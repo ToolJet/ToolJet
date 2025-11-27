@@ -29,14 +29,14 @@ Object.keys(ENV_VARS).forEach((key) => {
  *   npm run rotate:keys                # Perform actual rotation
  *
  * Environment Variables Required:
- *   LOCKBOX_MASTER_KEY       - Current/old master key (64 hex chars)
- *   NEW_LOCKBOX_MASTER_KEY   - New master key to rotate to (64 hex chars)
+ *   OLD_LOCKBOX_MASTER_KEY   - Current/old master key (64 hex chars)
+ *   LOCKBOX_MASTER_KEY       - New master key to rotate to (64 hex chars)
  *
  * IMPORTANT:
  *   - Stop the application before running this script
  *   - Backup the database before running
  *   - Test with --dry-run first in staging
- *   - After rotation, update .env with the new key
+ *   - After rotation, remove OLD_LOCKBOX_MASTER_KEY from .env and restart
  */
 
 class RotationProgress {
@@ -92,14 +92,14 @@ async function bootstrap() {
     console.log('✓ Environment variables validated');
 
     // Test encryption keys
-    const oldKey = process.env.LOCKBOX_MASTER_KEY!;
-    const newKey = process.env.NEW_LOCKBOX_MASTER_KEY!;
+    const oldKey = process.env.OLD_LOCKBOX_MASTER_KEY!;
+    const newKey = process.env.LOCKBOX_MASTER_KEY!;
     const dualKeyService = new DualKeyEncryptionService(oldKey, newKey);
 
     console.log('\nStep 2: Testing encryption keys...');
     await dualKeyService.testEncryptionCycle(oldKey, 'OLD_LOCKBOX_MASTER_KEY');
     console.log('✓ Old key validated');
-    await dualKeyService.testEncryptionCycle(newKey, 'NEW_LOCKBOX_MASTER_KEY');
+    await dualKeyService.testEncryptionCycle(newKey, 'LOCKBOX_MASTER_KEY');
     console.log('✓ New key validated');
 
     const keyInfo = dualKeyService.getKeyInfo();
@@ -183,9 +183,9 @@ async function bootstrap() {
       console.log('✓ ROTATION COMPLETED SUCCESSFULLY');
       console.log('\n⚠️  IMPORTANT NEXT STEPS:');
       console.log('1. Update your .env file:');
-      console.log(`   LOCKBOX_MASTER_KEY=${newKey}`);
-      console.log('2. Remove the NEW_LOCKBOX_MASTER_KEY variable');
-      console.log('3. Restart your application');
+      console.log('   - Remove OLD_LOCKBOX_MASTER_KEY (no longer needed)');
+      console.log('   - Keep LOCKBOX_MASTER_KEY as is (already the new key)');
+      console.log('2. Restart your application');
     }
     console.log('═'.repeat(60) + '\n');
 
@@ -198,28 +198,28 @@ async function bootstrap() {
 }
 
 function validateEnvironment(): void {
-  if (!process.env.LOCKBOX_MASTER_KEY) {
-    throw new Error('LOCKBOX_MASTER_KEY environment variable is not set');
+  if (!process.env.OLD_LOCKBOX_MASTER_KEY) {
+    throw new Error('OLD_LOCKBOX_MASTER_KEY environment variable is not set');
   }
 
-  if (!process.env.NEW_LOCKBOX_MASTER_KEY) {
-    throw new Error('NEW_LOCKBOX_MASTER_KEY environment variable is not set');
+  if (!process.env.LOCKBOX_MASTER_KEY) {
+    throw new Error('LOCKBOX_MASTER_KEY environment variable is not set');
   }
 
   // Validate format (64 hex characters)
   const hexRegex = /^[0-9a-fA-F]{64}$/;
 
+  if (!hexRegex.test(process.env.OLD_LOCKBOX_MASTER_KEY)) {
+    throw new Error('OLD_LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F)');
+  }
+
   if (!hexRegex.test(process.env.LOCKBOX_MASTER_KEY)) {
     throw new Error('LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F)');
   }
 
-  if (!hexRegex.test(process.env.NEW_LOCKBOX_MASTER_KEY)) {
-    throw new Error('NEW_LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F)');
-  }
-
   // Ensure keys are different
-  if (process.env.LOCKBOX_MASTER_KEY === process.env.NEW_LOCKBOX_MASTER_KEY) {
-    throw new Error('NEW_LOCKBOX_MASTER_KEY must be different from current LOCKBOX_MASTER_KEY');
+  if (process.env.OLD_LOCKBOX_MASTER_KEY === process.env.LOCKBOX_MASTER_KEY) {
+    throw new Error('LOCKBOX_MASTER_KEY must be different from OLD_LOCKBOX_MASTER_KEY');
   }
 }
 
