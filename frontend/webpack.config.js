@@ -129,6 +129,7 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      chunks: 'all',
       // chunks: 'all',
       // maxInitialRequests: 10, // Reduced from 25 - limits initial load chunks
       // maxAsyncRequests: 10,   // Limits async chunks (lazy loaded)
@@ -216,15 +217,18 @@ module.exports = {
         //   reuseExistingChunk: true,
         // },
 
-        // Everything else - catch-all for remaining node_modules
         defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
-          chunks: 'all',
-          // name: 'vendor-misc',
-          // priority: 10,
-          // minChunks: 2, // Only split if used in 2+ places
-          // reuseExistingChunk: true,
+          priority: -10,
+          reuseExistingChunk: true,
+          chunks: 'initial',
+        },
+        lucideReact: {
+          test: /[\\/]node_modules[\\/]lucide-react/,
+          name: 'lucide-react',
+          priority: 20, // Higher priority than vendors
+          reuseExistingChunk: true,
         },
       },
     },
@@ -354,6 +358,7 @@ module.exports = {
   output: {
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    // chunkFilename: '[name].[contenthash].js',
   },
   externals: {
     // global app config object
