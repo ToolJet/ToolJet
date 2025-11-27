@@ -14,7 +14,6 @@ import SectionCollapse from '@/_ui/Icon/solidIcons/SectionCollapse';
 import SectionExpand from '@/_ui/Icon/solidIcons/SectionExpand';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
-import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);

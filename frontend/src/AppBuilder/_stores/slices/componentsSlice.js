@@ -1538,9 +1538,9 @@ export const createComponentsSlice = (set, get) => ({
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.selectedComponents = [componentId];
+        state.selectedComponents = componentId ? [componentId] : [];
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
       },
       false,
