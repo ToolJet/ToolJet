@@ -213,7 +213,7 @@ export const ModalV2 = function Modal({
           data-cy={`${dataCy}-launch-button`}
         >
           {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span className={`${iconVisibility && 'tw-w-full tw-overflow-hidden'}`}>
+          <span className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}>
             {triggerButtonLabel ?? 'Show Modal'}
           </span>
           {iconVisibility && (
