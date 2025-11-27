@@ -81,7 +81,7 @@ export const ModalV2 = function Modal({
     currentLayout,
     isContainer: true,
     componentCount,
-    value: JSON.stringify({ headerHeight, showHeader }),
+    value: JSON.stringify({ headerHeight, showHeader, showModal }),
     visibility: isVisible,
     subContainerIndex,
   });
