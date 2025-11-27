@@ -340,7 +340,7 @@ export const Table = React.memo(
 
     function onPageIndexChanged(page) {
       setExposedVariables({ pageIndex: page });
-      setTimeout(() => onEvent('onPageChanged', tableEvents, { component }), 0);
+      onEvent('onPageChanged', tableEvents, { component });
     }
 
     function handleChangesSaved() {
