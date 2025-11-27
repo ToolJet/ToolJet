@@ -10,6 +10,7 @@ afterEach(function () {
 });
 
 describe("License - Update helper", () => {
+
   it("Update license", () => {
     cy.apiUpdateLicense("valid");
   });

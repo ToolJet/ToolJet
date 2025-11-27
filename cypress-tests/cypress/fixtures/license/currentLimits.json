@@ -7,6 +7,6 @@
   "Builders": 1,
   "End Users": 0,
   "Super Admins": 1,
-  "Workflows": "Unlimited",
-  "Tables": 0
+  "Workflows": 1,
+  "Tables": "Unlimited"
 }
