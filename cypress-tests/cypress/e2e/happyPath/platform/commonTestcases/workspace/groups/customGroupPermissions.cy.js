@@ -57,7 +57,7 @@ describe("Custom Group Permissions", () => {
     // Setup custom group
     cy.apiLogin();
     cy.visit(data.workspaceSlug);
-    cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
+    //cy.get(".basic-plan-migration-banner").invoke("css", "display", "none");
 
     cy.apiUpdateGroupPermission(
       "builder",
@@ -91,21 +91,21 @@ describe("Custom Group Permissions", () => {
     const permissions =
       Cypress.env("environment") === "Community"
         ? [
-            groupsSelector.appsDeleteCheck,
-            groupsSelector.foldersCreateCheck,
-            groupsSelector.workspaceVarCheckbox,
-          ]
+          groupsSelector.appsDeleteCheck,
+          groupsSelector.foldersCreateCheck,
+          groupsSelector.workspaceVarCheckbox,
+        ]
         : [
-            groupsSelector.appsDeleteCheck,
-            groupsSelector.appPromoteCheck,
-            groupsSelector.appReleaseCheck,
-            groupsSelector.workflowsCreateCheck,
-            groupsSelector.workflowsDeleteCheck,
-            groupsSelector.datasourcesCreateCheck,
-            groupsSelector.datasourcesDeleteCheck,
-            groupsSelector.foldersCreateCheck,
-            groupsSelector.workspaceVarCheckbox,
-          ];
+          groupsSelector.appsDeleteCheck,
+          groupsSelector.appPromoteCheck,
+          groupsSelector.appReleaseCheck,
+          groupsSelector.workflowsCreateCheck,
+          groupsSelector.workflowsDeleteCheck,
+          groupsSelector.datasourcesCreateCheck,
+          groupsSelector.datasourcesDeleteCheck,
+          groupsSelector.foldersCreateCheck,
+          groupsSelector.workspaceVarCheckbox,
+        ];
 
     permissions.forEach((permission) => {
       cy.get(permission).check();
