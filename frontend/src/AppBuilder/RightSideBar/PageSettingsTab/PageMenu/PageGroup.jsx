@@ -125,8 +125,6 @@ const RenderPageGroup = ({
     return <Icon {...props} />;
   };
 
-  const iconColor = isActive && !isExpanded ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
-
   if (isPageGroupHidden) {
     return null;
   }
@@ -158,13 +156,9 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              color={iconColor}
-              style={{
-                width: '16px',
-                height: '16px',
-                color: iconColor,
-                stroke: iconColor,
-              }}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
+                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+              }`}
             />
           </div>
         )}
@@ -191,10 +185,7 @@ const RenderPageGroup = ({
     >
       <NavigationMenuTrigger
         indicator={false}
-        className={`page-group-wrapper ${isActive && !isExpanded && 'page-group-selected'}`}
-        onClick={() => setIsExpanded((prev) => !prev)}
-        onMouseEnter={() => setIsExpanded(true)} // In horizontal page menu, page groups outside more popup open on hover too
-        onMouseLeave={() => setIsExpanded(false)}
+        className={`page-group-wrapper ${isActive && 'page-group-selected'}`}
         aria-label={pageGroup.name}
       >
         <TriggerBody />
@@ -230,11 +221,12 @@ const RenderPageGroup = ({
       className={`accordion-item ${darkMode && 'dark-theme'}`}
     >
       <button
-        className={`page-group-wrapper ${isActive && !isExpanded && 'page-group-selected'}`}
+        className={`tw-group page-group-wrapper ${isActive && 'page-group-selected'}`}
         onClick={(e) => {
           e.stopPropagation();
           setIsExpanded((prev) => !prev);
         }}
+        data-state={isExpanded ? 'open' : 'closed'}
         aria-label={pageGroup.name}
         aria-expanded={isExpanded}
       >
@@ -242,7 +234,7 @@ const RenderPageGroup = ({
         <Icons.IconChevronUp
           size={16}
           color="var(--nav-item-icon-color)"
-          className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 ${!isExpanded && 'tw-rotate-180'}`}
+          className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
         />
       </button>
 

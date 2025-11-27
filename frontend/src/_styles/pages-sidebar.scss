@@ -347,7 +347,7 @@
                 background-color: var(--hovered-nav-item-pill-bg);
             }
 
-            &.page-group-selected {
+            &.page-group-selected[data-state="closed"] {
                 color: var(--selected-nav-item-label-color);
                 background-color: var(--selected-nav-item-pill-bg);
             }
