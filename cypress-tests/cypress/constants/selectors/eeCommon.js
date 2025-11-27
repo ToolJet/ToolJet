@@ -11,6 +11,7 @@ export const commonEeSelectors = {
   saveButton: '[data-cy="save-button"]',
   cardTitle: '[data-cy="card-title"]',
   AddQueryButton: '[data-cy="show-ds-popover-button"]',
+  promoteVersionButton: '[data-cy="promote-version-button"]',
   promoteButton: '[data-cy="promote-button"]',
   settingsIcon: '[data-cy="icon-settings"]',
   gitSyncIcon: '[data-cy="git-sync-icon"]',
@@ -166,6 +167,9 @@ export const multiEnvSelector = {
   targetEnvName: '[data-cy="target-env-name"]',
   stagingLabel: '[data-cy="staging-label"]',
   productionLabel: '[data-cy="production-label"]',
+  environmentsTag: (envName) => {
+    return `[data-cy="${cyParamName(envName)}-environment-name"]`;
+  },
 };
 
 export const whiteLabellingSelectors = {
@@ -219,5 +223,55 @@ export const workspaceSelector = {
   },
   workspaceInput: (workspaceName) => {
     return `[data-cy="${workspaceName}-workspace-input"]`;
+  },
+};
+
+export const versionModalSelector = {
+  versionNameLabel: '[data-cy="version-name-label"]',
+  versionNameInput: '[data-cy="version-name-input-field"]',
+  versionNameHelperText: '[data-cy="version-name-helper-text"]',
+  versionDescriptionLabel: '[data-cy="version-description-label"]',
+  versionDescriptionHelperText: '[data-cy="version-description-helper-text"]',
+  commitChangesLabel: '[data-cy="commit-changes-label"]',
+  commitHelperText: '[data-cy="commit-helper-text"]',
+  versionLockInfoText: '[data-cy="version-lock-info-text"]',
+  versionName: (versionName) => {
+    return `[data-cy="${versionName}-version-name"]`;
+  },
+  draftTag: (versionName) => {
+    return `[data-cy="${versionName}-draft-tag"]`;
+  },
+  saveVersionButton: (versionName) => {
+    return `[data-cy="${versionName}-save-version-button"]`;
+  },
+  editVersionButton: (versionName) => {
+    return `[data-cy="${versionName}-edit-version-button"]`;
+  },
+  deleteVersionButton: (versionName) => {
+    return `[data-cy="${versionName}-delete-version-button"]`;
+  },
+
+  createVersionModal: {
+    versionDescriptionInput: '[data-cy="version-description-input-field"]',
+    createVersionHelperText: '[data-cy="create-version-helper-text"]',
+    cancelButton: '[data-cy="create-version-cancel-button"]',
+    saveButton: '[data-cy="create-version-save-button"]',
+  },
+
+  createDraftVersionModal: {
+    createDraftVersionFromLabel: '[data-cy="create-draft-version-from-label"]',
+    createDraftVersionFromInput:
+      '[data-cy="create-draft-version-from-input-field"]',
+    createDraftVersionHelperText:
+      '[data-cy="create-draft-version-helper-text"]',
+    cancelButton: '[data-cy="create-draft-version-cancel-button"]',
+    createButton: '[data-cy="create-draft-version-create-button"]',
+  },
+
+  editVersionModal: {
+    versionNameInput: '[data-cy="edit-version-name-input-field"]',
+    versionDescriptionInput: '[data-cy="edit-version-description-input-field"]',
+    cancelButton: '[data-cy="cancel-button"]',
+    saveButton: '[data-cy="save-button"]',
   },
 };

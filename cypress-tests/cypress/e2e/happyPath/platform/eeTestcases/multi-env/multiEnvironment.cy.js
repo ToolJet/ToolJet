@@ -22,6 +22,7 @@ import {
   verifyComponentInspectorDisabled,
   appPromote,
   releaseAndVisitApp,
+  createVersionFromDraft,
 } from "Support/utils/platform/multiEnv";
 
 describe("Multi-Environment Behavior", () => {
@@ -79,6 +80,7 @@ describe("Multi-Environment Behavior", () => {
         commonWidgetSelector.draggableWidget("query_data")
       );
     });
+    createVersionFromDraft("v1");
   });
 
   it("should verify multi-environment behavior across dev, staging, and production in editor and in released app", () => {

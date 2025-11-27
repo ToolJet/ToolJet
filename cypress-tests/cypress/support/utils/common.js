@@ -4,10 +4,10 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -235,6 +235,8 @@ export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
   });
+  cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+  cy.get(multiEnvSelector.environmentsTag("production")).click();
   cy.waitForElement(commonSelectors.releaseButton);
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();

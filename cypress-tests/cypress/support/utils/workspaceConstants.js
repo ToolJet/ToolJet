@@ -378,8 +378,15 @@ export const importConstantsApp = (filePath, app = true) => {
     force: true,
   });
   if (app) {
+    cy.intercept("GET", "/api/apps/*").as("getAppData");
     cy.get(importSelectors.importAppButton).click();
     cy.get('[data-cy="draggable-widget-textinput1"]').should("be.visible");
+    cy.wait("@getAppData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+    });
+    cy.apiPublishDraftVersion("v1");
     cy.wait(3000);
   } else {
     cy.get(workflowSelector.importWorkFlowsButton).click();
