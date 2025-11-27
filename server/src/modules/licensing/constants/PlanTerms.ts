@@ -26,6 +26,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
     customThemes: false,
     serverSideGlobalResolve: false,
+    scim: false,
   },
   domains: [],
   workflows: {

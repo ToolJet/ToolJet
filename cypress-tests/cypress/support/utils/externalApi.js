@@ -57,6 +57,16 @@ export const allAppsDetails = (workspaceIds) => {
     return apiRequest("GET", `${Cypress.env('API_URL')}/ext/workspace/${workspaceIds}/apps`);
 }
 
+export const fetchWorkspaceApps = (workspaceId, authToken) => {
+    const headers = authToken ? { Authorization: authToken } : {};
+    return apiRequest(
+        "GET",
+        `${Cypress.env('API_URL')}/ext/workspace/${workspaceId}/apps`,
+        {},
+        headers
+    );
+}
+
 export const createGroup = (groupName) => {
     cy.get(groupsSelector.createNewGroupButton).click();
     cy.clearAndType(groupsSelector.groupNameInput, groupName);

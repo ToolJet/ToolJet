@@ -40,8 +40,8 @@ const OAuthWrapper = ({
 
   const docLink =
     selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
 
   function authorizeWithProvider() {
     const provider = selectedDataSource?.kind;
