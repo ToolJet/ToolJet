@@ -25,7 +25,6 @@ import {
   positionGhostElement,
   positionGroupGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
-  isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
 } from './gridUtils';
@@ -978,7 +977,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
-            const isModalToCanvas = isDraggingModalToCanvas(source, target, boxList);
+            const isModalToCanvas = source.isModal && source.id !== target.id;
 
             let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
@@ -991,7 +990,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
               left = dragged.left * sourcegridWidth;
               top = dragged.top;
-              !isModalToCanvas &&
+              !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
               isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }
