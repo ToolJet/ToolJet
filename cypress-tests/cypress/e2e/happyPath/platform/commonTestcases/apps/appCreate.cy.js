@@ -10,11 +10,11 @@ describe("App creation", () => {
     const data = {};
     const appFile = "cypress/fixtures/templates/one_version.json";
 
-  beforeEach(() => {
-    cy.defaultWorkspaceLogin();
-    cy.skipWalkthrough();
-    cy.viewport(2000, 1900);
-  });
+    beforeEach(() => {
+        cy.defaultWorkspaceLogin();
+        cy.skipWalkthrough();
+        cy.viewport(2000, 1900);
+    });
 
     it("Should verify create, rename and clone app flow", () => {
         data.appName = `${fake.companyName}-App`;
@@ -66,7 +66,7 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.enabled").click();
 
         cy.backToApps();
-        cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+        // cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
         viewAppCardOptions(data.appName);
         cy.get(commonSelectors.appCardOptions("Rename app")).verifyVisibleElement(
@@ -177,7 +177,7 @@ describe("App creation", () => {
         cy.get(commonSelectors.cloneAppButton).should("be.enabled").click();
 
         cy.backToApps();
-        cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+        //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
 
         cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();

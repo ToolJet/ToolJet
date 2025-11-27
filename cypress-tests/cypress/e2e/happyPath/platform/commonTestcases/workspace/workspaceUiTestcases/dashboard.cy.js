@@ -315,7 +315,7 @@ describe("dashboard", () => {
     cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
 
     cy.backToApps();
-    cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+    //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     cy.wait("@appLibrary");
     cy.wait(1000);
 
@@ -374,7 +374,7 @@ describe("dashboard", () => {
     cy.get(".text-widget-section > div").should("be.visible");
     cy.backToApps();
     cy.wait("@appLibrary");
-    cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+    //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     cy.wait(2000);
     cy.deleteApp(data.appName);
 
@@ -495,7 +495,7 @@ describe("dashboard", () => {
     cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
       "not.exist"
     );
-    cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+    //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
     cy.wait(2000);
     cy.get(commonSelectors.allApplicationsLink).click();
     cy.deleteApp(data.appName);
