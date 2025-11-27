@@ -37,7 +37,7 @@ const MaintenanceMode = ({ darkMode }) => {
           checked={isMaintenanceOn}
           onCheckedChange={() => setConfirmationShow(true)}
           data-cy={`toggle-maintenance-mode`}
-          className="tw-w-full"
+          className="tw-w-full field-name"
         />
       </div>
     </div>
