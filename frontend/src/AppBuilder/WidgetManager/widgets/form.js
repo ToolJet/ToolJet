@@ -17,13 +17,14 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
         boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
       },
     },
     {
