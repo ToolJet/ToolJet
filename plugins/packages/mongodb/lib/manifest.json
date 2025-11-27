@@ -81,7 +81,7 @@
     }
   },
   "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert"],
-  "required": ["connection_type","host","port"],
+  "required": ["connection_type","host"],
   "allOf": [
     {
       "if": {
