@@ -8,7 +8,13 @@ import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import {
+  LEFT_SIDEBAR_WIDTH,
+  NO_OF_GRIDS,
+  PAGES_SIDEBAR_WIDTH_COLLAPSED,
+  PAGES_SIDEBAR_WIDTH_EXPANDED,
+  RIGHT_SIDEBAR_WIDTH,
+} from './appCanvasConstants';
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -20,15 +26,15 @@ import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/Pag
 import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
-import useCanvasMinWidth from './useCanvasMinWidth';
-import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
+  const scrollTimeoutRef = useRef(null);
   const canvasContentRef = useRef(null);
-  const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
+  const [isScrolling, setIsScrolling] = useState(false);
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
+  const resolveReferences = useStore((state) => state.resolveReferences);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
     (state) => state.environmentLoadingState || state.loaderStore.modules[moduleId].isEditorLoading,
@@ -49,8 +55,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -67,9 +77,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   );
   const showHeader = !globalSettings?.hideHeader;
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
-  const { position } = properties ?? {};
+  const { position, disableMenu, showOnDesktop } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
-  const minCanvasWidth = useCanvasMinWidth({ currentMode, position, isModuleMode });
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -144,6 +153,76 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
   }, [isViewerSidebarPinned]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 600);
+    };
+
+    const canvasContent = canvasContentRef.current;
+    if (canvasContent) {
+      canvasContent.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (canvasContent) {
+        canvasContent.removeEventListener('scroll', handleScroll);
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function getMinWidth() {
+    if (isModuleMode) return '100%';
+
+    const isSidebarOpenInEditor = currentMode === 'edit' ? isSidebarOpen : false;
+
+    const shouldAdjust = isSidebarOpen || (isRightSidebarOpen && currentMode === 'edit');
+
+    if (!shouldAdjust) return '';
+    let offset;
+    const currentSideBarWidth = LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default;
+
+    if (isViewerSidebarPinned && !isPagesSidebarHidden) {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
+        offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_EXPANDED}px`;
+      }
+    } else {
+      if (position === 'side' && isSidebarOpenInEditor && isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isSidebarOpenInEditor && !isRightSidebarOpen && !isPagesSidebarHidden) {
+        offset = `${currentSideBarWidth - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      } else if (position === 'side' && isRightSidebarOpen && !isSidebarOpenInEditor && !isPagesSidebarHidden) {
+        offset = `${RIGHT_SIDEBAR_WIDTH - PAGES_SIDEBAR_WIDTH_COLLAPSED}px`;
+      }
+    }
+
+    if (currentMode === 'edit') {
+      if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && isRightSidebarOpen) {
+        offset = `${currentSideBarWidth + RIGHT_SIDEBAR_WIDTH}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isSidebarOpenInEditor && !isRightSidebarOpen) {
+        offset = `${currentSideBarWidth}px`;
+      } else if ((position === 'top' || isPagesSidebarHidden) && isRightSidebarOpen && !isSidebarOpenInEditor) {
+        offset = `${RIGHT_SIDEBAR_WIDTH}px`;
+      }
+    }
+
+    return `calc(100% + ${offset})`;
+  }
+
   return (
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}
@@ -180,12 +259,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           <div
             ref={canvasContentRef}
             style={{
-              minWidth: minCanvasWidth,
-              overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+              minWidth: getMinWidth(),
+              overflow: 'auto',
               width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
               ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
             }}
-            className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`, {
+            className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content scrollbar`, {
               'scrollbar-hidden': !isScrolling,
             })}
           >

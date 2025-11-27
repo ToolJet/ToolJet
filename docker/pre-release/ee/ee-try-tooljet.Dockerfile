@@ -19,38 +19,6 @@ RUN mkdir -p /var/log/supervisor /var/run/postgresql /var/lib/postgresql /var/li
     chown -R appuser:appuser /etc/supervisor /var/log/supervisor /var/lib/redis && \
     chown -R postgres:postgres /var/run/postgresql /var/lib/postgresql
 
-# Install Temporal Server Binaries
-RUN curl -OL https://github.com/temporalio/temporal/releases/download/v1.28.0/temporal_1.28.0_linux_amd64.tar.gz \
- && tar -xzf temporal_1.28.0_linux_amd64.tar.gz \
- && mv temporal-server /usr/bin/temporal-server \
- && mv temporal-sql-tool /usr/bin/temporal-sql-tool \
- && chmod +x /usr/bin/temporal-server /usr/bin/temporal-sql-tool \
- && rm temporal_1.28.0_linux_amd64.tar.gz
-
-# Install Temporal UI Server Binaries
-RUN curl -OL https://github.com/temporalio/ui-server/releases/download/v2.28.0/ui-server_2.28.0_linux_amd64.tar.gz && \
-    tar -xzf ui-server_2.28.0_linux_amd64.tar.gz && \
-    mv ui-server /usr/bin/temporal-ui-server && \
-    chmod +x /usr/bin/temporal-ui-server && \
-    rm ui-server_2.28.0_linux_amd64.tar.gz
-
-
-# Install Git for schema extraction
-RUN apt update && apt install -y git && \
-    git clone --depth 1 --branch v1.28.0 https://github.com/temporalio/temporal.git /tmp/temporal && \
-    mkdir -p /etc/temporal/schema/postgresql && \
-    cp -r /tmp/temporal/schema/postgresql/v12 /etc/temporal/schema/postgresql/ && \
-    rm -rf /tmp/temporal
-
-# Install envsubst and grpcurl
-RUN apt update && apt install -y gettext-base curl \
-    && curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.0/grpcurl_1.8.0_linux_x86_64.tar.gz | tar -xzv -C /usr/local/bin grpcurl
-
-# Copy Temporal configuration files
-COPY ./docker/pre-release/ee/temporal-server.yaml /etc/temporal/temporal-server.template.yaml
-COPY ./docker/pre-release/ee/temporal-ui-server.yaml /etc/temporal/temporal-ui-server.yaml
-
-
 # Configure Supervisor to manage PostgREST, ToolJet, and Redis
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
@@ -111,16 +79,6 @@ ENV TOOLJET_HOST=http://localhost \
     REDIS_PASS= \
     ENABLE_MARKETPLACE_FEATURE=true \
     TERM=xterm \
-    ENABLE_WORKFLOW_SCHEDULING=true \
-    TEMPORAL_SERVER_ADDRESS=localhost:7233 \
-    TEMPORAL_TASK_QUEUE_NAME_FOR_WORKFLOWS=tooljet-workflows \
-    TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default \
-    TEMPORAL_ADDRESS=localhost:7233 \
-    TEMPORAL_DB_HOST=localhost \
-    TEMPORAL_DB_PORT=5432 \
-    TEMPORAL_DB_USER=tooljet \
-    TEMPORAL_DB_PASS=postgres \
-    TEMPORAL_CORS_ORIGINS=http://localhost:8080 \
     ENABLE_AI_FEATURES=true
 
 # Set the entrypoint

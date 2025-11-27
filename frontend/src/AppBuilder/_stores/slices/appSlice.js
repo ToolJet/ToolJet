@@ -158,11 +158,7 @@ export const createAppSlice = (set, get) => ({
     const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
       .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
       .reduce((max, [componentId, layout]) => {
-        const component = currentMainCanvasComponents.find((component) => componentId === component.id);
-        const visibility =
-          getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-          getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
-        const sum = layout.top + (visibility ? layout.height : 10);
+        const sum = layout.top + layout.height;
         return Math.max(max, sum);
       }, 0);
 
