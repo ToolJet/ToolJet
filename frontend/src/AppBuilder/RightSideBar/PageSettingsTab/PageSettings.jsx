@@ -5,7 +5,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import { pageConfig } from './pageConfig';
 import Accordion from '@/_ui/Accordion';
-import { ColorSwatches } from '@/modules/Appbuilder/components';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -503,9 +503,8 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
         <div className={`field`}>
           <InspectorTooltip
             label={'Hide navigation menu'}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
-              darkMode && 'color-whitish-darkmode'
-            }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
+              }`}
           />
         </div>
         <div className={`flex-grow-1`}>
