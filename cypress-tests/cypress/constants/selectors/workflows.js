@@ -34,6 +34,7 @@ export const workflowSelector = {
   workflowDropdown: '[data-cy="workflow-dropdown"]',
   workflowSelectInput: 'input[id*="react-select"]',
   workflowSelectOption: '[class*="workflow-select"]',
+  allWorkflowsLink: '[data-cy="all-workflows-link"]',
 
   nodeName: (nodeName) => `[data-cy="${cyParamName(nodeName)}-node"]`,
 
