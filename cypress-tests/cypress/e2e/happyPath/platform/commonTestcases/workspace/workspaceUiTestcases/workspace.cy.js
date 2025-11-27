@@ -13,6 +13,7 @@ data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
 describe("Workspace", () => {
     before(() => {
         cy.defaultWorkspaceLogin();
+        cy.intercept('GET', '**/api/library_apps').as('libraryApps');
     });
 
     it("Should verify create and edit workspace modal and flow", () => {
@@ -173,14 +174,14 @@ describe("Workspace", () => {
         cy.wait(1000);
         cy.get(commonSelectors.workspaceNameinput).clear().type(data.workspaceName);
         cy.wait(1000);
-        cy.get(dashboardSelector.workspaceSlugInputField)
+        cy.get(dashboardSelector.workspaceSlugInputField).click({ force: true })
             .clear()
             .type(data.workspaceSlug);
-        cy.wait(4000);
+        cy.wait(1000);
         cy.get(dashboardSelector.createWorkspaceButton)
             .should("be.enabled")
             .click();
-        cy.wait(1000);
+        cy.wait('@libraryApps');
         cy.get(commonSelectors.workspaceName).verifyVisibleElement(
             "have.text",
             data.workspaceName
@@ -191,14 +192,10 @@ describe("Workspace", () => {
         cy.get(
             `[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`
         )
-            .parents('[class*="align-items-center"]')
+            .closest('.align-items-center')
             .realHover()
-            .trigger("hover")
-            .then(() => {
-                cy.wait(500);
-                cy.hideTooltip();
-                cy.wait(500);
-                cy.get('[data-cy="current-org-indicator"]').eq(0).click();
+            .within(() => {
+                cy.get('[data-cy="current-org-indicator"]').click({ force: true });
             });
 
         cy.get(dashboardSelector.editWorkspaceTitle).verifyVisibleElement(

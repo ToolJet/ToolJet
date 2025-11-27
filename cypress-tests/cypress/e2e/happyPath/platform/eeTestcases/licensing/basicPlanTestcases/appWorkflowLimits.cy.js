@@ -11,7 +11,8 @@ describe("License - App & Workflow Limits", () => {
 
   beforeEach(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.intercept("GET", "/api/license/access").as("getLicenseAccess");
+    cy.apiDeleteAllApps();
   });
 
   it("should verify app limit progression, disable create/import/clone at limit", () => {
@@ -19,7 +20,10 @@ describe("License - App & Workflow Limits", () => {
     const app2Name = `${fake.companyName}-Limit-2`;
 
     cy.apiCreateApp(app1Name);
-    cy.get(commonSelectors.dashboardIcon).click();
+    cy.visit("/my-workspace");
+
+    cy.wait("@getLicenseAccess");
+    cy.wait(2000);
 
     verifyResourceLimit("apps", "basic");
 
@@ -64,8 +68,11 @@ describe("License - App & Workflow Limits", () => {
     const workflow2Name = `${fake.companyName}-Workflow-2`;
 
     cy.apiCreateWorkflow(workflow1Name);
+    cy.visit("my-workspace/workflows");
 
-    cy.get(workflowSelector.globalWorkFlowsIcon).click();
+    cy.wait("@getLicenseAccess");
+    cy.wait(2000);
+
     verifyResourceLimit("workflows", "basic", "workflow");
 
     getCurrentCountFromBanner("workflow").then((counts) => {
