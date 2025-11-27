@@ -203,7 +203,6 @@ const lastAutoFilledConnRef = React.useRef('');
 const autoFillTimeoutRef = React.useRef(null);
 const manuallyEditedFieldsRef = React.useRef(new Set());
 const skipNextAutoFillRef = React.useRef(false);
-
 React.useEffect(() => {
   const connString = options?.connection_string?.value;
   const connectionType = options?.connection_type?.value;
@@ -235,12 +234,15 @@ React.useEffect(() => {
     return;
   }
 
-  const isInitialLoad = !lastAutoFilledConnRef.current && selectedDataSource?.id;
-  if (isInitialLoad) {
+  const isLoadingExistingDataSource = 
+    !lastAutoFilledConnRef.current && 
+    selectedDataSource?.id && 
+    selectedDataSource?.options?.connection_string?.value === connString;
+    
+  if (isLoadingExistingDataSource) {
     lastAutoFilledConnRef.current = connString;
     return;
   }
-
 
   if (manuallyEditedFieldsRef.current.size > 0) {
     lastAutoFilledConnRef.current = connString;
@@ -290,13 +292,10 @@ React.useEffect(() => {
   const prevDataSourceId = prevDataSourceIdRef.current;
   
   if (prevDataSourceId !== selectedDataSource?.id) {
-    // Clear all tracking when switching datasources
     manuallyEditedFieldsRef.current.clear();
     lastAutoFilledConnRef.current = '';
     skipNextAutoFillRef.current = false;
     
-    // Prevent auto-fill from running on datasource switch
-    // by setting the current connection string as "already processed"
     const connString = options?.connection_string?.value;
     if (connString) {
       lastAutoFilledConnRef.current = connString;
@@ -582,80 +581,6 @@ const validateOptions = React.useCallback(async () => {
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
-/*
-const handleOptionChange = (key, value, flag = true) => {
-  if (!hasUserInteracted) {
-    setHasUserInteracted(true);
-  }
-  setInteractedFields((prev) => new Set(prev).add(key));
-  
-  const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl'];
-  
-  if (autoFilledFields.includes(key)) {
-    manuallyEditedFieldsRef.current.add(key);
-    
-    const isMongoDBDataSource = 
-      schema['tj:source']?.kind === 'mongodb' || 
-      schema['tj:source']?.name === 'MongoDB';
-    const connectionType = options?.connection_type?.value;
-    
-    if (isMongoDBDataSource && connectionType === 'string') {
-      optionchanged(key, value, flag);
-      
-      setTimeout(() => {
-        const newOptions = { ...options };
-        newOptions[key] = { value };
-        
-        const connFormat = newOptions.connection_format?.value || 'mongodb';
-        const isSrv = connFormat === 'mongodb+srv';
-        const username = newOptions.username?.value || '';
-        const password = newOptions.password?.value || '';
-        const host = newOptions.host?.value || '';
-        const port = newOptions.port?.value || '';
-        const database = newOptions.database?.value || '';
-        const use_ssl = !!newOptions.use_ssl?.value;
-        
-        if (host && host.trim() !== '') {
-          const prefix = isSrv ? 'mongodb+srv://' : 'mongodb://';
-          let credentials = '';
-          if (username) {
-            credentials += encodeURIComponent(username);
-            if (password) credentials += `:${encodeURIComponent(password)}`;
-            credentials += '@';
-          }
-          
-          let hostPart = host.trim();
-          if (!isSrv && port) {
-            hostPart += `:${port}`;
-          }
-          
-          const path = database ? `/${encodeURIComponent(database)}` : '';
-          const params = new URLSearchParams();
-          if (use_ssl) params.set('ssl', 'true');
-          const query = params.toString();
-          
-          const newConnString = `${prefix}${credentials}${hostPart}${path}${query ? `?${query}` : ''}`;
-          
-          skipNextAutoFillRef.current = true;
-          optionchanged('connection_string', newConnString, false);
-        }
-      }, 0);
-      return;
-    }
-  }
-  
-  if (key === 'connection_string') {
-    if (!value || value.trim() === '') {
-      manuallyEditedFieldsRef.current.clear();
-      lastAutoFilledConnRef.current = '';
-    } else {
-      manuallyEditedFieldsRef.current.clear();
-    }
-  }
-  
-  optionchanged(key, value, flag);
-};
-*/
 const handleOptionChange = (key, value, flag = true) => {
   if (!hasUserInteracted) {
     setHasUserInteracted(true);

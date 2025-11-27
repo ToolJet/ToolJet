@@ -80,7 +80,7 @@
       "default": false
     }
   },
-  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert"],
+  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert","connection_string"],
   "required": ["connection_type","host"],
   "allOf": [
     {
@@ -288,6 +288,7 @@
             "$ref": "#/properties/connection_string",
             "key": "connection_string",
             "label": "Connection string",
+            "placeholder": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
             "description": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
             "widget": "password-v3-textarea",
             "required": true
