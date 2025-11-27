@@ -84,6 +84,35 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 }
 
 /**
+ * Handles OTEL initialization for Enterprise Edition
+ */
+export async function initializeOtel(app: NestExpressApplication, logger: any) {
+  // Check if OTEL is enabled
+  if (process.env.ENABLE_OTEL !== 'true') {
+    logger.log('OTEL disabled (ENABLE_OTEL not set to true)');
+    return;
+  }
+
+  try {
+    logger.log('Initializing OpenTelemetry...');
+
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+    const importPath = await getImportPath(false, tooljetEdition);
+
+    // Dynamically import the edition-specific listener
+    const { otelListener } = await import(`${importPath}/otel/listener`);
+
+    // Initialize the listener (CE will no-op, EE will set up OTEL)
+    await otelListener.initialize(app);
+
+    logger.log('✅ OpenTelemetry initialization completed');
+  } catch (error) {
+    logger.error('❌ Failed to initialize OpenTelemetry:', error);
+    // Don't throw - observability should never break the app
+  }
+}
+
+/**
  * Replaces subpath placeholders in static assets
  */
 export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
