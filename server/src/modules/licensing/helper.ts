@@ -138,6 +138,18 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
       return licenseInstance.appPagesAddNavGroupEnabled;
 
+    case LICENSE_FIELD.GOOGLE:
+      return licenseInstance.google;
+
+    case LICENSE_FIELD.GITHUB:
+      return licenseInstance.github;
+
+    case LICENSE_FIELD.APP_PAGES_LIMIT:
+      return licenseInstance.appPagesLimit;
+
+    case LICENSE_FIELD.OBSERVABILITY:
+      return licenseInstance.observability;
+
     default:
       return licenseInstance.terms;
   }
