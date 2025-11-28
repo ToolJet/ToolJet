@@ -49,6 +49,11 @@ export default class MysqlQueryService implements QueryService {
       checkCache = sourceOptions['allow_dynamic_connection_parameters'] ? false : true;
       knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
 
+      // Verify SSL connection if SSL is enabled
+      if (sourceOptions.ssl_enabled) {
+        await this.verifySslConnection(knexInstance);
+      }
+
       switch (queryOptions.mode) {
         case 'sql':
           return await this.handleRawQuery(knexInstance, queryOptions);
@@ -79,9 +84,42 @@ export default class MysqlQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-    knexInstance.destroy();
-    return { status: 'ok' };
+
+    try {
+      await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
+
+      if (sourceOptions.ssl_enabled) {
+        await this.verifySslConnection(knexInstance);
+      }
+
+      return { status: 'ok' };
+    } finally {
+      knexInstance.destroy();
+    }
+  }
+
+  private async verifySslConnection(knexInstance: Knex): Promise<void> {
+    try {
+      const result = await knexInstance.raw(`SHOW STATUS LIKE 'Ssl_cipher'`);
+      const sslStatus = result[0];
+
+      if (!sslStatus || sslStatus.length === 0) {
+        throw new Error('Failed to retrieve SSL status from MySQL server');
+      }
+
+      const sslCipher = sslStatus[0]?.Value;
+
+      if (!sslCipher || sslCipher === '') {
+        throw new Error(
+          'SSL is enabled but the connection is not using SSL. Please verify your SSL configuration and certificates.'
+        );
+      }
+    } catch (err) {
+      if (err.message && err.message.includes('SSL is enabled but')) {
+        throw err;
+      }
+      throw new Error(`Failed to verify SSL connection: ${err.message}`);
+    }
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
@@ -118,24 +156,35 @@ export default class MysqlQueryService implements QueryService {
     return connectionOptions;
   }
 
+  private getSslConfig(sourceOptions: SourceOptions) {
+    if (!sourceOptions.ssl_enabled) return false;
+
+    const sslConfig: any = {
+      rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
+      require: true,
+      verifyServerCertificate: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
+    };
+
+    if (sourceOptions.ssl_certificate === 'ca_certificate') {
+      sslConfig.ca = sourceOptions.ca_cert;
+    }
+
+    if (sourceOptions.ssl_certificate === 'self_signed') {
+      sslConfig.ca = sourceOptions.root_cert;
+      sslConfig.key = sourceOptions.client_key;
+      sslConfig.cert = sourceOptions.client_cert;
+    }
+
+    return sslConfig;
+  }
+
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
     const props = sourceOptions.socket_path
       ? { socketPath: sourceOptions.socket_path }
       : {
           host: sourceOptions.host,
           port: +sourceOptions.port,
-          ssl: sourceOptions.ssl_enabled ?? false,
         };
-
-    const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
-    if (sourceOptions.ssl_certificate === 'ca_certificate') {
-      sslObject['ca'] = sourceOptions.ca_cert;
-    }
-    if (sourceOptions.ssl_certificate === 'self_signed') {
-      sslObject['ca'] = sourceOptions.root_cert;
-      sslObject['key'] = sourceOptions.client_key;
-      sslObject['cert'] = sourceOptions.client_cert;
-    }
 
     const config: Knex.Config = {
       client: 'mysql2',
@@ -145,7 +194,7 @@ export default class MysqlQueryService implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         multipleStatements: true,
-        ...(sourceOptions.ssl_enabled && { ssl: sslObject }),
+        ssl: this.getSslConfig(sourceOptions),
       },
       ...this.connectionOptions(sourceOptions),
     };
