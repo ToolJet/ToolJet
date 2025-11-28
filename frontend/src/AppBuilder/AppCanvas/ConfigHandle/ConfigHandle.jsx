@@ -124,6 +124,7 @@ export const ConfigHandle = ({
         height: '24px',
       }
     : {
+        color: 'var(--text-on-solid)',
         padding: '2px 6px',
         display: 'flex',
         flexDirection: 'row',
@@ -133,7 +134,6 @@ export const ConfigHandle = ({
       };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
     getConfigHandleButtonStyle.background = '#9747FF';
-    getConfigHandleButtonStyle.color = 'var(--text-inverse)';
   }
 
   const iconOnlyButtonStyle = {
@@ -227,10 +227,12 @@ export const ConfigHandle = ({
             popoverContentClassName="dynamic-height-info-popover"
           >
             <div style={{ cursor: 'pointer' }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-              <ToolTip message="Dynamic height enabled" show={hideDynamicHeightInfo}>
+              <ToolTip message="Dynamic height enabled" show={hideDynamicHeightInfo} delay={{ show: 500, hide: 50 }}>
                 <VectorSquare
                   size={14}
-                  color={isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-inverse)' : 'var(--icon-default)'}
+                  color={
+                    isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-on-solid)' : 'var(--icon-default)'
+                  }
                 />
               </ToolTip>
             </div>
@@ -240,7 +242,7 @@ export const ConfigHandle = ({
           <div>
             <EyeClosed
               size={14}
-              color={isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-inverse)' : 'var(--icon-default)'}
+              color={isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-on-solid)' : 'var(--icon-default)'}
             />
           </div>
         )}
@@ -296,6 +298,7 @@ export const ConfigHandle = ({
       {/* Tooltip for invalid license on ModuleViewer */}
       {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
         <Tooltip
+          delay={{ show: 500, hide: 50 }}
           id={`invalid-license-modules-${componentName?.toLowerCase()}`}
           className="tooltip"
           isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
