@@ -244,6 +244,11 @@ export const versionModalSelector = {
   saveVersionButton: (versionName) => {
     return `[data-cy="${versionName}-save-version-button"]`;
   },
+
+  versionOptionsButton: (versionName) => {
+    return `[data-cy="${versionName}-version-more-menu-button"]`;
+  },
+
   editVersionButton: (versionName) => {
     return `[data-cy="${versionName}-edit-version-button"]`;
   },

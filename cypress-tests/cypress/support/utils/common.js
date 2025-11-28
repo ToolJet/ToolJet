@@ -115,6 +115,7 @@ export const viewAppCardOptions = (appName) => {
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };
+
 export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()

@@ -80,6 +80,7 @@ describe("Multi-Environment Behavior", () => {
         commonWidgetSelector.draggableWidget("query_data")
       );
     });
+    cy.wait(2000);
     createVersionFromDraft("v1");
   });
 
