@@ -155,6 +155,32 @@ export const modalV2Config = {
     },
   ],
   styles: {
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger',
+      visibility: false,
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'trigger',
+    },
     headerBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Header background color',
@@ -257,6 +283,10 @@ export const modalV2Config = {
     },
     events: [],
     styles: {
+      icon: { value: 'IconAlignBoxBottomLeft' },
+      iconVisibility: { value: false },
+      iconColor: { value: 'var(--cc-default-icon)' },
+      direction: { value: 'left' },
       headerBackgroundColor: { value: '#ffffffff' },
       footerBackgroundColor: { value: '#ffffffff' },
       bodyBackgroundColor: { value: '#ffffffff' },
