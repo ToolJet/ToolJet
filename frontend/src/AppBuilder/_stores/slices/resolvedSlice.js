@@ -495,6 +495,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   getPagesSidebarVisibility: (moduleId = 'canvas') => {
+    // Tells whether the navigation items are visible or not (main header can still be visible due to app logo and title)
     return get().resolvedStore.modules[moduleId].others.isPagesSidebarHidden;
   },
 

@@ -78,15 +78,15 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, []);
 
-  useEffect(() => {
-    function handleResizeImmediate() {
-      const _canvasWidth =
-        moduleId === 'canvas'
-          ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
-          : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
-      if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
-    }
+  const handleResizeImmediate = useCallback(() => {
+    const _canvasWidth =
+      moduleId === 'canvas'
+        ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
+        : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
+    if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
+  }, [moduleId]);
 
+  useEffect(() => {
     const handleResize = debounce(handleResizeImmediate, 300);
 
     if (moduleId === 'canvas') {
@@ -108,7 +108,17 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       window.removeEventListener('resize', handleResize);
       handleResize.cancel();
     };
-  }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned, moduleId, isRightSidebarOpen]);
+  }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
+
+  useEffect(() => {
+    if (moduleId === 'canvas') {
+      const _canvasWidth =
+        document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
+        (isViewerSidebarPinned ? 272 : 70); // expanded and collapsed sidebar width + padding of above container
+      if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isViewerSidebarPinned]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
@@ -138,12 +148,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
-  const toggleSidebarPinned = useCallback(() => {
-    const newValue = !isViewerSidebarPinned;
-    setIsSidebarPinned(newValue);
-    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
-  }, [isViewerSidebarPinned]);
-
   return (
     <div
       className={cx(`main main-editor-canvas position-relative`, {})}
@@ -172,9 +176,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
               switchDarkMode={switchDarkMode}
               isSidebarPinned={isViewerSidebarPinned}
-              toggleSidebarPinned={toggleSidebarPinned}
+              setIsSidebarPinned={setIsSidebarPinned}
               darkMode={darkMode}
               canvasMaxWidth={canvasMaxWidth}
+              canvasContentRef={canvasContentRef}
             />
           )}
           <div
@@ -224,7 +229,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               )}
 
               {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+                <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
               )}
             </HotkeyProvider>
           </div>
