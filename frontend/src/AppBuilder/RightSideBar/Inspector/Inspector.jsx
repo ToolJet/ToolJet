@@ -413,8 +413,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -523,13 +523,13 @@ const getDocsLink = (componentMeta) => {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
-      return 'https://docs.tooljet.ai/docs/widgets/multiselect';
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
-      return 'https://docs.tooljet.ai/docs/widgets/date-range-picker';
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }

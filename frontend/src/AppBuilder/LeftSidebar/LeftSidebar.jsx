@@ -201,6 +201,7 @@ export const BaseLeftSidebar = ({
               tip="Settings"
               ref={setSideBarBtnRefs('settings')}
               isModuleEditor={isModuleEditor}
+              data-cy="left-sidebar-settings-button"
             >
               <Bolt width="16" height="16" className="tw-text-icon-strong" />
             </SidebarItem>

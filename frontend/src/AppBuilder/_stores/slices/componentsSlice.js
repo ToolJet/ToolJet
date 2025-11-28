@@ -482,7 +482,6 @@ export const createComponentsSlice = (set, get) => ({
     const mandatory = validationObject?.mandatory?.value ?? validationObject?.mandatory;
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
-    const re = new RegExp(validationRegex, 'g');
 
     if (componentType === 'EmailInput' && widgetValue) {
       const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
@@ -495,11 +494,14 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    if (!re.test(widgetValue)) {
-      return {
-        isValid: false,
-        validationError: 'The input should match pattern',
-      };
+    if (validationRegex && validationRegex.trim() !== '') {
+      const re = new RegExp(validationRegex, 'g');
+      if (!re.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'The input should match pattern',
+        };
+      }
     }
 
     const resolvedMinLength = getResolvedValue(minLength, customResolveObjects) || 0;
@@ -997,13 +999,15 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
+      getShouldFreeze,
     } = get();
+    const shouldFreeze = getShouldFreeze();
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
-    if (!_selectedComponents.length) return;
+    if (!_selectedComponents.length || shouldFreeze) return;
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
@@ -2232,5 +2236,24 @@ export const createComponentsSlice = (set, get) => ({
           );
         }
       });
+  },
+  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+    const component = getComponentDefinition(componentId, moduleId)?.component;
+    const componentName = component?.name;
+    const parentId = component?.parent;
+    const parentType = getComponentTypeFromId(parentId);
+    if (parentType === 'Listview') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      return subcontainerParentComponent?.[componentName]?.[property];
+    } else if (parentType === 'Form') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[componentName];
+      return subcontainerParentComponent?.[property];
+    } else {
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      return componentExposedProperty;
+    }
   },
 });
