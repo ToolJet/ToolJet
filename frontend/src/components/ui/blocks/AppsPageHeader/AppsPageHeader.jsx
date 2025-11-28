@@ -13,7 +13,11 @@ import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 const AppsPageHeader = forwardRef(
   ({ className, title = 'Applications', actionButtons, createAppMenuItems = [], ...props }, ref) => {
     return (
-      <div ref={ref} className={cn('tw-flex tw-items-center tw-justify-between tw-w-full', className)} {...props}>
+      <div
+        ref={ref}
+        className={cn('tw-flex tw-items-center tw-justify-between tw-w-full tw-mb-5', className)}
+        {...props}
+      >
         {/* Title Section */}
         <div className="tw-flex tw-items-center tw-gap-4">
           <div className="tw-flex tw-flex-col tw-items-start tw-justify-center">

@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { EndUserShellView } from './EndUserShellView';
 import { appsColumns } from '@/features/apps/columns';
-import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
+import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
 import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 import { EndUserHeader } from '@/components/ui/blocks/AppsPageHeader/EndUserHeader';
-import { transformAppsToAppRow } from '@/features/apps/adapters/homePageToAppRow';
 import { Button } from '@/components/ui/Button/Button';
-import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
 import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary/ResourceErrorBoundary';
@@ -31,21 +29,11 @@ function EndUserAppsPageAdapter({
   const { pageChanged, folderChanged, onSearch, deleteApp, cloneApp, exportApp } = rawActions;
   const { canCreateApp, canDeleteApp, canUpdateApp } = permissions;
   const { navigate, workspaceId } = navigation;
-  const {
-    workspaceName,
-    workspaces = [],
-    onWorkspaceChange,
-    sidebarUser,
-    sidebarTeams = [],
-    sidebarNavMain = [],
-    sidebarProjects = [],
-  } = layout;
-
-  const [modulesData] = useState({ data: [], isLoading: false, error: null, meta: {} });
+  const { workspaceName, workspaces = [], onWorkspaceChange } = layout;
 
   const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
     initialTab: 'apps',
-    loadingStates: { apps: appsIsLoading, modules: modulesData.isLoading, folders: foldersLoading },
+    loadingStates: { apps: appsIsLoading, folders: foldersLoading },
   });
 
   const resolvedWorkspaceId = workspaceId || '32434r';
@@ -77,34 +65,14 @@ function EndUserAppsPageAdapter({
 
   const {
     table: finalTable,
-    appsEmpty,
+    isEmpty: appsEmpty,
     error: adapterError,
-  } = useAppsPageAdapter({
+  } = useResourcePageAdapter({
     data: { apps, isLoading: appsIsLoading, error: appsError, meta },
     filters: { appSearchKey, currentFolder },
     actions: { pageChanged, onSearch },
     columns: finalColumns,
   });
-
-  const modulesRows = useMemo(() => {
-    if (!modulesData.data?.length) return [];
-    return transformAppsToAppRow(modulesData.data);
-  }, [modulesData.data]);
-
-  const modulesTableState = useAppsTableState({
-    data: modulesRows,
-    columns: finalColumns,
-    initial: {
-      globalFilter: appSearchKey || '',
-      pagination: {
-        pageIndex: Math.max(0, (modulesData.meta?.current_page || 1) - 1),
-        pageSize: modulesData.meta?.per_page || 10,
-      },
-    },
-  });
-
-  const hasQuery = !!(appSearchKey?.trim() || currentFolder?.id);
-  const modulesEmpty = modulesData.data.length === 0 && !hasQuery && !modulesData.isLoading;
 
   const breadcrumbItems = useMemo(
     () => [
@@ -115,7 +83,13 @@ function EndUserAppsPageAdapter({
   );
 
   const appsMenuItems = computedPerms.canImport
-    ? [{ label: 'Create app from template', onClick: () => console.log('Import template'), icon: 'app-window' }]
+    ? [
+        {
+          label: 'Create app from template',
+          onClick: () => console.log('Import template'),
+          icon: 'app-window',
+        },
+      ]
     : [];
 
   if (appsError || adapterError) {
@@ -128,27 +102,23 @@ function EndUserAppsPageAdapter({
     );
   }
 
-  const appsContent =
-    viewMode === 'list' ? (
-      <DataTable table={finalTable} isLoading={appsIsLoading} />
+  // Generic helper to render content based on view mode
+  const renderContentView = (table, isLoading) => {
+    return viewMode === 'list' ? (
+      <DataTable table={table} isLoading={isLoading} />
     ) : (
-      <AppsGrid table={finalTable} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
+      <AppsGrid table={table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
     );
+  };
 
-  const modulesContent =
-    viewMode === 'list' ? (
-      <DataTable table={modulesTableState.table} isLoading={modulesData.isLoading} />
-    ) : (
-      <AppsGrid table={modulesTableState.table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
-    );
+  const appsContent = renderContentView(finalTable, appsIsLoading);
 
   const tabs = [
-    { id: 'apps', content: appsContent, error: appsError, empty: appsEmpty, emptyState: <EmptyNoApps /> },
     {
-      id: 'modules',
-      content: modulesContent,
-      error: modulesData.error,
-      empty: modulesEmpty,
+      id: 'apps',
+      content: appsContent,
+      error: appsError,
+      empty: appsEmpty,
       emptyState: <EmptyNoApps />,
     },
   ];
@@ -160,10 +130,6 @@ function EndUserAppsPageAdapter({
       workspaceName={workspaceName}
       workspaces={workspaces}
       onWorkspaceChange={onWorkspaceChange}
-      sidebarUser={sidebarUser}
-      sidebarTeams={sidebarTeams}
-      sidebarNavMain={sidebarNavMain}
-      sidebarProjects={sidebarProjects}
       header={
         <EndUserHeader
           title={'Applications'}
@@ -191,7 +157,7 @@ function EndUserAppsPageAdapter({
       footer={<PaginationFooter table={finalTable} isLoading={isLoading} />}
     >
       <ResourceErrorBoundary>
-        <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs.filter((t) => t.id === 'apps')} />
+        <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
       </ResourceErrorBoundary>
     </EndUserShellView>
   );

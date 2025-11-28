@@ -8,12 +8,9 @@ export function EndUserShellView({
   searchValue,
   onSearch,
   footer,
-  toolbarSlot = null,
-  breadcrumbsSlot = null,
   header = null,
   contentSlot,
-  topbarRightSlot = null,
-  // Workspace switcher props (passed to MainLayout)
+  // Workspace switcher props (passed to EndUserLayout)
   workspaceName,
   workspaces,
   onWorkspaceChange,
@@ -27,16 +24,13 @@ export function EndUserShellView({
     <div className="tw-h-screen tw-bg-background-surface-layer-01">
       <EndUserLayout
         topbarLeftSlot={searchSlot}
-        topbarRightSlot={topbarRightSlot}
         workspaceName={workspaceName}
         workspaces={workspaces}
         onWorkspaceChange={onWorkspaceChange}
       >
         <PageContainer footer={footer}>
           <div className="tw-space-y-4">
-            {breadcrumbsSlot}
             {header}
-            {toolbarSlot}
             {contentSlot}
           </div>
         </PageContainer>
