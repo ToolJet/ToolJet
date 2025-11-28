@@ -8,7 +8,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/Rocket/pagination';
-import { PaginationFooterSkeleton } from './PaginationFooterSkeleton';
+import { PaginationFooterSkeleton } from '../PaginationFooterSkeleton';
 
 function PaginationFooterInternal({
   table, // Kept for backward compatibility, will be removed

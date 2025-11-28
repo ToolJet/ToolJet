@@ -1,5 +1,5 @@
 import React from 'react';
-import { ErrorState } from '@/components/ui/blocks/ErrorState/ErrorState';
+import { ErrorState } from '@/components/ui/blocks/ErrorState';
 
 export class ResourceErrorBoundary extends React.Component {
   constructor(props) {

@@ -1,9 +1,9 @@
 import React from 'react';
-import { AppsTableSkeleton } from '../AppsTableSkeleton';
+import { AppsTableSkeleton } from '../components/AppsTableSkeleton';
 import { Table, TableHeader, TableHead, TableRow } from '@/components/ui/Rocket/table';
 
 export default {
-  title: 'AppsPage/AppsTableSkeleton',
+  title: 'Features/Apps/Components/AppsTableSkeleton',
   component: AppsTableSkeleton,
   tags: ['autodocs'],
   parameters: {

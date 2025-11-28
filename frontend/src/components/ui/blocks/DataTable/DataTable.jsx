@@ -2,9 +2,11 @@ import * as React from 'react';
 import { flexRender } from '@tanstack/react-table';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Rocket/table';
-import { AppsTableSkeleton } from '@/components/AppsPage/AppsTableSkeleton'; // This will be genericized later
+import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
 
 function DataTableInternal({ table, isLoading, skeleton }) {
+  const columnCount = table?.getAllColumns()?.length || 4;
+  
   return (
     <div className="tw-overflow-hidden">
       <Table>
@@ -22,7 +24,7 @@ function DataTableInternal({ table, isLoading, skeleton }) {
           ))}
         </TableHeader>
         {isLoading ? (
-          skeleton || <AppsTableSkeleton rowCount={4} />
+          skeleton || <TableSkeleton rowCount={4} columnCount={columnCount} />
         ) : (
           <TableBody className="**:data-[slot=table-cell]:first:tw-w-8">
             {table.getRowModel().rows?.length ? (

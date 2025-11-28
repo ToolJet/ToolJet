@@ -1,6 +1,5 @@
 import React from 'react';
-import AppsPageAdapter from '../AppsPageAdapter';
-import { generateMockApps, generateMockFolders } from './utils';
+import EndUserAppsPageAdapter from '../adapters/EndUserAppsPageAdapter';
 import {
   AudioWaveform,
   Command,
@@ -15,16 +14,18 @@ import {
   Bell,
   Zap,
 } from 'lucide-react';
+import { generateMockApps, generateMockFolders } from './utils';
 
-// Mock action handlers for Storybook
+// Mock HomePage methods
+const mockCanCreateApp = () => true;
+const mockCanUpdateApp = (_app) => true;
+const mockCanDeleteApp = (_app) => true;
 const mockPageChanged = (page) => console.log('Page changed:', page);
-const mockFolderChanged = (folder) => console.log('Folder changed:', folder);
 const mockOnSearch = (key) => console.log('Search:', key);
 const mockDeleteApp = (app) => console.log('Delete:', app);
 const mockCloneApp = (app) => console.log('Clone:', app);
 const mockExportApp = (app) => console.log('Export:', app);
 const mockNavigate = (path) => console.log('Navigate:', path);
-const mockWorkspaceChange = (workspace) => console.log('Workspace changed:', workspace);
 
 // Dummy workspace data for Storybook
 const DUMMY_WORKSPACES = [
@@ -108,14 +109,86 @@ const MOCK_SIDEBAR_DATA = {
   ],
 };
 
+function StoryWithWorkspace(props) {
+  const [currentWorkspace, setCurrentWorkspace] = React.useState(DUMMY_WORKSPACES[0].name);
+  const [currentFolder, setCurrentFolder] = React.useState(props.filters?.currentFolder || {});
+
+  // Update currentFolder when prop changes
+  React.useEffect(() => {
+    if (props.filters?.currentFolder) {
+      setCurrentFolder(props.filters.currentFolder);
+    }
+  }, [props.filters?.currentFolder]);
+
+  const handleWorkspaceChange = (workspace) => {
+    setCurrentWorkspace(workspace.name);
+    console.log('Workspace changed to:', workspace);
+  };
+
+  const handleFolderChange = (folder) => {
+    setCurrentFolder(folder || {});
+    console.log('Folder changed to:', folder);
+    props.folderChanged?.(folder);
+  };
+
+  // Enhanced navigate that updates URL for Storybook
+  const enhancedNavigate = React.useCallback((path) => {
+    mockNavigate(path);
+    // Update browser URL for Storybook
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', path);
+      // Dispatch popstate to trigger any listeners
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, []);
+
+  return (
+    <EndUserAppsPageAdapter
+      {...props}
+      filters={{
+        ...props.filters,
+        currentFolder,
+      }}
+      actions={{
+        pageChanged: props.actions?.pageChanged || mockPageChanged,
+        folderChanged: handleFolderChange,
+        onSearch: props.actions?.onSearch || mockOnSearch,
+        deleteApp: props.actions?.deleteApp || mockDeleteApp,
+        cloneApp: props.actions?.cloneApp || mockCloneApp,
+        exportApp: props.actions?.exportApp || mockExportApp,
+      }}
+      permissions={{
+        canCreateApp: props.permissions?.canCreateApp || mockCanCreateApp,
+        canDeleteApp: props.permissions?.canDeleteApp || mockCanDeleteApp,
+        canUpdateApp: props.permissions?.canUpdateApp || mockCanUpdateApp,
+      }}
+      navigation={{
+        navigate: enhancedNavigate,
+        workspaceId: props.navigation?.workspaceId,
+        appType: props.navigation?.appType || 'front-end',
+      }}
+      layout={{
+        workspaceName: currentWorkspace,
+        workspaces: DUMMY_WORKSPACES,
+        onWorkspaceChange: handleWorkspaceChange,
+        sidebarUser: MOCK_SIDEBAR_DATA.user,
+        sidebarTeams: MOCK_SIDEBAR_DATA.teams,
+        sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
+        sidebarProjects: MOCK_SIDEBAR_DATA.projects,
+      }}
+    />
+  );
+}
+
 const meta = {
-  component: AppsPageAdapter,
-  title: 'Features/Apps/AppsPageAdapter',
+  component: EndUserAppsPageAdapter,
+  title: 'Features/Apps/EndUserAppsPageAdapter',
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Adapter for the main apps page, connecting legacy state to the new component architecture.',
+        component:
+          'Adapter for the end-user apps page, connecting legacy state to the new component architecture. This story demonstrates the component with mock modules data.',
       },
     },
   },
@@ -132,66 +205,10 @@ const meta = {
     permissions: { control: 'object', description: 'Permission checks' },
     navigation: { control: 'object', description: 'Navigation-related props' },
     layout: { control: 'object', description: 'Layout-related props' },
-    ui: { control: 'object', description: 'UI-related props' },
   },
 };
 
 export default meta;
-
-const StoryWithWorkspace = (args) => {
-  const [currentFolder, setCurrentFolder] = React.useState(args.filters?.currentFolder || {});
-
-  // Update currentFolder when prop changes
-  React.useEffect(() => {
-    if (args.filters?.currentFolder) {
-      setCurrentFolder(args.filters.currentFolder);
-    }
-  }, [args.filters?.currentFolder]);
-
-  const handleFolderChange = (folder) => {
-    setCurrentFolder(folder || {});
-    mockFolderChanged(folder);
-  };
-
-  return (
-    <AppsPageAdapter
-      {...args}
-      filters={{
-        ...args.filters,
-        currentFolder,
-      }}
-      actions={{
-        pageChanged: mockPageChanged,
-        folderChanged: handleFolderChange,
-        onSearch: mockOnSearch,
-        deleteApp: mockDeleteApp,
-        cloneApp: mockCloneApp,
-        exportApp: mockExportApp,
-      }}
-      permissions={{
-        canCreateApp: () => true,
-        canDeleteApp: () => true,
-        canUpdateApp: () => true,
-      }}
-      navigation={{
-        navigate: mockNavigate,
-        workspaceId: '123',
-      }}
-      layout={{
-        workspaceName: DUMMY_WORKSPACES[0].name,
-        workspaces: DUMMY_WORKSPACES,
-        onWorkspaceChange: mockWorkspaceChange,
-        sidebarUser: MOCK_SIDEBAR_DATA.user,
-        sidebarTeams: MOCK_SIDEBAR_DATA.teams,
-        sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
-        sidebarProjects: MOCK_SIDEBAR_DATA.projects,
-      }}
-      ui={{
-        darkMode: false,
-      }}
-    />
-  );
-};
 
 export const Default = {
   render: (args) => <StoryWithWorkspace {...args} />,
@@ -205,6 +222,7 @@ export const Default = {
     },
   },
 };
+
 
 export const Empty = {
   render: (args) => <StoryWithWorkspace {...args} />,
@@ -224,6 +242,7 @@ export const Loading = {
     data: {
       apps: [],
       isLoading: true,
+      meta: {},
     },
     filters: {
       ...Default.args.filters,
@@ -239,6 +258,7 @@ export const WithError = {
     data: {
       apps: [],
       error: new Error('Failed to fetch applications'),
+      meta: {},
     },
   },
 };

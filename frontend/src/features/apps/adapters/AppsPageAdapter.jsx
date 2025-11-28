@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { AppsShellView } from './AppsShellView';
+import { AppsShellView } from '../components/AppsShellView';
 import { appsColumns } from '@/features/apps/columns';
 import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
 import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
-import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
+import { EmptyNoApps } from '../components/EmptyNoApps';
 import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
-import { MOCK_MODULES_DATA, MOCK_MODULES_META } from './stories/mockData';
+import { MOCK_MODULES_DATA, MOCK_MODULES_META } from '../stories/mockData';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
-import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader/ResourceViewHeader';
-import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs/ResourceTabs';
-import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary/ResourceErrorBoundary';
-import { ErrorState } from '@/components/ui/blocks/ErrorState/ErrorState';
-import { DataTable } from '@/components/ui/blocks/DataTable/DataTable';
-import { AppsGrid } from './AppsGrid';
+import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader';
+import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
+import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
+import { ErrorState } from '@/components/ui/blocks/ErrorState';
+import { DataTable } from '@/components/ui/blocks/DataTable';
+import { AppsGrid } from '../components/AppsGrid';
 
 function AppsPageAdapter({
   data = {},
@@ -201,6 +201,7 @@ function AppsPageAdapter({
   const tabs = [
     {
       id: 'apps',
+      label: 'Apps',
       content: appsContent,
       error: appsError,
       empty: appsEmpty,
@@ -208,6 +209,7 @@ function AppsPageAdapter({
     },
     {
       id: 'modules',
+      label: 'Modules',
       content: modulesContent,
       error: modulesAdapterError,
       empty: modulesEmpty,

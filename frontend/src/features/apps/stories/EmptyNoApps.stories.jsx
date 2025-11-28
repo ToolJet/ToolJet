@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyNoApps } from './EmptyNoApps';
+import { EmptyNoApps } from '../components/EmptyNoApps';
 
 export default {
   title: 'UI/Blocks/EmptyNoApps',
