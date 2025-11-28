@@ -51,7 +51,7 @@ export default class LicenseBase {
   private _isScimEnabled: boolean;
   private _isGoogle: boolean;
   private _isGithub: boolean;
-  private _isObservability: boolean;
+  private _isObservability: object;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -118,6 +118,7 @@ export default class LicenseBase {
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
     this._isCustomGroups = this.getPermissionValue('customGroups');
+    this._isObservability = licenseData?.observability;
 
     // Features
     this._isAuditLogs = this.getFeatureValue('auditLogs');
@@ -127,7 +128,6 @@ export default class LicenseBase {
     this._isSAML = this.getFeatureValue('saml');
     this._isGoogle = this.getFeatureValue('google');
     this._isGithub = this.getFeatureValue('github');
-    this._isObservability = this.getFeatureValue('observability');
     this._isCustomStyling = this.getFeatureValue('customStyling');
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
     this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
@@ -392,11 +392,14 @@ export default class LicenseBase {
     return this._isGithub;
   }
 
-  public get observability(): boolean {
+  public get observabilityEnabled(): boolean {
     if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.observability;
+      return !!this.BASIC_PLAN_TERMS?.observability?.enabled;
     }
-    return this._isObservability;
+    if (!this._isObservability) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._isObservability['enabled'];
   }
 
   public get gitSync(): boolean {

@@ -135,7 +135,7 @@ export enum LICENSE_FIELD {
   APP_PAGES_LIMIT = 'appPagesLimit',
   GOOGLE = 'googleEnabled',
   GITHUB = 'githubEnabled',
-  OBSERVABILITY = 'observabilityEnabled',
+  OBSERVABILITY_ENABLED = 'observabilityEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

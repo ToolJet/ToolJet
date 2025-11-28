@@ -67,6 +67,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   permissions: {
     customGroups: false,
   },
+  observability: {
+    enabled: false,
+  },
 };
 
 export const BASIC_PLAN_SETTINGS = {

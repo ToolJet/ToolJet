@@ -65,6 +65,9 @@ export interface Terms {
   permissions?: {
     customGroups: boolean;
   };
+  observability?: {
+    enabled: boolean;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';

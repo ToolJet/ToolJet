@@ -147,8 +147,8 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_PAGES_LIMIT:
       return licenseInstance.appPagesLimit;
 
-    case LICENSE_FIELD.OBSERVABILITY:
-      return licenseInstance.observability;
+    case LICENSE_FIELD.OBSERVABILITY_ENABLED:
+      return licenseInstance.observabilityEnabled;
 
     default:
       return licenseInstance.terms;
