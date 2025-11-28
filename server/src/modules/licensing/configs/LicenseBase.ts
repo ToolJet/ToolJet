@@ -225,7 +225,7 @@ export default class LicenseBase {
 
   public get appPagesLimit(): number | string {
     if (this.IsBasicPlan) {
-      return this.BASIC_PLAN_TERMS.app?.pages?.limit || 5;
+      return this.BASIC_PLAN_TERMS.app?.pages?.count || 5;
     }
     if (!this._app) {
       return ''; //Not passed set to infinite for older licenses and trial

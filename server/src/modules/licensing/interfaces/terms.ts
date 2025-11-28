@@ -47,7 +47,7 @@ export interface Terms {
   app?: {
     pages: {
       enabled: boolean;
-      limit: number | string;
+      count: number | string;
       features: {
         appHeaderAndLogo: boolean;
         addNavGroup: boolean;
