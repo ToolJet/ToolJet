@@ -82,15 +82,6 @@ function EndUserAppsPageAdapter({
   );
 
   console.log('End user apps table', data, finalTable?.getRowCount());
-  if (appsError || adapterError) {
-    return (
-      <ErrorState
-        title="Failed to load apps"
-        error={appsError || adapterError}
-        onRetry={() => window.location.reload()}
-      />
-    );
-  }
 
   // Generic helper to render content based on view mode
   const renderContentView = (table, isLoading) => {
@@ -112,7 +103,15 @@ function EndUserAppsPageAdapter({
     id: 'apps',
     label: 'Apps',
     content: appsContent,
-    error: appsError,
+    error: appsError || adapterError,
+    errorState:
+      appsError || adapterError ? (
+        <ErrorState
+          title="Failed to load apps"
+          error={appsError || adapterError}
+          onRetry={() => window.location.reload()}
+        />
+      ) : null,
     empty: appsEmpty,
     emptyState: <EmptyNoApps />,
   };
@@ -140,18 +139,11 @@ function EndUserAppsPageAdapter({
       footer={<PaginationFooter table={finalTable} isLoading={isLoading} currentPage={currentPage} />}
     >
       <ResourceErrorBoundary>
-        {appsContentWrapper.error ? (
-          <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
-            <div className="tw-text-red-500 tw-mb-2">Failed to load {appsContentWrapper.label}</div>
-            <div className="tw-text-sm tw-text-muted-foreground">
-              {appsContentWrapper.error.message || 'An error occurred'}
-            </div>
-          </div>
-        ) : appsContentWrapper.empty ? (
-          appsContentWrapper.emptyState
-        ) : (
-          appsContentWrapper.content
-        )}
+        {appsContentWrapper.error
+          ? appsContentWrapper.errorState
+          : appsContentWrapper.empty
+          ? appsContentWrapper.emptyState
+          : appsContentWrapper.content}
       </ResourceErrorBoundary>
     </EndUserShellView>
   );

@@ -1,24 +1,36 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from '@/components/ui/Rocket/empty';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
 
 export function ErrorState({ title, description, onRetry, error }) {
   const errorMessage = description || error?.message || 'An unknown error occurred.';
 
   return (
-    <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite" aria-atomic="true">
-      <div className="tw-text-red-500 tw-font-semibold tw-mb-2" aria-label="Error message">
-        {title || 'Something went wrong'}
-      </div>
-      <div className="tw-text-sm tw-text-muted-foreground" id="error-description">
-        {errorMessage}
-      </div>
-      {onRetry && (
-        <Button onClick={onRetry} className="tw-mt-4" aria-label="Retry operation">
-          Retry
-        </Button>
-      )}
-    </div>
+    <Empty role="alert" aria-live="polite" aria-atomic="true">
+      <EmptyHeader>
+        <EmptyMedia variant="default">
+          <AlertCircle className="tw-size-10 tw-text-icon-danger" />
+        </EmptyMedia>
+        <EmptyTitle>{title || 'Something went wrong'}</EmptyTitle>
+        <EmptyDescription id="error-description">{errorMessage}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        {onRetry && (
+          <Button onClick={onRetry} aria-label="Retry operation">
+            Retry
+          </Button>
+        )}
+      </EmptyContent>
+    </Empty>
   );
 }
 
