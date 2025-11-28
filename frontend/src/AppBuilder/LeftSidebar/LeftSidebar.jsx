@@ -13,13 +13,15 @@ import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
-import { SquareDashedMousePointer, Bug, Bolt } from 'lucide-react';
+import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import SupportButton from './SupportButton';
 import AvatarGroup from '@/_ui/AvatarGroup';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import AppHistoryIcon from './AppHistory/AppHistoryIcon';
+import AppHistory from './AppHistory';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -92,7 +94,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-          100
+        100
       );
     } else {
       setPopoverContentHeight(100);
@@ -117,6 +119,8 @@ export const BaseLeftSidebar = ({
         );
       case 'tooljetai':
         return renderAIChat({ darkMode, isUserInZeroToOneFlow });
+      case 'apphistory':
+        return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
       case 'debugger':
         return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
       case 'settings':
@@ -124,7 +128,6 @@ export const BaseLeftSidebar = ({
           <GlobalSettings
             darkMode={darkMode}
             isModuleEditor={isModuleEditor}
-
           />
         );
     }
@@ -185,6 +188,12 @@ export const BaseLeftSidebar = ({
         {!isUserInZeroToOneFlow && (
           <>
             {renderCommonItems()}
+            <AppHistoryIcon
+              darkMode={darkMode}
+              selectedSidebarItem={selectedSidebarItem}
+              handleSelectedSidebarItem={handleSelectedSidebarItem}
+              setSideBarBtnRefs={setSideBarBtnRefs}
+            />
             <SidebarItem
               icon="settings"
               selectedSidebarItem={selectedSidebarItem}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -10,7 +9,7 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 //TODO: Remove this
-import { Confirm } from '@/Editor/Viewer/Confirm';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -40,6 +39,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       canReadDataSource(dataQuery?.data_source_id) ||
       canDeleteDataSource()
       : true;
+
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
