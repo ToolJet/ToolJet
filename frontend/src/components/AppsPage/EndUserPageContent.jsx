@@ -35,10 +35,6 @@ export function AppsTabs({
   perms,
   canDelete,
 }) {
-
-
-
-
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="tw-w-full tw-flex-col tw-justify-start tw-gap-6">
       {/* Apps Tab Content - only render when active */}

@@ -138,46 +138,66 @@ const meta = {
 
 export default meta;
 
-const StoryWithWorkspace = (args) => (
-  <AppsPageAdapter
-    {...args}
-    actions={{
-      pageChanged: mockPageChanged,
-      folderChanged: mockFolderChanged,
-      onSearch: mockOnSearch,
-      deleteApp: mockDeleteApp,
-      cloneApp: mockCloneApp,
-      exportApp: mockExportApp,
-    }}
-    permissions={{
-      canCreateApp: () => true,
-      canDeleteApp: () => true,
-      canUpdateApp: () => true,
-    }}
-    navigation={{
-      navigate: mockNavigate,
-      workspaceId: '123',
-    }}
-    layout={{
-      workspaceName: DUMMY_WORKSPACES[0].name,
-      workspaces: DUMMY_WORKSPACES,
-      onWorkspaceChange: mockWorkspaceChange,
-      sidebarUser: MOCK_SIDEBAR_DATA.user,
-      sidebarTeams: MOCK_SIDEBAR_DATA.teams,
-      sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
-      sidebarProjects: MOCK_SIDEBAR_DATA.projects,
-    }}
-    ui={{
-      darkMode: false,
-    }}
-  />
-);
+const StoryWithWorkspace = (args) => {
+  const [currentFolder, setCurrentFolder] = React.useState(args.filters?.currentFolder || {});
+
+  // Update currentFolder when prop changes
+  React.useEffect(() => {
+    if (args.filters?.currentFolder) {
+      setCurrentFolder(args.filters.currentFolder);
+    }
+  }, [args.filters?.currentFolder]);
+
+  const handleFolderChange = (folder) => {
+    setCurrentFolder(folder || {});
+    mockFolderChanged(folder);
+  };
+
+  return (
+    <AppsPageAdapter
+      {...args}
+      filters={{
+        ...args.filters,
+        currentFolder,
+      }}
+      actions={{
+        pageChanged: mockPageChanged,
+        folderChanged: handleFolderChange,
+        onSearch: mockOnSearch,
+        deleteApp: mockDeleteApp,
+        cloneApp: mockCloneApp,
+        exportApp: mockExportApp,
+      }}
+      permissions={{
+        canCreateApp: () => true,
+        canDeleteApp: () => true,
+        canUpdateApp: () => true,
+      }}
+      navigation={{
+        navigate: mockNavigate,
+        workspaceId: '123',
+      }}
+      layout={{
+        workspaceName: DUMMY_WORKSPACES[0].name,
+        workspaces: DUMMY_WORKSPACES,
+        onWorkspaceChange: mockWorkspaceChange,
+        sidebarUser: MOCK_SIDEBAR_DATA.user,
+        sidebarTeams: MOCK_SIDEBAR_DATA.teams,
+        sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
+        sidebarProjects: MOCK_SIDEBAR_DATA.projects,
+      }}
+      ui={{
+        darkMode: false,
+      }}
+    />
+  );
+};
 
 export const Default = {
   render: (args) => <StoryWithWorkspace {...args} />,
   args: {
     data: {
-      apps: generateMockApps(10),
+      apps: generateMockApps(50),
       meta: { current_page: 1, total_pages: 5, total_count: 50 },
     },
     filters: {

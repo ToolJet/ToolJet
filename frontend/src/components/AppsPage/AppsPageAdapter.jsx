@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { AppsShellView } from './AppsShellView';
 import { appsColumns } from '@/features/apps/columns';
-import { useAppsPageAdapter } from '@/features/apps/hooks/useAppsPageAdapter';
+import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
 import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
 import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
-import { transformAppsToAppRow } from '@/features/apps/adapters/homePageToAppRow';
-import { useAppsTableState } from '@/features/apps/hooks/useAppsTableState';
 import { MOCK_MODULES_DATA, MOCK_MODULES_META } from './stories/mockData';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
 import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader/ResourceViewHeader';
@@ -93,7 +91,7 @@ function AppsPageAdapter({
     }
   }, [activeTab]);
 
-  const resolvedWorkspaceId = workspaceId || '32434r';
+  const resolvedWorkspaceId = workspaceId || '';
   const actionsHandlers = useResourceActions({
     navigate,
     workspaceId: resolvedWorkspaceId,
@@ -122,34 +120,30 @@ function AppsPageAdapter({
 
   const {
     table: finalTable,
-    appsEmpty,
+    isEmpty: appsEmpty,
     error: adapterError,
-  } = useAppsPageAdapter({
+  } = useResourcePageAdapter({
     data: { apps, isLoading: appsIsLoading, error: appsError, meta },
     filters: { appSearchKey, currentFolder },
     actions: { pageChanged, onSearch },
     columns: finalColumns,
   });
 
-  const modulesRows = useMemo(() => {
-    if (!modulesData.data?.length) return [];
-    return transformAppsToAppRow(modulesData.data);
-  }, [modulesData.data]);
-
-  const modulesTableState = useAppsTableState({
-    data: modulesRows,
-    columns: finalColumns,
-    initial: {
-      globalFilter: appSearchKey || '',
-      pagination: {
-        pageIndex: Math.max(0, (modulesData.meta?.current_page || 1) - 1),
-        pageSize: modulesData.meta?.per_page || 10,
-      },
+  const {
+    table: modulesTable,
+    isEmpty: modulesEmpty,
+    error: modulesAdapterError,
+  } = useResourcePageAdapter({
+    data: {
+      apps: modulesData.data,
+      isLoading: modulesData.isLoading,
+      error: modulesData.error,
+      meta: modulesData.meta,
     },
+    filters: { appSearchKey, currentFolder },
+    actions: { pageChanged: undefined, onSearch },
+    columns: finalColumns,
   });
-
-  const hasQuery = !!(appSearchKey?.trim() || currentFolder?.id);
-  const modulesEmpty = modulesData.data.length === 0 && !hasQuery && !modulesData.isLoading;
 
   const breadcrumbItems = useMemo(
     () => [
@@ -185,19 +179,24 @@ function AppsPageAdapter({
     },
   ];
 
-  const appsContent =
-    viewMode === 'list' ? (
-      <DataTable table={finalTable} isLoading={appsIsLoading} />
+  // Generic helper to render content based on view mode
+  const renderContentView = (table, isLoading) => {
+    // Use pageIndex as key to force re-render when pagination changes
+    const pageIndex = table.getState().pagination.pageIndex;
+    return viewMode === 'list' ? (
+      <DataTable key={`table-page-${pageIndex}`} table={table} isLoading={isLoading} />
     ) : (
-      <AppsGrid table={finalTable} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
+      <AppsGrid table={table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
     );
+  };
 
-  const modulesContent =
-    viewMode === 'list' ? (
-      <DataTable table={modulesTableState.table} isLoading={modulesData.isLoading} />
-    ) : (
-      <AppsGrid table={modulesTableState.table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
-    );
+  const appsContent = renderContentView(finalTable, appsIsLoading);
+  const modulesContent = renderContentView(modulesTable, modulesData.isLoading);
+
+  // Get current page from table state to ensure PaginationFooter re-renders when it changes
+  // Use the correct table based on active tab
+  const activeTable = activeTab === 'modules' ? modulesTable : finalTable;
+  const currentPage = activeTable.getState().pagination.pageIndex + 1;
 
   const tabs = [
     {
@@ -210,7 +209,7 @@ function AppsPageAdapter({
     {
       id: 'modules',
       content: modulesContent,
-      error: modulesData.error,
+      error: modulesAdapterError,
       empty: modulesEmpty,
       emptyState: <EmptyNoApps />,
     },
@@ -230,7 +229,7 @@ function AppsPageAdapter({
       darkMode={isDarkMode}
       onToggleDarkMode={toggleDarkMode}
       header={<AppsPageHeader title={activeTab === 'apps' ? 'Applications' : 'Modules'} />}
-      footer={<PaginationFooter table={finalTable} isLoading={isLoading} />}
+      footer={<PaginationFooter table={activeTable} isLoading={isLoading} currentPage={currentPage} />}
     >
       <ResourceErrorBoundary>
         <ResourceViewHeader

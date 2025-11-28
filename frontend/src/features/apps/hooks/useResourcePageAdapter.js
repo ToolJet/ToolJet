@@ -3,7 +3,8 @@ import { transformAppsToAppRow } from '@/features/apps/adapters/homePageToAppRow
 import { useAppsTableState } from './useAppsTableState';
 
 /**
- * Custom hook that handles adapter logic: transformation, state sync.
+ * Generic hook that handles resource page adapter logic: transformation, state sync.
+ * Works for apps, modules, and other similar resources.
  * Separates business logic from presentation for better testability.
  *
  * @param {Object} params - Grouped props
@@ -14,61 +15,42 @@ import { useAppsTableState } from './useAppsTableState';
  *
  * @returns {Object} - Transformed data, handlers, table state
  */
-export function useAppsPageAdapter({ data = {}, filters = {}, actions = {}, columns = [] }) {
+export function useResourcePageAdapter({ data = {}, filters = {}, actions = {}, columns = [] }) {
   // Extract from grouped props
   const { apps = [], isLoading = false, error = null, meta = {} } = data;
   const { appSearchKey = '', currentFolder = {} } = filters;
   const { pageChanged, onSearch } = actions;
 
   // Data transformation (memoized)
-  const appRows = useMemo(() => {
+  const rows = useMemo(() => {
     if (!apps || !Array.isArray(apps)) return [];
     try {
       return transformAppsToAppRow(apps);
     } catch (err) {
-      console.error('Failed to transform apps:', err);
+      console.error('Failed to transform resources:', err);
       return [];
     }
   }, [apps]);
 
-  // Pagination state (convert 1-indexed to 0-indexed)
+  // Pagination state (client-side only)
   const tablePagination = useMemo(() => {
-    const currentPage = meta?.current_page || 1;
-    const pageSize = meta?.per_page || 9;
+    // Fixed client-side pageSize
+    const pageSize = 10;
     return {
-      pageIndex: Math.max(0, currentPage - 1), // Ensure non-negative
-      pageSize: Math.max(1, pageSize),
+      pageIndex: 0, // Always start at first page for client-side
+      pageSize: pageSize,
     };
-  }, [meta?.current_page, meta?.per_page]);
-
-  // Handlers (defined before table creation so we can pass them)
-  const handlePaginationChangeForTable = useCallback(
-    (newPagination) => {
-      try {
-        // Convert back to 1-indexed for HomePage
-        const newPage = Math.max(1, newPagination.pageIndex + 1);
-        const maxPage = meta?.total_pages || 1;
-        const clampedPage = Math.min(newPage, maxPage);
-
-        if (clampedPage !== meta?.current_page && pageChanged) {
-          pageChanged(clampedPage);
-        }
-      } catch (err) {
-        console.error('Failed to handle pagination change:', err);
-      }
-    },
-    [meta?.current_page, meta?.total_pages, pageChanged]
-  );
+  }, []); // No dependencies - fixed for client-side
 
   // Table state
   const { table, getSearch, setSearch } = useAppsTableState({
-    data: appRows,
+    data: rows,
     columns,
     initial: {
       globalFilter: appSearchKey || '',
       pagination: tablePagination,
     },
-    onPaginationChange: handlePaginationChangeForTable,
+    // No onPaginationChange needed - client-side pagination is handled automatically by TanStack Table
   });
 
   // Sync HomePage state → Table state (critical for reactivity)
@@ -77,14 +59,6 @@ export function useAppsPageAdapter({ data = {}, filters = {}, actions = {}, colu
       setSearch(appSearchKey || '');
     }
   }, [appSearchKey, getSearch, setSearch]);
-
-  useEffect(() => {
-    const newPageIndex = (meta?.current_page || 1) - 1;
-    const currentPageIndex = table.getState().pagination.pageIndex;
-    if (currentPageIndex !== newPageIndex) {
-      table.setPageIndex(newPageIndex);
-    }
-  }, [meta?.current_page, table]);
 
   // Handler for external pagination changes (if needed)
   const handlePaginationChange = useCallback(
@@ -116,18 +90,21 @@ export function useAppsPageAdapter({ data = {}, filters = {}, actions = {}, colu
 
   // Empty states
   const hasQuery = !!(appSearchKey?.trim() || currentFolder?.id);
-  const appsEmpty = appRows.length === 0 && !hasQuery && !isLoading;
+  const isEmpty = rows.length === 0 && !hasQuery && !isLoading;
 
   return {
-    appRows,
+    rows,
     table,
     getSearch,
     handleSearch,
     handlePaginationChange,
-    appsEmpty,
+    isEmpty,
     error,
     isLoading,
   };
 }
 
-export default useAppsPageAdapter;
+export default useResourcePageAdapter;
+
+
+

@@ -8,11 +8,8 @@ export function AppsShellView({
   searchValue,
   onSearch,
   footer,
-  toolbarSlot = null,
-  breadcrumbsSlot = null,
   header = null,
-  children, // Renamed from contentSlot to align with React conventions
-  topbarRightSlot = null,
+  children,
   // Workspace switcher props (passed to MainLayout)
   workspaceName,
   workspaces,
@@ -35,7 +32,6 @@ export function AppsShellView({
     <div className="tw-h-screen tw-bg-background-surface-layer-01">
       <MainLayout
         topbarLeftSlot={searchSlot}
-        topbarRightSlot={topbarRightSlot}
         workspaceName={workspaceName}
         workspaces={workspaces}
         onWorkspaceChange={onWorkspaceChange}
@@ -47,10 +43,8 @@ export function AppsShellView({
         onToggleDarkMode={onToggleDarkMode}
       >
         <PageContainer footer={footer}>
-          <div className="tw-space-y-4">
-            {breadcrumbsSlot}
+          <div className="tw-space-y-0">
             {header}
-            {toolbarSlot}
             {children}
           </div>
         </PageContainer>
