@@ -407,6 +407,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           disabled: page.disabled,
           hidden: page.hidden,
           appVersionId: appVersion.id,
+          co_relation_id: page.co_relation_id,
         })
       );
       oldPageToNewPageMapping[page.id] = savedPage.id;
