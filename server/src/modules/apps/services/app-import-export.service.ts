@@ -1460,6 +1460,7 @@ export class AppImportExportService {
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
                 newLayout.component = savedComponent;
+                newLayout.co_relation_id = layout.id;
 
                 await manager.save(newLayout);
               })
