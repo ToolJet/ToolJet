@@ -15,6 +15,7 @@ import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
 import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
+import { AppsTableSkeleton } from '@/features/apps/components/AppsTableSkeleton';
 import { AppsGrid } from '../components/AppsGrid';
 
 function AppsPageAdapter({
@@ -153,17 +154,6 @@ function AppsPageAdapter({
     [currentFolder]
   );
 
-  // TODO: Show errorstate within the Apps
-  if (appsError || adapterError) {
-    return (
-      <ErrorState
-        title="Failed to load apps"
-        error={appsError || adapterError}
-        onRetry={() => window.location.reload()}
-      />
-    );
-  }
-
   const tabsConfig = [
     {
       id: 'apps',
@@ -184,7 +174,7 @@ function AppsPageAdapter({
     // Use pageIndex as key to force re-render when pagination changes
     const pageIndex = table.getState().pagination.pageIndex;
     return viewMode === 'list' ? (
-      <DataTable key={`table-page-${pageIndex}`} table={table} isLoading={isLoading} />
+      <DataTable key={`table-page-${pageIndex}`} table={table} isLoading={isLoading} skeleton={<AppsTableSkeleton />} />
     ) : (
       <AppsGrid table={table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
     );
@@ -203,7 +193,15 @@ function AppsPageAdapter({
       id: 'apps',
       label: 'Apps',
       content: appsContent,
-      error: appsError,
+      error: appsError || adapterError,
+      errorState:
+        appsError || adapterError ? (
+          <ErrorState
+            title="Failed to load apps"
+            error={appsError || adapterError}
+            onRetry={() => window.location.reload()}
+          />
+        ) : null,
       empty: appsEmpty,
       emptyState: <EmptyNoApps />,
     },
@@ -212,6 +210,13 @@ function AppsPageAdapter({
       label: 'Modules',
       content: modulesContent,
       error: modulesAdapterError,
+      errorState: modulesAdapterError ? (
+        <ErrorState
+          title="Failed to load modules"
+          error={modulesAdapterError}
+          onRetry={() => window.location.reload()}
+        />
+      ) : null,
       empty: modulesEmpty,
       emptyState: <EmptyNoApps />,
     },

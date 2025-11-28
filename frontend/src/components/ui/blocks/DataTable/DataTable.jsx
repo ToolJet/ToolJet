@@ -6,7 +6,7 @@ import { TableSkeleton } from '@/components/ui/blocks/TableSkeleton';
 
 function DataTableInternal({ table, isLoading, skeleton }) {
   const columnCount = table?.getAllColumns()?.length || 4;
-  
+
   return (
     <div className="tw-overflow-hidden">
       <Table>

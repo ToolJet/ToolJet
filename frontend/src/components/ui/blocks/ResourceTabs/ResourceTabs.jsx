@@ -11,16 +11,16 @@ export function ResourceTabs({ activeTab, onTabChange, tabs = [] }) {
           value={tab.id}
           className="tw-relative tw-flex tw-flex-col tw-gap-4 tw-overflow-auto tw-mt-0"
         >
-          {tab.error ? (
-            <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
-              <div className="tw-text-red-500 tw-mb-2">Failed to load {tab.label}</div>
-              <div className="tw-text-sm tw-text-muted-foreground">{tab.error.message || 'An error occurred'}</div>
-            </div>
-          ) : tab.empty ? (
-            tab.emptyState
-          ) : (
-            tab.content
-          )}
+          {tab.error
+            ? tab.errorState || (
+                <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
+                  <div className="tw-text-red-500 tw-mb-2">Failed to load {tab.label}</div>
+                  <div className="tw-text-sm tw-text-muted-foreground">{tab.error.message || 'An error occurred'}</div>
+                </div>
+              )
+            : tab.empty
+            ? tab.emptyState
+            : tab.content}
         </TabsContent>
       ))}
     </Tabs>
@@ -36,6 +36,7 @@ ResourceTabs.propTypes = {
       label: PropTypes.string.isRequired,
       content: PropTypes.node,
       error: PropTypes.object,
+      errorState: PropTypes.node,
       empty: PropTypes.bool,
       emptyState: PropTypes.node,
     })
