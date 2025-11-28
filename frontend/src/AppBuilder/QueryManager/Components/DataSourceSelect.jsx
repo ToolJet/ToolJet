@@ -20,7 +20,7 @@ function DataSourceSelect({
   closePopup,
   workflowDataSources,
   onNewNode,
-  defaultDataSources,
+  staticDataSources: defaultDataSources,
   onQueryCreate,
   skipClosePopup = false,
   sampleDataSources = [],
@@ -154,31 +154,31 @@ function DataSourceSelect({
   const groupedSampleDataSources =
     sampleDataSources && sampleDataSources.length > 0
       ? Object.entries(groupBy(sampleDataSources, 'kind')).map(([kind, sources]) => ({
+        label: (
+          <div>
+            <DataSourceIcon source={sources[0]} height={16} />
+            <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+          </div>
+        ),
+        options: sources.map((source) => ({
           label: (
-            <div>
-              <DataSourceIcon source={sources[0]} height={16} />
-              <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+            <div
+              key={source.id}
+              className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+              style={{ fontSize: '13px' }}
+              data-tooltip-id="tooltip-for-add-query-dd-option"
+              data-tooltip-content={decodeEntities(source.name)}
+              data-cy={`ds-${source.name.toLowerCase()}`}
+            >
+              {decodeEntities(source.name)}
+              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
             </div>
           ),
-          options: sources.map((source) => ({
-            label: (
-              <div
-                key={source.id}
-                className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
-                style={{ fontSize: '13px' }}
-                data-tooltip-id="tooltip-for-add-query-dd-option"
-                data-tooltip-content={decodeEntities(source.name)}
-                data-cy={`ds-${source.name.toLowerCase()}`}
-              >
-                {decodeEntities(source.name)}
-                <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
-              </div>
-            ),
-            value: source.id,
-            isNested: true,
-            source,
-          })),
-        }))
+          value: source.id,
+          isNested: true,
+          source,
+        })),
+      }))
       : [];
 
   const dataSourcesAvailable = [
@@ -206,18 +206,18 @@ function DataSourceSelect({
     // Sample data sources group header
     ...(groupedSampleDataSources.length > 0
       ? [
-          {
-            label: (
-              <div>
-                <span className="color-slate9" style={{ fontWeight: 500 }}>
-                  Sample data sources
-                </span>
-              </div>
-            ),
-            isDisabled: true,
-          },
-          ...groupedSampleDataSources,
-        ]
+        {
+          label: (
+            <div>
+              <span className="color-slate9" style={{ fontWeight: 500 }}>
+                Sample data sources
+              </span>
+            </div>
+          ),
+          isDisabled: true,
+        },
+        ...groupedSampleDataSources,
+      ]
       : []),
   ];
 
@@ -240,8 +240,8 @@ function DataSourceSelect({
           source?.id !== 'if' && workflowDataSources
             ? onNewNode(source.kind, source.id, source.plugin_id, source)
             : source && source?.id === 'if'
-            ? onNewNode('if')
-            : handleChangeDataSource(source)
+              ? onNewNode('if')
+              : handleChangeDataSource(source)
         }
         classNames={{
           menu: () => 'tj-scrollbar',
@@ -311,8 +311,8 @@ function DataSourceSelect({
             },
             ...(isFocused &&
               isNested && {
-                '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
-              }),
+              '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
+            }),
           }),
           container: (styles) => ({
             ...styles,
