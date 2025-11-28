@@ -17,7 +17,7 @@ const CreateDraftVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
@@ -105,8 +105,8 @@ const CreateDraftVersionModal = ({
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-      : [];
+        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+        : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -203,7 +203,7 @@ const CreateDraftVersionModal = ({
                   maxLength="25"
                   style={{ height: '32px' }}
                 />
-                <small className="version-name-helper-text">
+                <small className="version-name-helper-text" data-cy="version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>
@@ -288,6 +288,7 @@ const CreateDraftVersionModal = ({
                 }}
                 variant="tertiary"
                 className="mx-2"
+                data-cy="create-draft-version-cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
@@ -297,6 +298,7 @@ const CreateDraftVersionModal = ({
                 className=""
                 type="submit"
                 disabled={!selectedVersionForCreation}
+                data-cy="create-draft-version-create-button"
               >
                 {t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>

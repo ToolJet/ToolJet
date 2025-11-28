@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
   versionId,
   onVersionCreated,
 }) => {
@@ -278,7 +278,7 @@ const CreateVersionModal = ({
                 minLength="1"
                 maxLength="25"
               />
-              <small className="version-name-helper-text">
+              <small className="version-name-helper-text" data-cy="version-name-helper-text">
                 {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
               </small>
             </div>
@@ -301,7 +301,7 @@ const CreateVersionModal = ({
                 maxLength="500"
                 rows={1}
               />
-              <small className="version-description-helper-text">
+              <small className="version-description-helper-text" data-cy="version-description-helper-text">
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
               </small>
             </div>
@@ -375,6 +375,7 @@ const CreateVersionModal = ({
                 }}
                 variant="tertiary"
                 className="mx-2"
+                data-cy="create-version-cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
@@ -384,6 +385,7 @@ const CreateVersionModal = ({
                 className=""
                 type="submit"
                 disabled={!selectedVersionForCreation || isCreatingVersion}
+                data-cy="create-version-save-button"
               >
                 {t('editor.appVersionManager.saveVersion', 'Save version')}
               </ButtonSolid>
