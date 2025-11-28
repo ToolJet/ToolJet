@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
 import { updateQuerySuggestions } from '@/_helpers/appUtils';
@@ -17,6 +17,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const queryNameEleRef = useRef(null);
+
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
@@ -37,8 +39,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(dataQuery?.data_source_id) ||
-      canReadDataSource(dataQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(dataQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
@@ -125,14 +127,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-              <span
-                className="text-truncate"
-                data-tooltip-id="query-card-name-tooltip"
-                data-tooltip-content={decodeEntities(dataQuery.name)}
-                data-tooltip-dynamic="true"
+              <ToolTip
+                message={decodeEntities(dataQuery.name)}
+                show={queryNameEleRef.current?.offsetWidth > 150}
+                tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
               >
-                {decodeEntities(dataQuery.name)}
-              </span>
+                <span ref={queryNameEleRef} className="text-truncate">
+                  {decodeEntities(dataQuery.name)}
+                </span>
+              </ToolTip>
               <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
                 <div className="d-flex align-items-center" style={{ marginLeft: '8px', marginRight: 'auto' }}>
                   {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
