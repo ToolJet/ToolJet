@@ -480,7 +480,6 @@ export const createComponentsSlice = (set, get) => ({
     const mandatory = validationObject?.mandatory?.value ?? validationObject?.mandatory;
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
-    const re = new RegExp(validationRegex, 'g');
 
     if (componentType === 'EmailInput' && widgetValue) {
       const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
@@ -493,11 +492,14 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    if (!re.test(widgetValue)) {
-      return {
-        isValid: false,
-        validationError: 'The input should match pattern',
-      };
+    if (validationRegex && validationRegex.trim() !== '') {
+      const re = new RegExp(validationRegex, 'g');
+      if (!re.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'The input should match pattern',
+        };
+      }
     }
 
     const resolvedMinLength = getResolvedValue(minLength, customResolveObjects) || 0;
@@ -1669,9 +1671,9 @@ export const createComponentsSlice = (set, get) => ({
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.selectedComponents = [componentId];
+        state.selectedComponents = componentId ? [componentId] : [];
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
       },
       false,

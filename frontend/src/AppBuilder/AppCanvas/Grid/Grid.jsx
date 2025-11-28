@@ -25,6 +25,7 @@ import {
   positionGhostElement,
   positionGroupGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
+  isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
 } from './gridUtils';
@@ -47,7 +48,7 @@ const RESIZABLE_CONFIG = {
 
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout }) {
+export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const { moduleId, isModuleEditor } = useModuleContext();
   const lastGroupDragEventRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
@@ -80,7 +81,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
-  const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
+  const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
+  const isPageMenuHidden = useStore((state) => state?.getPagesSidebarVisibility(moduleId), shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
@@ -147,10 +149,12 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const noOfBoxs = Object.values(boxList || []).length;
 
+  const { position: menuPosition, hideLogo, hideHeader } = pageMenuProperties;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noOfBoxs, triggerCanvasUpdater, pageMenuPosition]);
+  }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
@@ -332,7 +336,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [boxList, selectedComponents]);
+  }, [boxList, selectedComponents, mainCanvasWidth]);
 
   useEffect(() => {
     reloadGrid();
@@ -984,7 +988,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
-            const isModalToCanvas = source.isModal && source.id !== target.id;
+            const isModalToCanvas = isDraggingModalToCanvas(source, target, boxList);
 
             let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
@@ -997,7 +1001,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
               left = dragged.left * sourcegridWidth;
               top = dragged.top;
-              !isModalToCanvas ??
+              !isModalToCanvas &&
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
               isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }
