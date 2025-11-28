@@ -413,35 +413,38 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   newLeft = Math.max(0, newLeft);
   newTop = Math.max(0, newTop);
 
-  // Sort components once for efficient overlap checking
-  const sortedComponents = existingComponents.sort((a, b) => {
-    return a.layouts[layout].top - b.layouts[layout].top;
-  });
-
-  let foundSpace = false;
-  while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
-    foundSpace = true;
-    safetyCounter++;
-
-    const hasOverlap = sortedComponents.some((existing) => {
-      // Skip distant components
-      if (Math.abs(existing.layouts[layout].top - newTop) > 1000) {
-        return false;
-      }
-
-      const existingTop = existing.layouts[layout].top;
-      const existingBottom = existingTop + existing.layouts[layout].height;
-      const existingLeft = existing.layouts[layout].left;
-      const existingRight = existingLeft + existing.layouts[layout].width;
-      const newBottom = newTop + component.layouts[layout].height;
-      const newRight = newLeft + component.layouts[layout].width;
-
-      return newTop < existingBottom && newBottom > existingTop && newLeft < existingRight && newRight > existingLeft;
+  // If user clicks on canvas before pasting then respect click position and allow overlapping
+  if (!lastCanvasClickPosition) {
+    // Sort components once for efficient overlap checking
+    const sortedComponents = existingComponents.sort((a, b) => {
+      return a.layouts[layout].top - b.layouts[layout].top;
     });
 
-    if (hasOverlap) {
-      foundSpace = false;
-      newTop += 10;
+    let foundSpace = false;
+    while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
+      foundSpace = true;
+      safetyCounter++;
+
+      const hasOverlap = sortedComponents.some((existing) => {
+        // Skip distant components
+        if (Math.abs(existing.layouts[layout].top - newTop) > 1000) {
+          return false;
+        }
+
+        const existingTop = existing.layouts[layout].top;
+        const existingBottom = existingTop + existing.layouts[layout].height;
+        const existingLeft = existing.layouts[layout].left;
+        const existingRight = existingLeft + existing.layouts[layout].width;
+        const newBottom = newTop + component.layouts[layout].height;
+        const newRight = newLeft + component.layouts[layout].width;
+
+        return newTop < existingBottom && newBottom > existingTop && newLeft < existingRight && newRight > existingLeft;
+      });
+
+      if (hasOverlap) {
+        foundSpace = false;
+        newTop += 10;
+      }
     }
   }
 
@@ -488,6 +491,9 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
   // Create a virtual component representing the entire group
   const virtualGroupComponent = {
+    component: {
+      parent: targetParentId,
+    },
     layouts: {
       [layout]: {
         top: bounds.minTop,
