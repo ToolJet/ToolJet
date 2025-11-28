@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { EntityManager } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
-import { CreateEventHandlerDto, UpdateEvent } from '../dto/event';
+import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
 import { IEventsService } from '../interfaces/services/IEventService';
 import { ACTION_TYPE } from '@modules/app-history/constants';
@@ -155,6 +155,136 @@ export class EventsService implements IEventsService {
     });
 
     return result;
+  }
+
+  /**
+   * Core method to create events in batch - can be used within an existing transaction
+   * @param events - Array of event handler DTOs to create
+   * @param versionId - App version ID
+   * @param manager - EntityManager for the transaction
+   * @param options - Optional settings (skipValidation for when entities are created in same transaction)
+   */
+  async createEventsInTransaction(
+    events: CreateEventHandlerDto[],
+    versionId: string,
+    manager: EntityManager,
+    options: { skipValidation?: boolean } = {}
+  ): Promise<EventHandler[]> {
+    const createdEvents: EventHandler[] = [];
+
+    for (const eventHandler of events) {
+      // Skip events with missing required fields
+      if (!eventHandler.attachedTo || !eventHandler.eventType || !eventHandler.event) {
+        continue;
+      }
+
+      // Validate entity existence unless skipped (e.g., when entities are created in same transaction)
+      if (!options.skipValidation) {
+        if (
+          eventHandler.eventType === 'component' ||
+          eventHandler.eventType === 'table_column' ||
+          eventHandler.eventType === 'table_action'
+        ) {
+          const componentExists = await manager.findOne('Component', {
+            where: { id: eventHandler.attachedTo },
+          });
+
+          if (!componentExists) {
+            throw new BadRequestException('Component does not exist');
+          }
+        }
+
+        if (eventHandler.eventType === 'data_query') {
+          const dataQueryExists = await manager.findOne('DataQuery', {
+            where: { id: eventHandler.attachedTo },
+          });
+
+          if (!dataQueryExists) {
+            throw new BadRequestException('Data Query does not exist');
+          }
+        }
+
+        if (eventHandler.eventType === 'page') {
+          const pageExists = await manager.findOne('Page', {
+            where: { id: eventHandler.attachedTo },
+          });
+
+          if (!pageExists) {
+            throw new BadRequestException('Page does not exist');
+          }
+        }
+      }
+
+      const newEvent = new EventHandler();
+      newEvent.name = eventHandler.event.eventId;
+      newEvent.sourceId = eventHandler.attachedTo;
+      newEvent.target = eventHandler.eventType;
+      newEvent.event = eventHandler.event;
+      newEvent.index = eventHandler.index;
+      newEvent.appVersionId = versionId;
+
+      const savedEvent = await manager.save(EventHandler, newEvent);
+      createdEvents.push(savedEvent);
+    }
+
+    return createdEvents;
+  }
+
+  /**
+   * Bulk create events with its own transaction and history capture
+   * Use this when creating events as a standalone operation (not part of a larger batch)
+   */
+  async bulkCreateEvents(
+    bulkEventHandlerDto: BulkCreateEventHandlerDto,
+    versionId: string
+  ): Promise<EventHandler[]> {
+    const { events: eventHandlers } = bulkEventHandlerDto;
+
+    if (!eventHandlers || eventHandlers.length === 0) {
+      return [];
+    }
+
+    const results = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      return this.createEventsInTransaction(eventHandlers, versionId, manager);
+    }, versionId);
+
+    // Queue a single history capture for the bulk event creation
+    setImmediate(async () => {
+      try {
+        // Get entity name from the first event for context
+        let entityName = 'Unknown Component';
+        const firstEvent = eventHandlers[0];
+
+        if (firstEvent?.attachedTo && firstEvent?.eventType) {
+          try {
+            entityName = await this.appHistoryUtilService.resolveEntityName(
+              firstEvent.attachedTo,
+              firstEvent.eventType
+            );
+          } catch (error) {
+            console.error('Failed to resolve entity name for bulk event creation:', error);
+          }
+        }
+
+        await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.EVENT_ADD, {
+          eventCount: results.length,
+          componentName: entityName,
+          componentId: firstEvent?.attachedTo,
+          operation: 'bulk_create',
+          eventData: results.map((event) => ({
+            id: event.id,
+            name: event.name,
+            attachedTo: event.sourceId,
+            eventType: event.target,
+            index: event.index,
+          })),
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for bulk event creation:', error);
+      }
+    });
+
+    return results;
   }
 
   async updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string) {

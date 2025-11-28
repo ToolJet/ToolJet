@@ -3,9 +3,11 @@ import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
+import { CreateEventHandlerDto } from '../dto/event';
 import { LayoutDimensionUnits } from '../constants';
 import { IComponentsService } from '../interfaces/services/IComponentService';
 import { ACTION_TYPE } from '@modules/app-history/constants';
@@ -310,11 +312,21 @@ export class ComponentsService implements IComponentsService {
       update?: { diff: object };
       delete?: { diff: string[]; is_component_cut?: boolean };
       layout?: { diff: Record<string, { layouts: LayoutData; component?: { parent: string } }> };
+      events?: CreateEventHandlerDto[];
     },
     appVersionId: string
   ) {
+    // TODO: Consider moving batchOperations to a dedicated BatchOperationsService
+    // to support batching across all entity types (components, events, queries, etc.)
+    // This would make it reusable across the application and keep services focused
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const results: { created?: number; updated?: number; deleted?: number; layout?: number } = {};
+      const results: {
+        created?: number;
+        updated?: number;
+        deleted?: number;
+        layout?: number;
+        events?: EventHandler[];
+      } = {};
 
       // Handle create operation if present
       if (batchOperations.create) {
@@ -342,6 +354,17 @@ export class ComponentsService implements IComponentsService {
         const { diff } = batchOperations.layout;
         await this.updateComponentLayouts(diff, manager);
         results.layout = Object.keys(diff).length;
+      }
+
+      // Handle events creation if present
+      // skipValidation: true because components are created in the same transaction
+      if (batchOperations.events && batchOperations.events.length > 0) {
+        results.events = await this.eventHandlerService.createEventsInTransaction(
+          batchOperations.events,
+          appVersionId,
+          manager,
+          { skipValidation: true }
+        );
       }
 
       return results;
@@ -538,4 +561,5 @@ export class ComponentsService implements IComponentsService {
       }
     }
   }
+
 }

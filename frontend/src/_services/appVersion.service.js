@@ -12,6 +12,7 @@ export const appVersionService = {
   autoSaveApp,
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
+  bulkCreateAppVersionEventHandlers,
   deleteAppVersionEventHandler,
   clonePage,
   findAllEventsWithSourceId,
@@ -174,6 +175,22 @@ function createAppVersionEventHandler(appId, versionId, event) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function bulkCreateAppVersionEventHandlers(appId, versionId, events) {
+  const body = {
+    events,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/bulk`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteAppVersionEventHandler(appId, versionId, eventId) {
