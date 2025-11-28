@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState, Suspense } from 'react';
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
@@ -7,9 +7,6 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
-
-// Components that are lazy loaded and need Suspense wrapper
-const LAZY_LOADED_COMPONENTS = ['ModuleContainer', 'ModuleViewer'];
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -234,31 +231,7 @@ const RenderWidget = ({
               : ''
           }`} //required for custom CSS
         >
-          {LAZY_LOADED_COMPONENTS.includes(componentType) ? (
-            <Suspense fallback={<div style={{ height: '100%', width: '100%' }} />}>
-              <ComponentToRender
-                id={id}
-                key={key}
-                {...obj}
-                setExposedVariable={setExposedVariable}
-                setExposedVariables={setExposedVariables}
-                height={widgetHeight - 4}
-                width={widgetWidth}
-                parentId={parentId}
-                fireEvent={fireEventWrapper}
-                validate={validate}
-                resetComponent={resetComponent}
-                onComponentClick={onComponentClick}
-                darkMode={darkMode}
-                componentName={componentName}
-                adjustComponentPositions={adjustComponentPositions}
-                componentCount={componentCount}
-                dataCy={`draggable-widget-${componentName}`}
-                currentMode={currentMode}
-                subContainerIndex={subContainerIndex}
-              />
-            </Suspense>
-          ) : (
+          <Suspense fallback="Loading...">
             <ComponentToRender
               id={id}
               key={key}
@@ -280,7 +253,7 @@ const RenderWidget = ({
               currentMode={currentMode}
               subContainerIndex={subContainerIndex}
             />
-          )}
+          </Suspense>
         </div>
       </OverlayTrigger>
     </ErrorBoundary>

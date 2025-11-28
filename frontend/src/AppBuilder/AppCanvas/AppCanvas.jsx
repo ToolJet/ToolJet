@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Container } from './Container';
-import Grid from './Grid';
-import { EditorSelecto } from './Selecto';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
@@ -28,7 +26,8 @@ import { debounce } from 'lodash';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
-
+const EditorSelecto = React.lazy(() => import('./Selecto'));
+const Grid = React.lazy(() => import('./Grid'));
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -127,8 +126,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -310,13 +309,19 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               )}
 
               {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+                <Suspense fallback="Loading...">
+                  <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+                </Suspense>
               )}
             </HotkeyProvider>
           </div>
         </div>
       </div>
-      {currentMode === 'edit' && <EditorSelecto />}
+      {currentMode === 'edit' && (
+        <Suspense fallback="Loading...">
+          <EditorSelecto />
+        </Suspense>
+      )}
     </div>
   );
 };

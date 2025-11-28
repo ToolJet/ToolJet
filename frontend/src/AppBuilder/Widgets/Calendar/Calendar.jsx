@@ -27,7 +27,7 @@ const parseDate = (date, dateFormat) => {
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({
+export default function Calendar({
   id,
   component,
   height,
@@ -65,7 +65,7 @@ export const Calendar = function ({
         : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
-    
+
     return { style };
   };
 
@@ -200,4 +200,4 @@ export const Calendar = function ({
       />
     </div>
   );
-};
+}
