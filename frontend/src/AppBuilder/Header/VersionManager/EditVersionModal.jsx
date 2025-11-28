@@ -134,7 +134,10 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
               value={versionName}
               maxLength={25}
             />
-            <small className={`version-description-helper-text ${nameError ? 'text-danger' : ''}`}>
+            <small
+              className={`version-description-helper-text ${nameError ? 'text-danger' : ''}`}
+              data-cy="version-name-helper-text"
+            >
               {nameError
                 ? nameError
                 : t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
@@ -159,7 +162,10 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
               value={versionDescription}
               maxLength={500}
             />
-            <small className={`version-description-helper-text ${descriptionError ? 'text-danger' : ''}`}>
+            <small
+              className={`version-description-helper-text ${descriptionError ? 'text-danger' : ''}`}
+              data-cy="version-description-helper-text"
+            >
               {descriptionError
                 ? descriptionError
                 : t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}

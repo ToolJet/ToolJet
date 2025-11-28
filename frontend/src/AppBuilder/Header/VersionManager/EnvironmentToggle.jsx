@@ -5,7 +5,7 @@ import '@/AppBuilder/Header/VersionManager/environment-toggle.scss';
 
 const EnvironmentToggle = ({ environments, selectedEnvironment, onEnvironmentChange, disabled = false }) => {
   return (
-    <div className="environment-toggle">
+    <div className="environment-toggle" data-cy="environment-toggle">
       <div className="environment-toggle__bar d-flex align-items-center">
         {environments?.map((env) => {
           const isSelected = selectedEnvironment?.id === env.id;
@@ -19,6 +19,7 @@ const EnvironmentToggle = ({ environments, selectedEnvironment, onEnvironmentCha
               })}
               onClick={() => !disabled && onEnvironmentChange(env)}
               disabled={disabled}
+              data-cy={`${env.name}-environment-name`}
             >
               {capitalize(env.name)}
             </button>

@@ -66,6 +66,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
             className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
             disabled={shouldDisablePromote || !isPromoteVersionEnabled}
             onClick={handlePromote}
+            data-cy="promote-version-button"
           >
             Promote
           </button>
@@ -74,7 +75,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
           data={promoteModalData}
           editingVersion={editingVersion}
           onClose={() => setPromoteModalData(null)}
-          fetchEnvironments={() => {}}
+          fetchEnvironments={() => { }}
         />
       </>
     );
@@ -103,7 +104,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => {}}
+        fetchEnvironments={() => { }}
       />
     </>
   );
