@@ -6,24 +6,16 @@ import { AppsGrid } from './AppsGrid';
 
 export function AppsTabs({
   appsEmpty = false,
-  modulesEmpty = false,
   emptyAppsSlot = null,
-  emptyModulesSlot = null,
   // Folder selection props
-  folders = [],
-  currentFolder = null,
-  onFolderChange,
-  foldersLoading = false,
   activeTab = 'apps',
   onTabChange,
   // Table props
   appsTable,
-  modulesTable,
   // Loading and error states
   appsLoading = false,
-  modulesLoading = false,
+
   appsError = null,
-  modulesError = null,
   // Count props for badges
   viewAs,
   // Action handlers

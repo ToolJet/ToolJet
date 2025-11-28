@@ -1,0 +1,2 @@
+export { ResourceViewHeader } from './ResourceViewHeader';
+

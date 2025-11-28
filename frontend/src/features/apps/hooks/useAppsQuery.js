@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import data from '@/components/AppsPage/data.json';
+import data from '../stories/data.json';
 
 // Temporary static query hook. Replace with real data fetching later.
 export function useAppsQuery() {

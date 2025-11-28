@@ -1,8 +1,8 @@
 import React from 'react';
-import { PaginationFooterSkeleton } from '../../ui/blocks/PaginationFooterSkeleton';
+import { PaginationFooterSkeleton } from '../PaginationFooterSkeleton';
 
 export default {
-  title: 'Features/Apps/Components/TablePaginationFooterSkeleton',
+  title: 'UI/Blocks/PaginationFooterSkeleton',
   component: PaginationFooterSkeleton,
 };
 

@@ -1,0 +1,2 @@
+export { ResourceErrorBoundary } from './ResourceErrorBoundary';
+

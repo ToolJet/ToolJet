@@ -1,0 +1,2 @@
+export { PaginationFooterSkeleton } from './PaginationFooterSkeleton';
+

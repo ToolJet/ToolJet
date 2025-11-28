@@ -1,0 +1,2 @@
+export { DataTable } from './DataTable';
+

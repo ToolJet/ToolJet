@@ -1,20 +1,20 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { EndUserShellView } from './EndUserShellView';
+import { EndUserShellView } from '../components/EndUserShellView';
 import { appsColumns } from '@/features/apps/columns';
 import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
 import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
-import { EmptyNoApps } from '@/components/ui/blocks/EmptyNoApps';
+import { EmptyNoApps } from '../components/EmptyNoApps';
 import { EndUserHeader } from '@/components/ui/blocks/AppsPageHeader/EndUserHeader';
 import { Button } from '@/components/ui/Button/Button';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
-import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs/ResourceTabs';
-import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary/ResourceErrorBoundary';
-import { ErrorState } from '@/components/ui/blocks/ErrorState/ErrorState';
-import { DataTable } from '../ui/blocks/DataTable/DataTable';
-import { AppsGrid } from './AppsGrid';
+import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
+import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
+import { ErrorState } from '@/components/ui/blocks/ErrorState';
+import { DataTable } from '@/components/ui/blocks/DataTable';
+import { AppsGrid } from '../components/AppsGrid';
 
 function EndUserAppsPageAdapter({
   data = {},
@@ -31,8 +31,7 @@ function EndUserAppsPageAdapter({
   const { navigate, workspaceId } = navigation;
   const { workspaceName, workspaces = [], onWorkspaceChange } = layout;
 
-  const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
-    initialTab: 'apps',
+  const { viewMode, setViewMode, isLoading } = useResourcePageState({
     loadingStates: { apps: appsIsLoading, folders: foldersLoading },
   });
 
@@ -82,16 +81,7 @@ function EndUserAppsPageAdapter({
     [currentFolder]
   );
 
-  const appsMenuItems = computedPerms.canImport
-    ? [
-        {
-          label: 'Create app from template',
-          onClick: () => console.log('Import template'),
-          icon: 'app-window',
-        },
-      ]
-    : [];
-
+  console.log('End user apps table', data, finalTable?.getRowCount());
   if (appsError || adapterError) {
     return (
       <ErrorState
@@ -104,8 +94,10 @@ function EndUserAppsPageAdapter({
 
   // Generic helper to render content based on view mode
   const renderContentView = (table, isLoading) => {
+    // Use pageIndex as key to force re-render when pagination changes
+    const pageIndex = table.getState().pagination.pageIndex;
     return viewMode === 'list' ? (
-      <DataTable table={table} isLoading={isLoading} />
+      <DataTable key={`table-page-${pageIndex}`} table={table} isLoading={isLoading} />
     ) : (
       <AppsGrid table={table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
     );
@@ -113,15 +105,17 @@ function EndUserAppsPageAdapter({
 
   const appsContent = renderContentView(finalTable, appsIsLoading);
 
-  const tabs = [
-    {
-      id: 'apps',
-      content: appsContent,
-      error: appsError,
-      empty: appsEmpty,
-      emptyState: <EmptyNoApps />,
-    },
-  ];
+  // Get current page from table state to ensure PaginationFooter re-renders when it changes
+  const currentPage = finalTable.getState().pagination.pageIndex + 1;
+
+  const appsContentWrapper = {
+    id: 'apps',
+    label: 'Apps',
+    content: appsContent,
+    error: appsError,
+    empty: appsEmpty,
+    emptyState: <EmptyNoApps />,
+  };
 
   return (
     <EndUserShellView
@@ -133,17 +127,6 @@ function EndUserAppsPageAdapter({
       header={
         <EndUserHeader
           title={'Applications'}
-          actionButtons={
-            <>
-              <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={() => {}}>
-                Create blank app
-              </Button>
-              <Button variant="outline" size="default" leadingIcon="tooljetai" onClick={() => {}}>
-                Build with AI assistant
-              </Button>
-            </>
-          }
-          createAppMenuItems={appsMenuItems}
           breadcrumbItems={breadcrumbItems}
           isLoading={foldersLoading}
           viewAs={viewMode}
@@ -154,10 +137,21 @@ function EndUserAppsPageAdapter({
           foldersLoading={foldersLoading}
         />
       }
-      footer={<PaginationFooter table={finalTable} isLoading={isLoading} />}
+      footer={<PaginationFooter table={finalTable} isLoading={isLoading} currentPage={currentPage} />}
     >
       <ResourceErrorBoundary>
-        <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+        {appsContentWrapper.error ? (
+          <div className="tw-p-6 tw-text-center" role="alert" aria-live="polite">
+            <div className="tw-text-red-500 tw-mb-2">Failed to load {appsContentWrapper.label}</div>
+            <div className="tw-text-sm tw-text-muted-foreground">
+              {appsContentWrapper.error.message || 'An error occurred'}
+            </div>
+          </div>
+        ) : appsContentWrapper.empty ? (
+          appsContentWrapper.emptyState
+        ) : (
+          appsContentWrapper.content
+        )}
       </ResourceErrorBoundary>
     </EndUserShellView>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 import { EndUserLayout } from '@/components/layouts/EndUserLayout';
-import { PageContainer } from '@/components/AppsPage/PageContainer';
+import { PageContainer } from './PageContainer';
 
 // Thin layout shell for Apps: header, search, footer, and content slot
 export function EndUserShellView({
@@ -9,7 +9,7 @@ export function EndUserShellView({
   onSearch,
   footer,
   header = null,
-  contentSlot,
+  children,
   // Workspace switcher props (passed to EndUserLayout)
   workspaceName,
   workspaces,
@@ -31,7 +31,7 @@ export function EndUserShellView({
         <PageContainer footer={footer}>
           <div className="tw-space-y-4">
             {header}
-            {contentSlot}
+            {children}
           </div>
         </PageContainer>
       </EndUserLayout>

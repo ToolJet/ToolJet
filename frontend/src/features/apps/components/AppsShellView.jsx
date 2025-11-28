@@ -1,7 +1,7 @@
 import React from 'react';
 import { TopBarSearch } from '@/components/ui/blocks/TopBarSearch';
 import { MainLayout } from '@/components/layouts/MainLayout';
-import { PageContainer } from '@/components/AppsPage/PageContainer';
+import { PageContainer } from './PageContainer';
 
 // Thin layout shell for Apps: header, search, footer, and children (content)
 export function AppsShellView({
