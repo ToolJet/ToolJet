@@ -234,9 +234,14 @@ export const navigateToworkspaceConstants = () => {
 export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
+    cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+    cy.get(multiEnvSelector.environmentsTag("production")).click();
   });
-  cy.waitForElement(multiEnvSelector.environmentsTag("production"));
-  cy.get(multiEnvSelector.environmentsTag("production")).click();
+  cy.ifEnv("Community", () => {
+    cy.waitForElement(multiEnvSelector.environmentsTag("development"));
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+  });
+
   cy.waitForElement(commonSelectors.releaseButton);
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
