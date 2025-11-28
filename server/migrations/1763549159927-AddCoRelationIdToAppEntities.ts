@@ -5,17 +5,15 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
     public async up(queryRunner: QueryRunner): Promise<void> {
         // missing modules
         const tables = [
-            'apps',
             'components',
             'pages',
-            'layouts',
             'data_queries',
             'data_sources',
-            'app_versions',
             'data_source_options',
             'internal_tables',
             'app_versions',
             'event_handlers',
+            'layouts'
         ];
 
         for (const table of tables) {
@@ -25,17 +23,15 @@ export class AddCoRelationIdToAppEntities1763549159927 implements MigrationInter
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         const tables = [
-            'apps',
             'components',
-            'layouts',
             'pages',
-            'queries',
+            'data_queries',
             'data_sources',
-            'versions',
             'data_source_options',
             'internal_tables',
             'app_versions',
             'event_handlers',
+            'layouts'
         ];
 
         for (const table of tables) {
