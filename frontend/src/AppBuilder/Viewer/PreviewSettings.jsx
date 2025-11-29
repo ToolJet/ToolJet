@@ -8,6 +8,7 @@ import HeaderActions from '@/AppBuilder/Header/HeaderActions';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
+import Loader from '@/ToolJetUI/Loader/Loader';
 // import { AppEnvironments } from '@/modules/Appbuilder/components';
 // import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 // Lazy load editor-only components to reduce viewer bundle size
@@ -42,7 +43,12 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           Preview settings
         </span>
         {editingVersion && appType !== 'module' && (
-          <Suspense fallback={null}>
+          <Suspense fallback={
+            <div className="d-flex justify-content-center" style={{ width: '304px' }}>
+              <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
+                <Loader width={16} height={16} reverse={true} />
+              </div>
+            </div>}>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} />

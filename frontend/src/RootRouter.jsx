@@ -7,14 +7,10 @@ const ViewerApp = lazy(() => import('./ViewerApp'));
 const MainApp = lazy(() => import('./App').then(module => ({ default: module.App })));
 
 const LoadingFallback = () => (
-  <div className="loading-container" style={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    width: '100vw'
-  }}>
-    <div className="loading-spinner">Loading...</div>
+  <div class="load" style={{ display: 'flex' }}>
+    <div class="one"></div>
+    <div class="two"></div>
+    <div class="three"></div>
   </div>
 );
 
