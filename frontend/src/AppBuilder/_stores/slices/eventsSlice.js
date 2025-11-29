@@ -661,8 +661,7 @@ export const createEventsSlice = (set, get) => ({
               plaintext: (plaintext) => plaintext,
               pdf: (pdfData) => pdfData,
             }[fileType](data);
-            generateFile(fileName, fileData, fileType);
-            return Promise.resolve();
+            return generateFile(fileName, fileData, fileType);
           }
 
           case 'set-table-page': {
