@@ -1,7 +1,6 @@
 import { lazy } from 'react';
 import { Button } from '@/AppBuilder/Widgets/Button';
 import { Text } from '@/AppBuilder/Widgets/Text';
-import { Table } from '@/AppBuilder/Widgets/NewTable/Table';
 
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
 import { TextArea } from '@/AppBuilder/Widgets/TextArea';
@@ -28,7 +27,6 @@ import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
 import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput';
 import { IFrame } from '@/AppBuilder/Widgets/IFrame';
-import { CodeEditor } from '@/AppBuilder/Widgets/CodeEditor';
 import { Timer } from '@/AppBuilder/Widgets/Timer';
 import { Statistics } from '@/AppBuilder/Widgets/Statistics';
 import { Pagination } from '@/AppBuilder/Widgets/Pagination';
@@ -43,8 +41,6 @@ import { Html } from '@/AppBuilder/Widgets/Html';
 import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
 import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
 import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
-import { ColorPicker } from '@/AppBuilder/Widgets/ColorPicker';
-import { KanbanBoard } from '@/AppBuilder/Widgets/KanbanBoard/KanbanBoard';
 import { Steps } from '@/AppBuilder/Widgets/Steps';
 import { Icon } from '@/AppBuilder/Widgets/Icon';
 import { Link } from '@/AppBuilder/Widgets/Link/Link';
@@ -69,6 +65,10 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 
 // import './requestIdleCallbackPolyfill';
 
+const Table = lazy(() => import('@/AppBuilder/Widgets/NewTable/Table'));
+const KanbanBoard = lazy(() => import('@/AppBuilder/Widgets/KanbanBoard/KanbanBoard'));
+const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker'));
+const CodeEditor = lazy(() => import('@/AppBuilder/Widgets/CodeEditor'));
 const Calendar = lazy(() => import('@/AppBuilder/Widgets/Calendar/Calendar'));
 const Chart = lazy(() => import('@/AppBuilder/Widgets/Chart'));
 const Chat = lazy(() => import('@/AppBuilder/Widgets/Chat'));
@@ -360,5 +360,5 @@ export function checkAndExtractEntityId(errorString) {
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
   return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-  }px)`;
+    }px)`;
 };

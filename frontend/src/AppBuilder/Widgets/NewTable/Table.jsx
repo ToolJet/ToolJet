@@ -15,7 +15,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import './table.scss';
 
-export const Table = memo(
+const Table = memo(
   ({
     id,
     componentName,
@@ -223,3 +223,5 @@ export const Table = memo(
     return Object.keys(diff(prevProps, nextProps)).length === 0;
   }
 );
+
+export default Table;
