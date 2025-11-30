@@ -20,6 +20,9 @@
     "incremental": true,
     "skipLibCheck": true,
     "paths": {
+      "@tooljet/plugins/*": [
+        "../plugins/*"
+      ],
       "@ee/*": [
         "ee/*"
       ],

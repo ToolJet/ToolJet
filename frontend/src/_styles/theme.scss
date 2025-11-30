@@ -6632,7 +6632,7 @@ input.hide-input-arrows {
 
 .custom-checkbox-tree {
   overflow-y: auto;
-  color: #3e525b;
+  color: $color-light-slate-12;
 
   .react-checkbox-tree label:hover {
     background: none !important;
@@ -6652,6 +6652,10 @@ input.hide-input-arrows {
       -webkit-transform: rotate(-90deg);
     }
   }
+}
+
+.theme-dark .custom-checkbox-tree {
+  color: $color-dark-slate-12;
 }
 
 // sso enable/disable box
