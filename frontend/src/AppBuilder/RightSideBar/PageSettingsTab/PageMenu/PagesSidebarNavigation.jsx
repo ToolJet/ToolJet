@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _, { set } from 'lodash';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -473,8 +472,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
+          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+        }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >

@@ -4,10 +4,9 @@ import _ from 'lodash';
 import { slide as MobileMenu } from 'react-burger-menu';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
-import Cross from '@/_ui/Icon/solidIcons/Cross';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
 import AppLogo from '@/_components/AppLogo';
@@ -25,21 +24,19 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[pageGroup?.icon] ?? Icons?.['IconFile'];
+  const pageGroupIconName = pageGroup?.icon || 'IconFile';
   return (
     <>
       <div style={{ border: 'none' }} className={`accordion-item  ${darkMode ? 'dark-mode' : ''} `}>
         <div
           onClick={handleToggle}
           key={pageGroup.id}
-          className={`viewer-page-handler mb-2 cursor-pointer page-group-wrapper ${
-            groupActive ? 'page-group-active' : ''
-          } ${darkMode && 'dark'}`}
+          className={`viewer-page-handler mb-2 cursor-pointer page-group-wrapper ${groupActive ? 'page-group-active' : ''
+            } ${darkMode && 'dark'}`}
         >
           <div className={`card mb-1`}>
             <div className="card-body">
-              <IconElement />
+              <TablerIcon iconName={pageGroupIconName} fallbackIcon="IconFile" />
               <span>{_.truncate(pageGroup?.name, { length: 22 })}</span>
               <svg
                 className={`page-group-collapse ${isExpanded ? 'expanded' : 'collapsed'}`}
@@ -61,9 +58,7 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
           <div style={{ paddingLeft: '16px' }}>
             {pages.map((page) => {
               const isHomePage = page.id === homePageId;
-              const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-              // eslint-disable-next-line import/namespace
-              const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
+              const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon || 'IconFile';
               const pageVisibility = getPagesVisibility('canvas', page?.id);
 
               return pageVisibility || page?.disabled ? null : (
@@ -74,7 +69,7 @@ const RenderGroup = ({ pageGroup, currentPage, darkMode, handlepageSwitch, curre
                 >
                   <div className={`card mb-1  ${page?.id === currentPageId ? 'active' : ''}`}>
                     <div className="card-body">
-                      <IconElement />
+                      <TablerIcon iconName={iconName} fallbackIcon="IconFile" />
                       <span>{_.truncate(page?.name, { length: 22 })}</span>
                     </div>
                   </div>
@@ -137,9 +132,7 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
           } else {
             const isHomePage = page.id === homePageId;
             const pageVisibility = getPagesVisibility('canvas', page?.id);
-            const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-            // eslint-disable-next-line import/namespace
-            const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
+            const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon || 'IconFile';
 
             return pageVisibility || page.disabled || (page?.restricted && currentMode !== 'edit') ? null : (
               <div
@@ -149,7 +142,7 @@ const RenderPageGroups = ({ pages, handlepageSwitch, darkMode, currentPageId, cu
               >
                 <div className={`card ${page?.id === currentPageId ? 'active' : ''}`}>
                   <div className="card-body">
-                    <IconElement />
+                    <TablerIcon iconName={iconName} fallbackIcon="IconFile" />
                     <span>{_.truncate(page?.name, { length: 22 })}</span>
                   </div>
                 </div>
@@ -311,9 +304,7 @@ const MobileNavigationMenu = ({
               ) : (
                 pages?.map((page) => {
                   const isHomePage = page.id === homePageId;
-                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-                  // eslint-disable-next-line import/namespace
-                  const IconElement = Icons?.[iconName] ?? Icons?.['IconFile'];
+                  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon || 'IconFile';
                   const pageVisibility = getPagesVisibility('canvas', page?.id);
 
                   return pageVisibility || page?.disabled ? null : (
@@ -324,7 +315,7 @@ const MobileNavigationMenu = ({
                     >
                       <div className={`card  ${page?.id === currentPageId ? 'active' : ''}`}>
                         <div className="card-body">
-                          <IconElement style={{ width: '16px', height: '16px' }} />
+                          <TablerIcon iconName={iconName} fallbackIcon="IconFile" style={{ width: '16px', height: '16px' }} />
                           <span>{_.truncate(page?.name, { length: 22 })}</span>
                         </div>
                       </div>

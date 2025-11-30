@@ -18,6 +18,7 @@ import { Multiselect } from '@/AppBuilder/Widgets/Multiselect';
 import { MultiselectV2 } from '@/AppBuilder/Widgets/MultiselectV2/MultiselectV2';
 import { ToggleSwitch } from '@/AppBuilder/Widgets/Toggle';
 import { ToggleSwitchV2 } from '@/AppBuilder/Widgets/ToggleV2';
+
 import { RadioButton } from '@/AppBuilder/Widgets/RadioButton';
 import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2';
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
@@ -42,7 +43,6 @@ import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
 import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
 import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
 import { Steps } from '@/AppBuilder/Widgets/Steps';
-import { Icon } from '@/AppBuilder/Widgets/Icon';
 import { Link } from '@/AppBuilder/Widgets/Link/Link';
 import { BoundedBox } from '@/AppBuilder/Widgets/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
@@ -65,6 +65,7 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 
 // import './requestIdleCallbackPolyfill';
 
+const Icon = lazy(() => import('@/AppBuilder/Widgets/Icon'));
 const Table = lazy(() => import('@/AppBuilder/Widgets/NewTable/Table'));
 const KanbanBoard = lazy(() => import('@/AppBuilder/Widgets/KanbanBoard/KanbanBoard'));
 const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker'));

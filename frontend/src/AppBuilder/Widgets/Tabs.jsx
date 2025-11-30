@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -310,11 +310,10 @@ export const Tabs = function Tabs({
 
   function getTabIcon(tab) {
     const iconName = tab?.icon;
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
     return tab?.iconVisibility ? (
-      <IconElement
+      <TablerIcon
+        iconName={iconName}
         color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         style={{
           width: '20px',

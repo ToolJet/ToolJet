@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
-import { Container } from './Container';
+import { debounce } from 'lodash';
+import { shallow } from 'zustand/shallow';
+import cx from 'classnames';
+import './appCanvas.scss';
+
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
-import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import {
   LEFT_SIDEBAR_WIDTH,
@@ -13,16 +15,18 @@ import {
   PAGES_SIDEBAR_WIDTH_EXPANDED,
   RIGHT_SIDEBAR_WIDTH,
 } from './appCanvasConstants';
-import cx from 'classnames';
-import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
+
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
-import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import { DragResizeGhostWidget } from './GhostWidgets';
-import { debounce } from 'lodash';
+
+
+import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
+import { Container } from './Container';
+import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
@@ -126,8 +130,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {

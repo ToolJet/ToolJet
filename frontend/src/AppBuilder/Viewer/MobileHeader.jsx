@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import _, { isEmpty } from 'lodash';
 import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
@@ -8,11 +8,12 @@ import { shallow } from 'zustand/shallow';
 import { redirectToDashboard } from '@/_helpers/routes';
 import classNames from 'classnames';
 import PreviewSettings from './PreviewSettings';
-import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
-import { resolveReferences } from '@/_helpers/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+
+// Lazy load MobileNavigationMenu to reduce initial bundle size
+const MobileNavigationMenu = React.lazy(() => import('./MobileNavigationMenu'));
 
 const MobileHeader = ({
   showHeader,
@@ -72,17 +73,19 @@ const MobileHeader = ({
   );
 
   const _renderMobileNavigationMenu = () => (
-    <MobileNavigationMenu
-      currentPageId={currentPageId}
-      switchPage={switchPage}
-      darkMode={darkMode}
-      changeToDarkMode={changeToDarkMode}
-      showHeader={showHeader}
-      showDarkModeToggle={showDarkModeToggle}
-      appName={appName}
-      pages={pages}
-      viewerWrapperRef={viewerWrapperRef}
-    />
+    <Suspense fallback={null}>
+      <MobileNavigationMenu
+        currentPageId={currentPageId}
+        switchPage={switchPage}
+        darkMode={darkMode}
+        changeToDarkMode={changeToDarkMode}
+        showHeader={showHeader}
+        showDarkModeToggle={showDarkModeToggle}
+        appName={appName}
+        pages={pages}
+        viewerWrapperRef={viewerWrapperRef}
+      />
+    </Suspense>
   );
 
   const _renderPreviewSettings = () =>

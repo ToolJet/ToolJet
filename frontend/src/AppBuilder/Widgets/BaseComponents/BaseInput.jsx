@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
@@ -133,9 +133,6 @@ export const BaseInput = ({
     };
   }
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
-
   const finalStyles = getCustomStyles ? getCustomStyles(computedStyles) : computedStyles;
 
   return (
@@ -174,7 +171,8 @@ export const BaseInput = ({
         />
 
         {showLeftIcon && (
-          <IconElement
+          <TablerIcon
+            iconName={icon}
             data-cy={'text-input-icon'}
             style={{
               width: '16px',

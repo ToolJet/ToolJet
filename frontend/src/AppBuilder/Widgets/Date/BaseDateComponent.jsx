@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { DatepickerInput } from './DatepickerInput';
 import TimepickerInput from './TimepickerInput';
 import cx from 'classnames';
@@ -117,9 +117,8 @@ export const BaseDateComponent = ({
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
-  const iconName = styles.icon; // Replace with the name of the icon you want
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+  const iconName = styles.icon;
+  const IconElement = (props) => <TablerIcon iconName={iconName} {...props} />;
 
   return (
     <div

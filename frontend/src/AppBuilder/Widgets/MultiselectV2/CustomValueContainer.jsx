@@ -1,6 +1,6 @@
 import React from 'react';
 import { components } from 'react-select';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 const { ValueContainer, Placeholder } = components;
 import './multiselectV2.scss';
 
@@ -13,8 +13,6 @@ const CustomValueContainer = ({ children, ...props }) => {
       ?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
   const valueContainerWidth = selectProps?.containerRef?.current?.offsetWidth;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
 
   return (
     <ValueContainer {...props}>
@@ -25,7 +23,8 @@ const CustomValueContainer = ({ children, ...props }) => {
           style={{ marginBottom: '2px' }}
         >
           {selectProps?.doShowIcon && (
-            <IconElement
+            <TablerIcon
+              iconName={selectProps?.icon}
               style={{
                 width: '16px',
                 height: '16px',
