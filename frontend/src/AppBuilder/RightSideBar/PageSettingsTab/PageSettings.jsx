@@ -28,6 +28,7 @@ import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsM
 import { appPermissionService } from '@/_services';
 import './PageMenu/style.scss';
 import './styles.scss';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -103,7 +104,7 @@ export const PageSettings = () => {
 
   const closeIcon = () => {
     return (
-      <Button
+      <ButtonComponent
         iconOnly
         leadingIcon={'x'}
         onClick={handleToggle}
