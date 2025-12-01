@@ -19,6 +19,7 @@ export class AppHistoryModule extends SubModule {
     );
     const { AppStateRepository } = await import(`${importPath}/app-history/repositories/app-state.repository`);
     const { AppHistoryUtilService } = await import(`${importPath}/app-history/util.service`);
+    const { AppHistoryStreamService } = await import(`${importPath}/app-history/app-history-stream.service`);
 
     const providers: any[] = [
       AppHistoryService,
@@ -26,6 +27,7 @@ export class AppHistoryModule extends SubModule {
       AppStateRepository,
       NameResolverRepository,
       AppStateAggregatorService,
+      AppHistoryStreamService,
       FeatureAbilityFactory,
       VersionRepository,
       AppsRepository,
