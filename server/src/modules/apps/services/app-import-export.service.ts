@@ -144,6 +144,20 @@ const INPUT_WIDGET_TYPES = [
   'RangeSliderV2',
 ];
 
+const entitiesToRemoveTimestamps = [
+  'appVersions',
+  'appEnvironments',
+  'dataQueries',
+  'dataSourceOptions',
+  'dataSources',
+  'pagesWithPermissionGroups',
+  'queriesWithPermissionGroups',
+  'componentsWithPermissionGroups',
+  'events',
+  'moduleApps',
+  'appToExport',
+];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -371,46 +385,14 @@ export class AppImportExportService {
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
-      this.removeTimestamps(appVersions);
-      this.removeTimestamps(appEnvironments);
-      this.removeTimestamps(dataQueries);
-      this.removeTimestamps(dataSourceOptions);
-      this.removeTimestamps(dataSources);
-      this.removeTimestamps(pagesWithPermissionGroups);
-      this.removeTimestamps(queriesWithPermissionGroups);
-      this.removeTimestamps(componentsWithPermissionGroups);
-      this.removeTimestamps(events);
-      this.removeTimestamps(moduleApps);
-      // Ensure appToExport itself has no timestamps
-      this.removeTimestamps(appToExport);
 
-      const files = {
-        'app.json': {
-          id: appToExport.id,
-          name: appToExport.name,
-          type: appToExport.type,
-          // other app metadata
-        },
-        'components.json': componentsWithPermissionGroups,
-        'pages.json': pagesWithPermissionGroups,
-        'events.json': events,
-        'queries.json': queriesWithPermissionGroups,
-        'dataSources.json': dataSources,
-        'versions.json': appVersions,
-        'environments.json': appEnvironments,
-        'dataSourceOptions.json': dataSourceOptions,
-        'schema.json': {
-          multiPages: true,
-          multiEnv: true,
-          globalDataSources: true,
-        },
-        ...(appToExport?.type === APP_TYPES.FRONT_END && {
-          'modules.json': moduleApps,
-        }),
-      };
-      // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
+      entitiesToRemoveTimestamps.forEach((entityName) => {
+        const entity = appToExport[entityName];
+        if (entity) {
+          this.removeTimestamps(entity); // Pass the object/array to removeTimestamps
+        }
+      });
       delete (appToExport as any).updatedAt;
-      console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
