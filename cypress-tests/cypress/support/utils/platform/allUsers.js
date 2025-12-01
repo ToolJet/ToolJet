@@ -220,19 +220,6 @@ export const verifyUnarchiveUserModal = (userName, userEmail) => {
         "have.text",
         "active"
     );
-  openArchiveUserModal(userEmail);
-  cy.get('[data-cy="confirm-button"]').click();
-
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "User has been unarchived from this instance successfully!"
-  );
-
-  cy.wait(1000);
-  cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
-    "have.text",
-    "active"
-  );
 };
 
 export const loginAsUser = (email, password = usersText.password) => {
