@@ -16,33 +16,46 @@ import Constants from 'authorizenet/lib/constants';
     return merchantAuthenticationType;
   }
 
-
-export async function chargeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
-  const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
+function parseRequestBody(queryOptions: any): any {
+  return typeof queryOptions.requestBody === 'string' 
     ? JSON.parse(queryOptions.requestBody) 
     : queryOptions.requestBody;
+}
+function createCustomerAddress(addressData: any): any {
+  if (!addressData) return null;
 
-  const creditCard = new ApiContracts.CreditCardType();
-  creditCard.setCardNumber(params.cardNumber);
-  creditCard.setExpirationDate(params.expirationDate);
-  if (params.cardCode) {
-    creditCard.setCardCode(params.cardCode);
-  }
+  const address = new ApiContracts.CustomerAddressType();
+  
+  if (addressData.firstName) address.setFirstName(addressData.firstName);
+  if (addressData.lastName) address.setLastName(addressData.lastName);
+  if (addressData.company) address.setCompany(addressData.company);
+  if (addressData.address) address.setAddress(addressData.address);
+  if (addressData.city) address.setCity(addressData.city);
+  if (addressData.state) address.setState(addressData.state);
+  if (addressData.zip) address.setZip(addressData.zip);
+  if (addressData.country) address.setCountry(addressData.country);
+  if (addressData.phoneNumber) address.setPhoneNumber(addressData.phoneNumber);
+  if (addressData.faxNumber) address.setFaxNumber(addressData.faxNumber);
+  
+  return address;
+}
+function createExtendedAmountType(data: any): any {
+  if (!data) return null;
 
-  const paymentType = new ApiContracts.PaymentType();
-  paymentType.setCreditCard(creditCard);
+  const extendedAmount = new ApiContracts.ExtendedAmountType();
+  
+  if (data.amount) extendedAmount.setAmount(data.amount);
+  if (data.name) extendedAmount.setName(data.name);
+  if (data.description) extendedAmount.setDescription(data.description);
+  
+  return extendedAmount;
+}
+function setLineItemsIfExists(transactionRequest: any, lineItemsData: any): void {
+  if (!lineItemsData) return;
 
-  const transactionRequestType = new ApiContracts.TransactionRequestType();
-  transactionRequestType.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
-  transactionRequestType.setPayment(paymentType);
-  transactionRequestType.setAmount(params.amount);
-
-if (params.lineItems) {
-  const lineItemsArray = Array.isArray(params.lineItems.lineItem) 
-    ? params.lineItems.lineItem 
-    : [params.lineItems.lineItem];
+  const lineItemsArray = Array.isArray(lineItemsData.lineItem) 
+    ? lineItemsData.lineItem 
+    : [lineItemsData.lineItem];
   
   const lineItems = [];
   lineItemsArray.forEach(item => {
@@ -60,33 +73,65 @@ if (params.lineItems) {
   if (lineItems.length > 0) {
     const lineItemsList = new ApiContracts.ArrayOfLineItem();
     lineItemsList.setLineItem(lineItems);
-    transactionRequestType.setLineItems(lineItemsList);
+    transactionRequest.setLineItems(lineItemsList);
   }
 }
-
-  if (params.tax) {
-    const tax = new ApiContracts.ExtendedAmountType();
-    if (params.tax.amount) tax.setAmount(params.tax.amount);
-    if (params.tax.name) tax.setName(params.tax.name);
-    if (params.tax.description) tax.setDescription(params.tax.description);
-    transactionRequestType.setTax(tax);
+function setTransactionAmounts(transactionRequest: any, params: any): void {
+  const tax = createExtendedAmountType(params.tax);
+  if (tax) {
+    transactionRequest.setTax(tax);
   }
 
-  if (params.duty) {
-    const duty = new ApiContracts.ExtendedAmountType();
-    if (params.duty.amount) duty.setAmount(params.duty.amount);
-    if (params.duty.name) duty.setName(params.duty.name);
-    if (params.duty.description) duty.setDescription(params.duty.description);
-    transactionRequestType.setDuty(duty);
+  const duty = createExtendedAmountType(params.duty);
+  if (duty) {
+    transactionRequest.setDuty(duty);
   }
 
-  if (params.shipping) {
-    const shipping = new ApiContracts.ExtendedAmountType();
-    if (params.shipping.amount) shipping.setAmount(params.shipping.amount);
-    if (params.shipping.name) shipping.setName(params.shipping.name);
-    if (params.shipping.description) shipping.setDescription(params.shipping.description);
-    transactionRequestType.setShipping(shipping);
+  const shipping = createExtendedAmountType(params.shipping);
+  if (shipping) {
+    transactionRequest.setShipping(shipping);
   }
+}
+function setTransactionAddresses(transactionRequest: any, params: any): void {
+  const billTo = createCustomerAddress(params.billTo);
+  if (billTo) {
+    transactionRequest.setBillTo(billTo);
+  }
+
+  const shipTo = createCustomerAddress(params.shipTo);
+  if (shipTo) {
+    transactionRequest.setShipTo(shipTo);
+  }
+}
+function createCreditCard(cardData: any): any {
+  if (!cardData) return null;
+
+  const creditCard = new ApiContracts.CreditCardType();
+  creditCard.setCardNumber(cardData.cardNumber);
+  creditCard.setExpirationDate(cardData.expirationDate);
+  if (cardData.cardCode) {
+    creditCard.setCardCode(cardData.cardCode);
+  }
+  
+  return creditCard;
+}
+export async function chargeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
+  const merchantAuth = getMerchantAuth(sourceOptions);
+  const params = parseRequestBody(queryOptions);
+
+  const creditCard = createCreditCard(params);
+
+  const paymentType = new ApiContracts.PaymentType();
+  paymentType.setCreditCard(creditCard);
+
+  const transactionRequestType = new ApiContracts.TransactionRequestType();
+  transactionRequestType.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
+  transactionRequestType.setPayment(paymentType);
+  transactionRequestType.setAmount(params.amount);
+
+  setLineItemsIfExists(transactionRequestType, params.lineItems);
+  setTransactionAmounts(transactionRequestType, params);
+  setTransactionAddresses(transactionRequestType, params);
 
   if (params.poNumber) {
     transactionRequestType.setPoNumber(params.poNumber);
@@ -96,32 +141,6 @@ if (params.lineItems) {
     const customer = new ApiContracts.CustomerDataType();
     if (params.customer.id) customer.setId(params.customer.id);
     transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.billTo) {
-    const billTo = new ApiContracts.CustomerAddressType();
-    if (params.billTo.firstName) billTo.setFirstName(params.billTo.firstName);
-    if (params.billTo.lastName) billTo.setLastName(params.billTo.lastName);
-    if (params.billTo.company) billTo.setCompany(params.billTo.company);
-    if (params.billTo.address) billTo.setAddress(params.billTo.address);
-    if (params.billTo.city) billTo.setCity(params.billTo.city);
-    if (params.billTo.state) billTo.setState(params.billTo.state);
-    if (params.billTo.zip) billTo.setZip(params.billTo.zip);
-    if (params.billTo.country) billTo.setCountry(params.billTo.country);
-    transactionRequestType.setBillTo(billTo);
-  }
-
-  if (params.shipTo) {
-    const shipTo = new ApiContracts.CustomerAddressType();
-    if (params.shipTo.firstName) shipTo.setFirstName(params.shipTo.firstName);
-    if (params.shipTo.lastName) shipTo.setLastName(params.shipTo.lastName);
-    if (params.shipTo.company) shipTo.setCompany(params.shipTo.company);
-    if (params.shipTo.address) shipTo.setAddress(params.shipTo.address);
-    if (params.shipTo.city) shipTo.setCity(params.shipTo.city);
-    if (params.shipTo.state) shipTo.setState(params.shipTo.state);
-    if (params.shipTo.zip) shipTo.setZip(params.shipTo.zip);
-    if (params.shipTo.country) shipTo.setCountry(params.shipTo.country);
-    transactionRequestType.setShipTo(shipTo);
   }
 
   if (params.customerIP) {
@@ -215,22 +234,12 @@ if (params.lineItems) {
     });
   });
 }
-
 export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const cardData = params.payment?.creditCard || params;
-
-  const creditCard = new ApiContracts.CreditCardType();
-  creditCard.setCardNumber(cardData.cardNumber);
-  creditCard.setExpirationDate(cardData.expirationDate);
-  if (cardData.cardCode) {
-    creditCard.setCardCode(cardData.cardCode);
-  }
+  const creditCard = createCreditCard(params);
 
   const paymentType = new ApiContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
@@ -240,54 +249,9 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
   transactionRequestType.setPayment(paymentType);
   transactionRequestType.setAmount(params.amount);
 
-  if (params.lineItems) {
-    const lineItemsArray = Array.isArray(params.lineItems.lineItem) 
-      ? params.lineItems.lineItem 
-      : [params.lineItems.lineItem];
-    
-    const lineItems = [];
-    lineItemsArray.forEach(item => {
-      if (item) {
-        const lineItem = new ApiContracts.LineItemType();
-        if (item.itemId) lineItem.setItemId(item.itemId);
-        if (item.name) lineItem.setName(item.name);
-        if (item.description) lineItem.setDescription(item.description);
-        if (item.quantity) lineItem.setQuantity(item.quantity);
-        if (item.unitPrice) lineItem.setUnitPrice(item.unitPrice);
-        lineItems.push(lineItem);
-      }
-    });
-    
-    if (lineItems.length > 0) {
-      const lineItemsList = new ApiContracts.ArrayOfLineItem();
-      lineItemsList.setLineItem(lineItems);
-      transactionRequestType.setLineItems(lineItemsList);
-    }
-  }
-
-  if (params.tax) {
-    const tax = new ApiContracts.ExtendedAmountType();
-    if (params.tax.amount) tax.setAmount(params.tax.amount);
-    if (params.tax.name) tax.setName(params.tax.name);
-    if (params.tax.description) tax.setDescription(params.tax.description);
-    transactionRequestType.setTax(tax);
-  }
-
-  if (params.duty) {
-    const duty = new ApiContracts.ExtendedAmountType();
-    if (params.duty.amount) duty.setAmount(params.duty.amount);
-    if (params.duty.name) duty.setName(params.duty.name);
-    if (params.duty.description) duty.setDescription(params.duty.description);
-    transactionRequestType.setDuty(duty);
-  }
-
-  if (params.shipping) {
-    const shipping = new ApiContracts.ExtendedAmountType();
-    if (params.shipping.amount) shipping.setAmount(params.shipping.amount);
-    if (params.shipping.name) shipping.setName(params.shipping.name);
-    if (params.shipping.description) shipping.setDescription(params.shipping.description);
-    transactionRequestType.setShipping(shipping);
-  }
+  setLineItemsIfExists(transactionRequestType, params.lineItems);
+  setTransactionAmounts(transactionRequestType, params);
+  setTransactionAddresses(transactionRequestType, params);
 
   if (params.poNumber) {
     transactionRequestType.setPoNumber(params.poNumber);
@@ -297,32 +261,6 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
     const customer = new ApiContracts.CustomerDataType();
     if (params.customer.id) customer.setId(params.customer.id);
     transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.billTo) {
-    const billTo = new ApiContracts.CustomerAddressType();
-    if (params.billTo.firstName) billTo.setFirstName(params.billTo.firstName);
-    if (params.billTo.lastName) billTo.setLastName(params.billTo.lastName);
-    if (params.billTo.company) billTo.setCompany(params.billTo.company);
-    if (params.billTo.address) billTo.setAddress(params.billTo.address);
-    if (params.billTo.city) billTo.setCity(params.billTo.city);
-    if (params.billTo.state) billTo.setState(params.billTo.state);
-    if (params.billTo.zip) billTo.setZip(params.billTo.zip);
-    if (params.billTo.country) billTo.setCountry(params.billTo.country);
-    transactionRequestType.setBillTo(billTo);
-  }
-
-  if (params.shipTo) {
-    const shipTo = new ApiContracts.CustomerAddressType();
-    if (params.shipTo.firstName) shipTo.setFirstName(params.shipTo.firstName);
-    if (params.shipTo.lastName) shipTo.setLastName(params.shipTo.lastName);
-    if (params.shipTo.company) shipTo.setCompany(params.shipTo.company);
-    if (params.shipTo.address) shipTo.setAddress(params.shipTo.address);
-    if (params.shipTo.city) shipTo.setCity(params.shipTo.city);
-    if (params.shipTo.state) shipTo.setState(params.shipTo.state);
-    if (params.shipTo.zip) shipTo.setZip(params.shipTo.zip);
-    if (params.shipTo.country) shipTo.setCountry(params.shipTo.country);
-    transactionRequestType.setShipTo(shipTo);
   }
 
   if (params.customerIP) {
@@ -410,13 +348,9 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
     });
   });
 }
-
 export async function captureAuthorizedAmount(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const transactionRequestType = new ApiContracts.TransactionRequestType();
   transactionRequestType.setTransactionType(ApiContracts.TransactionTypeEnum.PRIORAUTHCAPTURETRANSACTION);
@@ -452,17 +386,10 @@ export async function captureAuthorizedAmount(sourceOptions: SourceOptions, quer
     });
   });
 }
-
 export async function refundTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
-
-    const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
-
-    const creditCard = new ApiContracts.CreditCardType();
-    creditCard.setCardNumber(params.cardNumber);
-    creditCard.setExpirationDate('XXXX');
+     const params = parseRequestBody(queryOptions);
+    const creditCard = createCreditCard(params);
 
     const paymentType = new ApiContracts.PaymentType();
     paymentType.setCreditCard(creditCard);
@@ -495,13 +422,10 @@ export async function refundTransaction(sourceOptions: SourceOptions, queryOptio
       });
     });
 }
-
 export async function voidTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
 
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   if (!params.transId) {
     throw new QueryError(
@@ -556,13 +480,9 @@ export async function voidTransaction(sourceOptions: SourceOptions, queryOptions
     });
   });
 }
-
 export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const profileData = params.profile || params;
 
@@ -582,54 +502,9 @@ export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryO
   transactionRequestType.setProfile(profileToCharge);
   transactionRequestType.setAmount(params.amount);
 
-  if (params.lineItems) {
-    const lineItemsArray = Array.isArray(params.lineItems.lineItem) 
-      ? params.lineItems.lineItem 
-      : [params.lineItems.lineItem];
-    
-    const lineItems = [];
-    lineItemsArray.forEach(item => {
-      if (item) {
-        const lineItem = new ApiContracts.LineItemType();
-        if (item.itemId) lineItem.setItemId(item.itemId);
-        if (item.name) lineItem.setName(item.name);
-        if (item.description) lineItem.setDescription(item.description);
-        if (item.quantity) lineItem.setQuantity(item.quantity);
-        if (item.unitPrice) lineItem.setUnitPrice(item.unitPrice);
-        lineItems.push(lineItem);
-      }
-    });
-    
-    if (lineItems.length > 0) {
-      const lineItemsList = new ApiContracts.ArrayOfLineItem();
-      lineItemsList.setLineItem(lineItems);
-      transactionRequestType.setLineItems(lineItemsList);
-    }
-  }
-
-  if (params.tax) {
-    const tax = new ApiContracts.ExtendedAmountType();
-    if (params.tax.amount) tax.setAmount(params.tax.amount);
-    if (params.tax.name) tax.setName(params.tax.name);
-    if (params.tax.description) tax.setDescription(params.tax.description);
-    transactionRequestType.setTax(tax);
-  }
-
-  if (params.duty) {
-    const duty = new ApiContracts.ExtendedAmountType();
-    if (params.duty.amount) duty.setAmount(params.duty.amount);
-    if (params.duty.name) duty.setName(params.duty.name);
-    if (params.duty.description) duty.setDescription(params.duty.description);
-    transactionRequestType.setDuty(duty);
-  }
-
-  if (params.shipping) {
-    const shipping = new ApiContracts.ExtendedAmountType();
-    if (params.shipping.amount) shipping.setAmount(params.shipping.amount);
-    if (params.shipping.name) shipping.setName(params.shipping.name);
-    if (params.shipping.description) shipping.setDescription(params.shipping.description);
-    transactionRequestType.setShipping(shipping);
-  }
+  setLineItemsIfExists(transactionRequestType, params.lineItems);
+  setTransactionAmounts(transactionRequestType, params);
+  setTransactionAddresses(transactionRequestType, params);
 
   if (params.poNumber) {
     transactionRequestType.setPoNumber(params.poNumber);
@@ -639,32 +514,6 @@ export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryO
     const customer = new ApiContracts.CustomerDataType();
     if (params.customer.id) customer.setId(params.customer.id);
     transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.billTo) {
-    const billTo = new ApiContracts.CustomerAddressType();
-    if (params.billTo.firstName) billTo.setFirstName(params.billTo.firstName);
-    if (params.billTo.lastName) billTo.setLastName(params.billTo.lastName);
-    if (params.billTo.company) billTo.setCompany(params.billTo.company);
-    if (params.billTo.address) billTo.setAddress(params.billTo.address);
-    if (params.billTo.city) billTo.setCity(params.billTo.city);
-    if (params.billTo.state) billTo.setState(params.billTo.state);
-    if (params.billTo.zip) billTo.setZip(params.billTo.zip);
-    if (params.billTo.country) billTo.setCountry(params.billTo.country);
-    transactionRequestType.setBillTo(billTo);
-  }
-
-  if (params.shipTo) {
-    const shipTo = new ApiContracts.CustomerAddressType();
-    if (params.shipTo.firstName) shipTo.setFirstName(params.shipTo.firstName);
-    if (params.shipTo.lastName) shipTo.setLastName(params.shipTo.lastName);
-    if (params.shipTo.company) shipTo.setCompany(params.shipTo.company);
-    if (params.shipTo.address) shipTo.setAddress(params.shipTo.address);
-    if (params.shipTo.city) shipTo.setCity(params.shipTo.city);
-    if (params.shipTo.state) shipTo.setState(params.shipTo.state);
-    if (params.shipTo.zip) shipTo.setZip(params.shipTo.zip);
-    if (params.shipTo.country) shipTo.setCountry(params.shipTo.country);
-    transactionRequestType.setShipTo(shipTo);
   }
 
   if (params.customerIP) {
@@ -733,10 +582,7 @@ export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryO
 }
 export async function createCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const customerProfile = new ApiContracts.CustomerProfileType();
   
@@ -762,18 +608,8 @@ export async function createCustomerProfile(sourceOptions: SourceOptions, queryO
         paymentProfile.setCustomerType(profile.customerType);
       }
 
-      if (profile.billTo) {
-        const billTo = new ApiContracts.CustomerAddressType();
-        if (profile.billTo.firstName) billTo.setFirstName(profile.billTo.firstName);
-        if (profile.billTo.lastName) billTo.setLastName(profile.billTo.lastName);
-        if (profile.billTo.company) billTo.setCompany(profile.billTo.company);
-        if (profile.billTo.address) billTo.setAddress(profile.billTo.address);
-        if (profile.billTo.city) billTo.setCity(profile.billTo.city);
-        if (profile.billTo.state) billTo.setState(profile.billTo.state);
-        if (profile.billTo.zip) billTo.setZip(profile.billTo.zip);
-        if (profile.billTo.country) billTo.setCountry(profile.billTo.country);
-        if (profile.billTo.phoneNumber) billTo.setPhoneNumber(profile.billTo.phoneNumber);
-        if (profile.billTo.faxNumber) billTo.setFaxNumber(profile.billTo.faxNumber);
+      const billTo = createCustomerAddress(profile.billTo);
+      if (billTo) {
         paymentProfile.setBillTo(billTo);
       }
 
@@ -781,13 +617,8 @@ export async function createCustomerProfile(sourceOptions: SourceOptions, queryO
         const payment = new ApiContracts.PaymentType();
 
         if (profile.payment.creditCard) {
-          const creditCard = new ApiContracts.CreditCardType();
-          creditCard.setCardNumber(profile.payment.creditCard.cardNumber);
-          creditCard.setExpirationDate(profile.payment.creditCard.expirationDate);
-          if (profile.payment.creditCard.cardCode) {
-            creditCard.setCardCode(profile.payment.creditCard.cardCode);
-          }
-          payment.setCreditCard(creditCard);
+           const creditCard = createCreditCard(profile.payment.creditCard);
+            payment.setCreditCard(creditCard);
         }
 
         if (profile.payment.bankAccount) {
@@ -822,20 +653,7 @@ export async function createCustomerProfile(sourceOptions: SourceOptions, queryO
   }
 
   if (params.shipToList && Array.isArray(params.shipToList)) {
-    const shipToList = params.shipToList.map((address: any) => {
-      const shipTo = new ApiContracts.CustomerAddressType();
-      if (address.firstName) shipTo.setFirstName(address.firstName);
-      if (address.lastName) shipTo.setLastName(address.lastName);
-      if (address.company) shipTo.setCompany(address.company);
-      if (address.address) shipTo.setAddress(address.address);
-      if (address.city) shipTo.setCity(address.city);
-      if (address.state) shipTo.setState(address.state);
-      if (address.zip) shipTo.setZip(address.zip);
-      if (address.country) shipTo.setCountry(address.country);
-      if (address.phoneNumber) shipTo.setPhoneNumber(address.phoneNumber);
-      if (address.faxNumber) shipTo.setFaxNumber(address.faxNumber);
-      return shipTo;
-    });
+    const shipToList = params.shipToList.map((address: any) => createCustomerAddress(address));
     customerProfile.setShipToList(shipToList);
   }
 
@@ -875,9 +693,7 @@ export async function createCustomerProfile(sourceOptions: SourceOptions, queryO
 export async function getCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
 
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const getRequest = new ApiContracts.GetCustomerProfileRequest();
   getRequest.setMerchantAuthentication(merchantAuth);
@@ -931,9 +747,7 @@ export async function getCustomerProfile(sourceOptions: SourceOptions, queryOpti
 export async function getCustomerProfileIds(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
 
-    const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+    const params = parseRequestBody(queryOptions);
 
     const getRequest = new ApiContracts.GetCustomerProfileIdsRequest();
     getRequest.setMerchantAuthentication(merchantAuth);
@@ -961,10 +775,7 @@ export async function getCustomerProfileIds(sourceOptions: SourceOptions, queryO
 }
 export async function updateCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
-
-     const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+    const params = parseRequestBody(queryOptions);
 
     const customerProfile = new ApiContracts.CustomerProfileExType();
     customerProfile.setCustomerProfileId(params.customerProfileId);
@@ -1002,13 +813,11 @@ export async function updateCustomerProfile(sourceOptions: SourceOptions, queryO
         }
       });
     });
-  }
+}
 export async function deleteCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
 
-    const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+   const params = parseRequestBody(queryOptions);
 
     const deleteRequest = new ApiContracts.DeleteCustomerProfileRequest();
     deleteRequest.setMerchantAuthentication(merchantAuth);
@@ -1037,22 +846,12 @@ export async function deleteCustomerProfile(sourceOptions: SourceOptions, queryO
         }
       });
     });
-  }
+}
 export async function createCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
-
+  const params = parseRequestBody(queryOptions);
   const cardData = params.payment?.creditCard || params;
-
-  const creditCard = new ApiContracts.CreditCardType();
-  creditCard.setCardNumber(cardData.cardNumber);
-  creditCard.setExpirationDate(cardData.expirationDate);
-  if (cardData.cardCode) {
-    creditCard.setCardCode(cardData.cardCode);
-  }
+  const creditCard = createCreditCard(params);
 
   const paymentType = new ApiContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
@@ -1060,18 +859,8 @@ export async function createCustomerPaymentProfile(sourceOptions: SourceOptions,
   const customerPaymentProfile = new ApiContracts.CustomerPaymentProfileType();
   customerPaymentProfile.setPayment(paymentType);
 
-  if (params.billTo) {
-    const billTo = new ApiContracts.CustomerAddressType();
-    if (params.billTo.firstName) billTo.setFirstName(params.billTo.firstName);
-    if (params.billTo.lastName) billTo.setLastName(params.billTo.lastName);
-    if (params.billTo.company) billTo.setCompany(params.billTo.company);
-    if (params.billTo.address) billTo.setAddress(params.billTo.address);
-    if (params.billTo.city) billTo.setCity(params.billTo.city);
-    if (params.billTo.state) billTo.setState(params.billTo.state);
-    if (params.billTo.zip) billTo.setZip(params.billTo.zip);
-    if (params.billTo.country) billTo.setCountry(params.billTo.country);
-    if (params.billTo.phoneNumber) billTo.setPhoneNumber(params.billTo.phoneNumber);
-    if (params.billTo.faxNumber) billTo.setFaxNumber(params.billTo.faxNumber);
+  const billTo = createCustomerAddress(params.billTo);
+  if (billTo) {
     customerPaymentProfile.setBillTo(billTo);
   }
 
@@ -1116,9 +905,7 @@ export async function createCustomerPaymentProfile(sourceOptions: SourceOptions,
 }
 export async function getCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
-    const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+    const params = parseRequestBody(queryOptions);
 
     const getRequest = new ApiContracts.GetCustomerPaymentProfileRequest();
     getRequest.setMerchantAuthentication(merchantAuth);
@@ -1145,13 +932,11 @@ export async function getCustomerPaymentProfile(sourceOptions: SourceOptions, qu
         }
       });
     });
-  }
+}
 export async function validateCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
 
-     const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+    const params = parseRequestBody(queryOptions);
 
     const validateRequest = new ApiContracts.ValidateCustomerPaymentProfileRequest();
     validateRequest.setMerchantAuthentication(merchantAuth);
@@ -1183,13 +968,10 @@ export async function validateCustomerPaymentProfile(sourceOptions: SourceOption
         }
       });
     });
-  }
+}
 export async function updateCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const profileData = params.paymentProfile || params;
   const cardData = profileData.payment?.creditCard || params;
@@ -1210,18 +992,8 @@ export async function updateCustomerPaymentProfile(sourceOptions: SourceOptions,
     profileData.customerPaymentProfileId || params.customerPaymentProfileId
   );
 
-  if (profileData.billTo) {
-    const billTo = new ApiContracts.CustomerAddressType();
-    if (profileData.billTo.firstName) billTo.setFirstName(profileData.billTo.firstName);
-    if (profileData.billTo.lastName) billTo.setLastName(profileData.billTo.lastName);
-    if (profileData.billTo.company) billTo.setCompany(profileData.billTo.company);
-    if (profileData.billTo.address) billTo.setAddress(profileData.billTo.address);
-    if (profileData.billTo.city) billTo.setCity(profileData.billTo.city);
-    if (profileData.billTo.state) billTo.setState(profileData.billTo.state);
-    if (profileData.billTo.zip) billTo.setZip(profileData.billTo.zip);
-    if (profileData.billTo.country) billTo.setCountry(profileData.billTo.country);
-    if (profileData.billTo.phoneNumber) billTo.setPhoneNumber(profileData.billTo.phoneNumber);
-    if (profileData.billTo.faxNumber) billTo.setFaxNumber(profileData.billTo.faxNumber);
+  const billTo = createCustomerAddress(profileData.billTo);
+  if (billTo) {
     customerPaymentProfile.setBillTo(billTo);
   }
 
@@ -1267,9 +1039,7 @@ export async function updateCustomerPaymentProfile(sourceOptions: SourceOptions,
 export async function deleteCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
 
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  const params = parseRequestBody(queryOptions);
 
   const deleteRequest = new ApiContracts.DeleteCustomerPaymentProfileRequest();
   deleteRequest.setMerchantAuthentication(merchantAuth);
@@ -1302,9 +1072,7 @@ export async function deleteCustomerPaymentProfile(sourceOptions: SourceOptions,
 export async function createCustomerProfileFromTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
 
-  const params = typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+ const params = parseRequestBody(queryOptions);
 
   const createRequest = new ApiContracts.CreateCustomerProfileFromTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuth);
