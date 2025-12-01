@@ -74,7 +74,7 @@ export const DaterangePicker = ({
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
 
-  const onChange = (dates) => {
+  const onChange = (dates, skipFireEvent = false) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
@@ -85,6 +85,7 @@ export const DaterangePicker = ({
       endDateInUnix: moment(end).valueOf(),
       selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
     });
+    if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -108,9 +109,9 @@ export const DaterangePicker = ({
 
     if (startDate && endDate) {
       if (moment(startDate).isSameOrBefore(endDate)) {
-        onChange([startDate, endDate]);
+        onChange([startDate, endDate], true);
       } else {
-        onChange([startDate, null]);
+        onChange([startDate, null], true);
       }
     }
   }, [defaultStartDate, defaultEndDate, format]);

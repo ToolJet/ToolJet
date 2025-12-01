@@ -9,7 +9,7 @@ import {
   setupDataSourceWithConstants,
 } from "Support/utils/exportImport";
 import { switchVersionAndVerify } from "Support/utils/version";
-import { renameApp } from 'Support/utils/editor/editorHeaderOperations';
+import { renameApp } from "Support/utils/editor/editorHeaderOperations";
 
 describe("App Import", () => {
   const TEST_DATA = {
@@ -31,7 +31,12 @@ describe("App Import", () => {
   });
 
   const setupWorkspaceConstants = (dsEnv) => {
-    cy.apiCreateWorkspaceConstant("pageHeader", "Import and Export", ["Global"], [dsEnv]);
+    cy.apiCreateWorkspaceConstant(
+      "pageHeader",
+      "Import and Export",
+      ["Global"],
+      [dsEnv]
+    );
     cy.apiCreateWorkspaceConstant("db_name", "persons", ["Secret"], [dsEnv]);
   };
 
@@ -41,7 +46,7 @@ describe("App Import", () => {
   };
 
   const verifyAppNameInEditor = (expectedName) => {
-    cy.get('[data-cy="edit-app-name-button"]')
+    cy.get('[data-cy="editor-app-name-input"]')
       .should("be.visible")
       .verifyVisibleElement("have.text", expectedName);
   };
@@ -64,9 +69,11 @@ describe("App Import", () => {
     data = generateTestData();
 
     cy.apiLogin();
-    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
-      Cypress.env("workspaceId", workspace.body.organization_id);
-    });
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then(
+      (workspace) => {
+        Cypress.env("workspaceId", workspace.body.organization_id);
+      }
+    );
     cy.skipWalkthrough();
     cy.visit(`${data.workspaceSlug}`);
   });
@@ -118,10 +125,13 @@ describe("App Import", () => {
     });
 
     cy.visit(`${data.workspaceSlug}/database`);
-    cy.get('[data-cy="student-table"]').verifyVisibleElement("have.text", "student");
+    cy.get('[data-cy="student-table"]', { timeout: 20000 }).verifyVisibleElement(
+      "have.text",
+      "student"
+    );
 
     cy.visit(`${data.workspaceSlug}/data-sources`);
-    cy.get('[data-cy="postgresql-button"]').should("be.visible");
+    cy.get('[data-cy="postgresql-button"]', { timeout: 20000 }).should("be.visible");
     setupCommunityOrEnterpriseDataSource();
 
     cy.wait("@importApp").then((interception) => {
@@ -151,11 +161,11 @@ describe("App Import", () => {
 
   it("should verify app with single version", () => {
     cy.get(importSelectors.dropDownMenu).click();
-    const dsEnv = setupCommunityOrEnterpriseDataSource();
 
     importAndVerifyApp(TEST_DATA.appFiles.singleVersion);
-
     verifyAppNameInEditor("one_version");
+
+    const dsEnv = setupCommunityOrEnterpriseDataSource();
 
     if (dsEnv) {
       setupDataSourceWithConstants(dsEnv);

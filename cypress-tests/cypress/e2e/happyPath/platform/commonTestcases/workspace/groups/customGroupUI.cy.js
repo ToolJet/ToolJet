@@ -3,7 +3,6 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors } from "Selectors/eeCommon";
 import { groupsSelector } from "Selectors/manageGroups";
-import { navigateToManageGroups } from "Support/utils/common";
 import {
   apiAddUserToGroup,
   apiCreateGroup,
@@ -22,6 +21,7 @@ import {
 } from "Support/utils/platform/customGroups";
 
 import {
+  granularPermissionEmptyState,
   verifyCheckPermissionStates,
   verifyEmptyStates,
   verifyGranularAccessByRole,
@@ -30,7 +30,6 @@ import {
   verifyGroupLinks,
   verifyPermissionCheckBoxLabelsAndHelperTexts,
   verifyUserRow,
-  granularPermissionEmptyState
 } from "Support/utils/platform/groupsUI";
 
 import { getGroupPermissionInput } from "Support/utils/userPermissions";
@@ -50,60 +49,33 @@ describe("Custom groups UI and Functionality verification", () => {
   const data = {
     firstName: fake.firstName,
     email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
-    workspaceName: fake.firstName,
-    workspaceSlug: fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", ""),
   };
-  let groupId3;
 
-  before(() => {
-    cy.apiLogin();
-    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-  });
+  const visitGroupsSettingsPage = () => {
+    cy.visit(`${data.workspaceSlug}/workspace-settings/groups`);
+    cy.wait(2000);
+  };
 
-  beforeEach(() => {
-    cy.apiLogin();
-    cy.visit(`${data.workspaceSlug}`);
-    cy.viewport(2000, 1900);
-  });
-
-  it("should create, rename, and delete a custom group", () => {
-    navigateToManageGroups();
-    createGroupViaUI(groupName);
-
-    verifyGroupCreatedInSidebar(groupName);
-
-    renameGroupViaUI(groupName, newGroupname);
-
-    verifyGroupCreatedInSidebar(newGroupname);
-
-    deleteGroupViaUI(newGroupname);
-
-    verifyGroupRemovedFromSidebar(newGroupname);
-  });
-
-  it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
-    apiCreateGroup(groupName2);
-
-    cy.apiCreateApp(groupName);
+  const seedResourcesForGroup = (resourceName) => {
+    cy.apiCreateApp(resourceName);
     cy.ifEnv("Enterprise", () => {
-      cy.apiCreateWorkflow(groupName);
+      cy.apiCreateWorkflow(resourceName);
       cy.apiCreateGDS(
         `${Cypress.env("server_host")}/api/data-sources`,
-        groupName,
+        resourceName,
         "restapi",
         [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
       );
     });
+  };
 
-    navigateToManageGroups();
-    cy.get(groupsSelector.groupLink(groupName2)).click();
+  const openGroupAndValidateEmptyStates = (groupName) => {
+    cy.get(groupsSelector.groupLink(groupName)).click();
 
     verifyGroupLinks();
     verifyEmptyStates();
 
-    cy.reload();
-    cy.wait(1000)
-    cy.get(groupsSelector.groupLink(groupName2)).click();
+    cy.get(groupsSelector.groupLink(groupName)).click();
     granularPermissionEmptyState();
 
     cy.get(groupsSelector.permissionsLink).click();
@@ -111,6 +83,9 @@ describe("Custom groups UI and Functionality verification", () => {
     verifyPermissionCheckBoxLabelsAndHelperTexts();
 
     cy.get(groupsSelector.granularLink).click();
+  };
+
+  const configureInitialGranularPermissions = () => {
     addGranularPermissionViaUI(appPermissionName, {
       resourceType: "app",
       permission: "edit",
@@ -130,10 +105,18 @@ describe("Custom groups UI and Functionality verification", () => {
         scope: "all",
       });
     });
+
     verifyGranularAccessByRole("builder");
     verifyGranularEditModal("custom");
+  };
 
-    cy.get('[data-cy="apps-granular-access"]').realHover();
+  const verifyAppGranularModalFlow = (groupName) => {
+    cy.wait(500);
+    cy.get(groupsSelector.groupLink("builder")).click();
+    cy.get(groupsSelector.groupLink(groupName)).click();
+    cy.get(groupsSelector.granularLink).click();
+    cy.wait(2000);
+    cy.get(groupsSelector.granularAccessPermission).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 
     verifyGranularPermissionModalStates("app", "custom");
@@ -168,31 +151,109 @@ describe("Custom groups UI and Functionality verification", () => {
     });
 
     cy.get(groupsSelector.cancelButton).click();
+  };
 
-    cy.ifEnv("Enterprise", () => {
-      cy.get('[data-cy="workflow-granular-access"]').realHover();
-      cy.get('[data-cy="edit-workflow-granular-access"]').click();
+  const verifyWorkflowGranularModalFlow = () => {
+    cy.get('[data-cy="workflow-granular-access"]').realHover();
+    cy.get('[data-cy="edit-workflow-granular-access"]').click();
 
-      verifyGranularPermissionModalStates("workflow", "custom");
+    verifyGranularPermissionModalStates("workflow", "custom");
 
-      cy.get(groupsSelector.executeWorkflowradio).check();
-      verifyGranularPermissionModalStates("workflow", "custom", {
-        buildRadio: { checked: false, enabled: true },
-        executeRadio: { checked: true, enabled: true },
-      });
-      cy.get(groupsSelector.cancelButton).click();
-
-      cy.get('[data-cy="datasource-granular-access"]').realHover();
-      cy.get('[data-cy="edit-datasource-granular-access"]').click();
-      verifyGranularPermissionModalStates("datasource", "custom");
-
-      cy.get(groupsSelector.buildWithDatasourceRadio).check();
-      verifyGranularPermissionModalStates("datasource", "custom", {
-        configureRadio: { checked: false, enabled: true },
-        buildWithRadio: { checked: true, enabled: true },
-      });
-      cy.get(groupsSelector.cancelButton).click();
+    cy.get(groupsSelector.executeWorkflowradio).check();
+    verifyGranularPermissionModalStates("workflow", "custom", {
+      buildRadio: { checked: false, enabled: true },
+      executeRadio: { checked: true, enabled: true },
     });
+    cy.get(groupsSelector.cancelButton).click();
+  };
+
+  const verifyDatasourceGranularModalFlow = () => {
+    cy.get('[data-cy="datasource-granular-access"]').realHover();
+    cy.get('[data-cy="edit-datasource-granular-access"]').click();
+    verifyGranularPermissionModalStates("datasource", "custom");
+
+    cy.get(groupsSelector.buildWithDatasourceRadio).check();
+    verifyGranularPermissionModalStates("datasource", "custom", {
+      configureRadio: { checked: false, enabled: true },
+      buildWithRadio: { checked: true, enabled: true },
+    });
+    cy.get(groupsSelector.cancelButton).click();
+  };
+
+  const verifyEnterpriseGranularModalFlows = () => {
+    cy.ifEnv("Enterprise", () => {
+      verifyWorkflowGranularModalFlow();
+      verifyDatasourceGranularModalFlow();
+    });
+  };
+
+  const duplicateGroupAndValidate = (groupName, duplicatedGroupName, user) => {
+    openGroupThreeDotMenu(groupName);
+    cy.get(groupsSelector.duplicateOption).click();
+    verifyDuplicateModal(groupName);
+
+    cy.get(groupsSelector.cancelButton).click();
+
+    openGroupThreeDotMenu(groupName);
+    cy.get(groupsSelector.duplicateOption).click();
+    cy.get(commonEeSelectors.confirmButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Group duplicated successfully"
+    );
+
+    cy.wait(1000);
+    verifyUserRow(user.firstName, ` ${user.email}`);
+    cy.get(groupsSelector.groupLink(duplicatedGroupName)).click();
+    cy.get(groupsSelector.permissionsLink).click();
+    verifyCheckPermissionStates("builder");
+
+    cy.get(groupsSelector.granularLink).click();
+    verifyGranularAccessByRole("builder");
+  };
+
+  let groupId3;
+
+  beforeEach(() => {
+    data.workspaceName = fake.firstName;
+    data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+    cy.apiLogin();
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((response) => {
+      Cypress.env("workspaceId", response.body.organization_id);
+    })
+    cy.viewport(2000, 1900);
+  });
+
+
+  it("should create, rename, and delete a custom group", () => {
+    visitGroupsSettingsPage();
+
+    createGroupViaUI(groupName);
+
+    verifyGroupCreatedInSidebar(groupName);
+
+    renameGroupViaUI(groupName, newGroupname);
+
+    verifyGroupCreatedInSidebar(newGroupname);
+
+    deleteGroupViaUI(newGroupname);
+
+    verifyGroupRemovedFromSidebar(newGroupname);
+  });
+
+  it("should create custom group, verify empty states, add permissions, and manage granular access", () => {
+    apiCreateGroup(groupName2);
+
+    seedResourcesForGroup(groupName);
+
+    visitGroupsSettingsPage();
+
+    openGroupAndValidateEmptyStates(groupName2);
+    configureInitialGranularPermissions();
+    cy.wait(1000) // need to add alias to avoid flakiness
+    verifyAppGranularModalFlow(groupName2);
+    verifyEnterpriseGranularModalFlows();
 
     apiDeleteGroup(groupName2);
   });
@@ -202,17 +263,7 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.apiLogout();
 
     cy.apiLogin();
-    cy.apiCreateApp(groupName3);
-
-    cy.ifEnv("Enterprise", () => {
-      cy.apiCreateWorkflow(groupName3);
-      cy.apiCreateGDS(
-        `${Cypress.env("server_host")}/api/data-sources`,
-        groupName3,
-        "restapi",
-        [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
-      );
-    });
+    seedResourcesForGroup(groupName3);
 
     apiCreateGroup(groupName3).then((groupId) => {
       groupId3 = groupId;
@@ -248,30 +299,8 @@ describe("Custom groups UI and Functionality verification", () => {
       getGroupPermissionInput(isEnterprise, true)
     );
 
-    navigateToManageGroups();
-    cy.wait(2000);
-    openGroupThreeDotMenu(groupName3);
-    cy.get(groupsSelector.duplicateOption).click();
-    verifyDuplicateModal(groupName3);
-
-    cy.get(groupsSelector.cancelButton).click();
-
-    openGroupThreeDotMenu(groupName3);
-    cy.get(groupsSelector.duplicateOption).click();
-    cy.get(commonEeSelectors.confirmButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Group duplicated successfully"
-    );
-
-    cy.wait(1000);
-    verifyUserRow(data.firstName, ` ${data.email}`);
-    cy.get(groupsSelector.groupLink(duplicatedGroupName)).click();
-    cy.get(groupsSelector.permissionsLink).click();
-    verifyCheckPermissionStates("builder");
-
-    cy.get(groupsSelector.granularLink).click();
-    verifyGranularAccessByRole("builder");
+    visitGroupsSettingsPage();
+    duplicateGroupAndValidate(groupName3, duplicatedGroupName, data);
 
     apiDeleteGroup(duplicatedGroupName);
     apiDeleteGroup(groupName3);
