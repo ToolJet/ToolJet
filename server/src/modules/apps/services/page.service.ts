@@ -71,6 +71,8 @@ export class PageService implements IPageService {
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
+    let clonedPageData: { id: string; name: string; handle: string; type: string; url: string } | null = null;
+
     await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
@@ -110,6 +112,15 @@ export class PageService implements IPageService {
 
       const clonedpage = await manager.save(newPage);
 
+      // Store cloned page data for history capture after transaction
+      clonedPageData = {
+        id: clonedpage.id,
+        name: clonedpage.name,
+        handle: clonedpage.handle,
+        type: clonedpage.type,
+        url: clonedpage.url,
+      };
+
       await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
       const pages = await this.findPagesForVersion(appVersionId, manager);
@@ -117,6 +128,26 @@ export class PageService implements IPageService {
 
       return { pages, events };
     }, appVersionId);
+
+    // Queue history capture after successful page cloning
+    if (clonedPageData) {
+      try {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_ADD, {
+          operation: 'clone',
+          pageId: clonedPageData.id,
+          sourcePageId: pageId,
+          pageName: clonedPageData.name,
+          pageData: {
+            name: clonedPageData.name,
+            handle: clonedPageData.handle,
+            type: clonedPageData.type,
+            url: clonedPageData.url,
+          },
+        });
+      } catch (error) {
+        console.error('Failed to queue history capture for page cloning:', error);
+      }
+    }
 
     // Fetch pages and events separately after transaction completes
     const pages = await this.findPagesForVersion(appVersionId);

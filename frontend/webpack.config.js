@@ -354,6 +354,9 @@ module.exports = {
       directory: path.resolve(__dirname, 'assets'),
       publicPath: '/assets/',
     },
+    client: {
+      overlay: false,
+    },
   },
   output: {
     publicPath: ASSET_PATH,

@@ -12,7 +12,6 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 // Lazy load editor-only component to reduce viewer bundle size
@@ -133,8 +132,10 @@ const Container = React.memo(
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+          const scrollLeft = realCanvas.scrollLeft || 0;
+          const scrollTop = realCanvas.scrollTop || 0;
+          const x = e.clientX - rect.left + scrollLeft;
+          const y = e.clientY - rect.top + scrollTop;
           setLastCanvasClickPosition({ x, y });
         }
       },

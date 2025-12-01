@@ -46,7 +46,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           <Suspense fallback={
             <div className="d-flex justify-content-center" style={{ width: '304px' }}>
               <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
-                <Loader width={16} height={16} reverse={true} />
+                <Loader width={16} height={16} />
               </div>
             </div>}>
             <AppVersionsManager darkMode={darkMode} />

@@ -480,7 +480,6 @@ export const createComponentsSlice = (set, get) => ({
     const mandatory = validationObject?.mandatory?.value ?? validationObject?.mandatory;
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
-    const re = new RegExp(validationRegex, 'g');
 
     if (componentType === 'EmailInput' && widgetValue) {
       const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
@@ -493,11 +492,14 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    if (!re.test(widgetValue)) {
-      return {
-        isValid: false,
-        validationError: 'The input should match pattern',
-      };
+    if (validationRegex && validationRegex.trim() !== '') {
+      const re = new RegExp(validationRegex, 'g');
+      if (!re.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'The input should match pattern',
+        };
+      }
     }
 
     const resolvedMinLength = getResolvedValue(minLength, customResolveObjects) || 0;
@@ -1164,25 +1166,62 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   pasteComponents: async (components, moduleId = 'canvas') => {
-    const { addComponentToCurrentPage, eventsSlice } = get();
+    const { addComponentToCurrentPage, saveComponentChanges, getCurrentPageId, eventsSlice } = get();
+    const currentPageId = getCurrentPageId(moduleId);
 
-    // Add the components to the current page and wait for it to complete
-    await addComponentToCurrentPage(components, moduleId);
+    // Add the components to the current page without saving (we'll save with events in batch)
+    const diff = await addComponentToCurrentPage(components, moduleId, {
+      saveAfterAction: false,
+      skipFormUpdate: true,
+    });
 
-    // Now that components are added, handle the events
+    // If no components were added, return early
+    if (!diff || Object.keys(diff).length === 0) {
+      return;
+    }
+
+    // Collect all events from all components for bulk creation
+    const allEvents = [];
     for (const component of components) {
       const events = component.events || [];
       for (const event of events) {
-        const newEvent = {
-          event: {
-            ...event?.event,
-          },
-          eventType: event?.target,
-          attachedTo: component.id,
-          index: event?.index,
-        };
-        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
+        // Only add events that have required fields
+        if (event?.event && event?.target && component.id != null && event?.index != null) {
+          allEvents.push({
+            event: {
+              ...event.event,
+            },
+            eventType: event.target,
+            attachedTo: component.id,
+            index: event.index,
+          });
+        }
       }
+    }
+
+    // Create components and events together in a single batch request
+    const batchDiff = {
+      create: {
+        diff: diff,
+        pageId: currentPageId,
+      },
+      events: allEvents,
+    };
+
+    try {
+      const response = await saveComponentChanges(batchDiff, 'components/batch', 'update', moduleId);
+
+      // Add created events to the local store
+      if (response?.events && response.events.length > 0) {
+        response.events.forEach((event) => {
+          eventsSlice.addEvent(event, moduleId);
+        });
+      }
+
+      get().multiplayer.broadcastUpdates(components, 'components', 'create');
+    } catch (error) {
+      console.error('Error pasting components with events:', error);
+      toast.error('Failed to paste components');
     }
   },
 
@@ -1632,9 +1671,9 @@ export const createComponentsSlice = (set, get) => ({
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.selectedComponents = [componentId];
+        state.selectedComponents = componentId ? [componentId] : [];
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
       },
       false,

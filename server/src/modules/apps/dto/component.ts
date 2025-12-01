@@ -14,6 +14,7 @@ import {
   Validate,
   ValidateNested,
 } from 'class-validator';
+import { CreateEventHandlerDto } from './event';
 
 export class ComponentLayoutDto {
   @IsNumber()
@@ -185,6 +186,12 @@ export class BatchDiffDto {
   layout?: {
     diff: Record<string, { layouts: LayoutData; component?: { parent: string } }>;
   };
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateEventHandlerDto)
+  events?: CreateEventHandlerDto[];
 }
 
 export class BatchComponentsDto {

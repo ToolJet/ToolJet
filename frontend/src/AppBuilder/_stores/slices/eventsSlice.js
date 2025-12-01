@@ -164,6 +164,29 @@ export const createEventsSlice = (set, get) => ({
           toast.error(err?.error || 'An error occurred while creating the event handler');
         });
     },
+    bulkCreateAppVersionEventHandlers: async (events, moduleId) => {
+      if (!events || events.length === 0) return [];
+
+      get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
+      const appId = get().appStore.modules[moduleId].app.appId;
+      const versionId = get().currentVersionId;
+
+      try {
+        const response = await appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events);
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+
+        // Add all created events to the store
+        response.forEach((event) => {
+          get().eventsSlice.addEvent(event, moduleId);
+        });
+
+        return response;
+      } catch (err) {
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        toast.error(err?.error || 'An error occurred while creating event handlers');
+        return [];
+      }
+    },
     deleteAppVersionEventHandler: async (eventId, index, moduleId = 'canvas') => {
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;

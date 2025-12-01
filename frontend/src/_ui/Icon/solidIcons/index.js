@@ -290,6 +290,7 @@ import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
 import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
+import PlayLucide from './PlayLucide.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -876,6 +877,8 @@ const Icon = (props) => {
       return <Google {...props} />;
     case 'github':
       return <GitHub {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
     default:
       return <Apps {...props} />;
   }
