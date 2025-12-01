@@ -16,7 +16,6 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
-import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
@@ -33,6 +32,7 @@ export const Viewer = ({
   const { t } = useTranslation();
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
+  const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
 
   const {
     isEditorLoading,
