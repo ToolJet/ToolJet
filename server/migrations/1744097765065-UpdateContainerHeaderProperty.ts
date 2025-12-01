@@ -46,5 +46,5 @@ export class UpdateContainerHeaderProperty1744097765065 implements MigrationInte
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
