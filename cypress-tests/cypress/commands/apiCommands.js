@@ -670,3 +670,39 @@ Cypress.Commands.add("apiGetAppIdByName", (appName) => {
       });
   });
 });
+
+Cypress.Commands.add(
+  "apiPublishDraftVersion",
+  (
+    versionName,
+    versionDescription = "",
+    appId = Cypress.env("appId"),
+    editingVersionId = Cypress.env("editingVersionId")
+  ) => {
+    cy.getCookie("tj_auth_token").then((cookie) => {
+      cy.request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${editingVersionId}`,
+        body: {
+          is_user_switched_version: false,
+          name: versionName,
+          description: versionDescription,
+          status: "PUBLISHED",
+        },
+        headers: {
+          "Content-Type": "application/json",
+          "tj-workspace-id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+      }).then((response) => {
+        expect(response.status, "Publish draft version status").to.eq(200);
+        Cypress.log({
+          name: "Version published",
+          displayName: "VERSION PUBLISHED",
+          message: `Version: ${versionName} (${editingVersionId})`,
+        });
+        return response.body;
+      });
+    });
+  }
+);

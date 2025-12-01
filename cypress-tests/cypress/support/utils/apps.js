@@ -96,6 +96,7 @@ export const setupAppWithSlug = (
       Cypress.env("appId"),
       commonWidgetSelector.draggableWidget(appType)
     );
+    cy.apiPublishDraftVersion("v1");
     appPromote("development", "production");
   });
   cy.wait(2000);
