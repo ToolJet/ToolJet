@@ -11,18 +11,24 @@ export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationIn
             INNER JOIN app_environments ae ON av.current_environment_id = ae.id
             WHERE ae.name = 'development'
         `);
+
     const allReleasedVersionIds = await queryRunner.query(`
-      SELECT current_version_id FROM apps
+    SELECT current_version_id FROM apps WHERE current_version_id IS NOT NULL
   `);
-    const releasedVersionIds = allReleasedVersionIds.map((row) => row.current_version_id);
-    const draftVersionStatusArray = allDevelopmentVersionIds
+
+    const releasedVersionIds = new Set((allReleasedVersionIds || []).map((row) => row.current_version_id));
+
+    // Development versions that are NOT released (drafts)
+    const draftVersionStatusArray = (allDevelopmentVersionIds || [])
       .map((row) => row.id)
       .filter((id) => !releasedVersionIds.has(id));
 
     const draftVersionIds = new Set(draftVersionStatusArray);
 
-    // All versions that are not drafts are ---> Published
-    const publishedVersionStatusArray = allVersions.map((row) => row.id).filter((id) => !draftVersionIds.has(id));
+    // All versions that are not drafts (published)
+    const publishedVersionStatusArray = (allVersions || [])
+      .map((row) => row.id)
+      .filter((id) => !draftVersionIds.has(id));
 
     if (publishedVersionStatusArray.length) {
       await queryRunner.query(`UPDATE app_versions SET status = $1 WHERE id = ANY($2::uuid[])`, [
