@@ -1,15 +1,15 @@
 import { fake } from "Fixtures/fake";
 import {
-  resetUserpasswordFromInstanceSettings,
-  resetUserpasswordAutomaticallyFromInstanceSettings,
-  verifyLoginWithOldPaswordRestriction,
+  resetUserPasswordFromInstanceSettings,
+  resetUserPasswordAutomaticallyFromInstanceSettings,
+  verifyLoginWithOldPasswordRestriction,
 } from "Support/utils/platform/superAdminPasswordReset";
 
 describe("Instance Settings - User Management | Reset Password Flow", () => {
   const user = {
     name: fake.firstName,
     email: fake.email.toLowerCase().replace(/[^a-z0-9@.]/g, ""),
-    newPassword: fake.firstName,
+    newPassword: "New Password",
     oldPassword: "Password",
   };
 
@@ -22,18 +22,18 @@ describe("Instance Settings - User Management | Reset Password Flow", () => {
     cy.apiLogin();
     cy.visit("/");
 
-    resetUserpasswordFromInstanceSettings(user.email, user.newPassword);
+    resetUserPasswordFromInstanceSettings(user.email, user.newPassword);
 
     cy.apiLogout();
     cy.visit("/");
-    verifyLoginWithOldPaswordRestriction(user.email, user.oldPassword);
+    verifyLoginWithOldPasswordRestriction(user.email, user.oldPassword);
 
     cy.apiLogin(user.email, user.newPassword);
     cy.apiLogout();
 
     cy.apiLogin();
     cy.visit("/");
-    resetUserpasswordAutomaticallyFromInstanceSettings(user.email);
+    resetUserPasswordAutomaticallyFromInstanceSettings(user.email);
 
     cy.get("@generatedPassword").then((generatedPassword) => {
       cy.apiLogout();
