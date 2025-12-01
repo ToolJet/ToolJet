@@ -145,17 +145,16 @@ const INPUT_WIDGET_TYPES = [
 ];
 
 const entitiesToRemoveTimestamps = [
-  'appVersions',
-  'appEnvironments',
-  'dataQueries',
-  'dataSourceOptions',
-  'dataSources',
-  'pagesWithPermissionGroups',
-  'queriesWithPermissionGroups',
-  'componentsWithPermissionGroups',
+  'components',
+  'pages',
   'events',
-  'moduleApps',
-  'appToExport',
+  'dataQueries',
+  'dataSources',
+  'appVersions',
+  'dataSourcesOptions',
+  'appEnvironments',
+  'modules',
+  'schemaDetails',
 ];
 
 @Injectable()
@@ -368,7 +367,6 @@ export class AppImportExportService {
         })
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
-
       appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
@@ -385,7 +383,6 @@ export class AppImportExportService {
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
-
       entitiesToRemoveTimestamps.forEach((entityName) => {
         const entity = appToExport[entityName];
         if (entity) {
