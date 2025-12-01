@@ -56,7 +56,7 @@ describe("Instance settings - All workspaces management", () => {
     );
   });
 
-  it.only("should allow login to active workspace when another is archived and restrict access to archived workspace app", () => {
+  it("should allow login to active workspace when another is archived and restrict access to archived workspace app", () => {
     const workspace1 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
     const workspace2 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
     const userName = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
