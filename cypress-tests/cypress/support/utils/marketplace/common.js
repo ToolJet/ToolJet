@@ -1,16 +1,16 @@
-import { dsCommonSelector } from "Selectors/marketplace/selectors/common";
+import { dsCommonSelector } from "Selectors/marketplace/common";
 
-
-const fillTextField = (fieldName) => {
-  cy.clearAndType(dsCommonSelector.textField(fieldName));
+export const fillDSConnectionTextField = (fieldName, text) => {
+  cy.clearAndType(dsCommonSelector.textField(fieldName), text);
 };
 
-const fillDropdown = (fieldName) => {
-  cy.get(dsCommonSelector.dropdownField(fieldName))
+const fillDSConnectionDropdown = (fieldName, option) => {
+  cy.waitForElement(dsCommonSelector.dropdownField(fieldName))
     .click();
+  cy.contains("[id*=react-select-]", option).click();
 };
 
-const togglebutton = (buttonName) => {
+const toggleDSConnectionButton = (buttonName) => {
   cy.get(dsCommonSelector.toggleInput(buttonName)).then(($checkbox) => {
     const isChecked = $checkbox.is(":checked");
     if (isChecked !== shouldBeChecked) {
@@ -19,12 +19,12 @@ const togglebutton = (buttonName) => {
   });
 };
 
-const selectRadioButton = (buttonName) => {
+const selectDSConnectionRadioButton = (buttonName) => {
   cy.get(dsCommonSelector.datasourceOption(buttonName))
     .click({ force: true });
 };
 
-const fillKeyValuePairs = (data) => {
+const fillDSConnectionKeyValuePairs = (data) => {
   data.values.forEach((pair, index) => {
     if (index > 0) {
       cy.get(dsCommonSelector.addMoreButton(data)).click();
@@ -37,14 +37,13 @@ const fillKeyValuePairs = (data) => {
 };
 
 const fieldHandlers = {
-  input: fillTextField,
-  password: fillTextField,
-  dropdown: fillDropdown,
-  toggle: togglebutton,
-  radio: selectRadioButton,
-  keyValue: fillKeyValuePairs
+  input: fillDSConnectionTextField,
+  password: fillDSConnectionTextField,
+  dropdown: fillDSConnectionDropdown,
+  toggle: toggleDSConnectionButton,
+  radio: selectDSConnectionRadioButton,
+  keyValue: fillDSConnectionKeyValuePairs
 };
-
 
 export function fillToolJetConnectionForm(config) {
   config.fields.forEach((field) => {

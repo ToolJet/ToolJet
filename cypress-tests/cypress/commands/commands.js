@@ -33,7 +33,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector)
+  cy.waitForElement(selector)
     .scrollIntoView()
     .should("be.visible", { timeout: 10000 })
     .click({ force: true })
@@ -627,7 +627,7 @@ Cypress.Commands.add("installMarketplacePlugin", (pluginName) => {
     }
   });
 
-  function installPlugin (pluginName) {
+  function installPlugin(pluginName) {
     cy.get('[data-cy="-list-item"]').eq(1).click();
     cy.wait(1000);
 
@@ -754,22 +754,21 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("waitForElement", (selector, timeout = 50000) => {
-  cy.get(selector, { timeout: timeout, log: false }).should("be.visible", {
-    timeout: timeout,
-    log: false,
-  });
-
-  Cypress.log({
-    name: "waitForElement",
-    displayName: "WAIT",
-    message: `Waiting for element: ${selector}`,
-    consoleProps: () => {
-      return {
-        Selector: selector,
-        Timeout: timeout,
-      };
-    },
-  });
-
-  cy.wait(200, { log: false });
+  return cy.get(selector, { timeout: timeout, log: false })
+    .should("be.visible", { timeout: timeout, log: false })
+    .then(($el) => {
+      Cypress.log({
+        name: "waitForElement",
+        displayName: "WAIT",
+        message: `Waiting for element: ${selector}`,
+        consoleProps: () => {
+          return {
+            Selector: selector,
+            Timeout: timeout,
+          };
+        },
+      });
+      return cy.wrap($el, { log: false });
+    })
+    .wait(100, { log: false });
 });

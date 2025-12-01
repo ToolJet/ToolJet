@@ -1,4 +1,6 @@
-import { cyParamName } from "../../constants/selectors/common";
+import { cyParamName } from "Selectors/common";
+
+
 
 export const dsCommonSelector = {
     deleteDSButton: (datasourceName) => {
