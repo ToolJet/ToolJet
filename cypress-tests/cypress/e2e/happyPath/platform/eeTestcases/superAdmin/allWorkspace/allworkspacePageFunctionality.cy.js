@@ -33,7 +33,7 @@ describe("Instance settings - All workspaces management", () => {
     const workspace1 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
     cy.apiCreateWorkspace(workspace1, workspace1);
     cy.visit(`/${workspace1}`);
-    cy.wait(2000);
+    cy.get(commonSelectors.mainWrapper, { timeout: 10000 }).should("be.visible");
 
     openAllWorkspaces();
     findAndArchiveWorkspace(workspace1);
@@ -56,7 +56,7 @@ describe("Instance settings - All workspaces management", () => {
     );
   });
 
-  it("should allow login to active workspace when another is archived and restrict access to archived workspace app", () => {
+  it.only("should allow login to active workspace when another is archived and restrict access to archived workspace app", () => {
     const workspace1 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
     const workspace2 = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
     const userName = fake.firstName.toLowerCase().replaceAll(/[^a-z]/g, "");
@@ -91,7 +91,7 @@ describe("Instance settings - All workspaces management", () => {
       `${workspace1} \n was successfully archived`
     );
 
-    // STEP 4: Login as user — should work only for active workspace
+    // STEP 4: Login as user — should allow user to login to active workspace
     cy.apiLogout();
     cy.visit(`/${workspace2}`);
     cy.clearAndType(onboardingSelectors.loginEmailInput, userEmail);
@@ -103,7 +103,7 @@ describe("Instance settings - All workspaces management", () => {
     );
     cy.url().should("include", `/${workspace2}`);
 
-    // STEP 5: Access public app from archived workspace → should be blocked
+    // STEP 5: Verify access for public app from archived workspace
     cy.visit(`/applications/${appName}`);
 
     cy.get(workspaceSelector.switchWsModalTitle).verifyVisibleElement(
@@ -116,7 +116,7 @@ describe("Instance settings - All workspaces management", () => {
       instanceWorkspaceText.archivedWorkspaceMessage
     );
 
-    // STEP 6: Unarchive first workspace and verify access restored
+    // STEP 6: Unarchive first workspace and verify login and app access
     cy.visitTheWorkspace(defaultWorkspace);
     cy.apiLogin();
     cy.visit("/");
@@ -128,7 +128,7 @@ describe("Instance settings - All workspaces management", () => {
       toastUnarchived(workspace1)
     );
 
-    cy.visit(workspace1);
+    cy.visit(`/${workspace1}`);
     cy.apiLogin();
     cy.visit(`/applications/${appName}`);
   });

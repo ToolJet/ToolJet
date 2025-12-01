@@ -151,7 +151,6 @@ export const verifyDefaultWorkspaceTooltip = () => {
           cy.wrap($row)
             .find(instanceWorkspaceSelectors.statusChangeButton)
             .trigger("mouseover");
-
           cy.get(instanceWorkspaceSelectors.tooltipDefaultWorkspace)
             .should("be.visible")
             .and(
@@ -169,14 +168,12 @@ export const handleArchiveWorkspaceModal = () => {
     "have.text",
     instanceWorkspaceText.archiveCurrentWorkspaceTitle
   );
-
   cy.get(workspaceSelector.switchWsModalMessage).should(
     "contain.text",
     instanceWorkspaceText.archiveCurrentWorkspaceMessage
   );
   cy.get(`[data-cy="${slug(defaultWorkspace)}-workspace-input"]`).check();
   cy.get(instanceWorkspaceSelectors.continueButton).click();
-
   cy.url().should("include", `/${slug(defaultWorkspace)}`);
 };
 
@@ -196,17 +193,14 @@ export const setupWorkspaceWithApp = (workspaceName, appName) => {
   cy.apiCreateWorkspace(workspaceName, workspaceName).then((ws) => {
     Cypress.env("workspaceId", ws.body.organization_id);
   });
-
   cy.apiCreateApp(appName).then((res) => {
     Cypress.env("appId", res.body.id);
   });
   cy.openApp();
   cy.apiAddComponentToApp(appName, "text1");
-
   cy.apiPromoteAppVersion().then(() => {
     cy.apiPromoteAppVersion(Cypress.env("stagingEnvId"));
   });
-
   cy.apiReleaseApp(appName);
   cy.apiAddAppSlug(appName, appName);
   cy.go("back");
