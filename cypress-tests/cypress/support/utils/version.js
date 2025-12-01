@@ -11,7 +11,6 @@ import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
 import { appVersionText } from "Texts/exportImport";
 import { deleteVersionText, releasedVersionText } from "Texts/version";
-import { versionSwitcherSelectors } from "Selectors/version";
 
 export const navigateToCreateNewVersionModal = (value) => {
   cy.get(versionSwitcherSelectors.versionName).click();

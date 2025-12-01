@@ -95,6 +95,7 @@ describe("Basic Permissions", () => {
         cy.get(commonSelectors.dashboardIcon).click();
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.apiPublishDraftVersion('v1')
 
         releaseApp();
 
