@@ -13,10 +13,10 @@ export class UpdateContainerHeaderProperty1744097765065 implements MigrationInte
       await processDataInBatches(
         entityManager,
         async (entityManager: EntityManager) => {
-          return await entityManager.query(
-            `SELECT * FROM components WHERE type = $1 ORDER BY created_at ASC`,
-            [componentType]
-          );
+          return await entityManager.find(Component, {
+            where: { type: componentType },
+            order: { createdAt: 'ASC' },
+          });
         },
         async (entityManager: EntityManager, components: Component[]) => {
           await this.processUpdates(entityManager, components);
@@ -31,17 +31,18 @@ export class UpdateContainerHeaderProperty1744097765065 implements MigrationInte
       const properties = component.properties;
       const styles = component.styles;
       const general = component.general;
+
       // Update showHeader property to false for old instances
       if (!properties.showHeader) {
         properties.showHeader = { value: '{{false}}' };
       }
+
       // Update the modal component with the modified properties
-      await entityManager.query(
-        `UPDATE components 
-        SET properties = $1, styles = $2, general_properties = $3 
-        WHERE id = $4`,
-        [properties, styles, general, component.id]
-      );
+      await entityManager.update(Component, component.id, {
+        properties,
+        styles,
+        general,
+      });
     }
   }
 
