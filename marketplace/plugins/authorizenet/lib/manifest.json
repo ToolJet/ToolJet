@@ -34,23 +34,15 @@
     "apiLoginId": {
       "label": "API Login ID",
       "key": "apiLoginId",
-      "type": "codehinter",
-      "description": "Your Authorize.Net API Login ID",
-      "hint": "Find your API Login ID in the Authorize.Net merchant interface under Account > Settings > API Credentials & Keys",
-      "validate": {
-        "required": true
-      }
-    },
+      "type": "text",
+      "description": "Your Authorize.Net API Login ID"
+      },
     "transactionKey": {
       "label": "Transaction Key",
       "key": "transactionKey",
-      "type": "codehinter",
-      "description": "Your Authorize.Net Transaction Key",
-      "hint": "Generate a Transaction Key in the Authorize.Net merchant interface under Account > Settings > API Credentials & Keys",
-      "validate": {
-        "required": true
-      }
-    },
+      "type": "text",
+      "description": "Your Authorize.Net Transaction Key"
+      },
     "environment": {
       "label": "Environment",
       "key": "environment",
