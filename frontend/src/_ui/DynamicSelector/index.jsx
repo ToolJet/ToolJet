@@ -6,6 +6,9 @@ import { get } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 
 import { shallow } from 'zustand/shallow';
+import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { debounce } from 'lodash';
 
 const DynamicSelector = ({
     operation,
@@ -21,8 +24,10 @@ const DynamicSelector = ({
     disableMenuPortal = false,
     queryName,
     propertyKey,
-    value
+    value,
+    fxEnabled = true
 }) => {
+    console.log("fxEnabled", fxEnabled);
 
     const isDependent = dependsOn?.length > 0;
 
@@ -32,6 +37,18 @@ const DynamicSelector = ({
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const isDynamicValue = (val) => typeof val === 'string' && val.startsWith('{{') && val.endsWith('}}');
+    const [isFxMode, setIsFxMode] = useState(fxEnabled && (isDynamicValue(options[propertyKey]?.value) || isDynamicValue(value)));
+
+    useEffect(() => {
+        if (fxEnabled) {
+            const val = options[propertyKey]?.value ?? value;
+            if (isDynamicValue(val) && !isFxMode) {
+                setIsFxMode(true);
+            }
+        }
+    }, [options, propertyKey, value, fxEnabled]);
 
     const depKeys = Array.isArray(dependsOn) ? dependsOn : [];
     const depValues = Object.fromEntries(depKeys.map(k => [k, options?.[k]?.value ?? options?.[k]]));
@@ -303,6 +320,26 @@ const DynamicSelector = ({
         optionsChanged(updatedOptions);
     };
 
+    const handleCodeChange = (val) => {
+        const updatedOptions = {
+            ...options,
+            [propertyKey]: val
+        };
+        optionsChanged(updatedOptions);
+    };
+
+    const debouncedHandleCodeChange = React.useCallback(debounce(handleCodeChange, 300), [options, propertyKey]);
+
+    const handleFxChange = () => {
+        const newFxMode = !isFxMode;
+        setIsFxMode(newFxMode);
+        if (!newFxMode) {
+            // When switching back to dropdown, if the value is dynamic, we might want to clear it or keep it?
+            // Usually if it's dynamic code, it won't match a dropdown option.
+            // But let's leave it as is, the Select component handles unmatched values gracefully usually or shows empty.
+        }
+    };
+
 
 
     // Get the current selected value to display
@@ -319,20 +356,41 @@ const DynamicSelector = ({
         <div className="dynamic-selector-container">
             <div className="d-flex align-items-center gap-2 mb-3">
                 <div className="flex-grow-1">
-                    <Select
-                        options={fetchedData}
-                        value={getCurrentValue()}
-                        onChange={handleMainSelectionChange}
-                        placeholder={`Select ${label ?? ''}`}
-                        isDisabled={disabled || (isDependent && !depsReady) || fetchedData?.length === 0}
-                        isLoading={isLoading}
-                        useMenuPortal={disableMenuPortal ? false : !!queryName}
-                        styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
-                        useCustomStyles={!!computeSelectStyles}
-                    />
+                    {isFxMode ? (
+                        <CodeHinter
+                            initialValue={options[propertyKey]?.value ?? value}
+                            onChange={(val) => {
+                                debouncedHandleCodeChange(val);
+                            }}
+                            mode="javascript"
+                            lineNumbers={false}
+                            className="dynamic-selector-code-hinter"
+                        />
+                    ) : (
+                        <Select
+                            options={fetchedData}
+                            value={getCurrentValue()}
+                            onChange={handleMainSelectionChange}
+                            placeholder={`Select ${label ?? ''}`}
+                            isDisabled={disabled || (isDependent && !depsReady) || fetchedData?.length === 0}
+                            isLoading={isLoading}
+                            useMenuPortal={disableMenuPortal ? false : !!queryName}
+                            styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                            useCustomStyles={!!computeSelectStyles}
+                        />
+                    )}
                 </div>
 
-                {!dependsOn.length && <ButtonSolid
+                {fxEnabled && (
+                    <div className={`fx-button-wrapper ${isFxMode ? 'active' : ''}`}>
+                        <FxButton
+                            active={isFxMode}
+                            onPress={handleFxChange}
+                        />
+                    </div>
+                )}
+
+                {!isFxMode && !dependsOn.length && <ButtonSolid
                     variant="secondary"
                     size="sm"
                     onClick={() => handleFetch(false)}
