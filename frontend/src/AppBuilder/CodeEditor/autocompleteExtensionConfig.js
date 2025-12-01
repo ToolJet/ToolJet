@@ -162,13 +162,11 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
           changes: pickedCompletionConfig,
         };
 
-        const actualInput = removeNestedDoubleCurlyBraces(doc.toString());
-
-        if (actualInput.length === 0) {
-          dispatchConfig.selection = {
-            anchor: anchorSelection,
-          };
-        }
+        dispatchConfig.selection = {
+          anchor:
+            pickedCompletionConfig.from +
+            (completion.type === 'js_methods' ? completion.label.length - 1 : completion.label.length),
+        };
 
         view.dispatch(dispatchConfig);
       },
@@ -331,10 +329,13 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
               break;
             }
           }
-          dispacthConfig.selection = {
-            anchor: pickedCompletionConfig.from + completion.label.length - 1,
-          };
         }
+
+        dispacthConfig.selection = {
+          anchor:
+            pickedCompletionConfig.from +
+            (completion.type === 'js_methods' ? completion.label.length - 1 : completion.label.length),
+        };
 
         view.dispatch(dispacthConfig);
       };
