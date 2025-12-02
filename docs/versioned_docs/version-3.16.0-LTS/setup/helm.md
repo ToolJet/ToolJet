@@ -26,7 +26,7 @@ helm install tooljet tooljet/tooljet
 Remember to replace the variables with your specific configuration values.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 ## ToolJet Database
@@ -86,10 +86,10 @@ For users migrating from Temporal-based workflows, please refer to the [Workflow
 
 To enable workflow scheduling in your Helm deployment, you need to configure the following environment variables:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| **WORKER** | Enable job processing for workflows. Set to `true` to process workflow jobs | `true` |
-| **TOOLJET_WORKFLOW_CONCURRENCY** | Maximum number of concurrent workflows that can be executed | `10` |
+| Variable                         | Description                                                                 | Default |
+| -------------------------------- | --------------------------------------------------------------------------- | ------- |
+| **WORKER**                       | Enable job processing for workflows. Set to `true` to process workflow jobs | `true`  |
+| **TOOLJET_WORKFLOW_CONCURRENCY** | Maximum number of concurrent workflows that can be executed                 | `10`    |
 
 :::warning
 **External Redis for Multiple Workflow Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
@@ -107,7 +107,7 @@ The ToolJet Helm chart includes a dedicated worker deployment template (**worker
 
 ```yaml
 redis:
-  enabled: true  # Enable Redis for multiple workers
+  enabled: true # Enable Redis for multiple workers
   architecture: standalone
   fullnameOverride: redis
   auth:
@@ -125,7 +125,7 @@ redis:
 
 ```yaml
 redis_pod:
-  REDIS_HOST: "redis-master"  # Redis service name
+  REDIS_HOST: "redis-master" # Redis service name
   REDIS_PORT: "6379"
   REDIS_USER: "default"
 ```
@@ -146,11 +146,11 @@ env:
 
 ```yaml
 workflow_env:
-  WORKER: "true"  # Already set by default
+  WORKER: "true" # Already set by default
 
 apps:
   tooljet:
-    replicaCount: 1  # Main application server
+    replicaCount: 1 # Main application server
 ```
 
 **Step 5: Install or Upgrade with Helm**
@@ -162,6 +162,7 @@ helm upgrade --install tooljet tooljet/tooljet -f values.yaml
 ### Architecture
 
 The Helm chart deploys:
+
 - **Main ToolJet deployment** (`deployment.yaml`): Web server with `WORKER=true`, handles HTTP requests and processes workflow jobs
 - **Worker deployment** (`worker.yml`): Additional dedicated workers with `WORKER=true`, scale independently for more processing capacity
 - **External Redis**: Stateful service for job queue and persistence
@@ -169,6 +170,7 @@ The Helm chart deploys:
 ### Redis Configuration Requirements
 
 **Critical**: Redis must be configured with:
+
 - **AOF (Append Only File)** persistence enabled
 - **maxmemory-policy** set to `noeviction`
 
@@ -191,12 +193,12 @@ If you need to configure additional Redis settings, you can add these to the `en
 
 ```yaml
 env:
-  REDIS_HOST: "redis-master"      # Default: redis-master
-  REDIS_PORT: "6379"               # Default: 6379
-  REDIS_USERNAME: ""               # Optional: Redis username (ACL)
-  REDIS_PASSWORD: ""               # Optional: Set via secret
-  REDIS_DB: "0"                    # Optional: Redis database number
-  REDIS_TLS: "false"               # Optional: Enable TLS/SSL
+  REDIS_HOST: "redis-master" # Default: redis-master
+  REDIS_PORT: "6379" # Default: 6379
+  REDIS_USERNAME: "" # Optional: Redis username (ACL)
+  REDIS_PASSWORD: "" # Optional: Set via secret
+  REDIS_DB: "0" # Optional: Redis database number
+  REDIS_TLS: "false" # Optional: Enable TLS/SSL
 ```
 
 **Note:** Only `REDIS_HOST` and `REDIS_PORT` are required. Authentication and TLS are optional based on your Redis setup.
