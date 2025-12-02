@@ -182,7 +182,8 @@
                 "app-builder/building-ui/component-library",
                 "app-builder/building-ui/component-properties",
                 "app-builder/building-ui/pages",
-                "app-builder/building-ui/component-state"
+                "app-builder/building-ui/component-state",
+                "app-builder/building-ui/dynamic-height"
               ]
             },
             "app-builder/custom-theme",
