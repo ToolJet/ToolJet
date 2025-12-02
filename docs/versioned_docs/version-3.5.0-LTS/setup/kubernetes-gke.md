@@ -6,7 +6,7 @@ title: Kubernetes (GKE)
 # Deploying ToolJet on Kubernetes (GKE)
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.com`.
 :::
 
 :::info

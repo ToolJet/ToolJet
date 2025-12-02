@@ -6,7 +6,7 @@ title: AWS ECS
 # Deploying ToolJet on Amazon ECS
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 :::info
@@ -198,6 +198,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
 **Environment Variable Details:**
+
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
@@ -210,12 +211,14 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 We recommend using **Amazon ElastiCache for Redis** with the following configuration:
 
 1. **Create an ElastiCache Redis cluster** with these settings:
+
    - Engine version: Redis 7.x
    - Node type: cache.t3.medium or higher
    - Number of replicas: At least 1 (for high availability)
    - Automatic failover: Enabled
 
 2. **Configure Redis settings**:
+
    - **maxmemory-policy**: Must be set to `noeviction` (critical for BullMQ)
    - **appendonly**: Set to `yes` for AOF persistence
    - **appendfsync**: Set to `everysec`
@@ -229,6 +232,7 @@ REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
 ```
 
 **Optional Redis Configuration:**
+
 - `REDIS_USERNAME=` - Redis username (ACL)
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=true` - Enable TLS/SSL for secure connections

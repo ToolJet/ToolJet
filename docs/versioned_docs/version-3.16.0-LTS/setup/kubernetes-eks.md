@@ -6,7 +6,7 @@ title: Kubernetes (EKS)
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 :::info
@@ -167,6 +167,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
 **Environment Variable Details:**
+
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
@@ -192,7 +193,7 @@ Change **REDIS_HOST** from **localhost** to **redis-service** in your deployment
 
 ```yaml
 - name: REDIS_HOST
-  value: redis-service  # Changed from localhost
+  value: redis-service # Changed from localhost
 - name: REDIS_PORT
   value: "6379"
 ```
@@ -200,6 +201,7 @@ Change **REDIS_HOST** from **localhost** to **redis-service** in your deployment
 </details>
 
 This example deployment creates:
+
 - A StatefulSet with persistent storage for Redis
 - A headless Service for stable network identity
 - ConfigMap with production-ready Redis configuration
@@ -218,6 +220,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 ```
 
 **Optional Redis Configuration:**
+
 - `REDIS_USERNAME=` - Redis username (ACL)
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')

@@ -6,7 +6,7 @@ title: Azure Container Apps
 # Deploying ToolJet on Azure Container Apps
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 :::info
@@ -156,18 +156,20 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 ```
 
 **Environment Variable Details:**
+
 - **WORKER** (required): Enables job processing. Set to `true` to activate workflow scheduling
 - **TOOLJET_WORKFLOW_CONCURRENCY** (optional): Controls the number of workflow jobs processed concurrently per worker instance. Default is 5 if not specified
 
 :::warning
 **External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment). Configure the Redis connection using the following environment variables:
+
 - `REDIS_HOST=localhost` - Default: localhost
 - `REDIS_PORT=6379` - Default: 6379
 - `REDIS_USERNAME=` - Optional: Redis username (ACL)
 - `REDIS_PASSWORD=` - Optional: Redis password
 - `REDIS_DB=0` - Optional: Redis database number (default: 0)
 - `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
-:::
+  :::
 
 ## Upgrading to the Latest LTS Version
 

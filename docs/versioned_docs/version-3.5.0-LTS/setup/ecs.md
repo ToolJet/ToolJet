@@ -6,7 +6,7 @@ title: AWS ECS
 # Deploying ToolJet on Amazon ECS
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.com.
 :::
 
 :::info
