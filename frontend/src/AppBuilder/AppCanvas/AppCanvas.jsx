@@ -8,7 +8,7 @@ import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from './appCanvasConstants';
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -69,7 +69,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
-  const minCanvasWidth = useCanvasMinWidth({ currentMode, position, isModuleMode });
+  const minCanvasWidth = useCanvasMinWidth({ currentMode, position, isModuleMode, isViewerSidebarPinned });
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -114,7 +114,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     if (moduleId === 'canvas') {
       const _canvasWidth =
         document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
-        (isViewerSidebarPinned ? 272 : 70); // expanded and collapsed sidebar width + padding of above container
+        (isViewerSidebarPinned ? PAGES_SIDEBAR_WIDTH_EXPANDED : PAGES_SIDEBAR_WIDTH_COLLAPSED) -
+        16; // padding of 'div.canvas-container.page-container' container
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
