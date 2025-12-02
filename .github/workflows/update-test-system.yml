@@ -258,10 +258,10 @@ jobs:
             echo "❌ Error: dockerfile_path is required"
             exit 1
           fi
-      # - name: Free up disk space
-      #   run: |
-      #     sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
-      #     sudo docker system prune -af && sudo apt-get clean && df -h
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af && sudo apt-get clean && df -h
       - name: ✅ Check user authorization
         run: |
           allowed_users=(
