@@ -31,7 +31,7 @@ describe("Manage Groups", () => {
             appName: fake.companyName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
             workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
-            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceSlug: `${fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, "")}-permissions`,
             folderName: fake.companyName,
             dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
@@ -189,112 +189,113 @@ describe("Manage Groups", () => {
         const appImportFile = "cypress/fixtures/templates/permission-export.json";
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
             Cypress.env("workspaceId", workspace.body.organization_id);
-        });
-        cy.visit(data.workspaceSlug);
 
-        cy.ifEnv("Enterprise", () => {
-            cy.apiUpdateGroupPermission(
-                "builder",
-                getGroupPermissionInput(isEnterprise, false)
-            );
-            cy.apiDeleteGranularPermission("builder", []);
-
-            cy.intercept("GET", "/api/apps/*").as("getApp");
-
-            cy.get(dashboardSelector.importAppButton).click();
-            cy.get(importSelectors.importOptionInput)
-                .eq(0)
-                .selectFile(appImportFile, { force: true });
-            cy.wait(2000);
-
-            cy.get(importSelectors.importAppButton).click();
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                importText.appImportedToastMessage
-            );
-            cy.wait(2000);
-
-            cy.wait("@getApp").then((interception) => {
-                const { id, editing_version, editorEnvironment, name } =
-                    interception.response.body;
-                Cypress.env("appId", id);
-                Cypress.env("editingVersionId", editing_version.id);
-                Cypress.env("environmentId", editorEnvironment.id);
-                data.importedAppName = name;
-            });
-
-            cy.go("back");
-            cy.wait(1000);
-
-            apiCreateGroup(groupName).then((groupId) => {
-                cy.apiCreateGranularPermission(
-                    groupName,
-                    `${data.importedAppName}_permission`,
-                    "app",
-                    { canEdit: true, canView: false },
-                    Cypress.env("appId"),
-                    false
-                );
-
-                cy.apiCreateGranularPermission(
-                    groupName,
-                    "datasource1_permission",
-                    "datasource",
-                    { canUse: true, canConfigure: false },
-                    ["datasource 1"],
-                    false
-                );
-            });
-
-            cy.apiFullUserOnboarding(
-                data.firstName,
-                data.email,
-                "builder",
-                "password",
-                data.workspaceName,
-                {},
-                [groupName]
-            );
-
-            cy.wait(1000);
-
-            cy.apiLogout();
-            cy.apiLogin(data.email, "password");
             cy.visit(data.workspaceSlug);
-            cy.wait(1000);
 
-            navigateToAppEditor("permission-export");
-            cy.wait(3000);
+            cy.ifEnv("Enterprise", () => {
+                cy.apiUpdateGroupPermission(
+                    "builder",
+                    getGroupPermissionInput(isEnterprise, false)
+                );
+                cy.apiDeleteGranularPermission("builder", []);
 
-            cy.get(dataSourceSelector.listQuery("user1-datasource"))
-                .should("be.visible")
-                .click();
-            cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
-            cy.get(dataSourceSelector.queryCreateAndRunButton)
-                .eq(0)
-                .should("be.enabled");
-            cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
-            cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
-            cy.get(dataSourceSelector.queryCardDeleteButton).click();
-            cy.get(dataSourceSelector.deleteModalConfirmButton).click();
+                cy.intercept("GET", "/api/apps/*").as("getApp");
 
-            cy.get(dataSourceSelector.listQuery("user2-datasource"))
-                .should("be.visible")
-                .click();
-            cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
-            cy.get(dataSourceSelector.queryCreateAndRunButton)
-                .eq(0)
-                .should("be.enabled");
-            cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.disabled");
+                cy.get(dashboardSelector.importAppButton).click();
+                cy.get(importSelectors.importOptionInput)
+                    .eq(0)
+                    .selectFile(appImportFile, { force: true });
+                cy.wait(2000);
 
-            cy.get(dataSourceSelector.editorDSPopover).click();
-            cy.wait(500);
+                cy.get(importSelectors.importAppButton).click();
+                cy.verifyToastMessage(
+                    commonSelectors.toastMessage,
+                    importText.appImportedToastMessage
+                );
+                cy.wait(2000);
 
-            cy.get('[data-cy="ds-datasource 2"]').click();
-            cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                "Failed to create query: You do not have permission to access this resource"
-            );
+                cy.wait("@getApp").then((interception) => {
+                    const { id, editing_version, editorEnvironment, name } =
+                        interception.response.body;
+                    Cypress.env("appId", id);
+                    Cypress.env("editingVersionId", editing_version.id);
+                    Cypress.env("environmentId", editorEnvironment.id);
+                    data.importedAppName = name;
+                });
+
+                cy.go("back");
+                cy.wait(1000);
+
+                apiCreateGroup(groupName).then((groupId) => {
+                    cy.apiCreateGranularPermission(
+                        groupName,
+                        `${data.importedAppName}_permission`,
+                        "app",
+                        { canEdit: true, canView: false },
+                        Cypress.env("appId"),
+                        false
+                    );
+
+                    cy.apiCreateGranularPermission(
+                        groupName,
+                        "datasource1_permission",
+                        "datasource",
+                        { canUse: true, canConfigure: false },
+                        ["datasource 1"],
+                        false
+                    );
+                });
+
+                cy.apiFullUserOnboarding(
+                    data.firstName,
+                    data.email,
+                    "builder",
+                    "password",
+                    data.workspaceName,
+                    {},
+                    [groupName]
+                );
+
+                cy.wait(1000);
+
+                cy.apiLogout();
+                cy.apiLogin(data.email, "password");
+                cy.visit(data.workspaceSlug);
+                cy.wait(1000);
+
+                navigateToAppEditor("permission-export");
+                cy.wait(3000);
+
+                cy.get(dataSourceSelector.listQuery("user1-datasource"))
+                    .should("be.visible")
+                    .click();
+                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryCreateAndRunButton)
+                    .eq(0)
+                    .should("be.enabled");
+                cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
+                cy.get(dataSourceSelector.queryCardDeleteButton).click();
+                cy.get(dataSourceSelector.deleteModalConfirmButton).click();
+
+                cy.get(dataSourceSelector.listQuery("user2-datasource"))
+                    .should("be.visible")
+                    .click();
+                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryCreateAndRunButton)
+                    .eq(0)
+                    .should("be.enabled");
+                cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.disabled");
+
+                cy.get(dataSourceSelector.editorDSPopover).click();
+                cy.wait(500);
+
+                cy.get('[data-cy="ds-datasource 2"]').click();
+                cy.verifyToastMessage(
+                    commonSelectors.toastMessage,
+                    "Failed to create query: You do not have permission to access this resource"
+                );
+            });
         });
     });
 });
