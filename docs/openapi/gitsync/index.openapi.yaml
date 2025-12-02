@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: ToolJet Git Sync CI/CD API
+  description: APIs to manage ToolJet applications' Git sync and CI/CD workflows programmatically.
+  version: 1.0.0
+
+servers:
+  - url: https://{your-tooljet-instance.com}
+    description: Your ToolJet instance
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    GitConfigRequest:
+      type: object
+      required:
+        - organizationId
+        - gitUrl
+        - branchName
+        - githubAppId
+        - githubAppInstallationId
+        - githubAppPrivateKey
+      properties:
+        organizationId:
+          type: string
+          description: UUID of the organization
+        gitUrl:
+          type: string
+          description: Full HTTPS Git URL
+        branchName:
+          type: string
+          description: Branch to sync with (e.g., "main")
+        githubAppId:
+          type: string
+        githubAppInstallationId:
+          type: string
+        githubAppPrivateKey:
+          type: string
+          description: GitHub App private key in PEM format
+
+    PushAppVersionRequest:
+      type: object
+      required:
+        - commitMessage
+      properties:
+        commitMessage:
+          type: string
+          description: Git commit message
+
+    CreateAppFromGitRequest:
+      type: object
+      required:
+        - gitAppId
+        - gitVersionId
+        - organizationId
+      properties:
+        gitAppId:
+          type: string
+        gitVersionId:
+          type: string
+          description: Branch or tag
+        organizationId:
+          type: string
+
+security:
+  - BasicAuth: []
+
+paths:
+  /api/ext/organizations/git:
+    post:
+      summary: Configure GitHub HTTPS for an organization
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitConfigRequest'
+      responses:
+        '201':
+          description: Git configuration added successfully
+
+  /api/ext/apps/{appId}/versions/{versionId}/git-sync/push:
+    post:
+      summary: Push a specific app version to GitHub
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushAppVersionRequest'
+      responses:
+        '200':
+          description: App version pushed to GitHub
+
+  /api/ext/apps:
+    post:
+      summary: Create a new ToolJet app from GitHub
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: createMode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [git]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppFromGitRequest'
+      responses:
+        '201':
+          description: New app created from Git
+
+  /api/ext/apps/{appId}:
+    put:
+      summary: Sync and pull latest changes from GitHub for an existing app
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: createMode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [git]
+      responses:
+        '200':
+          description: Changes pulled successfully
+
+  /api/ext/apps/{appId}/promote:
+    post:
+      summary: Auto-promote app by deploying latest version from Git
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: App promoted to production

@@ -1,0 +1,322 @@
+openapi: 3.0.3
+info:
+  title: ToolJet API
+  description: API to manage users, workspaces, and applications in ToolJet.
+  version: 1.0.0
+
+servers:
+  - url: https://{your-tooljet-instance.com}
+    description: Your ToolJet instance
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+        workspaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workspace'
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    App:
+      type: object
+      description: ToolJet application object
+    ExportAppResponse:
+      type: object
+      description: Exported ToolJet application JSON
+
+security:
+  - BasicAuth: []
+
+paths:
+  /api/ext/users:
+    get:
+      summary: Get all users
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a user
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                status:
+                  type: string
+                workspaces:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Workspace'
+      responses:
+        '201':
+          description: User created
+
+  /api/ext/user/{id}:
+    get:
+      summary: Get user by ID
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      summary: Update user by ID
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                status:
+                  type: string
+      responses:
+        '200':
+          description: User updated
+
+  /api/ext/workspaces:
+    get:
+      summary: Get all workspaces
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: List of workspaces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+
+  /api/ext/workspace/{workspace_id}/apps:
+    get:
+      summary: Get all app details for a workspace
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/App'
+
+  /api/ext/update-user-role/workspace/{workspaceId}:
+    put:
+      summary: Update user role in a workspace
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newRole:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Role updated
+
+  /api/ext/user/{id}/workspaces:
+    put:
+      summary: Replace all user workspace relations
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Workspace'
+      responses:
+        '200':
+          description: Workspaces updated
+
+  /api/ext/user/{id}/workspace/{workspaceId}:
+    patch:
+      summary: Update a specific user workspace relation
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+      responses:
+        '200':
+          description: Workspace updated
+
+  /api/ext/export/workspace/{workspace_id}/apps/{app_id}:
+    post:
+      summary: Export a ToolJet application
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: exportTJDB
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - name: appVersion
+          in: query
+          schema:
+            type: string
+        - name: exportAllVersions
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Exported application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportAppResponse'
+
+  /api/ext/import/workspace/{workspace_id}/apps:
+    post:
+      summary: Import a ToolJet application
+      security:
+        - BasicAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appName:
+                  type: string
+                applicationJson:
+                  type: object
+      responses:
+        '201':
+          description: Application imported
