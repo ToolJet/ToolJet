@@ -38,11 +38,9 @@ export const ConfigHandle = ({
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
 
-  // Check if this component is inside a read-only Kanban/Listview subcontainer (index !== 0)
   const parentComponentType = useStore((state) => {
     const parentId = state.getComponentDefinition(id, moduleId)?.component?.parent;
     if (!parentId) return null;
-    // For Kanban/Listview, parent ID might not have index suffix, get the component type directly
     return state.getComponentDefinition(parentId, moduleId)?.component?.component;
   }, shallow);
 
@@ -51,7 +49,6 @@ export const ConfigHandle = ({
     subContainerIndex !== 0 &&
     subContainerIndex !== null;
 
-  // Don't render ConfigHandle for components inside read-only subcontainers
   if (isInReadOnlySubcontainer) {
     return null;
   }
