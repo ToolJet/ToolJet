@@ -35,7 +35,7 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US', showFlag } = properties;
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -240,6 +240,7 @@ export const CurrencyInput = (props) => {
             showValidationError={showValidationError}
             darkMode={darkMode}
             isCurrencyInput={true}
+            showFlag={showFlag}
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
