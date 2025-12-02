@@ -1,12 +1,12 @@
 import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import {
-    openInstanceSettings,
     InstanceSSO,
-    resetInstanceDomain,
     instanceSSOConfig,
-    updateAutoSSOToggle,
+    openInstanceSettings,
     passwordToggle,
+    resetInstanceDomain,
+    updateAutoSSOToggle,
 } from "Support/utils/platform/eeCommon";
 
 import * as SSO from "Support/utils/manageSSO";
@@ -19,6 +19,7 @@ describe("Instance login", () => {
         updateAutoSSOToggle();
         cy.apiUpdateLicense();
     });
+
     it("Should verify instance login settings page elements and their functionality", () => {
         InstanceSSO(false, false, false);
         resetInstanceDomain(false);
@@ -50,6 +51,7 @@ describe("Instance login", () => {
         cy.get(ssoSelector.instanceLoginListItem).click();
         SSO.gitSSOPageElements("instance");
     });
+
     it("Should verify openID modal elements and their functionality", () => {
         instanceSSOConfig(false);
         openInstanceSettings();

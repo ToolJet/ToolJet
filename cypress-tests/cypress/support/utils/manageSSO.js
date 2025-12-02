@@ -1,14 +1,14 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import * as common from "Support/utils/common";
+import {
+  instanceSSOConfig,
+  openInstanceSettings,
+  passwordToggle,
+  verifyTooltipDisabled,
+} from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
-import {
-  openInstanceSettings,
-  verifyTooltipDisabled,
-  instanceSSOConfig,
-  passwordToggle,
-} from "Support/utils/platform/eeCommon";
 
 export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
@@ -315,10 +315,13 @@ export const gitSSOPageElements = (pageName) => {
 export const oidcSSOPageElements = (pageName) => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcTitle).verifyVisibleElement(
-    "have.text",
-    ssoText.oidcTitle
-  );
+  if (pageName === "workspace") {
+    cy.get('[data-cy="add-oidc-provider-button"]').click();
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", "OIDC 1");
+  }
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", ssoText.oidcTitle);
+  }
   cy.get(ssoSelector.statusLabel)
     .eq(0)
     .should("be.visible")
@@ -345,11 +348,21 @@ export const oidcSSOPageElements = (pageName) => {
   cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testclientSecret);
   cy.clearAndType(ssoSelector.wellKnownUrlInput, ssoText.testWellknownUrl);
   cy.get(ssoSelector.cancelButton).eq(1).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="oidc-modal-cancel-button"]').click();
+  }
+
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcEnableToggle).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="provider-name-oidc-1"]').click();
+  }
+
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcEnableToggle).click();
+  }
 
   if (pageName === "workspace") {
-    cy.get(ssoSelector.nameInput).should("have.value", "");
+    cy.get(ssoSelector.nameInput).should("have.value", "OIDC 1");
     cy.get(ssoSelector.clientIdInput).should("have.value", "");
     cy.get(ssoSelector.clientSecretInput).should(
       "have.value",
