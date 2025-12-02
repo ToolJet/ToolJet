@@ -355,6 +355,12 @@ export const DatepickerColumn = ({
             }
             setIsInputFocused(false);
           }}
+          closeOnScroll={(e) => {
+            return (
+              e.target.parentElement.id === `table-component-${id}` &&
+              e.target.className === 'table-responsive jet-data-table'
+            );
+          }}
         />
         {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
       </div>
