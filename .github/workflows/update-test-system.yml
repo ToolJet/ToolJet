@@ -373,36 +373,67 @@ jobs:
             echo "✅ Now in directory: \$(pwd)"
           else
             echo "Detected pre-release system: \$TARGET_SYSTEM"
-            echo "📂 Working in home directory: \$(pwd)"
+            echo "📂 Moving to target directory: \$TARGET_SYSTEM"
+            cd ~
+            echo "✅ Now in directory: \$(pwd)"
           fi
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PAT }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          echo "current image"
+          cat .env | grep TOOLJET_IMAGE
+          echo "📦 Reading current TOOLJET_IMAGE from .env"
           CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          echo "Found CURRENT_IMAGE: \$CURRENT_IMAGE"
+          echo "🛑 Stopping containers"
           sudo docker-compose down
+          echo "📝 Updating .env with new image"
           sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          echo "📥 Pulling new image: \$IMAGE_TAG"
+          if [ -z "\$IMAGE_TAG" ]; then
+            echo "❌ IMAGE_TAG is empty!"
+            exit 1
+          fi
           sudo docker pull "\$IMAGE_TAG"
+          echo "🚀 Starting container in background"
           sudo docker-compose up -d
+          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
           while [ \$ELAPSED -lt \$TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
+            echo "⏳ Still waiting... (\${ELAPSED}s elapsed)"
             sleep 10
             ELAPSED=\$((ELAPSED + 10))
           done
           if [ "\$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
             sudo docker-compose logs --tail=50
+            echo ""
+            echo "=== CONTAINER STATUS ==="
+            sudo docker-compose ps
+            echo ""
+            echo "🛑 Starting rollback process..."
             sudo docker-compose down
+            echo "🔄 Reverting to previous image: \$CURRENT_IMAGE"
             sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
+            echo "🔄 Starting previous image..."
             sudo docker-compose up -d
+            echo "✅ Rollback completed!"
             exit 1
           fi
+          echo "✅ Deployment successful!"
+          echo "📌 Storing successful deployment info in .env"
           sudo sed -i "/^OLD_IMAGE=/d" .env
           echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
+          echo "📄 Final application logs:"
           sudo docker-compose logs --tail=50
+          echo "🧹 Pruning old Docker images"
           sudo docker image prune -a -f
           EOF
         env:
@@ -612,47 +643,97 @@ jobs:
           IMAGE_TAG="$IMAGE_TAG"
           TARGET_SYSTEM="$TARGET_SYSTEM"
           cd ~
+          echo "📁 Finding correct deployment directory"
           if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
-            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V)
+            echo "Detected LTS system: \$TARGET_SYSTEM"
+            echo "🔍 Searching for LTS directories..."
+            LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
+                       ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
+            if [[ -z "\$LTS_DIRS" ]]; then
+              echo "❌ No LTS directories found!"
+              echo "Available directories:"
+              ls -la | grep "^d"
+              exit 1
+            fi
+            echo "Available LTS directories:"
+            echo "\$LTS_DIRS"
             SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
+            echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
             cd "\$SELECTED_LTS_DIR"
+            echo "✅ Now in directory: \$(pwd)"
+          else
+            echo "Detected pre-release system: \$TARGET_SYSTEM"
+            echo "📂 Moving to target directory: \$TARGET_SYSTEM"
+            cd ~
+            echo "✅ Now in directory: \$(pwd)"
           fi
           echo "🔐 Docker login"
           echo "${{ secrets.DOCKER_PAT }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          echo "current image"
+          cat .env | grep TOOLJET_IMAGE
+          echo "📦 Reading current TOOLJET_IMAGE from .env"
           CURRENT_IMAGE=\$(grep '^TOOLJET_IMAGE=' .env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+          echo "Found CURRENT_IMAGE: \$CURRENT_IMAGE"
+          echo "🛑 Stopping containers"
           sudo docker-compose down
+          echo "📝 Updating .env with new image"
           sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$IMAGE_TAG|" .env
+          echo "📥 Pulling new image: \$IMAGE_TAG"
+          if [ -z "\$IMAGE_TAG" ]; then
+            echo "❌ IMAGE_TAG is empty!"
+            exit 1
+          fi
           sudo docker pull "\$IMAGE_TAG"
+          echo "🚀 Starting container in background"
           sudo docker-compose up -d
+          echo "⏳ Waiting for ToolJet to start (timeout: 300 seconds)..."
           SUCCESS_FOUND=false
           TIMEOUT=300
           ELAPSED=0
           while [ \$ELAPSED -lt \$TIMEOUT ]; do
             if sudo docker-compose logs 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
               SUCCESS_FOUND=true
               break
             fi
+            echo "⏳ Still waiting... (\${ELAPSED}s elapsed)"
             sleep 10
             ELAPSED=\$((ELAPSED + 10))
           done
           if [ "\$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
             sudo docker-compose logs --tail=50
+            echo ""
+            echo "=== CONTAINER STATUS ==="
+            sudo docker-compose ps
+            echo ""
+            echo "🛑 Starting rollback process..."
             LATEST_BACKUP=\$(ls -t .env.backup.* 2>/dev/null | head -n 1)
             if [[ -n "\$LATEST_BACKUP" ]]; then
+              echo "🔄 Reverting to backup: \$LATEST_BACKUP"
               sudo cp "\$LATEST_BACKUP" .env
             else
+              echo "🔄 Reverting to previous image: \$CURRENT_IMAGE"
               sudo sed -i "s|^TOOLJET_IMAGE=.*|TOOLJET_IMAGE=\$CURRENT_IMAGE|" .env
             fi
             sudo docker-compose down
+            echo "🔄 Starting previous version..."
             sudo docker-compose up -d
+            echo "✅ Rollback completed!"
             exit 1
           fi
+          echo "✅ Deployment successful!"
+          echo "📌 Storing successful deployment info in .env"
           sudo sed -i "/^OLD_IMAGE=/d" .env
           echo "OLD_IMAGE=\$CURRENT_IMAGE" | sudo tee -a .env
+          echo "📄 Final application logs:"
+          sudo docker-compose logs --tail=50
+          echo "🧹 Pruning old Docker images"
           sudo docker image prune -a -f
+          echo "🧹 Cleaning up old backups..."
           ls -t .env.backup.* 2>/dev/null | tail -n +2 | xargs -r sudo rm -f
           EOF
         env:
           SSH_USER: ${{ secrets.AZURE_VM_USER }}
           SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
-          
