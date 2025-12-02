@@ -32,7 +32,7 @@ User → Your App → Backend → ToolJet API → Backend → Frontend → ifram
 - ToolJet returns a secure redirect URL.
 - Frontend embeds the app in an iframe using this URL.
 
-## Step 1 — Generate a PAT
+## Step 1 Generate a PAT
 
 Use ToolJet’s PAT endpoint to create a token for a specific app–user pair.
 
@@ -89,7 +89,7 @@ const generatePAT = async (email, appId) => {
 };
 ```
 
-## Step 2 — Create the Embed URL
+## Step 2 Create the Embed URL
 
 The response from ToolJet contains a redirectUrl or PAT. Use this to form the URL for embedding:
 
@@ -103,7 +103,7 @@ https://your-domain.com/embed-apps/:appId?personal-access-token=pat_XXXX
 2. A session is created isolated from your main ToolJet session.
 3. The embedded app loads inside the iframe.
 
-## Step 3 — Render the App
+## Step 3 Render the App
 
 **Basic iframe**
 
@@ -144,7 +144,7 @@ export default EmbeddedApp;
 :::note
 Always generate PATs on the backend. Never expose your main ToolJet token in the frontend.
 :::
-
+<!-- 
 ## Security Considerations
 
 - Backend-only generation: PATs should only be generated server-side.
@@ -152,7 +152,7 @@ Always generate PATs on the backend. Never expose your main ToolJet token in the
 - Session isolation: Embedded sessions don’t interfere with the user’s main ToolJet session.
 - HTTPS & CSP: Always use HTTPS and configure Content-Security-Policy headers.
 - Short expiration: Especially for public or high-risk apps.
-- Regenerate on role changes: If user roles or app permissions change, regenerate PATs.
+- Regenerate on role changes: If user roles or app permissions change, regenerate PATs. -->
 
 ## Error Handling
 
