@@ -164,7 +164,7 @@ export const PagesSidebarNavigation = ({
       if (darkModeToggleObserver) darkModeToggleObserver.disconnect();
       if (measurementContainerObserver) measurementContainerObserver.disconnect();
     };
-  }, [measureStaticElements, hideHeader, hideLogo, position, style]);
+  }, [measureStaticElements, hideHeader, hideLogo, position, style, appMode]);
 
   const calculateOverflow = useCallback(() => {
     if (!navRef.current || mainNavBarPages.length === 0) {
