@@ -314,6 +314,7 @@ export const currencyinputConfig = {
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       isCountryChangeEnabled: { value: '{{true}}' },
+      showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
     },
     events: [],
