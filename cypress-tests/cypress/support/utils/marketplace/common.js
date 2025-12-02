@@ -4,13 +4,13 @@ export const fillDSConnectionTextField = (fieldName, text) => {
   cy.clearAndType(dsCommonSelector.textField(fieldName), text);
 };
 
-const fillDSConnectionDropdown = (fieldName, option) => {
+export const fillDSConnectionDropdown = (fieldName, option) => {
   cy.waitForElement(dsCommonSelector.dropdownField(fieldName))
     .click();
   cy.contains("[id*=react-select-]", option).click();
 };
 
-const toggleDSConnectionButton = (buttonName) => {
+export const toggleDSConnectionButton = (buttonName, shouldBeChecked = true) => {
   cy.get(dsCommonSelector.toggleInput(buttonName)).then(($checkbox) => {
     const isChecked = $checkbox.is(":checked");
     if (isChecked !== shouldBeChecked) {
@@ -19,21 +19,68 @@ const toggleDSConnectionButton = (buttonName) => {
   });
 };
 
-const selectDSConnectionRadioButton = (buttonName) => {
-  cy.get(dsCommonSelector.datasourceOption(buttonName))
-    .click({ force: true });
+export const selectDSConnectionRadioButton = (buttonName, shouldBeSelected = true) => {
+  cy.get(dsCommonSelector.radioButtonInput(buttonName)).then(($radio) => {
+    const isSelected = $radio.is(":checked");
+    if (isSelected !== shouldBeSelected) {
+      cy.wrap($radio).click({ force: true });
+    }
+  });
 };
 
-const fillDSConnectionKeyValuePairs = (data) => {
-  data.values.forEach((pair, index) => {
-    if (index > 0) {
-      cy.get(dsCommonSelector.addMoreButton(data)).click();
+export const fillDSConnectionKeyValuePairs = (selector, keyValueData) => {
+  keyValueData.forEach((pair, index) => {
+    if (index === 0) {
+      cy.get('body').then(($body) => {
+        const noKeyValueText = $body.find(':contains("There are no key value pairs added")').length > 0;
+        const keyFieldExists = $body.find(dsCommonSelector.keyInputField(selector, index)).length > 0;
+
+        if (noKeyValueText || !keyFieldExists) {
+          cy.get(dsCommonSelector.addMoreButton(selector)).should("be.visible").click();
+          cy.wait(500);
+        }
+      });
     }
 
-    cy.clearAndType(dsCommonSelector.keyInputField(pair.key, index), pair.key);
+    if (index > 0) {
+      cy.get('body').then(($body) => {
+        const keyFieldExists = $body.find(dsCommonSelector.keyInputField(selector, index)).length > 0;
+        if (!keyFieldExists) {
+          cy.get(dsCommonSelector.addMoreButton(selector)).should("be.visible").click();
+          cy.wait(500);
+        }
+      });
+    }
 
-    cy.clearAndType(dsCommonSelector.valueInputField(pair.value, index), pair.value);
+    cy.get(dsCommonSelector.keyInputField(selector, index)).should("be.visible");
+    cy.get(dsCommonSelector.valueInputField(selector, index)).should("be.visible");
+
+    cy.clearAndType(dsCommonSelector.keyInputField(selector, index), pair.key);
+    cy.clearAndType(dsCommonSelector.valueInputField(selector, index), pair.value);
   });
+};
+
+export const renameDSName = (newName) => {
+  cy.waitForElement(dsCommonSelector.dataSourceNameInputField("data-source-name"))
+    .scrollIntoView()
+    .should("be.visible");
+
+  cy.clearAndType(dsCommonSelector.dataSourceNameInputField("data-source-name"), newName);
+
+  cy.get(dsCommonSelector.dataSourceNameButton("db-connection-save"))
+    .scrollIntoView()
+    .should("be.visible")
+    .click();
+
+  cy.waitForElement(dsCommonSelector.dataSourceNameButton(newName))
+    .should("be.visible");
+};
+
+export const saveAndDiscardDSChanges = (button) => {
+  cy.get('[data-cy="unsaved-changes-title"]')
+    .should("be.visible");
+  cy.get('[data-cy="modal-message"]').verifyVisibleElement("have.text", "Datasource has unsaved changes. Are you sure you want to discard them?");
+  cy.get(dsCommonSelector.dataSourceNameButton(button)).click();
 };
 
 const fieldHandlers = {
@@ -45,7 +92,7 @@ const fieldHandlers = {
   keyValue: fillDSConnectionKeyValuePairs
 };
 
-export function fillToolJetConnectionForm(config) {
+export function fillToolJetConnectionForm (config) {
   config.fields.forEach((field) => {
     const handler = fieldHandlers[field.type];
 

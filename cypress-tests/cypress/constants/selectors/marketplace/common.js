@@ -1,7 +1,5 @@
 import { cyParamName } from "Selectors/common";
 
-
-
 export const dsCommonSelector = {
     deleteDSButton: (datasourceName) => {
         return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
@@ -31,6 +29,9 @@ export const dsCommonSelector = {
     button: (buttonName) => {
         return `[data-cy="button-${cyParamName(buttonName)}"]`;
     },
+    dataSourceNameInputField: (fieldName) => {
+        return `[data-cy="${cyParamName(fieldName)}-input-field"]`;
+    },
     keyInputField: (header, index) => {
         return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
     },
@@ -48,5 +49,8 @@ export const dsCommonSelector = {
     },
     datasourceOption: (datasourceName) => {
         return `[data-cy="ds-${cyParamName(datasourceName)}"]`;
+    },
+    radioButtonInput: (buttonName) => {
+        return `[data-cy="${cyParamName(buttonName)}-input"]`;
     },
 };
