@@ -182,16 +182,25 @@ export default class MongodbService implements QueryService {
     const connectionType = sourceOptions['connection_type'];
 
     if (connectionType === 'manual') {
+      const format = sourceOptions.connection_format; 
       const database = sourceOptions.database;
       const host = sourceOptions.host;
-      const port = sourceOptions.port;
+      const port = sourceOptions.port || undefined ;
       const username = encodeURIComponent(sourceOptions.username);
       const password = encodeURIComponent(sourceOptions.password);
 
       const needsAuthentication = username !== '' && password !== '';
-      const uri = needsAuthentication
+      let uri = '';
+
+      if(format === 'mongodb'){
+       uri = needsAuthentication
         ? `mongodb://${username}:${password}@${host}:${port}`
         : `mongodb://${host}:${port}`;
+      }else{
+       uri = needsAuthentication
+        ? `mongodb+srv://${username}:${password}@${host}`
+        : `mongodb+srv://${host}`;
+      }
 
       let clientOptions = {};
 
@@ -222,18 +231,52 @@ export default class MongodbService implements QueryService {
       await client.connect();
 
       db = client.db(database);
-    } else {
-      const connectionString = sourceOptions['connection_string'];
+      } else {
+      const format = sourceOptions.connection_format;
+      const database = sourceOptions.database;
+      const conn = sourceOptions['connection_string'];
+      const baseMatch = conn.match(/^mongodb(\+srv)?:\/\/([^:]+):([^@]+)@([^/]+)/);
+      const extractedUsername = baseMatch ? baseMatch[2] : '';
+      const extractedPassword = baseMatch ? baseMatch[3] : '';
+      const extractedHost = baseMatch ? baseMatch[4] : '';
 
-      const password = connectionString.match(/(?<=:\/\/)(.*):(.*)@/)[2];
+      const username = sourceOptions.username
+        ? encodeURIComponent(sourceOptions.username)
+        : encodeURIComponent(extractedUsername);
 
-      const encodedPassword = encodeURIComponent(password);
+      const password = sourceOptions.password
+        ? encodeURIComponent(sourceOptions.password)
+        : encodeURIComponent(extractedPassword);
 
-      const encodedConnectionString = connectionString.replace(password, encodedPassword);
+      const host = sourceOptions.host || extractedHost.split(':')[0];
+      const port = sourceOptions.port || (extractedHost.includes(':') ? extractedHost.split(':')[1] : '');
 
-      client = new MongoClient(encodedConnectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+      const needsAuthentication = username !== '' && password !== '';
+
+      let uri = '';
+
+      if (format === 'mongodb') {
+        const hostPort = port ? `${host}:${port}` : host;
+        uri = needsAuthentication
+          ? `mongodb://${username}:${password}@${hostPort}`
+          : `mongodb://${hostPort}`;
+      } else {
+        uri = needsAuthentication
+          ? `mongodb+srv://${username}:${password}@${host}`
+          : `mongodb+srv://${host}`;
+      }
+
+      const isSrv = format === 'mongodb+srv';  
+
+      const clientOptions = {
+        ...(isSrv && { tls: true }),
+        ...(sourceOptions.use_ssl === true && { tls: true })
+      };
+
+      client = new MongoClient(uri, clientOptions);
       await client.connect();
-      db = client.db();
+
+      db = client.db(database);
     }
 
     return {
