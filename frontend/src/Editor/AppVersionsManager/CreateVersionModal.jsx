@@ -23,8 +23,7 @@ export const CreateVersion = ({
   const [versionName, setVersionName] = useState('');
   const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
   const [cancommit, setCommitEnabled] = useState(false);
-  const [orgGit, setOrgGit] = useState(null);
-  const { createNewVersionAction, selectedEnvironment, fetchDevelopmentVersions, developmentVersions } =
+  const { orgGit, createNewVersionAction, selectedEnvironment, fetchDevelopmentVersions, developmentVersions } =
     useEnvironmentsAndVersionsStore(
       (state) => ({
         appVersionsLazyLoaded: state.appVersionsLazyLoaded,
@@ -33,6 +32,7 @@ export const CreateVersion = ({
         createNewVersionAction: state.actions.createNewVersionAction,
         selectedEnvironment: state.selectedEnvironment,
         fetchDevelopmentVersions: state.actions.fetchDevelopmentVersions,
+        orgGit: state?.orgGit,
       }),
       shallow
     );
@@ -128,26 +128,7 @@ export const CreateVersion = ({
       }
     );
   };
-
-  const fetchOrgGit = () => {
-    setFetchingOrgGit(true);
-    gitSyncService
-      .getAppConfig(current_organization_id, editingVersion?.id)
-      .then((data) => {
-        setOrgGit(data?.app_git);
-      })
-      .finally(() => {
-        setFetchingOrgGit(false);
-      });
-  };
-
   const handleCommitEnableChange = (e) => setCommitEnabled(e.target.checked);
-
-  useEffect(() => {
-    if (featureAccess?.gitSync) fetchOrgGit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <AlertDialog
       show={showCreateAppVersion}
