@@ -1,7 +1,9 @@
 import { App } from '@entities/app.entity';
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
+import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -46,11 +48,18 @@ export class AppsRepository extends Repository<App> {
     });
   }
 
+  findOneById(id: string): Promise<App> {
+    return this.findOne({ where: { id } });
+  }
+
   findById(id: string, organizationId: string, versionId?: string): Promise<App> {
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
+    const baseWhere = { id, ...versionCondition };
+    const where = organizationId ? { ...baseWhere, organizationId } : baseWhere;
+
     return this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
-      where: { id, organizationId, ...versionCondition },
+      where,
     });
   }
 
@@ -62,5 +71,33 @@ export class AppsRepository extends Repository<App> {
         appVersions: { dataQueries: { id: dataQueryId }, ...(versionId ? { id: versionId } : {}) },
       },
     });
+  }
+
+  async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
+    return await this.createQueryBuilder('app')
+      .select([
+        'app.id AS id',
+        'app.name AS name',
+        'app.slug AS slug',
+        'app.created_at AS createdAt',
+        'app.organization_id AS organizationId',
+        'version.id AS versionId',
+        'version.name AS versionName',
+        'version.created_at AS versionCreatedAt',
+      ])
+      .leftJoin('app_versions', 'version', 'version.app_id = app.id')
+      .where('app.organizationId = :organizationId', { organizationId })
+      .orderBy('app.created_At', 'ASC')
+      .orderBy('version.created_at', 'ASC')
+      .getRawMany();
+  }
+
+  async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(App, {
+        where: { id: appId },
+        relations: ['appVersions'],
+      });
+    }, manager || this.manager);
   }
 }

@@ -8,13 +8,22 @@ import { IEventsService } from '../interfaces/services/IEventService';
 
 @Injectable()
 export class EventsService implements IEventsService {
-  async findEventsForVersion(appVersionId: string): Promise<EventHandler[]> {
+  async findEventById(eventId: string): Promise<EventHandler> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const event = await manager.findOne(EventHandler, {
+        where: { id: eventId },
+      });
+      return event;
+    });
+  }
+
+  async findEventsForVersion(appVersionId: string, manager?: EntityManager): Promise<EventHandler[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const allEvents = await manager.find(EventHandler, {
         where: { appVersionId },
       });
       return allEvents;
-    });
+    }, manager);
   }
 
   async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {

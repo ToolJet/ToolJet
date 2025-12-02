@@ -1,0 +1,21 @@
+.tj-tabs-container-outer {
+    padding-top: 0px;
+    gap: 10px;
+    height: 36px;
+    margin-bottom: 8px;
+    margin-top: 16px;
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+.tj-tabs-container {
+    padding: 2px;
+    gap: 2px;
+    display: flex;
+
+    width: 100%;
+    height: 100%;
+    background: var(--slate4);
+    border-radius: 6px;
+
+}

@@ -2,10 +2,10 @@
 id: listview
 title: List View
 ---
+
 # List View
 
 The **List View** component allows to create a list of repeatable rows of data. Just like the Container component, you can nest other components inside of it and control how many times they repeat.
-
 
 :::caution Restricted components
 Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the List View component using drag-and-drop functionality.
@@ -45,15 +45,15 @@ Similarly, for an Image component inside List View, you can use the below code t
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:---|:---|:---|
-| List data | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
-| Mode | The layout of the List View component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
-| Show bottom border | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
-| Columns | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
-| Row height | The height of each row in the List View component. | Any number between 1 and 100 |
-| Enable pagination | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
-| Rows per page | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                    | <div style={{ width:"135px"}}> Expected Value </div>             |
+| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- |
+| List data                                      | The data that you want to display in the List View component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| Mode                                           | The layout of the List View component. You can choose between `List` and `Grid` mode.                                                                | `list` or `grid`                                                 |
+| Show bottom border                             | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`.                                | `true` or `false`                                                |
+| Columns                                        | The number of columns in the List View component. This option is only available when the **Mode** is set to `Grid`.                                  | Any numerical value                                              |
+| Row height                                     | The height of each row in the List View component.                                                                                                   | Any number between 1 and 100                                     |
+| Enable pagination                              | Whether to enable pagination. If enabled, you can set the number of rows per page.                                                                   | `true` or `false`                                                |
+| Rows per page                                  | The number of rows per page. This option is only available when **Enable pagination** is enabled.                                                    | Any numerical value                                              |
 
 </div>
 
@@ -62,11 +62,13 @@ Similarly, for an Image component inside List View, you can use the below code t
 ## Events
 
 To attach an event handler to the List View component, follow these steps:
+
 1. Click on the component handle to open its properties on the right sidebar.
 2. Navigate to the **Events** section.
 3. Click on the **+Add handler** button.
 
 There are two events that you can use with the List View component:
+
 - **[Row clicked (Deprecated)](#row-clicked)**
 - **[Record clicked](#record-clicked)**
 
@@ -87,7 +89,7 @@ The **Record clicked** event is similar to the row click event, as it is trigger
 When a record is clicked in the List View component, relevant data is exposed through the **selectedRecordId** and **selectedRecord** variables. For the List View component's available exposed variables, refer to the **[here](#exposed-variables)** section.
 
 :::info
-To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/category/actions-reference) documentation.
+To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/3.5.0-LTS/actions/show-alert) documentation.
 :::
 
 </div>
@@ -104,20 +106,21 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 ## Exposed Variables
 
-|  <div style={{ width:"100px"}}> Variables </div>   |  <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:-------- |
-| data | This variable stores the data loaded into the List View component. | Retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
-| selectedRowId (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. | Access the selectedRowId using `{{components.listview1.selectedRowId}}` |
-| selectedRow (deprecated) | This variable contains the data of the components within the selected row. | Access the data using `{{components.listview1.selectedRow.text1}}` |
-| selectedRecordId | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. | Access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
-| selectedRecord | This variable stores the data of the components within the selected record. | Access the data using `{{components.listview1.selectedRecord.text1}}` |
-| children | This variable stores the data of the components within all the records in listview component. | The purpose of exposing children is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
+| <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"135px"}}> Description </div>                                                 | <div style={{ width:"135px"}}> How To Access </div>                                                                                                    |
+| :---------------------------------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| data                                            | This variable stores the data loaded into the List View component.                                | Retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}`                                                |
+| selectedRowId (deprecated)                      | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`.       | Access the selectedRowId using `{{components.listview1.selectedRowId}}`                                                                                |
+| selectedRow (deprecated)                        | This variable contains the data of the components within the selected row.                        | Access the data using `{{components.listview1.selectedRow.text1}}`                                                                                     |
+| selectedRecordId                                | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. | Access the selectedRecordId using `{{components.listview1.selectedRecordId}}`                                                                          |
+| selectedRecord                                  | This variable stores the data of the components within the selected record.                       | Access the data using `{{components.listview1.selectedRecord.text1}}`                                                                                  |
+| children                                        | This variable stores the data of the components within all the records in listview component.     | The purpose of exposing children is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
 ## General
+
 ### Tooltip
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
@@ -130,10 +133,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile  | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                              |
+| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
@@ -143,13 +146,13 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style  </div>    | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Background color |  You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Border color |  You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker. |
-| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Disable |  This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-| Border radius | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`. |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                          |
+| :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Background color                            | You can change the background color of the component by entering the Hex color code or choosing a color of your choice from the color picker.                                                                                              |
+| Border color                                | You can change the border color of the listview by entering the `Hex color code` or choosing a color of your choice from the color picker.                                                                                                 |
+| Visibility                                  | This is to control the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Disable                                     | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`.                                                                     |
+| Border radius                               | Use this property to modify the border radius of the list view. The field expects only numerical value from `1` to `100`, default is `0`.                                                                                                  |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
@@ -177,7 +180,6 @@ Any property having **fx** button next to its field can be **programmatically co
 
     </div>
 
-
 - Now lets edit the `List data` property of the List View component for displaying the query data. We will use JS to get the data from the query - `{{queries.restapi1.data.data}}`. Here the last `data` is a data object that includes an array of objects, the first `data` is the data resulted from the `restapi1` query. This will automatically create the rows in the component using the data.
 
     <div style={{textAlign: 'center'}}>
@@ -186,7 +188,6 @@ Any property having **fx** button next to its field can be **programmatically co
 
     </div>
 
-
 - Finally, we will need to nest components into the first row of List View component and the component will automatically create the subsequent instances. The subsequent rows will appear the same way you'll display the data in the first row.
 
     <div style={{textAlign: 'center'}}>
@@ -194,7 +195,6 @@ Any property having **fx** button next to its field can be **programmatically co
     <img className="screenshot-full" src="/img/widgets/list-view/addingwidgets.gif" alt="ToolJet - List view component" />
 
     </div>
-
 
 :::tip
 

@@ -25,7 +25,7 @@ export interface ILoginConfigsUtilService {
   }>;
 
   fetchOrganizationDetails(
-    organizationId: string,
+    organizationIdOrSlug: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean

@@ -21,8 +21,12 @@ const ForgotPasswordInfoScreen = ({ email }) => {
     <div className="forgot-password-info-wrapper info-screen">
       <OnboardingUIWrapper>
         <FormHeader>{t('forgotPasswordInfo.header', 'Check your mail')}</FormHeader>
-        <p className="message">{message}</p>
-        <span className="info">{info}</span>
+        <p className="message" data-cy="onboarding-page-description">
+          {message}
+        </p>
+        <span className="info" data-cy="info-message">
+          {info}
+        </span>
         <SepratorComponent />
         <div className="action-buttons">
           <button onClick={() => navigate('/login')} className="back-to-login-button" data-cy="back-to-login">

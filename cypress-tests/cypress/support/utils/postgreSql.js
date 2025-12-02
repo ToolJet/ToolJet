@@ -65,10 +65,9 @@ export const selectAndAddDataSource = (
       ).click();
     });
 
-  cy.wait(1000)
   cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
   cy.clearAndType(
-    '[data-cy="data-source-name-input-filed"]',
+    '[data-cy="data-source-name-input-field"]',
     cyParamName(`cypress-${dataSourceName}-${dataSource}`)
   );
   cy.get(postgreSqlSelector.buttonSave).click();
@@ -88,7 +87,7 @@ export const selectAndAddDataSource = (
 
 export const fillConnectionForm = (data, toggle = "") => {
   cy.get("body").then(($body) => {
-    const editButton = $body.find(".tj-btn");
+    const editButton = $body.find('.datasource-edit-btn');
     if (editButton.length > 0) {
       editButton.click();
     }

@@ -6,38 +6,42 @@ import { Logger } from 'nestjs-pino';
 import { Credential } from '../../../src/entities/credential.entity';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
-import { reconfigurePostgrest } from './helper';
+import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from './helper';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { TableCountGuard } from '@modules/licensing/guards/table.guard';
-import { getImportPath } from '@modules/app/constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { RolesRepository } from '@modules/roles/repository';
 import { FeatureAbilityFactory } from './ability';
+import { SubModule } from '@modules/app/sub-module';
+import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 
-export class TooljetDbModule implements OnModuleInit {
+export class TooljetDbModule extends SubModule implements OnModuleInit {
   constructor(
     private logger: Logger,
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
-  ) {}
+  ) {
+    super();
+  }
 
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-
-    const { TooljetDbController } = await import(`${importPath}/tooljet-db/controller`);
-    const { TooljetDbTableOperationsService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-table-operations.service`
-    );
-    const { TooljetDbBulkUploadService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-bulk-upload.service`
-    );
-    const { TooljetDbDataOperationsService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-data-operations.service`
-    );
-    const { TooljetDbImportExportService } = await import(
-      `${importPath}/tooljet-db/services/tooljet-db-import-export.service`
-    );
-    const { PostgrestProxyService } = await import(`${importPath}/tooljet-db/services/postgrest-proxy.service`);
+    const {
+      TooljetDbController,
+      TooljetDbTableOperationsService,
+      TooljetDbBulkUploadService,
+      TooljetDbDataOperationsService,
+      TooljetDbImportExportService,
+      PostgrestProxyService,
+    } = await this.getProviders(configs, 'tooljet-db', [
+      'controller',
+      'services/tooljet-db-table-operations.service',
+      'services/tooljet-db-bulk-upload.service',
+      'services/tooljet-db-data-operations.service',
+      'services/tooljet-db-import-export.service',
+      'services/postgrest-proxy.service',
+    ]);
 
     return {
       module: TooljetDbModule,
@@ -68,11 +72,20 @@ export class TooljetDbModule implements OnModuleInit {
       const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
       const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
 
-      await reconfigurePostgrest(this.tooljetDbManager, {
-        user: tooljtDbUser,
-        enableAggregates: true,
-        statementTimeoutInSecs: statementTimeoutInSecs,
-      });
+      if (isSQLModeDisabled()) {
+        await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      } else {
+        await reconfigurePostgrest(this.tooljetDbManager, {
+          user: tooljtDbUser,
+          enableAggregates: true,
+          statementTimeoutInSecs: statementTimeoutInSecs,
+        });
+      }
+
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     }
   }

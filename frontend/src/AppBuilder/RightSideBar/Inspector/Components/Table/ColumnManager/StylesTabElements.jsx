@@ -128,6 +128,8 @@ export const StylesTabElements = ({
         undefined,
         'number',
         'json',
+        'markdown',
+        'html',
         'boolean',
         'select',
         'text',
@@ -146,7 +148,7 @@ export const StylesTabElements = ({
                 property="textColor"
                 props={column}
                 component={component}
-                paramMeta={{ type: 'color', displayName: 'Text color' }}
+                paramMeta={{ type: 'colorSwatches', displayName: 'Text color' }}
                 paramType="properties"
               />
             </div>
@@ -161,7 +163,7 @@ export const StylesTabElements = ({
               property="cellBackgroundColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Cell color' }}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
               paramType="properties"
             />
           </div>

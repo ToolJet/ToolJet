@@ -8,11 +8,21 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET]: {
       isPublic: true,
     },
-    [FEATURE_KEY.WORKSPACE_STATUS_UPDATE]: {},
-    [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.CREATE]: {},
+    [FEATURE_KEY.WORKSPACE_ARCHIVE]: {
+      auditLogsKey: 'WORKSPACE_ARCHIVE',
+    },
+    [FEATURE_KEY.WORKSPACE_UNARCHIVE]: {
+      auditLogsKey: 'WORKSPACE_UNARCHIVE',
+    },
+    [FEATURE_KEY.UPDATE]: {
+      auditLogsKey: 'WORKSPACE_UPDATE',
+    },
+    [FEATURE_KEY.CREATE]: {
+      auditLogsKey: 'WORKSPACE_CREATE',
+    },
     [FEATURE_KEY.CHECK_UNIQUE_ONBOARDING]: {
       isPublic: true,
     },
+    [FEATURE_KEY.SET_DEFAULT]: {},
   },
 };

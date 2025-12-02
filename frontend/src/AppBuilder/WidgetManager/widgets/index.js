@@ -40,6 +40,7 @@ import { circularProgressbarConfig } from './circularProgressbar';
 import { spinnerConfig } from './spinner';
 import { statisticsConfig } from './statistics';
 import { rangeSliderConfig } from './rangeslider';
+import { rangeSliderV2Config } from './rangesliderV2';
 import { timelineConfig } from './timeline';
 import { svgImageConfig } from './svgImage';
 import { htmlConfig } from './html';
@@ -58,6 +59,12 @@ import { kanbanBoardConfig } from './kanbanBoard';
 import { datetimePickerV2Config } from './datetimepickerV2';
 import { datePickerV2Config } from './datepickerV2';
 import { timePickerConfig } from './timepicker';
+import { moduleContainerConfig } from './moduleContainer';
+import { moduleViewerConfig } from './moduleViewer';
+import { emailinputConfig } from './emailinput';
+import { phoneinputConfig } from './phoneinput';
+import { currencyinputConfig } from './currencyinput';
+import { chatConfig } from './chat';
 
 export {
   buttonConfig,
@@ -73,6 +80,9 @@ export {
   datetimePickerV2Config,
   datePickerV2Config,
   timePickerConfig,
+  emailinputConfig,
+  phoneinputConfig,
+  currencyinputConfig,
   checkboxConfig,
   radiobuttonConfig, //!Depreciated
   radiobuttonV2Config,
@@ -120,4 +130,8 @@ export {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig,
+  moduleContainerConfig,
+  moduleViewerConfig,
+  rangeSliderV2Config,
 };

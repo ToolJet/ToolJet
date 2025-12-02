@@ -12,48 +12,61 @@ const initialState = {
 
 export const createDependencySlice = (set, get) => ({
   ...initialState,
+  initializeDependencySlice: (moduleId) => {
+    set(
+      (state) => {
+        state.dependencyGraph.modules[moduleId] = {
+          graph: new DependencyGraph(),
+        };
+      },
+      false,
+      'initializeDependencySlice'
+    );
+  },
 
-  addDependency: (fromPath, toPath, nodeData) => {
-    if (!get().checkIfDependencyExists(fromPath, toPath)) {
+  addDependency: (fromPath, toPath, nodeData, moduleId = 'canvas') => {
+    if (!get().checkIfDependencyExists(fromPath, toPath, moduleId)) {
       set((state) => {
-        state.dependencyGraph.modules.canvas.graph.addDependency(fromPath, toPath, nodeData);
+        state.dependencyGraph.modules[moduleId].graph.addDependency(fromPath, toPath, nodeData);
         return { ...state };
       });
     }
   },
 
-  updateDependency: (newFromPath, toPath, nodeData) =>
+  updateDependency: (newFromPath, toPath, nodeData, moduleId = 'canvas') =>
     set((state) => {
-      state.dependencyGraph.modules.canvas.graph.updateDependency(newFromPath, toPath, nodeData);
+      state.dependencyGraph.modules[moduleId].graph.updateDependency(newFromPath, toPath, nodeData);
       return { ...state };
     }),
 
-  removeDependency: (toPath, clearToPath = false) =>
+  removeDependency: (toPath, clearToPath = false, moduleId = 'canvas') =>
     set((state) => {
-      state.dependencyGraph.modules.canvas.graph.removeDependency(toPath, clearToPath);
+      state.dependencyGraph.modules[moduleId].graph.removeDependency(toPath, clearToPath);
       return { ...state };
     }),
 
-  removeNode: (path) =>
+  removeNode: (path, moduleId = 'canvas') =>
     set((state) => {
-      state.dependencyGraph.modules.canvas.graph.removeNode(path);
+      state.dependencyGraph.modules[moduleId].graph.removeNode(path);
       return { ...state };
     }),
 
-  getNodeData: (path) => get().dependencyGraph.modules.canvas.graph.getNodeData(path),
+  getNodeData: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getNodeData(path),
 
-  getDependencies: (path) => get().dependencyGraph.modules.canvas.graph.getDependencies(path),
+  getDependencies: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getDependencies(path),
 
-  getDirectDependencies: (path) => get().dependencyGraph.modules.canvas.graph.getDirectDependencies(path),
+  getDirectDependencies: (path, moduleId = 'canvas') =>
+    get().dependencyGraph.modules[moduleId].graph.getDirectDependencies(path),
 
-  getDependents: (path) => get().dependencyGraph.modules.canvas.graph.getDependents(path),
+  getDependents: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getDependents(path),
 
-  getDirectDependents: (path) => get().dependencyGraph.modules.canvas.graph.getDirectDependents(path),
+  getDirectDependents: (path, moduleId = 'canvas') =>
+    get().dependencyGraph.modules[moduleId].graph.getDirectDependents(path),
 
-  getOverallOrder: () => get().dependencyGraph.modules.canvas.graph.getOverallOrder(),
+  getOverallOrder: (moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getOverallOrder(),
 
-  checkIfDependencyExists: (fromPath, toPath) => {
-    const dependencies = get().getDependencies(fromPath);
+  checkIfDependencyExists: (fromPath, toPath, moduleId = 'canvas') => {
+    const dependencies = get().getDependencies(fromPath, moduleId);
     return dependencies.includes(toPath);
   },
 });

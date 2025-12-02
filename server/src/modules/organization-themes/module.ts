@@ -1,16 +1,14 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { OrganizationsModule } from '@modules/organizations/module';
 import { OrganizationThemesRepository } from './repository';
 import { FeatureAbilityFactory } from './ability';
+import { SubModule } from '@modules/app/sub-module';
 
 @Module({})
-export class ThemesModule {
+export class ThemesModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
-    const { OrganizationThemesService } = await import(`${importPath}/organization-themes/service`);
-    const { OrganizationThemesController } = await import(`${importPath}/organization-themes/controller`);
-    const { OrganizationThemesUtilService } = await import(`${importPath}/organization-themes/util.service`);
+    const { OrganizationThemesService, OrganizationThemesController, OrganizationThemesUtilService } =
+      await this.getProviders(configs, 'organization-themes', ['service', 'controller', 'util.service']);
 
     return {
       module: ThemesModule,

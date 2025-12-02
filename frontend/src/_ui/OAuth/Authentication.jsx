@@ -27,7 +27,16 @@ const Authentication = ({
   optionsChanged,
   selectedDataSource,
   options,
+  oauth_configs,
 }) => {
+  const isFieldAllowed = (fieldName, key, oauth_configs) => {
+    if (!oauth_configs) return true;
+
+    const allowedFields = oauth_configs?.allowed_field_groups?.[key];
+    if (!allowedFields || !Array.isArray(allowedFields)) return false;
+    return allowedFields.includes(fieldName);
+  };
+
   if (auth_type === 'oauth2') {
     return (
       <div>
@@ -63,41 +72,51 @@ const Authentication = ({
             optionchanged,
             optionsChanged,
           }}
+          oauth_configs={oauth_configs}
+          isFieldAllowed={isFieldAllowed}
         />
       </div>
     );
   } else if (auth_type === 'basic') {
     return (
       <div>
-        <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Username</label>
-          <Input
-            type="text"
-            className="form-control"
-            onChange={(e) => optionchanged('username', e.target.value)}
-            value={username}
-            workspaceConstants={workspaceConstants}
-            placeholder="Username"
-          />
-        </div>
-        <div className="col-md-12">
-          <EncryptedFieldWrapper
-            options={options}
-            selectedDataSource={selectedDataSource}
-            optionchanged={optionchanged}
-            optionsChanged={optionsChanged}
-            name="password"
-            label="Password"
-          >
+        {isFieldAllowed('username', auth_type, oauth_configs) && (
+          <div className="col-md-12">
+            <label className="form-label mt-3" data-cy="label-username">
+              Username
+            </label>
             <Input
-              type="password"
+              data-cy="username-input-field"
+              type="text"
               className="form-control"
-              onChange={(e) => optionchanged('password', e.target.value)}
-              value={password}
+              onChange={(e) => optionchanged('username', e.target.value)}
+              value={username}
               workspaceConstants={workspaceConstants}
+              placeholder="Username"
             />
-          </EncryptedFieldWrapper>
-        </div>
+          </div>
+        )}
+        {isFieldAllowed('password', auth_type, oauth_configs) && (
+          <div className="col-md-12">
+            <EncryptedFieldWrapper
+              options={options}
+              selectedDataSource={selectedDataSource}
+              optionchanged={optionchanged}
+              optionsChanged={optionsChanged}
+              name="password"
+              label="Password"
+            >
+              <Input
+                data-cy="password-input-field"
+                type="password"
+                className="form-control"
+                onChange={(e) => optionchanged('password', e.target.value)}
+                value={password}
+                workspaceConstants={workspaceConstants}
+              />
+            </EncryptedFieldWrapper>
+          </div>
+        )}
       </div>
     );
   } else if (auth_type === 'bearer') {
@@ -113,6 +132,7 @@ const Authentication = ({
             label="Token"
           >
             <Input
+              data-cy="token-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('bearer_token', e.target.value)}

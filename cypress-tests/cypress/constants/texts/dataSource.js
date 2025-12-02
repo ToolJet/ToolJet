@@ -13,7 +13,7 @@ export const dataSourceText = {
       ? "Databases (20)"
       : "Databases (18)";
   },
-  allApis: "APIs (20)",
+  allApis: "APIs (21)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",
 
@@ -80,4 +80,11 @@ export const dataSourceText = {
   labelNoEventhandler: "No event handlers",
   toastDSSaved: "Data Source Saved",
   unSavedModalTitle: "Unsaved Changes",
+
+  sslCertificateLabel: "SSL Certificate",
+  caCertificateOption: "CA certificate",
+  clientCertificateOption: "Client certificate",
+  clientKeyLabel: "Client Key",
+  clientCertLabel: "Client Cert",
+  caCertLabel: "CA Cert",
 };

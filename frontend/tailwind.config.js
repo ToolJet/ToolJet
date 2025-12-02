@@ -1,7 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: ['./pages/**/*.{js,jsx}', './components/**/*.{js,jsx}', './app/**/*.{js,jsx}', './src/**/*.{js,jsx}'],
+  content: [
+    './pages/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
+    './app/**/*.{js,jsx}',
+    './src/**/*.{js,jsx}',
+    './ee/**/*.{js,jsx}',
+  ],
   prefix: 'tw-',
   corePlugins: {
     preflight: false,
@@ -22,7 +28,7 @@ module.exports = {
         'background-error-weak': 'var(--background-error-weak)',
         'background-warning-stong': 'var(--background-warning-stong)',
         'background-warning-weak': 'var(--background-warning-weak)',
-        'background-inverse': 'var(--background-Inverse)',
+        'background-inverse': 'var(--background-inverse)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
@@ -97,6 +103,14 @@ module.exports = {
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',
         'interactive-focus-outline-inset': 'inset 0px 0px 0px 2px #fff',
+        'elevation-000': '0px 1px 0px 0px rgba(0, 0, 0, 0.10)',
+        'elevation-100': '0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-200': '0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-300': '0px 4px 8px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-400': '0px 8px 16px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-500': '0px 16px 24px 0px rgba(48, 50, 51, 0.09), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-600': '0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+        'elevation-700': '0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
       },
       fontSize: {
         sm: ['11px', '16px'],

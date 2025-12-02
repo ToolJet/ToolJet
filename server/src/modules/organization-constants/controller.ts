@@ -12,19 +12,12 @@ import { MODULES } from '@modules/app/constants/modules';
 import { FeatureAbilityGuard } from './ability/guard';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { AppAuthGuard } from '@modules/apps/guards/app-auth.guard';
+import { ValidAppGuard } from './guards/valid-app.guard';
 
 @Controller('organization-constants')
 @InitModule(MODULES.ORGANIZATION_CONSTANT)
 export class OrganizationConstantController implements IOrganizationConstantController {
   constructor(protected readonly organizationConstantsService: OrganizationConstantsService) {}
-
-  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
-  @InitFeature(FEATURE_KEY.GET)
-  @Get()
-  async get(@User() user, @Query('type') type: OrganizationConstantType) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, false, type);
-    return { constants: result };
-  }
 
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_DECRYPTED_CONSTANTS)
@@ -47,27 +40,25 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   }
 
   //by default, this api fetches only global constants (for public apps, need to fetch app to get orgId in the public guard)
-  @UseGuards(AppAuthGuard)
+  @UseGuards(AppAuthGuard, FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_PUBLIC)
   @Get('public/:slug')
-  async getConstantsFromPublicApp(@App() app) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(
+  async getConstantsFromPublicApp(@App() app, @Query('environmentId') environmentId: string) {
+    const result = await this.organizationConstantsService.getConstantsForEnvironment(
       app.organizationId,
-      false,
-      OrganizationConstantType.GLOBAL
+      environmentId
     );
     return { constants: result };
   }
 
   //by default, this api fetches only global constants
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @InitFeature(FEATURE_KEY.GET_FROM_APP)
-  @Get(':app_slug')
-  async getConstantsFromApp(@User() user) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(
+  @Get(':appId')
+  async getConstantsFromApp(@User() user, @Query('environmentId') environmentId: string) {
+    const result = await this.organizationConstantsService.getConstantsForEnvironment(
       user.organizationId,
-      false,
-      OrganizationConstantType.GLOBAL
+      environmentId
     );
     return { constants: result };
   }

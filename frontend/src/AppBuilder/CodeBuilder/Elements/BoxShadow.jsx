@@ -175,15 +175,10 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
               data-cy={`${cyLabel}-picker`}
             >
               <div
-                className="col-auto"
+                className="color-icon"
                 style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: ' 6px',
-                  border: `1px solid var(--slate7, #D7DBDF)`,
-                  boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
                   backgroundColor: boxShadow.Color,
-                  marginRight: '4px',
+                  marginLeft: '4px',
                 }}
                 data-cy={`${cyLabel}-picker-icon`}
               ></div>

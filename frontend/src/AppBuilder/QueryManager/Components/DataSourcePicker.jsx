@@ -36,16 +36,23 @@ function DataSourcePicker({ darkMode }) {
     (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
   );
   //StaicDataSources DIDNT HAVE ID
-  const updatedStaticDataSources = staticDataSources.map((source) => {
-    // Find a matching object from staticDataSourcesFullObject based on the 'kind' field
-    const matchingObject = staticDataSourcesFullObject?.find((gds) => gds.kind === source.kind);
+  const updatedStaticDataSources = staticDataSources
+    .filter((source) => {
+      if (source.kind === 'workflows') {
+        return staticDataSourcesFullObject?.some((gds) => gds.kind === 'workflows');
+      }
+      return true;
+    })
+    .map((source) => {
+      // Find a matching object from staticDataSourcesFullObject based on the 'kind' field
+      const matchingObject = staticDataSourcesFullObject?.find((gds) => gds.kind === source.kind);
 
-    // Replace the 'id' with the one from the matching object, or keep the existing one if no match
-    return {
-      ...source,
-      id: matchingObject?.id || source.id,
-    };
-  });
+      // Replace the 'id' with the one from the matching object, or keep the existing one if no match
+      return {
+        ...source,
+        id: matchingObject?.id || source.id,
+      };
+    });
 
   const docLink = 'sampledb.com';
 
@@ -73,8 +80,6 @@ function DataSourcePicker({ darkMode }) {
     navigate(`/${workspaceId}/data-sources`);
   };
 
-  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
@@ -86,7 +91,7 @@ function DataSourcePicker({ darkMode }) {
         <a
           data-cy="querymanager-doc-link"
           target="_blank"
-          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          href="https://docs.tooljet.ai/docs/app-builder/query-panel"
           rel="noreferrer"
         >
           documentation
@@ -98,7 +103,6 @@ function DataSourcePicker({ darkMode }) {
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {updatedStaticDataSources.map((source) => {
-            if (!workflowsEnabled && source.kind === 'workflows') return null;
 
             return (
               <ButtonSolid

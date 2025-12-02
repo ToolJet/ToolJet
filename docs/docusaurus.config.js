@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.ai',
+  url: 'https://docs.tooljet.com',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -60,21 +60,21 @@ module.exports = {
           position: 'right',
         },
         {
-          href: 'https://www.tooljet.ai/',
+          href: 'https://www.tooljet.com/',
           position: 'right',
           label: 'Website',
           className: 'navbar-signin',
           'aria-label': 'Visit ToolJet Website',
         },
         {
-          href: 'https://www.tooljet.ai/login',
+          href: 'https://www.tooljet.com/login',
           position: 'right',
           label: 'Sign in',
           className: 'navbar-signin',
           'aria-label': 'Signin to ToolJet',
         },
         {
-          href: 'https://www.tooljet.ai/create-account',
+          href: 'https://www.tooljet.com/create-account',
           position: 'right',
           label: 'Try for free',
           className: 'navbar-website',
@@ -83,7 +83,7 @@ module.exports = {
       ],
     },
     footer: {
-      style: 'light', 
+      style: 'light',
       logo: {
         alt: 'ToolJet Logo',
         src: '/img/docs_logo.svg',
@@ -93,35 +93,35 @@ module.exports = {
         {
           title: 'Platform',
           items: [
-            { label: 'App builder', to: 'https://www.tooljet.ai/visual-app-builder' },
-            { label: 'AI Agent builder', to: 'https://www.tooljet.ai/ai-agent-builder' },
-            { label: 'ToolJet Database', to: 'https://www.tooljet.ai/database' },
+            { label: 'App builder', to: 'https://www.tooljet.com/visual-app-builder' },
+            { label: 'AI Agent builder', to: 'https://www.tooljet.com/ai-agent-builder' },
+            { label: 'ToolJet Database', to: 'https://www.tooljet.com/database' },
           ],
         },
         {
           title: 'Solutions',
           items: [
-            { label: 'Back office tools', to: 'https://www.tooljet.ai/building-back-office-apps' },
-            { label: 'Business applications', to: 'https://www.tooljet.ai/business-applications' },
+            { label: 'Back office tools', to: 'https://www.tooljet.com/building-back-office-apps' },
+            { label: 'Business applications', to: 'https://www.tooljet.com/business-applications' },
           ],
         },
         {
           title: 'Developers',
           items: [
-            { label: 'Blogs', to: 'https://blog.tooljet.ai/' },
-            { label: 'Events', to: 'https://www.tooljet.ai/events' },
+            { label: 'Blogs', to: 'https://blog.tooljet.com/' },
+            { label: 'Events', to: 'https://www.tooljet.com/events' },
             { label: 'GitHub', href: 'https://github.com/ToolJet/ToolJet' },
-            { label: 'Slack', href: 'https://tooljet.ai/slack' },
+            { label: 'Slack', href: 'https://tooljet.com/slack' },
           ],
         },
         {
           title: 'Templates',
           items: [
-            { label: 'Lead management', to: 'https://www.tooljet.ai/templates/lead-management-system' },
-            { label: 'KPI management', to: 'https://www.tooljet.ai/templates/kpi-management-dashboard' },
-            { label: 'Inventory management', to: 'https://www.tooljet.ai/templates/inventory-management-system' },
-            { label: 'Leave management', to: 'https://www.tooljet.ai/templates/leave-management-portal' },
-            { label: 'Applicant tracking', to: 'https://www.tooljet.ai/templates/applicant-tracking-system' },
+            { label: 'Lead management', to: 'https://www.tooljet.com/templates/lead-management-system' },
+            { label: 'KPI management', to: 'https://www.tooljet.com/templates/kpi-management-dashboard' },
+            { label: 'Inventory management', to: 'https://www.tooljet.com/templates/inventory-management-system' },
+            { label: 'Leave management', to: 'https://www.tooljet.com/templates/leave-management-portal' },
+            { label: 'Applicant tracking', to: 'https://www.tooljet.com/templates/applicant-tracking-system' },
           ],
         },
         {
@@ -242,8 +242,41 @@ module.exports = {
           window.buildUrlWithStoredParams = buildUrlWithStoredParams; // NEW: Build URLs with UTM params
       })();
       </script>
+      <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          console.log("Script for cookie called");
+          var cookieName = "source_page";
+          var domain = ".tooljet.ai";
+          var maxAge = 7 * 24 * 60 * 60; // 7 days
+          var currentHost = window.location.hostname;
+          var fullUrl = window.location.href;
+          // Helper: read cookie
+          function getCookie(name) {
+              var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+              return match ? decodeURIComponent(match[2]) : null;
+          }
+          // Helper: set cookie
+          function setCookie(name, value, maxAgeSeconds, domain) {
+              document.cookie =
+                  name + "=" + encodeURIComponent(value) +
+                  "; path=/; domain=" + domain +
+                  "; max-age=" + maxAgeSeconds + ";";
+          }
+          // If user is on blog.tooljet.ai → always update cookie with latest blog URL
+          // Else → do not overwrite, just keep existing one
+          if (currentHost.includes("blog.tooljet.ai")) {
+              setCookie(cookieName, fullUrl, maxAge, domain);
+              console.log("Updated source_page cookie with latest blog URL: " + fullUrl);
+          } else {
+              console.log("Not on blog domain — keeping existing source_page: " + getCookie(cookieName));
+          }
+      });
+      </script>
+      <!-- Start of HubSpot Embed Code -->
+      <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/39494431.js"></script>
+      <!-- End of HubSpot Embed Code -->
       `,
-    },    
+    },
     algolia: {
       appId: 'O8HQRLI0WA',
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
@@ -260,15 +293,16 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: true,
-          lastVersion: '3.5.0-LTS',
+          includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
+          lastVersion: '3.16.0-LTS',
           versions: {
-            current: {
-              label: '3.11.0-Beta 🚧',
-              path: 'beta',
-              banner: 'none',
-              badge: false
-            },
+            // Uncomment the following line to include the beta version in the sidebar
+            // current: {
+            //   label: 'beta 🚧',
+            //   path: 'beta',
+            //   banner: 'none',
+            //   badge: false,
+            // },
             "2.50.0-LTS": {
               banner: 'none',
               badge: false
@@ -278,6 +312,11 @@ module.exports = {
               badge: false
             },
             "3.5.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.16.0-LTS": {
+              label: '3.16 - 3.20 LTS',
               banner: 'none',
               badge: false
             }
@@ -292,6 +331,7 @@ module.exports = {
           ignorePatterns: ['/docs/1.x.x/**'],
           filename: 'sitemap.xml',
         },
+
         googleTagManager: isProd
           ? {
             containerId: process.env.GTM || 'development',
@@ -299,6 +339,18 @@ module.exports = {
           : undefined,
       },
     ],
+    [
+    'redocusaurus',
+    {
+      openapi: {
+        path: 'openapi',       // scans all folders inside openapi/, e.g., scim, tj-api
+        routeBasePath: '/api', // pages will be /api/scim, /api/tj-api
+      },
+      theme: {
+        primaryColor: '#1890ff', // customize the color
+      },
+    },
+  ],
   ],
   plugins: [
     devServerPlugin,
@@ -340,122 +392,6 @@ module.exports = {
             from: '/docs/enterprise/superadmin',
           },
           {
-            to: '/docs/beta/user-management/sso/oidc/setup',
-            from: '/docs/beta/category/openid-connect/',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/release/share-app/',
-            from: '/docs/beta/dashboard',
-          },
-          {
-            to: '/docs/beta/security/audit-logs',
-            from: '/docs/beta/enterprise/audit_logs',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/super-admin',
-            from: '/docs/beta/enterprise/superadmin',
-          },
-          {
-            to: '/docs/beta/tj-setup/org-branding/white-labeling',
-            from: '/docs/beta/enterprise/white-label',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/overview',
-            from: '/docs/beta/gitsync',
-          },
-          {
-            to: '/docs/beta/tj-setup/licensing/self-hosted',
-            from: '/docs/beta/org-management/licensing/self-hosted/',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/access-control',
-            from: '/docs/beta/org-management/permissions',
-          },
-          {
-            to: '/docs/beta/tj-setup/smtp-setup/configuration',
-            from: '/docs/beta/org-management/smtp-configuration',
-          },
-          {
-            to: '/docs/beta/security/constants/',
-            from: '/docs/beta/org-management/workspaces/workspace_constants/',
-          },
-          {
-            to: '/docs/beta/tj-setup/workspaces',
-            from: '/docs/beta/org-management/workspaces/workspace_overview/',
-          },
-          {
-            to: '/docs/beta/security/constants/variables',
-            from: '/docs/beta/org-management/workspaces/workspace-variables-migration',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/pull',
-            from: '/docs/beta/release-management/gitsync/git-pull',
-          },
-          {
-            to: '/docs/beta/development-lifecycle/gitsync/gitsync-config',
-            from: '/docs/beta/release-management/gitsync/tj-config/',
-          },
-          {
-            to: '/docs/beta/security/compliance',
-            from: '/docs/beta/security',
-          },
-          {
-            to: '/docs/beta/build-with-ai/overview',
-            from: '/docs/beta/tooljet-copilot',
-          },
-          {
-            to: '/docs/beta/user-management/role-based-access/custom-groups',
-            from: '/docs/beta/tutorial/manage-users-groups',
-          },
-          {
-            to: '/docs/beta/tooljet-api',
-            from: '/docs/beta/tutorial/tooljet-api',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/overview',
-            from: '/docs/beta/user-authentication/general-settings/',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/beta/user-authentication/password-login',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/beta/user-authentication/sso/auto-sso-login',
-          },
-          {
-            to: '/docs/user-management/sso/github',
-            from: '/docs/beta/user-authentication/sso/github',
-          },
-          {
-            to: '/docs/user-management/sso/ldap',
-            from: '/docs/beta/user-authentication/sso/ldap',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/azuread',
-            from: '/docs/beta/user-authentication/sso/openid/azuread/',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/google',
-            from: '/docs/beta/user-authentication/sso/openid/google-openid',
-          },
-          {
-            to: '/docs/beta/user-management/sso/oidc/okta',
-            from: '/docs/beta/user-authentication/sso/openid/okta',
-          },
-          {
-            to: '/docs/beta/user-management/sso/saml/setup',
-            from: '/docs/beta/user-authentication/sso/saml',
-          },
-          {
-            to: '/docs/beta/user-management/onboard-users/overview',
-            from: '/docs/beta/user-authentication/user-lifecycle/',
-          },
-          {
-            to: '/docs/beta/user-management/authentication/self-hosted/workspace-login',
-            from: '/docs/beta/user-authentication/workspace-login',
-          },
-          {
             to: '/docs/user-management/sso/oidc/setup',
             from: '/docs/category/openid-connect',
           },
@@ -491,14 +427,15 @@ module.exports = {
             to: '/docs/development-lifecycle/gitsync/delete-gitsync',
             from: '/docs/release-management/gitsync/delete-gitsync',
           },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-            from: '/docs/release-management/gitsync/ssh-config',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-            from: '/docs/release-management/gitsync/tj-config',
-          },
+          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
+          //   from: '/docs/release-management/gitsync/ssh-config',
+          // },
+          // {
+          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
+          //   from: '/docs/release-management/gitsync/tj-config',
+          // },
           {
             to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
             from: '/docs/release-management/multi-environment',
@@ -571,10 +508,10 @@ module.exports = {
             to: '/docs/widgets/table/',
             from: '/docs/widgets/table/table-properties',
           },
-          {
-            to: '/docs/workflows/how-to/trigger-workflow-from-app',
-            from: '/docs/workflows/trigger-workflow-from-app',
-          }
+          // {
+          //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
+          //   from: '/docs/workflows/trigger-workflow-from-app',
+          // }
         ],
       },
     ],

@@ -54,7 +54,7 @@ export const DatePickerV2 = ({
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select time'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date'
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 

@@ -3,6 +3,8 @@ import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import useRouter from '@/_hooks/use-router';
 
 export const LeftSidebarItem = forwardRef(
   (
@@ -22,10 +24,19 @@ export const LeftSidebarItem = forwardRef(
     ref
   ) => {
     const { t } = useTranslation();
+    const router = useRouter();
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
     const content = (
-      <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
+      <div
+        {...rest}
+        className={className}
+        onClick={(e) => {
+          computePosthogEvent(text, router.query.id);
+          onClick && onClick(e);
+        }}
+        ref={ref}
+      >
         {icon && (
           <div
             className={`sidebar-svg-icon  position-relative ${
@@ -86,6 +97,25 @@ function NotificationBadge({ count }) {
       )}
     </>
   );
+}
+
+function computePosthogEvent(text, appId) {
+  let label = '';
+  switch (text) {
+    case 'Sources':
+      label = 'click_menu_datasources';
+      break;
+    case 'Debugger':
+      label = 'click_menu_debugger';
+      break;
+    case 'Inspector':
+      label = 'click_menu_inspector';
+      break;
+    case 'Comments':
+      label = 'click_menu_comment';
+      break;
+  }
+  posthogHelper.captureEvent(label, { appId });
 }
 
 LeftSidebarItem.CommentBadge = CommentBadge;

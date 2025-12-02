@@ -8,11 +8,11 @@ export const libraryAppService = {
   findDependentPluginsInTemplate,
 };
 
-function deploy(identifier, appName, dependentPluginsForTemplate = [], shouldAutoImportPlugin = false) {
+function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false) {
   const body = {
     identifier,
     appName,
-    dependentPluginsForTemplate,
+    dependentPlugins,
     shouldAutoImportPlugin,
   };
 

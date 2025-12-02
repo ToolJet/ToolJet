@@ -1,11 +1,12 @@
 import { DynamicModule } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
+import { SubModule } from '@modules/app/sub-module';
 
-export class EncryptionModule {
+export class EncryptionModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs.IS_GET_CONTEXT);
-    const { EncryptionService } = await import(`${importPath}/encryption/service`);
-    const { CredentialsService } = await import(`${importPath}/encryption/services/credentials.service`);
+    const { EncryptionService, CredentialsService } = await this.getProviders(configs, 'encryption', [
+      'service',
+      'services/credentials.service',
+    ]);
 
     return {
       module: EncryptionModule,

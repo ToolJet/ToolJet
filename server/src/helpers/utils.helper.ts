@@ -5,8 +5,9 @@ import { isEmpty } from 'lodash';
 import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
-
-const semver = require('semver');
+import { getEnvVars } from 'scripts/database-config-utils';
+import { decamelizeKeys } from 'humps';
+import * as semver from 'semver';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -82,7 +83,7 @@ export function isJSONString(value: string): boolean {
   try {
     JSON.parse(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -449,5 +450,60 @@ export const getSubpath = () => {
 };
 
 export function getTooljetEdition(): string {
-  return process.env.TOOLJET_EDITION?.toLowerCase() || 'ce';
+  if (process.env.TOOLJET_EDITION) {
+    return process.env.TOOLJET_EDITION.toLowerCase();
+  }
+  const envVars = getEnvVars();
+  return envVars['TOOLJET_EDITION']?.toLowerCase() || 'ce';
+}
+
+export function getCustomEnvVars(name: string) {
+  const envVars = getEnvVars();
+  return envVars[name] || '';
+}
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
+
+export function decamelizeKeysExcept(obj: any, ignoreKeys: string[]): any {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => decamelizeKeysExcept(item, ignoreKeys));
+  }
+
+  if (obj !== null && typeof obj === 'object') {
+    const result: Record<string, any> = {};
+    for (const key in obj) {
+      if (ignoreKeys.includes(key)) {
+        // 🔒 Keep as-is
+        result[key] = obj[key];
+      } else {
+        const decamelizedKey = decamelizeKeys({ [key]: null });
+        const transformedKey = Object.keys(decamelizedKey)[0];
+        result[transformedKey] = decamelizeKeysExcept(obj[key], ignoreKeys);
+      }
+    }
+    return result;
+  }
+
+  return obj;
+}
+export function objectGUIDtoString(buffer) {
+  function toHex(byte) {
+    return byte.toString(16).padStart(2, '0');
+  }
+
+  const guid = [
+    buffer.readUInt32LE(0).toString(16).padStart(8, '0'),
+    buffer.readUInt16LE(4).toString(16).padStart(4, '0'),
+    buffer.readUInt16LE(6).toString(16).padStart(4, '0'),
+    [...buffer.slice(8, 10)].map(toHex).join(''),
+    [...buffer.slice(10, 16)].map(toHex).join(''),
+  ];
+
+  return guid.join('-');
+}
+
+export function isValidEmail(value: any): boolean {
+  return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }

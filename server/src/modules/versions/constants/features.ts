@@ -7,12 +7,21 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.VERSION]: {
     [FEATURE_KEY.GET]: {},
     [FEATURE_KEY.GET_ONE]: {},
-    [FEATURE_KEY.CREATE]: {},
-    [FEATURE_KEY.DELETE]: {},
-    [FEATURE_KEY.UPDATE]: {},
-    [FEATURE_KEY.UPDATE_SETTINGS]: {},
+    [FEATURE_KEY.CREATE]: {
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.DELETE]: {
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.UPDATE]: {
+      auditLogsKey: 'APP_UPDATE',
+    },
+    [FEATURE_KEY.UPDATE_SETTINGS]: {
+      auditLogsKey: 'APP_UPDATE',
+    },
     [FEATURE_KEY.PROMOTE]: {
       license: LICENSE_FIELD.VALID,
+      auditLogsKey: 'APP_PROMOTE',
     },
     [FEATURE_KEY.CREATE_COMPONENTS]: {},
     [FEATURE_KEY.UPDATE_COMPONENTS]: {},
@@ -20,6 +29,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.DELETE_COMPONENTS]: {},
     [FEATURE_KEY.CREATE_PAGES]: {},
     [FEATURE_KEY.CLONE_PAGES]: {},
+    [FEATURE_KEY.CLONE_GROUP]: {},
     [FEATURE_KEY.UPDATE_PAGES]: {},
     [FEATURE_KEY.DELETE_PAGE]: {},
     [FEATURE_KEY.REORDER_PAGES]: {},
@@ -27,5 +37,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_EVENT]: {},
     [FEATURE_KEY.UPDATE_EVENT]: {},
     [FEATURE_KEY.DELETE_EVENT]: {},
+    [FEATURE_KEY.APP_VERSION_CREATE]: {},
+    [FEATURE_KEY.APP_VERSION_DELETE]: {},
+    [FEATURE_KEY.APP_VERSION_UPDATE]: {},
   },
 };

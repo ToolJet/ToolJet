@@ -14,13 +14,14 @@ export default ({
   workspaceConstants,
   isDisabled,
   width,
+  dataCy,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className="table-content-wrapper">
       {options.length === 0 && (
-        <div className="empty-key-value">
+        <div className="empty-key-value" data-cy="label-empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
           <span>There are no key value pairs added</span>
         </div>
@@ -29,6 +30,7 @@ export default ({
       {options.map((option, index) => (
         <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
           <Input
+            data-cy={`${dataCy}-key-input-field-${index}`}
             type="text"
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
@@ -39,7 +41,7 @@ export default ({
             disabled={isDisabled}
             style={{
               flex: 1,
-              width: width ? width : '300px',
+              width: '316px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -47,6 +49,7 @@ export default ({
           />
 
           <Input
+            data-cy={`${dataCy}-value-input-field-${index}`}
             type="text"
             value={option[1]}
             placeholder="Value"
@@ -66,6 +69,7 @@ export default ({
           />
 
           <button
+            data-cy={`${dataCy}-delete-button-${index}`}
             className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
               darkMode ? 'delete-field-option-dark' : ''
             }`}
@@ -81,6 +85,7 @@ export default ({
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
         <ButtonSolid
+          data-cy={`${dataCy}-add-button`}
           variant="ghostBlue"
           size="sm"
           onClick={() => addNewKeyValuePair(options)}

@@ -1,0 +1,58 @@
+.tj-daterange-widget {
+    .react-datepicker {
+        .react-datepicker__header {
+            background-color: var(--cc-surface1-surface);
+        }
+    }
+}
+
+.tj-table-datepicker .react-datepicker__day--keyboard-selected {
+    background-color: var(--cc-surface1-surface) !important;
+}
+
+.react-datepicker__day:not([aria-disabled=true]):hover {
+    border-radius: 0.3rem;
+    background-color: var(--cc-surface1-surface) !important;
+    filter: brightness(0.92);
+}
+
+.react-datepicker__day--keyboard-selected {
+    background-color: var(--cc-surface1-surface) !important;
+}
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:hover {
+        background-color: var(--cc-date-dropdown-hover) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:active {
+        background-color: var(--cc-date-dropdown-active) !important;
+    }
+
+}
+
+
+.react-datepicker-time-component.tj-datepicker-widget {
+    width: 124px !important;
+}
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list .react-select__option > div > span{
+        color: var(--cc-primary-text) !important;
+    }
+}
+
+.cc-timepicker-widget {
+    .react-datepicker__input-time-container {
+        border-radius: 10px;
+        overflow: clip !important;
+    }
+}

@@ -5,8 +5,10 @@ import './selecto.scss';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const EditorSelecto = () => {
+  const { moduleId } = useModuleContext();
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
@@ -16,7 +18,7 @@ export const EditorSelecto = () => {
   const filterSelectedComponentsByHighestLevel = (selectedIds) => {
     const highestLevelComponents = findHighestLevelofSelection(
       selectedIds.map((id) => {
-        const component = getComponentDefinition(id);
+        const component = getComponentDefinition(id, moduleId);
         return {
           ...component,
           id,
@@ -79,9 +81,6 @@ export const EditorSelecto = () => {
         setSelectedComponents(
           !isCanvasSelectStartEndSame ? newSelection : filterSelectedComponentsByHighestLevel(newSelection)
         );
-        if (e.isClick) {
-          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-        }
       }
       canvasStartId.current = null;
     },
@@ -119,7 +118,6 @@ export const EditorSelecto = () => {
             setSelectedComponents(mergedArray);
           }
         }
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
       }
       return false;
     },

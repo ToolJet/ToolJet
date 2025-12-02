@@ -18,6 +18,11 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
       select: ['id', 'name'],
     });
 
+    if (organizations.length === 0) {
+      console.log('No organizations found, skipping backfill.');
+      return;
+    }
+
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     const { DataSourcesUtilService } = await import(`${await getImportPath(true, edition)}/data-sources/util.service`);

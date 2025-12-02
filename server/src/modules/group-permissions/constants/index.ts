@@ -17,6 +17,7 @@ export const HUMANIZED_USER_LIST = ['End-user', 'Builder', 'Admin'];
 export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
+  WORKFLOWS = 'workflow',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {
@@ -26,10 +27,14 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
+    workflowCreate: true,
+    workflowDelete: true,
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
     isBuilderLevel: true,
+    appPromote: true,
+    appRelease: true,
   },
   BUILDER: {
     name: USER_ROLE.BUILDER,
@@ -37,21 +42,29 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appCreate: true,
     appDelete: true,
     folderCRUD: true,
+    workflowCreate: true,
+    workflowDelete: true,
     orgConstantCRUD: true,
-    dataSourceCreate: false,
-    dataSourceDelete: false,
+    dataSourceCreate: true,
+    dataSourceDelete: true,
     isBuilderLevel: true,
+    appPromote: true,
+    appRelease: true,
   },
   END_USER: {
     name: USER_ROLE.END_USER,
     type: GROUP_PERMISSIONS_TYPE.DEFAULT,
     appCreate: false,
     appDelete: false,
+    workflowCreate: false,
+    workflowDelete: false,
     folderCRUD: false,
     orgConstantCRUD: false,
     dataSourceCreate: false,
     dataSourceDelete: false,
     isBuilderLevel: false,
+    appPromote: false,
+    appRelease: false,
   },
 } as Record<string, CreateDefaultGroupObject>;
 
@@ -68,12 +81,20 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canUse: false,
       },
     },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: true,
+      canView: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
       canEdit: false,
       canView: true,
       hideFromDashboard: false,
+    },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: false,
+      canView: true,
     },
   },
   [USER_ROLE.BUILDER]: {
@@ -87,6 +108,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
         canConfigure: true,
         canUse: false,
       },
+    },
+    [ResourceType.WORKFLOWS]: {
+      canEdit: true,
+      canView: false,
     },
   },
 } as Record<USER_ROLE, Record<ResourceType, CreateResourcePermissionObject<any>>>;
@@ -104,9 +129,12 @@ export enum FEATURE_KEY {
   GET_ADDABLE_USERS = 'get_addable_group_user',
   GET_ADDABLE_APPS = 'get_addable_apps',
   GET_ADDABLE_DS = 'get_addable_ds',
-  CREATE_GRANULAR_PERMISSIONS = 'create_granular_permissions',
+  CREATE_GRANULAR_APP_PERMISSIONS = 'create_granular_app_permissions',
+  CREATE_GRANULAR_DATA_PERMISSIONS = 'create_granular_data_permissions',
   GET_ALL_GRANULAR_PERMISSIONS = 'get_all_granular_permissions',
-  UPDATE_GRANULAR_PERMISSIONS = 'update_granular_permissions',
-  DELETE_GRANULAR_PERMISSIONS = 'delete_granular_permissions',
+  UPDATE_GRANULAR_APP_PERMISSIONS = 'update_granular_app_permissions',
+  UPDATE_GRANULAR_DATA_PERMISSIONS = 'update_granular_data_permissions',
+  DELETE_GRANULAR_APP_PERMISSIONS = 'delete_granular_app_permissions',
+  DELETE_GRANULAR_DATA_PERMISSIONS = 'delete_granular_data_permissions',
   USER_ROLE_CHANGE = 'change_user_role',
 }

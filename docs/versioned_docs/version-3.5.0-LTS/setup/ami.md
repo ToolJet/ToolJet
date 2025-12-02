@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 :::
 
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
@@ -61,19 +61,19 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
    :::
 
-8. `TOOLJET_DB_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
+8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
 
    Examples:
-   `TOOLJET_DB_HOST=http://12.34.56.78` or
-   `TOOLJET_DB_HOST=https://yourdomain.com` or
-   `TOOLJET_DB_HOST=https://tooljet.yourdomain.com`
+   `TOOLJET_HOST=http://12.34.56.78` or
+   `TOOLJET_HOST=https://yourdomain.com` or
+   `TOOLJET_HOST=https://tooljet.yourdomain.com`
 
    :::info
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    :::
 
    :::info
-   Please make sure that `TOOLJET_DB_HOST` starts with either `http://` or `https://`
+   Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
    :::
 
 9. Once you've configured the `.env` file, run `./setup_app`. This script will install all the dependencies of ToolJet and then will start the required services.

@@ -14,8 +14,8 @@ export class LicenseOrganizationService implements ILicenseOrganizationService {
     protected readonly licenseCountsService: LicenseCountsService
   ) {}
 
-  async validateOrganization(manager: EntityManager): Promise<void> {
-    const workspacesCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
+  async validateOrganization(manager: EntityManager, organizationId: string): Promise<void> {
+    const workspacesCount = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKSPACES, organizationId);
 
     if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
       return;
@@ -26,9 +26,11 @@ export class LicenseOrganizationService implements ILicenseOrganizationService {
     }
   }
 
-  async limit(manager?: EntityManager): Promise<void> {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
-
+  async limit(organizationId: string, manager?: EntityManager): Promise<void> {
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
+      LICENSE_FIELD.WORKSPACES,
+      LICENSE_FIELD.STATUS,
+    ], organizationId);
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return {
         workspacesCount: generatePayloadForLimits(

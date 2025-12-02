@@ -9,8 +9,10 @@ import HeaderActions from '@/AppBuilder/Header/HeaderActions';
 import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
+  const appType = useAppType();
   const { setShowUndoRedoBtn, editingVersion } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
@@ -29,15 +31,17 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const renderOverlay = () => (
     <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
-        <span className="preview-settings-text">Preview settings</span>
-        {editingVersion && (
+        <span className="preview-settings-text" data-cy="preview-settings-text">
+          Preview settings
+        </span>
+        {editingVersion && appType !== 'module' && (
           <>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
             <AppEnvironments darkMode={darkMode} />
           </>
         )}
-        <span>
+        <span style={{ marginLeft: appType === 'module' && '10px' }}>
           <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
         </span>
       </div>
@@ -59,11 +63,15 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               className="released-version-no-header-mbl-preview"
               style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
             >
-              <span className="preview-chip" style={{ color: 'var(--slate12)' }}>
+              <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
                 Preview
               </span>
-              <span style={{ marginLeft: '12px', cursor: 'pointer' }} onClick={props.onClick}>
-                <Icon name="settings" height={12} width={12} fill="#889099" />
+              <span
+                style={{ marginLeft: '12px', cursor: 'pointer' }}
+                onClick={props.onClick}
+                data-cy="preview-settings"
+              >
+                <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
               </span>
             </div>
           )}
@@ -79,13 +87,17 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              <span style={{ marginTop: '4px' }}>
-                <AppEnvironments darkMode={darkMode} />
-              </span>
-              <hr className="m-0" />
-              <span>
-                <AppVersionsManager darkMode={darkMode} />
-              </span>
+              {appType !== 'module' && (
+                <>
+                  <span style={{ marginTop: '4px' }}>
+                    <AppEnvironments darkMode={darkMode} />
+                  </span>
+                  <hr className="m-0" />
+                  <span>
+                    <AppVersionsManager darkMode={darkMode} />
+                  </span>
+                </>
+              )}
 
               <div
                 className={classNames('d-flex px-2 pb-2 align-items-center width-100', {
@@ -108,12 +120,12 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       className="released-version-no-header-mbl-preview"
       style={{ backgroundColor: 'var(--slate5)', top: showHeader ? '' : '14px' }}
     >
-      <span className="preview-chip" style={{ color: 'var(--slate12)' }}>
+      <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
         Preview
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
-        <span style={{ marginLeft: '12px', cursor: 'pointer' }}>
-          <Icon name="settings" height={12} width={12} fill="#889099" />
+        <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
+          <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
         </span>
       </OverlayTrigger>
     </div>

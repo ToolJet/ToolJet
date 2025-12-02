@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
-import { OnboardingFormInsideWrapper, OnboardingUIWrapper } from '@/modules/onboarding/components';
+// import OnboardingUIWrapper from '../../../../../onboarding/components/OnboardingUIWrapper';
+// import OnboardingFormInsideWrapper from '../../../../../onboarding/components/OnboardingFormInsideWrapper/OnboardingFormInsideWrapper';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import { redirectToDashboard } from '@/_helpers/routes';
 import './resources/styles/login-form.styles.scss';
@@ -126,14 +128,18 @@ const LoginForm = ({
                 <p className="signup-info" data-cy="signup-info">
                   {organizationId && (
                     <>
-                      Sign in to the workspace - <span className="workspace-name">{configs?.name}</span>.
+                      Sign in to the workspace -{' '}
+                      <span className="workspace-name" data-cy="workspace-name">
+                        {configs?.name}
+                      </span>
+                      .
                     </>
                   )}{' '}
                   {isSignUpCTAEnabled && (
                     <>
                       {' '}
                       {signupText}{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="signin-link">
+                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
                         {t('createToolJetAccount', signUpCTA)}
                       </Link>
                     </>

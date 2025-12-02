@@ -38,6 +38,19 @@ export const tagsConfig = {
         defaultValue: true,
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+    },
   },
   exposedVariables: {},
   definition: {
@@ -54,6 +67,7 @@ export const tagsConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      padding: { value: 'default' },
     },
   },
 };

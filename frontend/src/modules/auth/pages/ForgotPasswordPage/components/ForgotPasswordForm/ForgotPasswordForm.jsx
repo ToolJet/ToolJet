@@ -8,6 +8,7 @@ import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import './resources/styles/forgot-password-form.styles.scss';
 import { Alert } from '@/_ui/Alert';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 const ForgotPasswordForm = ({ onSubmit }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
@@ -16,6 +17,8 @@ const ForgotPasswordForm = ({ onSubmit }) => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
   const whiteLabelText = retrieveWhiteLabelText();
+  const edition = fetchEdition();
+  const adminUser = edition === 'cloud' ? 'admin' : 'super admin';
   useEffect(() => {
     setIsFormValid(validateEmail(email));
     const emailError =
@@ -81,7 +84,7 @@ const ForgotPasswordForm = ({ onSubmit }) => {
             imgWidth={'25px'}
           >
             <div className="reset-password-info-text" data-cy="reset-password-info-banner">
-              {t('forgotPasswordPage.contactSuperAdmin', 'Contact super admin to reset your password')}
+              {`Contact ${adminUser} to reset your password`}
             </div>
           </Alert>
         </div>

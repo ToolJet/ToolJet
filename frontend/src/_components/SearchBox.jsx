@@ -4,6 +4,7 @@ import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 import { useMounted } from '@/_hooks/use-mount';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import './_styles/search-box.scss';
 
 export const SearchBox = forwardRef(
   (

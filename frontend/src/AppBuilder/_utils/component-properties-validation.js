@@ -178,7 +178,7 @@ export const validateProperty = (resolvedProperty, propertyDefinitions, paramNam
   return [_valid, errors, newValue];
 };
 
-function findDefault(definition, value) {
+export function findDefault(definition, value) {
   switch (definition.type) {
     case 'string':
       return '';

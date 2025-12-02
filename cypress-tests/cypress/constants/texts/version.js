@@ -19,9 +19,13 @@ export const deleteVersionText = {
 
 export const onlydeleteVersionText = {
   deleteModalText: (text) => {
-    return `Are you sure you want to delete this version - ${cyParamName(
+    return `Deleting a version will permanently remove it from all environments.Are you sure you want to delete this version - ${cyParamName(
       text
     )}?`;
+
+    // `Are you sure you want to delete this version - ${cyParamName(
+    //   text
+    // )}?`;
   },
   deleteToastMessage: (version) => {
     return `Cannot delete only version of app`;

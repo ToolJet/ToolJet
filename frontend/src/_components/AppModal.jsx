@@ -10,6 +10,7 @@ import { PluginsListForAppModal } from './PluginsListForAppModal';
 const APP_TYPE = {
   WORKFLOW: 'workflow',
   APP: 'app',
+  MODULE: 'module',
 };
 
 export function AppModal({
@@ -29,7 +30,7 @@ export function AppModal({
   handleCommitEnableChange,
   appType,
   dependentPluginsDetail = [],
-  dependentPluginsForTemplate = [],
+  dependentPlugins = [],
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -37,7 +38,7 @@ export function AppModal({
     selectedAppName = '';
   }
 
-  if (actionButton === 'Clone app') {
+  if (actionButton.includes('Clone')) {
     if (selectedAppName.length >= 45) {
       selectedAppName = selectedAppName.slice(0, 45) + '_Copy';
     } else {
@@ -51,6 +52,8 @@ export function AppModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isNameChanged, setIsNameChanged] = useState(false);
   const inputRef = useRef(null);
+
+  const appTypeName = APP_TYPE.WORKFLOW == appType ? 'Workflow' : APP_TYPE.MODULE == appType ? 'Module' : 'App';
 
   useEffect(() => {
     setIsNameChanged(newAppName?.trim() !== selectedAppName);
@@ -85,7 +88,7 @@ export function AppModal({
           success = await processApp(trimmedAppName);
         }
         if (success === false) {
-          setErrorText(`${appType == APP_TYPE.WORKFLOW ? 'Workflow' : 'App'} name already exists`);
+          setErrorText(`${appTypeName} name already exists`);
           setInfoText('');
         } else {
           setErrorText('');
@@ -124,11 +127,8 @@ export function AppModal({
   const createBtnDisableState =
     isLoading ||
     errorText ||
-    (actionButton === 'Rename app' && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
-    (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0));
-
-  const appTypeName = APP_TYPE.WORKFLOW == appType ? 'Workflow' : 'App';
-
+    (actionButton.includes('Rename') && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
+    (actionButton.includes('Rename') && (newAppName.length > 50 || newAppName.trim().length === 0));
   return (
     <Modal
       show={show}
@@ -216,7 +216,7 @@ export function AppModal({
                   {`${appTypeName} name must be unique and max 50 characters`}
                 </small>
               )}
-              {orgGit?.is_enabled && appType != APP_TYPE.WORKFLOW && (
+              {orgGit?.is_enabled && appType != APP_TYPE.WORKFLOW && appType != APP_TYPE.MODULE && (
                 <div className="commit-changes mt-3">
                   <div>
                     <input
@@ -238,10 +238,10 @@ export function AppModal({
                 </div>
               )}
             </div>
-            {dependentPluginsForTemplate && dependentPluginsForTemplate.length >= 1 && (
+            {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>
                 <PluginsListForAppModal
-                  dependentPluginsForTemplate={dependentPluginsForTemplate}
+                  dependentPlugins={dependentPlugins}
                   dependentPluginsDetail={dependentPluginsDetail}
                 />
               </div>

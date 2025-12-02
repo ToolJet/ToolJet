@@ -6,6 +6,7 @@ export const FEATURES: FeaturesConfig = {
   [MODULES.ONBOARDING]: {
     [FEATURE_KEY.ACTIVATE_ACCOUNT]: {
       isPublic: true,
+      auditLogsKey: 'USER_SIGNUP',
     }, // Account Activation
     [FEATURE_KEY.SETUP_SUPER_ADMIN]: {
       isPublic: true,
@@ -15,6 +16,7 @@ export const FEATURES: FeaturesConfig = {
     }, // Signup
     [FEATURE_KEY.ACCEPT_INVITE]: {
       isPublic: true,
+      auditLogsKey: 'USER_INVITE_REDEEM',
     }, // Accept Invitation
     [FEATURE_KEY.RESEND_INVITE]: {
       isPublic: true,
@@ -27,6 +29,7 @@ export const FEATURES: FeaturesConfig = {
     }, // Verify Organization Token
     [FEATURE_KEY.SETUP_ACCOUNT_FROM_TOKEN]: {
       isPublic: true,
+      auditLogsKey: 'USER_SIGNUP',
     }, // Setup Account From Token
     [FEATURE_KEY.CHECK_WORKSPACE_UNIQUENESS]: {
       isPublic: true,

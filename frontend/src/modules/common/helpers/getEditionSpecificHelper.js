@@ -3,17 +3,27 @@
 import { fetchEdition } from './utils';
 
 // Static imports for all possible modules
-import * as commonWhiteLabelling from '@/modules/common/helpers/whiteLabelling';
-import * as eeWhiteLabelling from '@ee/modules/helpers/whiteLabelling';
+// import * as commonWhiteLabelling from '@/modules/common/helpers/whiteLabelling';
+// import * as eeWhiteLabelling from '@ee/modules/helpers/whiteLabelling';
 // import * as cloudWhiteLabelling from '@cloud/modules/helpers/whiteLabelling';
+import * as posthog from '@/modules/common/helpers/posthog';
+import * as posthogCloud from '@ee/modules/common/helpers/posthog';
 
 // Map of all helpers
 const helperModules = {
-  whiteLabelling: {
-    ce: commonWhiteLabelling,
-    ee: eeWhiteLabelling,
-    /* Can uncomment this once the cloud sub-module is ready */
-    // cloud: cloudWhiteLabelling,
+  //Doesn't work..
+
+  // whiteLabelling: {
+  //   ce: commonWhiteLabelling,
+  //   ee: eeWhiteLabelling,
+  //   cloud: eeWhiteLabelling, // Treat cloud as enterprise edition for now
+  //   /* Can uncomment this once the cloud sub-module is ready */
+  //   // cloud: cloudWhiteLabelling,
+  // },
+  posthog: {
+    ce: posthog,
+    ee: posthog, //no posthog for ee
+    cloud: posthogCloud,
   },
   // Add other helpers here in the same structure
 };

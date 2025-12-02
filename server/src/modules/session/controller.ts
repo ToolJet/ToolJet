@@ -13,6 +13,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { FeatureAbilityGuard } from './ability/guard';
+import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 
 @Controller('session')
 @InitModule(MODULES.SESSION)
@@ -40,8 +41,9 @@ export class SessionController implements ISessionController {
   getSessionDetails(
     @User() user: UserEntity,
     @Query('appId') appId: string,
-    @Query('workspaceSlug') workspaceSlug: string
+    @Query('workspaceSlug') workspaceSlug: string,
+    @AiCookies() aiCookies: any
   ) {
-    return this.sessionService.getSessionDetails(user, workspaceSlug, appId);
+    return this.sessionService.getSessionDetails(user, workspaceSlug, appId, aiCookies);
   }
 }

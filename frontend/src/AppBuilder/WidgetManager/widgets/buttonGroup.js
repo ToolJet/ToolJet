@@ -68,7 +68,7 @@ export const buttonGroupConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -76,7 +76,7 @@ export const buttonGroupConfig = {
       },
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -108,7 +108,7 @@ export const buttonGroupConfig = {
       },
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected text colour',
       validation: {
         schema: { type: 'string' },
@@ -116,17 +116,45 @@ export const buttonGroupConfig = {
       },
     },
     selectedBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#007bff',
+        defaultValue: 'var(--cc-primary-brand)',
       },
+    },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
     },
   },
   exposedVariables: {
     selected: [1],
   },
+  actions: [
+    {
+      handle: 'setSelected',
+      displayName: 'Select option',
+      params: [{ handle: 'selected', displayName: 'Value' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -141,13 +169,15 @@ export const buttonGroupConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '' },
-      textColor: { value: '' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
       selectedTextColor: { value: '#FFFFFF' },
-      selectedBackgroundColor: { value: '#4368E3' },
+      padding: { value: 'default' },
+      selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      alignment: { value: 'left' },
     },
   },
 };

@@ -31,7 +31,7 @@ The **Timer** component allows users to track time by counting both upward and d
 | On reset                                    | Triggers whenever the user clicks on reset button.   |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Check [Action Reference](/docs/3.5.0-LTS/actions/show-alert) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>

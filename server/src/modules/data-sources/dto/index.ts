@@ -47,7 +47,6 @@ export class GetDataSourceOauthUrlDto {
   @IsOptional()
   source_options: any;
 
-  @IsString()
   @IsOptional()
   plugin_id: string;
 }

@@ -13,6 +13,7 @@ import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const [page, setPage] = useState(0);
@@ -55,6 +56,15 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           setIsLoading(false);
           redirectToDashboard(data);
           setCompleted(false);
+          const ssoType = localStorage.getItem('ph-sso-type');
+          const event = `onboarding_${
+            source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
+          }`;
+          posthogHelper.initPosthog(data);
+          posthogHelper.captureEvent(event, {
+            email: data.email,
+            workspace_id: data.organization_id || data.current_organization_id,
+          });
         })
         .catch((res) => {
           setIsLoading(false);

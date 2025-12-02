@@ -4,10 +4,7 @@ import { FeaturesConfig } from '../types';
 
 export const FEATURES: FeaturesConfig = {
   [MODULES.ORGANIZATION_CONSTANT]: {
-    [FEATURE_KEY.GET]: {},
-    [FEATURE_KEY.GET_PUBLIC]: {
-      isPublic: true,
-    },
+    [FEATURE_KEY.GET_PUBLIC]: {},
     [FEATURE_KEY.GET_FROM_APP]: {},
     [FEATURE_KEY.GET_FROM_ENVIRONMENT]: {},
     [FEATURE_KEY.CREATE]: {},

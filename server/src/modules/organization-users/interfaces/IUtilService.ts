@@ -14,7 +14,13 @@ export interface IOrganizationUsersUtilService {
     roleUpdateObj: RoleUpdate,
     manager: EntityManager
   ): Promise<void>;
-  attachUserGroup(groups: string[], organizationId: string, userId: string, manager?: EntityManager): Promise<void>;
+  attachUserGroup(
+    groups: string[],
+    organizationId: string,
+    userId: string,
+    areGroupIds: boolean,
+    manager?: EntityManager
+  ): Promise<void>;
   updateUserStatus(userId: string, status: string, manager?: EntityManager): Promise<void>;
   findInvitingUserByEmail(email: string, manager?: EntityManager): Promise<User>;
   validateInvitingUser(email: string, organizationId: string, manager: EntityManager): Promise<User>;

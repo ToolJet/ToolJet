@@ -8,6 +8,8 @@ export interface CreateDefaultGroupObject {
   name: string;
   appCreate?: boolean;
   appDelete?: boolean;
+  workflowCreate?: boolean;
+  workflowDelete?: boolean;
   folderCRUD?: boolean;
   orgConstantCRUD?: boolean;
   dataSourceCreate?: boolean;
@@ -19,6 +21,7 @@ export interface GranularPermissionQuerySearchParam {
   name?: SearchParamItem;
   type?: string;
   groupId?: string;
+  filterDataSource?: boolean;
 }
 interface SearchParamItem {
   value: string;
@@ -51,11 +54,14 @@ interface Features {
   [FEATURE_KEY.GET_ALL]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_GROUP_USER]: FeatureConfig;
-  [FEATURE_KEY.DELETE_GRANULAR_PERMISSIONS]: FeatureConfig;
-  [FEATURE_KEY.CREATE_GRANULAR_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GRANULAR_APP_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.DELETE_GRANULAR_DATA_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.CREATE_GRANULAR_APP_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.CREATE_GRANULAR_DATA_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_APPS]: FeatureConfig;
-  [FEATURE_KEY.UPDATE_GRANULAR_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_GRANULAR_APP_PERMISSIONS]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_GRANULAR_DATA_PERMISSIONS]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_DS]: FeatureConfig;
   [FEATURE_KEY.USER_ROLE_CHANGE]: FeatureConfig;
 }

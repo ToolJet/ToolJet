@@ -1,6 +1,6 @@
 // src/interfaces/controllers/login-configs-controller.interface.ts
 import { OrganizationConfigsUpdateDto, InstanceConfigsUpdateDto } from '../dto';
-import { User as UserEntity } from '@entities/user.entity';
+import { User, User as UserEntity } from '@entities/user.entity';
 
 export interface ILoginConfigsController {
   /**
@@ -37,11 +37,13 @@ export interface ILoginConfigsController {
    * Update instance general configs
    * PATCH '/instance-general'
    */
-  updateGeneralConfigs(body: InstanceConfigsUpdateDto): Promise<any>;
+  updateGeneralConfigs(body: InstanceConfigsUpdateDto, user: User): Promise<any>;
 
   /**
    * Update organization general configs
    * PATCH '/organization-general'
    */
   updateOrganizationGeneralConfigs(body: OrganizationConfigsUpdateDto, user: UserEntity): Promise<any>;
+
+  updateInheritSSO(body: OrganizationConfigsUpdateDto, user: User);
 }

@@ -8,32 +8,55 @@ export default ({
   getter,
   options = [['', '']],
   optionchanged,
+  handleOptionChange,
   isRenderedAsQueryEditor,
   workspaceConstants,
   isDisabled,
   buttonText,
   width,
+  dataCy,
 }) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
-    optionchanged(getter, newPairs);
+
+    if (handleOptionChange) {
+      handleOptionChange(getter, newPairs, true);
+    } else {
+      optionchanged(getter, newPairs);
+    }
   }
 
   function removeKeyValuePair(index) {
     const newOptions = [...options];
     newOptions.splice(index, 1);
-    optionchanged(getter, newOptions);
+    if (handleOptionChange) {
+      handleOptionChange(getter, newOptions, true);
+    } else {
+      optionchanged(getter, newOptions);
+    }
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
     if (!isRenderedAsQueryEditor) {
       const newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
+      if (options.length - 1 === index) {
+        addNewKeyValuePair(newOptions);
+      } else {
+        if (handleOptionChange) {
+          handleOptionChange(getter, newOptions, true);
+        } else {
+          optionchanged(getter, newOptions);
+        }
+      }
     } else {
       let newOptions = deepClone(options);
       newOptions[index][keyIndex] = value;
-      optionchanged(getter, newOptions);
+      if (handleOptionChange) {
+        handleOptionChange(getter, newOptions, true);
+      } else {
+        optionchanged(getter, newOptions);
+      }
     }
   }
 
@@ -44,6 +67,7 @@ export default ({
     keyValuePairValueChanged,
     isDisabled,
     buttonText,
+    dataCy,
   };
 
   return isRenderedAsQueryEditor ? (

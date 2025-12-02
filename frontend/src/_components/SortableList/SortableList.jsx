@@ -36,7 +36,7 @@ export function SortableList({ items, onChange, renderItem }) {
       }}
     >
       <SortableContext items={items}>
-        {items.map((item) => (
+        {items?.map((item) => (
           <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
         ))}
       </SortableContext>

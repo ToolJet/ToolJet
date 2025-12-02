@@ -8,7 +8,6 @@ interface Features {
   [FEATURE_KEY.GET_LICENSE]: FeatureConfig;
   [FEATURE_KEY.GET_PLANS]: FeatureConfig;
   [FEATURE_KEY.GET_TERMS]: FeatureConfig;
-  [FEATURE_KEY.GET_ORGANIZATION_LIMITS]: FeatureConfig;
   [FEATURE_KEY.GET_APP_LIMITS]: FeatureConfig;
   [FEATURE_KEY.CHECK_AUDIT_LOGS_LICENSE]: FeatureConfig;
   [FEATURE_KEY.GET_AUDIT_LOGS_MAX_DURATION]: FeatureConfig;
@@ -17,6 +16,8 @@ interface Features {
   [FEATURE_KEY.UPDATE_LICENSE]: FeatureConfig;
   [FEATURE_KEY.GET_ORGANIZATION_LIMITS]: FeatureConfig;
   [FEATURE_KEY.GET_APP_LIMITS]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_CLOUD_TRIAL_LICENSE]: FeatureConfig;
+  [FEATURE_KEY.GENERATE_EE_TRIAL_LICENSE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

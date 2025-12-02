@@ -3,7 +3,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
 
-export const CopyToClipboardComponent = ({ data, callback, useCopyIcon }) => {
+export const CopyToClipboardComponent = ({ children, data, callback, useCopyIcon }) => {
   const [copied, setCopied] = React.useState(false);
   const dataToCopy = callback(data);
   const message = 'Copied to clipboard';
@@ -30,12 +30,14 @@ export const CopyToClipboardComponent = ({ data, callback, useCopyIcon }) => {
           toast.success(message, { position: 'top-center' });
         }}
       >
-        <span
-          style={{ height: '13px', width: '13px', marginBottom: useCopyIcon ? '8px' : '4px' }}
-          className="mx-1 copy-to-clipboard"
-        >
-          {useCopyIcon ? <CustomCopyIcon /> : <DefaultCopyIcon />}
-        </span>
+        {children ?? (
+          <span
+            style={{ height: '13px', width: '13px', marginBottom: useCopyIcon ? '8px' : '4px' }}
+            className="mx-1 copy-to-clipboard"
+          >
+            {useCopyIcon ? <CustomCopyIcon /> : <DefaultCopyIcon />}
+          </span>
+        )}
       </CopyToClipboard>
     </ToolTip>
   );

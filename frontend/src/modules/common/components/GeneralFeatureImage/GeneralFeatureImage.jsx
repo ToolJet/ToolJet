@@ -11,7 +11,7 @@ const GeneralFeatureImage = () => {
       <div className="gradient-top">
         <GradientTopImage />
       </div>
-      <div className="main-image-container">
+      <div className="main-image-container" data-cy="onboarding-image">
         <FeatImage />
       </div>
       <div className="gradient-bottom">
