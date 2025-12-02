@@ -74,7 +74,7 @@
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for refunding a transaction",
-        "placeholder": "{\n  \"transId\": \"12345678\",\n  \"amount\": \"5.00\",\n  \"cardNumber\": \"1111\"\n}",
+        "placeholder": "{\n  \"transId\": \"80048625878\",\n  \"amount\": \"1.00\",\n  \"cardNumber\": \"0015\",\n  \"expirationDate\": \"XXXX\"\n}",
         "height": "300px",
         "mandatory": true,
         "tooltip": "Provide the refund details as JSON. See Authorize.Net documentation for complete request format."

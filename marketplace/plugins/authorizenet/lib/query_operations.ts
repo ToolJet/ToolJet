@@ -15,7 +15,7 @@ import Constants from 'authorizenet/lib/constants';
     merchantAuthenticationType.setTransactionKey(sourceOptions.transactionKey);
     return merchantAuthenticationType;
   }
-
+// helpers
 function parseRequestBody(queryOptions: any): any {
   return typeof queryOptions.requestBody === 'string' 
     ? JSON.parse(queryOptions.requestBody) 
@@ -115,6 +115,109 @@ function createCreditCard(cardData: any): any {
   
   return creditCard;
 }
+function executeController<T>(ctrl: any, ResponseClass: any, errorTitle: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    ctrl.execute(() => {
+      const apiResponse = ctrl.getResponse();
+      const response = new ResponseClass(apiResponse);
+
+      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
+        resolve(response);
+      } else {
+        const msg = response.getMessages().getMessage()[0];
+        reject(new QueryError(errorTitle, msg.getText(), {
+          code: msg.getCode(),
+          message: msg.getText(),
+        }));
+      }
+    });
+  });
+}
+function setProcessingOptions(transactionRequest: any, params: any): void {
+  if (!params.processingOptions) return;
+
+  const processingOptions = new ApiContracts.ProcessingOptions();
+  if (params.processingOptions.isSubsequentAuth) {
+    processingOptions.setIsSubsequentAuth(params.processingOptions.isSubsequentAuth);
+  }
+  transactionRequest.setProcessingOptions(processingOptions);
+}
+function setSubsequentAuthInformation(transactionRequest: any, params: any): void {
+  if (!params.subsequentAuthInformation) return;
+
+  const subsequentAuthInfo = new ApiContracts.SubsequentAuthInformation();
+  if (params.subsequentAuthInformation.originalNetworkTransId) {
+    subsequentAuthInfo.setOriginalNetworkTransId(params.subsequentAuthInformation.originalNetworkTransId);
+  }
+  if (params.subsequentAuthInformation.originalAuthAmount) {
+    subsequentAuthInfo.setOriginalAuthAmount(params.subsequentAuthInformation.originalAuthAmount);
+  }
+  if (params.subsequentAuthInformation.reason) {
+    subsequentAuthInfo.setReason(params.subsequentAuthInformation.reason);
+  }
+  transactionRequest.setSubsequentAuthInformation(subsequentAuthInfo);
+}
+function setAuthorizationIndicatorType(transactionRequest: any, params: any): void {
+  if (!params.authorizationIndicatorType) return;
+
+  const authIndicatorType = new ApiContracts.AuthorizationIndicatorType();
+  if (params.authorizationIndicatorType.authorizationIndicator) {
+    authIndicatorType.setAuthorizationIndicator(params.authorizationIndicatorType.authorizationIndicator);
+  }
+  transactionRequest.setAuthorizationIndicatorType(authIndicatorType);
+}
+function setCustomerData(transactionRequest: any, params: any): void {
+  if (params.customer) {
+    const customer = new ApiContracts.CustomerDataType();
+    if (params.customer.id) customer.setId(params.customer.id);
+    transactionRequest.setCustomer(customer);
+  }
+
+  if (params.customerIP) {
+    transactionRequest.setCustomerIP(params.customerIP);
+  }
+}
+function setUserFields(transactionRequest: any, params: any): void {
+  if (!params.userFields) return;
+
+  const userFieldsArray = Array.isArray(params.userFields.userField)
+    ? params.userFields.userField
+    : [params.userFields.userField];
+  
+  const userFields = [];
+  userFieldsArray.forEach(uf => {
+    if (uf) {
+      const userField = new ApiContracts.UserField();
+      if (uf.name) userField.setName(uf.name);
+      if (uf.value) userField.setValue(uf.value);
+      userFields.push(userField);
+    }
+  });
+  
+  if (userFields.length > 0) {
+    const userFieldsList = new ApiContracts.TransactionRequestType.UserFields();
+    userFieldsList.setUserField(userFields);
+    transactionRequest.setUserFields(userFieldsList);
+  }
+}
+function setTransactionSettings(transactionRequest: any, params: any): void {
+  if (!params.transactionSettings) return;
+
+  const settingsList = new ApiContracts.ArrayOfSetting();
+  const settingsArray = Array.isArray(params.transactionSettings.setting)
+    ? params.transactionSettings.setting
+    : [params.transactionSettings.setting];
+  
+  settingsArray.forEach(s => {
+    const setting = new ApiContracts.SettingType();
+    if (s.settingName) setting.setSettingName(s.settingName);
+    if (s.settingValue) setting.setSettingValue(s.settingValue);
+    settingsList.getSetting().push(setting);
+  });
+  transactionRequest.setTransactionSettings(settingsList);
+}
+
+//main operations
 export async function chargeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
@@ -137,75 +240,12 @@ export async function chargeCreditCard(sourceOptions: SourceOptions, queryOption
     transactionRequestType.setPoNumber(params.poNumber);
   }
 
-  if (params.customer) {
-    const customer = new ApiContracts.CustomerDataType();
-    if (params.customer.id) customer.setId(params.customer.id);
-    transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.customerIP) {
-    transactionRequestType.setCustomerIP(params.customerIP);
-  }
-
-  if (params.transactionSettings) {
-    const settingsList = new ApiContracts.ArrayOfSetting();
-    const settingsArray = Array.isArray(params.transactionSettings.setting)
-      ? params.transactionSettings.setting
-      : [params.transactionSettings.setting];
-    
-    settingsArray.forEach(s => {
-      const setting = new ApiContracts.SettingType();
-      if (s.settingName) setting.setSettingName(s.settingName);
-      if (s.settingValue) setting.setSettingValue(s.settingValue);
-      settingsList.getSetting().push(setting);
-    });
-    transactionRequestType.setTransactionSettings(settingsList);
-  }
-
-  if (params.userFields) {
-    const userFieldsList = new ApiContracts.TransactionRequestType.UserFields();
-    const userFieldsArray = Array.isArray(params.userFields.userField)
-      ? params.userFields.userField
-      : [params.userFields.userField];
-    
-    userFieldsArray.forEach(uf => {
-      const userField = new ApiContracts.UserField();
-      if (uf.name) userField.setName(uf.name);
-      if (uf.value) userField.setValue(uf.value);
-      userFieldsList.getUserField().push(userField);
-    });
-    transactionRequestType.setUserFields(userFieldsList);
-  }
-
-  if (params.processingOptions) {
-    const processingOptions = new ApiContracts.ProcessingOptions();
-    if (params.processingOptions.isSubsequentAuth) {
-      processingOptions.setIsSubsequentAuth(params.processingOptions.isSubsequentAuth);
-    }
-    transactionRequestType.setProcessingOptions(processingOptions);
-  }
-
-  if (params.subsequentAuthInformation) {
-    const subsequentAuthInfo = new ApiContracts.SubsequentAuthInformation();
-    if (params.subsequentAuthInformation.originalNetworkTransId) {
-      subsequentAuthInfo.setOriginalNetworkTransId(params.subsequentAuthInformation.originalNetworkTransId);
-    }
-    if (params.subsequentAuthInformation.originalAuthAmount) {
-      subsequentAuthInfo.setOriginalAuthAmount(params.subsequentAuthInformation.originalAuthAmount);
-    }
-    if (params.subsequentAuthInformation.reason) {
-      subsequentAuthInfo.setReason(params.subsequentAuthInformation.reason);
-    }
-    transactionRequestType.setSubsequentAuthInformation(subsequentAuthInfo);
-  }
-
-  if (params.authorizationIndicatorType) {
-    const authIndicatorType = new ApiContracts.AuthorizationIndicatorType();
-    if (params.authorizationIndicatorType.authorizationIndicator) {
-      authIndicatorType.setAuthorizationIndicator(params.authorizationIndicatorType.authorizationIndicator);
-    }
-    transactionRequestType.setAuthorizationIndicatorType(authIndicatorType);
-  }
+  setCustomerData(transactionRequestType, params);
+  setTransactionSettings(transactionRequestType, params);
+  setUserFields(transactionRequestType, params);
+  setProcessingOptions(transactionRequestType, params);
+  setSubsequentAuthInformation(transactionRequestType, params);
+  setAuthorizationIndicatorType(transactionRequestType, params);
 
   const createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuth);
@@ -215,31 +255,15 @@ export async function chargeCreditCard(sourceOptions: SourceOptions, queryOption
   const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Transaction failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Transaction failed");
 }
+
 export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
 
   const cardData = params.payment?.creditCard || params;
-  const creditCard = createCreditCard(params);
+  const creditCard = createCreditCard(cardData);
 
   const paymentType = new ApiContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
@@ -257,67 +281,11 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
     transactionRequestType.setPoNumber(params.poNumber);
   }
 
-  if (params.customer) {
-    const customer = new ApiContracts.CustomerDataType();
-    if (params.customer.id) customer.setId(params.customer.id);
-    transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.customerIP) {
-    transactionRequestType.setCustomerIP(params.customerIP);
-  }
-
-  if (params.userFields) {
-    const userFieldsArray = Array.isArray(params.userFields.userField)
-      ? params.userFields.userField
-      : [params.userFields.userField];
-    
-    const userFields = [];
-    userFieldsArray.forEach(uf => {
-      if (uf) {
-        const userField = new ApiContracts.UserField();
-        if (uf.name) userField.setName(uf.name);
-        if (uf.value) userField.setValue(uf.value);
-        userFields.push(userField);
-      }
-    });
-    
-    if (userFields.length > 0) {
-      const userFieldsList = new ApiContracts.TransactionRequestType.UserFields();
-      userFieldsList.setUserField(userFields);
-      transactionRequestType.setUserFields(userFieldsList);
-    }
-  }
-
-  if (params.processingOptions) {
-    const processingOptions = new ApiContracts.ProcessingOptions();
-    if (params.processingOptions.isSubsequentAuth) {
-      processingOptions.setIsSubsequentAuth(params.processingOptions.isSubsequentAuth);
-    }
-    transactionRequestType.setProcessingOptions(processingOptions);
-  }
-
-  if (params.subsequentAuthInformation) {
-    const subsequentAuthInfo = new ApiContracts.SubsequentAuthInformation();
-    if (params.subsequentAuthInformation.originalNetworkTransId) {
-      subsequentAuthInfo.setOriginalNetworkTransId(params.subsequentAuthInformation.originalNetworkTransId);
-    }
-    if (params.subsequentAuthInformation.originalAuthAmount) {
-      subsequentAuthInfo.setOriginalAuthAmount(params.subsequentAuthInformation.originalAuthAmount);
-    }
-    if (params.subsequentAuthInformation.reason) {
-      subsequentAuthInfo.setReason(params.subsequentAuthInformation.reason);
-    }
-    transactionRequestType.setSubsequentAuthInformation(subsequentAuthInfo);
-  }
-
-  if (params.authorizationIndicatorType) {
-    const authIndicatorType = new ApiContracts.AuthorizationIndicatorType();
-    if (params.authorizationIndicatorType.authorizationIndicator) {
-      authIndicatorType.setAuthorizationIndicator(params.authorizationIndicatorType.authorizationIndicator);
-    }
-    transactionRequestType.setAuthorizationIndicatorType(authIndicatorType);
-  }
+  setCustomerData(transactionRequestType, params);
+  setUserFields(transactionRequestType, params);
+  setProcessingOptions(transactionRequestType, params);
+  setSubsequentAuthInformation(transactionRequestType, params);
+  setAuthorizationIndicatorType(transactionRequestType, params);
 
   const createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuth);
@@ -329,25 +297,9 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
   const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Authorization failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Authorization failed");
 }
+
 export async function captureAuthorizedAmount(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
@@ -367,30 +319,15 @@ export async function captureAuthorizedAmount(sourceOptions: SourceOptions, quer
   const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Capture failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Capture failed");
 }
+
 export async function refundTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
      const params = parseRequestBody(queryOptions);
-    const creditCard = createCreditCard(params);
-
+     const creditCard = new ApiContracts.CreditCardType();
+    creditCard.setCardNumber(params.cardNumber);  
+    creditCard.setExpirationDate(params.expirationDate);   
     const paymentType = new ApiContracts.PaymentType();
     paymentType.setCreditCard(creditCard);
 
@@ -407,24 +344,11 @@ export async function refundTransaction(sourceOptions: SourceOptions, queryOptio
     const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Refund failed', errorMessage, response)
-          );
-        }
-      });
-    });
+    return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Refund failed");
 }
+
 export async function voidTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
   const params = parseRequestBody(queryOptions);
 
   if (!params.transId) {
@@ -457,29 +381,9 @@ export async function voidTransaction(sourceOptions: SourceOptions, queryOptions
 
   const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
-
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-      
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const messages = response.getMessages().getMessage();
-        const errorMessage = messages[0].getText();
-        const errorCode = messages[0].getCode();
-        
-        reject(
-          new QueryError('Void failed', errorMessage, {
-            code: errorCode,
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Void failed");
 }
+
 export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
@@ -510,45 +414,10 @@ export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryO
     transactionRequestType.setPoNumber(params.poNumber);
   }
 
-  if (params.customer) {
-    const customer = new ApiContracts.CustomerDataType();
-    if (params.customer.id) customer.setId(params.customer.id);
-    transactionRequestType.setCustomer(customer);
-  }
-
-  if (params.customerIP) {
-    transactionRequestType.setCustomerIP(params.customerIP);
-  }
-
-  if (params.processingOptions) {
-    const processingOptions = new ApiContracts.ProcessingOptions();
-    if (params.processingOptions.isSubsequentAuth) {
-      processingOptions.setIsSubsequentAuth(params.processingOptions.isSubsequentAuth);
-    }
-    transactionRequestType.setProcessingOptions(processingOptions);
-  }
-
-  if (params.subsequentAuthInformation) {
-    const subsequentAuthInfo = new ApiContracts.SubsequentAuthInformation();
-    if (params.subsequentAuthInformation.originalNetworkTransId) {
-      subsequentAuthInfo.setOriginalNetworkTransId(params.subsequentAuthInformation.originalNetworkTransId);
-    }
-    if (params.subsequentAuthInformation.originalAuthAmount) {
-      subsequentAuthInfo.setOriginalAuthAmount(params.subsequentAuthInformation.originalAuthAmount);
-    }
-    if (params.subsequentAuthInformation.reason) {
-      subsequentAuthInfo.setReason(params.subsequentAuthInformation.reason);
-    }
-    transactionRequestType.setSubsequentAuthInformation(subsequentAuthInfo);
-  }
-
-  if (params.authorizationIndicatorType) {
-    const authIndicatorType = new ApiContracts.AuthorizationIndicatorType();
-    if (params.authorizationIndicatorType.authorizationIndicator) {
-      authIndicatorType.setAuthorizationIndicator(params.authorizationIndicatorType.authorizationIndicator);
-    }
-    transactionRequestType.setAuthorizationIndicatorType(authIndicatorType);
-  }
+  setCustomerData(transactionRequestType, params);
+  setProcessingOptions(transactionRequestType, params);
+  setSubsequentAuthInformation(transactionRequestType, params);
+  setAuthorizationIndicatorType(transactionRequestType, params);
 
   const createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuth);
@@ -560,26 +429,9 @@ export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryO
 
   const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
-
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Charge customer profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateTransactionResponse,"Charge customer profile failed");
 }
+
 export async function createCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
@@ -672,27 +524,11 @@ export async function createCustomerProfile(sourceOptions: SourceOptions, queryO
   const ctrl = new ApiControllers.CreateCustomerProfileController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateCustomerProfileResponse(apiResponse);
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Create customer profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.CreateCustomerProfileResponse,"Create customer profile failed");
 }
+
 export async function getCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
   const params = parseRequestBody(queryOptions);
 
   const getRequest = new ApiContracts.GetCustomerProfileRequest();
@@ -726,24 +562,9 @@ export async function getCustomerProfile(sourceOptions: SourceOptions, queryOpti
   const ctrl = new ApiControllers.GetCustomerProfileController(getRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.GetCustomerProfileResponse(apiResponse);
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Get customer profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl,ApiContracts.GetCustomerProfileResponse,"Get customer profile failed");
 }
+
 export async function getCustomerProfileIds(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
 
@@ -755,24 +576,9 @@ export async function getCustomerProfileIds(sourceOptions: SourceOptions, queryO
     const ctrl = new ApiControllers.GetCustomerProfileIdsController(getRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.GetCustomerProfileIdsResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Get customer profile IDs failed', errorMessage, {
-              code: response.getMessages().getMessage()[0].getCode(),
-              message: errorMessage,
-            })
-          );
-        }
-      });
-    });
+    return executeController(ctrl,ApiContracts.GetCustomerProfileIdsResponse,"Get customer profile IDs failed");
 }
+
 export async function updateCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
     const params = parseRequestBody(queryOptions);
@@ -796,28 +602,12 @@ export async function updateCustomerProfile(sourceOptions: SourceOptions, queryO
     const ctrl = new ApiControllers.UpdateCustomerProfileController(updateRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.UpdateCustomerProfileResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Update customer profile failed', errorMessage, {
-              code: response.getMessages().getMessage()[0].getCode(),
-              message: errorMessage,
-            })
-          );
-        }
-      });
-    });
+    return executeController(ctrl,ApiContracts.UpdateCustomerProfileResponse,"Update customer profile failed");
 }
+
 export async function deleteCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
-
-   const params = parseRequestBody(queryOptions);
+    const params = parseRequestBody(queryOptions);
 
     const deleteRequest = new ApiContracts.DeleteCustomerProfileRequest();
     deleteRequest.setMerchantAuthentication(merchantAuth);
@@ -829,29 +619,14 @@ export async function deleteCustomerProfile(sourceOptions: SourceOptions, queryO
     const ctrl = new ApiControllers.DeleteCustomerProfileController(deleteRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.DeleteCustomerProfileResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Delete customer profile failed', errorMessage, {
-              code: response.getMessages().getMessage()[0].getCode(),
-              message: errorMessage,
-            })
-          );
-        }
-      });
-    });
+    return executeController(ctrl, ApiContracts.DeleteCustomerProfileResponse,"Delete customer profile failed");
 }
+
 export async function createCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
   const cardData = params.payment?.creditCard || params;
-  const creditCard = createCreditCard(params);
+  const creditCard = createCreditCard(cardData);
 
   const paymentType = new ApiContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
@@ -884,25 +659,9 @@ export async function createCustomerPaymentProfile(sourceOptions: SourceOptions,
   const ctrl = new ApiControllers.CreateCustomerPaymentProfileController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateCustomerPaymentProfileResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Create customer payment profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
+  return executeController(ctrl, ApiContracts.CreateCustomerPaymentProfileResponse,"Create customer payment profile failed");
 }
+
 export async function getCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
     const params = parseRequestBody(queryOptions);
@@ -915,27 +674,11 @@ export async function getCustomerPaymentProfile(sourceOptions: SourceOptions, qu
     const ctrl = new ApiControllers.GetCustomerPaymentProfileController(getRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.GetCustomerPaymentProfileResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Get customer payment profile failed', errorMessage, {
-              code: response.getMessages().getMessage()[0].getCode(),
-              message: errorMessage,
-            })
-          );
-        }
-      });
-    });
+    return executeController(ctrl,ApiContracts.GetCustomerPaymentProfileResponse, "Get customer payment profile failed");
 }
+
 export async function validateCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
-
     const params = parseRequestBody(queryOptions);
 
     const validateRequest = new ApiContracts.ValidateCustomerPaymentProfileRequest();
@@ -951,38 +694,15 @@ export async function validateCustomerPaymentProfile(sourceOptions: SourceOption
     const ctrl = new ApiControllers.ValidateCustomerPaymentProfileController(validateRequest.getJSON());
     ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-    return new Promise((resolve, reject) => {
-      ctrl.execute(() => {
-        const apiResponse = ctrl.getResponse();
-        const response = new ApiContracts.ValidateCustomerPaymentProfileResponse(apiResponse);
-        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-          resolve(response);
-        } else {
-          const errorMessage = response.getMessages().getMessage()[0].getText();
-          reject(
-            new QueryError('Validate customer payment profile failed', errorMessage, {
-              code: response.getMessages().getMessage()[0].getCode(),
-              message: errorMessage,
-            })
-          );
-        }
-      });
-    });
+    return executeController(ctrl,ApiContracts.ValidateCustomerPaymentProfileResponse,"Validate customer payment profile failed");
 }
+
 export async function updateCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
-
   const profileData = params.paymentProfile || params;
-  const cardData = profileData.payment?.creditCard || params;
-
-  const creditCard = new ApiContracts.CreditCardType();
-  creditCard.setCardNumber(cardData.cardNumber);
-  creditCard.setExpirationDate(cardData.expirationDate);
-  if (cardData.cardCode) {
-    creditCard.setCardCode(cardData.cardCode);
-  }
-
+  const cardData = profileData.payment?.creditCard || profileData;
+  const creditCard = createCreditCard(cardData);
   const paymentType = new ApiContracts.PaymentType();
   paymentType.setCreditCard(creditCard);
 
@@ -1017,28 +737,11 @@ export async function updateCustomerPaymentProfile(sourceOptions: SourceOptions,
   const ctrl = new ApiControllers.UpdateCustomerPaymentProfileController(updateRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.UpdateCustomerPaymentProfileResponse(apiResponse);
+  return executeController(ctrl,ApiContracts.UpdateCustomerPaymentProfileResponse,"Update customer payment profile failed");
+} 
 
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Update customer payment profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
-}
 export async function deleteCustomerPaymentProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
   const params = parseRequestBody(queryOptions);
 
   const deleteRequest = new ApiContracts.DeleteCustomerPaymentProfileRequest();
@@ -1051,28 +754,13 @@ export async function deleteCustomerPaymentProfile(sourceOptions: SourceOptions,
   }
   const ctrl = new ApiControllers.DeleteCustomerPaymentProfileController(deleteRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.DeleteCustomerPaymentProfileResponse(apiResponse);
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Delete customer payment profile failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
-}
+
+  return executeController(ctrl,ApiContracts.DeleteCustomerPaymentProfileResponse,"Delete customer payment profile failed");
+} 
+
 export async function createCustomerProfileFromTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
-
- const params = parseRequestBody(queryOptions);
+  const params = parseRequestBody(queryOptions);
 
   const createRequest = new ApiContracts.CreateCustomerProfileFromTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuth);
@@ -1103,22 +791,5 @@ export async function createCustomerProfileFromTransaction(sourceOptions: Source
   const ctrl = new ApiControllers.CreateCustomerProfileFromTransactionController(createRequest.getJSON());
   ctrl.setEnvironment(getEnvironment(sourceOptions.environment));
 
-  return new Promise((resolve, reject) => {
-    ctrl.execute(() => {
-      const apiResponse = ctrl.getResponse();
-      const response = new ApiContracts.CreateCustomerProfileResponse(apiResponse);
-
-      if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-        resolve(response);
-      } else {
-        const errorMessage = response.getMessages().getMessage()[0].getText();
-        reject(
-          new QueryError('Create customer profile from transaction failed', errorMessage, {
-            code: response.getMessages().getMessage()[0].getCode(),
-            message: errorMessage,
-          })
-        );
-      }
-    });
-  });
-}
+  return executeController(ctrl,ApiContracts.CreateCustomerProfileResponse,"Create customer profile from transaction failed");
+} 
