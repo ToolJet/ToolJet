@@ -13,8 +13,7 @@
     },
     "options": {
       "apiLoginId": {
-        "type": "string",
-        "encrypted": true
+        "type": "string"
       },
       "transactionKey": {
         "type": "string",
@@ -32,16 +31,17 @@
   },
   "properties": {
     "apiLoginId": {
-      "label": "Api login ID",
+      "label": "API login ID",
       "key": "apiLoginId",
       "type": "text",
-      "description": "Your Authorize.Net API Login ID"
+      "description": "Your Authorize.Net API login ID"
       },
     "transactionKey": {
       "label": "Transaction key",
       "key": "transactionKey",
       "type": "text",
-      "description": "Your Authorize.Net Transaction Key"
+      "description": "Your Authorize.Net transaction key",
+      "encrypted": true
       },
     "environment": {
       "label": "Environment",

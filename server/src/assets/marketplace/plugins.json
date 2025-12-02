@@ -323,7 +323,7 @@
   },
   {
     "name": "Authorize.Net",
-    "description": "Plugin for payment processing and customer profile management with Authorize.Net",
+    "description": "Plugin for payment processing and customer profile management",
     "version": "1.0.0",
     "id": "authorizenet",
     "author": "Tooljet",
