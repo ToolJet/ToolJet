@@ -246,6 +246,12 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     if (!hasDataChanged) return;
+    clearEditedRows(id);
+    setExposedVariables({ dataUpdates: [], changeSet: {}, updatedData: data });
+  }, [hasDataChanged, clearEditedRows, id, setExposedVariables, data]);
+
+  useEffect(() => {
+    if (!hasDataChanged) return;
     resetRowSelection();
     function selectRow(key, value) {
       const index = data.findIndex((item) => item[key] == value);
