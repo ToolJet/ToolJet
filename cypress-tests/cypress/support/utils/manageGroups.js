@@ -9,26 +9,29 @@ import {
   fillUserInviteForm,
 } from "Support/utils/manageUsers";
 import { groupsText } from "Texts/manageGroups";
+import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
-export const apiCreateGroup = (groupName) => {
-  return cy.getAuthHeaders().then((headers) => {
+export const apiCreateGroup = (groupName, cachedHeaders = false) => {
+  return cy.getAuthHeaders(cachedHeaders).then((headers) => {
     return cy
       .request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers: headers,
         body: { name: groupName },
+        log: false,
       })
       .then((response) => {
         expect(response.status).to.equal(201);
+        Cypress.log({ name: "Create group :", message: ` ${groupName}` });
         return response.body.id; // Returns the group ID as resolved value
       });
   });
 };
 
-export const apiDeleteGroup = (groupName) => {
+export const apiDeleteGroup = (groupName, cachedHeaders = false) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
-    cy.getAuthHeaders().then((headers) => {
+    cy.getAuthHeaders(cachedHeaders).then((headers) => {
       cy.request({
         method: "DELETE",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
@@ -165,11 +168,7 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fetchAndVisitInviteLink(email);
   cy.wait(2000);
 
-  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
-  cy.wait(500);
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   cy.wait(500);
   cy.get(commonSelectors.dashboardIcon).click();
 };
