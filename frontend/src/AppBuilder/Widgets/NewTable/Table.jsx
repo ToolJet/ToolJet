@@ -186,7 +186,6 @@ export const Table = memo(
         data-cy={`draggable-widget-${componentName}`}
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
-        id={`table-component-${id}`}
         style={{
           height: isDynamicHeightEnabled ? '100%' : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
