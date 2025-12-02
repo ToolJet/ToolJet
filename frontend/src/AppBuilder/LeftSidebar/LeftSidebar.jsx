@@ -20,6 +20,7 @@ import AvatarGroup from '@/_ui/AvatarGroup';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -83,13 +84,15 @@ export const BaseLeftSidebar = ({
 
   useEffect(() => {
     if (isUserInZeroToOneFlow) {
-      setPopoverContentHeight(((window.innerHeight - 48) / window.innerHeight) * 100);
+      setPopoverContentHeight(((window.innerHeight - APP_HEADER_HEIGHT) / window.innerHeight) * 100);
       return;
     }
 
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
-        ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+        ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
+          window.innerHeight) *
+          100
       );
     } else {
       setPopoverContentHeight(100);
@@ -244,6 +247,7 @@ export const BaseLeftSidebar = ({
               tip="Settings"
               ref={setSideBarBtnRefs('settings')}
               isModuleEditor={isModuleEditor}
+              data-cy="left-sidebar-settings-button"
             >
               <Bolt width="16" height="16" className="tw-text-icon-strong" />
             </SidebarItem>

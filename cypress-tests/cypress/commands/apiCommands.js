@@ -111,7 +111,7 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
     cy.request(
       {
         method: "DELETE",
-        url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: Cypress.env("authToken"),
@@ -123,7 +123,7 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
       Cypress.log({
         name: "App Delete",
         displayName: "APP DELETED",
-        message: `: ${Cypress.env("appId")}`,
+        message: `:${appId}`,
       });
     });
   });
@@ -138,9 +138,11 @@ Cypress.Commands.add(
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.intercept("GET", "/api/apps/*").as("getAppData");
+
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
+
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
     cy.wait("@getAppData").then((interception) => {
@@ -152,7 +154,6 @@ Cypress.Commands.add(
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
-
 
 Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
@@ -435,7 +436,9 @@ Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName) => {
       headers: headers,
     }).then((response) => {
       expect(response.status).to.equal(200);
-      const id = response.body.data_sources.find(ds => ds.name === dataSourceName)?.id;
+      const id = response.body.data_sources.find(
+        (ds) => ds.name === dataSourceName
+      )?.id;
       Cypress.log({
         name: "apiGetDataSourceIdByName",
         displayName: "Data Source ID",
@@ -617,13 +620,14 @@ Cypress.Commands.add("apiUpdateGlobalSettings", (globalSettings) => {
 
 Cypress.Commands.add(
   "apiPromoteAppVersion",
-  (targetEnvId = Cypress.env("environmentId")) => {
+  (
+    targetEnvId = Cypress.env("environmentId"),
+    appId = Cypress.env("appId")
+  ) => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PUT",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env(
-          "appId"
-        )}/versions/${Cypress.env("editingVersionId")}/promote`,
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${Cypress.env("editingVersionId")}/promote`,
         body: { currentEnvironmentId: targetEnvId },
         headers: {
           "Content-Type": "application/json",
@@ -648,3 +652,21 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("apiGetAppIdByName", (appName) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/apps`,
+        headers: headers,
+        log: false,
+      })
+      .then((response) => {
+        expect(response.status).to.equal(200);
+        const app = response.body.apps.find((app) => app.name === appName);
+        expect(app, `App with name "${appName}" not found`).to.exist;
+        return app.id;
+      });
+  });
+});

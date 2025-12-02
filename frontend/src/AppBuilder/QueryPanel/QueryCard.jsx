@@ -104,7 +104,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           if (isQuerySelected) return;
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
-            if (menuBtn.contains(e.target)) {
+            if (menuBtn && menuBtn.contains(e.target)) {
               e.stopPropagation();
             } else {
               toggleQueryHandlerMenu(false);
@@ -144,7 +144,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   <a
                     className="text-truncate"
                     data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.ai/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -159,7 +159,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        {!shouldFreeze && (
+        {!shouldFreeze && hasPermissions && (
           <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
             <ButtonComponent
               iconOnly

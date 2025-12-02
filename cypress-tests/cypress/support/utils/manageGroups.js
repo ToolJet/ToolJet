@@ -9,26 +9,29 @@ import {
   fillUserInviteForm,
 } from "Support/utils/manageUsers";
 import { groupsText } from "Texts/manageGroups";
+import { enterPasswordAndAcceptInvite } from "Support/utils/onboarding";
 
-export const apiCreateGroup = (groupName) => {
-  return cy.getAuthHeaders().then((headers) => {
+export const apiCreateGroup = (groupName, cachedHeaders = false) => {
+  return cy.getAuthHeaders(cachedHeaders).then((headers) => {
     return cy
       .request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
         headers: headers,
         body: { name: groupName },
+        log: false,
       })
       .then((response) => {
         expect(response.status).to.equal(201);
+        Cypress.log({ name: "Create group :", message: ` ${groupName}` });
         return response.body.id; // Returns the group ID as resolved value
       });
   });
 };
 
-export const apiDeleteGroup = (groupName) => {
+export const apiDeleteGroup = (groupName, cachedHeaders = false) => {
   cy.apiGetGroupId(groupName).then((groupId) => {
-    cy.getAuthHeaders().then((headers) => {
+    cy.getAuthHeaders(cachedHeaders).then((headers) => {
       cy.request({
         method: "DELETE",
         url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
@@ -165,11 +168,7 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fetchAndVisitInviteLink(email);
   cy.wait(2000);
 
-  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
-  cy.wait(500);
-  cy.get(commonSelectors.acceptInviteButton).click();
+  enterPasswordAndAcceptInvite();
   cy.wait(500);
   cy.get(commonSelectors.dashboardIcon).click();
 };
@@ -181,9 +180,10 @@ export const setupWorkspaceAndInviteUser = (
   email,
   role = "end-user"
 ) => {
-  cy.apiCreateWorkspace(workspaceName, workspaceSlug);
-  cy.apiLogout();
-  cy.apiLogin();
+  cy.apiCreateWorkspace(workspaceName, workspaceSlug).then((workspace) => {
+    Cypress.env("workspaceId", workspace.body.organization_id);
+  });
+
   cy.apiFullUserOnboarding(firstName, email, role, "password", workspaceName);
   cy.apiLogout();
 
@@ -228,32 +228,23 @@ export const verifyUserRole = (userIdAlias, expectedRole, expectedGroups) => {
 
 export const apiAddUserToGroup = (groupId, email) => {
   return cy.getAuthHeaders().then((headers) => {
-    return cy
-      .request({
-        method: "GET",
-        url: `${Cypress.env("server_host")}/api/organization-users`,
-        headers: headers,
-        log: false,
-      })
-      .then((response) => {
-        expect(response.status).to.equal(200);
-        const user = response.body.users.find((u) => u.email === email);
-        const userId = user.user_id;
-        return cy
-          .request({
-            method: "POST",
-            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
-            headers: headers,
-            body: {
-              userIds: [userId],
-              groupId: groupId,
-            },
-            log: false,
-          })
-          .then((addResponse) => {
-            expect(addResponse.status).to.equal(201);
-            return userId;
-          });
-      });
+    return cy.apiGetUserDetails(email).then((response) => {
+      const userId = response.body.users.find((u) => u.email === email).user_id;
+      return cy
+        .request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
+          headers: headers,
+          body: {
+            userIds: [userId],
+            groupId: groupId,
+          },
+          log: false,
+        })
+        .then((addResponse) => {
+          expect(addResponse.status).to.equal(201);
+          return userId;
+        });
+    });
   });
 };
