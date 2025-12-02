@@ -34,7 +34,7 @@
     },
     "charge_credit_card": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for charging a credit card",
@@ -46,7 +46,7 @@
     },
     "authorize_credit_card": {
        "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for authorizing a credit card",
@@ -58,7 +58,7 @@
     },
     "capture_authorized_amount": {
        "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for capturing a previously authorized amount",
@@ -70,7 +70,7 @@
     },
     "refund_transaction": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for refunding a transaction",
@@ -82,7 +82,7 @@
     },
     "void_transaction": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for voiding a transaction",
@@ -94,7 +94,7 @@
     },
     "charge_customer_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for charging a customer profile",
@@ -106,7 +106,7 @@
     },
     "create_customer_pofile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for creating a customer profile",
@@ -118,7 +118,7 @@
     },
     "get_customer_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for getting a customer profile",
@@ -130,7 +130,7 @@
     },
     "get_customer_profileIds": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for getting customer profile IDs (optional)",
@@ -142,7 +142,7 @@
     },
     "update_customer_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for updating a customer profile",
@@ -154,7 +154,7 @@
     },
     "delete_customer_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for deleting a customer profile",
@@ -166,7 +166,7 @@
     },
     "create_customer_payment_profile": {
        "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for creating a customer payment profile",
@@ -178,7 +178,7 @@
     },
     "get_customer_payment_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for getting a customer payment profile",
@@ -189,7 +189,7 @@
     },
     "validate_customer_payment_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for validating a customer payment profile",
@@ -201,7 +201,7 @@
     },
     "update_customer_payment_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for updating a customer payment profile",
@@ -213,7 +213,7 @@
     },
     "delete_customer_payment_profile": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for deleting a customer payment profile",
@@ -225,7 +225,7 @@
     },
     "create_customer_profile_from_transaction": {
       "requestBody": {
-        "label": "Request Body",
+        "label": "Request body",
         "key": "requestBody",
         "type": "codehinter",
         "description": "JSON request body for creating a customer profile from a transaction",

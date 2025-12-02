@@ -17,9 +17,20 @@ import Constants from 'authorizenet/lib/constants';
   }
 // helpers
 function parseRequestBody(queryOptions: any): any {
-  return typeof queryOptions.requestBody === 'string' 
-    ? JSON.parse(queryOptions.requestBody) 
-    : queryOptions.requestBody;
+  try {
+    return typeof queryOptions.requestBody === 'string' 
+      ? JSON.parse(queryOptions.requestBody) 
+      : queryOptions.requestBody;
+  } catch (error) {
+    throw new QueryError(
+      'Request parsing failed',
+      'Invalid JSON format in request body',
+      {
+        code: 'INVALID_JSON',
+        message: error instanceof Error ? error.message : 'Failed to parse request body',
+      }
+    );
+  }
 }
 function createCustomerAddress(addressData: any): any {
   if (!addressData) return null;
@@ -115,19 +126,31 @@ function createCreditCard(cardData: any): any {
   
   return creditCard;
 }
-function executeController<T>(ctrl: any, ResponseClass: any, errorTitle: string): Promise<T> {
+function executeController<T>(ctrl: any, ResponseClass: any, errorTitle: string,timeoutMs: number = 30000 ): Promise<T> {
   return new Promise((resolve, reject) => {
+    let isResolved = false;
+    const timeoutId = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        reject(new QueryError(errorTitle,`Request timed out after ${timeoutMs}ms`,{code: 'TIMEOUT_ERROR',message: `Request timed out after ${timeoutMs}ms`,}));}
+    }, timeoutMs);
     ctrl.execute(() => {
+      clearTimeout(timeoutId);
+      if (isResolved) return;
+      isResolved = true;
+
       const apiResponse = ctrl.getResponse();
       const response = new ResponseClass(apiResponse);
 
       if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
         resolve(response);
       } else {
-        const msg = response.getMessages().getMessage()[0];
-        reject(new QueryError(errorTitle, msg.getText(), {
-          code: msg.getCode(),
-          message: msg.getText(),
+        const messages = response.getMessages()?.getMessage();
+        const errorMessage = messages?.[0]?.getText() ?? 'Unknown error';
+        const errorCode = messages?.[0]?.getCode() ?? 'UNKNOWN_ERROR';
+        reject(new QueryError(errorTitle, errorMessage, {
+          code: errorCode,
+          message: errorMessage,
         }));
       }
     });
@@ -216,11 +239,25 @@ function setTransactionSettings(transactionRequest: any, params: any): void {
   });
   transactionRequest.setTransactionSettings(settingsList);
 }
+function validateAmount(amount: any, operationName: string): void {
+  if (!amount || amount <= 0) {
+    throw new QueryError(
+      `${operationName} failed`,
+      'Amount must be a positive number',
+      {
+        code: 'INVALID_AMOUNT',
+        message: 'Amount must be greater than 0',
+      }
+    );
+  }
+}
 
 //main operations
 export async function chargeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
+
+  validateAmount(params.amount, 'Transaction');  
 
   const creditCard = createCreditCard(params);
 
@@ -261,7 +298,7 @@ export async function chargeCreditCard(sourceOptions: SourceOptions, queryOption
 export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
-
+  validateAmount(params.amount, 'Authorization');
   const cardData = params.payment?.creditCard || params;
   const creditCard = createCreditCard(cardData);
 
@@ -303,7 +340,7 @@ export async function authorizeCreditCard(sourceOptions: SourceOptions, queryOpt
 export async function captureAuthorizedAmount(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
-
+  validateAmount(params.amount, 'Capture');
   const transactionRequestType = new ApiContracts.TransactionRequestType();
   transactionRequestType.setTransactionType(ApiContracts.TransactionTypeEnum.PRIORAUTHCAPTURETRANSACTION);
   transactionRequestType.setAmount(params.amount);
@@ -325,8 +362,9 @@ export async function captureAuthorizedAmount(sourceOptions: SourceOptions, quer
 export async function refundTransaction(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
     const merchantAuth = getMerchantAuth(sourceOptions);
      const params = parseRequestBody(queryOptions);
+     validateAmount(params.amount, 'Refund');
      const creditCard = new ApiContracts.CreditCardType();
-    creditCard.setCardNumber(params.cardNumber);  
+     creditCard.setCardNumber(params.cardNumber);  
     creditCard.setExpirationDate(params.expirationDate);   
     const paymentType = new ApiContracts.PaymentType();
     paymentType.setCreditCard(creditCard);
@@ -387,7 +425,7 @@ export async function voidTransaction(sourceOptions: SourceOptions, queryOptions
 export async function chargeCustomerProfile(sourceOptions: SourceOptions, queryOptions: any): Promise<any> {
   const merchantAuth = getMerchantAuth(sourceOptions);
   const params = parseRequestBody(queryOptions);
-
+  validateAmount(params.amount, 'Charge customer profile');
   const profileData = params.profile || params;
 
   const profileToCharge = new ApiContracts.CustomerProfilePaymentType();

@@ -32,13 +32,13 @@
   },
   "properties": {
     "apiLoginId": {
-      "label": "API Login ID",
+      "label": "Api login ID",
       "key": "apiLoginId",
       "type": "text",
       "description": "Your Authorize.Net API Login ID"
       },
     "transactionKey": {
-      "label": "Transaction Key",
+      "label": "Transaction key",
       "key": "transactionKey",
       "type": "text",
       "description": "Your Authorize.Net Transaction Key"
