@@ -25,10 +25,8 @@ const DynamicSelector = ({
     queryName,
     propertyKey,
     value,
-    fxEnabled = true
+    fxEnabled = false
 }) => {
-    console.log("fxEnabled", fxEnabled);
-
     const isDependent = dependsOn?.length > 0;
 
     const currentUser = useStore((state) => state.user);
