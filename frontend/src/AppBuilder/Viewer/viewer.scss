@@ -216,6 +216,7 @@
           .header-container {
             background-color: transparent;
             padding: 12px 8px !important;
+            flex-wrap: nowrap !important;
 
             .icon-btn {
               height: 36px !important;
@@ -244,6 +245,7 @@
   
               .header-container {
                 padding: 12px 8px !important;
+                flex-wrap: nowrap !important;
 
                 .icon-btn {
                   height: 36px !important;
