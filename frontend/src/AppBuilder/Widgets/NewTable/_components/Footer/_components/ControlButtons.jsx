@@ -49,6 +49,7 @@ export const ControlButtons = memo(
 
       return (
         <OverlayTriggerComponent
+          id={id}
           trigger="click"
           overlay={callBack()}
           rootClose={true}

@@ -119,7 +119,13 @@ export const Pagination = function Pagination({
         ))}
 
         {showPagesPopupBtn && (
-          <OverlayTriggerComponent trigger="click" overlay={paginationPopover()} rootClose={true} placement={'top-end'}>
+          <OverlayTriggerComponent
+            id={id}
+            trigger="click"
+            overlay={paginationPopover()}
+            rootClose={true}
+            placement={'top-end'}
+          >
             <PaginationButton icon="IconDots" dataCy="pagination-button-more-pages" />
           </OverlayTriggerComponent>
         )}
