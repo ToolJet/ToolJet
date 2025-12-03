@@ -21,6 +21,8 @@ import { TopBar } from '@/components/ui/blocks/TopBar';
  * @param {Array} [props.sidebarTeams] - Teams data for sidebar
  * @param {Array} [props.sidebarNavMain] - Navigation items for sidebar
  * @param {Array} [props.sidebarProjects] - Project/action items for sidebar
+ * @param {Array} [props.sidebarUserMenuItems] - Menu items for user dropdown
+ * @param {string} [props.sidebarPlatformVersion] - Platform version string for user dropdown
  */
 export function MainLayout({
   children,
@@ -37,6 +39,8 @@ export function MainLayout({
   // Dark mode props
   darkMode,
   onToggleDarkMode,
+  sidebarUserMenuItems,
+  sidebarPlatformVersion,
 }) {
   return (
     <SidebarProvider
@@ -63,6 +67,8 @@ export function MainLayout({
             projects={sidebarProjects}
             darkMode={darkMode}
             onToggleDarkMode={onToggleDarkMode}
+            userMenuItems={sidebarUserMenuItems}
+            platformVersion={sidebarPlatformVersion}
           />
           <SidebarInset>
             <main className="tw-flex tw-flex-1 tw-flex-col tw-gap-4 tw-overflow-hidden">{children}</main>
@@ -93,6 +99,8 @@ MainLayout.propTypes = {
   sidebarProjects: PropTypes.array,
   darkMode: PropTypes.bool,
   onToggleDarkMode: PropTypes.func,
+  sidebarUserMenuItems: PropTypes.array,
+  sidebarPlatformVersion: PropTypes.string,
 };
 
 MainLayout.defaultProps = {

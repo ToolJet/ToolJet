@@ -12,6 +12,8 @@ export function AppSidebar({
   projects = [],
   darkMode,
   onToggleDarkMode,
+  userMenuItems,
+  platformVersion,
   ...props
 }) {
   return (
@@ -21,7 +23,7 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <NavActions actions={projects} darkMode={darkMode} onToggleDarkMode={onToggleDarkMode} />
-        <NavUser user={user} />
+        <NavUser user={user} menuItems={userMenuItems} platformVersion={platformVersion} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

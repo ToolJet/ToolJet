@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Rocket/avatar';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/Rocket/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/Rocket/sidebar';
 
-export function NavUser({ user }) {
+export function NavUser({ user, menuItems = [], platformVersion }) {
   const { isMobile } = useSidebar();
 
   return (
@@ -45,7 +45,7 @@ export function NavUser({ user }) {
             sideOffset={4}
           >
             <DropdownMenuLabel className="tw-p-0 tw-font-normal">
-              <div className="tw-flex tw-items-center tw-gap-2 tw-px-1 tw-py-1.5 tw-text-left tw-text-sm">
+              <div className="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-3 tw-text-left tw-text-sm">
                 <Avatar className="tw-h-8 tw-w-8 tw-rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="tw-rounded-lg">CN</AvatarFallback>
@@ -58,35 +58,48 @@ export function NavUser({ user }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
+              {menuItems.map((item) => {
+                const ItemContent = (
+                  <>
+                    {item.icon && <item.icon />}
+                    {item.label}
+                  </>
+                );
+
+                if (item.href) {
+                  return (
+                    <DropdownMenuItem
+                      key={item.id || item.label}
+                      asChild
+                      className={item.destructive ? 'tw-text-destructive' : ''}
+                      disabled={item.disabled}
+                    >
+                      <a href={item.href}>{ItemContent}</a>
+                    </DropdownMenuItem>
+                  );
+                }
+
+                return (
+                  <DropdownMenuItem
+                    key={item.id || item.label}
+                    onClick={item.onClick}
+                    className={item.destructive ? 'tw-text-destructive' : ''}
+                    disabled={item.disabled}
+                  >
+                    {ItemContent}
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+            {platformVersion && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>{platformVersion}</DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );
 }
-
