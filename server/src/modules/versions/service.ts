@@ -23,6 +23,8 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
+import { ACTION_TYPE } from '@modules/app-history/constants';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -37,8 +39,9 @@ export class VersionService implements IVersionService {
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
-  ) { }
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly appHistoryUtilService: AppHistoryUtilService
+  ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -52,7 +55,7 @@ export class VersionService implements IVersionService {
     const { versionName, versionFromId } = versionCreateDto;
     const { organizationId } = user;
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },
         relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
@@ -91,6 +94,27 @@ export class VersionService implements IVersionService {
 
       return decamelizeKeys(appVersion);
     });
+
+    // Queue initial history capture for the created version
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(
+        result.id,
+        ACTION_TYPE.INITIAL_SNAPSHOT,
+        {
+          operation: 'version_create',
+          versionName: versionCreateDto.versionName,
+          versionFromId: versionCreateDto.versionFromId,
+          appId: app.id,
+          appName: app.name,
+        },
+        false,
+        user.id
+      );
+    } catch (error) {
+      console.error('Failed to queue initial history capture for version creation:', error);
+    }
+
+    return result;
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
@@ -124,7 +148,10 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          app.organizationId
+        );
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -191,6 +218,9 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    // Queue history capture if homepage or settings are being updated
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -206,6 +236,9 @@ export class VersionService implements IVersionService {
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
+    // Queue history capture for settings changes AFTER successful update
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -215,7 +248,6 @@ export class VersionService implements IVersionService {
     });
     return;
   }
-
 
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {

@@ -1,8 +1,7 @@
-import { OnModuleInit, RequestMethod, MiddlewareConsumer, DynamicModule } from '@nestjs/common';
+import { OnModuleInit, DynamicModule } from '@nestjs/common';
 import { GetConnection } from './database/getConnection';
 import { ShutdownHook } from './schedulers/shut-down.hook';
 import { AppModuleLoader } from './loader';
-import * as Sentry from '@sentry/node';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
@@ -63,13 +62,18 @@ import { EntityManager } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
+import { AppHistoryModule } from '@modules/app-history/module';
+import { ScimModule } from '@modules/scim/module';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { ExpressAdapter } from '@bull-board/express';
+import * as basicAuth from 'express-basic-auth';
 
 export class AppModule implements OnModuleInit {
   constructor(
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
-  ) {}
+  ) { }
 
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -131,12 +135,28 @@ export class AppModule implements OnModuleInit {
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await AppHistoryModule.register(configs, true),
+      await ScimModule.register(configs, true),
     ];
 
     const conditionalImports = [];
+
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      conditionalImports.push(await WorkflowsModule.register(configs, true));
+      conditionalImports.push(
+        await WorkflowsModule.register(configs, true)
+      )
+      conditionalImports.push(
+        BullBoardModule.forRoot({
+          route: '/jobs',
+          adapter: ExpressAdapter,
+          middleware: basicAuth({
+            challenge: true,
+            users: { admin: process.env.TOOLJET_QUEUE_DASH_PASSWORD },
+          }),
+        })
+      )
     }
+
     if (process.env.ENABLE_METRICS === 'true') {
       conditionalImports.push(MetricsModule);
     }
@@ -158,37 +178,28 @@ export class AppModule implements OnModuleInit {
     };
   }
 
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL,
-    });
-  }
-
   async onModuleInit() {
     console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
     console.log(`Initializing server modules 📡 `);
 
-    if (!process.env.WORKER) {
-      const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
-      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
-      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
+    const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
+    const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+    const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
 
-      if (isSQLModeDisabled()) {
-        await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
-          user: tooljtDbUser,
-          enableAggregates: true,
-          statementTimeoutInSecs: statementTimeoutInSecs,
-        });
-      } else {
-        await reconfigurePostgrest(this.tooljetDbManager, {
-          user: tooljtDbUser,
-          enableAggregates: true,
-          statementTimeoutInSecs: statementTimeoutInSecs,
-        });
-      }
-
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    if (isSQLModeDisabled()) {
+      await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
+        user: tooljtDbUser,
+        enableAggregates: true,
+        statementTimeoutInSecs: statementTimeoutInSecs,
+      });
+    } else {
+      await reconfigurePostgrest(this.tooljetDbManager, {
+        user: tooljtDbUser,
+        enableAggregates: true,
+        statementTimeoutInSecs: statementTimeoutInSecs,
+      });
     }
+
+    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
   }
 }

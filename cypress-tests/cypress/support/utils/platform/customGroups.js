@@ -1,6 +1,6 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, cyParamName } from "Selectors/common";
 import { commonEeSelectors } from "Selectors/eeCommon";
-import { cyParamName, groupsSelector } from "Selectors/manageGroups";
+import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 
 export const createGroupViaUI = (groupName) => {

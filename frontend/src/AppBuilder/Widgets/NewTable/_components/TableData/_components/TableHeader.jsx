@@ -9,8 +9,8 @@ import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { getModifiedColor } from '@/Editor/Components/utils';
 import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
