@@ -26,7 +26,7 @@ const DataSourceIcon = ({ source, height = 25, styles }) => {
     case 'response':
       return <ResponseIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
 
-    case 'Agent Node':
+    case 'agent':
       return <AgentNodeIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
 
     default:
