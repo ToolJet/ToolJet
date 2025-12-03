@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
 }) => {

@@ -198,7 +198,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const versionIndex = state.versionsPromotedToEnvironment.findIndex((v) => v.id === versionId);
         if (versionIndex !== -1) {
           state.versionsPromotedToEnvironment[versionIndex].name = versionName;
+          state.versionsPromotedToEnvironment[versionIndex].description = versionDescription;
         }
+
+        const devVersionIndex = state.developmentVersions.findIndex((v) => v.id === versionId);
+        if (devVersionIndex !== -1) {
+          state.developmentVersions[devVersionIndex].name = versionName;
+          state.developmentVersions[devVersionIndex].description = versionDescription;
+        }
+
         state.appVersionsLazyLoaded = false;
       });
 
