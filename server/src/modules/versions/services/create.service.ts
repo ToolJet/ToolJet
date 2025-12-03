@@ -22,6 +22,7 @@ import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -29,7 +30,8 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
-    protected readonly dataQueryRepository: DataQueryRepository
+    protected readonly dataQueryRepository: DataQueryRepository,
+    private readonly logger: Logger
   ) {}
   async setupNewVersion(
     appVersion: AppVersion,
@@ -438,7 +440,9 @@ export class VersionsCreateService implements IVersionsCreateService {
         );
 
         if (!newComponent) {
-          console.error(`ERROR: New component instance not found for original ID ${originalComponent.id}.`);
+          this.logger.error('New component instance not found for original ID', {
+            originalComponentId: originalComponent.id
+          });
           continue;
         }
 

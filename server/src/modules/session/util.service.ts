@@ -30,6 +30,7 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
 import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class SessionUtilService {
@@ -43,7 +44,8 @@ export class SessionUtilService {
     protected readonly metadataUtilService: MetadataUtilService,
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
-    protected readonly jwtService: JwtService
+    protected readonly jwtService: JwtService,
+    private readonly logger: Logger
   ) {}
 
   async terminateAllSessions(userId: string): Promise<void> {
@@ -135,7 +137,12 @@ export class SessionUtilService {
             userRole: permissionData.admin ? 'admin' : 'member',
           });
         } catch (error) {
-          console.error('Error incrementing concurrent users metric:', error);
+          this.logger.error('Error incrementing concurrent users metric', {
+            userId: user.id,
+            workspaceId: organization.id,
+            error: error.message,
+            stack: error.stack
+          });
         }
       }
 
@@ -284,7 +291,11 @@ export class SessionUtilService {
           sessionType: 'user',
         });
       } catch (error) {
-        console.error('Error incrementing active sessions metric:', error);
+        this.logger.error('Error incrementing active sessions metric', {
+          userId,
+          error: error.message,
+          stack: error.stack
+        });
       }
 
       return session;
@@ -529,7 +540,12 @@ export class SessionUtilService {
       session.lastLoggedIn = new Date();
 
       manager.save(session).catch((err) => {
-        console.error('error while extending session expiry', err);
+        this.logger.error('Error while extending session expiry', {
+          sessionId: session.id,
+          userId: session.userId,
+          error: err.message,
+          stack: err.stack
+        });
       });
     });
   }

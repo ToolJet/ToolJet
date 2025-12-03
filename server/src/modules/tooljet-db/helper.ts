@@ -1,4 +1,5 @@
 import { EntityManager } from 'typeorm';
+import { Logger } from 'nestjs-pino';
 
 export async function reconfigurePostgrest(
   tooljetDbManager: EntityManager,
@@ -48,7 +49,7 @@ export async function reconfigurePostgrest(
         try {
           await tooljetDbManager.query('SELECT pg_advisory_unlock(123456788)');
         } catch (unlockError) {
-          console.warn('Failed to release advisory lock:', unlockError);
+          this.logger.warn('Failed to release advisory lock:', unlockError);
         }
       }
 
@@ -63,7 +64,7 @@ export async function reconfigurePostgrest(
         (error.code === '25P02' && error.message?.includes('current transaction is aborted'))
       ) {
         if (attempt < maxRetries) {
-          console.log(`Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+          this.logger.debug(`Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
           continue;
         }
@@ -124,7 +125,7 @@ export async function reconfigurePostgrestWithoutSchemaSync(
         try {
           await tooljetDbManager.query('SELECT pg_advisory_unlock(123456789)');
         } catch (unlockError) {
-          console.warn('Failed to release advisory lock:', unlockError);
+          this.logger.warn('Failed to release advisory lock:', unlockError);
         }
       }
 
@@ -139,7 +140,7 @@ export async function reconfigurePostgrestWithoutSchemaSync(
         (error.code === '25P02' && error.message?.includes('current transaction is aborted'))
       ) {
         if (attempt < maxRetries) {
-          console.log(`Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+          this.logger.debug(`Retrying in ${retryDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
           continue;
         }

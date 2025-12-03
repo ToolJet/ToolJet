@@ -1,5 +1,6 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
+import { Logger } from 'nestjs-pino';
 
 function findExpression(input) {
   const matches = [];
@@ -387,7 +388,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
 
     return { references };
   } catch (error) {
-    console.log(error);
+    this.logger.log(error);
     return { references: [] };
   }
 }

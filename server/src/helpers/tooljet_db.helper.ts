@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import * as crypto from 'crypto';
+import { Logger } from 'nestjs-pino';
 
 /**
  * Creates a custom tooljet database connection using a tenant user, for the respective workspace.
@@ -286,7 +287,7 @@ export function generateTJDBPasswordForRole(length = 30) {
   ];
 
   // Fill the rest securely
-  console.log(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
+  this.logger.debug(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
   const remaining = Array.from(crypto.randomBytes(length - mandatoryChars.length)).map(
     (b) => allChars[b % allChars.length]
   );

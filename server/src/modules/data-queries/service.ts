@@ -16,13 +16,15 @@ import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService } from './interfaces/IService';
 import { App } from '@entities/app.entity';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
   constructor(
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
-    protected readonly dataSourceRepository: DataSourcesRepository
+    protected readonly dataSourceRepository: DataSourcesRepository,
+    private readonly logger: Logger
   ) {}
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
@@ -188,7 +190,10 @@ export class DataQueriesService implements IDataQueriesService {
           metadata: error.metadata,
         };
       } else {
-        console.log(error);
+        this.logger.error('Query execution failed', {
+          error: error.message,
+          stack: error.stack
+        });
         result = {
           status: 'failed',
           message: 'Internal server error',

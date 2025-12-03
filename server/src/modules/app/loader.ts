@@ -172,7 +172,10 @@ export class AppModuleLoader {
         const { AuditLogsModule } = await import(`${await getImportPath(configs.IS_GET_CONTEXT)}/audit-logs/module`);
         dynamicModules.push(await AuditLogsModule.register(configs));
       } catch (error) {
-        console.error('Error loading dynamic modules:', error);
+        console.error('Error loading dynamic modules:', {
+          error: error.message,
+          stack: error.stack
+        });
       }
     }
 

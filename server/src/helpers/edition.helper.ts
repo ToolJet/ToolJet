@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { getTooljetEdition } from './utils.helper';
 import { INestApplication } from '@nestjs/common';
 import { Metadata } from '@entities/metadata.entity';
+import { Logger } from 'nestjs-pino';
 
 const EDITION_PRIORITY = {
   ce: 0,

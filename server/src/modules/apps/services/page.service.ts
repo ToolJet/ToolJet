@@ -15,14 +15,15 @@ import * as _ from 'lodash';
 import * as uuid from 'uuid';
 import { AppVersion } from '@entities/app_version.entity';
 import { IPageService } from '../interfaces/services/IPageService';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService
-  ) {}
+    protected eventHandlerService: EventsService,
+    private readonly logger: Logger) {}
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
@@ -270,7 +271,9 @@ export class PageService implements IPageService {
       for (const component of clonedComponents) {
         const originalComponent = pageComponents.find((c) => componentsIdMap[c.id] === component.id);
         if (!originalComponent) {
-          console.error(`Original component not found for cloned component ID: ${component.id}`);
+          this.logger.error('Original component not found for cloned component ID', {
+            componentId: component.id
+          });
           continue;
         }
 

@@ -13,12 +13,15 @@ import { MetadataType } from './types';
 import { IMetaUtilService } from './interfaces/IUtilService';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { Logger } from 'nestjs-pino';
+
 @Injectable()
 export class MetadataUtilService implements IMetaUtilService {
   constructor(
     protected configService: ConfigService,
     protected licenseTermsService: LicenseTermsService,
-    protected licenseCountsService: LicenseCountsService
+    protected licenseCountsService: LicenseCountsService,
+    private readonly logger: Logger
   ) {}
 
   async getMetaData() {
@@ -117,7 +120,10 @@ export class MetadataUtilService implements IMetaUtilService {
         },
       });
     } catch (error) {
-      console.error('Error while connecting to URL https://hub.tooljet.io/subscribe', error);
+      this.logger.error('Error while connecting to URL https://hub.tooljet.io/subscribe', {
+        error: error.message,
+        stack: error.stack
+      });
     }
   }
 
@@ -146,7 +152,10 @@ export class MetadataUtilService implements IMetaUtilService {
           },
         });
       } catch (error) {
-        console.error('Error while connecting to URL https://hub.tooljet.io/telemetry', error);
+        this.logger.error('Error while connecting to URL https://hub.tooljet.io/telemetry', {
+          error: error.message,
+          stack: error.stack
+        });
       }
     });
   }

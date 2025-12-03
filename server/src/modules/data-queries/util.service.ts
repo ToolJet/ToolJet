@@ -20,6 +20,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -28,7 +29,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     protected readonly configService: ConfigService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
-    protected readonly pluginsSelectorService: PluginsServiceSelector
+    protected readonly pluginsSelectorService: PluginsServiceSelector,
+    private readonly logger: Logger
   ) {}
   async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -51,7 +53,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               id: appVersionId,
             },
           });
-          console.log('ERROR_CURRENT_ENVIRONMENT_NULL_FOR_QUERY_CREATION', appVersion);
+          this.logger.error('Current environment null for query creation', {
+            appVersionId,
+            appVersion: appVersion?.id,
+            organizationId
+          });
         }
         const isPromotedVersion = environmentsCount > 1 && currentEnvironment && currentEnvironment?.priority !== 1;
         if (isPromotedVersion) {
@@ -190,7 +196,9 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 appToUse?.isPublic
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
-            console.log('Access token expired. Attempting refresh token flow.');
+            this.logger.debug('Access token expired. Attempting refresh token flow.', {
+              userId: user?.id
+            });
             let accessTokenDetails;
             try {
               accessTokenDetails = await service.refreshToken(

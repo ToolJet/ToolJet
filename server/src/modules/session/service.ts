@@ -22,6 +22,7 @@ import { decamelizeKeys } from 'humps';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class SessionService {
@@ -30,7 +31,8 @@ export class SessionService {
     protected readonly sessionUtilService: SessionUtilService,
     protected readonly appsRepository: AppsRepository,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly organizationUserRepository: OrganizationUsersRepository
+    protected readonly organizationUserRepository: OrganizationUsersRepository,
+    private readonly logger: Logger
   ) {}
 
   async terminateSession(user: User, sessionId: string, response: Response): Promise<void> {
@@ -52,7 +54,12 @@ export class SessionService {
           });
         }
       } catch (error) {
-        console.error('Error decrementing session metrics:', error);
+        this.logger.error('Error decrementing session metrics', {
+          userId: user.id,
+          workspaceId: user.organizationId,
+          error: error.message,
+          stack: error.stack
+        });
       }
 
       const auditLogData = {

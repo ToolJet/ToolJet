@@ -66,13 +66,15 @@ import { ScimModule } from '@modules/scim/module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
+import { Logger } from 'nestjs-pino';
 
 export class AppModule implements OnModuleInit {
   constructor(
     private configService: ConfigService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
-  ) { }
+  ,
+    private readonly logger: Logger) { }
 
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -177,8 +179,8 @@ export class AppModule implements OnModuleInit {
   }
 
   async onModuleInit() {
-    console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
-    console.log(`Initializing server modules 📡 `);
+    this.logger.log(`Version: ${globalThis.TOOLJET_VERSION}`);
+    this.logger.debug(`Initializing server modules 📡 `);
 
     const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
     const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;

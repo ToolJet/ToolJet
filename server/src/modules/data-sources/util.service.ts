@@ -21,6 +21,7 @@ import { OrganizationConstantsUtilService } from '@modules/organization-constant
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { IDataSourcesUtilService } from './interfaces/IUtilService';
 import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.service';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -32,7 +33,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService
+    protected readonly inMemoryCacheService: InMemoryCacheService,
+    private readonly logger: Logger
   ) {}
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -440,7 +442,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             constant.value
           );
         } catch (error) {
-          console.error(`Error resolving constant ${key}:`, error);
+          this.logger.error('Error resolving constant', {
+            key,
+            organizationId,
+            error: error.message,
+            stack: error.stack
+          });
           return fullMatch;
         }
       })

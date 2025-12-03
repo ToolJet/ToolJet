@@ -8,10 +8,14 @@ import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { CONSTRAINTS } from './constants';
 import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly logger: Logger
+  ) {
     super(Organization, dataSource.createEntityManager());
   }
 
@@ -215,8 +219,10 @@ export class OrganizationRepository extends Repository<Organization> {
         return await manager.findOneOrFail(Organization, {
           where: { isDefault: true },
         });
-      } catch {
-        console.error('No default workspace in this instance');
+      } catch (error) {
+        this.logger.error('No default workspace in this instance', {
+          error: error.message
+        });
         return null;
       }
     });

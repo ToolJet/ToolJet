@@ -37,7 +37,10 @@ export const logFileTransportConfig = (filePath, processId) => {
       readObjectFromLines(oldFilename);
     });
     transport.on('error', (err) => {
-      console.error('Log file generation error:', err);
+      console.error('Log file generation error:', {
+        error: err.message,
+        stack: err.stack
+      });
     });
     return transport;
   } catch (error) {
@@ -78,13 +81,19 @@ export const readObjectFromLines = (logFilePath) => {
     const jsonContent = JSON.stringify(eval(modifiedContent), null, 2);
     fs.writeFile(`${logFilePath}.json`, jsonContent, (err) => {
       if (err) {
-        console.error('Error writing file:', err);
+        console.error('Error writing file:', {
+          error: err.message,
+          stack: err.stack
+        });
         return;
       }
     });
   });
 
   rl.on('error', (err) => {
-    console.error('Error reading file:', err);
+    console.error('Error reading file:', {
+      error: err.message,
+      stack: err.stack
+    });
   });
 };

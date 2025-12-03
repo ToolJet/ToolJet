@@ -3,6 +3,7 @@ import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { MetadataScanner } from '@nestjs/core';
 import { ModulesContainer } from '@nestjs/core/injector/modules-container';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 // Validates if all routes are guarded with AbilityGuard
@@ -12,9 +13,10 @@ export class GuardValidator {
   constructor(
     private readonly metadataScanner: MetadataScanner,
     private readonly modulesContainer: ModulesContainer
-  ) {}
+  ,
+    private readonly logger: Logger) {}
   async validateJwtGuard() {
-    console.log('Validating if all routes are guarded with AbilityGuard');
+    this.logger.debug('Validating if all routes are guarded with AbilityGuard');
 
     try {
       const controllers = [];
@@ -23,7 +25,7 @@ export class GuardValidator {
         controllers.push(...moduleControllers);
       });
 
-      console.log('Discovered Controllers:', controllers.length);
+      this.logger.debug('Discovered Controllers:', controllers.length);
 
       for (const controller of controllers) {
         if (!controller.instance || !controller.metatype) continue;
@@ -63,18 +65,20 @@ export class GuardValidator {
       }
 
       if (this.unprotectedRoutes.size > 0) {
-        console.error(
-          '\x1b[31m%s\x1b[0m',
-          'ERROR: The following routes are not protected by AbilityGuard or its descendants:'
-        );
-        this.unprotectedRoutes.forEach((route) => console.error('\x1b[31m%s\x1b[0m', `- ${route}`));
+        this.logger.error('ERROR: The following routes are not protected by AbilityGuard or its descendants:');
+        this.unprotectedRoutes.forEach((route) => {
+          this.logger.error(`- ${route}`);
+        });
         //process.exit(1);
         return;
       }
 
-      console.log('✅ All routes are protected by AbilityGuard or its descendants');
+      this.logger.debug('✅ All routes are protected by AbilityGuard or its descendants');
     } catch (error) {
-      console.error('Error during validation:', error);
+      this.logger.error('Error during validation:', {
+        error: error.message,
+        stack: error.stack
+      });
       process.exit(1);
     }
   }
@@ -108,7 +112,11 @@ export class GuardValidator {
 
         return false;
       } catch (error) {
-        console.error('Error checking guard:', guard, error);
+        this.logger.error('Error checking guard', {
+          guard: guard?.name,
+          error: error.message,
+          stack: error.stack
+        });
         return false;
       }
     });

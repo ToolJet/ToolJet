@@ -2,6 +2,7 @@ import * as Y from 'yjs';
 import Redis, { Cluster } from 'ioredis';
 import * as encoding from 'lib0/encoding';
 import * as awarenessProtocol from 'y-protocols/awareness';
+import { Logger } from 'nestjs-pino';
 
 const messageAwareness = 1;
 export class RedisInstance {

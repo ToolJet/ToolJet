@@ -36,6 +36,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/c
 import { User } from '@entities/user.entity';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RequestContext } from '@modules/request-context/service';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -47,7 +48,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly userRepository: UserRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
     protected readonly licenseUserService: LicenseUserService
-  ) { }
+  ,
+    private readonly logger: Logger) { }
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
     if (HUMANIZED_USER_LIST.includes(createGroupPermissionDto.name)) {
@@ -447,7 +449,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getGroupWithName(name: string, organizationId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log(name, 'siu');
+      this.logger.debug(name, 'siu');
       const group = await this.groupPermissionsRepository.getGroup(
         {
           name,
@@ -506,8 +508,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           .where('group_id = :groupId', { groupId })
           .andWhere('user_id IN (:...userIds)', { userIds })
           .execute();
-        console.log(groupId);
-        console.log(userIds, ' sus');
+        this.logger.debug(groupId);
+        this.logger.debug(userIds, ' sus');
       } else {
         // 🧹 Delete all users from the group
         await groupUsersRepo

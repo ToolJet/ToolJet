@@ -127,7 +127,12 @@ export class TemplatesService {
         return await this.tooljetDbBulkUploadService.bulkUploadCsv(tableId, fileBuffer, organizationId);
       }
     } catch (error) {
-      console.error('Error processing CSV file:', error);
+      this.logger.error('Error processing CSV file', {
+        tableId,
+        organizationId,
+        error: error.message,
+        stack: error.stack
+      });
       throw new BadRequestException('Failed to process CSV file');
     }
   }

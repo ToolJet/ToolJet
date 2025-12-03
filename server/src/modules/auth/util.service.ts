@@ -41,6 +41,7 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -60,7 +61,8 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly profileUtilService: ProfileUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-    protected readonly groupPermissionsRepository: GroupPermissionsRepository
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository,
+    private readonly logger: Logger
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -167,7 +169,11 @@ export class AuthUtilService implements IAuthUtilService {
         await this.profileUtilService.addAvatar(user.id, profilePhoto, `${email}.jpeg`);
       } catch (error) {
         /* Should not break the flow */
-        console.log('Profile picture upload failed', error);
+        this.logger.warn('Profile picture upload failed', {
+          userId: user.id,
+          email,
+          error: error.message
+        });
       }
     }
 
@@ -341,7 +347,11 @@ export class AuthUtilService implements IAuthUtilService {
           await this.profileUtilService.addAvatar(userId, profilePhoto, `${email}.jpeg`);
         } catch (error) {
           /* Should not break the flow */
-          console.log('Profile picture upload failed', error);
+          this.logger.warn('Profile picture upload failed', {
+            userId,
+            email,
+            error: error.message
+          });
         }
       }
     }, manager);

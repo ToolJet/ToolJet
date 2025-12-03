@@ -43,6 +43,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -60,7 +61,8 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    private readonly logger: Logger
   ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -102,7 +104,7 @@ export class AppsService implements IAppsService {
     // Enforce access type for viewer users: only access_type=view is allowed
     const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
-    console.log({ hasEditPermission, hasViewPermission });
+    this.logger.debug('Permission check', { hasEditPermission, hasViewPermission, appId: app.id });
     if (!hasEditPermission) {
       // Viewer role: require access_type=view explicitly; reject edit or missing
       if (accessType?.toLowerCase() !== 'view') {
