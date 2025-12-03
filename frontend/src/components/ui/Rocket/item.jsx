@@ -23,7 +23,7 @@ function ItemSeparator({ className, ...props }) {
 }
 
 const itemVariants = cva(
-  'group/item [a]:hover:tw-bg-accent/50 focus-visible:tw-border-ring focus-visible:tw-ring-ring/50 [a]:tw-transition-colors tw-flex tw-flex-wrap tw-items-center tw-rounded-md tw-border tw-border-transparent tw-text-sm tw-outline-none tw-transition-colors tw-duration-100 focus-visible:tw-ring-[3px]',
+  'group/item [a]:hover:tw-bg-accent/50 focus-visible:tw-border-ring focus-visible:tw-ring-ring/50 [a]:tw-transition-colors [a]:tw-transition-transform [a]:active:tw-scale-[0.97] tw-flex tw-flex-wrap tw-items-center tw-rounded-md tw-border tw-border-transparent tw-text-sm tw-outline-none tw-transition-colors tw-duration-100 focus-visible:tw-ring-[3px]',
   {
     variants: {
       variant: {
