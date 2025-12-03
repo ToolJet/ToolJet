@@ -83,7 +83,7 @@ export default function generateColumnsData({
         enableColumnFilter: true,
         filterFn: 'applyFilters',
         size: columnSize || defaultColumn.width,
-        minSize: 68,
+        minSize: 60,
         show: isVisible,
         meta: {
           columnType,
