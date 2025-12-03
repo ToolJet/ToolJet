@@ -50,9 +50,9 @@ const CreateDraftVersionModal = ({
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
     const gitSyncEnabled =
-      orgGit?.org_git?.git_ssh?.is_enabled ||
-      orgGit?.org_git?.git_https?.is_enabled ||
-      orgGit?.org_git?.git_lab?.is_enabled;
+      orgGit?.git_ssh?.is_enabled ||
+      orgGit?.git_https?.is_enabled ||
+      orgGit?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
   }, [orgGit]);
 
