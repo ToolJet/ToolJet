@@ -28,35 +28,29 @@ export const selectDSConnectionRadioButton = (buttonName, shouldBeSelected = tru
   });
 };
 
-export const fillDSConnectionKeyValuePairs = (selector, keyValueData) => {
-  keyValueData.forEach((pair, index) => {
-    if (index === 0) {
-      cy.get('body').then(($body) => {
-        const noKeyValueText = $body.find(':contains("There are no key value pairs added")').length > 0;
-        const keyFieldExists = $body.find(dsCommonSelector.keyInputField(selector, index)).length > 0;
-
-        if (noKeyValueText || !keyFieldExists) {
-          cy.get(dsCommonSelector.addMoreButton(selector)).should("be.visible").click();
-          cy.wait(500);
-        }
-      });
-    }
-
-    if (index > 0) {
-      cy.get('body').then(($body) => {
-        const keyFieldExists = $body.find(dsCommonSelector.keyInputField(selector, index)).length > 0;
+export const fillDSConnectionKeyValuePairs = (section, keyValueData) => {
+  cy.get(dsCommonSelector.subSection(section)).within(() => {
+    keyValueData.forEach((pair, index) => {
+      cy.root().then(($section) => {
+        const keyFieldExists = $section.find(dsCommonSelector.keyInputField(section, index)).length > 0;
         if (!keyFieldExists) {
-          cy.get(dsCommonSelector.addMoreButton(selector)).should("be.visible").click();
+          cy.get(dsCommonSelector.addButton(section))
+            .should('be.visible')
+            .click();
           cy.wait(500);
         }
       });
-    }
 
-    cy.get(dsCommonSelector.keyInputField(selector, index)).should("be.visible");
-    cy.get(dsCommonSelector.valueInputField(selector, index)).should("be.visible");
+      cy.get(dsCommonSelector.keyInputField(section, index))
+        .should('be.visible')
+        .clear()
+        .type(pair.key);
 
-    cy.clearAndType(dsCommonSelector.keyInputField(selector, index), pair.key);
-    cy.clearAndType(dsCommonSelector.valueInputField(selector, index), pair.value);
+      cy.get(dsCommonSelector.valueInputField(section, index))
+        .should('be.visible')
+        .clear()
+        .type(pair.value);
+    });
   });
 };
 
@@ -76,82 +70,79 @@ export const renameDSName = (newName) => {
     .should("be.visible");
 };
 
-export const saveAndDiscardDSChanges = (button) => {
+export const saveAndDiscardDSChanges = (option) => {
   cy.get('[data-cy="unsaved-changes-title"]')
     .should("be.visible");
   cy.get('[data-cy="modal-message"]').verifyVisibleElement("have.text", "Datasource has unsaved changes. Are you sure you want to discard them?");
-  cy.get(dsCommonSelector.dataSourceNameButton(button)).click();
+  cy.get(dsCommonSelector.dataSourceNameButton(option)).click();
 };
 
-export const verifyDSConnection = () => {
-  cy.get(dsCommonSelector.dataSourceNameButton("test-connection"))
-    .verifyVisibleElement(
-      "have.text",
-      "Test connection"
-    )
-    .click();
-  cy.get(dsCommonSelector.text("test-connection-verified")).verifyVisibleElement(
-    "have.text",
-    "connection verified"
-  )
-};
-
-export const fillDSConnectionPasswordField = (fieldName, text) => {
-  cy.get('body').then(($body) => {
-    const editButtonExists = $body.find('[data-cy="button-edit"]').length > 0;
-    const passwordFieldDisabled = $body.find(dsCommonSelector.textField(fieldName)).is(':disabled');
-
-    if (editButtonExists || passwordFieldDisabled) {
-      cy.get('[data-cy="button-edit"]').should("be.visible").click();
-      cy.wait(500);
-    }
-  });
-
-  cy.waitForElement(dsCommonSelector.textField(fieldName))
+export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
+  cy.get('[data-cy="test-connection-button"]')
     .should("be.visible")
-    .should("not.be.disabled");
+    .should("contain.text", "Test connection")
+    .click();
 
-  cy.clearAndType(dsCommonSelector.textField(fieldName), text);
+  switch (expectedStatus) {
+    case "success":
+      cy.get('[data-cy="test-connection-verified-text"]')
+        .should("be.visible")
+        .should("have.text", "connection verified");
+      break;
+
+    case "failed":
+      cy.get('[data-cy="test-connection-failed-text"]')
+        .should("be.visible")
+        .should("contain.text", "could not connect");
+      cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement("have.text", customMessage);
+      break;
+  }
 };
 
-const fieldHandlers = {
-  input: fillDSConnectionTextField,
-  password: fillDSConnectionPasswordField,
-  dropdown: fillDSConnectionDropdown,
-  toggle: toggleDSConnectionButton,
-  radio: selectDSConnectionRadioButton,
-  keyValue: fillDSConnectionKeyValuePairs
+export const fillDSConnectionEncryptedField = (fieldName, text, encrypted = true) => {
+  const fieldSelector = dsCommonSelector.textField(fieldName);
+
+  if (encrypted) {
+    cy.get(fieldSelector).then(($field) => {
+      if ($field.is(':disabled')) {
+        cy.get('[data-cy="button-edit"]').should('be.visible').click();
+        cy.wait(500);
+      }
+    });
+  }
+
+  cy.clearAndType(fieldSelector, text);
 };
 
 export function fillDSConnectionForm (config) {
   config.fields.forEach((field) => {
-    const handler = fieldHandlers[field.type];
-
-    if (!handler) {
-      throw new Error(`Unsupported field type: ${field.type}`);
-    }
-
     switch (field.type) {
       case 'input':
-        handler(field.fieldName, field.text);
+        fillDSConnectionTextField(field.fieldName, field.text);
         break;
-      case 'password':
-        handler(field.fieldName, field.text);
+
+      case 'encryptedInput':
+        fillDSConnectionEncryptedField(field.fieldName, field.text, field.encrypted);
         break;
+
       case 'dropdown':
-        handler(field.fieldName, field.option);
+        fillDSConnectionDropdown(field.fieldName, field.option);
         break;
+
       case 'toggle':
-        handler(field.buttonName, field.shouldBeChecked);
+        toggleDSConnectionButton(field.buttonName, field.shouldBeChecked);
         break;
+
       case 'radio':
-        handler(field.buttonName, field.shouldBeSelected);
+        selectDSConnectionRadioButton(field.buttonName, field.shouldBeSelected);
         break;
+
       case 'keyValue':
-        handler(field.selector, field.keyValueData);
+        fillDSConnectionKeyValuePairs(field.section, field.keyValueData);
         break;
+
       default:
-        handler(field);
+        throw new Error(`Unsupported field type: ${field.type}`);
     }
   });
 }
