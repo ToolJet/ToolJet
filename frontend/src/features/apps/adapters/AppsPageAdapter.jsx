@@ -40,6 +40,8 @@ function AppsPageAdapter({
     sidebarTeams = [],
     sidebarNavMain = [],
     sidebarProjects = [],
+    sidebarUserMenuItems,
+    sidebarPlatformVersion,
   } = layout;
   const { darkMode: initialDarkMode } = ui;
 
@@ -233,6 +235,8 @@ function AppsPageAdapter({
       sidebarTeams={sidebarTeams}
       sidebarNavMain={sidebarNavMain}
       sidebarProjects={sidebarProjects}
+      sidebarUserMenuItems={sidebarUserMenuItems}
+      sidebarPlatformVersion={sidebarPlatformVersion}
       darkMode={isDarkMode}
       onToggleDarkMode={toggleDarkMode}
       header={<AppsPageHeader title={activeTab === 'apps' ? 'Applications' : 'Modules'} />}

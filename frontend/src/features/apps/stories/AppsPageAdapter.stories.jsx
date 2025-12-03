@@ -14,6 +14,10 @@ import {
   Moon,
   Bell,
   Zap,
+  FileText,
+  LogOut,
+  Monitor,
+  UserRound,
 } from 'lucide-react';
 
 // Mock action handlers for Storybook
@@ -106,6 +110,40 @@ const MOCK_SIDEBAR_DATA = {
       icon: Zap,
     },
   ],
+  userMenuItems: [
+    {
+      id: 'audit-logs',
+      label: 'Audit logs',
+      icon: FileText,
+      href: '#audit-logs',
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: Zap,
+      href: '#settings',
+    },
+    {
+      id: 'workspace-settings',
+      label: 'Workspace settings',
+      icon: Monitor,
+      href: '#workspace',
+    },
+    {
+      id: 'profile-settings',
+      label: 'Profile settings',
+      icon: UserRound,
+      href: '#profile',
+    },
+    {
+      id: 'logout',
+      label: 'Log out',
+      icon: LogOut,
+      onClick: () => console.log('Logout clicked'),
+      destructive: true,
+    },
+  ],
+  platformVersion: '3.20.46-cloud-lts',
 };
 
 const meta = {
@@ -185,6 +223,8 @@ const StoryWithWorkspace = (args) => {
         sidebarTeams: MOCK_SIDEBAR_DATA.teams,
         sidebarNavMain: MOCK_SIDEBAR_DATA.navMain,
         sidebarProjects: MOCK_SIDEBAR_DATA.projects,
+        sidebarUserMenuItems: MOCK_SIDEBAR_DATA.userMenuItems,
+        sidebarPlatformVersion: MOCK_SIDEBAR_DATA.platformVersion,
       }}
       ui={{
         darkMode: false,

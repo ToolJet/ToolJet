@@ -19,6 +19,8 @@ export function AppsShellView({
   sidebarTeams,
   sidebarNavMain,
   sidebarProjects,
+  sidebarUserMenuItems,
+  sidebarPlatformVersion,
   // Dark mode props (passed to MainLayout)
   darkMode,
   onToggleDarkMode,
@@ -39,6 +41,8 @@ export function AppsShellView({
         sidebarTeams={sidebarTeams}
         sidebarNavMain={sidebarNavMain}
         sidebarProjects={sidebarProjects}
+        sidebarUserMenuItems={sidebarUserMenuItems}
+        sidebarPlatformVersion={sidebarPlatformVersion}
         darkMode={darkMode}
         onToggleDarkMode={onToggleDarkMode}
       >

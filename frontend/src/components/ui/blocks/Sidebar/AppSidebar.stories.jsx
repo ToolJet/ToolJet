@@ -10,7 +10,22 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/Rocket/breadcrumb';
 import { Separator } from '@/components/ui/Rocket/separator';
-import { Home, Blocks, Workflow, Table2, Puzzle, KeyRound, Moon, Bell, Zap, GalleryVerticalEnd } from 'lucide-react';
+import {
+  Home,
+  Blocks,
+  Workflow,
+  Table2,
+  Puzzle,
+  KeyRound,
+  Moon,
+  Bell,
+  Zap,
+  GalleryVerticalEnd,
+  FileText,
+  LogOut,
+  Monitor,
+  UserRound,
+} from 'lucide-react';
 
 // Mock sidebar data
 const mockSidebarData = {
@@ -87,6 +102,40 @@ const mockSidebarData = {
       icon: Zap,
     },
   ],
+  userMenuItems: [
+    {
+      id: 'audit-logs',
+      label: 'Audit logs',
+      icon: FileText,
+      href: '#audit-logs',
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: Zap,
+      href: '#settings',
+    },
+    {
+      id: 'workspace-settings',
+      label: 'Workspace settings',
+      icon: Monitor,
+      href: '#workspace',
+    },
+    {
+      id: 'profile-settings',
+      label: 'Profile settings',
+      icon: UserRound,
+      href: '#profile',
+    },
+    {
+      id: 'logout',
+      label: 'Log out',
+      icon: LogOut,
+      onClick: () => console.log('Logout clicked'),
+      destructive: true,
+    },
+  ],
+  platformVersion: '3.20.46-cloud-lts',
 };
 
 export default {
@@ -136,7 +185,3 @@ const Template = (args) => (
 
 export const Default = Template.bind({});
 Default.args = mockSidebarData;
-
-
-
-
