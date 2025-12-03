@@ -32,6 +32,7 @@ import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
+import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
 import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
@@ -62,6 +63,14 @@ export default function Grid({ gridWidth, currentLayout }) {
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
+  const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+
+  const { startAutoScroll, stopAutoScroll, updateMousePosition, getScrollDelta } = useCanvasAutoScroll(
+    { threshold: 50, scrollSpeed: 10, containerSelector: '.canvas-content' },
+    boxList,
+    virtualTarget,
+    moveableRef
+  );
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
   const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
   const groupResizeDataRef = useRef([]);
@@ -77,7 +86,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const newDragParentId = useRef(null);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
-  const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
@@ -853,8 +861,11 @@ export default function Grid({ gridWidth, currentLayout }) {
         checkInput
         onDragStart={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
+            startAutoScroll(e.clientX, e.clientY, e.target);
             return true;
           }
+          // Start autoscroll monitoring
+          startAutoScroll(e.clientX, e.clientY, e.target);
 
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
@@ -946,6 +957,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }}
         onDragEnd={(e) => {
+          stopAutoScroll();
           handleDeactivateTargets();
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
@@ -1012,36 +1024,18 @@ export default function Grid({ gridWidth, currentLayout }) {
           hideGridLines();
           clearActiveTargetClassNamesAfterSnapping(selectedComponents);
           toggleCanvasUpdater();
-          // Move this to common function
-          const canvas = document.querySelector('.canvas-container');
-          const sidebar = document.querySelector('.editor-sidebar');
-          const droppedElem = document.getElementById(e.target.id);
-
-          if (!canvas || !sidebar || !droppedElem) return;
-
-          const droppedRect = droppedElem.getBoundingClientRect();
-          const sidebarRect = sidebar.getBoundingClientRect();
-
-          const isOverlapping = droppedRect.right > sidebarRect.left && droppedRect.left < sidebarRect.right;
-
-          if (isOverlapping) {
-            const overlap = droppedRect.right - sidebarRect.left;
-            canvas.scrollTo({
-              left: canvas.scrollLeft + overlap + 15,
-              behavior: 'smooth',
-            });
-          }
         }}
         onDrag={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
             showGridLines();
             const _gridWidth = useGridStore.getState().subContainerWidths[currentDragCanvasId] || gridWidth;
-            let left = e.translate[0];
-            let top = e.translate[1];
+            const scrollDelta = getScrollDelta();
+            let left = e.translate[0] + scrollDelta.x;
+            let top = e.translate[1] + scrollDelta.y;
 
             if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
+              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
             }
 
             useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
@@ -1049,6 +1043,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             e.target.style.width = `${draggingWidgetWidth}px`;
 
             e.target.style.transform = `translate(${left}px, ${top}px)`;
+            // Update autoscroll with current mouse position and target
+            updateMousePosition(e.clientX, e.clientY, e.target);
             return false;
           }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
@@ -1065,16 +1061,18 @@ export default function Grid({ gridWidth, currentLayout }) {
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
           const _gridWidth = useGridStore.getState().subContainerWidths[_dragParentId] || gridWidth;
 
-          // Snap to grid
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+          // Get scroll delta from autoscroll hook
+          const scrollDelta = getScrollDelta();
+          // Snap to grid + add scroll delta to keep widget under cursor
+          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
+          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
           const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
-            left = e.translate[0];
-            top = e.translate[1];
+            left = e.translate[0] + scrollDelta.x;
+            top = e.translate[1] + scrollDelta.y;
           }
 
           // Special case for Modal
@@ -1104,6 +1102,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           );
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
+
+          // Update autoscroll with current mouse position and target
+          updateMousePosition(e.clientX, e.clientY, e.target);
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -1136,6 +1137,9 @@ export default function Grid({ gridWidth, currentLayout }) {
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
           handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
+
+          // Update autoscroll with current mouse position for group drag
+          updateMousePosition(ev.clientX, ev.clientY);
         }}
         onDragGroupStart={() => {
           showGridLines();
