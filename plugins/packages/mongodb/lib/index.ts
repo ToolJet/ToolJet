@@ -221,12 +221,17 @@ export default class MongodbService implements QueryService {
           ca: sourceOptions.ca_cert,
         });
 
+      if (sourceOptions.query_params) {
+          uri += sourceOptions.query_params.startsWith('?')
+          ? sourceOptions.query_params
+          : `?${sourceOptions.query_params}`;
+      }
+
         clientOptions = {
           tls: true,
           secureContext,
         };
       }
-
       client = new MongoClient(uri, clientOptions);
       await client.connect();
 
@@ -267,12 +272,15 @@ export default class MongodbService implements QueryService {
       }
 
       const isSrv = format === 'mongodb+srv';  
+      if (sourceOptions.query_params) {
+          uri += sourceOptions.query_params.startsWith('?')
+          ? sourceOptions.query_params
+          : `?${sourceOptions.query_params}`;
+      }
 
       const clientOptions = {
-        ...(isSrv && { tls: true }),
-        ...(sourceOptions.use_ssl === true && { tls: true })
-      };
-
+         tls: isSrv || sourceOptions.use_ssl === true
+        };
       client = new MongoClient(uri, clientOptions);
       await client.connect();
 

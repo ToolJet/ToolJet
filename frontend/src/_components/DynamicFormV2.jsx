@@ -15,154 +15,8 @@ import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
+import { validateMongoDBConnectionString , parseMongoDBConnectionString } from '../_helpers/mongoDbHelpers.js'
 
-
-const validateMongoDBConnectionString = (connectionString) => {
-  if (!connectionString || connectionString.trim() === '') {
-    return { valid: false, error: 'Connection string is required' };
-  }
-
-  const trimmedString = connectionString.trim();
-
-  const hasValidProtocol = 
-    trimmedString.startsWith('mongodb://') || 
-    trimmedString.startsWith('mongodb+srv://');
-
-  if (!hasValidProtocol) {
-    return { 
-      valid: false, 
-      error: 'Invalid MongoDB connection string' 
-    };
-  }
-
-  const isSrv = trimmedString.startsWith('mongodb+srv://');
-  const isStandard = trimmedString.startsWith('mongodb://');
-
-  const mongodbStandardRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
-  const mongodbSrvRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
-
-  const regex = isStandard ? mongodbStandardRegex : mongodbSrvRegex;
-  const match = trimmedString.match(regex);
-  
-  if (!match) {
-    return { 
-      valid: false, 
-      error: 'Invalid MongoDB connection string' 
-    };
-  }
-
-  const [, username, password, hosts] = match;
-
-  if (!hosts || hosts.trim() === '') {
-    return { 
-      valid: false, 
-      error: 'Invalid MongoDB connection string' 
-    };
-  }
-
-  if (isSrv && hosts.includes(':')) {
-    return { 
-      valid: false, 
-      error: 'Invalid MongoDB connection string' 
-    };
-  }
-
-  if (isStandard) {
-    const hostList = hosts.split(',');
-    
-    for (const hostEntry of hostList) {
-      const hostEntry_trimmed = hostEntry.trim();
-      
-      if (hostEntry_trimmed.includes(':')) {
-        const [host, portStr] = hostEntry_trimmed.split(':');
-        
-        if (!host || !portStr || host.trim() === '' || portStr.trim() === '') {
-          return { 
-            valid: false, 
-            error: 'Invalid MongoDB connection string' 
-          };
-        }
-
-        const port = parseInt(portStr);
-        
-        if (isNaN(port) || port < 1 || port > 65535) {
-          return { 
-            valid: false, 
-            error: 'Invalid MongoDB connection string' 
-          };
-        }
-      }
-    }
-  }
-  return { valid: true, error: '' };
-};
-const parseMongoDBConnectionString = (connectionString) => {
-  if (!connectionString || connectionString.trim() === '') {
-    return null;
-  }
-
-  const trimmedString = connectionString.trim();
-  const isSrv = trimmedString.startsWith('mongodb+srv://');
-  const isStandard = trimmedString.startsWith('mongodb://');
-
-  if (!isSrv && !isStandard) {
-    return null;
-  }
-
-  const mongodbStandardRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
-  const mongodbSrvRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
-
-  const regex = isStandard ? mongodbStandardRegex : mongodbSrvRegex;
-  const match = trimmedString.match(regex);
-
-  if (!match) {
-    return null;
-  }
-
-  const [, username, password, hosts, database, queryString] = match;
-
-  let host = '';
-  let port = '';
-
-  if (isSrv) {
-    host = hosts || '';
-    port = ''; 
-  } else if (isStandard) {
-    const firstHost = hosts.split(',')[0].trim();
-    if (firstHost.includes(':')) {
-      const [h, p] = firstHost.split(':');
-      host = h || '';
-      port = p || '';
-    } else {
-      host = firstHost || '';
-      port = ''; 
-    }
-  }
-
-  let use_ssl = false;
-  if (queryString) {
-    const params = new URLSearchParams(queryString.substring(1)); 
-    
-    const sslParam = params.get('ssl');
-    const tlsParam = params.get('tls');
-    
-    if (sslParam !== null) {
-      use_ssl = sslParam === '' || sslParam.toLowerCase() === 'true';
-    } else if (tlsParam !== null) {
-      use_ssl = tlsParam === '' || tlsParam.toLowerCase() === 'true';
-    }
-  }
-
-  return {
-    host: host,
-    port: port, 
-    username: username || '',
-    password: password || '',
-    database: database || '',
-    connection_format: isSrv ? 'mongodb+srv' : 'mongodb',
-    use_ssl: use_ssl,
-  };
-};
 
 const DynamicFormV2 = ({
   schema,
@@ -276,6 +130,9 @@ React.useEffect(() => {
     }
     if (parsed.use_ssl !== undefined) {
       optionchanged('use_ssl', parsed.use_ssl, false);
+    }
+    if (parsed.query_params !== undefined) {
+      optionchanged('query_params', parsed.query_params, false);
     }
 
     lastAutoFilledConnRef.current = connString;
@@ -628,10 +485,18 @@ const handleOptionChange = (key, value, flag = true) => {
           }
           
           const path = database ? `/${encodeURIComponent(database)}` : '';
-          const params = new URLSearchParams();
-          if (use_ssl) params.set('ssl', 'true');
-          const query = params.toString();
-          
+          const originalConnString = options?.connection_string?.value || '';
+          const queryStringPart = originalConnString.split('?')[1] || '';
+          const originalParams = new URLSearchParams(queryStringPart);
+
+          if (use_ssl) {
+            originalParams.set('ssl', 'true');
+          } else {
+            originalParams.delete('ssl');
+            originalParams.delete('tls');
+          }
+
+          const query = originalParams.toString();
           const newConnString = `${prefix}${credentials}${hostPart}${path}${query ? `?${query}` : ''}`;
           
           skipNextAutoFillRef.current = true;

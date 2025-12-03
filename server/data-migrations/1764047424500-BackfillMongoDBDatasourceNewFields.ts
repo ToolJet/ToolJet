@@ -9,7 +9,7 @@ export class BackfillMongoDBDatasourceNewFields1764000000000 implements Migratio
         "options"::jsonb
         || jsonb_build_object(
             'connection_format',
-              COALESCE(("options"::jsonb -> 'connection_format'), jsonb_build_object('value','mongodb','encrypted',false)),
+              COALESCE(("options"::jsonb -> 'connection_format'), jsonb_build_object('value','mongodb')),
             'use_ssl',
               COALESCE(("options"::jsonb -> 'use_ssl'), jsonb_build_object('value', false, 'encrypted', false))
         )

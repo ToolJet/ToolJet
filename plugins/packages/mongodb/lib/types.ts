@@ -10,7 +10,8 @@ export type SourceOptions = {
   client_key: string;
   tls_certificate: string;
   connection_format: string;
-  use_ssl: boolean
+  use_ssl: boolean,
+  query_params: string
 };
 export type QueryOptions = {
   operation: string;
