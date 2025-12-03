@@ -28,10 +28,9 @@ const CreateVersionModal = ({
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled =
-    orgGit?.org_git?.git_ssh?.is_enabled ||
-    orgGit?.org_git?.git_https?.is_enabled ||
-    orgGit?.org_git?.git_lab?.is_enabled;
-
+    orgGit?.git_ssh?.is_enabled ||
+    orgGit?.git_https?.is_enabled ||
+    orgGit?.git_lab?.is_enabled;
   const {
     changeEditorVersionAction,
     environmentChangedAction,

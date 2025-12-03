@@ -33,6 +33,7 @@ export const CreateVersion = ({
         selectedEnvironment: state.selectedEnvironment,
         fetchDevelopmentVersions: state.actions.fetchDevelopmentVersions,
         orgGit: state?.orgGit,
+        appGit: state?.appGit
       }),
       shallow
     );
@@ -104,7 +105,7 @@ export const CreateVersion = ({
                 gitVersionName: data?.editing_version?.name,
               };
               gitSyncService
-                .gitPush(body, orgGit?.id, data?.editing_version?.id)
+                .gitPush(body, appGit?.id, data?.editing_version?.id)
                 .then(() => {
                   toast.success('Changes commited successfully');
                 })
