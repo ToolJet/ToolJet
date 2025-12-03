@@ -152,8 +152,8 @@ const MobileNavigationMenu = ({
         container: isMobilePreviewMode
           ? document.getElementsByClassName('canvas-area')[0]
           : document.querySelector('.viewer.mobile-view'),
-        overlayClassName: 'tw-absolute tw-h-[100vh]',
-        className: 'tw-absolute tw-h-[100vh] tw-p-0 mobile-page-menu-popup',
+        overlayClassName: 'tw-absolute tw-h-dvh',
+        className: 'tw-absolute tw-h-dvh tw-p-0 mobile-page-menu-popup',
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"
@@ -198,7 +198,7 @@ const MobileNavigationMenu = ({
       </SidebarContent>
       <SidebarFooter>
         {showDarkModeToggle && (
-          <div className="page-dark-mode-btn-wrapper">
+          <div className="page-dark-mode-btn-wrapper !tw-pb-[calc(env(safe-area-inset-bottom)+10px)]">
             <DarkModeToggle
               switchDarkMode={changeToDarkMode}
               darkMode={darkMode}
