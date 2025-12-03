@@ -1,12 +1,28 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogPortal,
+} from '@/components/ui/dialog';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/Button/Button';
-import { Crown } from 'lucide-react';
+import { Crown, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function UpgradePromptDialog({ open, onOpenChange, currentCount = 2, maxCount = 2, onUpgrade }) {
+export function UpgradePromptDialog({
+  open,
+  onOpenChange,
+  currentCount = 2,
+  maxCount = 2,
+  onUpgrade,
+  hideBackdrop = false,
+}) {
   const content = (
-    <DialogContent className="tw-max-w-[441px] tw-rounded-[14px] tw-p-4 tw-gap-4">
+    <>
       {/* Header with Progress Indicator and Close Button */}
       <div className="tw-flex tw-items-start tw-justify-between tw-w-full">
         {/* Progress Indicator */}
@@ -53,20 +69,35 @@ export function UpgradePromptDialog({ open, onOpenChange, currentCount = 2, maxC
           </Button>
         </div>
       </DialogHeader>
-    </DialogContent>
+    </>
   );
 
   // If open/onOpenChange are provided, wrap in Dialog for controlled usage
   if (open !== undefined || onOpenChange) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        {content}
+        <DialogPortal>
+          {!hideBackdrop && (
+            <DialogPrimitive.Overlay className="tw-fixed tw-inset-0 tw-z-50 tw-bg-black/80 data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0" />
+          )}
+          <DialogPrimitive.Content
+            className={cn(
+              'tw-fixed tw-left-[50%] tw-bottom-6 tw-z-50 tw-grid tw-w-full tw-max-w-[441px] tw-translate-x-[-50%] tw-gap-4 tw-border tw-bg-background tw-p-4 tw-shadow-lg tw-rounded-[14px] tw-duration-200 data-[state=open]:tw-animate-in data-[state=closed]:tw-animate-out data-[state=closed]:tw-fade-out-0 data-[state=open]:tw-fade-in-0 data-[state=closed]:tw-slide-out-to-bottom-4 data-[state=open]:tw-slide-in-from-bottom-4'
+            )}
+          >
+            {content}
+            <DialogPrimitive.Close className="tw-absolute tw-right-4 tw-top-4 tw-rounded-sm tw-opacity-70 tw-ring-offset-background tw-transition-opacity hover:tw-opacity-100 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-ring focus:tw-ring-offset-2 disabled:tw-pointer-events-none data-[state=open]:tw-bg-accent data-[state=open]:tw-text-muted-foreground">
+              <X className="tw-h-4 tw-w-4" />
+              <span className="tw-sr-only">Close</span>
+            </DialogPrimitive.Close>
+          </DialogPrimitive.Content>
+        </DialogPortal>
       </Dialog>
     );
   }
 
   // Otherwise, return just the content for use with DialogTrigger
-  return content;
+  return <DialogContent className="tw-max-w-[441px] tw-rounded-[14px] tw-p-4 tw-gap-4">{content}</DialogContent>;
 }
 
 UpgradePromptDialog.propTypes = {
@@ -75,10 +106,10 @@ UpgradePromptDialog.propTypes = {
   currentCount: PropTypes.number,
   maxCount: PropTypes.number,
   onUpgrade: PropTypes.func,
+  hideBackdrop: PropTypes.bool,
 };
 
 UpgradePromptDialog.defaultProps = {
   currentCount: 2,
   maxCount: 2,
 };
-

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Rocket/avat
 import { Smile } from 'lucide-react';
 
 export default {
-  title: 'Features/Apps/AppCard',
+  title: 'Features/Apps/Components/AppCard',
   component: AppCard,
   argTypes: {
     title: { control: 'text' },

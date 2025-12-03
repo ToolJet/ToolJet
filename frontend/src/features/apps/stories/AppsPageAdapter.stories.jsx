@@ -29,6 +29,7 @@ const mockCloneApp = (app) => console.log('Clone:', app);
 const mockExportApp = (app) => console.log('Export:', app);
 const mockNavigate = (path) => console.log('Navigate:', path);
 const mockWorkspaceChange = (workspace) => console.log('Workspace changed:', workspace);
+const mockOnUpgrade = () => console.log('Upgrade clicked');
 
 // Dummy workspace data for Storybook
 const DUMMY_WORKSPACES = [
@@ -205,7 +206,9 @@ const StoryWithWorkspace = (args) => {
         deleteApp: mockDeleteApp,
         cloneApp: mockCloneApp,
         exportApp: mockExportApp,
+        onUpgrade: args.actions?.onUpgrade || mockOnUpgrade,
       }}
+      subscriptionLimits={args.subscriptionLimits || {}}
       permissions={{
         canCreateApp: () => true,
         canDeleteApp: () => true,
@@ -279,6 +282,27 @@ export const WithError = {
     data: {
       apps: [],
       error: new Error('Failed to fetch applications'),
+    },
+  },
+};
+
+export const ReachedLimit = {
+  render: (args) => <StoryWithWorkspace {...args} />,
+  args: {
+    data: {
+      apps: generateMockApps(2),
+      meta: { current_page: 1, total_pages: 1, total_count: 2 },
+    },
+    filters: {
+      folders: generateMockFolders(5),
+    },
+    subscriptionLimits: {
+      appsLimit: {
+        current: 2,
+        total: 2,
+        percentage: 100,
+        canAddUnlimited: false,
+      },
     },
   },
 };
