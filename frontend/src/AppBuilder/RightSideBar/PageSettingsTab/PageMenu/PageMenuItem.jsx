@@ -288,7 +288,6 @@ export const PageMenuItem = withRouter(
             }}
             onClick={(e) => {
               e.preventDefault();
-              e.stopPropagation();
               handleOpenPopup(page?.type || 'page', page);
             }}
           >
