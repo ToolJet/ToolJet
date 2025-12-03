@@ -7,4 +7,6 @@
 
 body {
   font-family: var(--font-family-inter, "Inter", sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: subpixel-antialiased;
 }
