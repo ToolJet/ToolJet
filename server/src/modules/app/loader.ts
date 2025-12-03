@@ -78,7 +78,7 @@ export class AppModuleLoader {
             },
           },
           transport:
-            process.env.NODE_ENV !== 'production'
+            process.env.NODE_ENV !== 'production' || process.env.ENABLE_LOG_FORMAT === 'true'
               ? {
                   target: 'pino-pretty',
                   options: {
