@@ -262,6 +262,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
+        versionsPromotedToEnvironment: [data.editing_version],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
           get().selectedEnvironment,
