@@ -26,7 +26,7 @@ export default class Authorizenet implements QueryService {
           } else {
             const errorMessage = response.getMessages().getMessage()[0].getText();
             reject(
-              new QueryError('Connection test failed', errorMessage, {
+              new QueryError(errorMessage, errorMessage, {
                 code: response.getMessages().getMessage()[0].getCode(),
                 message: errorMessage,
               })

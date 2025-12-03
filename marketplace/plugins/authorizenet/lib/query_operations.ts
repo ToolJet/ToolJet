@@ -5,9 +5,15 @@ import ApiControllers from 'authorizenet/lib/apicontrollers';
 import Constants from 'authorizenet/lib/constants';
 
 
-  export function getEnvironment(env: string): any {
-      return env === 'production' ? "https://api.authorize.net/xml/v1/request.api" : "https://apitest.authorize.net/xml/v1/request.api";
+export function getEnvironment(env: string) {
+  const endpoints = Constants.constants?.endpoint;
+  if (!endpoints) {
+    throw new Error("Authorize.net endpoints not found in Constants");
   }
+  return env === "production"
+    ? endpoints.production
+    : endpoints.sandbox;
+}
 
   export function getMerchantAuth(sourceOptions: SourceOptions): any {
     const merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
