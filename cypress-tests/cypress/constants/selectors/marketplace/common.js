@@ -53,4 +53,7 @@ export const dsCommonSelector = {
     radioButtonInput: (buttonName) => {
         return `[data-cy="${cyParamName(buttonName)}-input"]`;
     },
+    text: (fieldName) => {
+        return `[data-cy="${cyParamName(fieldName)}-text"]`;
+    }
 };

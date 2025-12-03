@@ -83,16 +83,47 @@ export const saveAndDiscardDSChanges = (button) => {
   cy.get(dsCommonSelector.dataSourceNameButton(button)).click();
 };
 
+export const verifyDSConnection = () => {
+  cy.get(dsCommonSelector.dataSourceNameButton("test-connection"))
+    .verifyVisibleElement(
+      "have.text",
+      "Test connection"
+    )
+    .click();
+  cy.get(dsCommonSelector.text("test-connection-verified")).verifyVisibleElement(
+    "have.text",
+    "connection verified"
+  )
+};
+
+export const fillDSConnectionPasswordField = (fieldName, text) => {
+  cy.get('body').then(($body) => {
+    const editButtonExists = $body.find('[data-cy="button-edit"]').length > 0;
+    const passwordFieldDisabled = $body.find(dsCommonSelector.textField(fieldName)).is(':disabled');
+
+    if (editButtonExists || passwordFieldDisabled) {
+      cy.get('[data-cy="button-edit"]').should("be.visible").click();
+      cy.wait(500);
+    }
+  });
+
+  cy.waitForElement(dsCommonSelector.textField(fieldName))
+    .should("be.visible")
+    .should("not.be.disabled");
+
+  cy.clearAndType(dsCommonSelector.textField(fieldName), text);
+};
+
 const fieldHandlers = {
   input: fillDSConnectionTextField,
-  password: fillDSConnectionTextField,
+  password: fillDSConnectionPasswordField,
   dropdown: fillDSConnectionDropdown,
   toggle: toggleDSConnectionButton,
   radio: selectDSConnectionRadioButton,
   keyValue: fillDSConnectionKeyValuePairs
 };
 
-export function fillToolJetConnectionForm (config) {
+export function fillDSConnectionForm (config) {
   config.fields.forEach((field) => {
     const handler = fieldHandlers[field.type];
 
@@ -100,7 +131,28 @@ export function fillToolJetConnectionForm (config) {
       throw new Error(`Unsupported field type: ${field.type}`);
     }
 
-    handler(field);
+    switch (field.type) {
+      case 'input':
+        handler(field.fieldName, field.text);
+        break;
+      case 'password':
+        handler(field.fieldName, field.text);
+        break;
+      case 'dropdown':
+        handler(field.fieldName, field.option);
+        break;
+      case 'toggle':
+        handler(field.buttonName, field.shouldBeChecked);
+        break;
+      case 'radio':
+        handler(field.buttonName, field.shouldBeSelected);
+        break;
+      case 'keyValue':
+        handler(field.selector, field.keyValueData);
+        break;
+      default:
+        handler(field);
+    }
   });
 }
 
