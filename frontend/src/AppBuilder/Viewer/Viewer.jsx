@@ -138,6 +138,7 @@ export const Viewer = ({
     switchDarkMode(newMode);
   };
   useEffect(() => {
+    if (moduleMode) return;
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
