@@ -1,6 +1,5 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { EntityManager, DataSource } from 'typeorm';
-import { Logger } from 'nestjs-pino';
 
 export async function createMigrationConnectionForToolJetDatabase(
   connectionName: string
@@ -20,7 +19,7 @@ export async function createMigrationConnectionForToolJetDatabase(
     const tooljetDbManager = tooljetDbConnection.createEntityManager();
     await tooljetDbManager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.queryRunner.query(`SET statement_timeout = '0';`);
-      this.logger.debug(`ToolJet Database Migration: --- Statement timeouts made to default'`);
+      console.log(`ToolJet Database Migration: --- Statement timeouts made to default'`);
     });
 
     return { tooljetDbManager, tooljetDbConnection };
