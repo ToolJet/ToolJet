@@ -1,5 +1,8 @@
 import React from 'react';
 import { AppsPageHeader } from './AppsPageHeader';
+import { Button } from '@/components/ui/Button/Button';
+import { Crown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default {
   title: 'UI/Blocks/AppsPageHeader',
@@ -14,8 +17,16 @@ export const Simple = () => {
   return (
     <AppsPageHeader
       title="Applications"
-      onCreateBlankApp={() => console.log('Create blank app')}
-      onBuildWithAI={() => console.log('Build with AI')}
+      actionButtons={
+        <>
+          <Button variant="primary" onClick={() => console.log('Create blank app')}>
+            Create blank app
+          </Button>
+          <Button variant="secondary" onClick={() => console.log('Build with AI')}>
+            Build with AI
+          </Button>
+        </>
+      }
       createAppMenuItems={[]}
     />
   );
@@ -34,13 +45,55 @@ export const WithMenu = () => {
   return (
     <AppsPageHeader
       title="Applications"
-      onCreateBlankApp={() => console.log('Create blank app')}
-      onBuildWithAI={() => console.log('Build with AI')}
+      actionButtons={
+        <>
+          <Button variant="primary" onClick={() => console.log('Create blank app')}>
+            Create blank app
+          </Button>
+          <Button variant="secondary" onClick={() => console.log('Build with AI')}>
+            Build with AI
+          </Button>
+        </>
+      }
       createAppMenuItems={menuItems}
     />
   );
 };
 
+// Story with single action button
+export const SingleAction = () => {
+  return (
+    <AppsPageHeader
+      title="Applications"
+      actionButtons={
+        <Button variant="primary" onClick={() => console.log('Create app')}>
+          Create app
+        </Button>
+      }
+    />
+  );
+};
 
-
-
+// Story with upgrade banner
+export const WithUpgradeBanner = () => {
+  return (
+    <AppsPageHeader
+      title="Applications"
+      actionButtons={
+        <div
+          className={cn('tw-flex tw-items-center tw-gap-3 tw-pl-3 tw-pr-3 tw-py-3 tw-rounded-xl')}
+          style={{
+            background:
+              'linear-gradient(98deg, rgba(255, 255, 255, 0.04) 1.67%, rgba(142, 78, 198, 0.04) 39.08%, rgba(252, 95, 112, 0.04) 73.14%, rgba(252, 162, 63, 0.04) 100%)',
+          }}
+        >
+          <span className="tw-font-title-default tw-text-text-default">2 apps built! Upgrade for more apps.</span>
+          <Button variant="outline" size="default" isLucid={true} onClick={() => console.log('Upgrade')}>
+            <Crown width={14} height={14} className="tw-text-background-premium" />
+            Upgrade
+          </Button>
+        </div>
+      }
+    />
+  );
+};

@@ -31,6 +31,7 @@ module.exports = {
         'background-warning-stong': 'var(--background-warning-stong)',
         'background-warning-weak': 'var(--background-warning-weak)',
         'background-inverse': 'var(--background-inverse)',
+        'background-premium': 'var(--background-premium)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
