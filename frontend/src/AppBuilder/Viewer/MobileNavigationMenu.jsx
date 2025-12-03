@@ -30,6 +30,9 @@ const MobileNavigationMenu = ({
   const { toggleSidebar } = useSidebar();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const selectedVersion = useStore((state) => state.selectedVersion, shallow);
+  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -146,7 +149,9 @@ const MobileNavigationMenu = ({
       variant={'floating'}
       sidebarWidth="290px"
       sheetProps={{
-        container: document.getElementsByClassName('canvas-area')[0],
+        container: isMobilePreviewMode
+          ? document.getElementsByClassName('canvas-area')[0]
+          : document.querySelector('.viewer.mobile-view'),
         overlayClassName: 'tw-absolute tw-h-[100vh]',
         className: 'tw-absolute tw-h-[100vh] tw-p-0 mobile-page-menu-popup',
         style: bgStyles,
