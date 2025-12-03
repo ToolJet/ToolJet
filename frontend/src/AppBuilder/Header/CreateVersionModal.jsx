@@ -196,7 +196,7 @@ const CreateVersionModal = ({
                   newVersionData.editing_version.id,
                   () => {
                     console.log('Successfully switched environment and version');
-                    handleCommitOnVersionCreation(newVersionData);
+                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
                   },
                   (error) => {
                     console.error('Error switching to newly created version:', error);
@@ -211,7 +211,7 @@ const CreateVersionModal = ({
               appId,
               newVersionData.editing_version.id,
               () => {
-                handleCommitOnVersionCreation(newVersionData);
+                handleCommitOnVersionCreation(newVersionData, selectedVersion);
               },
               (error) => {
                 console.error('Error switching to newly created version:', error);

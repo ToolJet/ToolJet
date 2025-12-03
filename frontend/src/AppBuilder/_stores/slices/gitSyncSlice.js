@@ -27,7 +27,7 @@ export const createGitSyncSlice = (set, get) => ({
       const allowEditing = data?.app_git?.allow_editing ?? false;
       const orgGit = data?.app_git?.org_git;
       const appGit = data?.app_git;
-      const isGitSyncConfigured = data?.app_git?.isGitSyncConfigured
+      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured
       set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured')
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
