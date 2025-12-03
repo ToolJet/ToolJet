@@ -1,10 +1,10 @@
 import React from 'react';
-import AppCard from './AppCard';
+import { AppCard } from '../components/AppCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Rocket/avatar';
 import { Smile } from 'lucide-react';
 
 export default {
-  title: 'UI/Blocks/AppCard',
+  title: 'Features/Apps/AppCard',
   component: AppCard,
   argTypes: {
     title: { control: 'text' },
@@ -114,4 +114,3 @@ HoverDemo.parameters = {
     },
   },
 };
-

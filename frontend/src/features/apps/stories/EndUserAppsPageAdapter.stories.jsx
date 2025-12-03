@@ -261,7 +261,6 @@ export const Default = {
   },
 };
 
-
 export const Empty = {
   render: (args) => <StoryWithWorkspace {...args} />,
   args: {

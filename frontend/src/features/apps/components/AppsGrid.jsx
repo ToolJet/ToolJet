@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Smile } from 'lucide-react';
-import { AppCard } from '@/components/ui/blocks/AppCard';
+import { AppCard } from './AppCard';
 import { ResourceGrid } from '@/components/ui/blocks/ResourceGrid/ResourceGrid';
 
 // Note: AppsGrid is a thin wrapper that provides app-specific formatting logic.
