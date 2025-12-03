@@ -17,6 +17,10 @@ import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
 import { AppsTableSkeleton } from '@/features/apps/components/AppsTableSkeleton';
 import { AppsGrid } from '../components/AppsGrid';
+import { UpgradePromptDialog } from '@/components/ui/blocks/UpgradePromptDialog/UpgradePromptDialog';
+import { Button } from '@/components/ui/Button/Button';
+import { Crown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function AppsPageAdapter({
   data = {},
@@ -26,10 +30,12 @@ function AppsPageAdapter({
   navigation = {},
   layout = {},
   ui = {},
+  subscriptionLimits = {},
 }) {
   const { apps = [], isLoading: appsIsLoading, error: appsError, meta = {} } = data;
   const { appSearchKey = '', currentFolder = {}, folders = [], foldersLoading = false } = filters;
-  const { pageChanged, folderChanged, onSearch, deleteApp, cloneApp, exportApp } = rawActions;
+  const { pageChanged, folderChanged, onSearch, deleteApp, cloneApp, exportApp, onUpgrade } = rawActions;
+  const { appsLimit } = subscriptionLimits;
   const { canCreateApp, canDeleteApp, canUpdateApp } = permissions;
   const { navigate, workspaceId, appType = 'front-end' } = navigation;
   const {
@@ -70,6 +76,23 @@ function AppsPageAdapter({
     error: null,
     meta: {},
   });
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Check if limit is reached
+  const isLimitReached = appsLimit && !appsLimit.canAddUnlimited && appsLimit.percentage >= 100;
+
+  // Open dialog automatically when limit is reached on page load
+  useEffect(() => {
+    if (isLimitReached) {
+      setDialogOpen(true);
+    }
+  }, [isLimitReached]);
+
+  // Handler for opening dialog
+  const handleOpenDialog = React.useCallback(() => {
+    setDialogOpen(true);
+  }, []);
 
   const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
     initialTab: appType === 'module' ? 'modules' : 'apps',
@@ -171,6 +194,38 @@ function AppsPageAdapter({
     },
   ];
 
+  // Upgrade banner component
+  const upgradeBanner = useMemo(() => {
+    if (!isLimitReached) return null;
+
+    const currentCount = appsLimit?.current || 0;
+
+    return (
+      <div
+        className={cn('tw-flex tw-items-center tw-gap-3 tw-pl-3 tw-pr-3 tw-py-3 tw-rounded-xl')}
+        style={{
+          background:
+            'linear-gradient(98deg, rgba(255, 255, 255, 0.04) 1.67%, rgba(142, 78, 198, 0.04) 39.08%, rgba(252, 95, 112, 0.04) 73.14%, rgba(252, 162, 63, 0.04) 100%)',
+        }}
+      >
+        <span className="tw-font-title-default tw-text-text-default">
+          {currentCount} apps built! Upgrade for more apps.
+        </span>
+        <Button variant="outline" size="default" isLucid={true} onClick={handleOpenDialog}>
+          <Crown width={14} height={14} className="tw-text-background-premium" />
+          Upgrade
+        </Button>
+      </div>
+    );
+  }, [isLimitReached, appsLimit, handleOpenDialog]);
+
+  const handleUpgrade = () => {
+    if (onUpgrade) {
+      onUpgrade();
+    }
+    setDialogOpen(false);
+  };
+
   // Generic helper to render content based on view mode
   const renderContentView = (table, isLoading) => {
     // Use pageIndex as key to force re-render when pagination changes
@@ -225,39 +280,53 @@ function AppsPageAdapter({
   ];
 
   return (
-    <AppsShellView
-      searchValue={appSearchKey}
-      onSearch={onSearch}
-      workspaceName={workspaceName}
-      workspaces={workspaces}
-      onWorkspaceChange={onWorkspaceChange}
-      sidebarUser={sidebarUser}
-      sidebarTeams={sidebarTeams}
-      sidebarNavMain={sidebarNavMain}
-      sidebarProjects={sidebarProjects}
-      sidebarUserMenuItems={sidebarUserMenuItems}
-      sidebarPlatformVersion={sidebarPlatformVersion}
-      darkMode={isDarkMode}
-      onToggleDarkMode={toggleDarkMode}
-      header={<AppsPageHeader title={activeTab === 'apps' ? 'Applications' : 'Modules'} />}
-      footer={<PaginationFooter table={activeTable} isLoading={isLoading} currentPage={currentPage} />}
-    >
-      <ResourceErrorBoundary>
-        <ResourceViewHeader
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabsConfig={tabsConfig}
-          breadcrumbItems={breadcrumbItems}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          folders={folders}
-          currentFolder={currentFolder}
-          onFolderChange={folderChanged}
-          foldersLoading={foldersLoading}
+    <>
+      <AppsShellView
+        searchValue={appSearchKey}
+        onSearch={onSearch}
+        workspaceName={workspaceName}
+        workspaces={workspaces}
+        onWorkspaceChange={onWorkspaceChange}
+        sidebarUser={sidebarUser}
+        sidebarTeams={sidebarTeams}
+        sidebarNavMain={sidebarNavMain}
+        sidebarProjects={sidebarProjects}
+        sidebarUserMenuItems={sidebarUserMenuItems}
+        sidebarPlatformVersion={sidebarPlatformVersion}
+        darkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+        header={
+          <AppsPageHeader title={activeTab === 'apps' ? 'Applications' : 'Modules'} actionButtons={upgradeBanner} />
+        }
+        footer={<PaginationFooter table={activeTable} isLoading={isLoading} currentPage={currentPage} />}
+      >
+        <ResourceErrorBoundary>
+          <ResourceViewHeader
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            tabsConfig={tabsConfig}
+            breadcrumbItems={breadcrumbItems}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            folders={folders}
+            currentFolder={currentFolder}
+            onFolderChange={folderChanged}
+            foldersLoading={foldersLoading}
+          />
+          <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+        </ResourceErrorBoundary>
+      </AppsShellView>
+      {isLimitReached && (
+        <UpgradePromptDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          currentCount={appsLimit?.current || 0}
+          maxCount={appsLimit?.total || 0}
+          onUpgrade={handleUpgrade}
+          hideBackdrop={true}
         />
-        <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
-      </ResourceErrorBoundary>
-    </AppsShellView>
+      )}
+    </>
   );
 }
 
@@ -269,6 +338,7 @@ AppsPageAdapter.propTypes = {
   navigation: PropTypes.object,
   layout: PropTypes.object,
   ui: PropTypes.object,
+  subscriptionLimits: PropTypes.object,
 };
 
 export default React.memo(AppsPageAdapter);

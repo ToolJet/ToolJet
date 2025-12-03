@@ -3,17 +3,6 @@ import { AppsGrid } from '../components/AppsGrid';
 import { generateMockApps } from './utils';
 import { appsColumns } from '@/features/apps/columns';
 import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
-import { useReactTable, getCoreRowModel } from '@tanstack/react-table';
-
-// Helper to create a mock table
-function createMockTable(data, columns) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-}
 
 const mockActions = {
   play: (app) => console.log('Play:', app),
@@ -37,7 +26,18 @@ export default {
 };
 
 function AppsGridWrapper({ apps, perms = mockPerms, canDelete = true }) {
-  const columns = React.useMemo(() => appsColumns({ perms, actions: mockActions, canDelete }), [perms, canDelete]);
+  // Convert canDelete boolean to function if needed
+  const canDeleteFn = React.useMemo(() => {
+    if (typeof canDelete === 'function') {
+      return canDelete;
+    }
+    return (_app) => canDelete;
+  }, [canDelete]);
+
+  const columns = React.useMemo(
+    () => appsColumns({ perms, actions: mockActions, canDelete: canDeleteFn }),
+    [perms, canDeleteFn]
+  );
   const { table } = useResourcePageAdapter({
     data: { apps, isLoading: false, error: null, meta: {} },
     filters: { appSearchKey: '', currentFolder: {} },
@@ -45,7 +45,7 @@ function AppsGridWrapper({ apps, perms = mockPerms, canDelete = true }) {
     columns,
   });
 
-  return <AppsGrid table={table} actions={mockActions} perms={perms} canDelete={canDelete} />;
+  return <AppsGrid table={table} actions={mockActions} perms={perms} canDelete={canDeleteFn} />;
 }
 
 export const Default = () => {
@@ -70,4 +70,3 @@ export const WithPermissions = () => {
   };
   return <AppsGridWrapper apps={apps} perms={restrictedPerms} canDelete={false} />;
 };
-
