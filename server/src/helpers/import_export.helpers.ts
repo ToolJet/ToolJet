@@ -388,7 +388,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
 
     return { references };
   } catch (error) {
-    this.logger.log(error);
+    console.log(error);
     return { references: [] };
   }
 }

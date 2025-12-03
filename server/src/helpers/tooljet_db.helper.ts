@@ -287,7 +287,7 @@ export function generateTJDBPasswordForRole(length = 30) {
   ];
 
   // Fill the rest securely
-  this.logger.debug(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
+  console.log(Array.from(crypto.randomBytes(length - mandatoryChars.length)));
   const remaining = Array.from(crypto.randomBytes(length - mandatoryChars.length)).map(
     (b) => allChars[b % allChars.length]
   );
