@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { UpgradePromptDialog } from './UpgradePromptDialog';
 import { Button } from '@/components/ui/Button/Button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/Rocket/dialog';
 
 export default {
   title: 'UI/Blocks/UpgradePromptDialog',
