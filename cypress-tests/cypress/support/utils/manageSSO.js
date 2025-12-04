@@ -927,12 +927,13 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
-export const addOIDCConfig = (
+export const addOktaOIDCConfig = (
   groupMapping,
   level = "workspace",
   extra = {}
 ) => {
   const config = {
+    ...(level === "workspace" ? { configId: "22f22523-7bc2-4134-891d-88bdfec073cd" } : {}),
     type: "openid",
     configs: {
       name: "",
