@@ -129,17 +129,17 @@ export default class MysqlQueryService implements QueryService {
     const shouldUseSSL = sourceOptions.ssl_enabled;
     let sslObject: any = null;
 
-  if (shouldUseSSL) {
-      const hasCertificate = sourceOptions.ssl_certificate === 'ca_certificate' || sourceOptions.ssl_certificate === 'self_signed';
-      sslObject = { rejectUnauthorized: hasCertificate };
-      if (sourceOptions.ssl_certificate === 'ca_certificate') {
-        sslObject.ca = sourceOptions.ca_cert;
-      } else if (sourceOptions.ssl_certificate === 'self_signed') {
-        sslObject.ca = sourceOptions.root_cert;
-        sslObject.key = sourceOptions.client_key;
-        sslObject.cert = sourceOptions.client_cert;
-      }
- }
+if (shouldUseSSL) {
+  sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
+  
+  if (sourceOptions.ssl_certificate === 'ca_certificate') {
+    sslObject.ca = sourceOptions.ca_cert;
+  } else if (sourceOptions.ssl_certificate === 'self_signed') {
+    sslObject.ca = sourceOptions.root_cert;
+    sslObject.key = sourceOptions.client_key;
+    sslObject.cert = sourceOptions.client_cert;
+  }
+}
 
   const config: Knex.Config = {
     client: 'mysql2',
