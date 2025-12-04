@@ -36,7 +36,7 @@ export const PageMenuItem = withRouter(
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-    const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+    const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
     const showEditingPopover = useStore((state) => state.showEditingPopover);
     const logError = useStore((state) => state.eventsSlice.logError);
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
@@ -275,16 +275,14 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
-              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-            }`}
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${(showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+              }`}
             style={{
               position: 'relative',
               width: '100%',
             }}
             onClick={(e) => {
               e.preventDefault();
-              e.stopPropagation();
               handleOpenPopup(page?.type || 'page', page);
             }}
           >
@@ -336,7 +334,7 @@ export const PageMenuItem = withRouter(
                       </ToolTip>
                     )}
                     <div style={{ marginRight: 'auto' }}>
-                      {licenseValid && restricted && (
+                      {hasAppPermissionPages && restricted && (
                         <ToolTip message={getTooltip()}>
                           <div className="d-flex">
                             <SolidIcon width="16" name="lock" fill="var(--icons-default)" />
@@ -460,18 +458,18 @@ export const PageMenuItem = withRouter(
                                 <ToolTip
                                   message={'Page permissions are available only in paid plans'}
                                   placement="auto"
-                                  show={!licenseValid}
+                                  show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"
                                 >
                                   <div className="d-flex align-items-center enterprise-feature">
                                     <div>Page permission</div>
-                                    {!licenseValid && <SolidIcon name="enterprisecrown" />}
+                                    {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
                                   </div>
                                 </ToolTip>
                               }
                               icon="lock"
                               darkMode={darkMode}
-                              disabled={!licenseValid}
+                              disabled={!hasAppPermissionPages}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();

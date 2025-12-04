@@ -222,7 +222,7 @@ export const Viewer = ({
                         <div className={`areas d-flex flex-rows app-${appId}`}>
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
-                              'w-100': moduleMode || appType === 'module',
+                              'w-100': moduleMode || appType === 'module' || currentLayout === 'mobile',
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
