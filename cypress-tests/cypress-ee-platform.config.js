@@ -35,8 +35,6 @@ module.exports = defineConfig({
 
   e2e: {
     setupNodeEvents (on, config) {
-      config.baseUrl = environment.baseUrl;
-
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
 

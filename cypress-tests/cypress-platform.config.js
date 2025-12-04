@@ -40,7 +40,6 @@ module.exports = defineConfig({
     trashAssetsBeforeRuns: true,
     e2e: {
         setupNodeEvents (on, config) {
-            config.baseUrl = environment.baseUrl;
 
             on("task", {
                 readPdf (pathToPdf) {
