@@ -62,6 +62,10 @@ const RenderWidget = ({
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
   const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
+  const getExposedPropertyForAdditionalActions = useStore(
+    (state) => state.getExposedPropertyForAdditionalActions,
+    shallow
+  );
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
@@ -103,14 +107,24 @@ const RenderWidget = ({
 
   const isDisabled = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedDisabled = state.getExposedValueOfComponent(id, moduleId)?.isDisabled;
+    const componentExposedDisabled = getExposedPropertyForAdditionalActions(
+      id,
+      subContainerIndex,
+      'isDisabled',
+      moduleId
+    );
     if (componentExposedDisabled !== undefined) return componentExposedDisabled;
     return component?.properties?.disabledState || component?.styles?.disabledState;
   });
 
   const isLoading = useStore((state) => {
     const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedLoading = state.getExposedValueOfComponent(id, moduleId)?.isLoading;
+    const componentExposedLoading = getExposedPropertyForAdditionalActions(
+      id,
+      subContainerIndex,
+      'isLoading',
+      moduleId
+    );
     if (componentExposedLoading !== undefined) return componentExposedLoading;
     return component?.properties?.loadingState || component?.styles?.loadingState;
   });
@@ -127,11 +141,11 @@ const RenderWidget = ({
       validateWidget({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
-        customResolveObjects: customResolvables,
+        customResolveObjects: customResolvables?.[subContainerIndex] ?? {},
         componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
+    [validateWidget, customResolvables, subContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
   );
 
   const resetComponent = useCallback(() => {

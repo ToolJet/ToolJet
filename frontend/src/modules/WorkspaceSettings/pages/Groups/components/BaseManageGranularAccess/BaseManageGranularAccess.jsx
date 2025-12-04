@@ -251,12 +251,12 @@ class BaseManageGranularAccess extends React.Component {
         selectedResources:
           currentDs?.length > 0
             ? currentDs?.map(({ dataSource }) => {
-                return {
-                  name: dataSource.name,
-                  value: dataSource.id,
-                  label: dataSource.name,
-                };
-              })
+              return {
+                name: dataSource.name,
+                value: dataSource.id,
+                label: dataSource.name,
+              };
+            })
             : [],
         initialState: {
           type: RESOURCE_TYPE.DATA_SOURCES,
@@ -269,12 +269,12 @@ class BaseManageGranularAccess extends React.Component {
           selectedResources:
             currentDs?.length > 0
               ? currentDs?.map(({ dataSource }) => {
-                  return {
-                    name: dataSource.name,
-                    value: dataSource.id,
-                    label: dataSource.name,
-                  };
-                })
+                return {
+                  name: dataSource.name,
+                  value: dataSource.id,
+                  label: dataSource.name,
+                };
+              })
               : [],
         },
       });
@@ -284,12 +284,12 @@ class BaseManageGranularAccess extends React.Component {
       const selectedResources =
         currentApps?.length > 0
           ? currentApps?.map(({ app }) => {
-              return {
-                name: app.name,
-                value: app.id,
-                label: app.name,
-              };
-            })
+            return {
+              name: app.name,
+              value: app.id,
+              label: app.name,
+            };
+          })
           : [];
 
       this.setState({
@@ -418,11 +418,11 @@ class BaseManageGranularAccess extends React.Component {
     const currentResource =
       type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
         ? currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => {
-            return app.app.id;
-          })
+          return app.app.id;
+        })
         : currentEditingPermissions?.dataSourcesGroupPermission?.groupDataSources?.map((ds) => {
-            return ds.dataSource.id;
-          });
+          return ds.dataSource.id;
+        });
     const selectedResourceEnitities = this.getSelectedResources();
     const selectedResource = selectedResourceEnitities
       .filter((res) => !res?.isAllField)
@@ -444,11 +444,11 @@ class BaseManageGranularAccess extends React.Component {
     const groupResToDelete =
       type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
         ? currentEditingPermissions?.appsGroupPermissions?.groupApps?.filter((groupApp) =>
-            resourceItemsToDelete?.includes(groupApp.appId)
-          )
+          resourceItemsToDelete?.includes(groupApp.appId)
+        )
         : currentEditingPermissions?.dataSourcesGroupPermission?.groupDataSources?.filter((groupDs) =>
-            resourceItemsToDelete?.includes(groupDs.dataSourceId)
-          );
+          resourceItemsToDelete?.includes(groupDs.dataSourceId)
+        );
     const resourcesToDelete = groupResToDelete?.map(({ id }) => {
       return {
         id,
@@ -511,7 +511,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -593,10 +593,10 @@ class BaseManageGranularAccess extends React.Component {
     const permissionStateChanged =
       type === RESOURCE_TYPE.DATA_SOURCES
         ? this.state.initialState.initialPermissionStateDs?.canUse !== newPermissionState?.canUse ||
-          this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure
+        this.state.initialPermissionStateDs?.canConfigure !== newPermissionState?.canConfigure
         : this.state.initialState.initialPermissionState?.canEdit !== newPermissionState?.canEdit ||
-          newPermissionState?.canView !== this.state.initialState.initialPermissionState?.canView ||
-          newPermissionState?.hideFromDashboard !== this.state.initialState.initialPermissionState?.hideFromDashboard;
+        newPermissionState?.canView !== this.state.initialState.initialPermissionState?.canView ||
+        newPermissionState?.hideFromDashboard !== this.state.initialState.initialPermissionState?.hideFromDashboard;
 
     const selectedItemsChanged = JSON.stringify(selectedItems) !== JSON.stringify(newSelectedItems);
     const isAllChanged = this.state.initialState.isAll !== newState.isAll;
@@ -657,8 +657,8 @@ class BaseManageGranularAccess extends React.Component {
     const addPermissionTooltipMessage = !newPermissionName
       ? 'Please input permissions name'
       : isCustom && this.getSelectedResources().length === 0
-      ? 'Please select apps or select all apps option'
-      : '';
+        ? 'Please select apps or select all apps option'
+        : '';
     const isBasicPlan = this.props.isBasicPlan;
     const disableEditUpdate = currentGroupPermission.name == 'end-user' || isBasicPlan;
 
@@ -694,8 +694,8 @@ class BaseManageGranularAccess extends React.Component {
               modalType === 'add'
                 ? this.createGranularPermissions
                 : () => {
-                    this.updateGranularPermissions();
-                  }
+                  this.updateGranularPermissions();
+                }
             }
             updateParentState={this.updateState}
             resourceType={resourceType}
@@ -709,8 +709,8 @@ class BaseManageGranularAccess extends React.Component {
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
                         : resourceType === RESOURCE_TYPE.WORKFLOWS
-                        ? 'workflows'
-                        : 'datasource'
+                          ? 'workflows'
+                          : 'datasource'
                     }
                     fill="var(--slate8)"
                   />

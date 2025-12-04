@@ -40,7 +40,6 @@ import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
@@ -654,13 +653,13 @@ const getDocsLink = (componentMeta) => {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
-      return 'https://docs.tooljet.ai/docs/widgets/multiselect';
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
-      return 'https://docs.tooljet.ai/docs/widgets/date-range-picker';
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }

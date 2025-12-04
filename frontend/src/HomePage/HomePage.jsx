@@ -1908,7 +1908,7 @@ class HomePageComponent extends React.Component {
                         <div>Create reusable groups of components and queries via modules.</div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <a
-                            href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
+                            href="https://docs.tooljet.com/docs/app-builder/modules/overview"
                             target="_blank"
                             className="docs-link"
                             rel="noreferrer"

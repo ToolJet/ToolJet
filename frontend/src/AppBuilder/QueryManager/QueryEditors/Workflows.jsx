@@ -57,7 +57,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
         {`To know more about querying workflows data,`}
         &nbsp;
         <a
-          href={'https://docs.tooljet.ai/docs/workflows/how-to/trigger-workflow-from-app'}
+          href={'https://docs.tooljet.com/docs/workflows/how-to/trigger-workflow-from-app'}
           target="_blank"
           style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
           rel="noreferrer"
