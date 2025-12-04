@@ -140,9 +140,9 @@ export const parseMongoDBConnectionString = (connectionString) => {
     const tlsParam = params.get('tls');
 
     if (sslParam !== null) {
-      useSsl = sslParam === '' || sslParam.toLowerCase() === 'true';
+      useSsl = sslParam.toLowerCase() === 'true';
     } else if (tlsParam !== null) {
-      useSsl = tlsParam === '' || tlsParam.toLowerCase() === 'true';
+      useSsl = tlsParam.toLowerCase() === 'true';
     }
   }
 

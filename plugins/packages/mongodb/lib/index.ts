@@ -6,6 +6,23 @@ import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
 
 export default class MongodbService implements QueryService {
+
+  private extractSslFromConnString(queryParams: string): boolean | null {
+  if (!queryParams) return null;
+
+  const qp = queryParams.replace("?", "").toLowerCase();
+  const pairs = qp.split("&");
+
+  for (const p of pairs) {
+    if (p.startsWith("ssl=")) {
+      return p.split("=")[1] === "true";
+    }
+    if (p.startsWith("tls=")) {
+      return p.split("=")[1] === "true";
+    }
+  }
+  return null;
+}
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
@@ -176,122 +193,168 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    let db = null,
-      client;
-    const connectionType = sourceOptions['connection_type'];
+async getConnection(sourceOptions: SourceOptions): Promise<any> {
+  let db = null;
+  let client;
+  const connectionType = sourceOptions['connection_type'];
 
-    if (connectionType === 'manual') {
-      const format = sourceOptions.connection_format; 
-      const database = sourceOptions.database;
-      const host = sourceOptions.host;
-      const port = sourceOptions.port || undefined ;
-      const username = encodeURIComponent(sourceOptions.username);
-      const password = encodeURIComponent(sourceOptions.password);
+  if (connectionType === 'manual') {
+    const format = sourceOptions.connection_format;
+    const database = sourceOptions.database;
+    const host = sourceOptions.host;
+    const port = sourceOptions.port || undefined;
+    const username = encodeURIComponent(sourceOptions.username);
+    const password = encodeURIComponent(sourceOptions.password);
 
-      const needsAuthentication = username !== '' && password !== '';
-      let uri = '';
+    const needsAuthentication = username !== '' && password !== '';
+    let uri = '';
 
-      if(format === 'mongodb'){
-       uri = needsAuthentication
+    if (format === 'mongodb') {
+      uri = needsAuthentication
         ? `mongodb://${username}:${password}@${host}:${port}`
         : `mongodb://${host}:${port}`;
-      }else{
-       uri = needsAuthentication
+    } else {
+      uri = needsAuthentication
         ? `mongodb+srv://${username}:${password}@${host}`
         : `mongodb+srv://${host}`;
-      }
-
-      let clientOptions = {};
-
-      if (sourceOptions.tls_certificate === 'client_certificate') {
-        const secureContext = tls.createSecureContext({
-          ca: sourceOptions.ca_cert,
-          cert: sourceOptions.client_cert,
-          key: sourceOptions.client_key,
-        });
-        clientOptions = {
-          tls: true,
-          secureContext,
-        };
-      }
-
-      if (sourceOptions.tls_certificate === 'ca_certificate') {
-        const secureContext = tls.createSecureContext({
-          ca: sourceOptions.ca_cert,
-        });
-
-      if (sourceOptions.query_params) {
-          uri += sourceOptions.query_params.startsWith('?')
-          ? sourceOptions.query_params
-          : `?${sourceOptions.query_params}`;
-      }
-
-        clientOptions = {
-          tls: true,
-          secureContext,
-        };
-      }
-      client = new MongoClient(uri, clientOptions);
-      await client.connect();
-
-      db = client.db(database);
-      } else {
-      const format = sourceOptions.connection_format;
-      const database = sourceOptions.database;
-      const conn = sourceOptions['connection_string'];
-      const baseMatch = conn.match(/^mongodb(\+srv)?:\/\/([^:]+):([^@]+)@([^/]+)/);
-      const extractedUsername = baseMatch ? baseMatch[2] : '';
-      const extractedPassword = baseMatch ? baseMatch[3] : '';
-      const extractedHost = baseMatch ? baseMatch[4] : '';
-
-      const username = sourceOptions.username
-        ? encodeURIComponent(sourceOptions.username)
-        : encodeURIComponent(extractedUsername);
-
-      const password = sourceOptions.password
-        ? encodeURIComponent(sourceOptions.password)
-        : encodeURIComponent(extractedPassword);
-
-      const host = sourceOptions.host || extractedHost.split(':')[0];
-      const port = sourceOptions.port || (extractedHost.includes(':') ? extractedHost.split(':')[1] : '');
-
-      const needsAuthentication = username !== '' && password !== '';
-
-      let uri = '';
-
-      if (format === 'mongodb') {
-        const hostPort = port ? `${host}:${port}` : host;
-        uri = needsAuthentication
-          ? `mongodb://${username}:${password}@${hostPort}`
-          : `mongodb://${hostPort}`;
-      } else {
-        uri = needsAuthentication
-          ? `mongodb+srv://${username}:${password}@${host}`
-          : `mongodb+srv://${host}`;
-      }
-
-      const isSrv = format === 'mongodb+srv';  
-      if (sourceOptions.query_params) {
-          uri += sourceOptions.query_params.startsWith('?')
-          ? sourceOptions.query_params
-          : `?${sourceOptions.query_params}`;
-      }
-
-      const clientOptions = {
-         tls: isSrv || sourceOptions.use_ssl === true
-        };
-      client = new MongoClient(uri, clientOptions);
-      await client.connect();
-
-      db = client.db(database);
     }
 
-    return {
-      db,
-      close: async () => {
-        await client?.close?.();
-      },
-    };
+    let clientOptions = {};
+
+    if (sourceOptions.tls_certificate === 'client_certificate') {
+      const secureContext = tls.createSecureContext({
+        ca: sourceOptions.ca_cert,
+        cert: sourceOptions.client_cert,
+        key: sourceOptions.client_key,
+      });
+      clientOptions = {
+        tls: true,
+        secureContext,
+      };
+    }
+
+    if (sourceOptions.tls_certificate === 'ca_certificate') {
+      const secureContext = tls.createSecureContext({
+        ca: sourceOptions.ca_cert,
+      });
+
+      if (sourceOptions.query_params) {
+        uri += sourceOptions.query_params.startsWith('?')
+          ? sourceOptions.query_params
+          : `?${sourceOptions.query_params}`;
+      }
+
+      clientOptions = {
+        tls: true,
+        secureContext,
+      };
+    }
+    client = new MongoClient(uri, clientOptions);
+    await client.connect();
+    db = client.db(database);
+    
+  } else {
+  const connStr = sourceOptions.connection_string.trim();
+  const explicitFormat = sourceOptions.connection_format;
+  const explicitDb = sourceOptions.database;
+  const explicitHost = sourceOptions.host;
+  const explicitPort = sourceOptions.port;
+  const explicitUser = sourceOptions.username;
+  const explicitPass = sourceOptions.password;
+  const explicitQueryParams = sourceOptions.query_params;
+
+  const protocolMatch = connStr.match(/^(mongodb(?:\+srv)?):\/\//);
+  const protocol = protocolMatch ? protocolMatch[1] : explicitFormat;
+
+  const withoutProtocol = connStr.replace(/^(mongodb(?:\+srv)?):\/\//, "");
+  const authSplit = withoutProtocol.split("@");
+  const authPart = authSplit.length > 1 ? authSplit[0] : "";
+  const restPart = authSplit.length > 1 ? authSplit[1] : authSplit[0];
+
+  const restSplit = restPart.split("/");
+  const hostsPart = restSplit[0];
+  const dbAndParamsPart = restSplit.slice(1).join("/") || "";
+
+  const dbNameFromConn = dbAndParamsPart.split("?")[0] || "";
+  const queryParamsFromConn = dbAndParamsPart.includes("?")
+    ? `?${dbAndParamsPart.split("?")[1]}`
+    : "";
+
+  let connUser = "";
+  let connPass = "";
+
+  if (authPart.includes(":")) {
+    const [u, p] = authPart.split(":");
+    connUser = decodeURIComponent(u);
+    connPass = decodeURIComponent(p);
   }
+
+  const finalUser = explicitUser || connUser || "";
+  const finalPass = explicitPass || connPass || "";
+  const needsAuth = finalUser !== "" && finalPass !== "";
+  const hostsList = hostsPart.split(",");
+
+  if (explicitHost) {
+    const newPort = explicitPort ? `:${explicitPort}` : "";
+    const existingPort = hostsList[0].includes(":")
+      ? `:${hostsList[0].split(":")[1]}`
+      : "";
+
+    hostsList[0] = newPort
+      ? `${explicitHost}${newPort}`
+      : `${explicitHost}${existingPort}`;
+  }
+
+  const finalHosts = hostsList.join(",");
+  const finalDb = explicitDb || dbNameFromConn || "";
+  const authSection = needsAuth
+    ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
+    : "";
+
+  let finalUri = `${protocol}://${authSection}${finalHosts}`;
+
+  if (finalDb) {
+    finalUri += `/${finalDb}`;
+  }
+  if (explicitQueryParams) {
+    finalUri += explicitQueryParams.startsWith("?")
+      ? explicitQueryParams
+      : `?${explicitQueryParams}`;
+  } else if (queryParamsFromConn) {
+    finalUri += queryParamsFromConn;
+  }
+  let finalSsl: boolean = false;
+
+  const sslFromConn = this.extractSslFromConnString(queryParamsFromConn);
+  if (sslFromConn !== null) {
+    finalSsl = sslFromConn;
+  } else if (protocol === "mongodb+srv") {
+    finalSsl = true;
+  } else if (typeof sourceOptions.use_ssl === "boolean") {
+    finalSsl = sourceOptions.use_ssl;
+  }
+
+  if (finalSsl === true && !finalUri.includes('ssl=') && !finalUri.includes('tls=')) {
+    const separator = finalUri.includes('?') ? '&' : '?';
+    finalUri += `${separator}ssl=true`;
+  }
+      
+  const isSrv = protocol === "mongodb+srv";
+  const clientOptions: any = {};
+
+  if (finalSsl === true) {
+    clientOptions.tls = true;
+  }
+
+  client = new MongoClient(finalUri, clientOptions);
+  await client.connect();
+  db = client.db(finalDb);
+}
+  return {
+    db,
+    close: async () => {
+      await client?.close?.();
+    },
+  };
+}
 }

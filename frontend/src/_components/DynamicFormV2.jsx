@@ -438,85 +438,31 @@ const validateOptions = React.useCallback(async () => {
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
-const handleOptionChange = (key, value, flag = true) => {
-  if (!hasUserInteracted) {
-    setHasUserInteracted(true);
-  }
-  setInteractedFields((prev) => new Set(prev).add(key));
-  
-  const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl'];
-  
-  if (autoFilledFields.includes(key)) {
-    manuallyEditedFieldsRef.current.add(key);
-    
-    const isMongoDBDataSource = 
-      schema['tj:source']?.kind === 'mongodb' || 
-      schema['tj:source']?.name === 'MongoDB';
-    const connectionType = options?.connection_type?.value;
-    
-    if (isMongoDBDataSource && connectionType === 'string') {
-      optionchanged(key, value, flag);
+    const handleOptionChange = (key, value, flag = true) => {
+      if (!hasUserInteracted) {
+        setHasUserInteracted(true);
+      }
+      setInteractedFields((prev) => new Set(prev).add(key));
       
-      setTimeout(() => {
-        const newOptions = { ...options };
-        newOptions[key] = { value };
-        
-        const connFormat = newOptions.connection_format?.value || 'mongodb';
-        const isSrv = connFormat === 'mongodb+srv';
-        const username = newOptions.username?.value || '';
-        const password = newOptions.password?.value || '';
-        const host = newOptions.host?.value || '';
-        const port = newOptions.port?.value || '';
-        const database = newOptions.database?.value || '';
-        const use_ssl = !!newOptions.use_ssl?.value;
-        
-        if (host && host.trim() !== '') {
-          const prefix = isSrv ? 'mongodb+srv://' : 'mongodb://';
-          let credentials = '';
-          if (username) {
-            credentials += encodeURIComponent(username);
-            if (password) credentials += `:${encodeURIComponent(password)}`;
-            credentials += '@';
-          }
-          
-          let hostPart = host.trim();
-          if (!isSrv && port) {
-            hostPart += `:${port}`;
-          }
-          
-          const path = database ? `/${encodeURIComponent(database)}` : '';
-          const originalConnString = options?.connection_string?.value || '';
-          const queryStringPart = originalConnString.split('?')[1] || '';
-          const originalParams = new URLSearchParams(queryStringPart);
-
-          if (use_ssl) {
-            originalParams.set('ssl', 'true');
-          } else {
-            originalParams.delete('ssl');
-            originalParams.delete('tls');
-          }
-
-          const query = originalParams.toString();
-          const newConnString = `${prefix}${credentials}${hostPart}${path}${query ? `?${query}` : ''}`;
-          
-          skipNextAutoFillRef.current = true;
-          optionchanged('connection_string', newConnString, false);
+      const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl'];
+      
+      if (autoFilledFields.includes(key)) {
+        manuallyEditedFieldsRef.current.add(key);
+        optionchanged(key, value, flag);
+        return;
+      }
+      
+      if (key === 'connection_string') {
+        if (!value || value.trim() === '') {
+          manuallyEditedFieldsRef.current.clear();
+          lastAutoFilledConnRef.current = '';
+        } else {
+          manuallyEditedFieldsRef.current.clear();
         }
-      }, 0);
-      return;
-    }
-  }
-  
-  if (key === 'connection_string') {
-    if (!value || value.trim() === '') {
-      manuallyEditedFieldsRef.current.clear();
-      lastAutoFilledConnRef.current = '';
-    } else {
-      manuallyEditedFieldsRef.current.clear();
-    }
-  }
-  optionchanged(key, value, flag);
-};
+      }
+      
+      optionchanged(key, value, flag);
+    };
     switch (widget) {
       case 'password':
       case 'text':
