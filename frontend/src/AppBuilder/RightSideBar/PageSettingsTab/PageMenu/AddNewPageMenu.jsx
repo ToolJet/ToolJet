@@ -7,12 +7,13 @@ import PageOptions from './PageOptions';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export function AddNewPageMenu({ darkMode, isLicensed }) {
+export function AddNewPageMenu({ darkMode }) {
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
+  const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -70,20 +71,20 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            <div className={`${!isLicensed && 'd-flex disabled licensed-page-option'}`}>
+            <div className={`${!hasAppPermissionPages && 'd-flex disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
                 icon="folder"
                 darkMode={darkMode}
-                onClick={() => isLicensed && handleOpenPopup('group')}
+                onClick={() => hasAppPermissionPages && handleOpenPopup('group')}
               />
               <LicenseTooltip
                 message={"Nav group can't be created on free plans"}
                 placement="bottom"
-                show={!isLicensed}
+                show={!hasAppPermissionPages}
               >
-                <div className="d-flex align-items-center">{!isLicensed && <SolidIcon name="enterprisecrown" />}</div>
+                <div className="d-flex align-items-center">{!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}</div>
               </LicenseTooltip>
             </div>
           </div>
