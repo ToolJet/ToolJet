@@ -253,7 +253,104 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
     await client.connect();
     db = client.db(database);
     
-  } else {
+//   } else {
+//   const connStr = sourceOptions.connection_string.trim();
+//   const explicitFormat = sourceOptions.connection_format;
+//   const explicitDb = sourceOptions.database;
+//   const explicitHost = sourceOptions.host;
+//   const explicitPort = sourceOptions.port;
+//   const explicitUser = sourceOptions.username;
+//   const explicitPass = sourceOptions.password;
+//   const explicitQueryParams = sourceOptions.query_params;
+
+//   const protocolMatch = connStr.match(/^(mongodb(?:\+srv)?):\/\//);
+//   const protocol = protocolMatch ? protocolMatch[1] : explicitFormat;
+
+//   const withoutProtocol = connStr.replace(/^(mongodb(?:\+srv)?):\/\//, "");
+//   const authSplit = withoutProtocol.split("@");
+//   const authPart = authSplit.length > 1 ? authSplit[0] : "";
+//   const restPart = authSplit.length > 1 ? authSplit[1] : authSplit[0];
+
+//   const restSplit = restPart.split("/");
+//   const hostsPart = restSplit[0];
+//   const dbAndParamsPart = restSplit.slice(1).join("/") || "";
+
+//   const dbNameFromConn = dbAndParamsPart.split("?")[0] || "";
+//   const queryParamsFromConn = dbAndParamsPart.includes("?")
+//     ? `?${dbAndParamsPart.split("?")[1]}`
+//     : "";
+
+//   let connUser = "";
+//   let connPass = "";
+
+//   if (authPart.includes(":")) {
+//     const [u, p] = authPart.split(":");
+//     connUser = decodeURIComponent(u);
+//     connPass = decodeURIComponent(p);
+//   }
+
+//   const finalUser = explicitUser || connUser || "";
+//   const finalPass = explicitPass || connPass || "";
+//   const needsAuth = finalUser !== "" && finalPass !== "";
+//   const hostsList = hostsPart.split(",");
+
+//   if (explicitHost) {
+//     const newPort = explicitPort ? `:${explicitPort}` : "";
+//     const existingPort = hostsList[0].includes(":")
+//       ? `:${hostsList[0].split(":")[1]}`
+//       : "";
+
+//     hostsList[0] = newPort
+//       ? `${explicitHost}${newPort}`
+//       : `${explicitHost}${existingPort}`;
+//   }
+
+//   const finalHosts = hostsList.join(",");
+//   const finalDb = explicitDb || dbNameFromConn || "";
+//   const authSection = needsAuth
+//     ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
+//     : "";
+
+//   let finalUri = `${protocol}://${authSection}${finalHosts}`;
+
+//   if (finalDb) {
+//     finalUri += `/${finalDb}`;
+//   }
+//   if (explicitQueryParams) {
+//     finalUri += explicitQueryParams.startsWith("?")
+//       ? explicitQueryParams
+//       : `?${explicitQueryParams}`;
+//   } else if (queryParamsFromConn) {
+//     finalUri += queryParamsFromConn;
+//   }
+//   let finalSsl: boolean = false;
+
+//   const sslFromConn = this.extractSslFromConnString(queryParamsFromConn);
+//   if (sslFromConn !== null) {
+//     finalSsl = sslFromConn;
+//   } else if (protocol === "mongodb+srv") {
+//     finalSsl = true;
+//   } else if (typeof sourceOptions.use_ssl === "boolean") {
+//     finalSsl = sourceOptions.use_ssl;
+//   }
+
+//   if (finalSsl === true && !finalUri.includes('ssl=') && !finalUri.includes('tls=')) {
+//     const separator = finalUri.includes('?') ? '&' : '?';
+//     finalUri += `${separator}ssl=true`;
+//   }
+      
+//   const isSrv = protocol === "mongodb+srv";
+//   const clientOptions: any = {};
+
+//   if (finalSsl === true) {
+//     clientOptions.tls = true;
+//   }
+
+//   client = new MongoClient(finalUri, clientOptions);
+//   await client.connect();
+//   db = client.db(finalDb);
+// }
+} else {
   const connStr = sourceOptions.connection_string.trim();
   const explicitFormat = sourceOptions.connection_format;
   const explicitDb = sourceOptions.database;
@@ -294,7 +391,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const needsAuth = finalUser !== "" && finalPass !== "";
   const hostsList = hostsPart.split(",");
 
-  if (explicitHost) {
+  if (explicitHost && hostsList.length > 0) {
     const newPort = explicitPort ? `:${explicitPort}` : "";
     const existingPort = hostsList[0].includes(":")
       ? `:${hostsList[0].split(":")[1]}`
@@ -313,9 +410,6 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   let finalUri = `${protocol}://${authSection}${finalHosts}`;
 
-  if (finalDb) {
-    finalUri += `/${finalDb}`;
-  }
   if (explicitQueryParams) {
     finalUri += explicitQueryParams.startsWith("?")
       ? explicitQueryParams
@@ -323,6 +417,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   } else if (queryParamsFromConn) {
     finalUri += queryParamsFromConn;
   }
+
   let finalSsl: boolean = false;
 
   const sslFromConn = this.extractSslFromConnString(queryParamsFromConn);
@@ -340,12 +435,14 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   }
       
   const isSrv = protocol === "mongodb+srv";
-  const clientOptions: any = {};
+  const clientOptions: any = {
+    directConnection: hostsList.length === 1 ? true : false,
+  };
 
   if (finalSsl === true) {
     clientOptions.tls = true;
   }
-
+  
   client = new MongoClient(finalUri, clientOptions);
   await client.connect();
   db = client.db(finalDb);
