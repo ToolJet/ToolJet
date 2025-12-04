@@ -202,11 +202,11 @@ export const createResolvedSlice = (set, get) => ({
     });
   },
 
-  setResolvedQuery: (queryId, details, moduleId = 'canvas') => {
+  setResolvedQuery: (queryId, details, moduleId = 'canvas', replaceObject = false) => {
     set(
       (state) => {
         state.resolvedStore.modules[moduleId].exposedValues.queries[queryId] = {
-          ...state.resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId],
+          ...(replaceObject ? {} : state.resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]),
           ...details,
         };
       },
