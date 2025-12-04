@@ -19,7 +19,7 @@ import {
 } from './ButtonUtils.jsx';
 
 const buttonVariants = cva(
-  'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors focus-visible:tw-outline-none disabled:tw-pointer-events-none disabled:tw-opacity-50',
+  'tw-flex tw-justify-center tw-items-center tw-font-medium tw-whitespace-nowrap tw-transition-colors tw-transition-transform active:tw-scale-[0.97] focus-visible:tw-outline-none disabled:tw-pointer-events-none disabled:tw-opacity-50',
   {
     variants: {
       variant: {
