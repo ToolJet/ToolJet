@@ -106,7 +106,7 @@ export const Viewer = ({
 
   const canvasRef = useRef(null);
   const viewerWrapperRef = useRef(null);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
+  const isMobilePreviewMode = !moduleMode && selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
 
