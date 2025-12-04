@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useGridStore } from '@/_stores/gridStore';
 
 const DEFAULT_CONFIG = {
   threshold: 50, // Distance from edge to trigger scrolling (px)
@@ -105,10 +106,26 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     const element = targetElementRef.current;
     if (!element) return;
 
+    // Get canvas bounds for clamping
+    const realCanvas = document.getElementById('real-canvas');
+    if (!realCanvas) return;
+
+    const canvasWidth = realCanvas.clientWidth;
+    const elementWidth = element.clientWidth;
+    const _gridWidth = useGridStore.getState().subContainerWidths['canvas'];
     // Get current transform and add scroll delta
     const currentPos = parseTransform(element);
-    const newX = currentPos.x + scrollX;
-    const newY = currentPos.y + scrollY;
+    let newX = currentPos.x;
+    let newY = currentPos.y;
+    newX = Math.round(newX / _gridWidth) * _gridWidth + scrollX;
+    newY = Math.round(newY / 10) * 10 + scrollY;
+
+    // Clamp position to stay within canvas bounds
+    // Left bound: newX >= 0
+    // Top bound: newY >= 0
+    // Right bound: newX <= canvasWidth - elementWidth
+    newX = Math.max(0, Math.min(newX, canvasWidth - elementWidth));
+    newY = Math.max(0, newY);
 
     // Update element transform immediately
     element.style.transform = `translate(${newX}px, ${newY}px)`;

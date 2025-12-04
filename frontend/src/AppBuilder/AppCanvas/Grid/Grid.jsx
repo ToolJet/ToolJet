@@ -1036,8 +1036,13 @@ export default function Grid({ gridWidth, currentLayout }) {
             if (currentDragCanvasId === 'canvas') {
               left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
               top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
+
+              const _canvasWidth = NO_OF_GRIDS * _gridWidth;
+              left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
+              top = Math.max(0, top);
             }
 
+            // Apply bounds clamping to prevent widget from going out of canvas
             useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
             const draggingWidgetWidth = getDraggingWidgetWidth(currentDragCanvasId, e.target.clientWidth);
             e.target.style.width = `${draggingWidgetWidth}px`;
@@ -1092,6 +1097,13 @@ export default function Grid({ gridWidth, currentLayout }) {
             newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
             prevDragParentId.current = newParentId;
             handleActivateTargets(newParentId);
+          }
+
+          // Apply bounds clamping to prevent widget from going out of main canvas
+          if (newParentId === 'canvas') {
+            const _canvasWidth = NO_OF_GRIDS * _gridWidth;
+            left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
+            top = Math.max(0, top);
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
