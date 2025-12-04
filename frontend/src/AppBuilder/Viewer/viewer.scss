@@ -233,8 +233,7 @@
         }
       }
 
-      .canvas-area {
-        .mobile-page-menu-popup {
+      .mobile-page-menu-popup {
           .mobile-header {
             height: 61px !important; //1px to account for the border bottom
 
@@ -392,7 +391,19 @@
             padding: 10px;
             justify-content: center;
           }
-        }
+
+          .page-menu-scroll {
+            scrollbar-color: var(--interactive-hover) transparent !important;
+            scrollbar-width: thin !important;
+        
+            &::-webkit-scrollbar-track {
+                background: transparent !important;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--interactive-hover) !important;
+            }
+          }
       }
     }
 
