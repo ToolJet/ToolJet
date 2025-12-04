@@ -670,7 +670,8 @@ export class AppImportExportService {
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
-    moduleResourceMappings?: Record<string, unknown>
+    moduleResourceMappings?: Record<string, unknown>,
+    createNewVersion?: boolean
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -708,7 +709,8 @@ export class AppImportExportService {
       importedApp,
       importingAppVersions,
       appResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      createNewVersion
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1892,7 +1894,8 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    createNewVersion?: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -1915,7 +1918,7 @@ export class AppImportExportService {
 
       let version;
       // this case only happens in the AI flow when app is imported within an existing app
-      if (importedApp.editingVersion) {
+      if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
       } else {
         version = await manager.create(AppVersion, {
