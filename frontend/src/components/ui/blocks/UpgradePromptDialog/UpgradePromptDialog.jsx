@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogPortal,
-} from '@/components/ui/dialog';
+} from '@/components/ui/Rocket/dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/Button/Button';
 import { Crown, X } from 'lucide-react';
