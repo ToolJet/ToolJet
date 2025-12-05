@@ -173,32 +173,6 @@ export const modalV2Config = {
     },
   ],
   styles: {
-    icon: {
-      type: 'icon',
-      displayName: 'Icon',
-      validation: { schema: { type: 'string' } },
-      accordian: 'trigger',
-      visibility: false,
-    },
-    iconColor: {
-      type: 'colorSwatches',
-      displayName: 'Icon color',
-      validation: { schema: { type: 'string' } },
-      accordian: 'trigger',
-      visibility: false,
-    },
-    direction: {
-      type: 'switch',
-      displayName: '',
-      validation: { schema: { type: 'string' } },
-      showLabel: false,
-      isIcon: true,
-      options: [
-        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
-        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
-      ],
-      accordian: 'trigger',
-    },
     headerBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -251,7 +225,7 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'button',
+      accordian: 'trigger button',
     },
     triggerButtonTextColor: {
       type: 'colorSwatches',
@@ -260,7 +234,33 @@ export const modalV2Config = {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'button',
+      accordian: 'trigger button',
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'trigger button',
     },
   },
   exposedVariables: {
