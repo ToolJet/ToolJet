@@ -8,6 +8,7 @@ import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import * as Sentry from '@sentry/nestjs';
 
 /**
  * Creates a logger instance with a specific context
@@ -86,13 +87,24 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
  * Replaces subpath placeholders in static assets
  */
 export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
   logger.log('Starting subpath placeholder replacement...');
+
+  const buildDir = join(__dirname, '../../../../', 'frontend/build');
+
+  // Get all files that need subpath replacement
+  // index.html is always present, runtime/main files may have contenthash in production
+  const allFiles = fs.readdirSync(buildDir);
+  const filesToReplaceAssetPath = [
+    'index.html',
+    ...allFiles.filter((f) => /^runtime(\.[a-f0-9]+)?\.js$/.test(f)),
+    ...allFiles.filter((f) => /^main(\.[a-f0-9]+)?\.js$/.test(f)),
+  ];
+
+  logger.log(`Files to process: ${filesToReplaceAssetPath.join(', ')}`);
 
   for (const fileName of filesToReplaceAssetPath) {
     try {
-      const file = join(__dirname, '../../../../', 'frontend/build', fileName);
+      const file = join(buildDir, fileName);
       logger.log(`Processing file: ${fileName}`);
 
       let newValue = process.env.SUB_PATH;
@@ -124,6 +136,25 @@ export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
   logger.log('✅ Subpath placeholder replacement completed');
 }
 
+export function initSentry(logger: any, configService: ConfigService) {
+  if (configService.get<string>('APM_VENDOR') !== 'sentry') return;
+
+  logger.log('Initializing Sentry...');
+  // Sentry initialization logic here
+  try {
+    Sentry.init({
+      dsn: configService.get<string>('SENTRY_DNS'),
+      tracesSampleRate: 1.0,
+      environment: configService.get<string>('NODE_ENV') || 'development',
+      debug: !!configService.get<string>('SENTRY_DEBUG'),
+      sendDefaultPii: true,
+    });
+  } catch (error) {
+    logger.error('❌ Failed to set Sentry options:', error);
+  }
+  logger.log('✅ Sentry initialization completed');
+}
+
 /**
  * Sets up security headers including CORS and CSP
  */
@@ -142,6 +173,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     app.enableCors({
       origin: configService.get<string>('ENABLE_CORS') === 'true' || tooljetHost,
       credentials: true,
+      maxAge: 86400,
     });
 
     // Get CSP whitelisted domains
@@ -293,7 +325,7 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
-  logger.log(`OTEL_ENABLED: ${configService.get('OTEL_ENABLED') === 'true'}`);
+  logger.log(`OTEL_ENABLED: ${configService.get('ENABLE_OTEL') === 'true'}`);
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);

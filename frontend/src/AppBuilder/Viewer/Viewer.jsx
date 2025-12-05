@@ -106,7 +106,7 @@ export const Viewer = ({
 
   const canvasRef = useRef(null);
   const viewerWrapperRef = useRef(null);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
+  const isMobilePreviewMode = !moduleMode && selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
 
@@ -138,6 +138,7 @@ export const Viewer = ({
     switchDarkMode(newMode);
   };
   useEffect(() => {
+    if (moduleMode) return;
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
@@ -278,7 +279,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
-                            {isLicenseNotValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
+                            {isLicenseNotValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

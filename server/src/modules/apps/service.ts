@@ -61,7 +61,7 @@ export class AppsService implements IAppsService {
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) {}
+  ) { }
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -79,6 +79,13 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        resourceData: {
+          appSlug: app.slug,
+          isPublic: app.isPublic,
+        },
+        metadata: {
+          icon: icon || null,
+        },
       });
 
       return decamelizeKeys(app);
@@ -123,12 +130,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-            await this.versionRepository.findLatestVersionForEnvironment(
-              app.id,
-              envId,
-              environmentName,
-              app.organizationId
-            );
+          await this.versionRepository.findLatestVersionForEnvironment(
+            app.id,
+            envId,
+            environmentName,
+            app.organizationId
+          );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -189,12 +196,24 @@ export class AppsService implements IAppsService {
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
 
+    if (appUpdateDto.is_maintenance_on !== undefined && appUpdateDto.is_maintenance_on !== app.isMaintenanceOn) {
+      this.eventEmitter.emit('app.maintenance-toggled', {
+        appId: app.id,
+        isMaintenanceOn: appUpdateDto.is_maintenance_on,
+      });
+    }
+
     //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      resourceData: {
+        appSlug: app.slug,
+        isPublic: app.isPublic,
+        updatedFields: Object.keys(appUpdateDto),
+      },
       metadata: { updateParams: { app: appUpdateDto } },
     });
 
@@ -231,6 +250,10 @@ export class AppsService implements IAppsService {
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      resourceData: {
+        appSlug: app.slug,
+        isPublic: app.isPublic,
+      },
     });
   }
 
@@ -423,7 +446,7 @@ export class AppsService implements IAppsService {
       //check if the app version is eligible for release
       const currentEnvironment: AppEnvironment = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
+        .select(['app_environments.id', 'app_environments.name', 'app_environments.isDefault', 'app_environments.priority'])
         .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
         .where('app_versions.id = :versionToBeReleased', {
           versionToBeReleased,
@@ -434,15 +457,18 @@ export class AppsService implements IAppsService {
         LICENSE_FIELD.MULTI_ENVIRONMENT,
         user.organizationId
       );
-      /* 
-          Allow version release only if the environment is on 
-          production with a valid license or 
-          expired license and development environment (priority no.1) (CE rollback) 
+      /*
+          Allow version release only if the environment is on
+          production with a valid license or
+          expired license and development environment (priority no.1) (CE rollback)
           */
 
       if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
+
+      // Get version details for audit log
+      const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
@@ -452,6 +478,14 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        resourceData: {
+          appSlug: app.slug,
+          isPublic: app.isPublic,
+          releasedVersionId: versionToBeReleased,
+          releasedVersionName: releasedVersion?.name,
+          environmentId: currentEnvironment?.id,
+          environmentName: currentEnvironment?.name,
+        },
         metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
       });
       return;

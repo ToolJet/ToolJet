@@ -271,9 +271,9 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
             pages={
               appDefinition?.pages
                 ? Object.entries(appDefinition?.pages).map(([id, page]) => ({
-                    ...page,
-                    id,
-                  }))
+                  ...page,
+                  id,
+                }))
                 : []
             }
           />
@@ -316,7 +316,7 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
           </div>
         </div>
         <div className="d-flex">
-          <div className="form-label">{}</div>
+          <div className="form-label">{ }</div>
           <SuccessNotificationInputs
             currentState={currentState}
             options={options}
@@ -338,10 +338,10 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
     }
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
-      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     const selectedDataSourceName =
       dataSourcesKinds.find((dsk) => dsk.kind === selectedDataSource.kind)?.name || selectedDataSource.kind;
     return (
@@ -399,15 +399,14 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
-        !hasPermissions ? 'disabled' : ''
-      }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${!hasPermissions ? 'disabled' : ''
+        }`}
       style={{ height: `calc(100% - ${previewHeight + 40}px)`, overflowY: 'auto' }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (

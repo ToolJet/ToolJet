@@ -4,4 +4,20 @@
             background-color: var(--cc-surface1-surface);
         }
    }
+
+   .code-editor-widget {
+    background-color: var(--cc-surface1-surface) !important;
+   }
+   
+}
+
+.dynamic-height-target {
+    .canvas-component {
+        .code-editor-widget {
+            .cm-scroller {
+                overflow-y: hidden !important;
+                min-height: var(--cc-code-editor-min-height) !important;
+            }
+        }
+    }
 }

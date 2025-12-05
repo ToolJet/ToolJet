@@ -23,7 +23,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { DragGhostWidget, ResizeGhostWidget } from './GhostWidgets';
+import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 
@@ -55,6 +55,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
@@ -123,8 +124,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -143,7 +144,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
-      paddingBottom: currentMode === 'edit' && '2px',
     };
   }, [currentMode, isAppDarkMode, isModuleMode, editorMarginLeft, canvasContainerHeight, isRightSidebarOpen]);
 
@@ -294,8 +294,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   />
                   {currentMode === 'edit' && (
                     <>
-                      <DragGhostWidget />
-                      <ResizeGhostWidget />
+                      <DragResizeGhostWidget />
                     </>
                   )}
                   <div id="component-portal" />
