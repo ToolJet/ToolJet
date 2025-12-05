@@ -127,7 +127,7 @@ describe("App Version", () => {
   });
 
   it("should verify version management with components and queries", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       data.datasourceName,
       "restapi",

@@ -172,16 +172,19 @@ export const verifyImportModalElements = (expectedAppName) => {
 
 export const setupDataSourceWithConstants = (
   dsEnv,
-  password = Cypress.env("pg_password")
+  password = Cypress.env("pg_password"),
+  options = [
+    { key: "connection_type", value: "manual", encrypted: false },
+    { key: "host", value: "9.234.17.31" },
+    { key: "port", value: 5432 },
+    { key: "database", value: "student" },
+    { key: "username", value: "postgres" },
+    { key: "password", value: password, encrypted: true }, // Default password to be overridden
+    { key: "ssl_enabled", value: false, encrypted: false },
+    { key: "ssl_certificate", value: "none", encrypted: false },
+  ]
 ) => {
-  cy.apiUpdateDataSource("postgresql", dsEnv, {
-    options: [
-      {
-        key: "password",
-        value: password,
-        encrypted: true,
-      },
-    ],
+  cy.apiUpdateDataSource("postgresql", options, dsEnv, {
   });
 };
 
