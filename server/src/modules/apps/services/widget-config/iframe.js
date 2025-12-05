@@ -20,27 +20,74 @@ export const iframeConfig = {
         defaultValue: 'https://tooljet.io/',
       },
     },
-  },
-  events: {},
-  styles: {
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
     },
   },
-  exposedVariables: {},
+  events: {},
+  styles: {},
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [
+        {
+          handle: 'setVisibility',
+          displayName: 'Value',
+          defaultValue: '{{true}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [
+        {
+          handle: 'setDisable',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [
+        {
+          handle: 'setLoading',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
+          type: 'toggle',
+        },
+      ],
+    },
+    {
+      handle: 'reload',
+      displayName: 'Reload IFrame',
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -48,12 +95,10 @@ export const iframeConfig = {
     },
     properties: {
       source: { value: 'https://tooljet.io/' },
-      visible: { value: '{{true}}' },
-    },
-    events: [],
-    styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
     },
+    events: [],
   },
 };
