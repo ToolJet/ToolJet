@@ -172,8 +172,8 @@ const QueryCardMenu = ({ darkMode }) => {
               return option.value === 'permission' ? (
                 <ToolTip
                   key={option.value}
-                  message={'Query permissions are available only in paid plans'}
-                  placement="left"
+                  message={'You don\'t have access to query permissions. Upgrade your plan to access this feature.'}
+                  placement="right"
                   show={!hasAppPermissionQuery}
                 >
                   {optionBody}

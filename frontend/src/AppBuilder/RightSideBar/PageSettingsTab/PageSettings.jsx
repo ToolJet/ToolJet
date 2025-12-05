@@ -290,7 +290,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app header
-          <LicenseTooltip message={"App header can't be hidden on free plans"} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
+          <LicenseTooltip message={"You don\'t have access to hide app header. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
             <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
           </LicenseTooltip>
         </label>
@@ -309,7 +309,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
-          <LicenseTooltip message={"Logo can't be hidden on free plans"} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
+          <LicenseTooltip message={"You don\'t have access to hide logo. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
             <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
           </LicenseTooltip>
         </label>

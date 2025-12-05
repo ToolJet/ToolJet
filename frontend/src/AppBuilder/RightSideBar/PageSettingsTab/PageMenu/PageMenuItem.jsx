@@ -456,7 +456,7 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'Page permissions are available only in paid plans'}
+                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"
