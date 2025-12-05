@@ -27,7 +27,7 @@ function createPGconnection(envVars): Client {
   if (envVars?.CA_CERT) {
     config = {
       ...config,
-      ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT },
+      ssl: { rejectUnauthorized: envVars?.SAMPLE_PG_DB_DISABLE_SSL_VERIFY_CERT || false, ca: envVars.CA_CERT },
     };
   }
 

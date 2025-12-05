@@ -27,6 +27,7 @@ ToolJet requires several environment variables to function properly. Below is a 
 - `PG_USER`: Username
 - `PG_PASS`: Password
 - `PG_PORT`: Port
+- `PG_DISABLE_SSL_VERIFY_CERT`: Disable TLS CA certificate check (self signed), default is false
   
 **Docker Compose Setup:** If you are using a Docker Compose setup with an in-built PostgreSQL instance, set `PG_HOST` to `postgres`. This ensures that Docker's internal DNS resolves the hostname correctly, allowing the ToolJet server to connect to the database seamlessly.
 
@@ -47,6 +48,7 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_USER`: Database username
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
+- `TOOLJET_DB_DISABLE_SSL_VERIFY_CERT`: Disable database TLS CA certificate check (self signed), default is false
 
 #### Why ToolJet Requires Two Databases
 

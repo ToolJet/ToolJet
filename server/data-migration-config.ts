@@ -7,13 +7,13 @@ function sslConfig(envVars) {
   if (envVars?.DATABASE_URL)
     config = {
       url: envVars.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: { rejectUnauthorized: envVars?.PG_DISABLE_SSL_VERIFY_CERT || false },
     };
 
   if (envVars?.CA_CERT)
     config = {
       ...config,
-      ...{ ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT } },
+      ...{ ssl: { rejectUnauthorized: envVars?.PG_DISABLE_SSL_VERIFY_CERT || false, ca: envVars.CA_CERT } },
     };
 
   return config;
