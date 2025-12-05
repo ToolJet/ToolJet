@@ -29,7 +29,7 @@ module.exports = defineConfig({
     },
     redirectionLimit: 3,
 
-    numTestsKeptInMemory: 0,
+    numTestsKeptInMemory: 1,
     experimentalMemoryManagement: true,
 
     experimentalRunAllSpecs: true,
