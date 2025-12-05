@@ -56,6 +56,8 @@ EOF
   # Start SeaweedFS server with all components
   weed server \
     -dir="${SEAWEED_DIR:-/data/seaweedfs}" \
+    -ip=127.0.0.1 \
+    -ip.bind=0.0.0.0 \
     -master.port="${SEAWEED_MASTER_PORT:-9333}" \
     -volume.port="${SEAWEED_VOLUME_PORT:-8080}" \
     -filer=true \
@@ -63,7 +65,6 @@ EOF
     -s3 \
     -s3.port="${SEAWEED_S3_PORT:-8333}" \
     -s3.config=/tmp/seaweedfs-s3.json \
-    -ip.bind=127.0.0.1 \
     > /tmp/seaweedfs.log 2>&1 &
 
   SEAWEED_PID=$!
