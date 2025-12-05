@@ -62,7 +62,11 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         closeModal();
       }
     } catch (error) {
-      toast.error('Password could not be reset. Please try again!');
+      const backendMessage =
+        error?.data?.message ||                
+        'Password could not be reset. Please try again!';
+
+      toast.error(backendMessage);
       closeModal();
     } finally {
       setIsLoading(false);

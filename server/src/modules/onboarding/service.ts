@@ -31,6 +31,7 @@ import {
   generateOrgInviteURL,
   isValidDomain,
   generateWorkspaceSlug,
+  validatePasswordServer,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
@@ -81,6 +82,7 @@ export class OnboardingService implements IOnboardingService {
 
   async signup(appSignUpDto: AppSignupDto) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
+    validatePasswordServer(password);
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Check if the configs allows user signups
@@ -260,6 +262,9 @@ export class OnboardingService implements IOnboardingService {
 
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
+        }
+        if (password && isPasswordMandatory(user.source)) {
+          validatePasswordServer(password);
         }
 
         const activateDefaultWorkspace =
@@ -493,6 +498,9 @@ export class OnboardingService implements IOnboardingService {
     const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.userRepository.findByEmail(email);
     const invitedUser = await this.organizationUsersUtilService.findByWorkspaceInviteToken(organizationToken);
+    if (password) {
+      validatePasswordServer(password);
+    }
 
     /* Server level check for this API */
     if (!signupUser || invitedUser.email.toLowerCase() !== signupUser.email.toLowerCase()) {

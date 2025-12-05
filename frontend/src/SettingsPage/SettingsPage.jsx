@@ -144,7 +144,16 @@ function SettingsPage(props) {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      toast.error('Please verify that you have entered the correct password', {
+      const backendMessage = error?.data?.message;
+      const specificRequirementMessage = 'Password must be 12–24 characters and may include letters, numbers and special characters';
+
+      // Check if the backend message exactly matches the specific password requirement message
+      const errorMessage = 
+        backendMessage === specificRequirementMessage
+          ? backendMessage
+          : 'Please verify that you have entered the correct password';
+
+      toast.error(errorMessage, {
         duration: 3000,
       });
     }
