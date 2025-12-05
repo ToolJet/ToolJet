@@ -43,7 +43,7 @@ jobs:
           df -h
 
           # Remove unnecessary packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
           sudo apt-get autoremove -y
           sudo apt-get clean
 
@@ -154,7 +154,15 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -231,103 +239,132 @@ jobs:
 
       - name: Create delete_user procedure
         run: |
-          echo "Creating delete_user stored procedure..."
+          echo "Creating delete_users stored procedure..."
           docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
-          CREATE OR REPLACE PROCEDURE delete_user(p_email TEXT)
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
           LANGUAGE plpgsql
           AS \$\$
           DECLARE
-              v_user_id UUID;
-              v_organization_ids UUID[];
-              v_organizations_to_delete UUID[];
-              v_log_message TEXT;
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
           BEGIN
-              -- Log start of procedure
-              RAISE NOTICE 'Starting delete_user procedure for email: %', p_email;
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
 
-              -- Get user_id from email
-              SELECT id INTO v_user_id
-              FROM users
-              WHERE email = p_email;
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
 
-              IF v_user_id IS NULL THEN
-                  RAISE EXCEPTION 'User with email % not found', p_email;
-              END IF;
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
 
-              RAISE NOTICE 'User found with id: %', v_user_id;
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
 
-              -- Get organization_ids for the user
-              SELECT ARRAY_AGG(organization_id) INTO v_organization_ids
-              FROM organization_users
-              WHERE user_id = v_user_id;
+                RAISE NOTICE 'User found with id: %', v_user_id;
 
-              RAISE NOTICE 'Found % organizations for user', COALESCE(ARRAY_LENGTH(v_organization_ids, 1), 0);
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
 
-              -- Get organizations with exactly one user (to be deleted)
-              SELECT ARRAY_AGG(organization_id) INTO v_organizations_to_delete
-              FROM (
-                  SELECT organization_id
-                  FROM organization_users
-                  WHERE organization_id = ANY(v_organization_ids)
-                  GROUP BY organization_id
-                  HAVING COUNT(*) = 1
-              ) subquery;
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
 
-              -- Add organizations where the user is the owner
-              v_organizations_to_delete := v_organizations_to_delete;
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
 
-              RAISE NOTICE 'Found % organizations to delete', COALESCE(ARRAY_LENGTH(v_organizations_to_delete, 1), 0);
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
 
-              -- Delete apps in organizations to be deleted
-              WITH deleted_apps AS (
-                  DELETE FROM apps
-                  WHERE organization_id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' apps' INTO v_log_message FROM deleted_apps;
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
 
-              RAISE NOTICE '%', v_log_message;
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
 
-              -- Delete data_sources in organizations to be deleted
-              WITH deleted_data_sources AS (
-                  DELETE FROM data_sources
-                  WHERE organization_id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' data sources' INTO v_log_message FROM deleted_data_sources;
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
 
-              RAISE NOTICE '%', v_log_message;
-
-              -- Delete audit_logs for organizations to be deleted and for the user
-              WITH deleted_audit_logs AS (
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
                   DELETE FROM audit_logs
-                  WHERE organization_id = ANY(v_organization_ids)
-                  OR user_id = v_user_id
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
                   RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' audit logs' INTO v_log_message FROM deleted_audit_logs;
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
 
-              RAISE NOTICE '%', v_log_message;
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
 
-              -- Delete organizations
-              WITH deleted_organizations AS (
-                  DELETE FROM organizations
-                  WHERE id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' organizations' INTO v_log_message FROM deleted_organizations;
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
 
-              RAISE NOTICE '%', v_log_message;
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
 
-              -- Finally, delete the user
-              DELETE FROM users
-              WHERE id = v_user_id;
-
-              RAISE NOTICE 'Deleted user with id: %', v_user_id;
-              RAISE NOTICE 'User deletion procedure completed successfully for email: %', p_email;
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
           END;
           \$\$;"
-          echo "✅ delete_user procedure created successfully"
+          echo "✅ delete_users procedure created successfully"
 
       - name: Create Cypress environment file
         id: create-json-tj
@@ -340,9 +377,13 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -368,6 +409,29 @@ jobs:
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -465,7 +529,17 @@ jobs:
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
           echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_AI_FEATURES=true" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -530,6 +604,141 @@ jobs:
           fi
           echo "✅ Server is ready!"
 
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
       - name: Create Cypress environment file
         id: create-json-tj-subpath
         uses: jsdaniell/create-json@1.1.2
@@ -572,6 +781,29 @@ jobs:
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -669,7 +901,18 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_AI_FEATURES=true" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -747,6 +990,141 @@ jobs:
           fi
           echo "✅ Server is ready!"
 
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
       - name: Create Cypress environment file
         id: create-json-tj-proxy
         uses: jsdaniell/create-json@1.1.2
@@ -789,6 +1167,29 @@ jobs:
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -885,7 +1286,18 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_AI_FEATURES=true" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -962,6 +1374,141 @@ jobs:
             exit 1
           fi
           echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
 
       - name: Create Cypress environment file
         id: create-json-tj-proxy-subpath

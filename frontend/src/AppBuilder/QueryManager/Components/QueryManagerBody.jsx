@@ -21,6 +21,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
@@ -199,7 +200,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                   <a
                     href={docLinkStatic}
                     target="_blank"
-                    style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                    style={{
+                      marginLeft: '0px !important',
+                      color: 'hsl(226, 70.0%, 55.5%)',
+                      textDecoration: 'underline',
+                    }}
                     rel="noreferrer"
                   >
                     {t('globals.readDocumentation', 'read documentation').toLowerCase()}
@@ -256,6 +261,21 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     );
   };
 
+  const renderTimeout = () => {
+    return (
+      <div className="d-flex">
+        <div className="form-label mt-2">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
+        <div className="query-manager-query-timeout">
+          <CodeHinter
+            theme={darkMode ? 'monokai' : 'base16-light'}
+            initialValue={selectedQuery?.options?.query_timeout ?? ''}
+            onChange={(value) => optionchanged('query_timeout', value)}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const renderQueryOptions = () => {
     return (
       <div>
@@ -299,6 +319,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           />
         </div>
         {renderEventManager()}
+        {renderTimeout()}
       </div>
     );
   };

@@ -14,7 +14,7 @@ export const verifyAdminHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.ai/docs/tutorial/manage-users-groups");
+        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
 export const verifyEditUserRoleModal = (userEmail) => {
@@ -75,23 +75,12 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 export const verifyGranularEditModal = (role) => {
-    cy.get(groupsSelector.granularAccessPermission).realHover();
+    cy.wait(1000)
+    cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
     cy.get('[data-cy="edit-apps-granular-access"]').click();
 
     cy.get(".modal-base").should("be.visible");
 
-    cy.wait(500)
-    cy.get(groupsSelector.deletePermissionIcon)
-        .should("be.visible")
-        .and("be.enabled");
-    cy.get(groupsSelector.deletePermissionIcon).click();
-
-    verifyDeleteConfirmationModal();
-    cy.contains("Cancel").click();
-
-    cy.get(groupsSelector.granularAccessPermission)
-        .realHover()
-        .click({ force: true });
     cy.verifyElement(
         `${groupsSelector.addEditPermissionModalTitle}:eq(2)`,
         groupsText.editPermissionModalTitle
@@ -113,6 +102,19 @@ export const verifyGranularEditModal = (role) => {
     cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
+
+    cy.wait(2000)
+    cy.get(groupsSelector.granularAccessPermission).realHover();
+    cy.get('[data-cy="edit-apps-granular-access"]').click();
+
+    cy.get(groupsSelector.deletePermissionIcon)
+        .should("be.visible")
+        .and("be.enabled");
+    cy.get(groupsSelector.deletePermissionIcon).click();
+
+    verifyDeleteConfirmationModal();
+    cy.contains("Cancel").click();
+
 };
 
 export const verifyGranularAddModal = (role) => {
@@ -148,7 +150,7 @@ export const verifyGranularAddModal = (role) => {
         groupsText.customHelperText
     );
 
-    cy.verifyElement(groupsSelector.confimButton, groupsText.addButtonText);
+    cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
     cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
     cy.get(groupsSelector.cancelButton).click();
@@ -166,7 +168,7 @@ export const verifyEnduserHelperText = (index = 0) => {
         .should("be.visible")
         .and("have.text", "read documentation")
         .and("have.attr", "href")
-        .and("include", "docs.tooljet.ai/docs/tutorial/manage-users-groups");
+        .and("include", "docs.tooljet.com/docs/tutorial/manage-users-groups");
 };
 
 export const verifyGranularPermissionModalUI = (

@@ -1,6 +1,4 @@
-export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
-};
+import { cyParamName } from "Selectors/common";
 export const groupsSelector = {
   pageTitle: "[data-cy=user-groups-title]",
   createNewGroupButton: "[data-cy=create-new-group-button]",

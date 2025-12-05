@@ -20,7 +20,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { Page } from 'src/entities/page.entity';
+import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
@@ -670,7 +670,8 @@ export class AppImportExportService {
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
-    moduleResourceMappings?: Record<string, unknown>
+    moduleResourceMappings?: Record<string, unknown>,
+    createNewVersion?: boolean
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -708,7 +709,8 @@ export class AppImportExportService {
       importedApp,
       importingAppVersions,
       appResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      createNewVersion
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1067,6 +1069,10 @@ export class AppImportExportService {
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
+          type: page.type || PageType.DEFAULT,
+          openIn: page.openIn || PageOpenIn.SAME_TAB,
+          url: page.url || null,
+          appId: page.appId || '',
         });
 
         const pageCreated = await manager.save(newPage);
@@ -1888,7 +1894,8 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    createNewVersion?: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -1911,7 +1918,7 @@ export class AppImportExportService {
 
       let version;
       // this case only happens in the AI flow when app is imported within an existing app
-      if (importedApp.editingVersion) {
+      if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
       } else {
         version = await manager.create(AppVersion, {

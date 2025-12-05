@@ -18,6 +18,7 @@ export function createModalStyles({
   boxShadow,
   headerDividerColor,
   footerDividerColor,
+  direction,
 }) {
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
   return {
@@ -44,6 +45,8 @@ export function createModalStyles({
       color: triggerButtonTextColor,
       width: '100%',
       display: isVisible ? '' : 'none',
+      flexDirection: direction === 'left' ? 'row-reverse' : 'row',
+      gap: '6px',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
       borderColor: triggerButtonBackgroundColor,

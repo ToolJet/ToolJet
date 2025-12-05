@@ -40,7 +40,6 @@ import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
@@ -146,8 +145,7 @@ export const Inspector = ({
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -412,7 +410,7 @@ export const Inspector = ({
       setWidgetDeleteConfirmation(true);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -588,13 +586,13 @@ export const Inspector = ({
                               <div
                                 className={classNames('list-item-option-menu-label', {
                                   'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                 })}
                               >
                                 {option?.label}
                               </div>
                               {option.value === 'permission' &&
-                                !licenseValid &&
+                                !hasAppPermissionComponent &&
                                 option.trailingIcon &&
                                 option.trailingIcon}
                             </div>
@@ -605,7 +603,7 @@ export const Inspector = ({
                               key={option.value}
                               message={'Component permissions are available only in paid plans'}
                               placement="left"
-                              show={!licenseValid}
+                              show={!hasAppPermissionComponent}
                             >
                               {optionBody}
                             </ToolTip>
