@@ -15,7 +15,7 @@ This node executes securely on the server, so it can handle data manipulation at
 
 **Note:** The code must include a return statement to pass results to subsequent nodes.
 
-## Example: Fine-Tuning Your Response Using JavaScript
+## Example 1: Fine-Tuning Your Response Using JavaScript
 
 Refine your response by manipulating the data using JavaScript functions. For example, the slice function can be used to select a subset of data:
 
@@ -27,3 +27,50 @@ return
 ```
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/fineTune.png" alt="JS Node Fine Tune" />
+
+## Example 2: Auto Assign Ticket Priority
+
+Let's consider a workflow that automatically assigns a priority tag to a ticket based on the message length.
+
+Here's a sneak peek to the workflow.
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/sneakPeek.png" alt="Ticket Categoriser Sneak Peek" />
+
+#### Sample Input (for demonstration only)
+
+For this example, let's consider that the data that we get is in the following format.
+```js
+{
+    "subject": "Login issue",
+    "message": "I am unable to access my dashboard since yesterday.",
+    "email": "johndoe@gmail.com"
+}
+```
+
+#### Create an outgoing ```JavaScript node``` from the trigger node
+Add the following code to the node. This code checks for the message length and returns the original parameters along with a priority based on message length.
+
+```js
+const inputs = startTrigger.params;
+const { message } = inputs;
+const length = message.length;
+
+if (length < 20) {
+    priority = "low";
+} else if (length < 80) {
+    priority = "medium";
+} else {
+    priority = "high";
+}
+
+return {
+    inputs, priority
+}
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/categoriseDataCode.png" alt="categoriseData Code" />
+
+#### Output
+The output will be an object with 2 fields
+- inputs
+- priority
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/output.png" alt="Output" />
