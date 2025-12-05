@@ -26,7 +26,7 @@ fi
 
 # Start embedded SeaweedFS if enabled and storage backend is seaweed
 if [ "${STORAGE_BACKEND:-seaweed}" = "seaweed" ] && [ "${SEAWEED_EMBEDDED:-true}" = "true" ]; then
-  echo "Starting embedded SeaweedFS..."
+  echo "Preparing ToolJet application..."
 
   # Ensure data directory exists (in case volume mount doesn't preserve it)
   mkdir -p "${SEAWEED_DIR:-/data/seaweedfs}"
@@ -70,12 +70,10 @@ EOF
   SEAWEED_PID=$!
 
   # Wait for S3 API to be ready (critical for ToolJet startup)
-  echo "Waiting for SeaweedFS S3 API to be ready..."
   max_attempts=30
   attempt=0
   while [ $attempt -lt $max_attempts ]; do
     if curl -s -o /dev/null -w "%{http_code}" "http://localhost:${SEAWEED_S3_PORT:-8333}" | grep -q "200\|301\|302\|403"; then
-      echo "SeaweedFS S3 API is ready on port ${SEAWEED_S3_PORT:-8333}"
       break
     fi
     attempt=$((attempt + 1))
@@ -86,11 +84,10 @@ EOF
     echo "Warning: SeaweedFS S3 API did not become ready within 30 seconds"
     echo "Checking SeaweedFS logs:"
     tail -20 /tmp/seaweedfs.log
+  else
+    # Create default tooljet bucket
+    curl -s -X PUT "http://localhost:${SEAWEED_S3_PORT:-8333}/tooljet" > /dev/null 2>&1
   fi
-
-  echo "SeaweedFS started with PID $SEAWEED_PID"
-else
-  echo "Embedded SeaweedFS disabled. Expecting external object storage configuration."
 fi
 
 # Check if PGRST_HOST starts with "localhost"
