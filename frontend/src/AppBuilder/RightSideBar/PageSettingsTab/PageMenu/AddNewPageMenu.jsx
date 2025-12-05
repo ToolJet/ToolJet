@@ -80,7 +80,7 @@ export function AddNewPageMenu({ darkMode }) {
                 onClick={() => hasAppPermissionPages && handleOpenPopup('group')}
               />
               <LicenseTooltip
-                message={"Nav group can't be created on free plans"}
+                message={"You don\'t have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
                 show={!hasAppPermissionPages}
               >
