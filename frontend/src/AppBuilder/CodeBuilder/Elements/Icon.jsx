@@ -41,6 +41,7 @@ export const Icon = ({
         id="popover-basic"
         style={{ width: '460px', maxWidth: '460px' }}
         className={`icon-widget-popover ${darkMode && 'dark-theme theme-dark'}`}
+        onClick={(event) => event.stopPropagation()}
       >
         <Popover.Header>
           <SearchBox onSubmit={searchIcon} width="100%" />
