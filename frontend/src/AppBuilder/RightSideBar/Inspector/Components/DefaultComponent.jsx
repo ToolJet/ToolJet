@@ -27,6 +27,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'IFrame',
   'CodeEditor',
   'TextArea',
   'Container',
