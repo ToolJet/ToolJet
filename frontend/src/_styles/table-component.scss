@@ -778,29 +778,31 @@
     table footer
 */
 // footer action button pop-up in the table widget
-.table-widget-popup {
-  background-color: var(--cc-surface1-surface) !important;
-  box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
-  border-radius: 6px;
-  overflow-y: auto !important;
-  scrollbar-color: var(--interactive-overlays-border-hover) transparent;
-  max-width: none;
-
-  .popover-body {
-    width: 100%;
-    color: inherit;
-    border: none;
-    background-color: inherit;
-    padding: 8px;
+.popover {
+  &.table-widget-popup {
+    background-color: var(--cc-surface1-surface) !important;
+    box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0px 1px 1px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
     border-radius: 6px;
-  }
-
-  &.download-popup {
-    width: 171px;
-  }
-
-  &.pagination-popup {
-    width: 62px;
+    overflow: auto !important;
+    scrollbar-color: var(--interactive-overlays-border-hover) transparent;
+    max-width: none;
+  
+    .popover-body {
+      width: 100%;
+      color: inherit;
+      border: none;
+      background-color: inherit;
+      padding: 8px;
+      border-radius: 6px;
+    }
+  
+    &.download-popup {
+      width: 171px;
+    }
+  
+    &.pagination-popup {
+      width: 110px;
+    }
   }
 }
 
@@ -1680,6 +1682,10 @@
   display: flex;
   justify-content: center;
   color: var(--cc-primary-text) !important;
+
+  &.selected {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+  }
 }
 
 

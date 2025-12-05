@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PaginationButton } from './PaginationButton';
 import useTableStore from '../../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
@@ -65,9 +65,88 @@ export const Pagination = function Pagination({
   const pageNumbers = getPageNumbers();
   const showPagesPopupBtn = !serverSidePagination && ((tableWidth <= 460 && pageCount > 1) || pageCount > 3);
 
-  const paginationPopover = () => {
+  const PaginationPopoverContent = () => {
     const allPages = Array.from({ length: pageCount }, (_, i) => i + 1);
 
+    useEffect(() => {
+      // Use a small timeout to ensure the DOM is fully rendered
+      const timeoutId = setTimeout(() => {
+        const popoverContainer = document.getElementsByClassName('table-widget-popup')[0];
+        if (popoverContainer) {
+          const currentPageButton = popoverContainer.querySelector(`[data-cy="page-${pageIndex}-button-option"]`);
+          if (currentPageButton) {
+            // Scroll the current page button into view within the popover container when popover mounts
+            currentPageButton.scrollIntoView({
+              behavior: 'auto',
+              block: 'center',
+            });
+          }
+        }
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const getPopoverContainer = () => {
+      return document.getElementsByClassName('table-widget-popup')[0];
+    };
+
+    return (
+      <Popover.Body>
+        <PaginationButton
+          key={'lastpage'}
+          onClick={(e) => {
+            const popup = getPopoverContainer();
+            if (popup) {
+              popup.scrollTo({
+                top: popup.scrollHeight,
+                behavior: 'smooth',
+              });
+            }
+            e.target.blur(); // To remove focus styling that gets applied after clicking on the button
+          }}
+          dataCy={`last-page-button-option`}
+          currentPageIndex={pageIndex}
+          pageIndex={'Last page'}
+          className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+        />
+
+        {allPages.map((pageNum) => (
+          <PaginationButton
+            key={pageNum}
+            onClick={() => {
+              goToPage(pageNum);
+            }}
+            dataCy={`page-${pageNum}-button-option`}
+            currentPageIndex={pageIndex}
+            pageIndex={pageNum}
+            className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+          />
+        ))}
+
+        <PaginationButton
+          key={'firstpage'}
+          onClick={(e) => {
+            const popup = getPopoverContainer();
+            if (popup) {
+              popup.scrollTo({
+                top: 0,
+                behavior: 'smooth',
+              });
+            }
+            e.target.blur(); // To remove focus styling that gets applied after clicking on the button
+          }}
+          dataCy={`first-page-button-option`}
+          currentPageIndex={pageIndex}
+          pageIndex={'First page'}
+          className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+        />
+      </Popover.Body>
+    );
+  };
+
+  const paginationPopover = () => {
     return (
       <Popover
         id="popover-basic"
@@ -76,20 +155,7 @@ export const Pagination = function Pagination({
         style={{ maxHeight: `${height - 79}px` }}
         placement="top-end"
       >
-        <Popover.Body>
-          {allPages.map((pageNum) => (
-            <PaginationButton
-              key={pageNum}
-              onClick={() => {
-                goToPage(pageNum);
-              }}
-              dataCy={`page-${pageNum}-button-option`}
-              currentPageIndex={pageIndex}
-              pageIndex={pageNum}
-              className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-            />
-          ))}
-        </Popover.Body>
+        <PaginationPopoverContent />
       </Popover>
     );
   };
