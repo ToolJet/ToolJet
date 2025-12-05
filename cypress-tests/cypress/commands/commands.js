@@ -271,7 +271,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).last().invoke("removeAttr", "target").click({ force: true });
+  cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {

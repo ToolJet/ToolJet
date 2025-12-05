@@ -77,6 +77,7 @@ describe("App Import", () => {
     cy.skipWalkthrough();
     cy.visit(`${data.workspaceSlug}`);
   });
+
   it("should verify invalid import files", () => {
     cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
