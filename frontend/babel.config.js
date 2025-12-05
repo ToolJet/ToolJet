@@ -14,7 +14,7 @@ const plugins = [
   ['@babel/transform-runtime'],
 ];
 
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'developement') {
   plugins.push(['istanbul', { include: ['src/**/*.js', 'src/**/*.jsx'] }]);
 }
 
