@@ -1518,12 +1518,12 @@ export const validatePassword = (value) => {
   if (!value.trim()) {
     return 'Password is required';
   }
-  if (value.length < 5) {
-    return 'Password must be at least 5 characters long';
-  }
-  if (value.length > 100) {
-    return 'Password can be at max 100 characters long';
-  }
+  // if (value.length < 5) {
+  //   return 'Password must be at least 5 characters long';
+  // }
+  // if (value.length > 100) {
+  //   return 'Password can be at max 100 characters long';
+  // }
 };
 
 export const checkConditionsForRoute = (conditions, conditionsObj) => {

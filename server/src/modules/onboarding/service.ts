@@ -156,7 +156,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-
+    validatePasswordServer(password); 
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -730,6 +730,7 @@ export class OnboardingService implements IOnboardingService {
 
   async setupFirstUser(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { name, workspaceName, password, email } = userCreateDto;
+    validatePasswordServer(password);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization

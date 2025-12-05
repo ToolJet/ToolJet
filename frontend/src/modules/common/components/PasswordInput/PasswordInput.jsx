@@ -77,7 +77,6 @@ const PasswordInput = ({
         </p>
       ) : (
         <p className="password-input__hint" data-cy={`${dataCy}-hint`}>
-          {hint}
         </p>
       )}
     </div>

@@ -90,10 +90,10 @@ function SettingsPage(props) {
     setNewPassword(input);
     const trimmedInput = input.trim();
     if (trimmedInput.length > 100) {
-      setHelperText('Password should be Max 100 characters');
+      // setHelperText('Password should be Max 100 characters');
       setValidPassword(false);
     } else if (trimmedInput.length < 5 && trimmedInput.length > 0) {
-      setHelperText('Password should be at least 5 characters');
+      // setHelperText('Password should be at least 5 characters');
       setValidPassword(false);
     } else {
       setHelperText('');
