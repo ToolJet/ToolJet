@@ -493,6 +493,7 @@
               "items": [
                 "marketplace/plugins/marketplace-plugin-aftership",
                 "marketplace/plugins/marketplace-plugin-anthropic",
+                "marketplace/plugins/marketplace-plugin-authorizenet",
                 "marketplace/plugins/marketplace-plugin-aws-bedrock",
                 "marketplace/plugins/marketplace-plugin-awsredshift",
                 "marketplace/plugins/marketplace-plugin-textract",
