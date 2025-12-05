@@ -114,14 +114,14 @@ export const fillDSConnectionEncryptedField = (fieldName, text, encrypted = true
   cy.clearAndType(fieldSelector, text);
 };
 
-export function fillDSConnectionForm (config) {
-  config.fields.forEach((field) => {
+export function fillDSConnectionForm(fields) {
+  fields.forEach((field) => {
     switch (field.type) {
       case 'input':
         fillDSConnectionTextField(field.fieldName, field.text);
         break;
 
-      case 'encryptedInput':
+      case 'encrypted':
         fillDSConnectionEncryptedField(field.fieldName, field.text, field.encrypted);
         break;
 
@@ -130,15 +130,15 @@ export function fillDSConnectionForm (config) {
         break;
 
       case 'toggle':
-        toggleDSConnectionButton(field.buttonName, field.shouldBeChecked);
+        toggleDSConnectionButton(field.fieldName, field.shouldBeChecked);
         break;
 
       case 'radio':
-        selectDSConnectionRadioButton(field.buttonName, field.shouldBeSelected);
+        selectDSConnectionRadioButton(field.fieldName, field.shouldBeSelected);
         break;
 
       case 'keyValue':
-        fillDSConnectionKeyValuePairs(field.section, field.keyValueData);
+        fillDSConnectionKeyValuePairs(field.fieldName, field.keyValueData);
         break;
 
       default:

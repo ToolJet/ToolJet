@@ -147,10 +147,10 @@ export const verifyRadioButtonFieldUI = (field) => {
 };
 
 export const verifyKeyValueFieldUI = (field) => {
-    const { selector, validations = {} } = field;
+    const { fieldName, validations = {} } = field;
 
-    cy.get(dsCommonSelector.subSection(selector)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(selector)}"]`).should('be.visible');
+    cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
+        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
 
         if (validations.isEmpty) {
             cy.contains('There are no key value pairs added').should('be.visible');
@@ -161,7 +161,7 @@ export const verifyKeyValueFieldUI = (field) => {
         }
 
         if (validations.hasAddButton) {
-            cy.get(dsCommonSelector.addMoreButton(selector))
+            cy.get(dsCommonSelector.addMoreButton(fieldName))
                 .should('be.visible')
                 .and('contain.text', 'Add');
         }
@@ -169,24 +169,24 @@ export const verifyKeyValueFieldUI = (field) => {
         if (validations.rows) {
             validations.rows.forEach((row, index) => {
                 if (row.key !== undefined) {
-                    cy.get(dsCommonSelector.keyInputField(selector, index))
+                    cy.get(dsCommonSelector.keyInputField(fieldName, index))
                         .should('be.visible')
                         .and('have.value', row.key);
                 }
                 if (row.value !== undefined) {
-                    cy.get(dsCommonSelector.valueInputField(selector, index))
+                    cy.get(dsCommonSelector.valueInputField(fieldName, index))
                         .should('be.visible')
                         .and('have.value', row.value);
                 }
                 if (row.hasDeleteButton) {
-                    cy.get(dsCommonSelector.deleteKeyValueButton(selector, index)).should('be.visible');
+                    cy.get(dsCommonSelector.deleteKeyValueButton(fieldName, index)).should('be.visible');
                 }
                 if (row.keyPlaceholder !== undefined) {
-                    cy.get(dsCommonSelector.keyInputField(selector, index))
+                    cy.get(dsCommonSelector.keyInputField(fieldName, index))
                         .should('have.attr', 'placeholder', row.keyPlaceholder);
                 }
                 if (row.valuePlaceholder !== undefined) {
-                    cy.get(dsCommonSelector.valueInputField(selector, index))
+                    cy.get(dsCommonSelector.valueInputField(fieldName, index))
                         .should('have.attr', 'placeholder', row.valuePlaceholder);
                 }
             });
@@ -194,8 +194,8 @@ export const verifyKeyValueFieldUI = (field) => {
     });
 };
 
-export const verifyConnectionFormUI = (config) => {
-    config.fields.forEach((field) => {
+export const verifyConnectionFormUI = (fields) => {
+    fields.forEach((field) => {
         switch (field.type) {
             case 'input':
                 verifyInputFieldUI(field);
