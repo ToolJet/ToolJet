@@ -75,6 +75,17 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
+# Download SeaweedFS binary
+ENV SEAWEEDFS_VERSION=4.01
+
+RUN echo "Downloading SeaweedFS ${SEAWEEDFS_VERSION}..." && \
+    curl -Lo seaweedfs.tar.gz \
+    "https://github.com/seaweedfs/seaweedfs/releases/download/${SEAWEEDFS_VERSION}/linux_amd64.tar.gz" && \
+    tar -xzf seaweedfs.tar.gz && \
+    mv weed /weed && \
+    rm seaweedfs.tar.gz && \
+    chmod +x /weed
+
 FROM debian:12-slim
 
 RUN apt-get update && \
@@ -138,6 +149,14 @@ RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
     echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
     chmod +x /usr/local/bin/postgrest
 
+# Use the SeaweedFS binary from the builder stage
+COPY --from=builder --chown=appuser:0 /weed /usr/local/bin/weed
+
+# Wrap weed binary with logger prefix for consistent logging
+RUN mv /usr/local/bin/weed /usr/local/bin/weed-original && \
+    echo '#!/bin/bash\nexec /usr/local/bin/weed-original "$@" 2>&1 | sed "s/^/[SeaweedFS] /"' > /usr/local/bin/weed && \
+    chmod +x /usr/local/bin/weed
+
 
 # Copy application with ownership set directly to avoid chown -R
 COPY --from=builder --chown=appuser:0 /app/package.json ./app/package.json
@@ -174,6 +193,12 @@ RUN mkdir -p /home/appuser/rsyslog \
     && chmod g+s /home/appuser/rsyslog \
     && chmod -R g=u /home/appuser/rsyslog
 
+# Create SeaweedFS data directory with proper permissions for OpenShift/K8s
+RUN mkdir -p /data/seaweedfs \
+    && chown -R appuser:0 /data/seaweedfs \
+    && chmod g+s /data/seaweedfs \
+    && chmod -R g=u /data/seaweedfs
+
 # Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \
     && chown -R appuser:0 /tmp/.npm/npm-cache/ \
@@ -198,6 +223,17 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
 ENV HOME=/home/appuser
+
+# SeaweedFS embedded object storage configuration
+ENV STORAGE_BACKEND=seaweed \
+    SEAWEED_EMBEDDED=true \
+    SEAWEED_DIR=/data/seaweedfs \
+    SEAWEED_MASTER_PORT=9333 \
+    SEAWEED_VOLUME_PORT=8080 \
+    SEAWEED_FILER_PORT=8888 \
+    SEAWEED_S3_PORT=8333 \
+    SEAWEED_S3_ENDPOINT=http://localhost:8333
+
 # Switch back to appuser
 USER appuser
 WORKDIR /app
