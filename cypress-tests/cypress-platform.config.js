@@ -6,28 +6,6 @@ const pg = require("pg");
 const path = require("path");
 const pdf = require("pdf-parse");
 
-const environments = {
-    'run-cypress-platform': {
-        baseUrl: "http://localhost:3000",
-        configFile: "cypress-platform.config.js"
-    },
-    'run-cypress-platform-subpath': {
-        baseUrl: "http://localhost:3000/apps",
-        configFile: "cypress-platform.config.js"
-    },
-    'run-cypress-platform-proxy': {
-        baseUrl: "http://localhost:4001",
-        configFile: "cypress-platform.config.js"
-    },
-    'run-cypress-platform-proxy-subpath': {
-        baseUrl: "http://localhost:4001/apps",
-        configFile: "cypress-platform.config.js"
-    }
-};
-
-const githubLabel = process.env.GITHUB_LABEL || 'run-cypress-platform';
-const environment = environments[githubLabel];
-
 module.exports = defineConfig({
     execTimeout: 1800000,
     defaultCommandTimeout: 30000,
@@ -93,8 +71,7 @@ module.exports = defineConfig({
         downloadsFolder: "cypress/downloads",
         experimentalRunAllSpecs: true,
         experimentalModfyObstructiveThirdPartyCode: true,
-        baseUrl: environment.baseUrl,
-        configFile: environment.configFile,
+        baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
         specPattern: [
             "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
             "cypress/e2e/happyPath/platform/ceTestcases/apps/appSlug.cy.js",
