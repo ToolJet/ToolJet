@@ -61,7 +61,7 @@ const RenderPage = ({
         aria-label={page.name}
       >
         {!labelStyle?.icon?.hidden && (
-          <div className="custom-icon">
+          <div className="custom-icon" data-cy={`pages-icon-${String(page?.name).toLowerCase()}`}>
             <IconElement
               color={iconColor}
               style={{
@@ -156,9 +156,8 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
-                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
-              }`}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+                }`}
             />
           </div>
         )}
