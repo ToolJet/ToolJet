@@ -51,6 +51,7 @@ describe("Redirection error pages", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.apiPublishDraftVersion("v1");
         cy.wait(1000);
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click();

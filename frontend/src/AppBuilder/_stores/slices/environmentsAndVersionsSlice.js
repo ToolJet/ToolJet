@@ -15,6 +15,8 @@ const initialState = {
   appVersionsLazyLoaded: false,
   previewInitialEnvironmentId: null,
   developmentVersions: [],
+  draftVersions: [],
+  publishedVersions: [],
   environmentLoadingState: 'completed',
   isPublicAccess: false,
 };
@@ -82,10 +84,21 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   setEnvironmentDropdownStatus: (status) => set({ initializedEnvironmentDropdown: status }),
 
   fetchDevelopmentVersions: async (appId) => {
-    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'development').id;
+    const developmentEnvironment = get().environments.find((environment) => environment.name === 'development');
+
+    if (!developmentEnvironment) {
+      console.warn('Development environment not found');
+      return;
+    }
+
+    const developmentEnvironmentId = developmentEnvironment.id;
 
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);
+      const draftVersions = response.appVersions.filter((version) => version.status === 'DRAFT');
+      const publishedVersions = response.appVersions.filter((version) => version.status === 'PUBLISHED');
+      set({ draftVersions });
+      set({ publishedVersions });
       set({ developmentVersions: response.appVersions });
     } catch (error) {
       console.error('Error while getting the versions', error);
@@ -113,6 +126,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       id: newVersion.id,
       name: newVersion.name,
       current_environment_id: newVersion.current_environment_id,
+      status: newVersion.status,
     };
     set((state) => ({
       ...state,
@@ -130,10 +144,23 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     }));
   },
 
-  createNewVersionAction: async (appId, versionName, selectedVersionId, onSuccess, onFailure) => {
+  createNewVersionAction: async (
+    appId,
+    versionName,
+    selectedVersionId,
+    versionDescription = '',
+    onSuccess,
+    onFailure
+  ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
-      const newVersion = await appVersionService.create(appId, versionName, selectedVersionId, editorEnvironment);
+      const newVersion = await appVersionService.create(
+        appId,
+        versionName,
+        versionDescription,
+        selectedVersionId,
+        editorEnvironment
+      );
       const editorVersion = {
         id: newVersion.id,
         name: newVersion.name,
@@ -158,19 +185,28 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       onFailure(error);
     }
   },
-  updateVersionNameAction: async (appId, versionId, versionName, onSuccess, onFailure) => {
+  updateVersionNameAction: async (appId, versionId, versionName, versionDescription, onSuccess, onFailure) => {
     try {
-      await appVersionService.save(appId, versionId, { name: versionName });
+      await appVersionService.save(appId, versionId, { name: versionName, description: versionDescription });
 
       set((state) => {
         if (state.selectedVersion && state.selectedVersion.id === versionId) {
           state.selectedVersion.name = versionName;
+          state.selectedVersion.description = versionDescription;
         }
 
         const versionIndex = state.versionsPromotedToEnvironment.findIndex((v) => v.id === versionId);
         if (versionIndex !== -1) {
           state.versionsPromotedToEnvironment[versionIndex].name = versionName;
+          state.versionsPromotedToEnvironment[versionIndex].description = versionDescription;
         }
+
+        const devVersionIndex = state.developmentVersions.findIndex((v) => v.id === versionId);
+        if (devVersionIndex !== -1) {
+          state.developmentVersions[devVersionIndex].name = versionName;
+          state.developmentVersions[devVersionIndex].description = versionDescription;
+        }
+
         state.appVersionsLazyLoaded = false;
       });
 
@@ -226,6 +262,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         id: data.editing_version.id,
         name: data.editing_version.name,
         current_environment_id: data.editing_version.currentEnvironmentId,
+        status: data.editing_version.status,
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -233,6 +270,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
+        versionsPromotedToEnvironment: [data.editing_version],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
           get().selectedEnvironment,
@@ -275,7 +313,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             // Preserve the currently selected version when switching environments (e.g., version=v5)
             editorVersionId: get().selectedVersion?.id,
           });
-          selectedVersion = response.editorVersion;
+          const selectedVersion = response.editorVersion;
           const appVersionEnvironment = get().environments.find(
             (environment) => environment.id === selectedVersion.currentEnvironmentId
           );
@@ -303,10 +341,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedEnvironment,
         selectedVersionDef,
       };
-      // onSuccess(callBackResponse);
+      _onSuccess(callBackResponse);
     } catch (error) {
-      console.log({ error });
-      toast.error('Failed to switch theme: ' + error?.message);
+      toast.error('Failed to switch environment: ' + error?.message);
+      if (_onFailure) {
+        _onFailure(error);
+      }
     }
   },
 
@@ -354,11 +394,99 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       isReleaseVersionEnabled: hasReleasePermission,
     };
   },
+  createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
+    try {
+      const editorEnvironment = get().selectedEnvironment.id;
+      const newVersion = await appVersionService.createDraftVersion(appId, selectedVersionId, editorEnvironment);
+      const editorVersion = {
+        id: newVersion.id,
+        name: newVersion.name,
+        current_environment_id: newVersion.current_environment_id,
+      };
+      set((state) => ({
+        ...state,
+        selectedVersion: editorVersion,
+        currentVersionId: editorVersion.id,
+        selectedEnvironment: get().environments.find(
+          (environment) => environment.id === editorVersion.current_environment_id
+        ),
+        versionsPromotedToEnvironment: [editorVersion],
+        appVersionsLazyLoaded: false,
+        appVersionEnvironment: get().environments.find(
+          (environment) => environment.id === editorVersion.current_environment_id
+        ),
+        ...calculatePromoteAndReleaseButtonVisibilityForCreateNewVersion(useStore.getState().featureAccess),
+      }));
+      onSuccess(newVersion);
+    } catch (error) {
+      onFailure(error);
+    }
+  },
+
+  promoteVersionAction: async (appId, versionId, versionName, versionDescription, onSuccess, onFailure) => {
+    try {
+      const editorEnvironment = get().selectedEnvironment.id;
+      const response = await appVersionService.save(appId, versionId, {
+        name: versionName,
+        description: versionDescription,
+        status: 'PUBLISHED', // Promote from DRAFT to PUBLISHED
+      });
+
+      // After promotion, refresh the state
+      const editorVersion = {
+        id: response.id || versionId,
+        name: versionName,
+        current_environment_id: editorEnvironment,
+      };
+
+      set((state) => ({
+        ...state,
+        selectedVersion: editorVersion,
+        currentVersionId: editorVersion.id,
+        versionsPromotedToEnvironment: [editorVersion],
+        appVersionsLazyLoaded: false,
+        ...calculatePromoteAndReleaseButtonVisibility(
+          editorVersion.id,
+          get().selectedEnvironment,
+          useStore.getState().releasedVersionId,
+          useStore.getState()?.license?.featureAccess
+        ),
+      }));
+
+      onSuccess(response);
+    } catch (error) {
+      console.error('Failed to promote version:', error);
+      onFailure(error);
+    }
+  },
+
+  releaseVersionAction: async (appId, versionId, environmentId, onSuccess, onFailure) => {
+    try {
+      const response = await appVersionService.releaseVersion(appId, versionId, environmentId);
+
+      // Update released version ID in global state
+      set((state) => ({
+        ...state,
+        releasedVersionId: versionId,
+        appVersionsLazyLoaded: false,
+        ...calculatePromoteAndReleaseButtonVisibility(
+          get().selectedVersion.id,
+          get().selectedEnvironment,
+          versionId,
+          useStore.getState()?.license?.featureAccess
+        ),
+      }));
+
+      onSuccess(response);
+    } catch (error) {
+      console.error('Failed to release version:', error);
+      onFailure(error);
+    }
+  },
 
   setIsPublicAccess: (isPublicAccess) => set({ isPublicAccess }),
   getIsPublicAccess: () => get().isPublicAccess,
 });
-
 // Helper functions
 const calculatePromoteAndReleaseButtonVisibility = (
   selectedVersionId,
