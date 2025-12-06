@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 const JSON5 = require('json5');
 import { createClient } from '@clickhouse/client';
+import { Parser } from 'node-sql-parser';
 
 
 export default class Click implements QueryService {
@@ -12,19 +13,27 @@ export default class Click implements QueryService {
     try {
       switch (operation) {
         case 'sql': {
-          let resultSet= await clickhouseClient.query({
-            query,
-            format: 'JSONEachRow'
-          });
+          const isSelectQuery = this.isSelectQuery(query);
           
-          let data = await resultSet.json();    
-          if (!data || (Array.isArray(data) && data.length === 0)) {
-            result = { r: 1 };
+          if (isSelectQuery) {
+            const format = 'JSONEachRow';
+            const resultSet = await clickhouseClient.query({
+              query,
+              format: format
+            });
+            
+            let data = await resultSet.json();
+            
+              result = data;
+            
           } else {
-            result = data;
-          }  
-          break;
+            await clickhouseClient.command({
+              query
+            });
+            result = { r:1 };
+          }
           
+          break;
         }
         case 'insert': {
           const rows = this.parseJSON(query);
@@ -82,5 +91,25 @@ export default class Click implements QueryService {
     if (!json) return {};
 
     return JSON5.parse(json);
+  }
+
+  private isSelectQuery(query: string): boolean {
+    try {
+      const parser = new Parser();
+      const trimmedQuery = query.trim();
+      const upperQuery = trimmedQuery.toUpperCase();
+      if (upperQuery.startsWith('SELECT') || upperQuery.startsWith('WITH')) {
+        return true;
+      }
+      
+      
+      const parsedSQL = parser.astify(trimmedQuery);
+      const ast = Array.isArray(parsedSQL) ? parsedSQL[0] : parsedSQL;
+      
+      return ast && ast.type === 'select';
+    } catch (error) {
+      const upperQuery = query.trim().toUpperCase();
+      return upperQuery.startsWith('SELECT') || upperQuery.startsWith('WITH');
+    }
   }
 }
