@@ -42,6 +42,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -80,6 +81,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -113,6 +115,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );

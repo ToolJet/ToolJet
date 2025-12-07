@@ -9,6 +9,7 @@ import {
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
+import { multiEnvSelector } from "Selectors/eeCommon";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
@@ -259,10 +260,9 @@ describe("Self host onboarding", () => {
 
     cy.wait("@getDataQueries");
     cy.wait(2000);
-    cy.get('[data-cy="button-release"]', { timeout: 20000 }).should(
-      "be.visible",
-      { timeout: 20000 }
-    );
+    cy.get(multiEnvSelector.environmentsTag("development"), {
+      timeout: 20000,
+    }).should("be.visible", { timeout: 20000 });
 
     cy.apiLogout();
     cy.visit("/my-workspace");
