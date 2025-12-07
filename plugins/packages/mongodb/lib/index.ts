@@ -6,23 +6,6 @@ import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
 
 export default class MongodbService implements QueryService {
-
-  private extractSslFromConnString(queryParams: string): boolean | null {
-  if (!queryParams) return null;
-
-  const qp = queryParams.replace("?", "").toLowerCase();
-  const pairs = qp.split("&");
-
-  for (const p of pairs) {
-    if (p.startsWith("ssl=")) {
-      return p.split("=")[1] === "true";
-    }
-    if (p.startsWith("tls=")) {
-      return p.split("=")[1] === "true";
-    }
-  }
-  return null;
-}
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
     let result = {};
@@ -293,7 +276,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const needsAuth = finalUser !== "" && finalPass !== "";
   const hostsList = hostsPart.split(",");
 
-  if (explicitHost && hostsList.length > 0) {
+  if (explicitHost) {
     const newPort = explicitPort ? `:${explicitPort}` : "";
     const existingPort = hostsList[0].includes(":")
       ? `:${hostsList[0].split(":")[1]}`
@@ -312,39 +295,26 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   let finalUri = `${protocol}://${authSection}${finalHosts}`;
 
+  let queryParamsToUse = "";
   if (explicitQueryParams) {
-    finalUri += explicitQueryParams.startsWith("?")
+    queryParamsToUse = explicitQueryParams.startsWith("?")
       ? explicitQueryParams
       : `?${explicitQueryParams}`;
   } else if (queryParamsFromConn) {
-    finalUri += queryParamsFromConn;
+    queryParamsToUse = queryParamsFromConn;
   }
 
-  let finalSsl: boolean = false;
-
-  const sslFromConn = this.extractSslFromConnString(queryParamsFromConn);
-  if (sslFromConn !== null) {
-    finalSsl = sslFromConn;
-  } else if (protocol === "mongodb+srv") {
-    finalSsl = true;
-  } else if (typeof sourceOptions.use_ssl === "boolean") {
-    finalSsl = sourceOptions.use_ssl;
+  if (queryParamsToUse) {
+    finalUri += queryParamsToUse;
   }
 
-  if (finalSsl === true && !finalUri.includes('ssl=') && !finalUri.includes('tls=')) {
-    const separator = finalUri.includes('?') ? '&' : '?';
-    finalUri += `${separator}ssl=true`;
-  }
-      
-  const isSrv = protocol === "mongodb+srv";
-  const clientOptions: any = {
-    directConnection: hostsList.length === 1 ? true : false,
-  };
+  const paramsLower = queryParamsToUse.toLowerCase();
+  const hasSSLInParams = paramsLower.includes('ssl=') || paramsLower.includes('tls=');
 
-  if (finalSsl === true) {
-    clientOptions.tls = true;
+  const clientOptions: any = {};
+  if (!hasSSLInParams && typeof sourceOptions.use_ssl === "boolean") {
+    clientOptions.tls = sourceOptions.use_ssl;
   }
-  
   client = new MongoClient(finalUri, clientOptions);
   await client.connect();
   db = client.db(finalDb);
