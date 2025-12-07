@@ -629,7 +629,10 @@ export default function Grid({ gridWidth, currentLayout }) {
           const isLeftChanged = e.direction[0] === -1;
           const isTopChanged = e.direction[1] === -1;
 
-          // Calculate positions
+          // Get scroll delta from autoscroll hook
+          const scrollDelta = getScrollDelta();
+
+          // Calculate positions with scroll delta adjustment
           let transformX = currentWidget.left * _gridWidth;
           let transformY = currentWidget.top;
 
@@ -661,12 +664,28 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (!maxHeightHit || e.height < e.target.clientHeight) {
             e.target.style.height = `${e.height}px`;
           }
-          e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
+          e.target.style.transform = `translate(${transformX + scrollDelta.x}px, ${transformY + scrollDelta.y}px)`;
           if (e.width > 0) e.target.style.width = `${e.width}px`;
           if (e.height > 0) e.target.style.height = `${e.height}px`;
+
           positionGhostElement(e.target, 'moveable-ghost-widget');
+
+          // Update autoscroll with current mouse position, target, and resize direction
+          // For resize events, mouse position is in inputEvent
+          const clientX = e.inputEvent?.clientX ?? 0;
+          const clientY = e.inputEvent?.clientY ?? 0;
+
+          // Pass resize direction to auto-scroll so it only checks the relevant boundary
+          updateMousePosition(clientX, clientY, e.target, e.direction);
         }}
         onResizeStart={(e) => {
+          // Start autoscroll monitoring in resize mode with resize direction
+          // For resize events, mouse position is in inputEvent
+          const clientX = e.inputEvent?.clientX ?? 0;
+          const clientY = e.inputEvent?.clientY ?? 0;
+          // e.direction gives the resize direction: [-1, 0] = left, [1, 0] = right, [0, -1] = top, [0, 1] = bottom, etc.
+          startAutoScroll(clientX, clientY, e.target, 'resize', e.direction);
+
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -683,6 +702,11 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
         onResizeEnd={(e) => {
+          // Get scroll delta from autoscroll hook for final position calculation
+          const scrollDelta = getScrollDelta();
+          // Stop autoscroll monitoring
+          stopAutoScroll();
+
           try {
             handleDeactivateTargets();
             clearActiveTargetClassNamesAfterSnapping(selectedComponents);
@@ -737,8 +761,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               id: e.target.id,
               height: directions[1] !== 0 ? height : currentWidget.height,
               width: width,
-              x: transformX,
-              y: transformY,
+              x: transformX + scrollDelta.x || 0,
+              y: transformY + scrollDelta.y || 0,
             };
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
@@ -1048,6 +1072,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             e.target.style.width = `${draggingWidgetWidth}px`;
 
             e.target.style.transform = `translate(${left}px, ${top}px)`;
+
             // Update autoscroll with current mouse position and target
             updateMousePosition(e.clientX, e.clientY, e.target);
             return false;
