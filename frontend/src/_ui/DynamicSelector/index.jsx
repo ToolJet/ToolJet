@@ -25,7 +25,7 @@ const DynamicSelector = ({
     queryName,
     propertyKey,
     value,
-    fxEnabled = false
+    fxEnabled
 }) => {
     const isDependent = dependsOn?.length > 0;
 

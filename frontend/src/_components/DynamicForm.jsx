@@ -258,7 +258,7 @@ const DynamicForm = ({
     editor_type,
     spec_url = '',
     disabled = false,
-    fxEnabled,
+    fx_enabled: fxEnabled = false,
     buttonText: buttonTextProp,
     button_text,
     text,
