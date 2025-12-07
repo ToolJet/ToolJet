@@ -77,9 +77,10 @@ export const PagesSidebarNavigation = ({
   const { hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
   const license = useStore((state) => state.license);
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  // const isLicensed =
+  //   !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+  //   _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const isLicensed = useStore(state => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
 
   const labelStyle = useMemo(
     () => ({
@@ -115,6 +116,7 @@ export const PagesSidebarNavigation = ({
       );
     });
   }, [pagesTree, pagesVisibilityState, currentMode]);
+
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
