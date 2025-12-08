@@ -7,7 +7,8 @@ import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
-import { CreateVersionModal } from '@/modules/Appbuilder/components';
+import { CreateVersionModal, CreateDraftVersionModal } from '@/modules/Appbuilder/components';
+
 import useStore from '@/AppBuilder/_stores/store';
 
 import { Tag } from 'lucide-react';
@@ -110,7 +111,9 @@ export const SingleValue = ({ selectProps = {} }) => {
             onToggleMenu();
           }
         }}
-        variant="ghost" className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}>
+        variant="ghost"
+        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
+      >
         <Tag width="16" height="16" className="tw-text-icon-success" />
 
         <span
@@ -132,7 +135,13 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        <CreateVersionModal
+        // <CreateVersionModal
+        //   {...props}
+        //   showCreateAppVersion={showCreateAppVersion}
+        //   setShowCreateAppVersion={setShowCreateAppVersion}
+        //   onSelectVersion={onSelectVersion}
+        // />
+        <CreateDraftVersionModal
           {...props}
           showCreateAppVersion={showCreateAppVersion}
           setShowCreateAppVersion={setShowCreateAppVersion}
@@ -152,9 +161,13 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
+        title={'Delete version'}
+        message={`This version will be permanently deleted and cannot be recovered. Are you sure you want to continue?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
+        confirmButtonText={'Delete version'}
+        cancelButtonText={'Cancel'}
+        cancelButtonType="tertiary"
       />
       <Select
         width={'100%'}
