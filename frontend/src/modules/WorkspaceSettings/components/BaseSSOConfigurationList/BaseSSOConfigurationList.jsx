@@ -310,14 +310,17 @@ class BaseSSOConfigurationList extends React.Component {
       .filter((sso) => sso.enabled === true && sso.sso != 'form' && !(this.state.featureAccess?.[sso.sso] === false))
       .map((sso) => sso.sso);
 
-    let enabledSSOCount = 0;
+    // Count unique SSO types that are overridden by organization configs
+    // Use a Set to ensure each SSO type is only counted once (important for multi-OIDC)
+    const overriddenSSOTypes = new Set();
 
     this.state.ssoOptions.forEach((ssoOption) => {
       if (ssoOption.enabled === true && instanceEnabledSSOs.includes(ssoOption.sso)) {
-        enabledSSOCount += 1;
+        overriddenSSOTypes.add(ssoOption.sso);
       }
     });
-    return instanceEnabledSSOs.length - enabledSSOCount;
+
+    return instanceEnabledSSOs.length - overriddenSSOTypes.size;
   };
 
   determineDefaultSSOs = () => {
