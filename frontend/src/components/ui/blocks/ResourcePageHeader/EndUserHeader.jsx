@@ -123,7 +123,7 @@ EndUserHeader.propTypes = {
   title: PropTypes.string,
   onCreateBlankApp: PropTypes.func,
   onBuildWithAI: PropTypes.func,
-  createAppMenuItems: PropTypes.arrayOf(
+  contextMenuItems: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,
       onClick: PropTypes.func.isRequired,
@@ -135,7 +135,7 @@ EndUserHeader.propTypes = {
 EndUserHeader.defaultProps = {
   className: '',
   title: 'Applications',
-  createAppMenuItems: [],
+  contextMenuItems: [],
 };
 
 export { EndUserHeader };

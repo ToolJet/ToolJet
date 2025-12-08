@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppsShellView } from '../components/AppsShellView';
-import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
+import { ResourcePageHeader } from '@/components/ui/blocks/ResourcePageHeader';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import {
   AudioWaveform,
@@ -41,10 +41,22 @@ const MOCK_SIDEBAR_DATA = {
   navMain: [
     { title: 'Home', url: '#', icon: Home, isActive: false, items: [] },
     { title: 'Apps', url: '#', icon: Blocks, isActive: true, items: [] },
-    { title: 'Workflows', url: '#', icon: Workflow, isActive: false, items: [] },
+    {
+      title: 'Workflows',
+      url: '#',
+      icon: Workflow,
+      isActive: false,
+      items: [],
+    },
     { title: 'Database', url: '#', icon: Table2, isActive: false, items: [] },
     { title: 'Plugins', url: '#', icon: Puzzle, isActive: false, items: [] },
-    { title: 'Resources', url: '#', icon: KeyRound, isActive: false, items: [] },
+    {
+      title: 'Resources',
+      url: '#',
+      icon: KeyRound,
+      isActive: false,
+      items: [],
+    },
   ],
   projects: [
     { name: 'Theme', url: '#', icon: Moon },
@@ -118,7 +130,7 @@ export const Default = () => {
       sidebarPlatformVersion={MOCK_SIDEBAR_DATA.platformVersion}
       darkMode={darkMode}
       onToggleDarkMode={() => setDarkMode(!darkMode)}
-      header={<AppsPageHeader title="Applications" />}
+      header={<ResourcePageHeader title="Applications" />}
       footer={<PaginationFooter recordCount={50} currentPage={1} totalPages={5} />}
     >
       <div className="tw-p-6">Content goes here</div>
@@ -148,4 +160,3 @@ export const WithDarkMode = () => {
     </AppsShellView>
   );
 };
-

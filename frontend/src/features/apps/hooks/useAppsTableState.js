@@ -20,15 +20,18 @@ export function useAppsTableState({ data, columns, initial = {}, onPaginationCha
   const stableColumns = useMemo(() => columns, [columns]);
 
   // Handle pagination changes with optional callback
-  const handlePaginationChange = useCallback((updater) => {
-    setPagination((prev) => {
-      const newPagination = typeof updater === 'function' ? updater(prev) : updater;
-      if (onPaginationChange) {
-        onPaginationChange(newPagination);
-      }
-      return newPagination;
-    });
-  }, [onPaginationChange]);
+  const handlePaginationChange = useCallback(
+    (updater) => {
+      setPagination((prev) => {
+        const newPagination = typeof updater === 'function' ? updater(prev) : updater;
+        if (onPaginationChange) {
+          onPaginationChange(newPagination);
+        }
+        return newPagination;
+      });
+    },
+    [onPaginationChange]
+  );
 
   const table = useReactTable({
     data: stableData,
@@ -57,5 +60,3 @@ export function useAppsTableState({ data, columns, initial = {}, onPaginationCha
 }
 
 export default useAppsTableState;
-
-

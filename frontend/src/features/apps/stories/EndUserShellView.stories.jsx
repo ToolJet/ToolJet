@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { EndUserShellView } from '../components/EndUserShellView';
-import { EndUserHeader } from '@/components/ui/blocks/AppsPageHeader/EndUserHeader';
+import { EndUserHeader } from '@/components/ui/blocks/ResourcePageHeader/EndUserHeader';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react';
 
@@ -54,4 +54,3 @@ export const Minimal = () => {
     </EndUserShellView>
   );
 };
-

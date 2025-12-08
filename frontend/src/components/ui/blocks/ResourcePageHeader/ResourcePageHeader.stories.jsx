@@ -1,12 +1,12 @@
 import React from 'react';
-import { AppsPageHeader } from './AppsPageHeader';
+import { ResourcePageHeader } from './ResourcePageHeader';
 import { Button } from '@/components/ui/Button/Button';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default {
-  title: 'UI/Blocks/AppsPageHeader',
-  component: AppsPageHeader,
+  title: 'UI/Blocks/ResourcePageHeader',
+  component: ResourcePageHeader,
   parameters: {
     layout: 'padded',
   },
@@ -15,9 +15,9 @@ export default {
 // Simple test story
 export const Simple = () => {
   return (
-    <AppsPageHeader
+    <ResourcePageHeader
       title="Applications"
-      actionButtons={
+      rightSlot={
         <>
           <Button variant="primary" onClick={() => console.log('Create blank app')}>
             Create blank app
@@ -27,7 +27,7 @@ export const Simple = () => {
           </Button>
         </>
       }
-      createAppMenuItems={[]}
+      contextMenuItems={[]}
     />
   );
 };
@@ -43,9 +43,9 @@ export const WithMenu = () => {
   ];
 
   return (
-    <AppsPageHeader
+    <ResourcePageHeader
       title="Applications"
-      actionButtons={
+      rightSlot={
         <>
           <Button variant="primary" onClick={() => console.log('Create blank app')}>
             Create blank app
@@ -55,7 +55,7 @@ export const WithMenu = () => {
           </Button>
         </>
       }
-      createAppMenuItems={menuItems}
+      contextMenuItems={menuItems}
     />
   );
 };
@@ -63,9 +63,9 @@ export const WithMenu = () => {
 // Story with single action button
 export const SingleAction = () => {
   return (
-    <AppsPageHeader
+    <ResourcePageHeader
       title="Applications"
-      actionButtons={
+      rightSlot={
         <Button variant="primary" onClick={() => console.log('Create app')}>
           Create app
         </Button>
@@ -77,9 +77,9 @@ export const SingleAction = () => {
 // Story with upgrade banner
 export const WithUpgradeBanner = () => {
   return (
-    <AppsPageHeader
+    <ResourcePageHeader
       title="Applications"
-      actionButtons={
+      rightSlot={
         <div
           className={cn('tw-flex tw-items-center tw-gap-3 tw-pl-3 tw-pr-3 tw-py-3 tw-rounded-xl')}
           style={{
