@@ -1,2 +1,1 @@
 export { ResourceViewHeader } from './ResourceViewHeader';
-

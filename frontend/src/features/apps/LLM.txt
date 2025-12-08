@@ -39,7 +39,7 @@ AppsPageAdapter (Adapter - bridges HomePage)
   └─ AppsShellView (Layout shell)
       ├─ AppsPageLayout (Search, layout)
       └─ PageContainer (Content wrapper)
-          ├─ AppsPageHeader (Title, create buttons)
+          ├─ ResourcePageHeader (Title, create buttons)
           └─ AppsTabs (Tabbed content)
               ├─ AppsPageViewHeader (View switcher, filters)
               └─ AppsTable/AppsGrid (Data display)
@@ -51,7 +51,7 @@ AppsPageAdapter (Adapter - bridges HomePage)
 frontend/src/components/AppsPage/
 ├── AppsShellView.jsx              # Layout shell with contentSlot
 ├── AppsTabs.jsx                   # Tabbed content (apps/modules)
-├── AppsPageHeader.jsx             # Header with create buttons
+├── ResourcePageHeader.jsx             # Header with create buttons
 ├── AppsPageViewHeader.jsx         # View switcher and filters
 ├── AppsTable.jsx                  # Table renderer
 ├── AppsGrid.jsx                   # Grid renderer
@@ -101,7 +101,7 @@ frontend/src/lib/
 - `breadcrumbsSlot` (node, optional): Breadcrumbs above header
 
 **Responsibilities**:
-- Composes AppsPageLayout + PageContainer + AppsPageHeader
+- Composes AppsPageLayout + PageContainer + ResourcePageHeader
 - Provides slots for extensibility
 - No data logic, pure presentation
 
@@ -702,7 +702,7 @@ Replace the existing UI rendering in `HomePage.render()` with:
 - `AppsTabs.jsx`: Tabbed content
 - `AppsTable.jsx`: Table renderer
 - `AppsGrid.jsx`: Grid renderer
-- `AppsPageHeader.jsx`: Page header
+- `ResourcePageHeader.jsx`: Page header
 - `EmptyNoApps.jsx`: Empty state
 
 ### Hooks

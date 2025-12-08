@@ -1,3 +1,1 @@
 export { UpgradePromptDialog } from './UpgradePromptDialog';
-
-

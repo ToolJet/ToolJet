@@ -40,7 +40,7 @@ export function ResourceViewHeader({
               {tab.loading ? (
                 <Skeleton className="tw-h-4 tw-w-6 tw-inline-block tw-ml-1" />
               ) : (
-                <Badge variant="secondary">{tab.count}</Badge>
+                <span className="tw-text-xs tw-text-muted-foreground">({tab.count})</span>
               )}
             </TabsTrigger>
           ))}

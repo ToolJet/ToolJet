@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/Rocket/dropdown-menu';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
 
-const AppsPageHeader = forwardRef(
-  ({ className, title = 'Applications', actionButtons, createAppMenuItems = [], ...props }, ref) => {
+const ResourcePageHeader = forwardRef(
+  ({ className, title = 'Applications', rightSlot, contextMenuItems = [], ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -29,16 +29,16 @@ const AppsPageHeader = forwardRef(
 
         {/* Action Group */}
         <div className="tw-flex tw-items-center tw-gap-1">
-          {/* Create Blank App Button */}
-          {actionButtons}
+          {/* Right Slot Content */}
+          {rightSlot}
           {/* More Options Dropdown */}
-          {createAppMenuItems.length > 0 && (
+          {contextMenuItems.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="default" iconOnly isLucid leadingIcon="more-vertical" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="tw-w-[200px]">
-                {createAppMenuItems.map((item) => (
+                {contextMenuItems.map((item) => (
                   <DropdownMenuItem key={item.label} onClick={item.onClick} className="tw-cursor-pointer">
                     {item.icon && <DynamicIcon name={item.icon} size={16} className={'tw-text-icon-default'} />}
                     {item.label}
@@ -53,14 +53,13 @@ const AppsPageHeader = forwardRef(
   }
 );
 
-AppsPageHeader.displayName = 'AppsPageHeader';
+ResourcePageHeader.displayName = 'ResourcePageHeader';
 
-AppsPageHeader.propTypes = {
+ResourcePageHeader.propTypes = {
   className: PropTypes.string,
   title: PropTypes.string,
-  onCreateBlankApp: PropTypes.func,
-  onBuildWithAI: PropTypes.func,
-  createAppMenuItems: PropTypes.arrayOf(
+  rightSlot: PropTypes.node,
+  contextMenuItems: PropTypes.arrayOf(
     PropTypes.shape({
       label: PropTypes.string.isRequired,
       onClick: PropTypes.func.isRequired,
@@ -69,10 +68,10 @@ AppsPageHeader.propTypes = {
   ),
 };
 
-AppsPageHeader.defaultProps = {
+ResourcePageHeader.defaultProps = {
   className: '',
   title: 'Applications',
-  createAppMenuItems: [],
+  contextMenuItems: [],
 };
 
-export { AppsPageHeader };
+export { ResourcePageHeader };

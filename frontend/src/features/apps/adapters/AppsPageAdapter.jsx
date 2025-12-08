@@ -7,7 +7,7 @@ import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { EmptyNoApps } from '../components/EmptyNoApps';
-import { AppsPageHeader } from '@/components/ui/blocks/AppsPageHeader';
+import { ResourcePageHeader } from '@/components/ui/blocks/ResourcePageHeader';
 import { MOCK_MODULES_DATA, MOCK_MODULES_META } from '../stories/mockData';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
 import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader';
@@ -34,8 +34,19 @@ function AppsPageAdapter({
 }) {
   const { apps = [], isLoading: appsIsLoading, error: appsError, meta = {} } = data;
   const { appSearchKey = '', currentFolder = {}, folders = [], foldersLoading = false } = filters;
-  const { pageChanged, folderChanged, onSearch, deleteApp, cloneApp, exportApp, onUpgrade } = rawActions;
-  const { appsLimit } = subscriptionLimits;
+  const {
+    pageChanged,
+    folderChanged,
+    onSearch,
+    deleteApp,
+    cloneApp,
+    exportApp,
+    onUpgrade,
+    onCreateBlankApp,
+    onBuildWithAI,
+    onCreateModule,
+  } = rawActions;
+  const { appsLimit, modulesLimit } = subscriptionLimits;
   const { canCreateApp, canDeleteApp, canUpdateApp } = permissions;
   const { navigate, workspaceId, appType = 'front-end' } = navigation;
   const {
@@ -79,8 +90,25 @@ function AppsPageAdapter({
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Check if limit is reached
-  const isLimitReached = appsLimit && !appsLimit.canAddUnlimited && appsLimit.percentage >= 100;
+  const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
+    initialTab: appType === 'module' ? 'modules' : 'apps',
+    loadingStates: {
+      apps: appsIsLoading,
+      modules: modulesData.isLoading,
+      folders: foldersLoading,
+    },
+  });
+
+  // Check limit based on active tab
+  const isLimitReached = useMemo(() => {
+    if (activeTab === 'modules') {
+      return modulesLimit && !modulesLimit.canAddUnlimited && modulesLimit.percentage >= 100;
+    }
+    return appsLimit && !appsLimit.canAddUnlimited && appsLimit.percentage >= 100;
+  }, [activeTab, appsLimit, modulesLimit]);
+
+  // Get the current limit based on active tab
+  const currentLimit = activeTab === 'modules' ? modulesLimit : appsLimit;
 
   // Open dialog automatically when limit is reached on page load
   useEffect(() => {
@@ -93,15 +121,6 @@ function AppsPageAdapter({
   const handleOpenDialog = React.useCallback(() => {
     setDialogOpen(true);
   }, []);
-
-  const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
-    initialTab: appType === 'module' ? 'modules' : 'apps',
-    loadingStates: {
-      apps: appsIsLoading,
-      modules: modulesData.isLoading,
-      folders: foldersLoading,
-    },
-  });
 
   useEffect(() => {
     if (activeTab === 'modules') {
@@ -145,7 +164,7 @@ function AppsPageAdapter({
   );
 
   const {
-    table: finalTable,
+    table: appsTable,
     isEmpty: appsEmpty,
     error: adapterError,
   } = useResourcePageAdapter({
@@ -194,11 +213,12 @@ function AppsPageAdapter({
     },
   ];
 
-  // Upgrade banner component
+  // Upgrade banner component (shows for both apps and modules)
   const upgradeBanner = useMemo(() => {
     if (!isLimitReached) return null;
 
-    const currentCount = appsLimit?.current || 0;
+    const currentCount = currentLimit?.current || 0;
+    const resourceType = activeTab === 'modules' ? 'modules' : 'apps';
 
     return (
       <div
@@ -209,7 +229,7 @@ function AppsPageAdapter({
         }}
       >
         <span className="tw-font-title-default tw-text-text-default">
-          {currentCount} apps built! Upgrade for more apps.
+          {currentCount} {resourceType} built! Upgrade for more {resourceType}.
         </span>
         <Button variant="outline" size="default" isLucid={true} onClick={handleOpenDialog}>
           <Crown width={14} height={14} className="tw-text-background-premium" />
@@ -217,7 +237,72 @@ function AppsPageAdapter({
         </Button>
       </div>
     );
-  }, [isLimitReached, appsLimit, handleOpenDialog]);
+  }, [isLimitReached, currentLimit, activeTab, handleOpenDialog]);
+
+  // Normal action buttons (when limit not reached)
+  const normalActionButtons = useMemo(() => {
+    if (isLimitReached) return null;
+
+    if (activeTab === 'modules') {
+      // Module creation button
+      if (!onCreateModule) return null;
+      if (canCreateApp && typeof canCreateApp === 'function' && !canCreateApp()) return null;
+
+      return (
+        <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={onCreateModule} className="">
+          Create module
+        </Button>
+      );
+    }
+
+    // Apps tab buttons
+    if (!onCreateBlankApp && !onBuildWithAI) return null;
+    if (canCreateApp && typeof canCreateApp === 'function' && !canCreateApp()) return null;
+
+    return (
+      <>
+        {onCreateBlankApp && (
+          <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={onCreateBlankApp} className="">
+            Create blank app
+          </Button>
+        )}
+        {onBuildWithAI && (
+          <Button variant="outline" size="default" leadingIcon="tooljetai" onClick={onBuildWithAI}>
+            Build with AI assistant
+          </Button>
+        )}
+      </>
+    );
+  }, [isLimitReached, activeTab, onCreateModule, onCreateBlankApp, onBuildWithAI, canCreateApp]);
+
+  const appsMenuItems = [
+    {
+      label: 'Create app from template',
+      onClick: () => console.log('Import template'),
+      icon: 'app-window',
+    },
+    {
+      label: 'Import from device',
+      onClick: () => console.log('Import template'),
+      icon: 'file-down',
+    },
+
+    {
+      label: 'Import app from Git repo',
+      onClick: () => console.log('Import template'),
+      icon: 'folder-git-2',
+    },
+  ];
+
+  const modulesMenuItems = [
+    {
+      label: 'Create from template',
+      onClick: () => console.log('Import template'),
+      icon: 'app-window',
+    },
+  ];
+
+  const contextMenuItems = activeTab === 'apps' ? appsMenuItems : modulesMenuItems;
 
   const handleUpgrade = () => {
     if (onUpgrade) {
@@ -237,12 +322,12 @@ function AppsPageAdapter({
     );
   };
 
-  const appsContent = renderContentView(finalTable, appsIsLoading);
+  const appsContent = renderContentView(appsTable, appsIsLoading);
   const modulesContent = renderContentView(modulesTable, modulesData.isLoading);
 
   // Get current page from table state to ensure PaginationFooter re-renders when it changes
   // Use the correct table based on active tab
-  const activeTable = activeTab === 'modules' ? modulesTable : finalTable;
+  const activeTable = activeTab === 'modules' ? modulesTable : appsTable;
   const currentPage = activeTable.getState().pagination.pageIndex + 1;
 
   const tabs = [
@@ -279,6 +364,9 @@ function AppsPageAdapter({
     },
   ];
 
+  // Determine header content: upgrade banner OR normal buttons
+  const rightSlot = isLimitReached ? upgradeBanner : normalActionButtons;
+
   return (
     <>
       <AppsShellView
@@ -296,7 +384,11 @@ function AppsPageAdapter({
         darkMode={isDarkMode}
         onToggleDarkMode={toggleDarkMode}
         header={
-          <AppsPageHeader title={activeTab === 'apps' ? 'Applications' : 'Modules'} actionButtons={upgradeBanner} />
+          <ResourcePageHeader
+            title={activeTab === 'apps' ? 'Applications' : 'Modules'}
+            rightSlot={rightSlot}
+            contextMenuItems={contextMenuItems}
+          />
         }
         footer={<PaginationFooter table={activeTable} isLoading={isLoading} currentPage={currentPage} />}
       >
@@ -320,8 +412,8 @@ function AppsPageAdapter({
         <UpgradePromptDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          currentCount={appsLimit?.current || 0}
-          maxCount={appsLimit?.total || 0}
+          currentCount={currentLimit?.current || 0}
+          maxCount={currentLimit?.total || 0}
           onUpgrade={handleUpgrade}
           hideBackdrop={true}
         />

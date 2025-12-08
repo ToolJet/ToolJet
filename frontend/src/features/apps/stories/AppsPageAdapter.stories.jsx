@@ -30,6 +30,9 @@ const mockExportApp = (app) => console.log('Export:', app);
 const mockNavigate = (path) => console.log('Navigate:', path);
 const mockWorkspaceChange = (workspace) => console.log('Workspace changed:', workspace);
 const mockOnUpgrade = () => console.log('Upgrade clicked');
+const mockOnCreateBlankApp = () => console.log('Create blank app');
+const mockOnBuildWithAI = () => console.log('Build with AI');
+const mockOnCreateModule = () => console.log('Create module');
 
 // Dummy workspace data for Storybook
 const DUMMY_WORKSPACES = [
@@ -207,6 +210,9 @@ const StoryWithWorkspace = (args) => {
         cloneApp: mockCloneApp,
         exportApp: mockExportApp,
         onUpgrade: args.actions?.onUpgrade || mockOnUpgrade,
+        onCreateBlankApp: args.actions?.onCreateBlankApp || mockOnCreateBlankApp,
+        onBuildWithAI: args.actions?.onBuildWithAI || mockOnBuildWithAI,
+        onCreateModule: args.actions?.onCreateModule || mockOnCreateModule,
       }}
       subscriptionLimits={args.subscriptionLimits || {}}
       permissions={{
@@ -301,6 +307,12 @@ export const ReachedLimit = {
         current: 2,
         total: 2,
         percentage: 100,
+        canAddUnlimited: false,
+      },
+      modulesLimit: {
+        current: 0,
+        total: 0,
+        percentage: 0,
         canAddUnlimited: false,
       },
     },

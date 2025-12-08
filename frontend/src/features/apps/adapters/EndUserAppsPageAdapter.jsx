@@ -7,7 +7,7 @@ import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
 import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { EmptyNoApps } from '../components/EmptyNoApps';
-import { EndUserHeader } from '@/components/ui/blocks/AppsPageHeader/EndUserHeader';
+import { EndUserHeader } from '@/components/ui/blocks/ResourcePageHeader/EndUserHeader';
 import { Button } from '@/components/ui/Button/Button';
 import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
 import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
