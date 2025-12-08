@@ -29,6 +29,7 @@ describe("Instance settings - White labelling", () => {
 
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
+    cy.apiDeleteAllApps();
     cy.apiConfigureSmtp(smtpConfig);
     enableInstanceSignup();
   });
@@ -43,6 +44,7 @@ describe("Instance settings - White labelling", () => {
     openWhiteLabelingSettings();
     verifyWhiteLabelingUI();
   });
+
   it("should verify white label in user invitation email and on onboarding flow", () => {
     const name = fake.firstName;
     const email = fake.email.toLowerCase().replaceAll(/[^a-z0-9@.]/g, "");
@@ -81,6 +83,7 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.logoIdentifier
     );
   });
+
   it("should update white labelling settings and verify across login/signup/password reset", () => {
     const testWorkspace = fake.firstName
       .toLowerCase()
@@ -233,6 +236,7 @@ describe("Instance settings - White labelling", () => {
 
     cy.apiCreateApp(appName).then((app) => {
       cy.openApp().then(() => {
+        cy.apiPublishDraftVersion('v1')
         cy.apiPromoteAppVersion().then(() => {
           cy.apiPromoteAppVersion(Cypress.env("stagingEnvId"));
 
