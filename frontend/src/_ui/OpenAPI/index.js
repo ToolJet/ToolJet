@@ -197,9 +197,10 @@ const OpenApi = ({
         useMenuPortal={false}
         isDisabled={isDisabled}
       />
-      <div className="col-md-12">
-        <label className="form-label text-muted mt-3">Definition</label>
+      <div className="col-md-12" data-cy="definition-section">
+        <label className="form-label text-muted mt-3" data-cy="label-definition">Definition</label>
         <Textarea
+          data-cy="definition-input-field"
           placehlder="Enter spec definition"
           className="form-control"
           rows="14"

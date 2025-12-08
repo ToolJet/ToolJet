@@ -17,6 +17,8 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { setUpSlug } from "Support/utils/apps";
 import { sanitize } from "Support/utils/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+
 
 const data = {};
 
@@ -142,6 +144,10 @@ describe("Workspace constants", () => {
         verifySecretInStaticQueryRaw('[data-cy="list-query-secret_runjs"]');
 
         // Preview App
+        cy.reload();
+
+        cy.wait(3000);
+        cy.waitForElement(commonWidgetSelector.previewButton)
         previewAppAndVerify(3, 16, "Development environment testing");
 
         // Promote and verify through envs if enterprise
@@ -163,6 +169,8 @@ describe("Workspace constants", () => {
         });
 
         // Final housekeeping steps
+        cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+        cy.get(multiEnvSelector.environmentsTag("production")).click();
         cy.get(commonSelectors.releaseButton).click();
         cy.get(commonSelectors.yesButton).click();
         cy.wait(500);
