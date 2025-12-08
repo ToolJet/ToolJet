@@ -182,7 +182,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const connectionType = sourceOptions['connection_type'];
 
   if (connectionType === 'manual') {
-    const format = sourceOptions.connection_format;
+    const format = sourceOptions.connection_format || 'mongodb';
     const database = sourceOptions.database;
     const host = sourceOptions.host;
     const port = sourceOptions.port || undefined;
@@ -312,8 +312,12 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const hasSSLInParams = paramsLower.includes('ssl=') || paramsLower.includes('tls=');
 
   const clientOptions: any = {};
-  if (!hasSSLInParams && typeof sourceOptions.use_ssl === "boolean") {
+ const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
+  if (typeof sourceOptions.use_ssl === "boolean") {
     clientOptions.tls = sourceOptions.use_ssl;
+  } else if (hasSSLInParams) {
+  } else if (isSrvConnection) {
+    clientOptions.tls = true;
   }
   client = new MongoClient(finalUri, clientOptions);
   await client.connect();

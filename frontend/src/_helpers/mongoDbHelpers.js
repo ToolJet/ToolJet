@@ -1,4 +1,4 @@
-export const validateMongoDBConnectionString = (connectionString) => {
+export const validateMongoDBConnectionString = (connectionString, selectedFormat) => {
   if (!connectionString || connectionString.trim() === '') {
     return { valid: false, error: 'Connection string is required' };
   }
@@ -16,9 +16,26 @@ export const validateMongoDBConnectionString = (connectionString) => {
     };
   }
 
-   const protocol = trimmedString.match(/^([a-z+]+):\/\//)?.[1];
-   const isStandard = protocol === "mongodb";
-   const isSrv = protocol === "mongodb+srv";
+  const protocol = trimmedString.match(/^([a-z+]+):\/\//)?.[1];
+  const isStandard = protocol === "mongodb";
+  const isSrv = protocol === "mongodb+srv";
+
+  if (selectedFormat) {
+    const normalizedFormat = selectedFormat === 'mongodb+srv' ? 'mongodb+srv' : 'mongodb';
+    
+    if (normalizedFormat === 'mongodb' && isSrv) {
+      return {
+        valid: false,
+        error: "Connection format mismatch. Selected format is 'Standard (mongodb://)' but connection string uses 'mongodb+srv://'"
+      };
+    }
+    if (normalizedFormat === 'mongodb+srv' && isStandard) {
+      return {
+        valid: false,
+        error: "Connection format mismatch. Selected format is 'SRV (mongodb+srv://)' but connection string uses 'mongodb://'"
+      };
+    }
+  }
 
   const mongodbStandardRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
   const mongodbSrvRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;

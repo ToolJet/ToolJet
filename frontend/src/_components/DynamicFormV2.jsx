@@ -58,8 +58,20 @@ const autoFillTimeoutRef = React.useRef(null);
 const manuallyEditedFieldsRef = React.useRef(new Set());
 const skipNextAutoFillRef = React.useRef(false);
 React.useEffect(() => {
-  const connString = options?.connection_string?.value;
+  const isMongoDBDataSource = 
+    schema['tj:source']?.kind === 'mongodb' || 
+    schema['tj:source']?.name === 'MongoDB';
+  
+  if (!isMongoDBDataSource) {
+    return;
+  }
+
   const connectionType = options?.connection_type?.value;
+    if (connectionType !== 'string') {
+    return;
+  }
+
+  const connString = options?.connection_string?.value;
 
   if (autoFillTimeoutRef.current) {
     clearTimeout(autoFillTimeoutRef.current);
@@ -72,9 +84,6 @@ React.useEffect(() => {
     return;
   }
 
-  if (connectionType !== 'string') {
-    return;
-  }
 
   if (skipNextAutoFillRef.current) {
     skipNextAutoFillRef.current = false;
@@ -97,43 +106,39 @@ React.useEffect(() => {
     lastAutoFilledConnRef.current = connString;
     return;
   }
-
-  if (manuallyEditedFieldsRef.current.size > 0) {
-    lastAutoFilledConnRef.current = connString;
-    return;
-  }
-
   autoFillTimeoutRef.current = setTimeout(() => {
     const parsed = parseMongoDBConnectionString(connString);
     
     if (!parsed) {
       return;
     }
-    
-    if (parsed.connection_format !== undefined) {
-      optionchanged('connection_format', parsed.connection_format, false);
-    }
+    const updatedOptions = { ...options };
+
+    if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
+         updatedOptions.connection_format = { value: parsed.connection_format };
+       }
     if (parsed.host !== undefined) {
-      optionchanged('host', parsed.host, false);
+      updatedOptions.host = { value: parsed.host };
     }
     if (parsed.port !== undefined) {
-      optionchanged('port', parsed.port, false);
+      updatedOptions.port = { value: parsed.port };
     }
     if (parsed.username !== undefined) {
-      optionchanged('username', parsed.username, false);
+      updatedOptions.username = { value: parsed.username };
     }
     if (parsed.password !== undefined) {
-      optionchanged('password', parsed.password, false);
+      updatedOptions.password = { value: parsed.password };
     }
     if (parsed.database !== undefined) {
-      optionchanged('database', parsed.database, false);
+      updatedOptions.database = { value: parsed.database };
     }
     if (parsed.use_ssl !== undefined) {
-      optionchanged('use_ssl', parsed.use_ssl, false);
+      updatedOptions.use_ssl = { value: parsed.use_ssl };
     }
     if (parsed.query_params !== undefined) {
-      optionchanged('query_params', parsed.query_params, false);
+      updatedOptions.query_params = { value: parsed.query_params };
     }
+    optionsChanged(updatedOptions);
 
     lastAutoFilledConnRef.current = connString;
   }, 100);
@@ -143,9 +148,16 @@ React.useEffect(() => {
       clearTimeout(autoFillTimeoutRef.current);
     }
   };
-}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id]);
+}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id,schema]);
 
 React.useEffect(() => {
+  const isMongoDBDataSource = 
+    schema['tj:source']?.kind === 'mongodb' || 
+    schema['tj:source']?.name === 'MongoDB';
+  
+  if (!isMongoDBDataSource) {
+    return;
+  }
   const prevDataSourceId = prevDataSourceIdRef.current;
   
   if (prevDataSourceId !== selectedDataSource?.id) {
@@ -158,7 +170,7 @@ React.useEffect(() => {
       lastAutoFilledConnRef.current = connString;
     }
   }
-}, [selectedDataSource?.id, options?.connection_string?.value]);
+}, [selectedDataSource?.id, options?.connection_string?.value,schema]);
 
   React.useEffect(() => {
     if (isGDS) {
@@ -204,15 +216,19 @@ const validateOptions = React.useCallback(async () => {
 
     const customErrors = { ...errors };
     const isMongoDBDataSource = 
-      schema['tj:source']?.kind === 'mongodb' || 
+      schema['tj:source']?.kind === 'mongodb' ||  
       schema['tj:source']?.name === 'MongoDB';
     
     if (isMongoDBDataSource && options.connection_string?.value) {
-      const validation = validateMongoDBConnectionString(options.connection_string.value);
-      if (!validation.valid) {
-        customErrors.connection_string = validation.error;
-      }
-    }
+        const selectedFormat = options.connection_format?.value;
+        const validation = validateMongoDBConnectionString(
+          options.connection_string.value, 
+          selectedFormat
+        );
+        if (!validation.valid) {
+          customErrors.connection_string = validation.error;
+        }
+     }
 
     if (valid && Object.keys(customErrors).length === 0) {  
       clearValidationMessages();
@@ -438,31 +454,49 @@ const validateOptions = React.useCallback(async () => {
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
-    const handleOptionChange = (key, value, flag = true) => {
-      if (!hasUserInteracted) {
-        setHasUserInteracted(true);
-      }
-      setInteractedFields((prev) => new Set(prev).add(key));
-      
-      const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl'];
-      
-      if (autoFilledFields.includes(key)) {
+const handleOptionChange = (key, value, flag = true) => {
+  if (!hasUserInteracted) {
+    setHasUserInteracted(true);
+  }
+  setInteractedFields((prev) => new Set(prev).add(key));
+  
+  const isMongoDBDataSource = 
+    schema['tj:source']?.kind === 'mongodb' || 
+    schema['tj:source']?.name === 'MongoDB';
+  
+  if (isMongoDBDataSource) {
+    const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl', 'query_params'];
+    
+    if (autoFilledFields.includes(key)) {
+      if (key === 'connection_format') {
         manuallyEditedFieldsRef.current.add(key);
-        optionchanged(key, value, flag);
-        return;
       }
-      
-      if (key === 'connection_string') {
-        if (!value || value.trim() === '') {
-          manuallyEditedFieldsRef.current.clear();
-          lastAutoFilledConnRef.current = '';
+      optionchanged(key, value, flag);
+      return;
+    }
+    
+    if (key === 'connection_string') {
+      if (!value || value.trim() === '') {
+        manuallyEditedFieldsRef.current.clear();
+        lastAutoFilledConnRef.current = '';
+      } else {
+        const currentConnString = lastAutoFilledConnRef.current;
+        if (!currentConnString || 
+            (currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://'))) {
+          manuallyEditedFieldsRef.current.delete('connection_format');
         } else {
+          const connectionFormatWasEdited = manuallyEditedFieldsRef.current.has('connection_format');
           manuallyEditedFieldsRef.current.clear();
+          if (connectionFormatWasEdited) {
+            manuallyEditedFieldsRef.current.add('connection_format');
+          }
         }
       }
-      
-      optionchanged(key, value, flag);
-    };
+    }
+  }
+  
+  optionchanged(key, value, flag);
+};
     switch (widget) {
       case 'password':
       case 'text':
@@ -496,14 +530,14 @@ const validateOptions = React.useCallback(async () => {
           let customValidation = { valid: null, message: '' };
           
           if (isMongoDBDataSource && key === 'connection_string' && currentValue && !skipValidation) {
-            const validation = validateMongoDBConnectionString(currentValue);
-            if (!validation.valid) {
-              customValidation = { valid: false, message: validation.error };
-            } else {
-              customValidation = { valid: true, message: '' };
+              const selectedFormat = options.connection_format?.value;
+              const validation = validateMongoDBConnectionString(currentValue, selectedFormat);
+              if (!validation.valid) {
+                customValidation = { valid: false, message: validation.error };
+              } else {
+                customValidation = { valid: true, message: '' };
+              }
             }
-          }
-  
         const validationStatus = 
           (isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null)
             ? customValidation  
