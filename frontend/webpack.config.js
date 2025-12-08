@@ -37,7 +37,6 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: './src/index.ejs',
     favicon: './assets/images/logo.svg',
-    hash: environment === 'production',
   }),
   new CompressionPlugin({
     test: /\.js(\?.*)?$/i,
@@ -88,6 +87,9 @@ module.exports = {
     minimize: environment === 'production',
     usedExports: true,
     runtimeChunk: 'single',
+    moduleIds: 'deterministic',
+    chunkIds: 'deterministic',
+    realContentHash: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
@@ -241,8 +243,12 @@ module.exports = {
     },
   },
   output: {
+    filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
+    chunkFilename: environment === 'production' ? '[name].[contenthash:8].chunk.js' : '[name].chunk.js',
+    assetModuleFilename: 'assets/[contenthash:8][ext][query]',
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    clean: true,
   },
   externals: {
     // global app config object

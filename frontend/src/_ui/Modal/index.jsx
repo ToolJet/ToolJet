@@ -59,23 +59,33 @@ export default function ModalBase({
               Cancel
             </ButtonSolid>
 
-            <ToolTip
-              show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
-              message={confirmBtnProps?.tooltipMessage}
-            >
-              <div>
-                <ButtonSolid
-                  disabled={isLoading || confirmBtnProps?.disabled}
-                  isLoading={isLoading}
-                  variant={confirmBtnProps?.variant || 'primary'}
-                  onClick={handleConfirm}
-                  {...confirmBtnProps}
-                  data-cy="confirm-button"
-                >
-                  {confirmBtnProps?.title || 'Continue'}
-                </ButtonSolid>
-              </div>
-            </ToolTip>
+            {confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled ? (
+              <ToolTip show={true} message={confirmBtnProps?.tooltipMessage}>
+                <div>
+                  <ButtonSolid
+                    disabled={isLoading || confirmBtnProps?.disabled}
+                    isLoading={isLoading}
+                    variant={confirmBtnProps?.variant || 'primary'}
+                    onClick={handleConfirm}
+                    {...confirmBtnProps}
+                    data-cy="confirm-button"
+                  >
+                    {confirmBtnProps?.title || 'Continue'}
+                  </ButtonSolid>
+                </div>
+              </ToolTip>
+            ) : (
+              <ButtonSolid
+                disabled={isLoading || confirmBtnProps?.disabled}
+                isLoading={isLoading}
+                variant={confirmBtnProps?.variant || 'primary'}
+                onClick={handleConfirm}
+                {...confirmBtnProps}
+                data-cy="confirm-button"
+              >
+                {confirmBtnProps?.title || 'Continue'}
+              </ButtonSolid>
+            )}
           </>
         )}
       </Modal.Footer>
