@@ -81,6 +81,7 @@ export const PagesSidebarNavigation = ({
   //   !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
   //   _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
   const isLicensed = useStore(state => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore((state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled);
 
   const labelStyle = useMemo(
     () => ({
@@ -438,8 +439,8 @@ export const PagesSidebarNavigation = ({
   const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const labelHidden = labelStyle?.label?.hidden;
-  const headerHidden = isLicensed ? hideHeader : false;
-  const logoHidden = isLicensed ? hideLogo : false;
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
