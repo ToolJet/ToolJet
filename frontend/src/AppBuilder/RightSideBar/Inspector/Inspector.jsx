@@ -599,7 +599,7 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'Component permissions are available only in paid plans'}
+                              message={'You don\'t have access to component permissions. Upgrade your plan to access this feature.'}
                               placement="left"
                               show={!hasAppPermissionComponent}
                             >

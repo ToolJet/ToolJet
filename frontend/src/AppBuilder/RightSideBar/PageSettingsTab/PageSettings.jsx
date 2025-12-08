@@ -44,7 +44,8 @@ export const PageSettings = () => {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
-  const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
@@ -99,25 +100,10 @@ export const PageSettings = () => {
     {
       title: 'Pages and menu',
       children: [
-        hasAppPermissionPages ? (
-          <>
-            <AppPermissionsModal
-              modalType="page"
-              resourceId={editingPageId}
-              resourceName={editingPageName}
-              showModal={showPagePermissionModal}
-              toggleModal={togglePagePermissionModal}
-              darkMode={darkMode}
-              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
-              <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
-            </div>
-          </>
+        hasAppPagesAddNavGroupEnabled ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
+            <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
+          </div>
         ) : (
           <SortableList
             Element={PageMenuItem}
@@ -200,6 +186,19 @@ export const PageSettings = () => {
             </Tab>
           </Tabs>
           <DeletePageConfirmationModal darkMode={darkMode} />
+          {appPagePermissionEnabled && <AppPermissionsModal
+            modalType="page"
+            resourceId={editingPageId}
+            resourceName={editingPageName}
+            showModal={showPagePermissionModal}
+            toggleModal={togglePagePermissionModal}
+            darkMode={darkMode}
+            fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+            createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+            updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+            deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+          />}
         </div>
       </div>
     </div>
@@ -290,7 +289,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app header
-          <LicenseTooltip message={"App header can't be hidden on free plans"} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
+          <LicenseTooltip message={"You don\'t have access to hide app header. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
             <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
           </LicenseTooltip>
         </label>
@@ -309,7 +308,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
-          <LicenseTooltip message={"Logo can't be hidden on free plans"} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
+          <LicenseTooltip message={"You don\'t have access to hide logo. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
             <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
           </LicenseTooltip>
         </label>
