@@ -1,15 +1,16 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { appVersionSelectors, importSelectors } from "Selectors/exportImport";
 import { dashboardSelector } from "Selectors/dashboard";
-import { importText } from "Texts/exportImport";
+import { importSelectors } from "Selectors/exportImport";
+import { versionSwitcherSelectors } from "Selectors/version";
+import { renameApp } from "Support/utils/editor/editorHeaderOperations";
 import {
   importAndVerifyApp,
-  verifyImportModalElements,
   setupDataSourceWithConstants,
+  verifyImportModalElements,
 } from "Support/utils/exportImport";
 import { switchVersionAndVerify } from "Support/utils/version";
-import { renameApp } from "Support/utils/editor/editorHeaderOperations";
+import { importText } from "Texts/exportImport";
 
 describe("App Import", () => {
   const TEST_DATA = {
@@ -114,7 +115,7 @@ describe("App Import", () => {
 
     cy.get(commonSelectors.toastCloseButton).click();
     verifyAppNameInEditor("three-versions");
-    cy.get(appVersionSelectors.currentVersionField("v3")).should("be.visible");
+    cy.get(versionSwitcherSelectors.versionName).verifyVisibleElement("have.text", "v3");
 
     renameApp(data.appName);
     verifyAppNameInEditor(data.appName);
@@ -126,13 +127,14 @@ describe("App Import", () => {
     });
 
     cy.visit(`${data.workspaceSlug}/database`);
-    cy.get('[data-cy="student-table"]', { timeout: 20000 }).verifyVisibleElement(
-      "have.text",
-      "student"
-    );
+    cy.get('[data-cy="student-table"]', {
+      timeout: 20000,
+    }).verifyVisibleElement("have.text", "student");
 
     cy.visit(`${data.workspaceSlug}/data-sources`);
-    cy.get('[data-cy="postgresql-button"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="postgresql-button"]', { timeout: 20000 }).should(
+      "be.visible"
+    );
     setupCommunityOrEnterpriseDataSource();
 
     cy.wait("@importApp").then((interception) => {

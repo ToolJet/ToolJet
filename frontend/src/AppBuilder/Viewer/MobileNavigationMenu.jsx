@@ -34,9 +34,10 @@ const MobileNavigationMenu = ({
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  // const isLicensed =
+  //   !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+  //   _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const isLicensed = useStore(state => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
@@ -45,6 +46,8 @@ const MobileNavigationMenu = ({
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
   const pagesTree = useMemo(() => (isLicensed ? buildTree(pages) : pages), [isLicensed, pages]);
+
+  console.log('pagesTree->', pagesTree, pages);
 
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
