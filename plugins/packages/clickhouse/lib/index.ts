@@ -13,9 +13,9 @@ export default class Click implements QueryService {
     try {
       switch (operation) {
         case 'sql': {
-          const isSelectQuery = this.isSelectQuery(query);
+          const isDRLQuery = this.isDRLQuery(query);
           
-          if (isSelectQuery) {
+          if (isDRLQuery) {
             const format = 'JSONEachRow';
             const resultSet = await clickhouseClient.query({
               query,
@@ -43,7 +43,7 @@ export default class Click implements QueryService {
             columns: fields,
             format: 'JSONEachRow'
           });
-          result = { message: 'Data inserted successfully' };
+          result = { r:1 };
           break;
         }
       }
@@ -93,23 +93,31 @@ export default class Click implements QueryService {
     return JSON5.parse(json);
   }
 
-  private isSelectQuery(query: string): boolean {
+  private isDRLQuery(query: string): boolean {
     try {
       const parser = new Parser();
-      const trimmedQuery = query.trim();
-      const upperQuery = trimmedQuery.toUpperCase();
-      if (upperQuery.startsWith('SELECT') || upperQuery.startsWith('WITH')) {
-        return true;
-      }
-      
-      
-      const parsedSQL = parser.astify(trimmedQuery);
-      const ast = Array.isArray(parsedSQL) ? parsedSQL[0] : parsedSQL;
-      
-      return ast && ast.type === 'select';
-    } catch (error) {
-      const upperQuery = query.trim().toUpperCase();
-      return upperQuery.startsWith('SELECT') || upperQuery.startsWith('WITH');
+      const trimmed = query.trim();
+
+      const parsed = parser.astify(trimmed);
+      const ast = Array.isArray(parsed) ? parsed[0] : parsed;
+
+      if (!ast || !ast.type) return false;
+
+      // DRL types
+      const drlTypes = ['select', 'show', 'describe', 'desc', 'exists'];
+
+      return drlTypes.includes(ast.type.toLowerCase());
+    } catch (e) {
+      // Fallback for simple queries without AST support
+      const q = query.trim().toUpperCase();
+      return (
+        q.startsWith('SELECT') ||
+        q.startsWith('SHOW') ||
+        q.startsWith('DESCRIBE') ||
+        q.startsWith('DESC') ||
+        q.startsWith('EXISTS')
+      );
     }
   }
+
 }
