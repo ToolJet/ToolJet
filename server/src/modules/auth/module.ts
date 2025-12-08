@@ -36,6 +36,7 @@ export class AuthModule extends SubModule {
       LdapService,
       WebsiteAuthController,
       WebsiteAuthService,
+      WebsiteOtpController,
     } = await this.getProviders(configs, 'auth', [
       'controller',
       'service',
@@ -49,6 +50,7 @@ export class AuthModule extends SubModule {
       'oauth/util-services/ldap.service',
       'website/controller',
       'website/service',
+      'website/otp-controller',
     ]);
 
     return {
@@ -66,7 +68,7 @@ export class AuthModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
       ],
-      controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController] : [],
+      controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController, WebsiteOtpController] : [],
       providers: [
         AuthService,
         UserRepository,
