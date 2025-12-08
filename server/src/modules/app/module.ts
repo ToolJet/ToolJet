@@ -180,26 +180,24 @@ export class AppModule implements OnModuleInit {
     console.log(`Version: ${globalThis.TOOLJET_VERSION}`);
     console.log(`Initializing server modules 📡 `);
 
-    if (!process.env.WORKER) {
-      const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
-      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
-      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
+    const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
+    const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+    const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
 
-      if (isSQLModeDisabled()) {
-        await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
-          user: tooljtDbUser,
-          enableAggregates: true,
-          statementTimeoutInSecs: statementTimeoutInSecs,
-        });
-      } else {
-        await reconfigurePostgrest(this.tooljetDbManager, {
-          user: tooljtDbUser,
-          enableAggregates: true,
-          statementTimeoutInSecs: statementTimeoutInSecs,
-        });
-      }
-
-      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    if (isSQLModeDisabled()) {
+      await reconfigurePostgrestWithoutSchemaSync(this.tooljetDbManager, {
+        user: tooljtDbUser,
+        enableAggregates: true,
+        statementTimeoutInSecs: statementTimeoutInSecs,
+      });
+    } else {
+      await reconfigurePostgrest(this.tooljetDbManager, {
+        user: tooljtDbUser,
+        enableAggregates: true,
+        statementTimeoutInSecs: statementTimeoutInSecs,
+      });
     }
+
+    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
   }
 }

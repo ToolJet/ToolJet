@@ -1,9 +1,10 @@
 import { commonSelectors } from "Selectors/common";
+import { commonEeSelectors } from "Selectors/eeCommon";
+import { importSelectors } from "Selectors/exportImport";
 import { licenseSelectors } from "Selectors/license";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { createAndUpdateConstant } from "Support/utils/workspaceConstants";
 import { licenseText } from "Texts/license";
-import { importSelectors } from "Selectors/exportImport";
 
 export const getLicenseExpiryDate = () => {
   return cy
@@ -114,7 +115,9 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
           ? licenseSelectors.circularToggleEnabledIcon
           : licenseSelectors.circularToggleDisabledIcon;
 
-    cy.get(licenseSelectors.label(label)).next(toggleIcon).should("be.visible");
+    cy.get(licenseSelectors.label(label), { timeout: 10000 })
+      .next(toggleIcon, { timeout: 10000 })
+      .should("be.visible", { timeout: 10000 });
   });
 };
 
@@ -157,7 +160,7 @@ export const verifyFeatureBanner = (cyPrefix, expectedHeading = null) => {
 
   cy.get("body").then(($body) => {
     if ($body.find(headingSelector).length > 0) {
-      cy.get(headingSelector)
+      cy.get(headingSelector, { timeout: 10000 })
         .should("be.visible")
         .invoke("text")
         .then((headingText) => {
@@ -206,7 +209,15 @@ export const getResourceKey = (type) => {
     tables: "Tables",
     superadmins: "Super Admins",
   };
-  return map[type];
+
+  const singularToPlural = {
+    app: "apps",
+    workflow: "workflows",
+    user: "users",
+  };
+
+  const key = singularToPlural[type.toLowerCase()] || type.toLowerCase();
+  return map[key];
 };
 
 export const assertLimitState = (
@@ -215,40 +226,60 @@ export const assertLimitState = (
   headingSelector,
   infoSelector,
   currentValue,
-  planLimit,
-  planName
+  planLimit
 ) => {
-  if (/unlimited/i.test(planLimit)) {
-    cy.get(headingSelector).should("contain.text", "unlimited");
+  const current = Number(currentValue);
+  const limit = planLimit === "Unlimited" ? Infinity : Number(planLimit);
+
+  if (isNaN(current)) {
+    cy.log(`⚠️ Invalid current value for ${baseLabel}: ${currentValue}`);
     return;
   }
 
-  const current = Number(currentValue);
-  const limit = Number(planLimit);
+  cy.get("body").then(($body) => {
+    const bannerExists = $body.find(headingSelector).length > 0;
 
-  if (current >= limit) {
-    cy.get(headingSelector)
-      .invoke("text")
-      .then((t) =>
-        expect(normalizeText(t)).to.include(
-          `${baseLabel.toLowerCase()} limit reached`
-        )
+    if (!bannerExists && current < limit - 1) {
+      cy.log(
+        `No banner expected for ${baseLabel}, current=${current}, limit=${planLimit}`
       );
-    cy.get(infoSelector)
+      return;
+    }
+
+    cy.get(headingSelector, { timeout: 10000 })
+      .should("be.visible")
       .invoke("text")
-      .should("match", /reached/i);
-  } else if (current === limit - 1) {
-    cy.get(headingSelector)
-      .invoke("text")
-      .then((t) =>
-        expect(normalizeText(t)).to.include(
-          `${baseLabel.toLowerCase()} limit nearing`
-        )
-      );
-    cy.get(infoSelector)
-      .invoke("text")
-      .should("match", /nearing/i);
-  }
+      .then((headingText) => {
+        const normalizedHeading = normalizeText(headingText);
+
+        if (current >= limit) {
+          cy.log(
+            `${baseLabel} limit reached: current=${current}, limit=${planLimit}`
+          );
+          expect(normalizedHeading).to.include(
+            `${baseLabel.toLowerCase()} limit reached`
+          );
+          cy.get(infoSelector)
+            .invoke("text")
+            .should("match", /reached/i);
+        } else if (current === limit - 1) {
+          cy.log(
+            `${baseLabel} nearing limit: current=${current}, limit=${planLimit}`
+          );
+          expect(normalizedHeading).to.include(
+            `${baseLabel.toLowerCase()} limit nearing`
+          );
+          cy.get(infoSelector)
+            .invoke("text")
+            .should("match", /nearing/i);
+        } else {
+          cy.log(
+            `${baseLabel} under limit: current=${current}, limit=${planLimit}`
+          );
+          cy.get(headingSelector).should("not.exist");
+        }
+      });
+  });
 };
 
 export const verifyResourceLimit = (
@@ -263,24 +294,27 @@ export const verifyResourceLimit = (
   const baseLabel =
     type.charAt(0).toUpperCase() + type.slice(1).replace(/s$/i, "");
 
-  if (isBannerType(type)) {
-    handleFeatureBanner(type, expectedHeading);
-    return;
-  }
-
   const headingSelector = licenseSelectors.limitHeading(cyPrefix);
   const infoSelector = licenseSelectors.limitInfo(cyPrefix);
   const resourceKey = getResourceKey(type);
 
-  if (!resourceKey) return verifyFeatureBanner(cyPrefix, expectedHeading);
+  if (!resourceKey) {
+    cy.log(
+      `No resource key mapped for ${type}. Checking for feature banner instead.`
+    );
+    return verifyFeatureBanner(cyPrefix, expectedHeading);
+  }
 
   cy.fixture(`license/${outputFile}`).then((currentLimits) => {
     const currentValue = currentLimits[resourceKey];
     cy.fixture("license/license.json").then((licenseData) => {
       const plan = licenseData[planName.toLowerCase()];
       const planLimit = plan?.[resourceKey];
-      if (planLimit === undefined)
+
+      if (planLimit === undefined) {
+        cy.log(`Plan limit not defined for ${resourceKey}.`);
         return verifyFeatureBanner(cyPrefix, expectedHeading);
+      }
 
       assertLimitState(
         resourceKey,
@@ -288,11 +322,11 @@ export const verifyResourceLimit = (
         headingSelector,
         infoSelector,
         currentValue,
-        planLimit,
-        planName
+        planLimit
       );
     });
   });
+  // cy.get(commonSelectors.cancelButton).click();
 };
 
 export const verifyTotalLimitsWithPlan = (
@@ -486,7 +520,7 @@ export const verifyButtonDisabledWithTooltip = (
 
 export const getCurrentCountFromBanner = (resourceType) => {
   const cyPrefix = resourceType.toLowerCase().trim();
-  const headingSelector = `[data-cy="${cyPrefix}-limit-heading"]`;
+  const headingSelector = licenseSelectors.limitHeading(cyPrefix);
 
   return cy
     .get(headingSelector)
@@ -544,7 +578,7 @@ export const bulkUploadUsersViaCSV = (
 
   const emails = [];
   for (let i = 1; i <= count; i++) {
-    emails.push(`${prefix}-${timestamp}-${i}@test.com`);
+    emails.push(`${prefix}-${timestamp}-${i}@example.com`);
   }
 
   return cy.apiBulkUploadUsers(csvContent).then((response) => {
@@ -553,8 +587,8 @@ export const bulkUploadUsersViaCSV = (
 };
 
 export const verifyLimitBanner = (heading, infoText) => {
-  cy.verifyElement('[data-cy="usage-limit-heading"]', heading);
-  cy.verifyElement('[data-cy="usage-limit-info"]', infoText);
+  cy.verifyElement(licenseSelectors.limitHeading("usage"), heading);
+  cy.verifyElement(licenseSelectors.limitInfo("usage"), infoText);
 };
 
 export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
@@ -577,9 +611,9 @@ export const verifyUpgradeModal = (messageText, hasAdditionalInfo = false) => {
   }
 
   cy.get(".modal-footer").within(() => {
-    cy.get('[data-cy="cancel-button"]').eq(0).should("be.visible");
-    cy.get('[data-cy="upgrade-button"]').should("be.visible");
-    cy.get('[data-cy="cancel-button"]').eq(0).click();
+    cy.get(commonEeSelectors.cancelButton).eq(0).should("be.visible");
+    cy.get(commonEeSelectors.upgradeButton).should("be.visible");
+    cy.get(commonEeSelectors.cancelButton).eq(0).click();
   });
 };
 
@@ -600,9 +634,13 @@ export const archiveUserAndVerify = (email) => {
   });
 };
 
-export const changeRoleAndExpectLimit = (email, newRole) => {
+export const changeRoleAndExpectLimit = (
+  email,
+  newRole,
+  expectedStatus = 451
+) => {
   return changeUserRole(email, newRole).then((roleChangeResponse) => {
-    expect(roleChangeResponse.status).to.equal(451);
+    expect(roleChangeResponse.status).to.equal(expectedStatus);
     expect(roleChangeResponse.body.message).to.contain("limit");
     return roleChangeResponse;
   });

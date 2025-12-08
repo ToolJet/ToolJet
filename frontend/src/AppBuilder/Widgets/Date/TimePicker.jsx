@@ -52,12 +52,13 @@ export const TimePicker = ({
     selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : 'Select time'
   );
 
-  const setInputValue = (date, format) => {
+  const setInputValue = (date, format, skipFireEvent = false) => {
     const timestamp = getUnixTime(date, format ? format : timeFormat);
     setSelectedTimestamp(timestamp);
     setExposedVariables({
       value: timestamp ? getFormattedSelectTimestamp(timestamp, timeFormat) : null,
     });
+    if (skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -88,7 +89,7 @@ export const TimePicker = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue);
+    setInputValue(defaultValue, null, true);
   }, [defaultValue, timeFormat]);
 
   useEffect(() => {
