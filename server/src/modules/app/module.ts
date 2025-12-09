@@ -67,6 +67,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
+import { SupportModule } from '@ee/support/module';
 
 export class AppModule implements OnModuleInit {
   constructor(
@@ -152,6 +153,11 @@ export class AppModule implements OnModuleInit {
           }),
         })
       );
+    }
+
+    // Add Support module for EE editions
+    if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+      conditionalImports.push(SupportModule);
     }
 
     if (process.env.ENABLE_METRICS === 'true') {

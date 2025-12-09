@@ -16,6 +16,8 @@ import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import * as pino from 'pino';
+import { getLogCaptureState } from '@ee/support/services/log-capture.service';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -77,17 +79,52 @@ export class AppModuleLoader {
               return false;
             },
           },
-          transport:
-            process.env.NODE_ENV !== 'production'
-              ? {
+          // Use multistream to support both console (pino-pretty in dev) and optional capture file
+          stream: (() => {
+            const streams = [];
+
+            // Primary console stream
+            if (process.env.NODE_ENV !== 'production') {
+              // Development: use pino-pretty for console
+              streams.push({
+                level: 'debug',
+                stream: pino.transport({
                   target: 'pino-pretty',
                   options: {
                     colorize: true,
                     levelFirst: true,
                     translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
                   },
+                }),
+              });
+            } else {
+              // Production: raw JSON to stdout
+              streams.push({
+                level: 'info',
+                stream: process.stdout,
+              });
+            }
+
+            // Capture stream - conditionally writes when capture is active
+            // We use a custom writable that checks the global state
+            const captureStream = new (require('stream').Writable)({
+              write(chunk, encoding, callback) {
+                const captureState = getLogCaptureState();
+                if (captureState.captureMode && captureState.captureDestination) {
+                  captureState.captureDestination.write(chunk, encoding, callback);
+                } else {
+                  callback();
                 }
-              : undefined,
+              },
+            });
+
+            streams.push({
+              level: 'trace', // Capture everything
+              stream: captureStream,
+            });
+
+            return pino.multistream(streams);
+          })(),
           redact: {
             paths: [
               'req.headers.authorization',
