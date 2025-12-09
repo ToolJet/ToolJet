@@ -11,15 +11,26 @@
         align-items: center;
         justify-content: center;
         flex-direction: row;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: transparent;
+            transition: background 0.15s ease;
+        }
     }
 
     &:not(.no-hover) {
-        button:hover {
-            background: var(--interactive-hover) !important;
+        button:hover::after {
+            background: var(--interactive-hover);
         }
 
-        button.badge:active {
-            background: var(--interactive-selected) !important;
+        button.badge:active::after {
+            background: var(--interactive-selected);
+        }
     }
-  }
 }
