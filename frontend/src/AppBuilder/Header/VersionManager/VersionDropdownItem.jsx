@@ -39,12 +39,13 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-    developmentVersions.find((v) => v.id === version.parentVersionId)
+      developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
+  const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
 
   // Check if metadata text is overflowing
   useEffect(() => {
@@ -241,7 +242,12 @@ const VersionDropdownItem = ({
 
             {/* Action buttons */}
             {showActions && (
-              <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
+              <div
+                className="d-flex align-items-center"
+                style={{ gap: '4px', flexShrink: 0 }}
+                onMouseEnter={() => setIsHoveringActionButtons(true)}
+                onMouseLeave={() => setIsHoveringActionButtons(false)}
+              >
                 {/* Promote button - shown for versions that can be promoted */}
                 {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
@@ -308,8 +314,8 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata
-  if (showMetadataTooltip && tooltipContent) {
+  // Wrap with tooltip if there's overflow metadata and not hovering action buttons
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons) {
     return (
       <ToolTip
         message={tooltipContent}
