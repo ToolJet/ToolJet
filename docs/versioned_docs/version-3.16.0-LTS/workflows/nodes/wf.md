@@ -22,15 +22,70 @@ The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECO
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/example.png" alt="IF Else Node Example" />
 
-### Example - Notification System
-Imagine an enterprise with thousands of workflows that need to notify a concerned person about an incident. Instead of repeating the same steps, a centralised notification workflow can be built.
+### Example 1 - Reusable Logging Workflow
+This example shows how you can centralise common tasks like logging, into a reusable workflow that other workflows can call.  
+Consider a centralised workflow that inserts event logs in a database. So any workflow that performs a critical task inserts a log.
 
-Here's a quick overview of the centralised notification workflow -
+**Child Workflow**  
+Here's an overview of the child workflow (logger):
+<img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/sneakPeakChild.png" alt="Child Workflow Sneak Peek" />
+For this example, the data that the child workflow receives is in the following format:
+```js
+{
+  "logged_by": "Authentication System",
+  "message": "New user created"
+}
+```
+The child workflow receives the data and performs an insert operation to the database and returns a response based on the success of the insert operation.
+
+**Result (Child Workflow):**
+<img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/childWFResult.png" alt="Child Workflow Result" />
+
+**Parent Workflow**  
+We'll create a new parent workflow to integrate the child workflow.
+This workflow:
+- Adds an employee to the company database.
+- Sends a welcome email to the employee.
+- Adds a failure/success log.
+
+Here's an overview of the workflow:
+<img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/sneakPeekParent.png" alt="Parent Workflow Sneak Peek" />
+
+For this example, the data that the parent workflow receives is in the following format:
+```js
+{
+  "email": "employee@org.com",
+  "name": "Employee",
+  "phone_number": "+1111111111"
+}
+```
+**Step - 1 Create a DB Node to insert the data to the DB named `addEmployee`.**  
+**Step - 2 Branch the `addEmployee` node.**  
+Click the branch icon to branch the `addEmployee` node. From the green port, create an SMTP Node to send a success mail to the employee named `mailTheEmployee`.  
+From the red port, create a workflow node and name it `logFailure`.  
+**Step - 3 From the `mailTheEmployee` node, create a workflow node and name it `logSuccess`.**  
+**Step - 4 Configure the `logSuccess` and `logFailure` nodes.**
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/logFailure.png" alt="Log Failure" />
+<img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/logSuccess.png" alt="Log Success" />
+
+**Result**  
+Both success and failure paths create a log entry, ensuring that the parent workflow’s actions are traceable.
+
+### Example 2 - Notification System
+Often, different workflows need to alert the right person when an incident occurs. To avoid repeating the same notification steps in every workflow, we can create one shared workflow for sending notifications.
+
+In simple terms:
+- The parent workflow deletes an S3 object and then calls the child workflow.
+- The child workflow sends notifications.
+- The parent workflow checks if the notification succeeded.
+
+**Child workflow**  
+Here's an overview of the child workflow which acts as a central notification system:
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/centralNotifcationSystem.png" alt="Central Notification System" />
 
-Following is the parameter structure for the notification system -
-
+Following is the parameter structure for the child workflow:
 ```js
 {
     "incident": "Payment Failure",
@@ -40,27 +95,30 @@ Following is the parameter structure for the notification system -
 }
 ```
 
-The workflow extracts recipient details from the database, determines the severity level, and triggers the appropriate notification channels.
+The workflow does the following work
+- Extract recipient details from the database. 
+- Extrace the severity level from the parameters
+- Triggers the appropriate notification channels.  
+
 At the end of the workflow, ```Response``` nodes return structured output.
 These values can then be consumed by any parent workflow that triggers this one.
 
-Now that the centralised notification workflow is defined, let’s look at how another workflow can invoke it using the Workflow node.
+**Parent Workflow**  
+Now that the child workflow is defined, let’s look at how another parent workflow can invoke it using the Workflow node.
 
-To integrate the notification system into another workflow, we create a new workflow. Its job is to remove an object from an AWS S3 bucket and then notify the organisation's AWS team.
-
-Here's an overview.
+We are creating a new workflow that removes an object from an AWS S3 bucket and then notify the organisation's AWS team.  
+Here's an overview of the parent workflow:
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/sneakPeek.png" alt="Overview" />
 
-We have configured an AWS S3 Datasource and added a node named ```removeObjectFromAWSS3``` to perform delete operation. We create an outgoing node from ```removeObjectFromAWSS3``` and create a ```Run Workflow``` node and name it ```notificationSystem```.
+We add a node that deletes an object from S3 and name it `removeObjectFromAWSS3`. Then, from this node, we create an outgoing connection to a Run Workflow node named `notificationSystem`.
 
-Here's the configuration for ```notificationSystem``` node.
-
+Here's the configuration for ```notificationSystem``` node. This follow the same format as given in child workflow:
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/notificationSystemNode.png" alt="Notification System node" />
 
 After the child workflow completes, we evaluate its response to determine whether the notification was successful. For this, we use an ```If Condition``` node named ```checkNotificationSuccess```, which checks:
 ```notificationSystem.data.success == true```
 
-After running the workflow, we'll receive an email like this.
+After running the workflow, we'll receive an email like this:
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/successMail.png" alt="Success Mail" />

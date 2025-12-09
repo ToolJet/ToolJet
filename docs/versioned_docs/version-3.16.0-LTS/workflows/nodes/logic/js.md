@@ -30,14 +30,13 @@ return
 
 ## Example 2: Auto Assign Ticket Priority
 
-Let's consider a workflow that automatically assigns a priority tag to a ticket based on the message length.
+Consider a workflow that automatically assigns a priority tag to a ticket based on the message length.
 
-Here's a sneak peek to the workflow.
+Here's an overview of the workflow.
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/sneakPeek.png" alt="Ticket Categoriser Sneak Peek" />
 
-#### Sample Input (for demonstration only)
-
-For this example, let's consider that the data that we get is in the following format.
+**Input**  
+For this example, the data that the workflow receives is in the following format:
 ```js
 {
     "subject": "Login issue",
@@ -46,13 +45,15 @@ For this example, let's consider that the data that we get is in the following f
 }
 ```
 
-#### Create an outgoing ```JavaScript node``` from the trigger node
+**Create an outgoing ```JavaScript node``` from the trigger node.**  
 Add the following code to the node. This code checks for the message length and returns the original parameters along with a priority based on message length.
 
 ```js
 const inputs = startTrigger.params;
 const { message } = inputs;
 const length = message.length;
+
+let priority;
 
 if (length < 20) {
     priority = "low";
@@ -69,7 +70,7 @@ return {
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/categoriseDataCode.png" alt="categoriseData Code" />
 
-#### Output
+**Output**  
 The output will be an object with 2 fields
 - inputs
 - priority
