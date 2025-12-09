@@ -175,3 +175,24 @@ export const parseMongoDBConnectionString = (connectionString) => {
   };
 };
 
+export const detectConnectionStringChange = (oldString, newString) => {
+  if (!oldString || !newString) return null;
+  
+  const oldParsed = parseMongoDBConnectionString(oldString);
+  const newParsed = parseMongoDBConnectionString(newString);
+  
+  if (!oldParsed || !newParsed) return null;
+  
+  const changes = {
+    protocol: oldParsed.connection_format !== newParsed.connection_format,
+    host: oldParsed.host !== newParsed.host,
+    port: oldParsed.port !== newParsed.port,
+    username: oldParsed.username !== newParsed.username,
+    password: oldParsed.password !== newParsed.password,
+    database: oldParsed.database !== newParsed.database,
+    ssl: oldParsed.use_ssl !== newParsed.use_ssl,
+    query: oldParsed.query_params !== newParsed.query_params
+  };
+  
+  return { changes, newParsed };
+};

@@ -15,7 +15,7 @@ import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { validateMongoDBConnectionString , parseMongoDBConnectionString } from '../_helpers/mongoDbHelpers.js'
+import { validateMongoDBConnectionString , parseMongoDBConnectionString , detectConnectionStringChange } from '../_helpers/mongoDbHelpers.js'
 
 
 const DynamicFormV2 = ({
@@ -67,7 +67,7 @@ React.useEffect(() => {
   }
 
   const connectionType = options?.connection_type?.value;
-    if (connectionType !== 'string') {
+  if (connectionType !== 'string') {
     return;
   }
 
@@ -83,7 +83,6 @@ React.useEffect(() => {
     manuallyEditedFieldsRef.current.clear();
     return;
   }
-
 
   if (skipNextAutoFillRef.current) {
     skipNextAutoFillRef.current = false;
@@ -107,39 +106,71 @@ React.useEffect(() => {
     return;
   }
   autoFillTimeoutRef.current = setTimeout(() => {
-    const parsed = parseMongoDBConnectionString(connString);
+    const changeDetection = detectConnectionStringChange(lastAutoFilledConnRef.current, connString);
     
-    if (!parsed) {
+    if (!changeDetection) {
+      const parsed = parseMongoDBConnectionString(connString);
+      if (!parsed) return;
+      
+      const updatedOptions = { ...options };
+      if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
+        updatedOptions.connection_format = { value: parsed.connection_format };
+      }
+      if (parsed.host !== undefined) {
+        updatedOptions.host = { value: parsed.host };
+      }
+      if (parsed.port !== undefined) {
+        updatedOptions.port = { value: parsed.port };
+      }
+      if (parsed.username !== undefined) {
+        updatedOptions.username = { value: parsed.username };
+      }
+      if (parsed.password !== undefined) {
+        updatedOptions.password = { value: parsed.password };
+      }
+      if (parsed.database !== undefined) {
+        updatedOptions.database = { value: parsed.database };
+      }
+      if (parsed.use_ssl !== undefined) {
+        updatedOptions.use_ssl = { value: parsed.use_ssl };
+      }
+      if (parsed.query_params !== undefined) {
+        updatedOptions.query_params = { value: parsed.query_params };
+      }
+      optionsChanged(updatedOptions);
+      lastAutoFilledConnRef.current = connString;
       return;
     }
+
+    const { changes, newParsed } = changeDetection;
     const updatedOptions = { ...options };
 
-    if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
-         updatedOptions.connection_format = { value: parsed.connection_format };
-       }
-    if (parsed.host !== undefined) {
-      updatedOptions.host = { value: parsed.host };
+    if (changes.protocol && !manuallyEditedFieldsRef.current.has('connection_format')) {
+      updatedOptions.connection_format = { value: newParsed.connection_format };
     }
-    if (parsed.port !== undefined) {
-      updatedOptions.port = { value: parsed.port };
+    if (changes.host && !manuallyEditedFieldsRef.current.has('host')) {
+      updatedOptions.host = { value: newParsed.host };
     }
-    if (parsed.username !== undefined) {
-      updatedOptions.username = { value: parsed.username };
+    if (changes.port && !manuallyEditedFieldsRef.current.has('port')) {
+      updatedOptions.port = { value: newParsed.port };
     }
-    if (parsed.password !== undefined) {
-      updatedOptions.password = { value: parsed.password };
+    if (changes.username && !manuallyEditedFieldsRef.current.has('username')) {
+      updatedOptions.username = { value: newParsed.username };
     }
-    if (parsed.database !== undefined) {
-      updatedOptions.database = { value: parsed.database };
+    if (changes.password && !manuallyEditedFieldsRef.current.has('password')) {
+      updatedOptions.password = { value: newParsed.password };
     }
-    if (parsed.use_ssl !== undefined) {
-      updatedOptions.use_ssl = { value: parsed.use_ssl };
+    if (changes.database && !manuallyEditedFieldsRef.current.has('database')) {
+      updatedOptions.database = { value: newParsed.database };
     }
-    if (parsed.query_params !== undefined) {
-      updatedOptions.query_params = { value: parsed.query_params };
+    if (changes.ssl && !manuallyEditedFieldsRef.current.has('use_ssl')) {
+      updatedOptions.use_ssl = { value: newParsed.use_ssl };
     }
-    optionsChanged(updatedOptions);
+    if (changes.query && !manuallyEditedFieldsRef.current.has('query_params')) {
+      updatedOptions.query_params = { value: newParsed.query_params };
+    }
 
+    optionsChanged(updatedOptions);
     lastAutoFilledConnRef.current = connString;
   }, 100);
 
@@ -148,7 +179,7 @@ React.useEffect(() => {
       clearTimeout(autoFillTimeoutRef.current);
     }
   };
-}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id,schema]);
+}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id, schema]);
 
 React.useEffect(() => {
   const isMongoDBDataSource = 
