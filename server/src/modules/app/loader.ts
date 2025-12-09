@@ -138,15 +138,20 @@ export class AppModuleLoader {
             if (process.env.NODE_ENV === 'production') {
               let captureWriteCount = 0;
               let captureSkipCount = 0;
+              let totalLinesWritten = 0;
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
                   const state = globalThis.__tooljet_log_capture_state__;
                   if (state?.captureMode && state?.captureDestination) {
                     captureWriteCount++;
-                    // Log every 100th write to avoid spam
-                    if (captureWriteCount % 100 === 1) {
-                      console.error(`[DEBUG] Captured ${captureWriteCount} logs to file`);
-                    }
+                    // Count lines in this chunk (each log is one line)
+                    const chunkStr = chunk.toString();
+                    const linesInChunk = (chunkStr.match(/\n/g) || []).length;
+                    totalLinesWritten += linesInChunk;
+
+                    // Log every write since we're debugging
+                    console.error(`[DEBUG] Write #${captureWriteCount}: ${linesInChunk} lines (total: ${totalLinesWritten})`);
+
                     // Write to destination but don't pass callback - handle it ourselves
                     try {
                       state.captureDestination.write(chunk, encoding);
