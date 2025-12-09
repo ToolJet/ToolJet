@@ -226,7 +226,12 @@ export const ConfigHandle = ({
             popoverContent={popoverContent}
             popoverContentClassName="dynamic-height-info-popover"
           >
-            <div style={{ cursor: 'pointer' }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <div
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onClick={(e) => e.stopPropagation()}
+            >
               <ToolTip message="Dynamic height enabled" show={hideDynamicHeightInfo} delay={{ show: 500, hide: 50 }}>
                 <VectorSquare
                   size={14}
