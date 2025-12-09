@@ -131,7 +131,12 @@ export class AppModuleLoader {
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
                   const captureState = getGlobalLogCaptureState();
+
+                  // Debug: Log to console that we received data
+                  console.log('[CAPTURE STREAM] Received chunk, captureMode:', captureState.captureMode);
+
                   if (captureState.captureMode && captureState.captureDestination) {
+                    console.log('[CAPTURE STREAM] Writing to destination');
                     captureState.captureDestination.write(chunk, encoding, callback);
                   } else {
                     callback();
@@ -143,6 +148,8 @@ export class AppModuleLoader {
                 level: 'trace', // Capture everything
                 stream: captureStream,
               });
+
+              console.log('[LOADER] Capture stream added to multistream in production mode');
             }
 
             return pino.multistream(streams);
