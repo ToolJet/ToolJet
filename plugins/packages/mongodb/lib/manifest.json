@@ -130,7 +130,7 @@
         }
       },
       "then": {
-        "required": ["connection_string","host"]
+        "required": ["connection_string"]
       }
     }
   ],

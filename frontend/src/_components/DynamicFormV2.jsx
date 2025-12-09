@@ -245,27 +245,39 @@ const validateOptions = React.useCallback(async () => {
     const conditionallyRequiredFields = processAllOfConditions(schema, options);
     setConditionallyRequiredProperties(conditionallyRequiredFields);
 
-    const customErrors = { ...errors };
     const isMongoDBDataSource = 
       schema['tj:source']?.kind === 'mongodb' ||  
       schema['tj:source']?.name === 'MongoDB';
     
-    if (isMongoDBDataSource && options.connection_string?.value) {
-        const selectedFormat = options.connection_format?.value;
-        const validation = validateMongoDBConnectionString(
-          options.connection_string.value, 
-          selectedFormat
-        );
-        if (!validation.valid) {
-          customErrors.connection_string = validation.error;
-        }
-     }
-
-    if (valid && Object.keys(customErrors).length === 0) {  
+    let finalValid = valid;
+    let finalErrors = [...errors];
+    
+    if (isMongoDBDataSource && 
+        options?.connection_type?.value === 'string' && 
+        options.connection_string?.value) {
+      const selectedFormat = options.connection_format?.value;
+      const validation = validateMongoDBConnectionString(
+        options.connection_string.value, 
+        selectedFormat
+      );
+      
+      if (!validation.valid) {
+        finalValid = false;
+        finalErrors.push({
+          dataPath: ".connection_string",
+          keyword: "custom",
+          message: validation.error,
+          params: {},
+          schemaPath: "#/properties/connection_string"
+        });
+      }
+    }
+    
+    if (finalValid) {
       clearValidationMessages();
       clearValidationErrorBanner();
     } else {
-      setValidationMessages(errors, schema, interactedFields);  
+      setValidationMessages(finalErrors, schema, interactedFields);
     }
   } catch (error) {
     console.error('Validation error:', error);
