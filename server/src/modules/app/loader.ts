@@ -48,6 +48,11 @@ export class AppModuleLoader {
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+    // CRITICAL: Initialize global log capture state FIRST, before any streams are created
+    // This ensures the capture stream has a valid state object to reference
+    const globalLogState = getGlobalLogCaptureState();
+    console.log('[LOADER] Pre-initialized global state at module load, captureMode:', globalLogState.captureMode);
+
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
@@ -135,14 +140,15 @@ export class AppModuleLoader {
             if (process.env.NODE_ENV === 'production') {
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
-                  const captureState = getGlobalLogCaptureState();
+                  // Direct access to globalThis to avoid any function call issues
+                  const state = globalThis.__tooljet_log_capture_state__;
 
-                  // Debug: Log to console that we received data
-                  console.log('[CAPTURE STREAM] Received chunk, captureMode:', captureState.captureMode);
+                  // Debug: Show state directly
+                  console.log('[CAPTURE] mode:', state?.captureMode, 'hasState:', !!state, 'hasDest:', !!state?.captureDestination);
 
-                  if (captureState.captureMode && captureState.captureDestination) {
-                    console.log('[CAPTURE STREAM] Writing to destination');
-                    captureState.captureDestination.write(chunk, encoding, callback);
+                  if (state?.captureMode && state?.captureDestination) {
+                    console.log('[CAPTURE] WRITING TO FILE');
+                    state.captureDestination.write(chunk, encoding, callback);
                   } else {
                     callback();
                   }
