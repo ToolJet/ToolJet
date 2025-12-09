@@ -216,6 +216,7 @@
           .header-container {
             background-color: transparent;
             padding: 12px 8px !important;
+            flex-wrap: nowrap !important;
 
             .icon-btn {
               height: 36px !important;
@@ -232,8 +233,7 @@
         }
       }
 
-      .canvas-area {
-        .mobile-page-menu-popup {
+      .mobile-page-menu-popup {
           .mobile-header {
             height: 61px !important; //1px to account for the border bottom
 
@@ -244,6 +244,7 @@
   
               .header-container {
                 padding: 12px 8px !important;
+                flex-wrap: nowrap !important;
 
                 .icon-btn {
                   height: 36px !important;
@@ -390,7 +391,19 @@
             padding: 10px;
             justify-content: center;
           }
-        }
+
+          .page-menu-scroll {
+            scrollbar-color: var(--interactive-hover) transparent !important;
+            scrollbar-width: thin !important;
+        
+            &::-webkit-scrollbar-track {
+                background: transparent !important;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--interactive-hover) !important;
+            }
+          }
       }
     }
 

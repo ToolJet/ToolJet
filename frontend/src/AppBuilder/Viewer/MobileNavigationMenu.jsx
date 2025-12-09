@@ -30,6 +30,9 @@ const MobileNavigationMenu = ({
   const { toggleSidebar } = useSidebar();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const selectedVersion = useStore((state) => state.selectedVersion, shallow);
+  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
   const isLicensed =
     !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
@@ -146,9 +149,11 @@ const MobileNavigationMenu = ({
       variant={'floating'}
       sidebarWidth="290px"
       sheetProps={{
-        container: document.getElementsByClassName('canvas-area')[0],
-        overlayClassName: 'tw-absolute tw-h-[100vh]',
-        className: 'tw-absolute tw-h-[100vh] tw-p-0 mobile-page-menu-popup',
+        container: isMobilePreviewMode
+          ? document.getElementsByClassName('canvas-area')[0]
+          : document.querySelector('.viewer.mobile-view'),
+        overlayClassName: 'tw-absolute tw-h-dvh',
+        className: 'tw-absolute tw-h-dvh tw-p-0 mobile-page-menu-popup',
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"
@@ -193,7 +198,7 @@ const MobileNavigationMenu = ({
       </SidebarContent>
       <SidebarFooter>
         {showDarkModeToggle && (
-          <div className="page-dark-mode-btn-wrapper">
+          <div className="page-dark-mode-btn-wrapper !tw-pb-[calc(env(safe-area-inset-bottom)+10px)]">
             <DarkModeToggle
               switchDarkMode={changeToDarkMode}
               darkMode={darkMode}
