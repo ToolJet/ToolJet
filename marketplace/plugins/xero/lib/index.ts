@@ -4,9 +4,10 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat, QueryResult, } from './types';
-import got, { Headers, OptionsOfTextResponseBody } from 'got';
+import got, { OptionsOfTextResponseBody } from 'got';
 
 export default class Xero implements QueryService {
 
@@ -213,12 +214,12 @@ export default class Xero implements QueryService {
         responseType: 'json'
       });
 
-       const tokenResponse = response.body as { access_token: string; refresh_token: string };
-       
-       return [
-         ['access_token', tokenResponse.access_token],
-         ['refresh_token', tokenResponse.refresh_token],
-       ];
+      const tokenResponse = response.body as { access_token: string; refresh_token: string };
+
+      return [
+        ['access_token', tokenResponse.access_token],
+        ['refresh_token', tokenResponse.refresh_token],
+      ];
     } catch (error: any) {
       let parsed;
       try {
@@ -250,10 +251,10 @@ export default class Xero implements QueryService {
     const queryParams = queryOptions['params']['query'];
     const bodyParams = queryOptions['params']['request'];
 
-    console.log(`------------------------------------>query Options`,queryOptions);
+    // console.log(`------------------------------------>query Options`, queryOptions);
     let baseUrl: string;
 
-    switch (specType.toLowerCase()) { 
+    switch (specType.toLowerCase()) {
       case "accounts":
       case "contacts":
       case "invoices":
@@ -319,7 +320,6 @@ export default class Xero implements QueryService {
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
       requestOptions.headers = {
         ...(requestOptions.headers || {}),
-       // 'Xero-tenant-id': sourceOptions['tenant_id'],
         'Xero-tenant-id': queryOptions?.tenant_id,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -329,19 +329,13 @@ export default class Xero implements QueryService {
         method: operation,
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          //'Xero-tenant-id': sourceOptions['tenant_id'],
           'Xero-tenant-id': queryOptions?.tenant_id,
-           Accept: 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         searchParams: queryParams,
       };
 
-      // if (operation && typeof operation === 'string' && !['get', 'delete'].includes(operation)) {
-      //   if (bodyParams && Object.keys(bodyParams).length > 0) {
-      //     requestOptions['json'] = bodyParams;
-      //   }
-      // }
       if (operation && typeof operation === 'string' && !['get', 'delete'].includes(operation)) {
         if (specType === 'files' && operation === 'post') {
           requestOptions.headers['Content-Type'] = 'multipart/form-data';
@@ -351,10 +345,8 @@ export default class Xero implements QueryService {
         }
       }
     }
+
     try {
-      console.log(`------------------------tenant_id`, queryOptions?.tenant_id)
-      console.log(`------------------------->url[]`,url);
-      console.log(`------------------------->requestOptions[]`,requestOptions);
       const response = await got(url, requestOptions);
       const result = response.body ? JSON.parse(response.body) : 'Query Success';
       return {
@@ -368,18 +360,90 @@ export default class Xero implements QueryService {
       } catch {
         parsed = error?.response?.body || error;
       }
-      const errorMessage = parsed?.Message || parsed?.Title || parsed?.message ||'Xero API request failed';
+      const errorMessage = parsed?.Message || parsed?.Title || parsed?.message || 'Xero API request failed';
       const errorDetails = {
         statusCode: error?.response?.statusCode,
         ErrorNumber: parsed?.ErrorNumber,
-        Type: parsed?.Type ,
+        Type: parsed?.Type,
         Message: parsed?.Message || parsed?.message || parsed?.Detail || parsed,
         Detail: parsed?.Detail,
         code: error?.code,
-        Instance : parsed?.Instance,
+        Instance: parsed?.Instance,
         modelState: parsed?.modelState
       };
       throw new QueryError('Query execution failed', errorMessage, errorDetails);
+    }
+  }
+
+  async invokeMethod(methodName: string, sourceOptions: any, args?: any): Promise<any> {
+    if (methodName === 'getTenants') {
+      return await this.getTenants(sourceOptions);
+    }
+
+    throw new QueryError('Method not found', `Method ${methodName} is not supported for Xero plugin`, {
+      availableMethods: ['getTenants']
+    });
+  }
+
+  private async getTenants(sourceOptions: any): Promise<any> {
+    const accessToken = sourceOptions['access_token'];
+
+    if (!accessToken) {
+      throw new QueryError('Authentication required', 'Xero access token not found. Please authenticate first.', {
+        code: 'MISSING_ACCESS_TOKEN'
+      });
+    }
+
+    try {
+      const response = await got('https://api.xero.com/connections', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const tenants = JSON.parse(response.body);
+
+      return {
+        data: tenants.map((tenant: any) => ({
+          key: tenant.tenantId,
+          value: tenant.tenantId,
+          label: `${tenant.tenantName} (${tenant.tenantType})`,
+          name: tenant.tenantName,
+          type: tenant.tenantType,
+          createdDate: tenant.createdDateUtc,
+          updatedDate: tenant.updatedDateUtc
+        }))
+      };
+    } catch (error: any) {
+      // Handle OAuth unauthorized errors
+      if (error?.response?.statusCode === 401 ||
+        error?.response?.statusCode === 403) {
+        throw new OAuthUnauthorizedClientError(
+          'OAuth token expired or invalid',
+          error.message,
+          error
+        );
+      }
+
+      let parsed;
+      try {
+        parsed = error?.response?.body ? JSON.parse(error.response.body) : error;
+      } catch {
+        parsed = error?.response?.body || error;
+      }
+
+      const errorMessage = parsed?.message || parsed?.error_description || error?.message || 'Failed to fetch tenants';
+      const errorDetails = {
+        statusCode: error?.response?.statusCode,
+        error: parsed?.error,
+        error_description: parsed?.error_description,
+        code: error?.code
+      };
+
+      throw new QueryError('Failed to fetch tenants', errorMessage, errorDetails);
     }
   }
 }
