@@ -346,10 +346,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedEnvironment,
         selectedVersionDef,
       };
-      // _onSuccess(callBackResponse);
+      if (_onSuccess && typeof _onSuccess === 'function') {
+        _onSuccess(callBackResponse);
+      }
     } catch (error) {
       toast.error('Failed to switch environment: ' + error?.message);
-      if (_onFailure) {
+      if (_onFailure && typeof _onFailure === 'function') {
         _onFailure(error);
       }
     }
