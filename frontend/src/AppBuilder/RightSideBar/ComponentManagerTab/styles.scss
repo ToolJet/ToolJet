@@ -83,3 +83,10 @@
 
   
 }
+.custom-component-inspector-multiline {
+  .codehinter-container {
+    .cm-editor {
+      max-height: 400px !important;
+    }
+   }
+}

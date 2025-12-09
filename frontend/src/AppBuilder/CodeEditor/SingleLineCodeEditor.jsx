@@ -14,7 +14,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
@@ -486,8 +486,16 @@ const EditorInput = ({
                       autoCompleteConfig,
                       keymap.of([...customKeyMaps]),
                       customTabKeymap,
+                      tooltips({
+                        parent: document.body,
+                      }),
                     ]
-                  : [javascript({ jsx: lang === 'jsx' })]
+                  : [
+                      javascript({ jsx: lang === 'jsx' }),
+                      tooltips({
+                        parent: document.body,
+                      }),
+                    ]
               }
               onChange={(val) => {
                 setFirstTimeFocus(false);
