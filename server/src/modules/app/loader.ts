@@ -39,7 +39,6 @@ export function getGlobalLogCaptureState(): LogCaptureState {
       captureMode: false,
       captureFilePath: null,
     };
-    console.log('[LOADER] Initialized global log capture state');
   }
   return globalThis.__tooljet_log_capture_state__;
 }
@@ -50,8 +49,7 @@ export class AppModuleLoader {
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
     // CRITICAL: Initialize global log capture state FIRST, before any streams are created
     // This ensures the capture stream has a valid state object to reference
-    const globalLogState = getGlobalLogCaptureState();
-    console.log('[LOADER] Pre-initialized global state at module load, captureMode:', globalLogState.captureMode);
+    getGlobalLogCaptureState();
 
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
@@ -140,14 +138,8 @@ export class AppModuleLoader {
             if (process.env.NODE_ENV === 'production') {
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
-                  // Direct access to globalThis to avoid any function call issues
                   const state = globalThis.__tooljet_log_capture_state__;
-
-                  // Debug: Show state directly
-                  console.log('[CAPTURE] mode:', state?.captureMode, 'hasState:', !!state, 'hasDest:', !!state?.captureDestination);
-
                   if (state?.captureMode && state?.captureDestination) {
-                    console.log('[CAPTURE] WRITING TO FILE');
                     state.captureDestination.write(chunk, encoding, callback);
                   } else {
                     callback();
@@ -159,8 +151,6 @@ export class AppModuleLoader {
                 level: 'trace', // Capture everything
                 stream: captureStream,
               });
-
-              console.log('[LOADER] Capture stream added to multistream in production mode');
             }
 
             return pino.multistream(streams);
