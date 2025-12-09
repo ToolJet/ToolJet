@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Smile } from 'lucide-react';
-import { AppCard } from './AppCard';
+import { ResourceCard } from '@/components/ui/blocks/ResourceCard/ResourceCard';
 import { ResourceGrid } from '@/components/ui/blocks/ResourceGrid/ResourceGrid';
 
 // Note: AppsGrid is a thin wrapper that provides app-specific formatting logic.
@@ -25,14 +25,14 @@ const formatTimeAgo = (dateString) => {
 
 // Color variants for app icons (matching Figma design)
 const iconColors = [
-  'tw-bg-blue-500',
-  'tw-bg-green-500',
-  'tw-bg-purple-500',
-  'tw-bg-orange-500',
-  'tw-bg-pink-500',
-  'tw-bg-yellow-500',
-  'tw-bg-indigo-500',
-  'tw-bg-red-500',
+  'tw-text-blue-500',
+  'tw-text-green-500',
+  'tw-text-purple-500',
+  'tw-text-orange-500',
+  'tw-text-pink-500',
+  'tw-text-yellow-500',
+  'tw-text-indigo-500',
+  'tw-text-red-500',
 ];
 
 export const AppsGrid = ({ table, actions, perms, canDelete }) => {
@@ -44,11 +44,11 @@ export const AppsGrid = ({ table, actions, perms, canDelete }) => {
     const iconColor = iconColors[index % iconColors.length];
 
     return (
-      <AppCard
+      <ResourceCard
         key={app.id}
         icon={
-          <div className={`tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center ${iconColor}`}>
-            <Smile className="tw-w-3 tw-h-3 tw-text-white" />
+          <div className="tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center">
+            <Smile className={`tw-w-5 tw-h-5 ${iconColor}`} />
           </div>
         }
         title={app.name}

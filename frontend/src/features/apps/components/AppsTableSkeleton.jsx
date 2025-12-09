@@ -15,8 +15,8 @@ export function AppsTableSkeleton({ rowCount = 5 }) {
     <TableBody className="**:data-[slot=table-cell]:first:tw-w-8">
       {rows.map((row) => (
         <TableRow key={row.id} className="tw-group tw-border-b-0">
-          <TableCell>
-            <div className="tw-flex tw-items-center tw-justify-center tw-size-10">
+          <TableCell className="tw-w-10 tw-h-10 tw-pr-0">
+            <div className="tw-flex tw-items-center tw-justify-center tw-h-10 tw-w-full">
               <Skeleton className="tw-size-4" />
             </div>
           </TableCell>

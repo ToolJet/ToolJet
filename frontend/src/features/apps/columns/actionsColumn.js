@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import { MoreVertical, Play, SquarePen } from 'lucide-react';
+import { MoreVertical, Play, SquarePen, AppWindow, PencilRuler, Copy, FolderInput, FileUp, Trash } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,11 +17,12 @@ export const createActionsColumn = (deps = {}) => {
 
   return {
     id: 'actions',
+    size: 200,
     cell: ({ row }) => (
       <div className="group-hover:tw-opacity-100 tw-opacity-0 has-[button[data-state=open]]:tw-opacity-100 tw-flex tw-items-center tw-justify-end tw-gap-2 tw-transition-opacity">
         <Button variant="ghost" size="medium" disabled={!canPlay(row)} onClick={() => actions.play?.(row.original)}>
           <Play className="tw-size-4 tw-text-icon-strong" />
-          Play
+          Launch
         </Button>
         <Button variant="secondary" size="medium" disabled={!canEdit(row)} onClick={() => actions.edit?.(row.original)}>
           <SquarePen className="tw-size-4 tw-text-icon-accent" />
@@ -39,21 +40,29 @@ export const createActionsColumn = (deps = {}) => {
               <span className="tw-sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="tw-w-32">
+          <DropdownMenuContent align="end" className="tw-w-40">
             <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
-              Edit
+              <AppWindow className="tw-text-icon-strong" />Rename app
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => actions.clone?.(row.original)}>Make a copy</DropdownMenuItem>
-            {actions.export && (
-              <DropdownMenuItem onClick={() => actions.export?.(row.original)}>Export</DropdownMenuItem>
-            )}
-            <DropdownMenuItem>Favorite</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+              <PencilRuler className="tw-text-icon-strong" /> Customize icon
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+              <Copy className="tw-text-icon-strong" /> Duplicate app
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+              <FolderInput className="tw-text-icon-strong" /> Move to folder
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+              <FileUp className="tw-text-icon-strong" /> Export app
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
               onClick={() => actions.delete?.(row.original)}
               disabled={canDelete && !canDelete(row.original)}
             >
+              <Trash className="tw-text-icon-strong" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
