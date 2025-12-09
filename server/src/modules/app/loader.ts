@@ -137,6 +137,7 @@ export class AppModuleLoader {
             // In development, we don't need log capture since logs are already visible in console
             if (process.env.NODE_ENV === 'production') {
               let captureWriteCount = 0;
+              let captureSkipCount = 0;
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
                   const state = globalThis.__tooljet_log_capture_state__;
@@ -146,8 +147,19 @@ export class AppModuleLoader {
                     if (captureWriteCount % 100 === 1) {
                       console.error(`[DEBUG] Captured ${captureWriteCount} logs to file`);
                     }
-                    state.captureDestination.write(chunk, encoding, callback);
+                    // Write to destination but don't pass callback - handle it ourselves
+                    try {
+                      state.captureDestination.write(chunk, encoding);
+                      callback(); // Always call callback to keep multistream flowing
+                    } catch (err) {
+                      console.error('[DEBUG] Capture write error:', err);
+                      callback(); // Still call callback even on error
+                    }
                   } else {
+                    captureSkipCount++;
+                    if (captureSkipCount % 500 === 1) {
+                      console.error(`[DEBUG] Skipped ${captureSkipCount} logs (not capturing)`);
+                    }
                     callback();
                   }
                 },
