@@ -346,7 +346,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedEnvironment,
         selectedVersionDef,
       };
-      _onSuccess(callBackResponse);
+      // _onSuccess(callBackResponse);
     } catch (error) {
       toast.error('Failed to switch environment: ' + error?.message);
       if (_onFailure) {
