@@ -81,7 +81,7 @@ const Authentication = ({
     return (
       <div>
         {isFieldAllowed('username', auth_type, oauth_configs) && (
-          <div className="col-md-12">
+          <div className="col-md-12" data-cy="username-section">
             <label className="form-label mt-3" data-cy="label-username">
               Username
             </label>
@@ -97,7 +97,7 @@ const Authentication = ({
           </div>
         )}
         {isFieldAllowed('password', auth_type, oauth_configs) && (
-          <div className="col-md-12">
+          <div className="col-md-12" data-cy="password-section">
             <EncryptedFieldWrapper
               options={options}
               selectedDataSource={selectedDataSource}
@@ -121,8 +121,8 @@ const Authentication = ({
     );
   } else if (auth_type === 'bearer') {
     return (
-      <div>
-        <div className="col-md-12">
+      <div >
+        <div className="col-md-12" data-cy="token-section">
           <EncryptedFieldWrapper
             options={options}
             selectedDataSource={selectedDataSource}

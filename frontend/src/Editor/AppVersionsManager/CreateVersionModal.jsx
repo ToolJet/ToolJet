@@ -23,8 +23,7 @@ export const CreateVersion = ({
   const [versionName, setVersionName] = useState('');
   const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
   const [cancommit, setCommitEnabled] = useState(false);
-  const [orgGit, setOrgGit] = useState(null);
-  const { createNewVersionAction, selectedEnvironment, fetchDevelopmentVersions, developmentVersions } =
+  const { orgGit, createNewVersionAction, selectedEnvironment, fetchDevelopmentVersions, developmentVersions } =
     useEnvironmentsAndVersionsStore(
       (state) => ({
         appVersionsLazyLoaded: state.appVersionsLazyLoaded,
@@ -33,6 +32,8 @@ export const CreateVersion = ({
         createNewVersionAction: state.actions.createNewVersionAction,
         selectedEnvironment: state.selectedEnvironment,
         fetchDevelopmentVersions: state.actions.fetchDevelopmentVersions,
+        orgGit: state?.orgGit,
+        appGit: state?.appGit
       }),
       shallow
     );
@@ -100,11 +101,11 @@ export const CreateVersion = ({
               const body = {
                 gitAppName: orgGit?.git_app_name,
                 versionId: data?.editing_version?.id,
-                lastCommitMessage: `Version ${data?.editing_version?.name} created of app ${orgGit?.git_app_name}`,
+                lastCommitMessage: `Version ${data?.editing_version?.name} created of app ${appGit?.git_app_name}`,
                 gitVersionName: data?.editing_version?.name,
               };
               gitSyncService
-                .gitPush(body, orgGit?.id, data?.editing_version?.id)
+                .gitPush(body, appGit?.id, data?.editing_version?.id)
                 .then(() => {
                   toast.success('Changes commited successfully');
                 })
@@ -128,26 +129,7 @@ export const CreateVersion = ({
       }
     );
   };
-
-  const fetchOrgGit = () => {
-    setFetchingOrgGit(true);
-    gitSyncService
-      .getAppConfig(current_organization_id, editingVersion?.id)
-      .then((data) => {
-        setOrgGit(data?.app_git);
-      })
-      .finally(() => {
-        setFetchingOrgGit(false);
-      });
-  };
-
   const handleCommitEnableChange = (e) => setCommitEnabled(e.target.checked);
-
-  useEffect(() => {
-    if (featureAccess?.gitSync) fetchOrgGit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <AlertDialog
       show={showCreateAppVersion}
