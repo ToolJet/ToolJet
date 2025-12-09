@@ -14,25 +14,25 @@ export default class Click implements QueryService {
       switch (operation) {
         case 'sql': {
           const isDRLQuery = this.isDRLQuery(query);
-          
+
           if (isDRLQuery) {
             const format = 'JSONEachRow';
             const resultSet = await clickhouseClient.query({
               query,
               format: format
             });
-            
+
             let data = await resultSet.json();
-            
+
             result = data;
-            
+
           } else {
             await clickhouseClient.command({
               query
             });
             result = { r:1 }; //for backward compatibility
           }
-          
+
           break;
         }
         case 'insert': {
@@ -56,29 +56,27 @@ export default class Click implements QueryService {
     };
   }
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    
-    try{
-      const clickhouse = await this.getConnection(sourceOptions);
-      if (!clickhouse) {
-        throw new Error('Invalid credentials');
-      }
-      const resultSet =await clickhouse.query({
-          query: 'SHOW DATABASES',
-          format: 'JSON',
-        });
-      await resultSet.json();
-      return {
-        status: 'ok',
-      };
-    }catch (err: any) {
-      throw new QueryError('Connection failed', err.message, {});
+
+
+    const clickhouse = await this.getConnection(sourceOptions);
+    if (!clickhouse) {
+      throw new Error('Invalid credentials');
     }
-    
+    const resultSet = await clickhouse.query({
+      query: 'SHOW DATABASES',
+      format: 'JSON',
+    });
+    await resultSet.json();
+    return {
+      status: 'ok',
+    };
+
+
   }
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
     const { port, host, protocol, database, username, password } = sourceOptions;
     const url = `${protocol}://${host}:${port}`;
-    const clickhouse=createClient({
+    const clickhouse = createClient({
       host: url,
       username: username || 'default',
       password: password || '',
