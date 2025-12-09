@@ -267,10 +267,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
       );
+      let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
+      const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
+      if (versionIndex !== -1 && data?.editing_version) {
+        updatedVersionsArray[versionIndex] = data?.editing_version;
+      }
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
-        versionsPromotedToEnvironment: [data.editing_version],
+        versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
           get().selectedEnvironment,
