@@ -19,24 +19,29 @@ import { SentryModule } from '@sentry/nestjs/setup';
 import * as pino from 'pino';
 
 // Global singleton for log capture state - accessible across modules
-// This MUST be defined here (not imported) to avoid circular dependency and build issues
-class GlobalLogCaptureState {
-  private static instance: GlobalLogCaptureState;
-  captureDestination: any = null;
-  captureMode = false;
-  captureFilePath: string | null = null;
+// Uses globalThis to ensure SAME instance across all modules/imports
+interface LogCaptureState {
+  captureDestination: any;
+  captureMode: boolean;
+  captureFilePath: string | null;
+}
 
-  static getInstance(): GlobalLogCaptureState {
-    if (!GlobalLogCaptureState.instance) {
-      GlobalLogCaptureState.instance = new GlobalLogCaptureState();
-    }
-    return GlobalLogCaptureState.instance;
-  }
+// Attach to globalThis to ensure single instance across entire Node.js process
+declare global {
+  var __tooljet_log_capture_state__: LogCaptureState | undefined;
 }
 
 // Export for use by LogCaptureService
-export function getGlobalLogCaptureState() {
-  return GlobalLogCaptureState.getInstance();
+export function getGlobalLogCaptureState(): LogCaptureState {
+  if (!globalThis.__tooljet_log_capture_state__) {
+    globalThis.__tooljet_log_capture_state__ = {
+      captureDestination: null,
+      captureMode: false,
+      captureFilePath: null,
+    };
+    console.log('[LOADER] Initialized global log capture state');
+  }
+  return globalThis.__tooljet_log_capture_state__;
 }
 
 export class AppModuleLoader {
