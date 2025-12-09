@@ -136,10 +136,16 @@ export class AppModuleLoader {
             // Capture stream - ONLY in production mode
             // In development, we don't need log capture since logs are already visible in console
             if (process.env.NODE_ENV === 'production') {
+              let captureWriteCount = 0;
               const captureStream = new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
                   const state = globalThis.__tooljet_log_capture_state__;
                   if (state?.captureMode && state?.captureDestination) {
+                    captureWriteCount++;
+                    // Log every 100th write to avoid spam
+                    if (captureWriteCount % 100 === 1) {
+                      console.error(`[DEBUG] Captured ${captureWriteCount} logs to file`);
+                    }
                     state.captureDestination.write(chunk, encoding, callback);
                   } else {
                     callback();
