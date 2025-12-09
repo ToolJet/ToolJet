@@ -46,6 +46,7 @@ const VersionDropdownItem = ({
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
   const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   // Check if metadata text is overflowing
   useEffect(() => {
@@ -271,7 +272,13 @@ const VersionDropdownItem = ({
                 )}
 
                 {/* More menu */}
-                <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom-end"
+                  overlay={renderMenu}
+                  rootClose
+                  onToggle={(show) => setIsMoreMenuOpen(show)}
+                >
                   <Button
                     variant="ghost"
                     size="small"
@@ -314,8 +321,8 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata and not hovering action buttons
-  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons) {
+  // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen) {
     return (
       <ToolTip
         message={tooltipContent}
