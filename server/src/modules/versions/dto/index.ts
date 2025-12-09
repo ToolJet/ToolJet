@@ -16,6 +16,9 @@ export class VersionCreateDto {
   @IsUUID()
   @IsOptional()
   environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
 }
 
 export class PromoteVersionDto {
@@ -23,4 +26,14 @@ export class PromoteVersionDto {
   @IsUUID()
   @Transform(({ value }) => sanitizeInput(value))
   currentEnvironmentId: string;
+}
+export class DraftVersionDto {
+  @IsUUID()
+  versionFromId: string;
+
+  @IsUUID()
+  environmentId: string;
+
+  @IsOptional()
+  versionDescription: string;
 }

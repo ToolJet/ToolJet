@@ -14,6 +14,7 @@ const createAndReleaseApp = (appName, appSlug) => {
     cy.apiCreateApp(appName);
     cy.openApp();
     cy.apiAddComponentToApp(appName, "text1");
+    cy.apiPublishDraftVersion('v1')
     cy.apiPromoteAppVersion().then(() => {
         const stagingId = Cypress.env("stagingEnvId");
         cy.apiPromoteAppVersion(stagingId);
