@@ -1,33 +1,39 @@
-import { Component } from "src/entities/component.entity";
-import { processDataInBatches } from "@helpers/migration.helper";
-import { EntityManager, MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class MigrateVisibilityDisabledStatesForIFrame1764763028973
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const batchSize = 100;
-    const entityManager = queryRunner.manager;
+    let hasMoreData = true;
+    let offset = 0;
 
-    await processDataInBatches(
-      entityManager,
-      async (entityManager: EntityManager) => {
-        return await entityManager.find(Component, {
-          where: { type: "Iframe" },
-          order: { createdAt: "ASC" },
-        });
-      },
-      async (entityManager: EntityManager, components: Component[]) => {
-        await this.processUpdates(entityManager, components);
-      },
-      batchSize
-    );
+    while (hasMoreData) {
+      const components = await queryRunner.query(
+        `SELECT id, properties, styles
+         FROM components
+         WHERE type = 'IFrame'
+         ORDER BY "created_at" ASC
+         LIMIT $1 OFFSET $2`,
+        [batchSize, offset]
+      );
+
+      if (components.length === 0) {
+        hasMoreData = false;
+        break;
+      }
+
+      await this.processUpdates(queryRunner, components);
+      offset += batchSize;
+    }
   }
 
-  private async processUpdates(entityManager, components) {
+  private async processUpdates(queryRunner: QueryRunner, components) {
     for (const component of components) {
-      const properties = component.properties;
-      const styles = component.styles;
+      const properties = component.properties
+        ? { ...component.properties }
+        : {};
+      const styles = component.styles ? { ...component.styles } : {};
 
       if (styles.visibility) {
         properties.visibility = styles.visibility;
@@ -39,10 +45,12 @@ export class MigrateVisibilityDisabledStatesForIFrame1764763028973
         delete styles.disabledState;
       }
 
-      await entityManager.update(Component, component.id, {
-        properties,
-        styles,
-      });
+      await queryRunner.query(
+        `UPDATE components
+         SET properties = $1, styles = $2
+         WHERE id = $3`,
+        [JSON.stringify(properties), JSON.stringify(styles), component.id]
+      );
     }
   }
 

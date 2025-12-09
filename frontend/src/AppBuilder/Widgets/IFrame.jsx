@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Spinner from "@/_ui/Spinner";
+import { useBatchedUpdateEffectArray } from "@/_hooks/useBatchedUpdateEffectArray";
 
 export const IFrame = function IFrame({
   width,
@@ -8,87 +9,88 @@ export const IFrame = function IFrame({
   styles,
   dataCy,
   setExposedVariable,
+  setExposedVariables,
 }) {
-  const { source, loadingState, disabledState } = properties;
+  const { source, loadingState, disabledState, visibility } = properties;
   const { boxShadow } = styles;
 
-  const [loading, setLoading] = useState(loadingState);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [disable, setDisable] = useState(disabledState || loadingState);
-
-  useEffect(() => {
-    disable !== disabledState && setDisable(disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    visibility !== properties.visibility &&
-      setVisibility(properties.visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    loading !== loadingState && setLoading(loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(!!loading);
-      setExposedVariable('isLoading', !!loading);
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] =
+    useState({
+      isLoading: loadingState,
+      isDisabled: disabledState,
+      isVisible: visibility,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
+
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
 
   useEffect(() => {
-    setExposedVariable('reload', async function () {
-      this.contentWindow.location.reload();
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const exposedVariables = {
+      isLoading: loadingState,
+      isDisabled: disabledState,
+      visibility: visibility,
+      setLoading: async function (newValue) {
+        setExposedVariable("isLoading", newValue);
+        updateExposedVariablesState("isLoading", newValue);
+      },
+      setDisabled: async function (newValue) {
+        setExposedVariable("isDisabled", newValue);
+        updateExposedVariablesState("isDisabled", newValue);
+      },
+      setVisibility: async function (newValue) {
+        setExposedVariable("visibility", newValue);
+        updateExposedVariablesState("visibility", newValue);
+      },
+      reload: async function () {
+        this.contentWindow.location.reload();
+      },
+    };
+
+    setExposedVariables(exposedVariables);
   }, []);
 
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(!!state);
-      setExposedVariable('isVisible', !!state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(!!disable);
-      setExposedVariable('isDisabled', !!disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', loading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
+  useBatchedUpdateEffectArray([
+    {
+      dep: loadingState,
+      sideEffect: () => {
+        setExposedVariable("isLoading", loadingState);
+        updateExposedVariablesState("isLoading", loadingState);
+      },
+    },
+    {
+      dep: disabledState,
+      sideEffect: () => {
+        setExposedVariable("isDisabled", disabledState);
+        updateExposedVariablesState("isDisabled", disabledState);
+      },
+    },
+    {
+      dep: visibility,
+      sideEffect: () => {
+        setExposedVariable("visibility", visibility);
+        updateExposedVariablesState("visibility", visibility);
+      },
+    },
+  ]);
 
   return (
     <div
       className="tw-h-full"
-      data-disabled={disable}
-      style={{ display: visibility ? '' : 'none', boxShadow }}
+      data-disabled={exposedVariablesTemporaryState.isDisabled}
+      style={{
+        display: exposedVariablesTemporaryState.isVisible ? "" : "none",
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
-      {loading ? (
+      {exposedVariablesTemporaryState.isLoading ? (
         <div
           className="tw-flex tw-items-center tw-justify-center tw-h-full"
-          style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+          style={{ backgroundColor: "var(--cc-surface1-surface)" }}
         >
           <Spinner />
         </div>
