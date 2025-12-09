@@ -173,6 +173,8 @@ export const PhoneInput = (props) => {
     borderLeft: 'none',
   };
 
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
+
   return (
     <>
       <div
@@ -205,6 +207,8 @@ export const PhoneInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
           widthType={widthType}
+          inputId={`component-${id}`}
+          classes={labelClasses}
         />
         <div
           className="d-flex h-100"
@@ -239,10 +243,16 @@ export const PhoneInput = (props) => {
             onChange={onInputValueChange}
             placeholder={placeholder}
             style={computedStyles}
+            id={`component-${id}`}
+            aria-disabled={disabledState}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
             className={`tj-text-input-widget ${
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
-            disabled={disabledState}
             data-ignore-hover={true}
             onBlur={handleBlur}
             onFocus={handleFocus}

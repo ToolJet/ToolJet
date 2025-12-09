@@ -28,6 +28,8 @@ export const Table = memo(
     setExposedVariables,
     adjustComponentPositions,
     currentLayout,
+    currentMode,
+    subContainerIndex,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -40,6 +42,8 @@ export const Table = memo(
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
     const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
     const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+    const tableBodyRef = useRef(null);
+
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
@@ -73,7 +77,12 @@ export const Table = memo(
       ...restOfProperties
     } = properties;
 
-    const firstRowOfTable = !isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : undefined;
+    const data =
+      restOfProperties.dataSourceSelector === 'rawJson' ? restOfProperties.data : restOfProperties.dataSourceSelector;
+
+    const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+
+    const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
@@ -88,11 +97,11 @@ export const Table = memo(
 
     useEffect(() => {
       hasDataChanged.current = true;
-    }, [restOfProperties.data]);
+    }, [data]);
 
     // Create ref for height observation
     const tableRef = useRef(null);
-    const heightChangeValue = useHeightObserver(tableRef, properties.dynamicHeight);
+    const heightChangeValue = useHeightObserver(tableBodyRef, isDynamicHeightEnabled);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -153,21 +162,22 @@ export const Table = memo(
 
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
-      return transformTableData(restOfProperties.data, transformations, getResolvedValue);
+      return transformTableData(data, transformations, getResolvedValue);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getResolvedValue, restOfProperties.data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
     useDynamicHeight({
-      dynamicHeight: properties.dynamicHeight,
+      isDynamicHeightEnabled,
       id: id,
       height,
-      value: heightChangeValue,
+      value: JSON.stringify({ heightChangeValue, tableData }),
       skipAdjustment: loadingState || tableData.length === 0,
       adjustComponentPositions,
       currentLayout,
       width,
-      visibility,
+      visibility: visibility === 'none' ? false : true,
+      subContainerIndex,
     });
 
     return (
@@ -177,7 +187,8 @@ export const Table = memo(
         data-disabled={disabledState}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: properties.dynamicHeight ? '100%' : `${height}px`,
+          height: isDynamicHeightEnabled ? '100%' : `${height}px`,
+          ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
           display: visibility === 'none' ? 'none' : '',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
@@ -202,6 +213,7 @@ export const Table = memo(
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
+          tableBodyRef={tableBodyRef}
         />
       </div>
     );

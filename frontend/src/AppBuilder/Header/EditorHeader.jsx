@@ -2,9 +2,9 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown, AppEnvironments } from '@/modules/Appbuilder/components';
+import { LogoNavDropdown } from '@/modules/Appbuilder/components';
 import HeaderActions from './HeaderActions';
-import { AppVersionsManager } from './AppVersionsManager';
+import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
@@ -96,13 +96,12 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
             {!isUserInZeroToOneFlow && (
               <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
                 <div className="d-flex align-items-center p-0">
-                  <div className="d-flex version-manager-container p-0  align-items-center ">
+                  <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
-                        <AppEnvironments darkMode={darkMode} />
-                        <div className="tw-hidden navbar-seperator" />
-                        <AppVersionsManager darkMode={darkMode} />
-                        <div className="navbar-seperator" />
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}

@@ -437,7 +437,7 @@ export const MultiselectV2 = ({
       padding: '8px 6px 8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'transparent',
+        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       cursor: 'pointer',
@@ -496,8 +496,8 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
-          top={'1px'}
           widthType={widthType}
+          id={`${id}-label`}
         />
         <div
           className="px-0 h-100"
@@ -515,6 +515,14 @@ export const MultiselectV2 = ({
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             styles={customStyles}
+            aria-hidden={!visibility}
+            aria-disabled={isMultiSelectDisabled}
+            aria-busy={isMultiSelectLoading}
+            aria-required={isMandatory}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
             // Only show loading when dynamic options are enabled
             isLoading={isMultiSelectLoading}
             showSearchInput={showSearchInput}

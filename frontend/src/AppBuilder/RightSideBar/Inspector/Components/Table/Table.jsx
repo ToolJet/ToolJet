@@ -247,9 +247,9 @@ class TableComponent extends React.Component {
     const actionRef = { ref: `${action?.name}` };
 
     return (
-      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'} tw-max-w-80`}>
         <Popover.Body
-          className="table-action-popover d-flex flex-column custom-gap-16"
+          className="table-action-popover d-flex flex-column custom-gap-16 tw-w-[19rem]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="field tj-app-input">
@@ -595,17 +595,33 @@ class TableComponent extends React.Component {
     let items = [];
     items.push({
       title: 'Data',
-      children: renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        'data',
-        'properties',
-        currentState,
-        components,
-        darkMode,
-        false
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'dataSourceSelector',
+            'properties',
+            currentState,
+            components,
+            darkMode,
+            false
+          )}
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'data',
+            'properties',
+            currentState,
+            components,
+            darkMode,
+            false
+          )}
+        </>
       ),
     });
 

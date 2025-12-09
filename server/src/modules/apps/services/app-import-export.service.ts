@@ -44,6 +44,7 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
+import { AppVersionStatus } from '@entities/app_version.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -83,7 +84,9 @@ type NewRevampedComponent =
   | 'Steps'
   | 'Statistics'
   | 'StarRating'
-  | 'Tags';
+  | 'Tags'
+  | 'CircularProgressBar'
+  | 'Html';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -115,6 +118,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Statistics',
   'StarRating',
   'Tags',
+  'CircularProgressBar',
+  'Html',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -384,9 +389,7 @@ export class AppImportExportService {
         ? await this.entityManager
             .createQueryBuilder(App, 'app')
             .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', {
-              organizationId: user.organizationId,
-            })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
             .distinct(true)
             .getMany()
         : [];
@@ -668,7 +671,8 @@ export class AppImportExportService {
     externalResourceMappings: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
-    moduleResourceMappings?: Record<string, unknown>
+    moduleResourceMappings?: Record<string, unknown>,
+    createNewVersion?: boolean
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -706,7 +710,8 @@ export class AppImportExportService {
       importedApp,
       importingAppVersions,
       appResourceMappings,
-      isNormalizedAppDefinitionSchema
+      isNormalizedAppDefinitionSchema,
+      createNewVersion
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -1886,7 +1891,8 @@ export class AppImportExportService {
     importedApp: App,
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
-    isNormalizedAppDefinitionSchema: boolean
+    isNormalizedAppDefinitionSchema: boolean,
+    createNewVersion?: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -1909,7 +1915,7 @@ export class AppImportExportService {
 
       let version;
       // this case only happens in the AI flow when app is imported within an existing app
-      if (importedApp.editingVersion) {
+      if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
       } else {
         version = await manager.create(AppVersion, {
@@ -1919,6 +1925,8 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parent_version_id: appVersion?.id || null,
         });
       }
 
@@ -2586,6 +2594,58 @@ function migrateProperties(
       }
     }
 
+    // CircularProgressBar
+    if (componentType === 'CircularProgressBar') {
+      if (!properties.labelType) {
+        properties.labelType = { value: 'custom' };
+      }
+
+      if (!properties.text || !properties.text.value) {
+        properties.text = {
+          ...properties.text,
+          value: '',
+        };
+      }
+
+      if (!styles.completionColor) {
+        styles.completionColor = {
+          ...styles.color,
+        };
+      }
+
+      // When CircularProgressBar was released
+      const backwordCompatibilityCheck = !isVersionGreaterThanOrEqual(tooljetVersion, '3.16.33');
+      if (backwordCompatibilityCheck) {
+        if (styles.textSize) {
+          styles.textSize = {
+            ...styles.textSize,
+            fxActive: true,
+          };
+        }
+
+        if (styles.strokeWidth) {
+          styles.strokeWidth = {
+            ...styles.strokeWidth,
+            fxActive: true,
+          };
+        }
+
+        if (styles.counterClockwise) {
+          styles.counterClockwise = {
+            ...styles.counterClockwise,
+            fxActive: true,
+          };
+        }
+
+        if (styles.circleRatio) {
+          styles.circleRatio = {
+            ...styles.circleRatio,
+            fxActive: true,
+          };
+        }
+      }
+    }
+
     // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
@@ -2720,6 +2780,17 @@ function migrateProperties(
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
       styles.widthType = { value: 'ofField' };
+    }
+  }
+
+  // TODO: Once the Kanban component is revamped, remove this logic and add 'Kanban' to the NewRevampedComponent array.
+  // The migration for Kanban will then be handled automatically along with other revamped components.
+  if (['Kanban'].includes(componentType)) {
+    if (general?.tooltip) {
+      if (properties.tooltip === undefined) {
+        properties.tooltip = general?.tooltip;
+      }
+      delete general?.tooltip;
     }
   }
 

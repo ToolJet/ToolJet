@@ -8,6 +8,11 @@ export const FEATURES: FeaturesConfig = {
       auditLogsKey: 'EXECUTE_WORKFLOW',
       skipAuditLogs: true,
     },
+
+    [FEATURE_KEY.EXECUTE_WORKFLOW_FROM_APP]: {
+      auditLogsKey: 'EXECUTE_WORKFLOW',
+      skipAuditLogs: true,
+    },
     [FEATURE_KEY.WORKFLOW_EXECUTION_STATUS]: {},
     [FEATURE_KEY.WORKFLOW_EXECUTION_DETAILS]: {}, //Basic plan users can access worfklows
     [FEATURE_KEY.LIST_WORKFLOW_EXECUTIONS]: {},
@@ -34,5 +39,12 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.CREATE_WORKFLOW]: {
       auditLogsKey: 'CREATE_WORKFLOW',
     },
+
+    [FEATURE_KEY.NPM_PACKAGES]: {
+      auditLogsKey: 'NPM_PACKAGES',
+    },
+
+    [FEATURE_KEY.TERMINATE_WORKFLOW_EXECUTION]: {},
+    [FEATURE_KEY.WORKFLOW_EXECUTION_STATE]: {},
   },
 };

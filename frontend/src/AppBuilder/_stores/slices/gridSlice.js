@@ -1,6 +1,8 @@
-import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import { isProperNumber } from '../utils';
+import { isTruthyOrZero } from '@/_helpers/appUtils';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
   hoveredComponentForGrid: '',
@@ -11,6 +13,8 @@ const initialState = {
   temporaryLayouts: {},
   draggingComponentId: null,
   resizingComponentId: null,
+  isGroupDragging: false,
+  isGroupResizing: false,
   reorderContainerChildren: {
     containerId: null,
     triggerUpdate: 0,
@@ -37,6 +41,8 @@ export const createGridSlice = (set, get) => ({
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
+  setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
+  setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -107,14 +113,13 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
-  adjustComponentPositions: (componentId, currentLayout = 'desktop', shouldReset = false, isContainer = false) => {
+  adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
     const {
       getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
       toggleCanvasUpdater,
       temporaryLayouts,
-      deleteContainerTemporaryLayouts,
       adjustComponentPositions,
       getResolvedComponent,
       getComponentTypeFromId,
@@ -126,33 +131,57 @@ export const createGridSlice = (set, get) => ({
       // Getting all the components on the current page
       const currentPageComponents = getCurrentPageComponents();
 
+      // This is done in order to modify the component id if the sub container index exists
+      const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
+
+      // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
+      const transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
+
       // If the component is a container, we need to calculate the height of the container
-      let maxHeight = 0;
+      let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
 
-      if (isContainer) {
-        if (componentType === 'Listview') return;
-        let visibility = true;
-        const component = getResolvedComponent(componentId);
-        const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
-        if (componentExposedVisibility === false) visibility = false;
-        else if (component?.properties?.visibility === false || component?.styles?.visibility === false)
-          visibility = false;
-        else visibility = true;
+      // Determine component visibility by checking multiple sources in priority order
+      const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
+      const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
+      const componentDisplay = component?.others?.[displayProperty];
+
+      if (componentType === 'Listview' && doesSubContainerIndexExist) {
+        const rowHeight = component?.properties.rowHeight;
+        containerHeight = rowHeight;
+      }
+
+      // Priority: exposed visibility > component properties > component styles
+      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
+      let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
+
+      // Override visibility if component is set to not display on current layout
+      if (componentDisplay === false) {
+        visibility = false;
+      }
+
+      // If the component is a container, we go to each and every child component and calculate the height of the container
+      if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
+        let contentHeight = 0;
         const element = document.querySelector(`.dynamic-${componentId}`);
+        // If the component is not a dynamic component, we use the height of the component from the layouts
         if (!element) {
-          maxHeight = visibility ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height : 10;
-          // deleteContainerTemporaryLayouts(componentId);
-          // return;
+          contentHeight = visibility
+            ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
+            : HIDDEN_COMPONENT_HEIGHT;
         } else {
+          // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
           if (!visibility) {
-            maxHeight = 10;
+            contentHeight = HIDDEN_COMPONENT_HEIGHT;
           } else {
+            // If the component is a tabs, we need to get the active tab
             let modifiedComponentId = componentId;
             if (componentType === 'Tabs') {
               const activeTab = element?.getAttribute('activetab');
               modifiedComponentId = `${componentId}-${activeTab}`;
             }
+
+            // The normal component layouts
             const componentLayouts = get()
               .getContainerChildrenMapping(modifiedComponentId)
               .reduce((acc, id) => {
@@ -164,16 +193,18 @@ export const createGridSlice = (set, get) => ({
                 };
               }, {});
 
+            // Dynamic height layouts
             const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
+              const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
               return {
                 ...acc,
-                ...(temporaryLayouts[id] && { [id]: temporaryLayouts[id] }),
+                ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
               };
             }, {});
 
             const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
 
-            // Calculate the maximum height of the container
+            // Calculate the height of the container
             let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
               if (!layout) {
                 return max;
@@ -184,12 +215,15 @@ export const createGridSlice = (set, get) => ({
 
             let extraHeight = 0;
 
+            // If the component is a container, we need to get the header height
             if (componentType === 'Container') {
               const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
               const { showHeader, headerHeight } = properties;
               if (showHeader && isProperNumber(headerHeight)) {
-                extraHeight += headerHeight - 10;
+                extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
               }
+
+              // If the component is a form, we need to get the header and footer height
             } else if (componentType === 'Form') {
               const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
               const { component } = getComponentDefinition(modifiedComponentId);
@@ -211,258 +245,185 @@ export const createGridSlice = (set, get) => ({
                 }
                 extraHeight += 20;
               }
+
+              // If the component is a tabs, we add 20px for the bottom
             } else if (componentType === 'Tabs') {
-              extraHeight = 20;
+              extraHeight = 40;
+            } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
+              extraHeight -= 40;
             }
-            if (Object.keys(mergedLayouts).length === 0) {
-              maxHeight = 250;
-            } else {
-              maxHeight = currentMax + 50 + extraHeight;
-            }
+            contentHeight = currentMax + 50 + extraHeight;
           }
+        }
+        if (visibility) {
+          containerHeight = Math.max(contentHeight, containerHeight);
+        } else {
+          containerHeight = HIDDEN_COMPONENT_HEIGHT;
         }
       }
 
-      const boxList = Object.keys(currentPageComponents)
-        .map((key) => {
-          const widget = currentPageComponents[key];
-          return {
-            id: key,
-            ...widget,
-            height: widget?.layouts?.[currentLayout]?.height,
-            left: widget?.layouts?.[currentLayout]?.left,
-            top: widget?.layouts?.[currentLayout]?.top,
-            width: widget?.layouts?.[currentLayout]?.width,
-            parent: widget?.component?.parent,
-            component: widget?.component,
-          };
-        })
-        .filter((box) =>
-          getResolvedValue(
-            box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
-          )
-        );
+      // Get all the component layouts
+      const boxList = Object.keys(currentPageComponents).map((key) => {
+        const widget = currentPageComponents[key];
+        return {
+          id: key,
+          ...widget,
+          height: widget?.layouts?.[currentLayout]?.height,
+          left: widget?.layouts?.[currentLayout]?.left,
+          top: widget?.layouts?.[currentLayout]?.top,
+          width: widget?.layouts?.[currentLayout]?.width,
+          parent: widget?.component?.parent,
+          component: widget?.component,
+        };
+      });
 
+      // If the component is not found in the box list, we return
       const changedComponent = boxList.find((box) => box.id === componentId);
       if (!changedComponent) return;
 
-      const componentElement = document.querySelector(`.ele-${componentId}`);
+      const componentElement =
+        doesSubContainerIndexExist && componentType !== 'Listview'
+          ? document.querySelector(`.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`)
+          : document.querySelector(`.ele-${componentId}`);
+
       if (!componentElement) return;
 
       // Get the actual new height from the DOM
-      const newHeight = shouldReset ? 0 : isContainer ? maxHeight : componentElement.offsetHeight;
+      // If the component is a container, we use the container height calculated above
+      // If the component is not a container, we use the offset height of the component
+      const newHeight =
+        isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
+          ? containerHeight
+          : visibility
+            ? componentElement.offsetHeight
+            : HIDDEN_COMPONENT_HEIGHT;
+
+      // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
       const dynamicHeightDifference = newHeight - oldHeight;
 
+      // If the dynamic height difference is 0 and the component is not a container, we return
       if (dynamicHeightDifference === 0 && !isContainer) return;
 
       // Update the changed component's height in layouts
       const updatedLayouts = {
-        [componentId]: {
+        [transformedComponentId]: {
           ...changedComponent.layouts[currentLayout],
-          ...temporaryLayouts?.[componentId],
+          ...temporaryLayouts?.[transformedComponentId],
           height: newHeight,
         },
       };
 
       // Calculate the new top, bottom, left, right of the changed component
+      // Left and Width are always the same as normal component layouts
       const changedCompLeft = changedComponent.layouts[currentLayout].left;
       const changedCompWidth = changedComponent.layouts[currentLayout].width;
       const changedCompRight = changedCompLeft + changedCompWidth;
-      const changedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const changedCompTop =
+        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const changedCompBottom = changedCompTop + newHeight;
+      const oldChangedCompTop =
+        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
+      const oldChangedCompHeight =
+        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
 
       //Fetch all the components that are below the changed component
       const componentsToAdjust = boxList.filter((box) => {
         if (box.id === componentId) return false;
+
+        // Only checking components below that have the same parent
         const sameParent = box.component?.parent === changedComponent.component?.parent;
-        const isBelow =
-          (temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top) + box.layouts[currentLayout].height >=
-          changedCompTop;
+
+        // Checking if changed component initial bottom is below the initial box top
+        const boxTop = temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top;
+        const isBelow = oldChangedCompBottom <= boxTop;
         return sameParent && isBelow;
       });
-
-      let realDiff = 0;
-      let minimumDist = Infinity;
 
       const isHorizontallyOverlapping = (element1Left, element1Right, element2Left, element2Right) => {
         return (
           (element1Left <= element2Left && element1Right >= element2Right) || // Completely contains
           (element1Left >= element2Left && element1Right <= element2Right) || // Completely contained
-          (element1Left <= element2Left && element1Right >= element2Left) || // Left edge overlaps
-          (element1Left <= element2Right && element1Right >= element2Right) // Right edge overlaps
+          (element1Left < element2Left && element1Right > element2Left) || // Left edge of dynamic height component overlaps
+          (element1Left < element2Right && element1Right > element2Right) // Right edge of dynamic height component overlaps
         );
       };
-
-      //Find the distance by which to move the components up or down
-      for (let component of componentsToAdjust) {
-        const compLeft = component.layouts[currentLayout].left;
-        const compWidth = component.layouts[currentLayout].width;
-        const compRight = compLeft + compWidth;
-        const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, changedCompLeft, changedCompRight);
-        const currentDist =
-          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) - changedCompTop;
-
-        const isInitialTopAboveChangedBottom =
-          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) < changedCompTop + oldHeight;
-
-        if (hasHorizontalOverlap && currentDist < minimumDist && !isInitialTopAboveChangedBottom) {
-          const difference =
-            changedCompBottom - (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top);
-          realDiff = Math.ceil(difference / 10) * 10;
-          minimumDist = currentDist;
-        }
-      }
 
       let currentLeft = changedCompLeft;
       let currentRight = changedCompRight;
       let currentBottom = changedCompBottom;
 
-      if (realDiff > 0) {
-        const componentsToAdjustSorted = componentsToAdjust.sort(
-          (a, b) =>
-            (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) -
-            (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top)
+      const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
+        const transformedAId = doesSubContainerIndexExist ? `${a.id}-${subContainerIndex}` : a.id;
+        const transformedBId = subContainerIndex !== null ? `${b.id}-${subContainerIndex}` : b.id;
+        return (
+          (temporaryLayouts?.[transformedAId]?.top ?? a.layouts[currentLayout].top) -
+          (temporaryLayouts?.[transformedBId]?.top ?? b.layouts[currentLayout].top)
         );
+      });
 
-        for (let component of componentsToAdjustSorted) {
-          const element = document.querySelector(`.ele-${component.id}`);
-          if (!element) continue;
-          const compLeft = component.layouts[currentLayout].left;
-          const compWidth = component.layouts[currentLayout].width;
-          const compRight = compLeft + compWidth;
-          const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
-          if (hasHorizontalOverlap) {
-            const newTop = (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + realDiff;
-
-            updatedLayouts[component.id] = {
-              ...component.layouts[currentLayout],
-              ...temporaryLayouts?.[component.id],
-              top: newTop,
-            };
-            const newBottom =
-              newTop + (temporaryLayouts?.[component.id]?.height ?? component.layouts[currentLayout].height);
-            if (newBottom > currentBottom) {
-              currentBottom = newBottom;
-            }
-            if (compLeft < currentLeft) {
-              currentLeft = compLeft;
-            }
-            if (compRight > currentRight) {
-              currentRight = compRight;
-            }
+      const targetComponents = componentsToAdjustSorted.filter((component) => {
+        const compLeft = component.layouts[currentLayout].left;
+        const compWidth = component.layouts[currentLayout].width;
+        const compRight = compLeft + compWidth;
+        const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
+        if (hasHorizontalOverlap) {
+          if (compLeft < currentLeft) {
+            currentLeft = compLeft;
+          }
+          if (compRight > currentRight) {
+            currentRight = compRight;
           }
         }
-      } else if (dynamicHeightDifference < 0 && realDiff < 0) {
-        const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
-          const aBottom =
-            (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) +
-            (temporaryLayouts?.[a.id]?.height ?? a.layouts[currentLayout].height);
-          const bBottom =
-            (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top) +
-            (temporaryLayouts?.[b.id]?.height ?? b.layouts[currentLayout].height);
-          return aBottom - bBottom;
-        });
-        const tempTopMap = {};
-        componentsToAdjustSorted.forEach((component, index) => {
-          const element = document.querySelector(`.ele-${component.id}`);
-          if (!element) return;
-          const compLeft = component.layouts[currentLayout].left;
-          const compWidth = component.layouts[currentLayout].width;
-          const compRight = compLeft + compWidth;
-          const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
+        return hasHorizontalOverlap;
+      });
 
-          const componentInitialTop = component.layouts[currentLayout].top;
-          const componentInitialBottom = componentInitialTop + component.layouts[currentLayout].height;
+      for (let index = 0; index < targetComponents.length; index++) {
+        const component = targetComponents[index];
+        const element = document.querySelector(`.ele-${component.id}`);
+        if (!element) continue;
+        const transformedTargetComponentId = doesSubContainerIndexExist
+          ? `${component.id}-${subContainerIndex}`
+          : component.id;
 
-          if (hasHorizontalOverlap) {
-            let newTop =
-              (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + dynamicHeightDifference;
+        const verticalGap =
+          (temporaryLayouts?.[transformedTargetComponentId]?.top ?? component.layouts[currentLayout].top) -
+          oldChangedCompBottom;
+        const newTop = changedCompBottom + verticalGap;
 
-            //Situations to accomodate the case when there is a component above the current component
-            if (index > 0) {
-              let prevIndex = index - 1;
-              while (prevIndex >= 0) {
-                const currentComponentLeft = component.layouts[currentLayout].left;
-                const currentComponentRight = currentComponentLeft + component.layouts[currentLayout].width;
-                const prevComponent = componentsToAdjustSorted[prevIndex];
-                const prevTop =
-                  tempTopMap?.[prevComponent.id] ??
-                  temporaryLayouts?.[prevComponent.id]?.top ??
-                  prevComponent.layouts[currentLayout].top;
-                const prevBottom =
-                  prevTop +
-                  (temporaryLayouts?.[prevComponent.id]?.height ?? prevComponent.layouts[currentLayout].height);
-                if (newTop >= prevBottom) {
-                  break;
-                } else {
-                  const prevCompLeft = prevComponent.layouts[currentLayout].left;
-                  const prevCompWidth = prevComponent.layouts[currentLayout].width;
-                  const prevCompRight = prevCompLeft + prevCompWidth;
-                  const prevCompInitialTop = prevComponent.layouts[currentLayout].top;
-                  const prevCompInitialBottom = prevCompInitialTop + prevComponent.layouts[currentLayout].height;
-
-                  const hasHorizontalOverlap = isHorizontallyOverlapping(
-                    prevCompLeft,
-                    prevCompRight,
-                    currentComponentLeft,
-                    currentComponentRight
-                  );
-
-                  const hasInitialVerticalOverlap =
-                    (componentInitialTop < prevCompInitialBottom && componentInitialBottom > prevCompInitialTop) || //  Bottom of the current component is above the top of the previous component
-                    (componentInitialTop > prevCompInitialTop && componentInitialBottom < prevCompInitialBottom) || // Current component is completely inside the previous component
-                    (componentInitialTop < prevCompInitialTop && componentInitialBottom > prevCompInitialTop) || // Top of the current component is below the bottom of the previous component
-                    (componentInitialTop < prevCompInitialBottom && componentInitialBottom > prevCompInitialBottom); // Bottom of the current component is below the bottom of the previous component
-
-                  if (hasHorizontalOverlap && !hasInitialVerticalOverlap) {
-                    newTop = prevBottom;
-                    break;
-                  }
-                }
-                prevIndex--;
-              }
-            }
-
-            if (component.layouts[currentLayout].top > newTop) {
-              newTop = component.layouts[currentLayout].top;
-            }
-            tempTopMap[component.id] = newTop;
-
-            updatedLayouts[component.id] = {
-              ...component.layouts[currentLayout],
-              ...temporaryLayouts?.[component.id],
-              top: newTop,
-            };
-
-            const newBottom =
-              newTop + (temporaryLayouts?.[component.id]?.height ?? component.layouts[currentLayout].height);
-            if (newBottom < currentBottom) {
-              currentBottom = newBottom;
-            }
-            if (compLeft < currentLeft) {
-              currentLeft = compLeft;
-            }
-            if (compRight > currentRight) {
-              currentRight = compRight;
-            }
-          }
-        });
+        updatedLayouts[transformedTargetComponentId] = {
+          ...component.layouts[currentLayout],
+          ...temporaryLayouts?.[transformedTargetComponentId],
+          top: newTop,
+        };
+        const newBottom =
+          newTop +
+          (temporaryLayouts?.[transformedTargetComponentId]?.height ?? component.layouts[currentLayout].height);
+        if (newBottom > currentBottom) {
+          currentBottom = newBottom;
+        }
       }
 
-      if (shouldReset) {
-        setTemporaryLayouts(updatedLayouts);
-      } else {
-        if (isContainer) {
+      if (isContainer) {
+        if (componentType !== 'Listview') {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
-        setTemporaryLayouts(updatedLayouts);
       }
 
+      setTemporaryLayouts(updatedLayouts);
+
       toggleCanvasUpdater();
-      if (changedComponent.component?.parent) {
-        adjustComponentPositions(changedComponent.component?.parent?.slice(0, 36), currentLayout, shouldReset, true);
+      if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
+        adjustComponentPositions(
+          isContainer && isTruthyOrZero(subContainerIndex)
+            ? componentId
+            : changedComponent.component?.parent?.slice(0, 36),
+          currentLayout,
+          true,
+          componentType === 'Listview' ? null : subContainerIndex
+        );
       }
       return updatedLayouts;
     } catch (error) {
@@ -476,5 +437,32 @@ export const createGridSlice = (set, get) => ({
     set((state) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
+  },
+  handleCanvasContainerMouseUp: (e) => {
+    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
+      get();
+    const selectedText = window.getSelection().toString();
+    const isClickedOnSubcontainer =
+      e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    // Check if any codehinter preview popover is currently open
+    const isCodehinterPreviewOpen = () => {
+      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
+      return popovers.length > 0;
+    };
+
+    if (
+      !isClickedOnSubcontainer &&
+      ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
+      !selectedText &&
+      !isCodehinterPreviewOpen() &&
+      !isGroupResizing &&
+      !isGroupDragging
+    ) {
+      clearSelectedComponents();
+      if (isRightSidebarOpen) {
+        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      }
+    }
   },
 });

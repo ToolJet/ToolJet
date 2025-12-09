@@ -9,6 +9,7 @@ import { Monitor, Smartphone, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
@@ -60,18 +61,22 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-        <Link
-          title="Preview"
+        <ButtonComponent
+          isLucid
+          size="default"
+          variant="outline"
+          leadingIcon="play"
+          data-cy="preview-link-button"
+          component={Link}
           to={appPreviewLink}
           target="_blank"
           rel="noreferrer"
-          data-cy="preview-link-button"
-          className="preview-link-btn"
+          className="hover:tw-no-underline hover:tw-text-text-default"
         >
-          <Play width="16" height="16" />
           Preview
-        </Link>
+        </ButtonComponent>
       )}
+
       <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
     </div>

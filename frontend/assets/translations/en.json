@@ -138,14 +138,20 @@
         "appVersionManager": {
             "version": "Version",
             "currentlyReleased": "Currently Released",
-            "createVersion": "Create new version",
+            "createVersion": "Create version",
+            "saveVersion": "Save version",
+            "createDraftVersion": "Create draft version",
             "versionName": "Version name",
-            "createVersionFrom": "Create version from",
+            "versionDescription": "Version description",
+            "createVersionFrom": "Create from version",
             "save": "Save",
             "create": "Create Version",
-            "editVersion": "Edit Version",
+            "editVersion": "Edit version",
             "deleteVersion": "Do you really want to delete this version ({{version}})?",
             "enterVersionName": "Enter version name",
+            "enterVersionDescription": "Enter version description",
+            "versionNameHelper": "Version name must be unique and max 25 characters",
+            "versionDescriptionHelper": "Description must be max 500 characters",
             "versionAlreadyReleased": "You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes."
         },
         "queries": "Queries",
@@ -850,11 +856,11 @@
             "description": "User-controlled on-off switch"
         },
         "Textarea": {
-            "displayName": "Textarea",
+            "displayName": "Text Area",
             "description": "Multi-line text input"
         },
         "DateRangePicker": {
-            "displayName": "Range Picker",
+            "displayName": "Date Range Picker",
             "description": "Choose date ranges"
         },
         "Text": {
@@ -874,7 +880,7 @@
             "description": "Single item selector"
         },
         "Multiselect": {
-            "displayName": "Multiselect",
+            "displayName": "Multi Select",
             "description": "Multiple item selector"
         },
         "RichTextEditor": {

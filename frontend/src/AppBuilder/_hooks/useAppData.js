@@ -18,12 +18,11 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -86,6 +85,7 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
+  const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -127,7 +127,7 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = moduleMode ? '' : pathParams?.slug;
+  let slug = pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -232,17 +232,13 @@ const useAppData = (
     }
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
-    const isPublicAccess = moduleMode
-      ? false
-      : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        // clean up the module definition from the store
-        deleteModuleDefinition(appId);
         appDataPromise = Promise.resolve(moduleDefinition);
       } else {
         appDataPromise = appService.fetchApp(appId);
@@ -266,6 +262,7 @@ const useAppData = (
       .then(async (result) => {
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
+        let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -286,7 +283,12 @@ const useAppData = (
         if (mode !== 'edit') {
           try {
             const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
+            const viewerEnvironment =
+              moduleMode && isPublicAccess
+                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
+                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
               name: viewerEnvironment?.environment?.name,
@@ -328,7 +330,6 @@ const useAppData = (
           getCreditBalance();
         }
 
-        let showWalkthrough = true;
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
@@ -367,6 +368,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
 
           // If the app builder mode is AI
           // - Do not show zero state - if there is some conversation already done or if route state has prompt
@@ -487,6 +489,7 @@ const useAppData = (
         setQueryMapping(moduleId);
 
         setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -512,7 +515,6 @@ const useAppData = (
           (conversation?.aiConversationMessages || []).length === 0
         ) {
           sendMessage(state.prompt);
-          showWalkthrough = false;
         }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
@@ -531,8 +533,7 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-        // only show if app is not created from prompt
-        if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+
         !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
@@ -690,6 +691,7 @@ const useAppData = (
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,

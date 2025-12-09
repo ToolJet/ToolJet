@@ -174,6 +174,8 @@ export const CurrencyInput = (props) => {
     }
   }, []);
 
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
+
   return (
     <>
       <div
@@ -206,6 +208,8 @@ export const CurrencyInput = (props) => {
           _width={_width}
           labelWidth={labelWidth}
           widthType={widthType}
+          inputId={`component-${id}`}
+          classes={labelClasses}
         />
         <div
           className="d-flex h-100"
@@ -264,10 +268,16 @@ export const CurrencyInput = (props) => {
             }}
             // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             prefix={''}
-            disabled={disabledState}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            id={`component-${id}`}
+            aria-disabled={disabledState}
+            aria-busy={loading}
+            aria-required={isMandatory}
+            aria-hidden={!visibility}
+            aria-invalid={!isValid && showValidationError}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
         </div>
         {loading && <Loader style={loaderStyle} width="16" />}

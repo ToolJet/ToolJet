@@ -42,6 +42,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -80,6 +81,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
@@ -113,19 +115,20 @@ export function defineAppVersionAbility(
         FEATURE_KEY.APP_VERSION_CREATE,
         FEATURE_KEY.APP_VERSION_DELETE,
         FEATURE_KEY.APP_VERSION_UPDATE,
+        FEATURE_KEY.APP_DRAFT_VERSION_CREATE,
       ],
       App
     );
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.GET_EVENTS], App);
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   } else if (
     userAppPermissions?.viewableAppsId?.length &&
     resourceId &&
     userAppPermissions.viewableAppsId.includes(resourceId)
   ) {
-    can([FEATURE_KEY.GET_EVENTS], App);
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
 
   if (isBuilder && resourceType === MODULES.MODULES) {

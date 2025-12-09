@@ -68,6 +68,15 @@ export abstract class AbilityGuard implements CanActivate {
         }
 
         const licenseRequired: LICENSE_FIELD = featureInfo?.license;
+        if (licenseRequired && featureInfo.isPublic && !(app?.organizationId || user?.organizationId)) {
+          // Public feature and organization id not present -> Check instance level license
+          if (!(await this.licenseTermsService.getLicenseTermsInstance(licenseRequired))) {
+            throw new HttpException(
+              `Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.`,
+              451
+            );
+          }
+        }
         if (licenseRequired && !(app?.organizationId || user?.organizationId)) {
           // If no license is required, continue to the next feature
           return true;

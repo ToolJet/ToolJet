@@ -246,6 +246,8 @@ export const createQueryPanelSlice = (set, get) => ({
             return { status: 'COMPLETE', result: eventData.result, data: eventData };
           } else if (eventData.type === 'workflow_execution_error') {
             return { status: 'ERROR', data: eventData };
+          } else if (eventData.type === 'workflow_execution_cancelled') {
+            return { status: 'CANCELLED', data: eventData };
           } else {
             return { status: 'PROGRESS', data: eventData };
           }
@@ -263,21 +265,36 @@ export const createQueryPanelSlice = (set, get) => ({
             });
           },
           onComplete: async (result) => {
-            const processedResult = { data: result };
-            await processQueryResults(processedResult);
+            await processQueryResults(result);
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on completion
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
           },
           onError: (e) => {
+            const cleanData = typeof e?.error === 'object' ? { ...e.error } : e?.error;
+            if (cleanData?.metadata) delete cleanData.metadata; // Remove metadata from the data object if present
+
             handleFailure({
               status: 'failed',
               message: e?.error?.message || 'Error running workflow',
               description: e?.error?.description || null,
-              data: typeof e?.error === 'object' ? { ...e.error } : e?.error,
+              data: cleanData,
+              metadata: e?.error?.metadata,
             });
             // Remove the AsyncQueryHandler instance from asyncQueryRuns on error
+            get().queryPanel.setAsyncQueryRuns((currentRuns) =>
+              currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
+            );
+          },
+          onCancel: (data) => {
+            handleFailure({
+              status: 'cancelled',
+              message: 'Workflow execution cancelled',
+              description: data?.error?.message || 'User cancelled the workflow execution',
+              data: data?.error,
+            });
+            // Remove the AsyncQueryHandler instance from asyncQueryRuns on cancellation
             get().queryPanel.setAsyncQueryRuns((currentRuns) =>
               currentRuns.filter((handler) => handler.jobId !== asyncHandler.jobId)
             );
@@ -523,6 +540,8 @@ export const createQueryPanelSlice = (set, get) => ({
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
+              : query.kind === 'workflows'
+              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
               : {}),
           },
           moduleId
@@ -599,7 +618,7 @@ export const createQueryPanelSlice = (set, get) => ({
         queryExecutionPromise
           .then(async (data) => {
             if (data.status === 'needs_oauth') {
-              localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+              localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
               fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
             }
@@ -1249,7 +1268,12 @@ export const createQueryPanelSlice = (set, get) => ({
       }
 
       try {
-        const executionResponse = await workflowExecutionsService.trigger(workflowAppId, resolvedParams, appEnvId);
+        const executionResponse = await workflowExecutionsService.trigger(
+          workflowAppId,
+          resolvedParams,
+          appEnvId,
+          query.id
+        );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
         return { data: e?.message, status: 'failed' };

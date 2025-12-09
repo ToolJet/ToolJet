@@ -328,5 +328,16 @@
     "id": "fedex",
     "author": "Tooljet",
     "timestamp": "Fri, 05 Sep 2025 05:46:39 GMT"
+  },
+  {
+    "name": "Authorize.Net",
+    "description": "Plugin for payment processing and customer profile management",
+    "version": "1.0.0",
+    "id": "authorizenet",
+    "author": "Tooljet",
+    "timestamp": "Tue, 25 Nov 2025 16:27:22 GMT",
+    "tags": [
+      "Payment"
+    ]
   }
 ]

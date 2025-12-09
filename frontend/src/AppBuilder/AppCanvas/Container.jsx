@@ -38,6 +38,7 @@ const Container = React.memo(
     canvasMaxWidth,
     componentType,
     appType,
+    hasNoScroll = false,
   }) => {
     const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -50,6 +51,10 @@ const Container = React.memo(
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    const isWidgetInSubContainerDragging = useStore(
+      (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
@@ -70,10 +75,6 @@ const Container = React.memo(
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -188,6 +189,8 @@ const Container = React.memo(
           })(),
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
+          // Prevent the scroll when dragging a widget inside the container or moving out of the container
+          overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
         }}
         className={cx('real-canvas', {
@@ -195,6 +198,8 @@ const Container = React.memo(
           'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
+          'has-no-scroll': hasNoScroll,
+          'is-child-being-dragged': !hasNoScroll && isWidgetInSubContainerDragging,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

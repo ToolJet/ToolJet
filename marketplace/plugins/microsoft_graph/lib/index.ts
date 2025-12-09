@@ -5,9 +5,11 @@ import {
   User,
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
+  OAuthUnauthorizedClientError,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat } from './types';
-import got, { OptionsOfTextResponseBody, Headers } from 'got';
+import got, { OptionsOfTextResponseBody, Headers, HTTPError } from 'got';
+import { getCurrentToken } from '@tooljet-marketplace/common';
 
 export default class Microsoft_graph implements QueryService {
   authUrl(source_options: SourceOptions) {
@@ -157,6 +159,9 @@ export default class Microsoft_graph implements QueryService {
         result = 'Query Success';
       }
     } catch (error) {
+      if (error instanceof HTTPError && error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, {});
+      }
       if (error.response && error.response.body) {
         try {
           result = JSON.parse(error.response.body);
@@ -188,7 +193,7 @@ export default class Microsoft_graph implements QueryService {
     const tenantId = sourceOptions['tenant_id'] || 'common';
     const accessTokenUrl = sourceOptions['access_token_url'];
     const authUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
-    const scope = 'https://graph.microsoft.com/.default';
+    const scope = 'https://graph.microsoft.com/.default offline_access';
 
     const addSourceOptions = {
       url: baseUrl,
@@ -210,7 +215,8 @@ export default class Microsoft_graph implements QueryService {
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      scopes: this.encodeOAuthScope(scope),
+      scopes: scope,
+      // scopes: this.encodeOAuthScope(scope),
     };
 
     const newSourceOptions = {
@@ -298,5 +304,63 @@ export default class Microsoft_graph implements QueryService {
     const redirectUri = `${fullUrl}oauth2/authorize`;
 
     return { clientId, clientSecret, tenantId, accessTokenUrl, scopes, redirectUri };
+  }
+
+  async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
+    let refreshToken: string;
+    // If multi user authentication is enabled, we would need specific users refresh token.
+    if (sourceOptions?.multiple_auth_enabled) {
+      const currentToken = getCurrentToken(
+        sourceOptions['multiple_auth_enabled'],
+        sourceOptions['tokenData'],
+        userId,
+        isAppPublic
+      );
+
+      if (!currentToken?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = currentToken['refresh_token'];
+    } else {
+      if (!sourceOptions?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = sourceOptions['refresh_token'];
+    }
+
+    const accessTokenDetails = {};
+    // Refresh token logic here
+    const { clientId, clientSecret, tenantId } = this.getOAuthCredentials(sourceOptions);
+    const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+    const tokenRequestBody = {
+      grant_type: 'refresh_token',
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    };
+
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    try {
+      const response = await got(tokenEndpoint, {
+        method: 'post',
+        headers,
+        form: tokenRequestBody,
+        responseType: 'json', // Automatically parse JSON response
+      });
+      const result = response.body;
+      if (result['access_token']) {
+        accessTokenDetails['access_token'] = result['access_token'];
+        accessTokenDetails['refresh_token'] = result['refresh_token'];
+      } else {
+        throw new QueryError('Refresh token failed', 'Access token not found in response', {});
+      }
+    } catch (error) {
+      throw new QueryError('Error while generating refresh access token', JSON.stringify(error), {});
+    }
+    return accessTokenDetails;
   }
 }

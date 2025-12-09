@@ -39,9 +39,10 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins ci --omit=dev
+RUN npm --prefix plugins install
 COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build && npm --prefix plugins prune --omit=dev
+RUN NODE_ENV=production npm --prefix plugins run build
+RUN npm --prefix plugins prune --production 
 
 ENV TOOLJET_EDITION=ee
 
@@ -166,6 +167,12 @@ RUN mkdir -p /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
+
+# Create rsyslog directory for audit logs with proper permissions
+RUN mkdir -p /home/appuser/rsyslog \
+    && chown -R appuser:0 /home/appuser/rsyslog \
+    && chmod g+s /home/appuser/rsyslog \
+    && chmod -R g=u /home/appuser/rsyslog
 
 # Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \
