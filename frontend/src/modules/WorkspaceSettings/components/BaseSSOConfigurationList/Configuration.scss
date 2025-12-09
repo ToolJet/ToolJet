@@ -75,6 +75,10 @@
   mix-blend-mode: multiply;
 }
 
+.dark-theme .oidc-count-badge {
+  mix-blend-mode: normal;
+}
+
 .switch {
   position: relative;
   display: inline-block;
@@ -291,7 +295,8 @@ input:checked+.slider:before {
       border-top: 1px solid var(--border-weak) !important;
       margin-top: 0px !important;
       align-Self: 'stretch';
-      height: 88px;;
+      height: 88px;
+      ;
       background: 0 0;
     }
 
