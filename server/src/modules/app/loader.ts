@@ -17,7 +17,27 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import * as pino from 'pino';
-import { getLogCaptureState } from '@ee/support/services/log-capture.service';
+
+// Global singleton for log capture state - accessible across modules
+// This MUST be defined here (not imported) to avoid circular dependency and build issues
+class GlobalLogCaptureState {
+  private static instance: GlobalLogCaptureState;
+  captureDestination: any = null;
+  captureMode = false;
+  captureFilePath: string | null = null;
+
+  static getInstance(): GlobalLogCaptureState {
+    if (!GlobalLogCaptureState.instance) {
+      GlobalLogCaptureState.instance = new GlobalLogCaptureState();
+    }
+    return GlobalLogCaptureState.instance;
+  }
+}
+
+// Export for use by LogCaptureService
+export function getGlobalLogCaptureState() {
+  return GlobalLogCaptureState.getInstance();
+}
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -105,23 +125,25 @@ export class AppModuleLoader {
               });
             }
 
-            // Capture stream - conditionally writes when capture is active
-            // We use a custom writable that checks the global state
-            const captureStream = new (require('stream').Writable)({
-              write(chunk, encoding, callback) {
-                const captureState = getLogCaptureState();
-                if (captureState.captureMode && captureState.captureDestination) {
-                  captureState.captureDestination.write(chunk, encoding, callback);
-                } else {
-                  callback();
-                }
-              },
-            });
+            // Capture stream - ONLY in production mode
+            // In development, we don't need log capture since logs are already visible in console
+            if (process.env.NODE_ENV === 'production') {
+              const captureStream = new (require('stream').Writable)({
+                write(chunk, encoding, callback) {
+                  const captureState = getGlobalLogCaptureState();
+                  if (captureState.captureMode && captureState.captureDestination) {
+                    captureState.captureDestination.write(chunk, encoding, callback);
+                  } else {
+                    callback();
+                  }
+                },
+              });
 
-            streams.push({
-              level: 'trace', // Capture everything
-              stream: captureStream,
-            });
+              streams.push({
+                level: 'trace', // Capture everything
+                stream: captureStream,
+              });
+            }
 
             return pino.multistream(streams);
           })(),
