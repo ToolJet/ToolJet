@@ -276,8 +276,6 @@ export const RenderPageAndPageGroup = ({
   const currentPage = pages.find((page) => page.id === currentPageId);
   const getIsPageHidden = useStore((state) => state.getPagesVisibility); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
 
-  console.log('visibleLinks->', pages, visibleLinks);
-
   const isEmptyPageGroup = (page) => {
     return isLicensed && page.isPageGroup && page.children?.length === 0;
   };
@@ -290,7 +288,6 @@ export const RenderPageAndPageGroup = ({
       // check if the page group has at least one visible child
       page.children.some((child) => {
         const isPageHidden = getIsPageHidden('canvas', child?.id);
-        console.log('isPageHidden->', isPageHidden, child.name);
         return (
           isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true)
         );

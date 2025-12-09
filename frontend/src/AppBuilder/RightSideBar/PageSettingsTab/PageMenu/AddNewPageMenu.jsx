@@ -13,7 +13,8 @@ export function AddNewPageMenu({ darkMode }) {
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
-  const hasAppPagesAddNavGroupPerm = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -71,20 +72,20 @@ export function AddNewPageMenu({ darkMode }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            <div className={`${!hasAppPagesAddNavGroupPerm && 'd-flex disabled licensed-page-option'}`}>
+            <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
                 icon="folder"
                 darkMode={darkMode}
-                onClick={() => hasAppPagesAddNavGroupPerm && handleOpenPopup('group')}
+                onClick={() => hasAppPagesAddNavGroupEnabled && handleOpenPopup('group')}
               />
               <LicenseTooltip
                 message={"You don\'t have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!hasAppPagesAddNavGroupPerm}
+                show={!hasAppPagesAddNavGroupEnabled}
               >
-                <div className="d-flex align-items-center">{!hasAppPagesAddNavGroupPerm && <SolidIcon name="enterprisecrown" />}</div>
+                <div className="d-flex align-items-center">{!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}</div>
               </LicenseTooltip>
             </div>
           </div>
