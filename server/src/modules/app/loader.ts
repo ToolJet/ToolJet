@@ -111,30 +111,8 @@ export class AppModuleLoader {
           stream: (() => {
             const streams = [];
 
-            // Primary console stream
-            if (process.env.NODE_ENV !== 'production') {
-              // Development: use pino-pretty for console
-              streams.push({
-                level: 'debug',
-                stream: pino.transport({
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    levelFirst: true,
-                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                  },
-                }),
-              });
-            } else {
-              // Production: raw JSON to stdout
-              streams.push({
-                level: 'info',
-                stream: process.stdout,
-              });
-            }
-
-            // Capture stream - ONLY in production mode
-            // In development, we don't need log capture since logs are already visible in console
+            // Capture stream - FIRST so it gets all logs before stdout
+            // ONLY in production mode - In development, we don't need log capture since logs are already visible in console
             if (process.env.NODE_ENV === 'production') {
               let captureWriteCount = 0;
               let captureSkipCount = 0;
@@ -171,8 +149,30 @@ export class AppModuleLoader {
               });
 
               streams.push({
-                level: 'trace', // Capture everything
+                level: 'info', // Match stdout level to ensure all logs go to both streams
                 stream: captureStream,
+              });
+            }
+
+            // Primary console stream - AFTER capture stream
+            if (process.env.NODE_ENV !== 'production') {
+              // Development: use pino-pretty for console
+              streams.push({
+                level: 'debug',
+                stream: pino.transport({
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    levelFirst: true,
+                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  },
+                }),
+              });
+            } else {
+              // Production: raw JSON to stdout
+              streams.push({
+                level: 'info',
+                stream: process.stdout,
               });
             }
 
