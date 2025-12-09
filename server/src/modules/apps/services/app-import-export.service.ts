@@ -86,7 +86,8 @@ type NewRevampedComponent =
   | 'StarRating'
   | 'Tags'
   | 'CircularProgressBar'
-  | 'Html';
+  | 'Html'
+  | 'IFrame';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -120,6 +121,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tags',
   'CircularProgressBar',
   'Html',
+  'IFrame',
 ];
 
 const INPUT_WIDGET_TYPES = [
