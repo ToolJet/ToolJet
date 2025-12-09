@@ -107,76 +107,42 @@ export class AppModuleLoader {
               return false;
             },
           },
-          // Use multistream to support both console (pino-pretty in dev) and optional capture file
+          // Use a custom stream that tees to both stdout and capture file
           stream: (() => {
-            const streams = [];
-
-            // Capture stream - FIRST so it gets all logs before stdout
-            // ONLY in production mode - In development, we don't need log capture since logs are already visible in console
-            if (process.env.NODE_ENV === 'production') {
+            if (process.env.NODE_ENV !== 'production') {
+              // Development: use pino-pretty for console
+              return pino.transport({
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  levelFirst: true,
+                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                },
+              });
+            } else {
+              // Production: Create a custom tee stream that writes to BOTH stdout AND capture file
               let captureWriteCount = 0;
-              let captureSkipCount = 0;
-              let totalLinesWritten = 0;
-              const captureStream = new (require('stream').Writable)({
+              return new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
+                  // ALWAYS write to stdout
+                  process.stdout.write(chunk, encoding);
+
+                  // ALSO write to capture file if capture is active
                   const state = globalThis.__tooljet_log_capture_state__;
                   if (state?.captureMode && state?.captureDestination) {
                     captureWriteCount++;
-                    // Count lines in this chunk (each log is one line)
-                    const chunkStr = chunk.toString();
-                    const linesInChunk = (chunkStr.match(/\n/g) || []).length;
-                    totalLinesWritten += linesInChunk;
-
-                    // Log every write since we're debugging
-                    console.error(`[DEBUG] Write #${captureWriteCount}: ${linesInChunk} lines (total: ${totalLinesWritten})`);
-
-                    // Write to destination but don't pass callback - handle it ourselves
+                    console.error(`[DEBUG] Captured log #${captureWriteCount}`);
                     try {
                       state.captureDestination.write(chunk, encoding);
-                      callback(); // Always call callback to keep multistream flowing
                     } catch (err) {
-                      console.error('[DEBUG] Capture write error:', err);
-                      callback(); // Still call callback even on error
+                      console.error('[DEBUG] Capture error:', err);
                     }
-                  } else {
-                    captureSkipCount++;
-                    if (captureSkipCount % 500 === 1) {
-                      console.error(`[DEBUG] Skipped ${captureSkipCount} logs (not capturing)`);
-                    }
-                    callback();
                   }
+
+                  callback();
                 },
               });
-
-              streams.push({
-                level: 'info', // Match stdout level to ensure all logs go to both streams
-                stream: captureStream,
-              });
             }
-
-            // Primary console stream - AFTER capture stream
-            if (process.env.NODE_ENV !== 'production') {
-              // Development: use pino-pretty for console
-              streams.push({
-                level: 'debug',
-                stream: pino.transport({
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    levelFirst: true,
-                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                  },
-                }),
-              });
-            } else {
-              // Production: raw JSON to stdout
-              streams.push({
-                level: 'info',
-                stream: process.stdout,
-              });
-            }
-
-            return pino.multistream(streams);
           })(),
           redact: {
             paths: [
