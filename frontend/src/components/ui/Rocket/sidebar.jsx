@@ -177,7 +177,7 @@ const Sidebar = React.forwardRef(
         />
         <div
           className={cn(
-            'tw-fixed tw-inset-y-0 tw-z-10 tw-hidden tw-h-svh tw-w-[--sidebar-width] tw-transition-[left,right,width] tw-duration-200 tw-ease-linear md:tw-flex',
+            'tw-fixed tw-inset-y-0 tw-z-10 tw-hidden tw-h-svh tw-border-r-sidebar-border tw-w-[--sidebar-width] tw-transition-[left,right,width] tw-duration-200 tw-ease-linear md:tw-flex',
             side === 'left'
               ? 'tw-left-0 group-data-[collapsible=offcanvas]:tw-left-[calc(var(--sidebar-width)*-1)]'
               : 'tw-right-0 group-data-[collapsible=offcanvas]:tw-right-[calc(var(--sidebar-width)*-1)]',
@@ -237,7 +237,7 @@ const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        'tw-absolute tw-inset-y-0 tw-z-20 tw-hidden tw-w-4 -tw-translate-x-1/2 tw-transition-all tw-ease-linear tw-transition-transform active:tw-scale-[0.97] after:tw-absolute after:tw-inset-y-0 after:tw-left-1/2 after:tw-w-[2px] hover:after:tw-bg-sidebar-border group-data-[side=left]:-tw-right-4 group-data-[side=right]:tw-left-0 sm:tw-flex',
+        'tw-absolute tw-inset-y-0 tw-z-20 tw-hidden tw-w-4 -tw-translate-x-1/2 tw-transition-all tw-ease-linear active:tw-scale-[0.97] after:tw-absolute after:tw-inset-y-0 after:tw-left-1/2 after:tw-w-[2px] hover:after:tw-bg-border-weak group-data-[side=left]:-tw-right-4 group-data-[side=right]:tw-left-0 sm:tw-flex',
         '[[data-side=left]_&]:tw-cursor-w-resize [[data-side=right]_&]:tw-cursor-e-resize',
         '[[data-side=left][data-state=collapsed]_&]:tw-cursor-e-resize [[data-side=right][data-state=collapsed]_&]:tw-cursor-w-resize',
         'group-data-[collapsible=offcanvas]:tw-translate-x-0 group-data-[collapsible=offcanvas]:after:tw-left-full group-data-[collapsible=offcanvas]:hover:tw-bg-sidebar',

@@ -16,6 +16,7 @@ export const createNameColumn = () => {
   return {
     accessorKey: 'name',
     header: 'Name',
+    size: 400,
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} className="!tw-h-10" />;
     },
