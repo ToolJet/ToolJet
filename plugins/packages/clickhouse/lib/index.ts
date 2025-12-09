@@ -24,13 +24,13 @@ export default class Click implements QueryService {
             
             let data = await resultSet.json();
             
-              result = data;
+            result = data;
             
           } else {
             await clickhouseClient.command({
               query
             });
-            result = { r:1 };
+            result = { r:1 }; //for backward compatibility
           }
           
           break;
@@ -43,7 +43,7 @@ export default class Click implements QueryService {
             columns: fields,
             format: 'JSONEachRow'
           });
-          result = { r:1 };
+          result = { r:1 }; //for backward compatibility
           break;
         }
       }

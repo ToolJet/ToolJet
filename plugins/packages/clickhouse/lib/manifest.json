@@ -19,7 +19,11 @@
       "password": { "type": "string", "encrypted": true },
       "port": { "type": "string" },
       "database": { "type": "string" },
-      "protocol": { "type": "string" }
+      "protocol": { "type": "string" },
+      "usePost": { "type": "string" },
+      "isUseGzip": { "type": "string" },
+      "debug": { "type": "string" },
+      "raw": { "type": "string" }
     }
   },
   "properties": {
@@ -68,6 +72,36 @@
         }
       ],
       "description": "Enter protocol"
+    },
+     "usePost": {
+      "label": "Use post",
+      "key": "usePost",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "trimQuery": {
+      "label": "Trim query",
+      "key": "trimQuery",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "isUseGzip": {
+      "label": "Use gzip",
+      "key": "isUseGzip",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "debug": {
+      "label": "Debug",
+      "key": "debug",
+      "type": "text",
+      "description": "Enter true/false"
+    },
+    "raw": {
+      "label": "Raw",
+      "key": "raw",
+      "type": "text",
+      "description": "Enter true/false"
     }
     
   },

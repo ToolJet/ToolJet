@@ -19,7 +19,6 @@
     "test": "NODE_ENV=test jest"
   },
   "dependencies": {
-    "@clickhouse/client": "^1.14.0",
     "@tooljet-plugins/airtable": "file:packages/airtable",
     "@tooljet-plugins/amazonses": "file:packages/amazonses",
     "@tooljet-plugins/appwrite": "file:packages/appwrite",
