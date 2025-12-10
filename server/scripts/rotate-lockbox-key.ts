@@ -2,13 +2,14 @@ import { AppModule } from '@modules/app/module';
 import { NestFactory } from '@nestjs/core';
 import { EntityManager } from 'typeorm';
 import * as readline from 'readline';
-import { DualKeyEncryptionService } from '../src/modules/encryption/rotation.service';
+import { DualKeyEncryptionService } from './services/rotation.service';
 import { Credential } from '../src/entities/credential.entity';
 import { OrgEnvironmentConstantValue } from '../src/entities/org_environment_constant_values.entity';
 import { SSOConfigs } from '../src/entities/sso_config.entity';
 import { OrganizationTjdbConfigurations } from '../src/entities/organization_tjdb_configurations.entity';
 import { UserDetails } from '../src/entities/user_details.entity';
 import { getEnvVars } from './database-config-utils';
+import { dbTransactionWrap } from '../src/helpers/database.helper';
 
 // Load environment variables from .env file
 const ENV_VARS = getEnvVars();
@@ -28,15 +29,17 @@ Object.keys(ENV_VARS).forEach((key) => {
  *   npm run rotate:keys -- --dry-run  # Test without making changes
  *   npm run rotate:keys                # Perform actual rotation
  *
- * Environment Variables Required:
- *   OLD_LOCKBOX_MASTER_KEY   - Current/old master key (64 hex chars)
- *   LOCKBOX_MASTER_KEY       - New master key to rotate to (64 hex chars)
+ * How it works:
+ *   1. Update LOCKBOX_MASTER_KEY in .env with your NEW key
+ *   2. Run this script - it will prompt you to enter the OLD key
+ *   3. Script decrypts with old key, re-encrypts with new key
+ *   4. Restart your application
  *
  * IMPORTANT:
  *   - Stop the application before running this script
  *   - Backup the database before running
  *   - Test with --dry-run first in staging
- *   - After rotation, remove OLD_LOCKBOX_MASTER_KEY from .env and restart
+ *   - Keep the old key handy - you'll need to enter it when prompted
  */
 
 class RotationProgress {
@@ -87,41 +90,49 @@ async function bootstrap() {
 
   try {
     // Pre-flight checks
-    console.log('Step 1: Pre-flight validation...');
+    console.log('Step 1: Validating new master key...');
     validateEnvironment();
-    console.log('✓ Environment variables validated');
+    console.log('✓ New master key (LOCKBOX_MASTER_KEY) validated');
+
+    // Prompt for old key
+    console.log('\nStep 2: Enter old master key...');
+    console.log('ℹ️  You will be prompted to enter your OLD master key');
+    console.log('   (the key currently used in production)\n');
+    const oldKey = await promptForOldKey();
+    const newKey = process.env.LOCKBOX_MASTER_KEY!;
+
+    // Validate old key format
+    validateKeyFormat(oldKey, 'Old master key');
+    console.log('✓ Old key format validated');
 
     // Test encryption keys
-    const oldKey = process.env.OLD_LOCKBOX_MASTER_KEY!;
-    const newKey = process.env.LOCKBOX_MASTER_KEY!;
     const dualKeyService = new DualKeyEncryptionService(oldKey, newKey);
 
-    console.log('\nStep 2: Testing encryption keys...');
-    await dualKeyService.testEncryptionCycle(oldKey, 'OLD_LOCKBOX_MASTER_KEY');
+    console.log('\nStep 3: Testing encryption keys...');
+    await dualKeyService.testEncryptionCycle(oldKey, 'Old master key');
     console.log('✓ Old key validated');
-    await dualKeyService.testEncryptionCycle(newKey, 'LOCKBOX_MASTER_KEY');
+    await dualKeyService.testEncryptionCycle(newKey, 'New master key (LOCKBOX_MASTER_KEY)');
     console.log('✓ New key validated');
 
     const keyInfo = dualKeyService.getKeyInfo();
     if (!keyInfo.keysAreDifferent) {
-      throw new Error('OLD and NEW keys are identical. Please provide different keys.');
+      throw new Error('Old and new keys are identical. Please provide different keys.');
     }
     console.log('✓ Keys are different');
 
     // Backup confirmation (skip in dry-run)
     if (!isDryRun) {
-      console.log('\nStep 3: Backup confirmation...');
+      console.log('\nStep 4: Backup confirmation...');
       await promptBackupConfirmation();
     } else {
-      console.log('\nStep 3: Backup confirmation (skipped in dry-run)');
+      console.log('\nStep 4: Backup confirmation (skipped in dry-run)');
     }
 
-    // Initialize NestJS application context
-    console.log('\nStep 4: Connecting to database...');
+    // Initialize NestJS application context for database connection
+    console.log('\nStep 5: Connecting to database...');
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
       logger: ['error', 'warn'],
     });
-    const entityManager = nestApp.get(EntityManager);
     console.log('✓ Database connection established');
 
     // Start rotation
@@ -130,46 +141,43 @@ async function bootstrap() {
     console.log('═'.repeat(60));
 
     const progress = new RotationProgress();
-    const queryRunner = entityManager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
 
-    try {
-      // Rotate all tables
-      await rotateCredentials(queryRunner.manager, dualKeyService, progress, isDryRun);
-      await rotateOrgConstants(queryRunner.manager, dualKeyService, progress, isDryRun);
-      await rotateSSOConfigs(queryRunner.manager, dualKeyService, progress, isDryRun);
-      await rotateTJDBConfigs(queryRunner.manager, dualKeyService, progress, isDryRun);
-      await rotateUserDetails(queryRunner.manager, dualKeyService, progress, isDryRun);
+    // Use dbTransactionWrap for automatic transaction management
+    await dbTransactionWrap(async (entityManager: EntityManager) => {
+      try {
+        // Rotate all tables
+        await rotateCredentials(entityManager, dualKeyService, progress, isDryRun);
+        await rotateOrgConstants(entityManager, dualKeyService, progress, isDryRun);
+        await rotateSSOConfigs(entityManager, dualKeyService, progress, isDryRun);
+        await rotateTJDBConfigs(entityManager, dualKeyService, progress, isDryRun);
+        await rotateUserDetails(entityManager, dualKeyService, progress, isDryRun);
 
-      progress.complete();
+        progress.complete();
 
-      // Verify rotation
-      if (!isDryRun) {
-        console.log('\nStep 5: Verifying rotation...');
-        await verifyRotation(queryRunner.manager, newKey);
-        console.log('✓ Rotation verified successfully');
+        // Verify rotation
+        if (!isDryRun) {
+          console.log('\nStep 6: Verifying rotation...');
+          await verifyRotation(entityManager, newKey);
+          console.log('✓ Rotation verified successfully');
+          console.log('\nStep 7: Committing changes...');
+        }
+
+        // For dry-run, throw error to rollback transaction
+        if (isDryRun) {
+          console.log('\n🔍 DRY RUN: Rolling back all changes...');
+          throw new Error('DRY_RUN_ROLLBACK');
+        }
+      } catch (error) {
+        if (error.message === 'DRY_RUN_ROLLBACK') {
+          console.log('✓ Changes rolled back (dry run)');
+          // Don't re-throw for dry run
+          return;
+        }
+        console.error('\n❌ ERROR during rotation:', error.message);
+        console.log('\nRolling back all changes...');
+        throw error;
       }
-
-      // Commit or rollback
-      if (isDryRun) {
-        console.log('\n🔍 DRY RUN: Rolling back all changes...');
-        await queryRunner.rollbackTransaction();
-        console.log('✓ Changes rolled back');
-      } else {
-        console.log('\nStep 6: Committing changes...');
-        await queryRunner.commitTransaction();
-        console.log('✓ Changes committed to database');
-      }
-    } catch (error) {
-      console.error('\n❌ ERROR during rotation:', error.message);
-      console.log('\nRolling back all changes...');
-      await queryRunner.rollbackTransaction();
-      console.log('✓ Changes rolled back');
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
 
     // Cleanup
     await nestApp.close();
@@ -182,10 +190,9 @@ async function bootstrap() {
     } else {
       console.log('✓ ROTATION COMPLETED SUCCESSFULLY');
       console.log('\n⚠️  IMPORTANT NEXT STEPS:');
-      console.log('1. Update your .env file:');
-      console.log('   - Remove OLD_LOCKBOX_MASTER_KEY (no longer needed)');
-      console.log('   - Keep LOCKBOX_MASTER_KEY as is (already the new key)');
-      console.log('2. Restart your application');
+      console.log('1. Restart your application');
+      console.log('   - LOCKBOX_MASTER_KEY in .env is already set to the new key');
+      console.log('   - Your application will now use the new key for all encryption');
     }
     console.log('═'.repeat(60) + '\n');
 
@@ -198,29 +205,52 @@ async function bootstrap() {
 }
 
 function validateEnvironment(): void {
-  if (!process.env.OLD_LOCKBOX_MASTER_KEY) {
-    throw new Error('OLD_LOCKBOX_MASTER_KEY environment variable is not set');
-  }
-
   if (!process.env.LOCKBOX_MASTER_KEY) {
-    throw new Error('LOCKBOX_MASTER_KEY environment variable is not set');
+    throw new Error('LOCKBOX_MASTER_KEY environment variable is not set. Please set it to your NEW master key in .env');
   }
 
   // Validate format (64 hex characters)
   const hexRegex = /^[0-9a-fA-F]{64}$/;
 
-  if (!hexRegex.test(process.env.OLD_LOCKBOX_MASTER_KEY)) {
-    throw new Error('OLD_LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F)');
-  }
-
   if (!hexRegex.test(process.env.LOCKBOX_MASTER_KEY)) {
     throw new Error('LOCKBOX_MASTER_KEY must be exactly 64 hexadecimal characters (0-9, a-f, A-F)');
   }
+}
 
-  // Ensure keys are different
-  if (process.env.OLD_LOCKBOX_MASTER_KEY === process.env.LOCKBOX_MASTER_KEY) {
-    throw new Error('LOCKBOX_MASTER_KEY must be different from OLD_LOCKBOX_MASTER_KEY');
+function validateKeyFormat(key: string, label: string): void {
+  const hexRegex = /^[0-9a-fA-F]{64}$/;
+  if (!hexRegex.test(key)) {
+    throw new Error(`${label} must be exactly 64 hexadecimal characters (0-9, a-f, A-F)`);
   }
+}
+
+async function promptForOldKey(): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve, reject) => {
+    rl.question(
+      'Please enter the old key: ',
+      (answer) => {
+        rl.close();
+        const key = answer.trim();
+
+        if (!key) {
+          reject(new Error('Old key is required'));
+          return;
+        }
+
+        try {
+          validateKeyFormat(key, 'Old master key');
+          resolve(key);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
 }
 
 async function promptBackupConfirmation(): Promise<void> {
