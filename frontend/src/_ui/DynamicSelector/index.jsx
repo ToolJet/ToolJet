@@ -171,13 +171,13 @@ const DynamicSelector = ({
                 if (isMultiAuth) {
                     if (userId) {
                         newCache[userId] = {
-                            '__default': transformedData
+                            'nonDependentCache': transformedData
                         };
                     }
                 } else {
                     newCache = {
                         isMultiAuth: isMultiAuth,
-                        '__default': transformedData
+                        'nonDependentCache': transformedData
                     };
                 }
 
@@ -258,10 +258,10 @@ const DynamicSelector = ({
                 let cachedData = null;
                 if (isMultiAuth) {
                     if (userId && existingCache[userId]) {
-                        cachedData = existingCache[userId]['__default'];
+                        cachedData = existingCache[userId]['nonDependentCache'];
                     }
                 } else {
-                    cachedData = existingCache['__default'];
+                    cachedData = existingCache['nonDependentCache'];
                 }
 
                 if (cachedData) {
