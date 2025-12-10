@@ -187,7 +187,7 @@ export const modalV2Config = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'header',
     },
@@ -214,7 +214,7 @@ export const modalV2Config = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'footer',
     },
@@ -333,8 +333,8 @@ export const modalV2Config = {
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
-      headerDividerColor: { value: 'var(--cc-default-border)' },
-      footerDividerColor: { value: 'var(--cc-default-border)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
+      footerDividerColor: { value: 'var(--cc-weak-border)' },
     },
   },
 };

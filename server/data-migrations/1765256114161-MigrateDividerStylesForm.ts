@@ -35,6 +35,10 @@ export class MigrateDividerStylesForm1765256114161 implements MigrationInterface
                 styles.headerDividerColor.value = "var(--cc-default-border)"
             }
 
+            if (!styles.footerDividerColor.value) {
+                styles.footerDividerColor.value = "var(--cc-default-border)"
+            }
+
             await queryRunner.query(
                 `UPDATE components
                  SET styles = $1
