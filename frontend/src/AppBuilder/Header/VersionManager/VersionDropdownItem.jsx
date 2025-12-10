@@ -261,7 +261,12 @@ const VersionDropdownItem = ({
 
             {/* Action buttons */}
             {showActions && (
-              <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
+              <div
+                className="d-flex align-items-center"
+                style={{ gap: '4px', flexShrink: 0 }}
+                onMouseEnter={() => setIsHoveringActionButtons(true)}
+                onMouseLeave={() => setIsHoveringActionButtons(false)}
+              >
                 {/* Promote button - shown for versions that can be promoted */}
                 {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
@@ -292,6 +297,7 @@ const VersionDropdownItem = ({
                   rootClose
                   show={openMenuVersionId === version.id}
                   onToggle={(show) => {
+                    setIsMoreMenuOpen(show);
                     setOpenMenuVersionId?.(show ? version.id : null);
                   }}
                 >
@@ -337,8 +343,8 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata
-  if (showMetadataTooltip && tooltipContent) {
+  // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen) {
     return (
       <ToolTip
         message={tooltipContent}

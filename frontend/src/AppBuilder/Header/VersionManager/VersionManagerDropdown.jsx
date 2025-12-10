@@ -147,6 +147,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleEnvironmentChange = (env) => {
+    // Close any open menus when switching environments
+    setOpenMenuVersionId(null);
     // Update local filter and lazy load versions for the selected environment
     setSelectedEnvironmentFilter(env);
     if (appId && env.id) {
