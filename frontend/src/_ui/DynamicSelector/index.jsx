@@ -35,17 +35,7 @@ const DynamicSelector = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const isDynamicValue = (val) => typeof val === 'string' && val.startsWith('{{') && val.endsWith('}}');
-    const [isFxMode, setIsFxMode] = useState(fxEnabled && (isDynamicValue(options[propertyKey]?.value) || isDynamicValue(value)));
-
-    useEffect(() => {
-        if (fxEnabled) {
-            const val = options[propertyKey]?.value ?? value;
-            if (isDynamicValue(val) && !isFxMode) {
-                setIsFxMode(true);
-            }
-        }
-    }, [options, propertyKey, value, fxEnabled]);
+    const [isFxMode, setIsFxMode] = useState(false);
 
     const depKeys = Array.isArray(dependsOn) ? dependsOn : [];
     const depValues = Object.fromEntries(depKeys.map(key => [key, options?.[key]?.value ?? options?.[key]]));
