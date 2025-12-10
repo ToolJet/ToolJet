@@ -24,6 +24,8 @@ const VersionDropdownItem = ({
   environments = [],
   showActions = true,
   darkMode = false,
+  openMenuVersionId,
+  setOpenMenuVersionId,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
@@ -45,6 +47,24 @@ const VersionDropdownItem = ({
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
+  const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
+  // Close menu when scrolling
+  useEffect(() => {
+    if (openMenuVersionId === version.id) {
+      const handleScroll = () => {
+        setOpenMenuVersionId?.(null);
+      };
+
+      // Find the scrollable versions list container
+      const scrollContainer = document.querySelector('.versions-list');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }
+  }, [openMenuVersionId, version.id, setOpenMenuVersionId]);
 
   // Check if metadata text is overflowing
   useEffect(() => {
@@ -265,7 +285,16 @@ const VersionDropdownItem = ({
                 )}
 
                 {/* More menu */}
-                <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom-end"
+                  overlay={renderMenu}
+                  rootClose
+                  show={openMenuVersionId === version.id}
+                  onToggle={(show) => {
+                    setOpenMenuVersionId?.(show ? version.id : null);
+                  }}
+                >
                   <Button
                     variant="ghost"
                     size="small"

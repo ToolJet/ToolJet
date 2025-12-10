@@ -11,6 +11,7 @@ const initialState = {
   loading: false,
   error: null,
   retryCount: 0,
+  currentFetchId: null, // Track the latest fetch request to prevent race conditions
 };
 
 export const useVersionManagerStore = create(
@@ -72,7 +73,9 @@ export const useVersionManagerStore = create(
 
       // Fetch versions for the currently selected environment (lazy loading)
       fetchVersionsForEnvironment: async (appId, environmentId) => {
-        set({ loading: true, error: null });
+        // Generate unique fetch ID to track this specific request
+        const fetchId = `${appId}-${environmentId}-${Date.now()}`;
+        set({ loading: true, error: null, currentFetchId: fetchId });
 
         try {
           await get()._retryWithBackoff(async () => {
@@ -80,22 +83,31 @@ export const useVersionManagerStore = create(
             const response = await appEnvironmentService.getVersionsByEnvironment(appId, environmentId);
             const versions = response.appVersions || [];
 
-            // Find the draft version
-            const draft = versions.find((v) => v.status === 'DRAFT');
+            // Only update state if this is still the most recent fetch
+            // This prevents race conditions where an older request completes after a newer one
+            if (get().currentFetchId === fetchId) {
+              // Find the draft version
+              const draft = versions.find((v) => v.status === 'DRAFT');
 
-            set({
-              versions,
-              draftVersion: draft,
-              loading: false,
-            });
+              set({
+                versions,
+                draftVersion: draft,
+                loading: false,
+              });
 
-            // Apply filtering after setting versions
-            get()._filterVersionsByEnvironmentAndSearch();
+              // Apply filtering after setting versions
+              get()._filterVersionsByEnvironmentAndSearch();
+            } else {
+              console.log(`Ignoring stale fetch for environment ${environmentId}`);
+            }
           });
         } catch (error) {
-          console.error('Failed to fetch versions after retries:', error);
-          set({ error: error.message || 'Failed to load versions', loading: false });
-          toast.error('Failed to load versions. Please try again.');
+          // Only show error if this is still the current fetch
+          if (get().currentFetchId === fetchId) {
+            console.error('Failed to fetch versions after retries:', error);
+            set({ error: error.message || 'Failed to load versions', loading: false });
+            toast.error('Failed to load versions. Please try again.');
+          }
         }
       },
 
