@@ -132,6 +132,12 @@ export class AppModuleLoader {
 
                   // ALSO write to capture file if capture is active
                   const state = globalThis.__tooljet_log_capture_state__;
+
+                  // Debug every 100th call to see state
+                  if (totalWriteCalls % 100 === 1) {
+                    console.error(`[DEBUG] Write #${totalWriteCalls}: mode=${state?.captureMode}, hasDest=${!!state?.captureDestination}, hasState=${!!state}`);
+                  }
+
                   if (state?.captureMode && state?.captureDestination) {
                     captureWriteCount++;
                     console.error(`[DEBUG] Write call #${totalWriteCalls} -> Captured log #${captureWriteCount}`);
