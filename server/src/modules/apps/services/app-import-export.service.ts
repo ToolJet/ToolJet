@@ -85,7 +85,10 @@ type NewRevampedComponent =
   | 'StarRating'
   | 'Tags'
   | 'CircularProgressBar'
-  | 'Html';
+  | 'Html'
+  | 'Container'
+  | 'Form'
+  | 'ModalV2';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -119,6 +122,9 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tags',
   'CircularProgressBar',
   'Html',
+  'Container',
+  'Form',
+  'ModalV2',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -2650,6 +2656,9 @@ function migrateProperties(
     // Container
     if (componentType === 'Container') {
       properties.showHeader = properties?.showHeader || false;
+      if(styles.headerDividerColor === undefined){
+        styles.headerDividerColor = { value: 'var(--cc-default-border)' };
+      }
     }
 
     //Tags
@@ -2663,6 +2672,23 @@ function migrateProperties(
     if (componentType === 'Form') {
       properties.showHeader = properties?.showHeader || false;
       properties.showFooter = properties?.showFooter || false;
+
+      if (styles.headerDividerColor === undefined) {
+        styles.headerDividerColor = { value: 'var(--cc-default-border)' };
+      }
+      if (styles.footerDividerColor === undefined) {
+        styles.footerDividerColor = { value: 'var(--cc-default-border)' };
+      }
+    }
+
+    // ModalV2
+    if (componentType === 'ModalV2') {
+      if (styles.headerDividerColor === undefined) {
+        styles.headerDividerColor = { value: 'var(--cc-default-border)' };
+      }
+      if (styles.footerDividerColor === undefined) {
+        styles.footerDividerColor = { value: 'var(--cc-default-border)' };
+      }
     }
 
     // Tabs
