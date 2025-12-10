@@ -1,0 +1,136 @@
+@import "../../_styles/designtheme.scss";
+
+.log-capture-floating-button {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 10001; // Above all other elements
+
+  @media (max-width: 768px) {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .log-capture-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--red9);
+    color: white;
+    border: none;
+    border-radius: 28px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+                0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--red10);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3),
+                  0 4px 12px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      padding: 10px 16px;
+      font-size: 13px;
+      gap: 10px;
+    }
+  }
+
+  .recording-indicator {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  .recording-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    z-index: 2;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  .recording-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+
+  .button-text {
+    line-height: 1;
+    white-space: nowrap;
+
+    @media (max-width: 480px) {
+      display: none; // Show only dot on very small screens
+    }
+  }
+
+  // Pulsing animations
+  @keyframes dotPulse {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes ringPulse {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.8);
+      opacity: 0;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+// Dark mode support
+[data-theme="dark"],
+.dark-mode {
+  .log-capture-floating-button {
+    .log-capture-button {
+      background: var(--red10);
+
+      &:hover:not(:disabled) {
+        background: var(--red11);
+      }
+    }
+  }
+}
