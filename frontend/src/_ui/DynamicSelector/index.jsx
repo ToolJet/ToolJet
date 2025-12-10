@@ -71,7 +71,7 @@ const DynamicSelector = ({
 
     const handleFetch = async () => {
         if (!selectedDataSource?.id || !invokeMethod) {
-            console.error('[DynamicSelector] Missing data source or invoke method', { selectedDataSourceId: selectedDataSource?.id, invokeMethod });
+            console.error('[DynamicSelector] Missing data source or invoke method', { invokeMethod });
             setError('Configuration error: missing data source or invoke method');
             return;
         }
