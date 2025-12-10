@@ -61,6 +61,8 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
+
 type NewRevampedComponent =
   | 'Text'
   | 'TextInput'
@@ -85,7 +87,8 @@ type NewRevampedComponent =
   | 'StarRating'
   | 'Tags'
   | 'CircularProgressBar'
-  | 'Html';
+  | 'Html'
+  | 'Chat';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -119,7 +122,10 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tags',
   'CircularProgressBar',
   'Html',
+  'Chat',
 ];
+
+const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
 
 const INPUT_WIDGET_TYPES = [
   'TextInput',
@@ -2524,9 +2530,9 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent,
   component: Component,
-  componentTypes: NewRevampedComponent[],
+  componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
 ) {
   const properties = { ...component.properties };
@@ -2540,6 +2546,36 @@ function migrateProperties(
 
   const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
 
+  if (PartialRevampedComponents.includes(componentType as PartialRevampedComponent)) {
+    const defaultStylesByComponent: Record<string, Record<string, { value: string | number }>> = {
+      CodeEditor: {
+        borderRadius: { value: 4 },
+        borderColor: { value: 'var(--cc-weak-border)' },
+        backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      },
+      PDF: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      Calendar: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      CustomComponent: {
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        borderColor: { value: 'var(--cc-default-border)' },
+      },
+    };
+
+    const defaults = defaultStylesByComponent[componentType];
+    if (defaults) {
+      for (const [key, value] of Object.entries(defaults)) {
+        if (!styles[key]) {
+          styles[key] = value;
+        }
+      }
+    }
+  }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
@@ -2592,6 +2628,12 @@ function migrateProperties(
           validation.maxValue = properties?.maxValue;
         }
         delete properties.maxValue;
+      }
+    }
+
+    if (componentType === 'Chat') {
+      if (!styles.borderRadius) {
+        styles.borderRadius = { value: 6 };
       }
     }
 

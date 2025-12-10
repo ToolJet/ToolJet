@@ -32,7 +32,7 @@ export class BackfillDefaultComponentStyles1765313746517 implements MigrationInt
     while (hasMoreData) {
       // Fetch components in batches using raw SQL
       const components = await queryRunner.query(
-        `SELECT id, properties, styles, general_properties, general_styles
+        `SELECT id, properties, styles, general_properties, general_styles, type
              FROM components
              WHERE type = ANY($1)
              ORDER BY "created_at" ASC
@@ -63,26 +63,16 @@ export class BackfillDefaultComponentStyles1765313746517 implements MigrationInt
 
   private async processUpdates(queryRunner: QueryRunner, components: any[]) {
     for (const component of components) {
-      const properties = component.properties ? { ...component.properties } : {};
       const styles = component.styles ? { ...component.styles } : {};
-      const general = component.general_properties ? { ...component.general_properties } : {};
-      const generalStyles = component.general_styles ? { ...component.general_styles } : {};
+      const componentType = component.type;
 
-      this.applyDefaultStyles(styles, component.type);
+      this.applyDefaultStyles(styles, componentType);
 
       // Updating component using raw query
-      await queryRunner.query(
-        `UPDATE components
-           SET properties = $1, styles = $2, general_properties = $3, general_styles = $4
-           WHERE id = $5`,
-        [
-          JSON.stringify(properties),
-          JSON.stringify(styles),
-          JSON.stringify(general),
-          JSON.stringify(generalStyles),
-          component.id,
-        ]
-      );
+      await queryRunner.query(`UPDATE components SET styles = $1 WHERE id = $2`, [
+        JSON.stringify(styles),
+        component.id,
+      ]);
     }
   }
 
