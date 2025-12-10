@@ -48,10 +48,10 @@ const DynamicSelector = ({
     }, [options, propertyKey, value, fxEnabled]);
 
     const depKeys = Array.isArray(dependsOn) ? dependsOn : [];
-    const depValues = Object.fromEntries(depKeys.map(k => [k, options?.[k]?.value ?? options?.[k]]));
-    const depsReady = depKeys.length === 0 || depKeys.every(k => {
-        const v = options?.[k]?.value ?? options?.[k];
-        return v !== undefined && v !== null && v !== '';
+    const depValues = Object.fromEntries(depKeys.map(key => [key, options?.[key]?.value ?? options?.[key]]));
+    const depsReady = depKeys.length === 0 || depKeys.every(key => {
+        const value = options?.[key]?.value ?? options?.[key];
+        return value !== undefined && value !== null && value !== '';
     });
 
     const [fetchedData, setFetchedData] = useState([]);
