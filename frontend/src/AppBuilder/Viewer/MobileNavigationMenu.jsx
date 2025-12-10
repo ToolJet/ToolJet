@@ -46,8 +46,6 @@ const MobileNavigationMenu = ({
     [hasAppPagesAddNavGroupEnabled, pages]
   );
 
-  console.log('pagesTree->', pagesTree, pages);
-
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
       const pageVisibility = pagesVisibilityState[page?.id]?.hidden ?? false;
