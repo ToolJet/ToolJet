@@ -34,10 +34,17 @@ const MobileNavigationMenu = ({
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
+
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const { name, hideLogo, hideHeader } = properties ?? {};
+
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
@@ -45,8 +52,6 @@ const MobileNavigationMenu = ({
     () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages) : pages),
     [hasAppPagesAddNavGroupEnabled, pages]
   );
-
-  console.log('pagesTree->', pagesTree, pages);
 
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
@@ -169,12 +174,12 @@ const MobileNavigationMenu = ({
           </div>
           <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
             <h1 className="navbar-brand d-flex align-items-center justify-content-center tw-gap-[12px] p-0">
-              {!hideLogo && (
+              {!logoHidden && (
                 <div data-cy="viewer-page-logo" onClick={switchToHomePage} className="cursor-pointer tw-flex-shrink-0">
                   <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />
                 </div>
               )}
-              {!hideHeader && (
+              {!headerHidden && (
                 <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
               )}
             </h1>

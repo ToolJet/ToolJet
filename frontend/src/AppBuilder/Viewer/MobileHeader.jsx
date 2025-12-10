@@ -39,6 +39,12 @@ const MobileHeader = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
+
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -61,12 +67,12 @@ const MobileHeader = ({
       style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
     >
       <h1 className={classNames('navbar-brand', 'd-flex align-items-center justify-content-center tw-gap-[12px] p-0')}>
-        {!hideLogo && (
+        {!logoHidden && (
           <div data-cy="viewer-page-logo" onClick={switchToHomePage} className="cursor-pointer tw-flex-shrink-0">
             <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />
           </div>
         )}
-        {!hideHeader && (
+        {!headerHidden && (
           <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
         )}
       </h1>
@@ -116,13 +122,6 @@ const MobileHeader = ({
       </div>
     );
   };
-
-  const hasAppPagesHeaderAndLogoEnabled = useStore(
-    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
-  );
-
-  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
-  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   return (
     <SidebarProvider
