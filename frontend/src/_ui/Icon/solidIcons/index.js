@@ -1,877 +1,859 @@
-import React from 'react';
-import Apps from './Apps.jsx';
-import AddAppIcon from './AddApp.jsx';
-import Archive from './Archive.jsx';
-import ArrowBack from './ArrowBack.jsx';
-import ArrowDown from './ArrowDown.jsx';
-import Arroweft from './Arroweft.jsx';
-import ArrowReturn from './ArrowReturn.jsx';
-import ArrowRight from './ArrowRight.jsx';
-import ArrowSort from './ArrowSort.jsx';
-import ArrowSortRectangle from './ArrowSortRectangle.jsx';
-import AddNavItemURL from './AddNavItemURL.jsx';
-import ArrowTransfer from './ArrowTransfer.jsx';
-import ArrowUp from './ArrowUp.jsx';
-import ArrowUpRightIcon from './ArrowUpRightIcon.jsx';
-import ArrowUpDown from './ArrowUpDown.jsx';
-import BulbIcon from './Bulb.jsx';
-import BulletList from './BulletList.jsx';
-import BookSearch from './BookSearch.jsx';
-import Branch from './Branch.jsx';
-import Bug from './Bug.jsx';
-import Debugger from './Debugger.jsx';
-import Calender from './Calender.jsx';
-import CheckCircle from './CheckCircle.jsx';
-import CheckRectangle from './CheckRectangle.jsx';
-import CheveronDown from './CheveronDown.jsx';
-import CheveronLeft from './CheveronLeft.jsx';
-import CheveronRight from './CheveronRight.jsx';
-import CheveronUp from './CheveronUp.jsx';
-import ClearRectangle from './ClearRectangle.jsx';
-import CaretDown from './CaretDown.jsx';
-import CaretUp from './CaretUp.jsx';
-import Clock from './Clock.jsx';
-import CursorClick from './CursorClick.jsx';
-import LockGradient from './LockGradient.jsx';
-import DatasourceGradient from './DatasourceGradient.jsx';
-import CoinIcon from './CoinIcon.jsx';
-import Column from './Column.jsx';
-import Columns from './Columns.jsx';
-import Compass from './Compass.jsx';
-import Computer from './Computer.jsx';
-import Copy from './Copy.jsx';
-import DarkMode from './DarkMode.jsx';
-import Datasource from './Datasource.jsx';
-import Delete from './Delete.jsx';
-import Diamond from './Diamond.jsx';
-import DownArrow from './DownArrow.jsx';
-import EditRectangle from './EditRectangle.jsx';
-import EnterpriseV3 from './EnterpriseV3.jsx';
-import Enterprise from './Enterprise.jsx';
-import EnterpriseSmall from './EnterpriseSmall.jsx';
-import Eye from './Eye.jsx';
-import Eye1 from './Eye1.jsx';
-import EyeDisable from './EyeDisable.jsx';
-import Expand from './Expand.jsx';
-import File01 from './File01.jsx';
-import FileDownload from './FileDownload.jsx';
-import FileUpload from './FileUpload.jsx';
-import Filter from './Filter.jsx';
-import FloppyDisk from './FloppyDisk.jsx';
-import Folder from './Folder.jsx';
-import FolderDownload from './FolderDownload.jsx';
-import FolderUpload from './FolderUpload.jsx';
-import GitSync from './GitSync.jsx';
-import FullOuterJoin from './FullOuterJoin.jsx';
-import Globe from './Globe.jsx';
-import Options from './Options.jsx';
-import Grid from './Grid.jsx';
-import HelpPolygon from './HelpPolygon.jsx';
-import Home from './Home.jsx';
-import Information from './Information.jsx';
-import InformationCircle from './InformationCircle.jsx';
-import InnerJoinIcon from './InnerJoinIcon.jsx';
-import InRectangle from './InRectangle.jsx';
-import Interactive from './Interactive.jsx';
-import Layers from './Layers.jsx';
-import LeftArrow from './LeftArrow.jsx';
-import LeftOuterJoinIcon from './LeftOuterJoinIcon.jsx';
-import LightMode from './LightMode.jsx';
-import ListView from './ListView.jsx';
-import Logout from './Logout.jsx';
-import Menu from './Menu.jsx';
-import MenuHome from './MenuHome.jsx';
-import Minus from './Minus.jsx';
-import Minus01 from './Minus01.jsx';
-import Mobile from './Mobile.jsx';
-import MoreHorizontal from './MoreHorizontal.jsx';
-import MoreVertical from './MoreVertical.jsx';
-import MoreVertical01 from './MoreVertical01.jsx';
-import Notification from './Notification.jsx';
-import NotificationRinging from './NotificationRinging.jsx';
-import NotificationSide from './NotificationSide.jsx';
-import NotificationSilent from './NotificationSilent.jsx';
-import NotificationUnread from './NotificationUnread.jsx';
-import NewTab from './NewTab.jsx';
-import Open from './Open.jsx';
-import Page from './Page.jsx';
-import PageAdd from './PageAdd.jsx';
-import PageUpload from './PageUpload.jsx';
-import Pin from './Pin.jsx';
-import Unpin from './Unpin.jsx';
-import AlignRight from './AlignRight';
-import Play from './Play.jsx';
-import Play01 from './Play01.jsx';
-import Plus from './Plus.jsx';
-import Plus01 from './Plus01.jsx';
-import Reload from './Reload.jsx';
-import Read from './Read.jsx';
-import ReloadError from './ReloadError.jsx';
-import Remove from './Remove.jsx';
-import Remove01 from './Remove01.jsx';
-import Remove03 from './Remove03.jsx';
-import RemoveRectangle from './RemoveRectangle.jsx';
-import RightArrow from './RightArrow.jsx';
-import RightOuterJoin from './RightOuterJoin.jsx';
-import Row from './Row.jsx';
-import Retry from './Retry.jsx';
-import SadRectangle from './SadRectangle.jsx';
-import Search from './Search.jsx';
-import SearchMinus from './SearchMinus.jsx';
-import SearchPlus from './SearchPlus.jsx';
-import Sent from './Sent.jsx';
-import SentFast from './SentFast.jsx';
-import Server from './Server.jsx';
-import Settings from './Settings.jsx';
-import Share from './Share.jsx';
-import Shield from './Shield.jsx';
-import ShieldCheck from './ShieldCheck.jsx';
-import Skip from './Skip.jsx';
-import Signpost from './Signpost.jsx';
-import SmileRectangle from './SmileRectangle.jsx';
-import SortArrowDown from './SortArrowDown.jsx';
-import SortArrowUp from './SortArrowUp.jsx';
-import Subtract from './Subtract.jsx';
-import Sun from './Sun.jsx';
-import Sync from './SyncIcon.jsx';
-import Table from './Table.jsx';
-import Tick from './Tick.jsx';
-import TickV3 from './TickV3.jsx';
-import Trash from './Trash.jsx';
-import UpArrow from './UpArrow.jsx';
-import User from './User.jsx';
-import UserAdd from './UserAdd.jsx';
-import UserGroup from './UserGroup.jsx';
-import UserRemove from './UserRemove.jsx';
-import UTurn from './UTurn.jsx';
-import Variable from './Variable.jsx';
-import Workflows from './Workflows.jsx';
-import Warning from './Warning.jsx';
-import ZoomIn from './ZoomIn.jsx';
-import ZoomOut from './ZoomOut.jsx';
-import ZoomOutRectangle from './ZoomOutRectangle.jsx';
-import AddRectangle from './AddRectangle.jsx';
-import Lock from './Lock.jsx';
-import Mail from './Mail.jsx';
-import Logs from './Logs.jsx';
-import Marketplace from './Marketplace.jsx';
-import AuditLogs from './AuditLog.jsx';
-import InstanceSettings from './InstanceSettings.jsx';
-import EnterpriseGradient from './EnterpriseGradient.jsx';
-import Workspace from './Workspace.jsx';
-import CircularToggleDisabled from './CircularToggleDisabled.jsx';
-import CircularToggleEnabled from './CircularToggleEnabled.jsx';
-import Idea from './Idea.jsx';
-import Minimize from './Minimize.jsx';
-import Maximize from './Maximize.jsx';
-import PlusRectangle from './PlusRectangle.jsx';
-import EyeOpen from './EyeOpen.jsx';
-import CloudInvalid from './CloudInvalid.jsx';
-import CloudValid from './CloudValid.jsx';
-import LayersVersion from './LayersVersion.jsx';
-import Comments from './Comments';
-import Inspect from './Inspect.jsx';
-import ArrowForwardUp from './ArrowForwardUp.jsx';
-import ArrowBackUp from './ArrowBackUp.jsx';
-import CheveronLeftDouble from './CheveronLeftDouble.jsx';
-import CheveronRightDouble from './CheveronRightDouble.jsx';
-import Dot from './Dot.jsx';
-import Check from './Check.jsx';
-import Editable from './Editable.jsx';
-import Save from './Save.jsx';
-import Cross from './Cross.jsx';
-import Danger from './Danger.jsx';
-import DangerDark from './DangerDark.jsx';
-import ArrowUpTriangle from './ArrowUpTriangle.jsx';
-import ArrowDownTriangle from './ArrowDownTriangle.jsx';
-import EnterButtonIcon from './EnterButtonIcon.jsx';
-import WorkspaceConstants from './WorkspaceConstants.jsx';
-import ArrowBackDown from './ArrowBackDown.jsx';
-import AlignRightinspector from './AlignRightinspector.jsx';
-import AlignLeftinspector from './AlignLeftinspector.jsx';
-import AlignHorizontalCenter from './AlignHorizontalCenter.jsx';
-import AlignVerticallyTop from './AlignVerticallyTop.jsx';
-import AlignVerticallyBottom from './AlignVerticallyBottom.jsx';
-import AlignVerticallyCenter from './AlignVerticallyCenter.jsx';
-import Italic from './Italic.jsx';
-import Underline from './Underline.jsx';
-import Overline from './Overline.jsx';
-import Linethrough from './Linethrough.jsx';
-import Uppercase from './Uppercase.jsx';
-import Lowercase from './Lowercase.jsx';
-import Capitalize from './Capitalize.jsx';
-import Oblique from './Oblique.jsx';
-import TooljetIcon from './TooljetIcon.jsx';
-import PrimaryKey from './PrimaryKey.jsx';
-import PostgreSQLIcon from './PostgreSQLIcon.jsx';
-import ForeignKey from './ForeignKey.jsx';
-import TriangleUpCenter from './TriangleUpCenter.jsx';
-import TriangleDownCenter from './TriangleDownCenter.jsx';
-import UserGear from './UserGear.jsx';
-import GranularAccess from './GranularAccess.jsx';
-import Search01 from './Search01.jsx';
-import LightIcon from './LightIcon.jsx';
-import DarkIcon from './DarkIcon.jsx';
-import Credentials from './Credentials.jsx';
-import ShiftButtonIcon from './ShiftButtonIcon.jsx';
-import Unpin01 from './Unpin01.jsx';
-import GranularAccessGrad from './GranularAceesGrad.jsx';
-import WarningUserNotFound from './WarningUserNotFound.jsx';
-import VarcharCol from './VarcharCol.jsx';
-import Jsonb from './Jsonb.jsx';
-import IntegerCol from './IntegerCol.jsx';
-import BigIntCol from './BigIntCol.jsx';
-import FloatCol from './FloatCol.jsx';
-import BooleanCol from './BooleanCol.jsx';
-import SerialCol from './SerialCol.jsx';
-import DatetimeCol from './DatetimeCol';
-import AITag from './AITag.jsx';
-import SectionCollapse from './SectionCollapse.jsx';
-import SectionExpand from './SectionExpand.jsx';
-import Reset from './Reset.jsx';
-import Outbound from './Outbound.jsx';
-import AddPageGroupIcon from './AddPageGroup.jsx';
-import PageIcon from './PageIcon.jsx';
-import EnterpriseNew from './EnterpriseNew.jsx';
-import ArrowReturn01 from './ArrowReturn01.jsx';
-import ArrowUp01 from './ArrowUp01.jsx';
-import ArrowDown01 from './ArrowDown01.jsx';
-import Replace from './Replace.jsx';
-import ReplaceAll from './ReplaceAll.jsx';
-import Remove02 from './Remove02.jsx';
-import TooljetAi from './TooljetAI.jsx';
-import AICrown from './AICrown.jsx';
-import BookDemo from './BookDemo.jsx';
-import Contactv3 from './Contactv3.jsx';
-import PremiumLogo from './PremiumLogo.jsx';
-import PremiumPlan from './PremiumPlan.jsx';
-import StudentIcon from './StudentIcon.jsx';
-import CalendarIcon from './CalendarIcon.jsx';
-import CalendarSmall from './CalendarSmall.jsx';
-import UserGroupsGrey from './UserGroupsGrey.jsx';
-import AppLimitSvg from './AppLimitSvg.jsx';
-import NewTabSmall from './NewTabSmall.jsx';
-import EmptyStateModules from './EmptyStateModules.jsx';
-import Code from './Code.jsx';
-import WorkflowV3 from './WorkflowV3.jsx';
-import WorkspaceV3 from './WorkspaceV3.jsx';
-import CurlyBraces from './CurlyBraces.jsx';
-import Sliders from './Sliders.jsx';
-import Asterix from './Asterix.jsx';
-import ArrowDirectionLoop from './ArrowDirectionLoop.jsx';
-import EnterpriseCrown from './EnterrpiseCrown.jsx';
-import FileCode from './FileCode.jsx';
-import Corners from './Corners.jsx';
-import Moon from './Moon.jsx';
-import NoPageEvents from './NoPageEvents.jsx';
-import ArrowRight01 from './ArrowRight01.jsx';
-import DuplicatePage from './DuplicatePage.jsx';
-import Delete01 from './Delete01.jsx';
-import SourceControl from './SourceControl.jsx';
-import Push from './PushIcon.jsx';
-import Pull from './PullIcon.jsx';
-import PropertiesStyles from './PropertiesStyles.jsx';
-import RemoveFolder from './RemoveFolder.jsx';
-import Support from './Support.jsx';
-import ClearHistory from './ClearHistory.jsx';
-import PageDownload from './PageDownload.jsx';
-import Send from './Send.jsx';
-import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
-import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
-import LoadingState from './LoadingState.jsx';
-import DataDatabase from './DataDatabase.jsx';
-import Flash from './Flash.jsx';
-import Json from './Json.jsx';
-import AITopup from './AITopup.jsx';
-import AITopupWhite from './AITopupWhite.jsx';
-import AITopupGrey from './AITopupGrey.jsx';
-import MobileEmptyStateIcon from './MobileEmptyStateIcon';
-import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
-import Google from './Google.jsx';
-import GitHub from './GitHub.jsx';
+import React from "react";
+import Apps from "./Apps.jsx";
+import AddAppIcon from "./AddApp.jsx";
+import Archive from "./Archive.jsx";
+import ArrowBack from "./ArrowBack.jsx";
+import ArrowDown from "./ArrowDown.jsx";
+import Arroweft from "./Arroweft.jsx";
+import ArrowReturn from "./ArrowReturn.jsx";
+import ArrowRight from "./ArrowRight.jsx";
+import ArrowSort from "./ArrowSort.jsx";
+import ArrowSortRectangle from "./ArrowSortRectangle.jsx";
+import AddNavItemURL from "./AddNavItemURL.jsx";
+import ArrowTransfer from "./ArrowTransfer.jsx";
+import ArrowUp from "./ArrowUp.jsx";
+import ArrowUpRightIcon from "./ArrowUpRightIcon.jsx";
+import ArrowUpDown from "./ArrowUpDown.jsx";
+import BulbIcon from "./Bulb.jsx";
+import BulletList from "./BulletList.jsx";
+import BookSearch from "./BookSearch.jsx";
+import Branch from "./Branch.jsx";
+import Bug from "./Bug.jsx";
+import Debugger from "./Debugger.jsx";
+import Calender from "./Calender.jsx";
+import CheckCircle from "./CheckCircle.jsx";
+import CheckRectangle from "./CheckRectangle.jsx";
+import CheveronDown from "./CheveronDown.jsx";
+import CheveronLeft from "./CheveronLeft.jsx";
+import CheveronRight from "./CheveronRight.jsx";
+import CheveronUp from "./CheveronUp.jsx";
+import ClearRectangle from "./ClearRectangle.jsx";
+import CaretDown from "./CaretDown.jsx";
+import CaretUp from "./CaretUp.jsx";
+import Clock from "./Clock.jsx";
+import CursorClick from "./CursorClick.jsx";
+import LockGradient from "./LockGradient.jsx";
+import DatasourceGradient from "./DatasourceGradient.jsx";
+import CoinIcon from "./CoinIcon.jsx";
+import Column from "./Column.jsx";
+import Columns from "./Columns.jsx";
+import Compass from "./Compass.jsx";
+import Computer from "./Computer.jsx";
+import Copy from "./Copy.jsx";
+import DarkMode from "./DarkMode.jsx";
+import Datasource from "./Datasource.jsx";
+import Delete from "./Delete.jsx";
+import Diamond from "./Diamond.jsx";
+import DownArrow from "./DownArrow.jsx";
+import EditRectangle from "./EditRectangle.jsx";
+import EnterpriseV3 from "./EnterpriseV3.jsx";
+import Enterprise from "./Enterprise.jsx";
+import EnterpriseSmall from "./EnterpriseSmall.jsx";
+import Eye from "./Eye.jsx";
+import Eye1 from "./Eye1.jsx";
+import EyeDisable from "./EyeDisable.jsx";
+import Expand from "./Expand.jsx";
+import File01 from "./File01.jsx";
+import FileDownload from "./FileDownload.jsx";
+import FileUpload from "./FileUpload.jsx";
+import Filter from "./Filter.jsx";
+import FloppyDisk from "./FloppyDisk.jsx";
+import Folder from "./Folder.jsx";
+import FolderDownload from "./FolderDownload.jsx";
+import FolderUpload from "./FolderUpload.jsx";
+import GitSync from "./GitSync.jsx";
+import FullOuterJoin from "./FullOuterJoin.jsx";
+import Globe from "./Globe.jsx";
+import Options from "./Options.jsx";
+import Grid from "./Grid.jsx";
+import HelpPolygon from "./HelpPolygon.jsx";
+import Home from "./Home.jsx";
+import Information from "./Information.jsx";
+import InformationCircle from "./InformationCircle.jsx";
+import InnerJoinIcon from "./InnerJoinIcon.jsx";
+import InRectangle from "./InRectangle.jsx";
+import Interactive from "./Interactive.jsx";
+import Layers from "./Layers.jsx";
+import LeftArrow from "./LeftArrow.jsx";
+import LeftOuterJoinIcon from "./LeftOuterJoinIcon.jsx";
+import LightMode from "./LightMode.jsx";
+import ListView from "./ListView.jsx";
+import Logout from "./Logout.jsx";
+import Menu from "./Menu.jsx";
+import MenuHome from "./MenuHome.jsx";
+import Minus from "./Minus.jsx";
+import Minus01 from "./Minus01.jsx";
+import Mobile from "./Mobile.jsx";
+import MoreHorizontal from "./MoreHorizontal.jsx";
+import MoreVertical from "./MoreVertical.jsx";
+import MoreVertical01 from "./MoreVertical01.jsx";
+import Notification from "./Notification.jsx";
+import NotificationRinging from "./NotificationRinging.jsx";
+import NotificationSide from "./NotificationSide.jsx";
+import NotificationSilent from "./NotificationSilent.jsx";
+import NotificationUnread from "./NotificationUnread.jsx";
+import NewTab from "./NewTab.jsx";
+import Open from "./Open.jsx";
+import Page from "./Page.jsx";
+import PageAdd from "./PageAdd.jsx";
+import PageUpload from "./PageUpload.jsx";
+import Pin from "./Pin.jsx";
+import Unpin from "./Unpin.jsx";
+import AlignRight from "./AlignRight";
+import Play from "./Play.jsx";
+import Play01 from "./Play01.jsx";
+import Plus from "./Plus.jsx";
+import Plus01 from "./Plus01.jsx";
+import Reload from "./Reload.jsx";
+import Read from "./Read.jsx";
+import ReloadError from "./ReloadError.jsx";
+import Remove from "./Remove.jsx";
+import Remove01 from "./Remove01.jsx";
+import Remove03 from "./Remove03.jsx";
+import RemoveRectangle from "./RemoveRectangle.jsx";
+import RightArrow from "./RightArrow.jsx";
+import RightOuterJoin from "./RightOuterJoin.jsx";
+import Row from "./Row.jsx";
+import Retry from "./Retry.jsx";
+import SadRectangle from "./SadRectangle.jsx";
+import Search from "./Search.jsx";
+import SearchMinus from "./SearchMinus.jsx";
+import SearchPlus from "./SearchPlus.jsx";
+import Sent from "./Sent.jsx";
+import SentFast from "./SentFast.jsx";
+import Server from "./Server.jsx";
+import Settings from "./Settings.jsx";
+import Share from "./Share.jsx";
+import Shield from "./Shield.jsx";
+import ShieldCheck from "./ShieldCheck.jsx";
+import Skip from "./Skip.jsx";
+import Signpost from "./Signpost.jsx";
+import SmileRectangle from "./SmileRectangle.jsx";
+import SortArrowDown from "./SortArrowDown.jsx";
+import SortArrowUp from "./SortArrowUp.jsx";
+import Subtract from "./Subtract.jsx";
+import Sun from "./Sun.jsx";
+import Sync from "./SyncIcon.jsx";
+import Table from "./Table.jsx";
+import Tick from "./Tick.jsx";
+import TickV3 from "./TickV3.jsx";
+import Trash from "./Trash.jsx";
+import UpArrow from "./UpArrow.jsx";
+import User from "./User.jsx";
+import UserAdd from "./UserAdd.jsx";
+import UserGroup from "./UserGroup.jsx";
+import UserRemove from "./UserRemove.jsx";
+import UTurn from "./UTurn.jsx";
+import Variable from "./Variable.jsx";
+import Workflows from "./Workflows.jsx";
+import Warning from "./Warning.jsx";
+import ZoomIn from "./ZoomIn.jsx";
+import ZoomOut from "./ZoomOut.jsx";
+import ZoomOutRectangle from "./ZoomOutRectangle.jsx";
+import AddRectangle from "./AddRectangle.jsx";
+import Lock from "./Lock.jsx";
+import Mail from "./Mail.jsx";
+import Logs from "./Logs.jsx";
+import Marketplace from "./Marketplace.jsx";
+import AuditLogs from "./AuditLog.jsx";
+import InstanceSettings from "./InstanceSettings.jsx";
+import EnterpriseGradient from "./EnterpriseGradient.jsx";
+import Workspace from "./Workspace.jsx";
+import CircularToggleDisabled from "./CircularToggleDisabled.jsx";
+import CircularToggleEnabled from "./CircularToggleEnabled.jsx";
+import Idea from "./Idea.jsx";
+import Minimize from "./Minimize.jsx";
+import Maximize from "./Maximize.jsx";
+import PlusRectangle from "./PlusRectangle.jsx";
+import EyeOpen from "./EyeOpen.jsx";
+import CloudInvalid from "./CloudInvalid.jsx";
+import CloudValid from "./CloudValid.jsx";
+import LayersVersion from "./LayersVersion.jsx";
+import Comments from "./Comments";
+import Inspect from "./Inspect.jsx";
+import ArrowForwardUp from "./ArrowForwardUp.jsx";
+import ArrowBackUp from "./ArrowBackUp.jsx";
+import CheveronLeftDouble from "./CheveronLeftDouble.jsx";
+import CheveronRightDouble from "./CheveronRightDouble.jsx";
+import Dot from "./Dot.jsx";
+import Check from "./Check.jsx";
+import Editable from "./Editable.jsx";
+import Save from "./Save.jsx";
+import Cross from "./Cross.jsx";
+import Danger from "./Danger.jsx";
+import DangerDark from "./DangerDark.jsx";
+import ArrowUpTriangle from "./ArrowUpTriangle.jsx";
+import ArrowDownTriangle from "./ArrowDownTriangle.jsx";
+import EnterButtonIcon from "./EnterButtonIcon.jsx";
+import WorkspaceConstants from "./WorkspaceConstants.jsx";
+import ArrowBackDown from "./ArrowBackDown.jsx";
+import AlignRightinspector from "./AlignRightinspector.jsx";
+import AlignLeftinspector from "./AlignLeftinspector.jsx";
+import AlignHorizontalCenter from "./AlignHorizontalCenter.jsx";
+import AlignVerticallyTop from "./AlignVerticallyTop.jsx";
+import AlignVerticallyBottom from "./AlignVerticallyBottom.jsx";
+import AlignVerticallyCenter from "./AlignVerticallyCenter.jsx";
+import Italic from "./Italic.jsx";
+import Underline from "./Underline.jsx";
+import Overline from "./Overline.jsx";
+import Linethrough from "./Linethrough.jsx";
+import Uppercase from "./Uppercase.jsx";
+import Lowercase from "./Lowercase.jsx";
+import Capitalize from "./Capitalize.jsx";
+import Oblique from "./Oblique.jsx";
+import TooljetIcon from "./TooljetIcon.jsx";
+import PrimaryKey from "./PrimaryKey.jsx";
+import PostgreSQLIcon from "./PostgreSQLIcon.jsx";
+import ForeignKey from "./ForeignKey.jsx";
+import TriangleUpCenter from "./TriangleUpCenter.jsx";
+import TriangleDownCenter from "./TriangleDownCenter.jsx";
+import UserGear from "./UserGear.jsx";
+import GranularAccess from "./GranularAccess.jsx";
+import Search01 from "./Search01.jsx";
+import LightIcon from "./LightIcon.jsx";
+import DarkIcon from "./DarkIcon.jsx";
+import Credentials from "./Credentials.jsx";
+import ShiftButtonIcon from "./ShiftButtonIcon.jsx";
+import Unpin01 from "./Unpin01.jsx";
+import GranularAccessGrad from "./GranularAceesGrad.jsx";
+import WarningUserNotFound from "./WarningUserNotFound.jsx";
+import VarcharCol from "./VarcharCol.jsx";
+import Jsonb from "./Jsonb.jsx";
+import IntegerCol from "./IntegerCol.jsx";
+import BigIntCol from "./BigIntCol.jsx";
+import FloatCol from "./FloatCol.jsx";
+import BooleanCol from "./BooleanCol.jsx";
+import SerialCol from "./SerialCol.jsx";
+import DatetimeCol from "./DatetimeCol";
+import AITag from "./AITag.jsx";
+import SectionCollapse from "./SectionCollapse.jsx";
+import SectionExpand from "./SectionExpand.jsx";
+import Reset from "./Reset.jsx";
+import Outbound from "./Outbound.jsx";
+import AddPageGroupIcon from "./AddPageGroup.jsx";
+import PageIcon from "./PageIcon.jsx";
+import EnterpriseNew from "./EnterpriseNew.jsx";
+import ArrowReturn01 from "./ArrowReturn01.jsx";
+import ArrowUp01 from "./ArrowUp01.jsx";
+import ArrowDown01 from "./ArrowDown01.jsx";
+import Replace from "./Replace.jsx";
+import ReplaceAll from "./ReplaceAll.jsx";
+import Remove02 from "./Remove02.jsx";
+import TooljetAi from "./TooljetAI.jsx";
+import AICrown from "./AICrown.jsx";
+import BookDemo from "./BookDemo.jsx";
+import Contactv3 from "./Contactv3.jsx";
+import PremiumLogo from "./PremiumLogo.jsx";
+import PremiumPlan from "./PremiumPlan.jsx";
+import StudentIcon from "./StudentIcon.jsx";
+import CalendarIcon from "./CalendarIcon.jsx";
+import CalendarSmall from "./CalendarSmall.jsx";
+import UserGroupsGrey from "./UserGroupsGrey.jsx";
+import AppLimitSvg from "./AppLimitSvg.jsx";
+import NewTabSmall from "./NewTabSmall.jsx";
+import EmptyStateModules from "./EmptyStateModules.jsx";
+import MobileEmptyStateIcon from "./MobileEmptyStateIcon.jsx";
+import MobileEmptyStateIconDark from "./MobileEmptyStateIconDark.jsx";
+import Code from "./Code.jsx";
+import WorkflowV3 from "./WorkflowV3.jsx";
+import WorkspaceV3 from "./WorkspaceV3.jsx";
+import CurlyBraces from "./CurlyBraces.jsx";
+import Sliders from "./Sliders.jsx";
+import Asterix from "./Asterix.jsx";
+import ArrowDirectionLoop from "./ArrowDirectionLoop.jsx";
+import EnterpriseCrown from "./EnterrpiseCrown.jsx";
+import FileCode from "./FileCode.jsx";
+import Corners from "./Corners.jsx";
+import Moon from "./Moon.jsx";
+import NoPageEvents from "./NoPageEvents.jsx";
+import ArrowRight01 from "./ArrowRight01.jsx";
+import DuplicatePage from "./DuplicatePage.jsx";
+import Delete01 from "./Delete01.jsx";
+import SourceControl from "./SourceControl.jsx";
+import Push from "./PushIcon.jsx";
+import Pull from "./PullIcon.jsx";
+import PropertiesStyles from "./PropertiesStyles.jsx";
+import RemoveFolder from "./RemoveFolder.jsx";
+import Support from "./Support.jsx";
+import ClearHistory from "./ClearHistory.jsx";
+import PageDownload from "./PageDownload.jsx";
+import Send from "./Send.jsx";
+import DefaultSenderChatIcon from "./DefaultSenderChatIcon.jsx";
+import DefaultResponseAvatar from "./DefaultResponseAvatar.jsx";
+import LoadingState from "./LoadingState.jsx";
+import Google from "./Google.jsx";
+import GitHub from "./GitHub.jsx";
 
 const Icon = (props) => {
   switch (props.name) {
-    case 'tooljetai':
+    case "tooljetai":
       return <TooljetAi {...props} />;
-    case 'lighticon':
+    case "lighticon":
       return <LightIcon {...props} />;
-    case 'darkicon':
+    case "darkicon":
       return <DarkIcon {...props} />;
-    case 'addrectangle':
+    case "addrectangle":
       return <AddRectangle {...props} />;
-    case 'addnavitemurl':
+    case "addnavitemurl":
       return <AddNavItemURL {...props} />;
-    case 'alignleftinspector':
+    case "alignleftinspector":
       return <AlignLeftinspector {...props} />;
-    case 'alignrightinspector':
+    case "alignrightinspector":
       return <AlignRightinspector {...props} />;
-    case 'alignhorizontalcenter':
+    case "alignhorizontalcenter":
       return <AlignHorizontalCenter {...props} />;
-    case 'alignverticallytop':
+    case "alignverticallytop":
       return <AlignVerticallyTop {...props} />;
-    case 'alignverticallybottom':
+    case "alignverticallybottom":
       return <AlignVerticallyBottom {...props} />;
-    case 'alignverticallycenter':
+    case "alignverticallycenter":
       return <AlignVerticallyCenter {...props} />;
-    case 'alignright':
+    case "alignright":
       return <AlignRight {...props} />;
-    case 'apps':
+    case "apps":
       return <Apps {...props} />;
-    case 'add-app':
+    case "add-app":
       return <AddAppIcon {...props} />;
-    case 'archive':
+    case "archive":
       return <Archive {...props} />;
-    case 'arrowback':
+    case "arrowback":
       return <ArrowBack {...props} />;
-    case 'arrowbackdown':
+    case "arrowbackdown":
       return <ArrowBackDown {...props} />;
-    case 'arrowright01':
+    case "arrowright01":
       return <ArrowRight01 {...props} />;
-    case 'arrowdown':
+    case "arrowdown":
       return <ArrowDown {...props} />;
-    case 'arrowdirectionloop':
+    case "arrowdirectionloop":
       return <ArrowDirectionLoop {...props} />;
-    case 'arroweft':
+    case "arroweft":
       return <Arroweft {...props} />;
-    case 'arrowreturn':
+    case "arrowreturn":
       return <ArrowReturn {...props} />;
-    case 'arrowright':
+    case "arrowright":
       return <ArrowRight {...props} />;
-    case 'arrowsort':
+    case "arrowsort":
       return <ArrowSort {...props} />;
-    case 'arrowsortrectangle':
+    case "arrowsortrectangle":
       return <ArrowSortRectangle {...props} />;
-    case 'arrowtransfer':
+    case "arrowtransfer":
       return <ArrowTransfer {...props} />;
-    case 'arrowup':
+    case "arrowup":
       return <ArrowUp {...props} />;
-    case 'arrow-up-right':
+    case "arrow-up-right":
       return <ArrowUpRightIcon {...props} />;
-    case 'arrowupdown':
+    case "arrowupdown":
       return <ArrowUpDown {...props} />;
-    case 'asterix':
+    case "asterix":
       return <Asterix {...props} />;
-    case 'auditlogs':
+    case "auditlogs":
       return <AuditLogs {...props} />;
-    case 'bulb':
+    case "bulb":
       return <BulbIcon {...props} />;
-    case 'bullet-list':
+    case "bullet-list":
       return <BulletList {...props} />;
-    case 'booksearch':
+    case "booksearch":
       return <BookSearch {...props} />;
-    case 'branch':
+    case "branch":
       return <Branch {...props} />;
-    case 'bug':
+    case "bug":
       return <Bug {...props} />;
-    case 'debugger':
+    case "debugger":
       return <Debugger {...props} />;
-    case 'calender':
+    case "calender":
       return <Calender {...props} />;
-    case 'caretdown':
+    case "caretdown":
       return <CaretDown {...props} />;
-    case 'caretup':
+    case "caretup":
       return <CaretUp {...props} />;
-    case 'check-circle':
+    case "check-circle":
       return <CheckCircle {...props} />;
-    case 'checkrectangle':
+    case "checkrectangle":
       return <CheckRectangle {...props} />;
-    case 'cheverondown':
+    case "cheverondown":
       return <CheveronDown {...props} />;
-    case 'cheveronleft':
+    case "cheveronleft":
       return <CheveronLeft {...props} />;
-    case 'cheveronleftdouble':
+    case "cheveronleftdouble":
       return <CheveronLeftDouble {...props} />;
-    case 'cheveronright':
+    case "cheveronright":
       return <CheveronRight {...props} />;
-    case 'credentials':
+    case "credentials":
       return <Credentials {...props} />;
-    case 'cheveronrightdouble':
+    case "cheveronrightdouble":
       return <CheveronRightDouble {...props} />;
-    case 'cheveronup':
+    case "cheveronup":
       return <CheveronUp {...props} />;
-    case 'circularToggleDisabled':
+    case "circularToggleDisabled":
       return <CircularToggleDisabled {...props} />;
-    case 'circularToggleEnabled':
+    case "circularToggleEnabled":
       return <CircularToggleEnabled {...props} />;
-    case 'clearrectangle':
+    case "clearrectangle":
       return <ClearRectangle {...props} />;
-    case 'code':
+    case "code":
       return <Code {...props} />;
-    case 'clock':
+    case "clock":
       return <Clock {...props} />;
-    case 'cursorclick':
+    case "cursorclick":
       return <CursorClick {...props} />;
-    case 'coin':
+    case "coin":
       return <CoinIcon {...props} />;
-    case 'column':
+    case "column":
       return <Column {...props} />;
-    case 'columns':
+    case "columns":
       return <Columns {...props} />;
-    case 'compass':
+    case "compass":
       return <Compass {...props} />;
-    case 'computer':
+    case "computer":
       return <Computer {...props} />;
-    case 'copy':
+    case "copy":
       return <Copy {...props} />;
-    case 'curlybraces':
+    case "curlybraces":
       return <CurlyBraces {...props} />;
-    case 'darkmode':
+    case "darkmode":
       return <DarkMode {...props} />;
-    case 'datasource':
+    case "datasource":
       return <Datasource {...props} />;
-    case 'danger':
+    case "danger":
       return <Danger {...props} />;
-    case 'danger-dark':
+    case "danger-dark":
       return <DangerDark {...props} />;
-    case 'delete':
+    case "delete":
       return <Delete {...props} />;
-    case 'delete01':
+    case "delete01":
       return <Delete01 {...props} />;
-    case 'diamond':
+    case "diamond":
       return <Diamond {...props} />;
-    case 'downarrow':
+    case "downarrow":
       return <DownArrow {...props} />;
-    case 'duplicatepage':
+    case "duplicatepage":
       return <DuplicatePage {...props} />;
-    case 'editrectangle':
+    case "editrectangle":
       return <EditRectangle {...props} />;
-    case 'enterprise':
+    case "enterprise":
       return <Enterprise {...props} />;
-    case 'enterpriseGradient':
+    case "enterpriseGradient":
       return <EnterpriseGradient {...props} />;
-    case 'nopageevents':
+    case "nopageevents":
       return <NoPageEvents {...props} />;
-    case 'enterprisesmall':
+    case "enterprisesmall":
       return <EnterpriseSmall {...props} />;
-    case 'enterprise-new':
+    case "enterprise-new":
       return <EnterpriseNew {...props} />;
-    case 'enterprisev3':
+    case "enterprisev3":
       return <EnterpriseV3 {...props} />;
-    case 'enterprisecrown':
+    case "enterprisecrown":
       return <EnterpriseCrown {...props} />;
-    case 'lockGradient':
+    case "lockGradient":
       return <LockGradient {...props} />;
-    case 'datasourceGradient':
+    case "datasourceGradient":
       return <DatasourceGradient {...props} />;
-    case 'enterbutton':
+    case "enterbutton":
       return <EnterButtonIcon {...props} />;
-    case 'eye':
+    case "eye":
       return <Eye {...props} />;
-    case 'eye1':
+    case "eye1":
       return <Eye1 {...props} />;
-    case 'eyedisable':
+    case "eyedisable":
       return <EyeDisable {...props} />;
-    case 'expand':
+    case "expand":
       return <Expand {...props} />;
-    case 'file-code':
+    case "file-code":
       return <FileCode {...props} />;
-    case 'file01':
+    case "file01":
       return <File01 {...props} />;
-    case 'filedownload':
+    case "filedownload":
       return <FileDownload {...props} />;
-    case 'fileupload':
+    case "fileupload":
       return <FileUpload {...props} />;
-    case 'filter':
+    case "filter":
       return <Filter {...props} />;
-    case 'floppydisk':
+    case "floppydisk":
       return <FloppyDisk {...props} />;
-    case 'folder':
+    case "folder":
       return <Folder {...props} />;
-    case 'folderdownload':
+    case "folderdownload":
       return <FolderDownload {...props} />;
-    case 'folderupload':
+    case "folderupload":
       return <FolderUpload {...props} />;
-    case 'gitsync':
+    case "gitsync":
       return <GitSync {...props} />;
-    case 'foreignkey':
+    case "foreignkey":
       return <ForeignKey {...props} />;
-    case 'fullouterjoin':
+    case "fullouterjoin":
       return <FullOuterJoin {...props} />;
-    case 'globe':
+    case "globe":
       return <Globe {...props} />;
-    case 'grid':
+    case "grid":
       return <Grid {...props} />;
-    case 'granularaccess':
+    case "granularaccess":
       return <GranularAccess {...props} />;
-    case 'granularaccessgrad':
+    case "granularaccessgrad":
       return <GranularAccessGrad {...props} />;
-    case 'helppolygon':
+    case "helppolygon":
       return <HelpPolygon {...props} />;
-    case 'home':
+    case "home":
       return <Home {...props} />;
-    case 'information':
+    case "information":
       return <Information {...props} />;
-    case 'innerjoin':
+    case "innerjoin":
       return <InnerJoinIcon {...props} />;
-    case 'inrectangle':
+    case "inrectangle":
       return <InRectangle {...props} />;
-    case 'instancesettings':
+    case "instancesettings":
       return <InstanceSettings {...props} />;
-    case 'informationcircle':
+    case "informationcircle":
       return <InformationCircle {...props} />;
-    case 'interactive':
+    case "interactive":
       return <Interactive {...props} />;
-    case 'idea':
+    case "idea":
       return <Idea {...props} />;
-    case 'italic':
+    case "italic":
       return <Italic {...props} />;
-    case 'layers':
+    case "layers":
       return <Layers {...props} />;
-    case 'leftarrow':
+    case "leftarrow":
       return <LeftArrow {...props} />;
-    case 'leftouterjoin':
+    case "leftouterjoin":
       return <LeftOuterJoinIcon {...props} />;
-    case 'lightmode':
+    case "lightmode":
       return <LightMode {...props} />;
-    case 'listview':
+    case "listview":
       return <ListView {...props} />;
-    case 'lock':
+    case "lock":
       return <Lock {...props} />;
-    case 'logout':
+    case "logout":
       return <Logout {...props} />;
-    case 'logs':
+    case "logs":
       return <Logs {...props} />;
-    case 'menu':
+    case "menu":
       return <Menu {...props} />;
-    case 'menuhome':
+    case "menuhome":
       return <MenuHome {...props} />;
-    case 'minus':
+    case "minus":
       return <Minus {...props} />;
-    case 'minus01':
+    case "minus01":
       return <Minus01 {...props} />;
-    case 'mobile':
+    case "mobile":
       return <Mobile {...props} />;
-    case 'morehorizontal':
+    case "morehorizontal":
       return <MoreHorizontal {...props} />;
-    case 'morevertical':
+    case "morevertical":
       return <MoreVertical {...props} />;
-    case 'morevertical01':
+    case "morevertical01":
       return <MoreVertical01 {...props} />;
-    case 'notification':
+    case "notification":
       return <Notification {...props} />;
-    case 'notificationringing':
+    case "notificationringing":
       return <NotificationRinging {...props} />;
-    case 'notificationside':
+    case "notificationside":
       return <NotificationSide {...props} />;
-    case 'notificationsilent':
+    case "notificationsilent":
       return <NotificationSilent {...props} />;
-    case 'notificationunread':
+    case "notificationunread":
       return <NotificationUnread {...props} />;
-    case 'newtab':
+    case "newtab":
       return <NewTab {...props} />;
-    case 'open':
+    case "open":
       return <Open {...props} />;
-    case 'options':
+    case "options":
       return <Options {...props} />;
-    case 'page':
+    case "page":
       return <Page {...props} />;
-    case 'pageAdd':
+    case "pageAdd":
       return <PageAdd {...props} />;
-    case 'page-icon':
+    case "page-icon":
       return <PageIcon {...props} />;
-    case 'pageUpload':
+    case "pageUpload":
       return <PageUpload {...props} />;
-    case 'pin':
+    case "pin":
       return <Pin {...props} />;
-    case 'unpin01':
+    case "unpin01":
       return <Unpin01 {...props} />;
-    case 'propertiesstyles':
+    case "propertiesstyles":
       return <PropertiesStyles {...props} />;
-    case 'unpin':
+    case "unpin":
       return <Unpin {...props} />;
-    case 'play':
+    case "play":
       return <Play {...props} />;
-    case 'plus':
+    case "plus":
       return <Plus {...props} />;
-    case 'plus01':
+    case "plus01":
       return <Plus01 {...props} />;
-    case 'plusrectangle':
+    case "plusrectangle":
       return <PlusRectangle {...props} />;
-    case 'primarykey':
+    case "primarykey":
       return <PrimaryKey {...props} />;
-    case 'postgresql':
+    case "postgresql":
       return <PostgreSQLIcon {...props} />;
-    case 'reload':
+    case "reload":
       return <Reload {...props} />;
-    case 'read':
+    case "read":
       return <Read {...props} />;
-    case 'reloaderror':
+    case "reloaderror":
       return <ReloadError {...props} />;
-    case 'remove':
+    case "remove":
       return <Remove {...props} />;
-    case 'remove01':
+    case "remove01":
       return <Remove01 {...props} />;
-    case 'removefolder':
+    case "removefolder":
       return <RemoveFolder {...props} />;
-    case 'removerectangle':
+    case "removerectangle":
       return <RemoveRectangle {...props} />;
-    case 'rightarrrow':
+    case "rightarrrow":
       return <RightArrow {...props} />;
-    case 'rightouterjoin':
+    case "rightouterjoin":
       return <RightOuterJoin {...props} />;
-    case 'row':
+    case "row":
       return <Row {...props} />;
-    case 'reset':
+    case "reset":
       return <Reset {...props} />;
-    case 'retry':
+    case "retry":
       return <Retry {...props} />;
-    case 'sadrectangle':
+    case "sadrectangle":
       return <SadRectangle {...props} />;
-    case 'search':
+    case "search":
       return <Search {...props} />;
-    case 'search01':
+    case "search01":
       return <Search01 {...props} />;
-    case 'searchminus':
+    case "searchminus":
       return <SearchMinus {...props} />;
-    case 'searchplus':
+    case "searchplus":
       return <SearchPlus {...props} />;
-    case 'sectioncollapse':
+    case "sectioncollapse":
       return <SectionCollapse {...props} />;
-    case 'sectionexpand':
+    case "sectionexpand":
       return <SectionExpand {...props} />;
-    case 'sent':
+    case "sent":
       return <Sent {...props} />;
-    case 'sentfast':
+    case "sentfast":
       return <SentFast {...props} />;
-    case 'server':
+    case "server":
       return <Server {...props} />;
-    case 'settings':
+    case "settings":
       return <Settings {...props} />;
-    case 'shiftbutton':
+    case "shiftbutton":
       return <ShiftButtonIcon {...props} />;
-    case 'comments':
+    case "comments":
       return <Comments {...props} />;
-    case 'corners':
+    case "corners":
       return <Corners {...props} />;
-    case 'share':
+    case "share":
       return <Share {...props} />;
-    case 'shield':
+    case "shield":
       return <Shield {...props} />;
-    case 'shieldcheck':
+    case "shieldcheck":
       return <ShieldCheck {...props} />;
-    case 'skip':
+    case "skip":
       return <Skip {...props} />;
-    case 'signpost':
+    case "signpost":
       return <Signpost {...props} />;
-    case 'sliders':
+    case "sliders":
       return <Sliders {...props} />;
-    case 'smilerectangle':
+    case "smilerectangle":
       return <SmileRectangle {...props} />;
-    case 'sortarrowdown':
+    case "sortarrowdown":
       return <SortArrowDown {...props} />;
-    case 'sortarrowup':
+    case "sortarrowup":
       return <SortArrowUp {...props} />;
-    case 'subtract':
+    case "subtract":
       return <Subtract {...props} />;
-    case 'sun':
+    case "sun":
       return <Sun {...props} />;
-    case 'sync':
+    case "sync":
       return <Sync {...props} />;
-    case 'table':
+    case "table":
       return <Table {...props} />;
-    case 'tick':
+    case "tick":
       return <Tick {...props} />;
-    case 'tickv3':
+    case "tickv3":
       return <TickV3 {...props} />;
-    case 'tooljet':
+    case "tooljet":
       return <TooljetIcon {...props} />;
-    case 'trash':
+    case "trash":
       return <Trash {...props} />;
-    case 'uparrow':
+    case "uparrow":
       return <UpArrow {...props} />;
-    case 'user':
+    case "user":
       return <User {...props} />;
-    case 'useradd':
+    case "useradd":
       return <UserAdd {...props} />;
-    case 'usergroup':
+    case "usergroup":
       return <UserGroup {...props} />;
-    case 'usergear':
+    case "usergear":
       return <UserGear {...props} />;
-    case 'userremove':
+    case "userremove":
       return <UserRemove {...props} />;
-    case 'uturn':
+    case "uturn":
       return <UTurn {...props} />;
-    case 'variable':
+    case "variable":
       return <Variable {...props} />;
-    case 'warning':
+    case "warning":
       return <Warning {...props} />;
-    case 'warning-user-notfound':
+    case "warning-user-notfound":
       return <WarningUserNotFound {...props} />;
-    case 'workflowv3':
+    case "workflowv3":
       return <WorkflowV3 {...props} />;
-    case 'workspacev3':
+    case "workspacev3":
       return <WorkspaceV3 {...props} />;
-    case 'workspaceconstants':
+    case "workspaceconstants":
       return <WorkspaceConstants {...props} />;
-    case 'zoomin':
+    case "zoomin":
       return <ZoomIn {...props} />;
-    case 'zoomout':
+    case "zoomout":
       return <ZoomOut {...props} />;
-    case 'zoomoutrectangle':
+    case "zoomoutrectangle":
       return <ZoomOutRectangle {...props} />;
-    case 'mail':
+    case "mail":
       return <Mail {...props} />;
-    case 'marketplace':
+    case "marketplace":
       return <Marketplace {...props} />;
-    case 'workspace':
+    case "workspace":
       return <Workspace {...props} />;
-    case 'workflows':
+    case "workflows":
       return <Workflows {...props} />;
-    case 'eyeopen':
+    case "eyeopen":
       return <EyeOpen {...props} />;
-    case 'layersversion':
+    case "layersversion":
       return <LayersVersion {...props} />;
-    case 'cloudvalid':
+    case "cloudvalid":
       return <CloudValid {...props} />;
-    case 'cloudinvalid':
+    case "cloudinvalid":
       return <CloudInvalid {...props} />;
-    case 'dot':
+    case "dot":
       return <Dot {...props} />;
-    case 'check':
+    case "check":
       return <Check {...props} />;
-    case 'editable':
+    case "editable":
       return <Editable {...props} />;
-    case 'minimize':
+    case "minimize":
       return <Minimize {...props} />;
-    case 'maximize':
+    case "maximize":
       return <Maximize {...props} />;
-    case 'inspect':
+    case "inspect":
       return <Inspect {...props} />;
-    case 'arrowbackup':
+    case "arrowbackup":
       return <ArrowForwardUp {...props} />;
-    case 'arrowforwardup':
+    case "arrowforwardup":
       return <ArrowBackUp {...props} />;
-    case 'save':
+    case "save":
       return <Save {...props} />;
-    case 'cross':
+    case "cross":
       return <Cross {...props} />;
-    case 'arrowUpTriangle':
+    case "arrowUpTriangle":
       return <ArrowUpTriangle {...props} />;
-    case 'arrowDownTriangle':
+    case "arrowDownTriangle":
       return <ArrowDownTriangle {...props} />;
-    case 'underline':
+    case "underline":
       return <Underline {...props} />;
-    case 'overline':
+    case "overline":
       return <Overline {...props} />;
-    case 'linethrough':
+    case "linethrough":
       return <Linethrough {...props} />;
-    case 'uppercase':
+    case "uppercase":
       return <Uppercase {...props} />;
-    case 'lowercase':
+    case "lowercase":
       return <Lowercase {...props} />;
-    case 'capitalize':
+    case "capitalize":
       return <Capitalize {...props} />;
-    case 'oblique':
+    case "oblique":
       return <Oblique {...props} />;
-    case 'oubound':
+    case "oubound":
       return <Outbound {...props} />;
-    case 'TriangleUpCenter':
+    case "TriangleUpCenter":
       return <TriangleUpCenter {...props} />;
-    case 'TriangleDownCenter':
+    case "TriangleDownCenter":
       return <TriangleDownCenter {...props} />;
-    case 'addpagegroup':
+    case "addpagegroup":
       return <AddPageGroupIcon {...props} />;
-    case 'jsonb':
+    case "jsonb":
       return <Jsonb {...props} />;
-    case 'character varying':
+    case "character varying":
       return <VarcharCol {...props} />;
-    case 'integer':
+    case "integer":
       return <IntegerCol {...props} />;
-    case 'bigint':
+    case "bigint":
       return <BigIntCol {...props} />;
-    case 'double precision':
+    case "double precision":
       return <FloatCol {...props} />;
-    case 'boolean':
+    case "boolean":
       return <BooleanCol {...props} />;
-    case 'serial':
+    case "serial":
       return <SerialCol {...props} />;
-    case 'timestamp with time zone':
+    case "timestamp with time zone":
       return <DatetimeCol {...props} />;
-    case 'AI-tag':
+    case "AI-tag":
       return <AITag {...props} />;
-    case 'clearhistory':
+    case "clearhistory":
       return <ClearHistory {...props} />;
-    case 'pagedownload':
+    case "pagedownload":
       return <PageDownload {...props} />;
-    case 'send':
+    case "send":
       return <Send {...props} />;
-    case 'defaultresponseavatar':
+    case "defaultresponseavatar":
       return <DefaultResponseAvatar {...props} />;
-    case 'defaultsenderchatavatar':
+    case "defaultsenderchatavatar":
       return <DefaultSenderChatIcon {...props} />;
-    case 'loadingstate':
+    case "loadingstate":
       return <LoadingState {...props} />;
-    case 'arrowdown01':
+    case "arrowdown01":
       return <ArrowDown01 {...props} />;
-    case 'arrowreturn01':
+    case "arrowreturn01":
       return <ArrowReturn01 {...props} />;
-    case 'arrowup01':
+    case "arrowup01":
       return <ArrowUp01 {...props} />;
-    case 'replace':
+    case "replace":
       return <Replace {...props} />;
-    case 'replaceall':
+    case "replaceall":
       return <ReplaceAll {...props} />;
-    case 'remove02':
+    case "remove02":
       return <Remove02 {...props} />;
-    case 'remove03':
+    case "remove03":
       return <Remove03 {...props} />;
-    case 'bookdemo':
+    case "bookdemo":
       return <BookDemo {...props} />;
-    case 'contactv3':
+    case "contactv3":
       return <Contactv3 {...props} />;
-    case 'premium-logo':
+    case "premium-logo":
       return <PremiumLogo {...props} />;
-    case 'premium-plan':
+    case "premium-plan":
       return <PremiumPlan {...props} />;
-    case 'calendar-icon':
+    case "calendar-icon":
       return <CalendarIcon {...props} />;
-    case 'calendar-small':
+    case "calendar-small":
       return <CalendarSmall {...props} />;
-    case 'user-groups-grey':
+    case "user-groups-grey":
       return <UserGroupsGrey {...props} />;
-    case 'app-limit':
+    case "app-limit":
       return <AppLimitSvg {...props} />;
-    case 'new-tab-small':
+    case "new-tab-small":
       return <NewTabSmall {...props} />;
-    case 'student-icon':
+    case "student-icon":
       return <StudentIcon {...props} />;
-    case 'ai-crown':
+    case "ai-crown":
       return <AICrown {...props} />;
-    case 'empty-state-modules':
+    case "empty-state-modules":
       return <EmptyStateModules {...props} />;
-    case 'mobile-empty-state':
+    case "mobile-empty-state":
       return <MobileEmptyStateIcon {...props} />;
-    case 'mobile-empty-state-dark':
+    case "mobile-empty-state-dark":
       return <MobileEmptyStateIconDark {...props} />;
 
-    case 'play01':
+    case "play01":
       return <Play01 {...props} />;
-    case 'moon':
+    case "moon":
       return <Moon {...props} />;
-    case 'source-control':
+    case "source-control":
       return <SourceControl {...props} />;
-    case 'push-changes':
+    case "push-changes":
       return <Push {...props} />;
-    case 'pull-changes':
+    case "pull-changes":
       return <Pull {...props} />;
-    case 'support':
+    case "support":
       return <Support {...props} />;
-    case 'data-database':
-      return <DataDatabase {...props} />;
-    case 'flash':
-      return <Flash {...props} />;
-    case 'json':
-      return <Json {...props} />;
-    case 'ai-topup':
-      return <AITopup {...props} />;
-    case 'ai-topup-white':
-      return <AITopupWhite {...props} />;
-    case 'ai-topup-grey':
-      return <AITopupGrey {...props} />;
-    case 'google':
+    case "google":
       return <Google {...props} />;
-    case 'github':
+    case "github":
       return <GitHub {...props} />;
     default:
       return <Apps {...props} />;
