@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import _, { isEmpty } from 'lodash';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import classNames from 'classnames';
@@ -21,7 +20,6 @@ const MobileHeader = ({
   currentPageId,
   switchPage,
   setAppDefinitionFromVersion,
-  showViewerNavigation,
   pages,
   viewerWrapperRef,
 }) => {
@@ -43,10 +41,6 @@ const MobileHeader = ({
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Fetch the version parameter from the query string
-  const searchParams = new URLSearchParams(window.location.search);
-  const version = searchParams.get('version');
 
   const switchToHomePage = () => {
     if (currentPageId === homePageId) return;
@@ -95,7 +89,6 @@ const MobileHeader = ({
       switchToHomePage={switchToHomePage}
       darkMode={darkMode}
       changeToDarkMode={changeToDarkMode}
-      showHeader={showHeader}
       showDarkModeToggle={showDarkModeToggle}
       appName={appName}
       pages={pages}
@@ -114,61 +107,6 @@ const MobileHeader = ({
       />
     );
 
-  // TODO: Check and remove the below code if not being used since showHeader is not being used now
-  const _renderDarkModeBtn = (args) => {
-    if (!showDarkModeToggle) return null;
-    const styles = args?.styles ?? {};
-    return (
-      <span
-        className="released-version-no-header-dark-mode-icon"
-        style={{ position: 'absolute', top: '7px', ...styles }}
-      >
-        <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-      </span>
-    );
-  };
-
-  if (!showHeader && isReleasedVersionId) {
-    return (<SidebarProvider
-      open={isSidebarOpen}
-      onOpenChange={setIsSidebarOpen}
-      isMobile={true}
-      sidebarWidth="290px"
-      className="!tw-min-h-0 !tw-block"
-      style={bgStyles}
-    >
-      {showViewerNavigation && showOnMobile ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}
-    </SidebarProvider>);
-  }
-
-  if (!showHeader && !isReleasedVersionId) {
-    return (
-      <SidebarProvider
-        open={isSidebarOpen}
-        onOpenChange={setIsSidebarOpen}
-        isMobile={true}
-        sidebarWidth="290px"
-        className="!tw-min-h-0 !tw-block"
-        style={bgStyles}
-      >
-        <Header
-          styles={{
-            height: '46px',
-            position: 'fixed',
-            width: version ? '450px' : '100%',
-            zIndex: '100',
-          }}
-          showNavbarClass={false}
-        >
-          {showViewerNavigation && _renderMobileNavigationMenu()}
-          {/* {!isEmpty(editingVersion) && _renderPreviewSettings()} */}
-          {!showViewerNavigation && _renderDarkModeBtn()}
-        </Header>
-      </SidebarProvider>
-    );
-  }
-  // TODO: Remove code till here
-
   const MenuBtn = () => {
     const { toggleSidebar } = useSidebar();
 
@@ -179,7 +117,9 @@ const MobileHeader = ({
     );
   };
 
-  const hasAppPagesHeaderAndLogoEnabled = useStore((state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
 
   const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
   const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;

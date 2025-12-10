@@ -33,7 +33,7 @@ const MobileNavigationMenu = ({
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
-  const hasAppPagesAddNavGroupEnabled = useStore(state => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
@@ -41,7 +41,10 @@ const MobileNavigationMenu = ({
 
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
-  const pagesTree = useMemo(() => (hasAppPagesAddNavGroupEnabled ? buildTree(pages) : pages), [hasAppPagesAddNavGroupEnabled, pages]);
+  const pagesTree = useMemo(
+    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages) : pages),
+    [hasAppPagesAddNavGroupEnabled, pages]
+  );
 
   console.log('pagesTree->', pagesTree, pages);
 
