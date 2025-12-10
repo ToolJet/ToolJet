@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonEeSelectors,
   multiEnvSelector,
@@ -34,18 +34,18 @@ describe("License Page", () => {
 
   beforeEach(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.apiDeleteAllApps();
+    cy.apiCreateApp(data.appName1);
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.visit("/my-workspace");
   });
 
-  after(() => {
-    cy.apiDeleteAllApps();
+  afterEach(() => {
     cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Should verify license page elements with the paid plan", () => {
     cy.writeFile("cypress/fixtures/license/currentLimits.json", {});
-    cy.apiCreateApp(data.appName1);
-    cy.apiCreateWorkflow(data.workflowName);
 
     cy.apiUpdateLicense("validWithLimits");
 
@@ -177,17 +177,13 @@ describe("License Page", () => {
 
     cy.openApp(data.appName1);
 
-    cy.get(multiEnvSelector.currentEnvName).click();
-    cy.get(multiEnvSelector.envNameList)
-      .eq(1)
-      .within(() => {
-        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
-      });
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+    cy.get(multiEnvSelector.environmentsTag("staging")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("not.exist");
+    });
+    cy.get(multiEnvSelector.environmentsTag("production")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("not.exist");
+    });
 
-    cy.get(multiEnvSelector.envNameList)
-      .eq(2)
-      .within(() => {
-        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
-      });
   });
 });
