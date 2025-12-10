@@ -116,7 +116,7 @@ const DynamicSelector = ({
 
                 if (isMultiAuth) {
                     if (!userId) {
-                        console.warn('[DynamicSelector] Multi-user auth enabled but no user ID found, skipping cache update');
+                        throw new Error('[DynamicSelector] Multi-user auth enabled but no user ID found');
                     } else {
                         // Replace the user's cache with the new data, discarding previous dependency values
                         newCache[userId] = {
