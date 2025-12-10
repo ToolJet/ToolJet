@@ -132,6 +132,7 @@
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
     "openid-client": "^5.4.0",
+    "otpauth": "^9.4.1",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
     "pino-pretty": "^13.1.1",

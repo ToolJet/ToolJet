@@ -365,10 +365,10 @@ const DynamicFormV2 = ({
           isValidatedMessages: skipValidation
             ? { valid: null, message: '' } // skip validation for initial render and untouched elements
             : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' }, // handle optional && encrypted fields
+              ? { valid: false, message: validationMessages[key] }
+              : isRequired
+                ? { valid: true, message: '' }
+                : { valid: null, message: '' }, // handle optional && encrypted fields
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
@@ -503,7 +503,7 @@ const DynamicFormV2 = ({
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
-              data-cy={`${generateCypressDataCy(key)}-section`}
+              data-cy={`${generateCypressDataCy(label ?? key)}-section`}
               key={key}
             >
               {!isSpecificComponent && (
@@ -535,7 +535,7 @@ const DynamicFormV2 = ({
                   {...getElementProps(uiProperties[key])}
                   {...computedProps[propertyKey]}
                   data-cy={`${generateCypressDataCy(label)}-text-field`}
-                  dataCy={uiProperties[key].key.replace(/_/g, '-')}
+                  dataCy={generateCypressDataCy(uiProperties[key].label ?? key)}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
                   handleEncryptedFieldsToggle={handleEncryptedFieldsToggle}
@@ -566,6 +566,7 @@ const DynamicFormV2 = ({
                 'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
+              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
             >
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
@@ -580,7 +581,8 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
-                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
+                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)} />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>

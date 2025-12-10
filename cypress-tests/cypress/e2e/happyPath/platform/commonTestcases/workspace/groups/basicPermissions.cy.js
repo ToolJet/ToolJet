@@ -4,7 +4,8 @@ import { groupsSelector } from "Selectors/manageGroups";
 import {
     navigateToManageGroups,
     sanitize,
-    selectAppCardOption
+    selectAppCardOption,
+    releaseApp
 } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -94,7 +95,9 @@ describe("Basic Permissions", () => {
         cy.get(commonSelectors.dashboardIcon).click();
         cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.releaseApp();
+        cy.apiPublishDraftVersion('v1')
+
+        releaseApp();
 
         //verify clone access
         cy.visit(data.workspaceSlug);

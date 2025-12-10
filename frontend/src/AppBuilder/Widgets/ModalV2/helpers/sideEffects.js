@@ -23,6 +23,7 @@ export const onShowSideEffects = () => {
 export const onHideSideEffects = () => {
   const canvasElement = document.getElementsByClassName('canvas-content')?.[0];
   const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+  if (!realCanvasEl) return;
   const allModalContainers = realCanvasEl.querySelectorAll('.modal');
   const hasManyModalsOpen = allModalContainers.length > 1;
 
