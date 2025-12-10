@@ -101,9 +101,8 @@ export const postgresUIConfig = {
     ]
 };
 
-
 export const postgresFormConfig = {
-    defaultFields: [
+    valid: [
         {
             type: "input",
             fieldName: "Host",
@@ -113,6 +112,11 @@ export const postgresFormConfig = {
             type: "input",
             fieldName: "Port",
             text: "5432"
+        },
+        {
+            type: "toggle",
+            fieldName: "SSL",
+            shouldBeChecked: false
         },
         {
             type: "input",
@@ -125,16 +129,46 @@ export const postgresFormConfig = {
             text: `${Cypress.env('pg_password')}`
         },
         {
-            type: "toggle",
-            fieldName: "ssl",
-            shouldBeChecked: false
-        },
-        {
             type: "keyValue",
             fieldName: "Connection options",
             keyValueData: [
                 { key: "test", value: "value123" }
             ]
         }
-    ]
+    ],
+    invalidHost: [
+        {
+            type: "input",
+            fieldName: "Host",
+            text: "invalid-host"
+        }
+    ],
+    invalidUsername: [
+        {
+            type: "input",
+            fieldName: "Username",
+            text: "invalid-username"
+        }
+    ],
+    invalidPassword: [
+        {
+            type: "encrypted",
+            fieldName: "Password",
+            text: "invalid-password"
+        }
+    ],
+    invalidPort: [
+        {
+            type: "input",
+            fieldName: "Port",
+            text: "9999"
+        }
+    ],
+    invalidSsl: [
+        {
+            type: "toggle",
+            fieldName: "SSL",
+            shouldBeChecked: true
+        }
+    ],
 };

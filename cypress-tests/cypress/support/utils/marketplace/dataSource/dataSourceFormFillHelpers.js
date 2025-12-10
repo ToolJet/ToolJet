@@ -92,9 +92,12 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
 
     case "failed":
       cy.get('[data-cy="test-connection-failed-text"]')
-        .should("be.visible")
+        .should("be.visible", { timeout: 10000 })
         .should("contain.text", "could not connect");
-      cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement("have.text", customMessage);
+
+      cy.get('[data-cy="connection-alert-text"]')
+        .should("be.visible", { timeout: 10000 })
+        .verifyVisibleElement("have.text", customMessage);
       break;
   }
 };
@@ -114,36 +117,58 @@ export const fillDSConnectionEncryptedField = (fieldName, text, encrypted = true
   cy.clearAndType(fieldSelector, text);
 };
 
-export function fillDSConnectionForm(fields) {
+const processFields = (fields) => {
   fields.forEach((field) => {
     switch (field.type) {
       case 'input':
         fillDSConnectionTextField(field.fieldName, field.text);
         break;
-
       case 'encrypted':
         fillDSConnectionEncryptedField(field.fieldName, field.text, field.encrypted);
         break;
-
       case 'dropdown':
         fillDSConnectionDropdown(field.fieldName, field.option);
         break;
-
       case 'toggle':
         toggleDSConnectionButton(field.fieldName, field.shouldBeChecked);
         break;
-
       case 'radio':
         selectDSConnectionRadioButton(field.fieldName, field.shouldBeSelected);
         break;
-
       case 'keyValue':
         fillDSConnectionKeyValuePairs(field.fieldName, field.keyValueData);
         break;
-
       default:
         throw new Error(`Unsupported field type: ${field.type}`);
     }
   });
+};
+
+export function fillDSConnectionForm (formConfig, invalidFields = []) {
+  if (Array.isArray(formConfig) && formConfig.length > 0 && typeof formConfig[0] === 'object' && formConfig[0].type) {
+    cy.log('Using old array format');
+    processFields(formConfig);
+    return;
+  }
+
+  if (!formConfig || typeof formConfig !== 'object') {
+    throw new Error('Invalid formConfig: expected an object');
+  }
+
+  if (formConfig.valid && Array.isArray(formConfig.valid)) {
+    processFields(formConfig.valid);
+  }
+
+  if (invalidFields && invalidFields.length > 0) {
+    invalidFields.forEach(fieldType => {
+      const invalidConfigKey = `invalid${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}`;
+
+      const invalidConfig = formConfig[invalidConfigKey];
+
+      if (invalidConfig && Array.isArray(invalidConfig)) {
+        processFields(invalidConfig);
+      }
+    });
+  }
 }
 
