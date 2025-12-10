@@ -51,6 +51,38 @@ export class AppModuleLoader {
     // This ensures the capture stream has a valid state object to reference
     getGlobalLogCaptureState();
 
+    // Intercept process.stdout in production to capture ALL stdout writes
+    // This captures logs from ALL sources (Pino, console.log, child processes, etc.)
+    if (process.env.NODE_ENV === 'production') {
+      const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+
+      (process.stdout.write as any) = function(
+        chunk: any,
+        encodingOrCallback?: any,
+        callback?: any
+      ): boolean {
+        // Handle both (chunk, encoding, callback) and (chunk, callback) signatures
+        const encoding = typeof encodingOrCallback === 'string' ? encodingOrCallback : 'utf8';
+        const cb = typeof encodingOrCallback === 'function' ? encodingOrCallback : callback;
+
+        // Always write to original stdout
+        const result = originalStdoutWrite(chunk, encoding, cb);
+
+        // ALSO write to capture file if active
+        const state = globalThis.__tooljet_log_capture_state__;
+        if (state?.captureMode && state?.captureDestination) {
+          try {
+            state.captureDestination.write(chunk, encoding);
+          } catch (err) {
+            // Log errors to stderr to avoid infinite loops
+            console.error('[Capture Error]', err);
+          }
+        }
+
+        return result;
+      };
+    }
+
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
@@ -107,7 +139,7 @@ export class AppModuleLoader {
               return false;
             },
           },
-          // Use a custom stream that tees to both stdout and capture file
+          // Use a simple stream - stdout interception handles capture
           stream: (() => {
             if (process.env.NODE_ENV !== 'production') {
               // Development: use pino-pretty for console
@@ -120,37 +152,9 @@ export class AppModuleLoader {
                 },
               });
             } else {
-              // Production: Create a custom tee stream that writes to BOTH stdout AND capture file
-              let totalWriteCalls = 0;
-              let captureWriteCount = 0;
-              return new (require('stream').Writable)({
-                write(chunk, encoding, callback) {
-                  totalWriteCalls++;
-
-                  // ALWAYS write to stdout
-                  process.stdout.write(chunk, encoding);
-
-                  // ALSO write to capture file if capture is active
-                  const state = globalThis.__tooljet_log_capture_state__;
-
-                  // Debug every 100th call to see state
-                  if (totalWriteCalls % 100 === 1) {
-                    console.error(`[DEBUG] Write #${totalWriteCalls}: mode=${state?.captureMode}, hasDest=${!!state?.captureDestination}, hasState=${!!state}`);
-                  }
-
-                  if (state?.captureMode && state?.captureDestination) {
-                    captureWriteCount++;
-                    console.error(`[DEBUG] Write call #${totalWriteCalls} -> Captured log #${captureWriteCount}`);
-                    try {
-                      state.captureDestination.write(chunk, encoding);
-                    } catch (err) {
-                      console.error('[DEBUG] Capture error:', err);
-                    }
-                  }
-
-                  callback();
-                },
-              });
+              // Production: use stdout directly
+              // Capture is handled by process.stdout.write interception above
+              return process.stdout;
             }
           })(),
           redact: {
