@@ -1,4 +1,4 @@
-import { create, zustandDevTools } from './utils';
+import { createGlobalStore, zustandDevTools } from './utils';
 import { supportService } from '@/_services';
 import { shallow } from 'zustand/shallow';
 
@@ -9,7 +9,7 @@ const initialState = {
   error: null,
 };
 
-export const useLogCaptureStore = create(
+export const useLogCaptureStore = createGlobalStore(
   zustandDevTools(
     (set, get) => ({
       ...initialState,

@@ -23,6 +23,14 @@ export const create = (fn) => {
   return store;
 };
 
+// Global stores that persist across app navigation (instance-level state)
+export const createGlobalStore = (fn) => {
+  if (fn === undefined) return createGlobalStore;
+  const store = _create(fn);
+  // Intentionally does NOT register a resetter - state persists across navigation
+  return store;
+};
+
 export const resetAllStores = () => {
   for (const resetter of resetters) {
     resetter();
