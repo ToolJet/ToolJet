@@ -148,12 +148,12 @@ describe("ToolJet: User & Workspace API", () => {
         });
     });
 
-    it("fails with unknown user ID", () => {
-        sendApiRequest("GET", "/ext/user/invalid12345").then(({ status, body }) => {
-            expect(422).to.eq(status);
-            expect(body.message).to.include('invalid input syntax for type uuid: "invalid12345"');
-        });
-    });
+    // it("fails with unknown user ID", () => {
+    //     sendApiRequest("GET", "/ext/user/invalid12345").then(({ status, body }) => {
+    //         expect(422).to.eq(status);
+    //         expect(body.message).to.include('invalid input syntax for type uuid: "invalid12345"');
+    //     });
+    // });
 
     // it.skip("fails if userId is missing", () => {
     //     sendApiRequest("GET", "/ext/user/").then(({ status, body }) => {

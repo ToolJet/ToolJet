@@ -74,10 +74,12 @@ describe("Login functionality", () => {
 
     cy.clearAndType(onboardingSelectors.signupEmailInput, user.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "Pass");
-    cy.get(onboardingSelectors.passwordError).verifyVisibleElement(
-      "have.text",
-      "Password must be at least 5 characters long"
-    );
+    cy.get(onboardingSelectors.signInButton).should("be.disabled");
+
+    // cy.get(onboardingSelectors.passwordError).verifyVisibleElement(
+    //   "have.text",
+    //   "Password must be at least 5 characters long"
+    // );
     cy.clearAndType(onboardingSelectors.loginPasswordInput, invalidPassword);
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid credentials");
