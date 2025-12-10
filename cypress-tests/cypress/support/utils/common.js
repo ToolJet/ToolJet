@@ -4,10 +4,10 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -50,7 +50,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -115,6 +115,7 @@ export const viewAppCardOptions = (appName) => {
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };
+
 export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
@@ -234,7 +235,14 @@ export const navigateToworkspaceConstants = () => {
 export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
+    cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+    cy.get(multiEnvSelector.environmentsTag("production")).click();
   });
+  cy.ifEnv("Community", () => {
+    cy.waitForElement(multiEnvSelector.environmentsTag("development"));
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+  });
+
   cy.waitForElement(commonSelectors.releaseButton);
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
