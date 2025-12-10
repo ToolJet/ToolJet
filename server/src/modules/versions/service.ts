@@ -1,8 +1,8 @@
 import { App } from '@entities/app.entity';
 import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { VersionRepository } from './repository';
-import { AppVersion } from '@entities/app_version.entity';
-import { PromoteVersionDto, VersionCreateDto } from './dto';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
 import { User } from '@entities/user.entity';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { EntityManager, MoreThan } from 'typeorm';
@@ -38,7 +38,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) { }
+  ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -49,7 +49,11 @@ export class VersionService implements IVersionService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
-    const { versionName, versionFromId } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      // need to add logic to get the version name -> from the version created at from
+      throw new BadRequestException('Version name cannot be empty.');
+    }
     const { organizationId } = user;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -69,6 +73,9 @@ export class VersionService implements IVersionService {
           currentEnvironmentId: firstPriorityEnv?.id,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
+          description: versionDescription ? versionDescription : null,
         })
       );
 
@@ -124,7 +131,10 @@ export class VersionService implements IVersionService {
 
       let shouldFreezeEditor = false;
       if (appCurrentEditingVersion) {
-        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, app.organizationId);
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          app.organizationId
+        );
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -156,6 +166,9 @@ export class VersionService implements IVersionService {
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
       }
+      if (appVersion?.status === AppVersionStatus.PUBLISHED) {
+        shouldFreezeEditor = true;
+      }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {
         ...appData,
@@ -171,6 +184,7 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
+    // need to add freeze version logic here
     return response;
   }
 
@@ -216,7 +230,6 @@ export class VersionService implements IVersionService {
     return;
   }
 
-
   promoteVersion(app: App, user: User, promoteVersionDto: PromoteVersionDto) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { currentEnvironmentId } = promoteVersionDto;
@@ -234,6 +247,11 @@ export class VersionService implements IVersionService {
 
         if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))) {
           throw new BadRequestException('You do not have permissions to perform this action');
+        }
+        if (version?.status === AppVersionStatus.DRAFT) {
+          throw new BadRequestException(
+            'You cannot promote a draft version. \nPlease save the version before promoting.'
+          );
         }
 
         if (version.currentEnvironmentId !== currentEnvironmentId) {
@@ -279,5 +297,23 @@ export class VersionService implements IVersionService {
         return { editorEnvironment: nextEnvironment, environments };
       }
     });
+  }
+  async createDraftVersion(
+    app: App,
+    user: User,
+    draftVersionDto: DraftVersionDto,
+    manager?: EntityManager
+  ): Promise<void> {
+    const { versionFromId } = draftVersionDto;
+    const parentVersion = await this.versionRepository.findVersion(versionFromId);
+    const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
+    const childVersionAppsCount = childVersionApps.length;
+    const createVersionDto: VersionCreateDto = {
+      ...draftVersionDto,
+      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionDescription: '',
+    };
+    const draftVersion = await this.createVersion(app, user, createVersionDto);
+    return draftVersion;
   }
 }
