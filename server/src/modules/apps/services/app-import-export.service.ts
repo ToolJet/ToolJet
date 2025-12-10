@@ -2774,8 +2774,8 @@ function migrateProperties(
 
     // CurrencyInput
     if (componentType === 'CurrencyInput') {
-      if (properties.loadingState == undefined) {
-        properties.loadingState = { value: false };
+      if (properties.showFlag == undefined) {
+        properties.showFlag = { value: true };
       }
     }
   }
