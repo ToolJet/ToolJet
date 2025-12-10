@@ -135,9 +135,6 @@ class AppComponent extends React.Component {
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
 
-    // Initialize log capture state
-    useLogCaptureStore.getState().actions.checkStatus();
-
     let counter = 0;
     let interval;
 
@@ -146,6 +143,8 @@ class AppComponent extends React.Component {
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
         this.initTelemetryAndSupport(current_user); //Call when currentuser is available
+        // Initialize log capture state after authentication is confirmed
+        useLogCaptureStore.getState().actions.checkStatus();
         clearInterval(interval);
       } else if (counter > 10) {
         clearInterval(interval);
