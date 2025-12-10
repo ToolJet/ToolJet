@@ -135,8 +135,11 @@ class AppComponent extends React.Component {
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
 
-    // Initialize log capture state
-    useLogCaptureStore.getState().actions.checkStatus();
+    // Initialize log capture state (only in production)
+    const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+    if (isProduction) {
+      useLogCaptureStore.getState().actions.checkStatus();
+    }
 
     let counter = 0;
     let interval;

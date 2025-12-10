@@ -23,8 +23,16 @@ export const useLogCaptureStore = create(
               error: null,
             });
           } catch (error) {
+            // Don't modify capture state on error - preserve current state
+            // This prevents the button from disappearing due to auth errors
             console.error('Error checking capture status:', error);
-            set({ error: error.message });
+            // Only update error, keep isCapturing and filePath unchanged
+            const currentState = get();
+            set({
+              error: error.message,
+              isCapturing: currentState.isCapturing,
+              filePath: currentState.filePath,
+            });
           }
         },
 
