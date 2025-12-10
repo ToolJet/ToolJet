@@ -76,8 +76,10 @@ export const PagesSidebarNavigation = ({
 
   const { hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
-  const hasAppPagesAddNavGroupEnabled = useStore(state => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
-  const hasAppPagesHeaderAndLogoEnabled = useStore((state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
 
   const labelStyle = useMemo(
     () => ({
@@ -113,7 +115,6 @@ export const PagesSidebarNavigation = ({
       );
     });
   }, [pagesTree, pagesVisibilityState, currentMode]);
-
 
   const measureStaticElements = useCallback(() => {
     if (headerRef.current) {
@@ -628,8 +629,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-        }),
+            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+          }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >
