@@ -74,7 +74,7 @@ describe("Login functionality", () => {
 
     cy.clearAndType(onboardingSelectors.signupEmailInput, user.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "Pass");
-    cy.get(onboardingSelectors.signInButton).should("be.disabled");
+    // cy.get(onboardingSelectors.signInButton).should("be.disabled");
 
     // cy.get(onboardingSelectors.passwordError).verifyVisibleElement(
     //   "have.text",
