@@ -3,9 +3,8 @@ import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
-import AppEnvironments from '@/modules/Appbuilder/components/AppEnvironments';
 import HeaderActions from './HeaderActions';
-import { AppVersionsManager } from './AppVersionsManager';
+import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
@@ -100,10 +99,9 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                   <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
-                        <AppEnvironments darkMode={darkMode} />
-                        <div className="tw-hidden navbar-seperator m-0" />
-                        <AppVersionsManager darkMode={darkMode} />
-                        <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}

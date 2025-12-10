@@ -99,7 +99,7 @@ export const Viewer = ({
 
   const canvasRef = useRef(null);
   const viewerWrapperRef = useRef(null);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
+  const isMobilePreviewMode = !moduleMode && selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
 
@@ -131,6 +131,7 @@ export const Viewer = ({
     switchDarkMode(newMode);
   };
   useEffect(() => {
+    if (moduleMode) return;
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
@@ -222,7 +223,7 @@ export const Viewer = ({
                         <div className={`areas d-flex flex-rows app-${appId}`}>
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
-                              'w-100': moduleMode || appType === 'module',
+                              'w-100': moduleMode || appType === 'module' || currentLayout === 'mobile',
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',

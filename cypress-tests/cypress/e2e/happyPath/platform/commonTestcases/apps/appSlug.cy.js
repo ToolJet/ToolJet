@@ -22,16 +22,20 @@ describe("App Slug", () => {
     cy.apiLogin();
     cy.skipWalkthrough();
     cy.apiCreateApp(data.appName);
-    cy.openApp()
+    cy.openApp();
+    cy.apiPublishDraftVersion("v1");
+
   });
 
   it("Verify app slug cases in global settings", () => {
+    cy.url().should(
+      "eq",
+      `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`
+    );
 
-
-
-    cy.url().should("eq", `${host}/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}/`);
-
-    cy.get('[data-cy="query-manager-toggle-button"]', { timeout: 20000 }).should("be.visible").click();
+    cy.get('[data-cy="query-manager-toggle-button"]', { timeout: 20000 })
+      .should("be.visible")
+      .click();
 
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
 
@@ -83,8 +87,6 @@ describe("App Slug", () => {
   });
 
   it("Verify app slug cases in share modal", () => {
-
-
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonWidgetSelector.appSlugInput).clear();
     cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
@@ -126,6 +128,7 @@ describe("App Slug", () => {
     cy.visit("/my-workspace");
     cy.apiCreateApp(newSlug);
     cy.openApp("my-workspace");
+    cy.apiPublishDraftVersion("v1");
 
     releaseApp();
     cy.get(commonWidgetSelector.shareAppButton).click();

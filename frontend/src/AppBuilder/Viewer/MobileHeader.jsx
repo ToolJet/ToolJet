@@ -43,7 +43,6 @@ const MobileHeader = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
-  const license = useStore((state) => state.license);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -134,12 +133,28 @@ const MobileHeader = ({
   };
 
   if (!showHeader && isReleasedVersionId) {
-    return <>{showViewerNavigation && showOnMobile ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
+    return (<SidebarProvider
+      open={isSidebarOpen}
+      onOpenChange={setIsSidebarOpen}
+      isMobile={true}
+      sidebarWidth="290px"
+      className="!tw-min-h-0 !tw-block"
+      style={bgStyles}
+    >
+      {showViewerNavigation && showOnMobile ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}
+    </SidebarProvider>);
   }
 
   if (!showHeader && !isReleasedVersionId) {
     return (
-      <>
+      <SidebarProvider
+        open={isSidebarOpen}
+        onOpenChange={setIsSidebarOpen}
+        isMobile={true}
+        sidebarWidth="290px"
+        className="!tw-min-h-0 !tw-block"
+        style={bgStyles}
+      >
         <Header
           styles={{
             height: '46px',
@@ -153,7 +168,7 @@ const MobileHeader = ({
           {/* {!isEmpty(editingVersion) && _renderPreviewSettings()} */}
           {!showViewerNavigation && _renderDarkModeBtn()}
         </Header>
-      </>
+      </SidebarProvider>
     );
   }
   // TODO: Remove code till here
@@ -168,12 +183,10 @@ const MobileHeader = ({
     );
   };
 
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const hasAppPagesHeaderAndLogoEnabled = useStore((state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled);
 
-  const headerHidden = isLicensed ? hideHeader : false;
-  const logoHidden = isLicensed ? hideLogo : false;
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   return (
     <SidebarProvider

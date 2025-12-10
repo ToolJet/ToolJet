@@ -143,8 +143,7 @@ export const Inspector = ({
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -409,7 +408,7 @@ export const Inspector = ({
       setWidgetDeleteConfirmation(true);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -585,13 +584,13 @@ export const Inspector = ({
                               <div
                                 className={classNames('list-item-option-menu-label', {
                                   'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                 })}
                               >
                                 {option?.label}
                               </div>
                               {option.value === 'permission' &&
-                                !licenseValid &&
+                                !hasAppPermissionComponent &&
                                 option.trailingIcon &&
                                 option.trailingIcon}
                             </div>
@@ -600,9 +599,9 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'Component permissions are available only in paid plans'}
+                              message={'You don\'t have access to component permissions. Upgrade your plan to access this feature.'}
                               placement="left"
-                              show={!licenseValid}
+                              show={!hasAppPermissionComponent}
                             >
                               {optionBody}
                             </ToolTip>

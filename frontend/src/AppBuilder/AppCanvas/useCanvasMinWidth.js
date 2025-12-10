@@ -8,12 +8,11 @@ import {
 } from './appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export default function useCanvasMinWidth({ currentMode, position, isModuleMode }) {
+export default function useCanvasMinWidth({ currentMode, position, isModuleMode, isViewerSidebarPinned }) {
   const { moduleId } = useModuleContext();
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
-  const isViewerSidebarPinned = useStore((state) => state.isViewerSidebarPinned, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const getMinWidth = () => {
