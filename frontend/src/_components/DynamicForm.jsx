@@ -266,7 +266,6 @@ const DynamicForm = ({
     depends_on,
     label,
     fx_enabled: fxEnabled = false,
-    ...rest
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
