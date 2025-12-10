@@ -779,7 +779,7 @@ const handleOptionChange = (key, value, flag = true) => {
                 'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
-              data-cy={`${generateCypressDataCy(key)}-section`}
+              data-cy={`${generateCypressDataCy(label ?? key)}-section`}
               key={key}
             >
               {!isSpecificComponent && (
@@ -813,7 +813,7 @@ const handleOptionChange = (key, value, flag = true) => {
                   {...getElementProps(uiProperties[key])}
                   {...computedProps[propertyKey]}
                   data-cy={`${generateCypressDataCy(label)}-text-field`}
-                  dataCy={uiProperties[key].key.replace(/_/g, '-')}
+                  dataCy={generateCypressDataCy(uiProperties[key].label ?? key)}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
                   handleEncryptedFieldsToggle={handleEncryptedFieldsToggle}
@@ -844,6 +844,7 @@ const handleOptionChange = (key, value, flag = true) => {
                 'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
+              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
             >
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
@@ -858,7 +859,8 @@ const handleOptionChange = (key, value, flag = true) => {
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
-                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
+                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)} />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>

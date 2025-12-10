@@ -6,6 +6,7 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  getTooljetEdition,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
@@ -14,8 +15,10 @@ import { isEmpty } from '@tooljet-plugins/common';
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
   private STATEMENT_TIMEOUT;
+  private tooljet_edition: string;
 
   constructor() {
+    this.tooljet_edition = getTooljetEdition();
     // Default 120 secs
     this.STATEMENT_TIMEOUT =
       process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
@@ -63,6 +66,7 @@ export default class PostgresqlQueryService implements QueryService {
             pgConnection = await pgPool.acquire().promise;
             const query = queryOptions.query;
             let result = { rows: [] };
+
             result = await pgConnection.query(query);
             return {
               status: 'ok',
@@ -150,12 +154,12 @@ export default class PostgresqlQueryService implements QueryService {
         password: sourceOptions.password,
         port: sourceOptions.port,
         ssl: this.getSslConfig(sourceOptions),
-        statement_timeout: this.STATEMENT_TIMEOUT,
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
-        statement_timeout: this.STATEMENT_TIMEOUT,
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     }
     const connectionOptions: Knex.Config = {
