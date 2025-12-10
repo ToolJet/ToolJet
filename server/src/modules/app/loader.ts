@@ -121,9 +121,12 @@ export class AppModuleLoader {
               });
             } else {
               // Production: Create a custom tee stream that writes to BOTH stdout AND capture file
+              let totalWriteCalls = 0;
               let captureWriteCount = 0;
               return new (require('stream').Writable)({
                 write(chunk, encoding, callback) {
+                  totalWriteCalls++;
+
                   // ALWAYS write to stdout
                   process.stdout.write(chunk, encoding);
 
@@ -131,7 +134,7 @@ export class AppModuleLoader {
                   const state = globalThis.__tooljet_log_capture_state__;
                   if (state?.captureMode && state?.captureDestination) {
                     captureWriteCount++;
-                    console.error(`[DEBUG] Captured log #${captureWriteCount}`);
+                    console.error(`[DEBUG] Write call #${totalWriteCalls} -> Captured log #${captureWriteCount}`);
                     try {
                       state.captureDestination.write(chunk, encoding);
                     } catch (err) {
