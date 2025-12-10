@@ -49,7 +49,6 @@ const DynamicForm = ({
   layout = 'vertical',
   renderCopilot,
   elementsProps = null,
-  responsePath,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -541,7 +540,6 @@ const DynamicForm = ({
         return {
           operation: operation,
           dependsOn: depends_on || [],
-          responsePath: responsePath,
           selectedDataSource,
           currentAppEnvironmentId,
           optionchanged,
