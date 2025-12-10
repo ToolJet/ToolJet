@@ -135,12 +135,6 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        // <CreateVersionModal
-        //   {...props}
-        //   showCreateAppVersion={showCreateAppVersion}
-        //   setShowCreateAppVersion={setShowCreateAppVersion}
-        //   onSelectVersion={onSelectVersion}
-        // />
         <CreateDraftVersionModal
           {...props}
           showCreateAppVersion={showCreateAppVersion}
