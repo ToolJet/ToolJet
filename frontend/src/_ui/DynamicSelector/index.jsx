@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
 import Select from '@/_ui/Select';
 import { dataqueryService } from '@/_services';
@@ -67,7 +67,7 @@ const DynamicSelector = ({
         }, {});
     }, shallow);
 
-    const compositeDependencyKey = Object.values(dependencyValues).join('_');
+    const compositeDependencyKey = useMemo(() => Object.values(dependencyValues).join('_'), [dependencyValues]);
 
     const handleFetch = async () => {
         if (!selectedDataSource?.id || !invokeMethod) {
