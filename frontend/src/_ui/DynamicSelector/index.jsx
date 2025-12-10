@@ -91,28 +91,8 @@ const DynamicSelector = ({
             );
 
             const payload = response?.data ?? response;
-
-            let items = [];
-            if (Array.isArray(payload?.data)) {
-                items = payload.data;
-            } else if (Array.isArray(payload)) {
-                items = payload;
-            } else if (payload && Array.isArray(payload?.result)) {
-                items = payload.result;
-            }
-
-            const transformedData = items.map(it => {
-                const key = it?.key ?? it?.id ?? it?.value;
-                const labelText = it?.label ?? it?.value ?? String(key);
-                const valueForSelect = key;
-                return {
-                    value: valueForSelect,
-                    label: labelText,
-                    meta: it
-                };
-            });
-
-            setFetchedData(transformedData);
+            const items = payload?.data || [];
+            setFetchedData(items);
 
             if (isDependentField) {
                 // Store in cache based on dependency value
@@ -140,13 +120,13 @@ const DynamicSelector = ({
                     } else {
                         // Replace the user's cache with the new data, discarding previous dependency values
                         newCache[userId] = {
-                            [parentValue]: transformedData
+                            [parentValue]: items
                         };
                     }
                 } else {
                     newCache = {
                         isMultiAuth: isMultiAuth,
-                        [parentValue]: transformedData
+                        [parentValue]: items
                     };
                 }
 
@@ -171,13 +151,13 @@ const DynamicSelector = ({
                 if (isMultiAuth) {
                     if (userId) {
                         newCache[userId] = {
-                            'nonDependentCache': transformedData
+                            'nonDependentCache': items
                         };
                     }
                 } else {
                     newCache = {
                         isMultiAuth: isMultiAuth,
-                        'nonDependentCache': transformedData
+                        'nonDependentCache': items
                     };
                 }
 
@@ -193,12 +173,6 @@ const DynamicSelector = ({
         } catch (err) {
             console.error(`[DynamicSelector] Error fetching data for ${invokeMethod}:`, err);
             setError(err?.message || 'Failed to fetch data');
-
-            // bubble oauth unauthorized message detection
-            if (err?.message?.includes('OAuthUnauthorizedClientError') || err?.status === 401) {
-                // Let UI handle re-auth flow; show specific message
-                setError('Authentication expired. Please re-authenticate the data source.');
-            }
         } finally {
             setIsLoading(false);
         }
