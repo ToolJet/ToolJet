@@ -249,35 +249,53 @@ const validateOptions = React.useCallback(async () => {
       schema['tj:source']?.kind === 'mongodb' ||  
       schema['tj:source']?.name === 'MongoDB';
     
-    let finalValid = valid;
     let finalErrors = [...errors];
     
-    if (isMongoDBDataSource && 
-        options?.connection_type?.value === 'string' && 
-        options.connection_string?.value) {
-      const selectedFormat = options.connection_format?.value;
-      const validation = validateMongoDBConnectionString(
-        options.connection_string.value, 
-        selectedFormat
-      );
+    if (isMongoDBDataSource) {
+      const connectionType = options?.connection_type?.value;
       
-      if (!validation.valid) {
-        finalValid = false;
-        finalErrors.push({
-          dataPath: ".connection_string",
-          keyword: "custom",
-          message: validation.error,
-          params: {},
-          schemaPath: "#/properties/connection_string"
-        });
+      finalErrors = finalErrors.filter(err => {
+        if (connectionType === 'string' && err.keyword === 'if') {
+          return false;
+        }
+        if (connectionType === 'string' && 
+            err.dataPath === '.connection_string' && 
+            err.keyword === 'required' && 
+            err.schemaPath.includes('allOf')) {
+          return false;
+        }
+        
+        if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      if (connectionType === 'string' && options.connection_string?.value) {
+        const selectedFormat = options.connection_format?.value;
+        const validation = validateMongoDBConnectionString(
+          options.connection_string.value, 
+          selectedFormat
+        );
+        
+        if (!validation.valid) {
+          finalErrors.push({
+            dataPath: ".connection_string",
+            keyword: "custom",
+            message: validation.error,
+            params: {},
+            schemaPath: "#/properties/connection_string"
+          });
+        }
       }
     }
-    
-    if (finalValid) {
+
+    if (finalErrors.length === 0) {  
       clearValidationMessages();
       clearValidationErrorBanner();
     } else {
-      setValidationMessages(finalErrors, schema, interactedFields);
+      setValidationMessages(finalErrors, schema, interactedFields);  
     }
   } catch (error) {
     console.error('Validation error:', error);
