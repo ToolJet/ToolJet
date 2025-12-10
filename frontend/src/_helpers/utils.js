@@ -1520,19 +1520,19 @@ export const validatePassword = (value) => {
     return 'Password is required';
   }
 
-  const passwordRulesEnabled = config.ENABLE_PASSWORD_COMPLEXITY_RULES === 'true';
-  const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
-  if (passwordRulesEnabled) {
-    if (!PASSWORD_REGEX.test(value)) {
-      return 'Password must be 12-24 characters long and can include letters, numbers, and special characters.';
-    }
-  }
-  if (value.length < 5) {
-    return 'Password must be at least 5 characters long';
-  }
-  if (value.length > 100) {
-    return 'Password can be at max 100 characters long';
-  }
+  // const passwordRulesEnabled = config.ENABLE_PASSWORD_COMPLEXITY_RULES === 'true';
+  // const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+  // if (passwordRulesEnabled) {
+  //   if (!PASSWORD_REGEX.test(value)) {
+  //     return 'Password must be 12-24 characters long and can include letters, numbers, and special characters.';
+  //   }
+  // }
+  // if (value.length < 5) {
+  //   return 'Password must be at least 5 characters long';
+  // }
+  // if (value.length > 100) {
+  //   return 'Password can be at max 100 characters long';
+  // }
 };
 
 export const checkConditionsForRoute = (conditions, conditionsObj) => {
