@@ -258,7 +258,6 @@ const DynamicForm = ({
     editor_type,
     spec_url = '',
     disabled = false,
-    fx_enabled: fxEnabled = false,
     buttonText: buttonTextProp,
     button_text,
     text,
@@ -266,9 +265,8 @@ const DynamicForm = ({
     oauth_configs,
     operation,
     depends_on,
-    response_path,
-    responsePath: responsePathProp,
     label,
+    fx_enabled: fxEnabled = false,
     ...rest
   }) => {
     const source = schema?.source?.kind;

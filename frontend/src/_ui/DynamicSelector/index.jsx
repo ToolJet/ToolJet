@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
 import Select from '@/_ui/Select';
 import { dataqueryService } from '@/_services';
-import { get } from 'lodash';
+import { get, debounce } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 
 import { shallow } from 'zustand/shallow';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { debounce } from 'lodash';
 
 const DynamicSelector = ({
     operation,
@@ -27,11 +26,11 @@ const DynamicSelector = ({
     value,
     fxEnabled
 }) => {
-    const isDependent = dependsOn?.length > 0;
+    const isDependentField = dependsOn?.length > 0;
 
     const currentUser = useStore((state) => state.user);
 
-    const opLabel = operation?.label || operation?.name || 'Fetch';
+    const operationLabel = operation?.label || operation?.name || 'Fetch';
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -60,7 +59,7 @@ const DynamicSelector = ({
 
     // Use zustand/shallow to avoid unnecessary re-renders
     const dependencyValues = useStore((state) => {
-        if (!isDependent) return {};
+        if (!isDependentField) return {};
         const queryOptions = state.queryPanel.selectedQuery?.options || {};
         return depKeys.reduce((acc, key) => {
             acc[key] = queryOptions[key];
@@ -70,7 +69,7 @@ const DynamicSelector = ({
 
     const compositeDependencyKey = Object.values(dependencyValues).join('_');
 
-    const handleFetch = async (isAutoFetch = false) => {
+    const handleFetch = async () => {
         if (!selectedDataSource?.id || !invokeMethod) {
             console.error('[DynamicSelector] Missing data source or invoke method', { selectedDataSourceId: selectedDataSource?.id, invokeMethod });
             setError('Configuration error: missing data source or invoke method');
@@ -115,7 +114,7 @@ const DynamicSelector = ({
 
             setFetchedData(transformedData);
 
-            if (isDependent) {
+            if (isDependentField) {
                 // Store in cache based on dependency value
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
@@ -211,11 +210,9 @@ const DynamicSelector = ({
 
         const storedValue = get(options, propertyKey);
         if (storedValue) {
-            console.log(`[DynamicSelector] Found stored value for ${propertyKey}:`, storedValue);
-
             // Check if the component depends on other fields, if yes then update the cache
 
-            if (isDependent) {
+            if (isDependentField) {
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
 
@@ -277,7 +274,7 @@ const DynamicSelector = ({
 
     // Watch for changes in dependency state
     useEffect(() => {
-        if (isDependent && compositeDependencyKey && depsReady) {
+        if (isDependentField && compositeDependencyKey && depsReady) {
             const cacheKey = `${propertyKey}_cache`;
             const existingCache = get(options, cacheKey) || {};
 
@@ -307,7 +304,7 @@ const DynamicSelector = ({
 
     }, [compositeDependencyKey])
 
-    const handleMainSelectionChange = (selectedOption) => {
+    const handleSelectionChange = (selectedOption) => {
         const selectedValue = selectedOption?.value ?? selectedOption;
 
         // Update the options based on the new selection
@@ -345,7 +342,7 @@ const DynamicSelector = ({
         const currentValue = options[propertyKey]?.value ?? value;
         if (!currentValue || !fetchedData.length) return null;
 
-        const selectedOption = fetchedData.find(it => String(it.value) === String(currentValue));
+        const selectedOption = fetchedData.find(option => String(option.value) === String(currentValue));
         return selectedOption || null;
     };
 
@@ -368,9 +365,9 @@ const DynamicSelector = ({
                         <Select
                             options={fetchedData}
                             value={getCurrentValue()}
-                            onChange={handleMainSelectionChange}
+                            onChange={handleSelectionChange}
                             placeholder={`Select ${label ?? ''}`}
-                            isDisabled={disabled || (isDependent && !depsReady) || fetchedData?.length === 0}
+                            isDisabled={disabled || (isDependentField && !depsReady) || fetchedData?.length === 0}
                             isLoading={isLoading}
                             useMenuPortal={disableMenuPortal ? false : !!queryName}
                             styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
@@ -401,7 +398,7 @@ const DynamicSelector = ({
                             Loading...
                         </>
                     ) : (
-                        opLabel || 'Fetch'
+                        operationLabel || 'Fetch'
                     )}
                 </ButtonSolid>}
             </div>
