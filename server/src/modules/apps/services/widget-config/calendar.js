@@ -58,7 +58,7 @@ export const calendarConfig = {
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#00000000',
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
     borderRadius: {
@@ -66,7 +66,7 @@ export const calendarConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 0,
+        defaultValue: 6,
       },
     },
   },
@@ -122,8 +122,8 @@ export const calendarConfig = {
       visibility: { value: '{{true}}' },
       cellSizeInViewsClassifiedByResource: { value: 'spacious' },
       weekDateFormat: { value: 'DD MMM' },
-      borderColor: { value: '#00000000' },
-      borderRadius: { value: 0 },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: 6 },
     },
   },
 };

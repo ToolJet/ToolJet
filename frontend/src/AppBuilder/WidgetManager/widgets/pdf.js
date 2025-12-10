@@ -48,7 +48,7 @@ export const pdfConfig = {
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#00000000',
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
     borderRadius: {
@@ -56,7 +56,7 @@ export const pdfConfig = {
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 0,
+        defaultValue: 6,
       },
     },
   },
@@ -84,8 +84,8 @@ export const pdfConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
-      borderColor: { value: '#00000000' },
-      borderRadius: { value: 0 },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      borderRadius: { value: 6 },
     },
   },
 };

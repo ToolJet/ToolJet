@@ -83,7 +83,7 @@ export const customComponentConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{6}}' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
