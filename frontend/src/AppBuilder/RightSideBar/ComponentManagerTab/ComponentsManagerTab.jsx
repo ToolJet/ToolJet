@@ -222,6 +222,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             setSearchQuery('');
             filterComponents('');
           }}
+          autoFocus={true}
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
@@ -254,40 +255,47 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
           </div>
           {closeIcon()}
+        </div>
+
+        {/* Row 2: Tabs (conditional) */}
+        {!(isModuleEditor || edition === 'ce') && (
+          <Tabs
+            activeKey={activeTab}
+            onSelect={(key) => {
+              setActiveTab(key);
+            }}
+            id="components-manager-tabs"
+            className="mt-2"
+            darkMode={darkMode}
+          >
+            <Tab
+              eventKey="components"
+              title={(() => {
+                const str = t('globals.components', 'Components');
+                const title = str.charAt(0).toUpperCase() + str.slice(1);
+                return <span className="tab-label">{title}</span>;
+              })()}
+            />
+            {hasModuleAccess && (
+              <Tab eventKey="modules" title={<span className="tab-label">{t('globals.modules', 'Modules')}</span>} />
+            )}
+          </Tabs>
+        )}
+      </div>
+
+      {/* Content - Outside Header */}
+      {activeTab === 'components' && (
+        <>
           {searchBox()}
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
-      ) : (
-        <Tabs
-          activeKey={activeTab}
-          onSelect={(key) => {
-            setActiveTab(key);
-          }}
-          id="components-manager-tabs"
-          className="mt-2"
-          darkMode={darkMode}
-          closeIcon={closeIcon}
-        >
-          <Tab
-            eventKey="components"
-            title={(() => {
-              const str = t('globals.components', 'Components');
-              return str.charAt(0).toUpperCase() + str.slice(1);
-            })()}
-            darkMode={darkMode}
-          >
-            {searchBox()}
-            <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
-          </Tab>
-          {hasModuleAccess && (
-            <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
-              <ModuleErrorBoundary onError={() => setModuleError(true)}>
-                {searchBox()}
-                <ModuleManager searchQuery={searchQuery} />
-              </ModuleErrorBoundary>
-            </Tab>
-          )}
-        </Tabs>
+      )}
+
+      {activeTab === 'modules' && hasModuleAccess && (
+        <ModuleErrorBoundary onError={() => setModuleError(true)}>
+          {searchBox()}
+          <ModuleManager searchQuery={searchQuery} />
+        </ModuleErrorBoundary>
       )}
     </div>
   );

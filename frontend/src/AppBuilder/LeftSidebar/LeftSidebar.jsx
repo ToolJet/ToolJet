@@ -223,7 +223,7 @@ export const BaseLeftSidebar = ({
     <div
       className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 9999, backgroundColor: 'var(--surfaces-surface-01)', maxWidth: 304  }}
     >
       {renderLeftSidebarItems()}
       <Popover
@@ -242,9 +242,7 @@ export const BaseLeftSidebar = ({
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
-        contentProps={{
-          onOpenAutoFocus: (e) => e.preventDefault(),
-        }}
+        popoverContentWidth={304}
       />
       <div className="left-sidebar-stack-bottom">
         <div className="tw-flex tw-flex-col tw-gap-2">

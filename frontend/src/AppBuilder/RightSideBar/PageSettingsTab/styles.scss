@@ -1,0 +1,183 @@
+.pages-settings {
+  .pages-settings-header {
+    padding: 16px 16px 0px 16px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border-weak);
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .pages-settings-label {
+        margin: 0 !important;
+        color: var(--text-default);
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Content wrapper - mimics .inspector .tab-content behavior
+  .pages-settings-content {
+    overflow-y: auto;
+    // height: calc(100vh - 8rem);
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+
+    // Reset any inherited styles that might affect children
+    display: block;
+    padding: 0;
+    margin: 0;
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // Apply the same styles that were under #page-settings-tabpane-properties
+    .accordion-body {
+      padding: 16px !important;
+
+      .page-type-buttons-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .add-new-page, .more-page-opts {
+        padding: 7px 12px;
+        margin-top: 12px;
+        height: 32px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      .add-new-page {
+        width: 100%;
+      }
+    }
+
+    .accordion-header {
+      height: 32px;
+
+      .accordion-title-text {
+        color: var(--text-default);
+        text-transform: unset !important;
+      }
+    }
+
+    .form-control.is-invalid {
+      background-image: none;
+    }
+
+    input[type='text'] {
+      border-radius: 6px;
+
+      &:focus {
+        border: 2px solid var(--border-accent-strong);
+      }
+    }
+
+    .form-check-input[type=checkbox] {
+      float: right;
+    }
+
+    .app-name {
+      width: 100% !important;
+      margin: 0px !important;
+    }
+  }
+
+  #page-settings-tabs {
+    margin-left: 10px;
+    position: relative;
+  }
+
+  #page-settings-tabs-tab-properties,
+  #page-settings-tabs-tab-styles {
+    border-radius: 0px !important;
+    background-color: transparent !important;
+  }
+
+  #page-settings-tabs-tab-properties.nav-link.active,
+  #page-settings-tabs-tab-styles.nav-link.active {
+    border-bottom: 2px solid rgb(77, 114, 250) !important;
+    color: var(--text-default) !important;
+  }
+
+  #page-settings-tabs-tab-properties.nav-link,
+  #page-settings-tabs-tab-styles.nav-link {
+    font-weight: 500 !important;
+  }
+
+  #page-settings-tabs-tab-properties:hover,
+  #page-settings-tabs-tab-styles:hover {
+    border: none !important;
+  }
+
+  #page-settings-tabs {
+    height: 32px;
+    margin-top: 0px !important;
+    align-items: flex-end;
+    gap: 4px;
+    width: 100%;
+
+    .nav-item {
+      // background-color: var(--controls-switch-tab) !important;
+      flex: 1;
+
+      button {
+        min-width: 0 !important;
+        padding: 2px 7px;
+        width: 100%;
+      }
+
+      #page-settings-tabs-tab-properties {
+        width: 100%;
+      }
+
+      #page-settings-tabs-tab-styles {
+        width: 100%;
+      }
+
+      &:hover {
+        button.nav-link:not(.active) {
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 22px;
+            transform: translateY(-50%);
+            background-color: var(--interactive-hover);
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 6px;
+          }
+        }
+      }
+    }
+
+  }
+
+  // Hide empty Bootstrap-generated tab-content inside pages-settings-header
+  // Need to override .inspector .tab-content from theme.scss
+  .pages-settings-header .tab-content {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+  }
+}

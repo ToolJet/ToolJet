@@ -20,7 +20,7 @@ export const QUERY_PANE_HEIGHT = 40; // This represents pane that contains trigg
 
 export const LEFT_SIDEBAR_WIDTH = {
   tooljetai: 440,
-  default: 350,
+  default: 304,
 };
 
 export const RIGHT_SIDEBAR_WIDTH = 300;

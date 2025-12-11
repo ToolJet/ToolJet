@@ -1,6 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { PanelBottomClose, PanelBottomOpen } from 'lucide-react';
-
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
