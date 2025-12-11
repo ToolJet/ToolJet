@@ -13,7 +13,7 @@
 
 .sso-option {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between !important;
   align-items: center;
   padding-left: 12px;
   padding-right: 12px;
@@ -140,7 +140,7 @@ input:checked+.slider:before {
 }
 
 .dropdown-item {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem !important;
   color: #212529;
 }
 
@@ -158,6 +158,7 @@ input:checked+.slider:before {
 .dropdown-item.disabled {
   color: #6c757d !important;
   cursor: not-allowed;
+  padding: 0.5rem 1rem;
 }
 
 .overlay-style {
@@ -274,7 +275,8 @@ input:checked+.slider:before {
       border-top: 1px solid var(--border-weak) !important;
       margin-top: 0px !important;
       align-Self: 'stretch';
-      height: 88px;;
+      height: 88px;
+      ;
       background: 0 0;
     }
 

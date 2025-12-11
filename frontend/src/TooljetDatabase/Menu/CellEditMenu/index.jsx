@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import DropDownSelect from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
+import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -11,9 +11,9 @@ import cx from 'classnames';
 import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
-import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import DateTimePicker from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { TooljetDatabaseContext } from '@/TooljetDatabase';
-import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import { getLocalTimeZone } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import { CellHinterWrapper } from './CellHinterWrapper';
 
 export const CellEditMenu = ({

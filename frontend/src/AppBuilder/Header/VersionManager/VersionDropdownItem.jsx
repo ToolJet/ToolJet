@@ -24,6 +24,8 @@ const VersionDropdownItem = ({
   environments = [],
   showActions = true,
   darkMode = false,
+  openMenuVersionId,
+  setOpenMenuVersionId,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
@@ -39,12 +41,30 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-    developmentVersions.find((v) => v.id === version.parentVersionId)
+      developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
+  const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
+  // Close menu when scrolling
+  useEffect(() => {
+    if (openMenuVersionId === version.id) {
+      const handleScroll = () => {
+        setOpenMenuVersionId?.(null);
+      };
+
+      // Find the scrollable versions list container
+      const scrollContainer = document.querySelector('.versions-list');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }
+  }, [openMenuVersionId, version.id, setOpenMenuVersionId]);
 
   // Check if metadata text is overflowing
   useEffect(() => {
@@ -241,7 +261,12 @@ const VersionDropdownItem = ({
 
             {/* Action buttons */}
             {showActions && (
-              <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
+              <div
+                className="d-flex align-items-center"
+                style={{ gap: '4px', flexShrink: 0 }}
+                onMouseEnter={() => setIsHoveringActionButtons(true)}
+                onMouseLeave={() => setIsHoveringActionButtons(false)}
+              >
                 {/* Promote button - shown for versions that can be promoted */}
                 {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
@@ -265,7 +290,17 @@ const VersionDropdownItem = ({
                 )}
 
                 {/* More menu */}
-                <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom-end"
+                  overlay={renderMenu}
+                  rootClose
+                  show={openMenuVersionId === version.id}
+                  onToggle={(show) => {
+                    setIsMoreMenuOpen(show);
+                    setOpenMenuVersionId?.(show ? version.id : null);
+                  }}
+                >
                   <Button
                     variant="ghost"
                     size="small"
@@ -308,8 +343,8 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata
-  if (showMetadataTooltip && tooltipContent) {
+  // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen) {
     return (
       <ToolTip
         message={tooltipContent}
