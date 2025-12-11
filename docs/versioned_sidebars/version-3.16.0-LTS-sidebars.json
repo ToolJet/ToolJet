@@ -824,7 +824,6 @@
           "label": "GitSync CI/CD",
           "items": [
             "development-lifecycle/cicd/overview",
-            "development-lifecycle/cicd/gitsync-api",
             "development-lifecycle/cicd/example"
           ]
         },
@@ -910,7 +909,8 @@
       "collapsed": true,
       "items": [
         "tooljet-api",
-        "user-management/authentication/self-hosted/pat"
+        "user-management/authentication/self-hosted/pat",
+        "development-lifecycle/cicd/gitsync-api"
       ]
     },
     {
