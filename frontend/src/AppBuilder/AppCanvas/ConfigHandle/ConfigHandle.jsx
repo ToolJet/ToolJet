@@ -85,10 +85,10 @@ export const ConfigHandle = ({
 
   const getTooltip = () => {
     const permission = component.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -105,7 +105,7 @@ export const ConfigHandle = ({
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);

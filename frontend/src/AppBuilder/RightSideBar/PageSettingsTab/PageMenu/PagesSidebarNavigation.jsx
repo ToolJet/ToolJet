@@ -76,10 +76,10 @@ export const PagesSidebarNavigation = ({
 
   const { hideHeader, position, style, collapsable, name, hideLogo } = properties ?? {};
 
-  const license = useStore((state) => state.license);
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
 
   const labelStyle = useMemo(
     () => ({
@@ -94,8 +94,8 @@ export const PagesSidebarNavigation = ({
   );
 
   const pagesTree = useMemo(
-    () => (isLicensed ? buildTree(pages, !!labelStyle?.label?.hidden) : pages),
-    [isLicensed, pages, labelStyle?.label?.hidden]
+    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, !!labelStyle?.label?.hidden) : pages),
+    [hasAppPagesAddNavGroupEnabled, pages, labelStyle?.label?.hidden]
   );
 
   const mainNavBarPages = useMemo(() => {
@@ -436,8 +436,8 @@ export const PagesSidebarNavigation = ({
   const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const labelHidden = labelStyle?.label?.hidden;
-  const headerHidden = isLicensed ? hideHeader : false;
-  const logoHidden = isLicensed ? hideLogo : false;
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   if (headerHidden && logoHidden && isPagesSidebarHidden) {
     return null;
@@ -477,7 +477,7 @@ export const PagesSidebarNavigation = ({
     return (
       !isPagesSidebarHidden && (
         <RenderPageAndPageGroup
-          isLicensed={isLicensed}
+          isLicensed={hasAppPagesAddNavGroupEnabled}
           switchPageWrapper={switchPageWrapper}
           pages={pages}
           labelStyle={labelStyle}
@@ -629,8 +629,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-        }),
+            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+          }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >

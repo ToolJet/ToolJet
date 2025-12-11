@@ -238,12 +238,12 @@ export const PageMenuItem = withRouter(
     };
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
-      if (!permission) return '';
+      if (!permission) return 'Access restricted';
       const users = permission.users || [];
       const isSingle = permission.type === 'SINGLE';
       const isGroup = permission.type === 'GROUP';
 
-      if (users.length === 0) return null;
+      if (users.length === 0) return 'Access restricted';
 
       if (isSingle) {
         if (users.length === 1) {
@@ -263,7 +263,7 @@ export const PageMenuItem = withRouter(
         }
       }
 
-      return '';
+      return 'Access restricted';
     }
     return (
       <div
@@ -456,7 +456,7 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'Page permissions are available only in paid plans'}
+                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"

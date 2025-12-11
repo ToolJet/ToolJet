@@ -73,10 +73,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
 
   const getTooltip = () => {
     const permission = dataQuery.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -93,7 +93,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   return (

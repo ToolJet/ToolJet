@@ -159,7 +159,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                   text={() => {
                     return (
                       <ToolTip
-                        message={'Page permissions are available only in paid plans'}
+                        message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
                         placement="right"
                         show={!hasAppPermissionPages}
                       >

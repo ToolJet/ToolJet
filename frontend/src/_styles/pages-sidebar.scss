@@ -217,8 +217,9 @@
 }
 
 #sidebar-page-navigation {
-    
-    .navigation-area, .mobile-navigation-area {
+
+    .navigation-area,
+    .mobile-navigation-area {
         width: 100%;
         z-index: 1;
         background: var(--base, #FFF);
@@ -314,7 +315,7 @@
             border-radius: 0 !important;
             border: none;
 
-            .accordion-body{
+            .accordion-body {
                 padding: 0 0 0 32px !important;
                 border-bottom: 0px !important;
 
@@ -404,7 +405,8 @@
                 padding: 8px;
             }
 
-            &.not-collapsable, &.collapsable-only {
+            &.not-collapsable,
+            &.collapsable-only {
                 .page-dark-mode-btn-wrapper {
                     height: 56px;
                 }
@@ -435,7 +437,7 @@
             }
         }
 
-        .accordion-header{
+        .accordion-header {
             height: auto !important;
             position: relative;
 
@@ -468,8 +470,8 @@
                 left: -1rem;
             }
         }
-        
-        .accordion-header button{
+
+        .accordion-header button {
             margin: 0;
             padding: 0 !important;
         }
@@ -515,9 +517,9 @@
                 flex-direction: row;
                 align-items: center;
 
-                > div {
+                >div {
                     height: 32px;
-                    width: 100%; 
+                    width: 100%;
                 }
 
                 .page-handler-list {
@@ -582,7 +584,8 @@
                 padding: 8px;
                 box-shadow: 0px 4px 8px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1)), 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05));
 
-                .tj-list-item, .page-group-wrapper {
+                .tj-list-item,
+                .page-group-wrapper {
                     padding: 8px 12px !important;
                     height: 36px !important;
                     gap: 10px;
@@ -617,7 +620,6 @@
             }
         }
     }
-    
     &.offset-top-bar-navigation {
         #sidebar-page-navigation {
             .navigation-area {
@@ -629,12 +631,12 @@
     }
 
     // scrollbar behaviour in viewer for page menu
-    .main{
-        .canvas-container{
+    .main {
+        .canvas-container {
             .page-menu-scroll {
                 scrollbar-color: var(--interactive-hover) transparent !important;
                 scrollbar-width: thin !important;
-            
+
                 &::-webkit-scrollbar-track {
                     background: transparent !important;
                 }
@@ -733,6 +735,7 @@
     position: relative;
     width: 100%;
     height: 100%;
+    z-index: 1000;
 
     &:hover {
         .navigation-area.navigation-hover-trigger {
