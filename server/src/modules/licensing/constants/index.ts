@@ -136,6 +136,7 @@ export enum LICENSE_FIELD {
   GOOGLE = 'googleEnabled',
   GITHUB = 'githubEnabled',
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
+  MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
