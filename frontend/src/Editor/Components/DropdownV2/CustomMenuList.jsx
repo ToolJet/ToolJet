@@ -29,6 +29,18 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
   }, []);
 
+  const firstSelectedIndex =
+    !Array.isArray(selectProps?.value)
+      ? props?.options?.findIndex(opt => opt.value === selectProps.value?.value)
+      : -1;
+
+  useEffect(() => {
+    if (firstSelectedIndex >= 0) {
+      virtualizer.scrollToIndex(firstSelectedIndex, { align: 'center' });
+    }
+  }, [firstSelectedIndex]);
+
+
   return (
     <div
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
