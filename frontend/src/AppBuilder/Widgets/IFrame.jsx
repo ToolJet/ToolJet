@@ -13,6 +13,7 @@ export const IFrame = function IFrame({
 }) {
   const { source, loadingState, disabledState, visibility } = properties;
   const { boxShadow } = styles;
+  const iframeRef = React.useRef(null);
 
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] =
     useState({
@@ -32,7 +33,7 @@ export const IFrame = function IFrame({
     const exposedVariables = {
       isLoading: loadingState,
       isDisabled: disabledState,
-      visibility: visibility,
+      isVisible: visibility,
       setLoading: async function (newValue) {
         setExposedVariable("isLoading", newValue);
         updateExposedVariablesState("isLoading", newValue);
@@ -42,11 +43,12 @@ export const IFrame = function IFrame({
         updateExposedVariablesState("isDisabled", newValue);
       },
       setVisibility: async function (newValue) {
-        setExposedVariable("visibility", newValue);
-        updateExposedVariablesState("visibility", newValue);
+        setExposedVariable("isVisible", newValue);
+        updateExposedVariablesState("isVisible", newValue);
       },
       reload: async function () {
-        this.contentWindow.location.reload();
+        const currentSrc = iframeRef.current.getAttribute("src");
+        iframeRef.current.setAttribute("src", currentSrc);
       },
     };
 
@@ -71,8 +73,8 @@ export const IFrame = function IFrame({
     {
       dep: visibility,
       sideEffect: () => {
-        setExposedVariable("visibility", visibility);
-        updateExposedVariablesState("visibility", visibility);
+        setExposedVariable("isVisible", visibility);
+        updateExposedVariablesState("isVisible", visibility);
       },
     },
   ]);
@@ -96,6 +98,7 @@ export const IFrame = function IFrame({
         </div>
       ) : (
         <iframe
+          ref={iframeRef}
           width={width - 4}
           height={height}
           src={source}
