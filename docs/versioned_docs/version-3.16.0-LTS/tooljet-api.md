@@ -26,7 +26,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Get All Users](#get-all-users)
 - [Get All Workspaces](#get-all-workspaces)
 - [Get All App Details](#get-all-app-details)
-- [Get User by ID](#get-user-by-id)
+- [Get User by Identifier](#get-user-by-identifier)
 - [Create User](#create-user)
 - [Update User](#update-user)
 - [Update User Role](#update-user-role)
