@@ -27,4 +27,4 @@ The company also uses different global and secret constants for each environment
 - For details on managing versions, check the **Version Control Documentation**.
 - After successful testing, the application is promoted to **production** and released, making it available to end users. This environment uses the production database set up during data source configuration.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/appbuilder.png" alt="self-hosted-env-concept" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/draft-version/appbuilder.png" alt="self-hosted-env-concept" />
