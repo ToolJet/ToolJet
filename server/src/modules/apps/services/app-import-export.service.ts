@@ -86,7 +86,8 @@ type NewRevampedComponent =
   | 'StarRating'
   | 'Tags'
   | 'CircularProgressBar'
-  | 'Html';
+  | 'Html'
+  | 'IFrame';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -120,6 +121,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tags',
   'CircularProgressBar',
   'Html',
+  'IFrame',
 ];
 
 const INPUT_WIDGET_TYPES = [
@@ -2779,7 +2781,15 @@ function migrateProperties(
         styles.labelStyle = { value: 'legacy' };
       }
     }
+
+    //IFrame
+    if (componentType === 'IFrame') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: false };
+      }
+    } 
   }
+
   // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {
