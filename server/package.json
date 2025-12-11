@@ -107,6 +107,7 @@
     "express-basic-auth": "^1.2.1",
     "express-http-proxy": "^2.1.1",
     "fast-csv": "^5.0.2",
+    "fast-json-patch": "^3.1.1",
     "fast-xml-parser": "^5.2.5",
     "flatted": "^3.3.1",
     "futoin-hkdf": "^1.4.2",
