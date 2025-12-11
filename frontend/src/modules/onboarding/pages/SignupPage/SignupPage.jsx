@@ -48,16 +48,22 @@ const SignupPage = ({ configs, organizationId }) => {
         .then((response) => onInvitedUserSignUpSuccess(response, navigate))
         .catch((errorObj) => {
           let errorMessage;
-          const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
-          if (errorObj?.error?.includes('reached your limit')) {
-            // Note : The fix is made to handle the case when errorObj?.error is a string and not an object
-            errorMessage = errorObj?.error;
-          } else if (isThereAnyErrorsArray) {
-            errorMessage = errorObj?.error?.[0];
-          } else if (typeof errorObj?.error?.error === 'string') {
-            errorMessage = errorObj?.error?.error;
+          if (typeof errorObj?.error === 'string') {
+            errorMessage = errorObj.error; 
+          }
+          if (!errorMessage) {
+            const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
+            if (errorObj?.error?.includes('reached your limit')) {
+              // Note : The fix is made to handle the case when errorObj?.error is a string and not an object
+              errorMessage = errorObj?.error;
+            } else if (isThereAnyErrorsArray) {
+              errorMessage = errorObj?.error?.[0];
+            } else if (typeof errorObj?.error?.error === 'string') {
+              errorMessage = errorObj?.error?.error;
+            }
           }
           errorMessage && toast.error(errorMessage);
+          onFaluire(errorObj);
         });
     } else {
       authenticationService
