@@ -39,6 +39,7 @@ const Container = React.memo(
     componentType,
     appType,
     hasNoScroll = false,
+    parentSubContainerIndex = null,
   }) => {
     const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -232,6 +233,7 @@ const Container = React.memo(
               darkMode={darkMode}
               moduleId={moduleId}
               parentId={id}
+              parentSubContainerIndex={parentSubContainerIndex}
             />
           ))}
         </div>

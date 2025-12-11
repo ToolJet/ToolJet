@@ -23,6 +23,7 @@ const WidgetWrapper = memo(
     darkMode,
     moduleId,
     parentId,
+    parentSubContainerIndex = null,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
@@ -173,6 +174,7 @@ const WidgetWrapper = memo(
             onOptionsChange={onOptionsChange}
             moduleId={moduleId}
             currentMode={mode}
+            parentSubContainerIndex={parentSubContainerIndex}
           />
         </div>
       </>

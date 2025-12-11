@@ -253,7 +253,7 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
+    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId,subContainerIndex);
   }
   return (
     <div
@@ -290,6 +290,7 @@ export const Listview = function Listview({
             currentLayout={currentLayout}
             visibility={visibility}
             parentHeight={height}
+            parentSubContainerIndex={subContainerIndex}
           />
         ))}
       </div>

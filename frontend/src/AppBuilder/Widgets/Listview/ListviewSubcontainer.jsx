@@ -23,6 +23,7 @@ export const ListviewSubcontainer = ({
   currentLayout,
   visibility,
   parentHeight,
+  parentSubContainerIndex,
 }) => {
   const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
   const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
@@ -70,6 +71,7 @@ export const ListviewSubcontainer = ({
         listViewMode={mode}
         darkMode={darkMode}
         componentType="Listview"
+        parentSubContainerIndex={parentSubContainerIndex}
       />
     </div>
   );

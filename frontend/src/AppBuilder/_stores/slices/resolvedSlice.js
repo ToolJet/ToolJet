@@ -385,28 +385,39 @@ export const createResolvedSlice = (set, get) => ({
     get().setExposedValues(id, 'components', exposedVariables, moduleId);
   },
 
-  updateCustomResolvables: (componentId, data, key, moduleId = 'canvas') => {
+  updateCustomResolvables: (componentId, data, key, moduleId = 'canvas', parentSubContainerIndex = null) => {
     const { updateDependencyValues, updateChildComponentsLength } = get();
     set((state) => {
-      state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
+      if (parentSubContainerIndex !== null && parentSubContainerIndex !== undefined) {
+        // Nested container (e.g., Listview inside Listview) - store per parent row index
+        if (!state.resolvedStore.modules[moduleId].customResolvables[componentId]) {
+          state.resolvedStore.modules[moduleId].customResolvables[componentId] = {};
+        }
+        // Store as object with parent row indices as keys
+        state.resolvedStore.modules[moduleId].customResolvables[componentId][parentSubContainerIndex] = data;
+      } else {
+        // Top-level container - store as array directly
+        state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
+      }
     });
-    updateChildComponentsLength(componentId, data.length, data, moduleId);
+    updateChildComponentsLength(componentId, data.length, data, moduleId, parentSubContainerIndex);
     updateDependencyValues(`components.${componentId}.${key}`, moduleId);
   },
 
-  updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas') => {
+  updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentSubContainerIndex = null) => {
     const { getContainerChildrenMapping, copyResolvedDataFromFirstIndex } = get();
     const childComponents = getContainerChildrenMapping(parentId, moduleId);
     set((state) => {
       childComponents.forEach((componentId) => {
         state.resolvedStore.modules[moduleId].components[componentId].length = length;
-        copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId);
+        copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId, parentSubContainerIndex);
       });
     });
   },
 
-  copyResolvedDataFromFirstIndex: (componentId, parentId, data = [], moduleId = 'canvas') => {
-    const dataLength = get().getCustomResolvables(parentId, moduleId).length ?? data.length;
+  copyResolvedDataFromFirstIndex: (componentId, parentId, data = [], moduleId = 'canvas', parentSubContainerIndex = null) => {
+    const customResolvables = get().getCustomResolvables(parentId, null, moduleId, parentSubContainerIndex);
+    const dataLength = (Array.isArray(customResolvables) ? customResolvables.length : 0) || data.length;
     if (get().resolvedStore.modules[moduleId]['components'][componentId].length === dataLength) return;
     set((state) => {
       for (let i = 0; i < dataLength; i++) {
@@ -418,11 +429,28 @@ export const createResolvedSlice = (set, get) => ({
     });
   },
 
-  getCustomResolvables: (componentId, index = null, moduleId = 'canvas') => {
-    if (index !== null) {
-      return get().resolvedStore.modules[moduleId].customResolvables?.[componentId]?.[index] || {};
+  getCustomResolvables: (componentId, index = null, moduleId = 'canvas', parentSubContainerIndex = null) => {
+    const customResolvables = get().resolvedStore.modules[moduleId].customResolvables?.[componentId];
+
+    // Handle nested container structure (object with parent row indices as keys)
+    if (parentSubContainerIndex !== null && parentSubContainerIndex !== undefined) {
+      const nestedData = customResolvables?.[parentSubContainerIndex];
+      if (index !== null) {
+        return nestedData?.[index] || {};
+      }
+      return nestedData || [];
     }
-    return get().resolvedStore.modules[moduleId].customResolvables?.[componentId] || {};
+
+    // Handle top-level container (array structure) or fallback
+    if (index !== null) {
+      // Check if this is a nested structure (object) vs array
+      if (customResolvables && !Array.isArray(customResolvables) && typeof customResolvables === 'object') {
+        // For nested structure without parentSubContainerIndex, return empty (shouldn't happen in normal flow)
+        return {};
+      }
+      return customResolvables?.[index] || {};
+    }
+    return customResolvables || [];
   },
 
   getResolvedComponent: (componentId, subContainerIndex = null, moduleId = 'canvas') => {

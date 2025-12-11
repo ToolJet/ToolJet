@@ -7,6 +7,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { resolveDynamicValues } from '@/AppBuilder/_stores/utils';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -57,6 +58,7 @@ const RenderWidget = ({
   darkMode,
   moduleId,
   currentMode,
+  parentSubContainerIndex = null,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -87,8 +89,11 @@ const RenderWidget = ({
     shallow
   );
   const unResolvedValidation = component?.definition?.validation || {};
+  const unResolvedProperties = component?.definition?.properties || {};
+  const unResolvedStyles = component?.definition?.styles || {};
   // const others = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.others, shallow);
   const updateDependencyValues = useStore((state) => state.updateDependencyValues, shallow);
+  const getAllExposedValues = useStore((state) => state.getAllExposedValues, shallow);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
   const setExposedValue = useStore((state) => state.setExposedValue, shallow);
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
@@ -99,7 +104,16 @@ const RenderWidget = ({
   );
   const parentId = component?.parent;
   const customResolvables = useStore(
-    (state) => state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId],
+    (state) => {
+      // For nested containers, use parentSubContainerIndex to get the correct customResolvables
+      // This handles cases like Listview inside Listview
+      const raw = state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId];
+      if (parentSubContainerIndex !== null && parentSubContainerIndex !== undefined && raw && !Array.isArray(raw)) {
+        // Nested structure - get customResolvables for the specific parent row
+        return raw[parentSubContainerIndex] || [];
+      }
+      return raw;
+    },
     shallow
   );
   const { t } = useTranslation();
@@ -129,9 +143,94 @@ const RenderWidget = ({
     return component?.properties?.loadingState || component?.styles?.loadingState;
   });
 
+  // Re-resolve properties at render time for components inside nested containers (e.g., Listview inside Listview)
+  // This is necessary because the original resolution doesn't have access to parentSubContainerIndex
+  const reResolvedProperties = useMemo(() => {
+    // Only re-resolve if we're in a nested container context
+    if (parentSubContainerIndex === null || parentSubContainerIndex === undefined) {
+      return resolvedProperties;
+    }
+
+    // Check if we have customResolvables for this context
+    if (!customResolvables || (Array.isArray(customResolvables) && customResolvables.length === 0)) {
+      return resolvedProperties;
+    }
+
+    // Get the customResolvables item for the current subContainerIndex (row in the immediate parent)
+    const currentCustomResolvables = Array.isArray(customResolvables)
+      ? customResolvables[subContainerIndex] || {}
+      : customResolvables;
+
+    // Re-resolve properties that might reference listItem
+    const reResolved = { ...resolvedProperties };
+    const exposedValues = getAllExposedValues(moduleId);
+
+    Object.keys(unResolvedProperties).forEach((propKey) => {
+      const unResolvedValue = unResolvedProperties[propKey]?.value;
+      if (typeof unResolvedValue === 'string' && unResolvedValue.includes('{{') && unResolvedValue.includes('listItem')) {
+        try {
+          const resolved = resolveDynamicValues(unResolvedValue, exposedValues, currentCustomResolvables, false, []);
+          reResolved[propKey] = resolved;
+        } catch (e) {
+          // Keep original resolved value if re-resolution fails
+        }
+      }
+    });
+
+    return reResolved;
+  }, [
+    parentSubContainerIndex,
+    subContainerIndex,
+    customResolvables,
+    resolvedProperties,
+    unResolvedProperties,
+    getAllExposedValues,
+    moduleId,
+  ]);
+
+  // Similarly re-resolve styles if needed
+  const reResolvedStyles = useMemo(() => {
+    if (parentSubContainerIndex === null || parentSubContainerIndex === undefined) {
+      return transformedStyles;
+    }
+
+    if (!customResolvables || (Array.isArray(customResolvables) && customResolvables.length === 0)) {
+      return transformedStyles;
+    }
+
+    const currentCustomResolvables = Array.isArray(customResolvables)
+      ? customResolvables[subContainerIndex] || {}
+      : customResolvables;
+
+    const reResolved = { ...transformedStyles };
+    const exposedValues = getAllExposedValues(moduleId);
+
+    Object.keys(unResolvedStyles).forEach((styleKey) => {
+      const unResolvedValue = unResolvedStyles[styleKey]?.value;
+      if (typeof unResolvedValue === 'string' && unResolvedValue.includes('{{') && unResolvedValue.includes('listItem')) {
+        try {
+          const resolved = resolveDynamicValues(unResolvedValue, exposedValues, currentCustomResolvables, false, []);
+          reResolved[styleKey] = resolved;
+        } catch (e) {
+          // Keep original resolved value if re-resolution fails
+        }
+      }
+    });
+
+    return reResolved;
+  }, [
+    parentSubContainerIndex,
+    subContainerIndex,
+    customResolvables,
+    transformedStyles,
+    unResolvedStyles,
+    getAllExposedValues,
+    moduleId,
+  ]);
+
   const obj = {
-    properties: { ...resolvedGeneralProperties, ...resolvedProperties },
-    styles: { ...resolvedGeneralStyles, ...transformedStyles },
+    properties: { ...resolvedGeneralProperties, ...reResolvedProperties },
+    styles: { ...resolvedGeneralStyles, ...reResolvedStyles },
     validation: resolvedValidation,
     ...(componentType === 'CustomComponent' && { component }),
   };
