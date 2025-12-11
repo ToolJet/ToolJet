@@ -188,6 +188,8 @@ export const BaseLeftSidebar = ({
         {!isUserInZeroToOneFlow && (
           <>
             {renderCommonItems()}
+            {/* App history temporarily disabled: setup is incomplete in cloud environment and caused a prod bug.
+                TODO: Re-enable queueing only after the setup flow is finished and validated end-to-end in cloud environment. */}
             {/* <AppHistoryIcon
               darkMode={darkMode}
               selectedSidebarItem={selectedSidebarItem}
