@@ -55,7 +55,7 @@ export const AppsGrid = ({ table, actions, perms, canDelete }) => {
         description={`Edited ${timeAgo} by ${app.editedBy}`}
         variant="outline"
         className="tw-p-4 tw-flex-col tw-items-start"
-        app={app}
+        item={app}
         actions={actions}
         canPlay={perms?.canPlay?.(app) ?? true}
         canEdit={perms?.canEdit?.(app) ?? true}

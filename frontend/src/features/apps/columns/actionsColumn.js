@@ -41,19 +41,20 @@ export const createActionsColumn = (deps = {}) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="tw-w-40">
-            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
-              <AppWindow className="tw-text-icon-strong" />Rename app
+            <DropdownMenuItem onClick={() => actions.rename?.(row.original)} disabled={!canEdit(row)}>
+              <AppWindow className="tw-text-icon-strong" />
+              Rename app
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+            <DropdownMenuItem onClick={() => actions.customizeIcon?.(row.original)} disabled={!canEdit(row)}>
               <PencilRuler className="tw-text-icon-strong" /> Customize icon
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+            <DropdownMenuItem onClick={() => actions.clone?.(row.original)} disabled={!canEdit(row)}>
               <Copy className="tw-text-icon-strong" /> Duplicate app
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+            <DropdownMenuItem onClick={() => actions.moveToFolder?.(row.original)} disabled={!canEdit(row)}>
               <FolderInput className="tw-text-icon-strong" /> Move to folder
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => actions.edit?.(row.original)} disabled={!canEdit(row)}>
+            <DropdownMenuItem onClick={() => actions.export?.(row.original)} disabled={!canEdit(row)}>
               <FileUp className="tw-text-icon-strong" /> Export app
             </DropdownMenuItem>
             <DropdownMenuSeparator />

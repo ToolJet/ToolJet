@@ -27,6 +27,9 @@ const mockOnSearch = (key) => console.log('Search:', key);
 const mockDeleteApp = (app) => console.log('Delete:', app);
 const mockCloneApp = (app) => console.log('Clone:', app);
 const mockExportApp = (app) => console.log('Export:', app);
+const mockRenameApp = (app) => console.log('Rename:', app);
+const mockCustomizeIcon = (app) => console.log('Customize icon:', app);
+const mockMoveToFolder = (app) => console.log('Move to folder:', app);
 const mockNavigate = (path) => console.log('Navigate:', path);
 const mockWorkspaceChange = (workspace) => console.log('Workspace changed:', workspace);
 const mockOnUpgrade = () => console.log('Upgrade clicked');
@@ -209,6 +212,9 @@ const StoryWithWorkspace = (args) => {
         deleteApp: mockDeleteApp,
         cloneApp: mockCloneApp,
         exportApp: mockExportApp,
+        renameApp: mockRenameApp,
+        customizeIcon: mockCustomizeIcon,
+        moveToFolder: mockMoveToFolder,
         onUpgrade: args.actions?.onUpgrade || mockOnUpgrade,
         onCreateBlankApp: args.actions?.onCreateBlankApp || mockOnCreateBlankApp,
         onBuildWithAI: args.actions?.onBuildWithAI || mockOnBuildWithAI,

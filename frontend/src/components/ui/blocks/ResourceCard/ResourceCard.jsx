@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from '@/components/ui/Button/Button';
-import { MoreVertical, Play, SquarePen } from 'lucide-react';
+import { MoreVertical, Play, SquarePen, AppWindow, PencilRuler, Copy, FolderInput, FileUp, Trash } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,18 +29,21 @@ export function ResourceCard({
   renderActions, // Optional custom actions renderer
   ...props
 }) {
+  // Use item if provided, otherwise fall back to app for backward compatibility
+  const resourceItem = item;
+
   // If custom renderActions is provided, use it; otherwise use default actions UI
   const actionsContent = renderActions ? (
-    renderActions({ item, actions, canPlay, canEdit, canDelete })
+    renderActions({ item: resourceItem, actions, canPlay, canEdit, canDelete })
   ) : (
     <div className="tw-mt-1 tw-h-0 tw-hidden group-hover:tw-flex tw-opacity-0 group-hover:tw-h-auto group-hover:tw-opacity-100 has-[button[data-state=open]]:tw-flex has-[button[data-state=open]]:tw-h-auto has-[button[data-state=open]]:tw-opacity-100 has-[button[data-state=open]]:tw-translate-y-0 group-hover:tw-translate-y-0 tw-transition-all tw-duration-150 tw-ease-in-out tw-items-center tw-justify-between tw-gap-2">
       <div className="tw-grow tw-w">
-        <Button variant="ghost" size="medium" disabled={!canPlay} onClick={() => actions.play?.(item)}>
+        <Button variant="ghost" size="medium" disabled={!canPlay} onClick={() => actions.play?.(resourceItem)}>
           <Play className="tw-size-4 tw-text-icon-strong" />
           Play
         </Button>
       </div>
-      <Button variant="secondary" size="medium" disabled={!canEdit} onClick={() => actions.edit?.(item)}>
+      <Button variant="secondary" size="medium" disabled={!canEdit} onClick={() => actions.edit?.(resourceItem)}>
         <SquarePen className="tw-size-4 tw-text-icon-accent" />
         Edit
       </Button>
@@ -56,17 +59,30 @@ export function ResourceCard({
             <span className="tw-sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="tw-w-32">
-          <DropdownMenuItem onClick={() => actions.edit?.(item)}>Edit</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => actions.clone?.(item)}>Make a copy</DropdownMenuItem>
-          {actions.export && <DropdownMenuItem onClick={() => actions.export?.(item)}>Export</DropdownMenuItem>}
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
+        <DropdownMenuContent align="end" className="tw-w-40">
+          <DropdownMenuItem onClick={() => actions.rename?.(resourceItem)} disabled={!canEdit}>
+            <AppWindow className="tw-text-icon-strong" />
+            Rename app
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => actions.customizeIcon?.(resourceItem)} disabled={!canEdit}>
+            <PencilRuler className="tw-text-icon-strong" /> Customize icon
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => actions.clone?.(resourceItem)} disabled={!canEdit}>
+            <Copy className="tw-text-icon-strong" /> Duplicate app
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => actions.moveToFolder?.(resourceItem)} disabled={!canEdit}>
+            <FolderInput className="tw-text-icon-strong" /> Move to folder
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => actions.export?.(resourceItem)} disabled={!canEdit}>
+            <FileUp className="tw-text-icon-strong" /> Export app
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
-            onClick={() => actions.delete?.(item)}
-            disabled={canDelete ? !canDelete(item) : false}
+            onClick={() => actions.delete?.(resourceItem)}
+            disabled={canDelete ? !canDelete(resourceItem) : false}
           >
+            <Trash className="tw-text-icon-strong" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -105,4 +121,3 @@ ResourceCard.propTypes = {
 };
 
 export default ResourceCard;
-
