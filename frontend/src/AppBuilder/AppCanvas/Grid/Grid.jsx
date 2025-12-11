@@ -206,6 +206,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const configHandleWhenMultipleComponentSelected = (id) => {
     return (
       <div
+        id="multiple-components-config-handle"
         className={'multiple-components-config-handle'}
         // This is to handle dragging using config handle when multiple components are selected since dragGroup is not triggered
         onMouseUpCapture={() => {
@@ -452,6 +453,9 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const handleDragGroupEnd = (e) => {
     try {
+      const scrollDelta = getScrollDelta();
+      // Stop autoscroll monitoring for group drag
+      stopAutoScroll();
       hideGridLines();
       handleDeactivateTargets();
       clearActiveTargetClassNamesAfterSnapping(selectedComponents);
@@ -572,11 +576,11 @@ export default function Grid({ gridWidth, currentLayout }) {
             const snappedX = Math.round(posX / _gridWidth) * _gridWidth;
             const snappedY = Math.round(posY / GRID_HEIGHT) * GRID_HEIGHT;
 
-            ev.target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
+            ev.target.style.transform = `translate(${snappedX + scrollDelta.x}px, ${snappedY + scrollDelta.y}px)`;
             return {
               id: ev.target.id,
-              x: posX,
-              y: posY,
+              x: posX + scrollDelta.x || 0,
+              y: posY + scrollDelta.y || 0,
               parent: draggedOverElemId,
             };
           })
@@ -679,13 +683,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           updateMousePosition(clientX, clientY, e.target, e.direction);
         }}
         onResizeStart={(e) => {
-          // Start autoscroll monitoring in resize mode with resize direction
-          // For resize events, mouse position is in inputEvent
-          const clientX = e.inputEvent?.clientX ?? 0;
-          const clientY = e.inputEvent?.clientY ?? 0;
-          // e.direction gives the resize direction: [-1, 0] = left, [1, 0] = right, [0, -1] = top, [0, 1] = bottom, etc.
-          startAutoScroll(clientX, clientY, e.target, 'resize', e.direction);
-
           if (
             e.target.id &&
             useGridStore.getState().resizingComponentId !== e.target.id &&
@@ -702,11 +699,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
         onResizeEnd={(e) => {
-          // Get scroll delta from autoscroll hook for final position calculation
-          const scrollDelta = getScrollDelta();
-          // Stop autoscroll monitoring
-          stopAutoScroll();
-
           try {
             handleDeactivateTargets();
             clearActiveTargetClassNamesAfterSnapping(selectedComponents);
@@ -761,8 +753,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               id: e.target.id,
               height: directions[1] !== 0 ? height : currentWidget.height,
               width: width,
-              x: transformX + scrollDelta.x || 0,
-              y: transformY + scrollDelta.y || 0,
+              x: transformX || 0,
+              y: transformY || 0,
             };
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
@@ -1125,7 +1117,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           // Apply bounds clamping to prevent widget from going out of main canvas
-          if (newParentId === 'canvas') {
+          if (newParentId === 'canvas' && currentParentId === 'canvas') {
             const _canvasWidth = NO_OF_GRIDS * _gridWidth;
             left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
             top = Math.max(0, top);
@@ -1160,27 +1152,86 @@ export default function Grid({ gridWidth, currentLayout }) {
               }
             });
           }
-          // Position single ghost for entire group
-          positionGroupGhostElement(events, 'moveable-ghost-widget');
+
+          // Get scroll delta from autoscroll hook for group drag
+          const scrollDelta = getScrollDelta();
+
+          // First pass: calculate all positions and find group bounds
+          const positions = [];
+          let groupMinLeft = Infinity;
+          let groupMinTop = Infinity;
+          let groupMaxRight = -Infinity;
 
           events.forEach((ev) => {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
             const _gridWidth =
               useGridStore.getState().subContainerWidths?.[currentWidget?.component?.parent] || gridWidth;
 
-            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth;
-            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            // Add scroll delta to position for smooth scrolling during group drag
+            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
+            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
 
+            positions.push({ ev, left, top, currentWidget });
+
+            // Track group bounds for widgets on main canvas
+            if (!currentWidget?.component?.parent) {
+              groupMinLeft = Math.min(groupMinLeft, left);
+              groupMinTop = Math.min(groupMinTop, top);
+              groupMaxRight = Math.max(groupMaxRight, left + ev.target.clientWidth);
+            }
+          });
+
+          // Calculate offset needed to keep entire group within canvas bounds
+          const realCanvas = document.getElementById('real-canvas');
+          let offsetX = 0;
+          let offsetY = 0;
+
+          if (realCanvas && groupMinTop !== Infinity) {
+            const canvasWidth = realCanvas.clientWidth;
+
+            // Top bound: group's topmost edge should not go below 0
+            if (groupMinTop < 0) {
+              offsetY = -groupMinTop;
+            }
+            // Left bound: group's leftmost edge should not go below 0
+            if (groupMinLeft < 0) {
+              offsetX = -groupMinLeft;
+            }
+            // Right bound: group's rightmost edge should not exceed canvas width
+            if (groupMaxRight > canvasWidth) {
+              offsetX = canvasWidth - groupMaxRight;
+            }
+          }
+
+          // Second pass: apply positions with group offset
+          positions.forEach(({ ev, left, top, currentWidget }) => {
+            // Apply group offset only to widgets on main canvas
+            if (!currentWidget?.component?.parent) {
+              left += offsetX;
+              top += offsetY;
+            }
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
+
+          // Position single ghost for entire group
+          positionGroupGhostElement(events, 'moveable-ghost-widget');
+
           handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
 
-          // Update autoscroll with current mouse position for group drag
-          updateMousePosition(ev.clientX, ev.clientY);
+          // Update autoscroll with current mouse position and all targets for group drag
+          const targets = events.map((e) => e.target);
+          updateMousePosition(ev.clientX, ev.clientY, targets);
         }}
-        onDragGroupStart={() => {
+        onDragGroupStart={(e) => {
           showGridLines();
           handleActivateNonDraggingComponents();
+          // Don't start autoscroll if dragging via config handle
+          if (isGroupHandleHoverd) return;
+          // Start autoscroll for group drag with all target elements
+          const targets = e.targets || [];
+          if (targets.length > 0) {
+            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
+          }
         }}
         onDragGroupEnd={(e) => {
           // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler
