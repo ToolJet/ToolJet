@@ -98,8 +98,6 @@
   #page-settings-tabs {
     margin-left: 10px;
     position: relative;
-    top: 1px;
-    border-bottom: 1px solid var(--border-weak) !important;
   }
 
   #page-settings-tabs-tab-properties,
@@ -125,7 +123,7 @@
   }
 
   #page-settings-tabs {
-    height: 40px;
+    height: 32px;
     margin-top: 0px !important;
     align-items: flex-end;
     gap: 4px;

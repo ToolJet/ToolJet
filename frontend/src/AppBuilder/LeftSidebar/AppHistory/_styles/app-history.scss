@@ -19,12 +19,11 @@
   }
 
   .app-history-header {
-    height: 52px !important;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 16px 24px 16px 28px;
     border-bottom: 1px solid var(--border-weak, #E4E7EB);
 
     .app-history-header-title {
@@ -94,10 +93,10 @@
             gap: 4px;
 
             .entry-info {
-              width: 252px;
+              width: 210px;
 
               .entry-name {
-                width: 100%;
+                width: 210px;
                 text-align: left;
                 font-family: 'IBM Plex Sans';
                 font-weight: 500;

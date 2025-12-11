@@ -11,7 +11,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-
+      height: 28px;
+      
       .flex-grow-1 {
         flex: 1;
       }
@@ -29,9 +30,7 @@
   #inspector-tabs {
     margin-left: 10px;
     position: relative;
-    top: 1px;
-    border-bottom: 1px solid var(--border-weak) !important;
-    height: 40px;
+    height: 32px;
     margin-top: 0px !important;
     align-items: flex-end;
     gap: 4px;

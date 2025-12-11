@@ -223,6 +223,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
             setSearchQuery('');
             filterComponents('');
           }}
+          autoFocus={true}
           placeholder={
             activeTab === 'components'
               ? t('globals.searchComponents', 'Search widgets')
@@ -276,11 +277,12 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
               eventKey="components"
               title={(() => {
                 const str = t('globals.components', 'Components');
-                return str.charAt(0).toUpperCase() + str.slice(1);
+                const title = str.charAt(0).toUpperCase() + str.slice(1);
+                return <span className="tab-label">{title}</span>;
               })()}
             />
             {hasModuleAccess && (
-              <Tab eventKey="modules" title={t('globals.modules', 'Modules')} />
+              <Tab eventKey="modules" title={<span className="tab-label">{t('globals.modules', 'Modules')}</span>} />
             )}
           </Tabs>
         )}
