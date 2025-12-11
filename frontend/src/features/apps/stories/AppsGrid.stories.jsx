@@ -10,6 +10,9 @@ const mockActions = {
   delete: (app) => console.log('Delete:', app),
   clone: (app) => console.log('Clone:', app),
   export: (app) => console.log('Export:', app),
+  rename: (app) => console.log('Rename:', app),
+  customizeIcon: (app) => console.log('Customize icon:', app),
+  moveToFolder: (app) => console.log('Move to folder:', app),
 };
 
 const mockPerms = {

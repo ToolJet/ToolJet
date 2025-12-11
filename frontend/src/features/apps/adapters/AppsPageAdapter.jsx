@@ -41,6 +41,9 @@ function AppsPageAdapter({
     deleteApp,
     cloneApp,
     exportApp,
+    renameApp,
+    customizeIcon,
+    moveToFolder,
     onUpgrade,
     onCreateBlankApp,
     onBuildWithAI,
@@ -140,7 +143,14 @@ function AppsPageAdapter({
   const actionsHandlers = useResourceActions({
     navigate,
     workspaceId: resolvedWorkspaceId,
-    handlers: { deleteApp, cloneApp, exportApp },
+    handlers: {
+      deleteApp,
+      cloneApp,
+      exportApp,
+      renameApp,
+      customizeIcon,
+      moveToFolder,
+    },
   });
   const actions = useMemo(
     () => ({
@@ -149,6 +159,9 @@ function AppsPageAdapter({
       delete: actionsHandlers.handleDelete,
       clone: actionsHandlers.handleClone,
       export: actionsHandlers.handleExport,
+      rename: actionsHandlers.handleRename,
+      customizeIcon: actionsHandlers.handleCustomizeIcon,
+      moveToFolder: actionsHandlers.handleMoveToFolder,
     }),
     [actionsHandlers]
   );

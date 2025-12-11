@@ -12,6 +12,9 @@ import { useNavigate } from 'react-router-dom';
  * @param {Function} params.handlers.deleteApp - Delete handler
  * @param {Function} params.handlers.cloneApp - Clone handler
  * @param {Function} params.handlers.exportApp - Export handler
+ * @param {Function} params.handlers.renameApp - Rename handler
+ * @param {Function} params.handlers.customizeIcon - Customize icon handler
+ * @param {Function} params.handlers.moveToFolder - Move to folder handler
  *
  * @returns {Object} Action handlers
  */
@@ -101,12 +104,63 @@ export function useResourceActions({ navigate, workspaceId, handlers = {} }) {
     [handlers]
   );
 
+  const handleRename = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !handlers.renameApp) {
+          console.warn('Missing _originalApp or renameApp handler');
+          return;
+        }
+        handlers.renameApp(originalApp);
+      } catch (err) {
+        console.error('Failed to rename app:', err);
+      }
+    },
+    [handlers]
+  );
+
+  const handleCustomizeIcon = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !handlers.customizeIcon) {
+          console.warn('Missing _originalApp or customizeIcon handler');
+          return;
+        }
+        handlers.customizeIcon(originalApp);
+      } catch (err) {
+        console.error('Failed to customize icon:', err);
+      }
+    },
+    [handlers]
+  );
+
+  const handleMoveToFolder = useCallback(
+    (appRow) => {
+      try {
+        const originalApp = appRow?._originalApp;
+        if (!originalApp || !handlers.moveToFolder) {
+          console.warn('Missing _originalApp or moveToFolder handler');
+          return;
+        }
+        handlers.moveToFolder(originalApp);
+      } catch (err) {
+        console.error('Failed to move app to folder:', err);
+      }
+    },
+    [handlers]
+  );
+
   return {
     handlePlay,
     handleEdit,
     handleDelete,
     handleClone,
     handleExport,
+    handleRename,
+    handleCustomizeIcon,
+    handleMoveToFolder,
   };
 }
 

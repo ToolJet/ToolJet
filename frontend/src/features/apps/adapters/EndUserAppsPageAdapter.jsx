@@ -43,6 +43,9 @@ function EndUserAppsPageAdapter({
     deleteApp,
     cloneApp,
     exportApp,
+    renameApp,
+    customizeIcon,
+    moveToFolder,
   } = rawActions;
   const { canCreateApp, canDeleteApp, canUpdateApp } = permissions;
   const { navigate, workspaceId } = navigation;
@@ -56,7 +59,14 @@ function EndUserAppsPageAdapter({
   const actionsHandlers = useResourceActions({
     navigate,
     workspaceId: resolvedWorkspaceId,
-    handlers: { deleteApp, cloneApp, exportApp },
+    handlers: {
+      deleteApp,
+      cloneApp,
+      exportApp,
+      renameApp,
+      customizeIcon,
+      moveToFolder,
+    },
   });
   const actions = useMemo(
     () => ({
@@ -65,6 +75,9 @@ function EndUserAppsPageAdapter({
       delete: actionsHandlers.handleDelete,
       clone: actionsHandlers.handleClone,
       export: actionsHandlers.handleExport,
+      rename: actionsHandlers.handleRename,
+      customizeIcon: actionsHandlers.handleCustomizeIcon,
+      moveToFolder: actionsHandlers.handleMoveToFolder,
     }),
     [actionsHandlers]
   );
