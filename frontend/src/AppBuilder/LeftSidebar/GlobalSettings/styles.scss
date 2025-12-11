@@ -2,4 +2,14 @@
 	.panel-header-container {
 		height: 32px;
 	}
+
+	.sidebar-panel-header {
+		font-weight: 500;
+		font-weight: medium;
+		font-size: 14px;
+		line-height: 20px;
+		letter-spacing: 0%;
+		vertical-align: middle;
+		color: var(--text-default)
+	}
 }

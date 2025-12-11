@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import cx from 'classnames';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import InfoSvg from '@assets/images/info.svg';
 import useStore from '@/AppBuilder/_stores/store';
