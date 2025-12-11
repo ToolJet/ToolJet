@@ -95,7 +95,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               Cancel
             </ButtonSolid>
-            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled || !validPassword} data-cy="reset-button">
+            <ButtonSolid onClick={handleResetPassword} disabled={isDisabled} data-cy="reset-button">
               {isLoading ? 'Resetting...' : 'Reset'}
             </ButtonSolid>
           </>
