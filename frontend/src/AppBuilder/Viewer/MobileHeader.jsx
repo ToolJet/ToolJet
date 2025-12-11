@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import _, { isEmpty } from 'lodash';
-import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import classNames from 'classnames';
@@ -21,7 +20,6 @@ const MobileHeader = ({
   currentPageId,
   switchPage,
   setAppDefinitionFromVersion,
-  showViewerNavigation,
   pages,
   viewerWrapperRef,
 }) => {
@@ -41,13 +39,27 @@ const MobileHeader = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
-  const license = useStore((state) => state.license);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
+
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Fetch the version parameter from the query string
-  const searchParams = new URLSearchParams(window.location.search);
-  const version = searchParams.get('version');
+  const switchToHomePage = () => {
+    if (currentPageId === homePageId) return;
+
+    const page = pages.find((p) => p.id === homePageId);
+
+    const queryParams = {
+      version: selectedVersionName,
+      env: selectedEnvironmentName,
+    };
+
+    switchPage(page?.id, pages.find((p) => page.id === p?.id)?.handle, Object.entries(queryParams));
+  };
 
   const switchToHomePage = () => {
     if (currentPageId === homePageId) return;
@@ -68,12 +80,12 @@ const MobileHeader = ({
       style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
     >
       <h1 className={classNames('navbar-brand', 'd-flex align-items-center justify-content-center tw-gap-[12px] p-0')}>
-        {!hideLogo && (
+        {!logoHidden && (
           <div data-cy="viewer-page-logo" onClick={switchToHomePage} className="cursor-pointer tw-flex-shrink-0">
             <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />
           </div>
         )}
-        {!hideHeader && (
+        {!headerHidden && (
           <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
         )}
       </h1>
@@ -96,7 +108,6 @@ const MobileHeader = ({
       switchToHomePage={switchToHomePage}
       darkMode={darkMode}
       changeToDarkMode={changeToDarkMode}
-      showHeader={showHeader}
       showDarkModeToggle={showDarkModeToggle}
       appName={appName}
       pages={pages}
@@ -115,45 +126,6 @@ const MobileHeader = ({
       />
     );
 
-  // TODO: Check and remove the below code if not being used since showHeader is not being used now
-  const _renderDarkModeBtn = (args) => {
-    if (!showDarkModeToggle) return null;
-    const styles = args?.styles ?? {};
-    return (
-      <span
-        className="released-version-no-header-dark-mode-icon"
-        style={{ position: 'absolute', top: '7px', ...styles }}
-      >
-        <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
-      </span>
-    );
-  };
-
-  if (!showHeader && isReleasedVersionId) {
-    return <>{showViewerNavigation && showOnMobile ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
-  }
-
-  if (!showHeader && !isReleasedVersionId) {
-    return (
-      <>
-        <Header
-          styles={{
-            height: '46px',
-            position: 'fixed',
-            width: version ? '450px' : '100%',
-            zIndex: '100',
-          }}
-          showNavbarClass={false}
-        >
-          {showViewerNavigation && _renderMobileNavigationMenu()}
-          {/* {!isEmpty(editingVersion) && _renderPreviewSettings()} */}
-          {!showViewerNavigation && _renderDarkModeBtn()}
-        </Header>
-      </>
-    );
-  }
-  // TODO: Remove code till here
-
   const MenuBtn = () => {
     const { toggleSidebar } = useSidebar();
 
@@ -163,13 +135,6 @@ const MobileHeader = ({
       </div>
     );
   };
-
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
-
-  const headerHidden = isLicensed ? hideHeader : false;
-  const logoHidden = isLicensed ? hideLogo : false;
 
   return (
     <SidebarProvider

@@ -57,6 +57,7 @@ describe("Private and Public apps", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.dragAndDropWidget("text", 450, 300);
+    cy.apiPublishDraftVersion("v1");
 
     cy.get(commonWidgetSelector.shareAppButton).should("be.visible").click();
     cy.contains("This version has not been released yet").should("be.visible");

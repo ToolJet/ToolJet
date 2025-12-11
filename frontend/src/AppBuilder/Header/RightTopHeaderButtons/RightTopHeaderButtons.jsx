@@ -17,7 +17,7 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
         <GitSyncManager />
         <div className="tw-hidden navbar-seperator" />
         <PreviewAndShareIcons />
-        {!isModuleEditor && <PromoteReleaseButton />}
+        {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
     </div>
   );

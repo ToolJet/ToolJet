@@ -61,7 +61,7 @@ const RenderPage = ({
         aria-label={page.name}
       >
         {!labelStyle?.icon?.hidden && (
-          <div className="custom-icon">
+          <div className="custom-icon" data-cy={`pages-icon-${String(page?.name).toLowerCase()}`}>
             <IconElement
               color={iconColor}
               style={{
@@ -289,9 +289,7 @@ export const RenderPageAndPageGroup = ({
       // check if the page group has at least one visible child
       page.children.some((child) => {
         const isPageHidden = getIsPageHidden('canvas', child?.id);
-        return (
-          isPageHidden === false && !child?.disabled && (currentMode === 'view' ? child?.restricted === false : true)
-        );
+        return isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true);
       })
     );
   };
