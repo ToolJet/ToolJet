@@ -188,12 +188,12 @@ export const BaseLeftSidebar = ({
         {!isUserInZeroToOneFlow && (
           <>
             {renderCommonItems()}
-            <AppHistoryIcon
+            {/* <AppHistoryIcon
               darkMode={darkMode}
               selectedSidebarItem={selectedSidebarItem}
               handleSelectedSidebarItem={handleSelectedSidebarItem}
               setSideBarBtnRefs={setSideBarBtnRefs}
-            />
+            /> */}
             <SidebarItem
               icon="settings"
               selectedSidebarItem={selectedSidebarItem}
