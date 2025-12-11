@@ -25,6 +25,7 @@ import {
   positionGhostElement,
   positionGroupGhostElement,
   clearActiveTargetClassNamesAfterSnapping,
+  isDraggingModalToCanvas,
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
 } from './gridUtils';
@@ -47,7 +48,7 @@ const RESIZABLE_CONFIG = {
 
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout }) {
+export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const { moduleId, isModuleEditor } = useModuleContext();
   const lastGroupDragEventRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
@@ -80,7 +81,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
-  const pageMenuPosition = useStore((state) => state?.pageSettings?.definition?.properties?.position ?? '');
+  const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
+  const isPageMenuHidden = useStore((state) => state?.getPagesSidebarVisibility(moduleId), shallow);
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
@@ -147,15 +149,20 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const noOfBoxs = Object.values(boxList || []).length;
 
+  const { position: menuPosition, hideLogo, hideHeader } = pageMenuProperties;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noOfBoxs, triggerCanvasUpdater, pageMenuPosition]);
+  }, [noOfBoxs, triggerCanvasUpdater, menuPosition, hideLogo, hideHeader, isPageMenuHidden]);
 
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
 
   const handleResizeStop = useCallback(
     (boxList) => {
+      // Batch all layout updates into a single object
+      const batchedLayouts = {};
+
       boxList.forEach(({ id, height, width, x, y, gw }) => {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
@@ -182,15 +189,20 @@ export default function Grid({ gridWidth, currentLayout }) {
             newWidth = 43 - posX;
           }
         }
-        setComponentLayout({
-          [id]: {
-            height: height ? height : GRID_HEIGHT,
-            width: newWidth ? newWidth : 1,
-            top: y,
-            left: Math.round(x / gw),
-          },
-        });
+
+        // Add to batched layouts instead of calling setComponentLayout immediately
+        batchedLayouts[id] = {
+          height: height ? height : GRID_HEIGHT,
+          width: newWidth ? newWidth : 1,
+          top: y,
+          left: Math.round(x / gw),
+        };
       });
+
+      // Call setComponentLayout once with all updates
+      if (Object.keys(batchedLayouts).length > 0) {
+        setComponentLayout(batchedLayouts);
+      }
     },
     [canvasWidth, gridWidth, setComponentLayout]
   );
@@ -324,7 +336,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     if (moveableRef.current) {
       safeUpdateMoveable();
     }
-  }, [boxList, selectedComponents]);
+  }, [boxList, selectedComponents, mainCanvasWidth]);
 
   useEffect(() => {
     reloadGrid();
@@ -402,11 +414,10 @@ export default function Grid({ gridWidth, currentLayout }) {
 
         return layouts;
       }, {});
-      setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: true });
-
-      // const currentWidget = boxList.find((box) => box.id === id);
-      updateContainerAutoHeight(newParent);
-      updateContainerAutoHeight(oldParent);
+      // Only set updateParent to true when the parent actually changed
+      // This avoids unnecessary batch updates for simple drag operations within the same parent
+      const hasParentChanged = newParent !== oldParent;
+      setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: hasParentChanged });
 
       toggleCanvasUpdater();
     },
@@ -977,7 +988,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Compute new position
             let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
 
-            const isModalToCanvas = source.isModal && source.id !== target.id;
+            const isModalToCanvas = isDraggingModalToCanvas(source, target, boxList);
 
             let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
@@ -990,7 +1001,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
               left = dragged.left * sourcegridWidth;
               top = dragged.top;
-              !isModalToCanvas ??
+              !isModalToCanvas &&
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
               isParentModuleContainer ? toast.error('Modules cannot be edited inside an app') : null;
             }

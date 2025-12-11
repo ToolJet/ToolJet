@@ -20,7 +20,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { Page } from 'src/entities/page.entity';
+import { Page, PageOpenIn, PageType } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
@@ -44,6 +44,7 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
+import { AppVersionStatus } from '@entities/app_version.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -1069,6 +1070,10 @@ export class AppImportExportService {
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,
+          type: page.type || PageType.DEFAULT,
+          openIn: page.openIn || PageOpenIn.SAME_TAB,
+          url: page.url || null,
+          appId: page.appId || '',
         });
 
         const pageCreated = await manager.save(newPage);
@@ -1924,6 +1929,8 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parent_version_id: appVersion?.id || null,
         });
       }
 

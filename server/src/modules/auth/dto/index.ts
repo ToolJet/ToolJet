@@ -93,4 +93,8 @@ export class CreateAiUserDto {
 
   @IsOptional()
   utmParams?: Record<string, any>;
+
+  @IsString()
+  @IsNotEmpty()
+  otp: string;
 }
