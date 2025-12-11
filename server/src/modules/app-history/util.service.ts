@@ -82,65 +82,54 @@ export class AppHistoryUtilService {
     isAiGenerated?: boolean,
     userId?: string
   ): Promise<void> {
-    // Get app type using a single query with relation
-    const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(AppVersion, {
-        where: { id: appVersionId },
-        relations: ['app'],
-        select: {
-          app: {
-            type: true,
-          },
-        },
-      });
-    });
-
-    if (!appVersion || !appVersion.app) {
-      this.logger.warn(`AppVersion ${appVersionId} not found or has no associated app`);
-      return;
-    }
-
-    // Only process history for front-end apps
-    if (appVersion.app.type !== APP_TYPES.FRONT_END) {
-      // Skip history capture for non-frontend apps (workflow, module, etc.)
-      return;
-    }
-
-    // Get userId from the current request context if not provided
-    let finalUserId = userId;
-    if (!finalUserId) {
-      const context = RequestContext.currentContext;
-      finalUserId = (context?.req as any)?.user?.id || 'system';
-    }
-
-    // Log before adding to queue
-    this.logger.log(`[QueueHistory] Adding job to queue for app ${appVersionId}, action: ${actionType}`);
-
-    const job = await this.historyQueue.add('capture-change', {
-      appVersionId,
-      actionType,
-      operationScope,
-      userId: finalUserId,
-      timestamp: Date.now(),
-      isAiGenerated: isAiGenerated || false,
-    });
-
-    this.logger.log(`[QueueHistory] Job ${job.id} added successfully for app ${appVersionId}`);
+    // // Get app type using a single query with relation
+    // const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+    //   return await manager.findOne(AppVersion, {
+    //     where: { id: appVersionId },
+    //     relations: ['app'],
+    //     select: {
+    //       app: {
+    //         type: true,
+    //       },
+    //     },
+    //   });
+    // });
+    // if (!appVersion || !appVersion.app) {
+    //   this.logger.warn(`AppVersion ${appVersionId} not found or has no associated app`);
+    //   return;
+    // }
+    // // Only process history for front-end apps
+    // if (appVersion.app.type !== APP_TYPES.FRONT_END) {
+    //   // Skip history capture for non-frontend apps (workflow, module, etc.)
+    //   return;
+    // }
+    // // Get userId from the current request context if not provided
+    // let finalUserId = userId;
+    // if (!finalUserId) {
+    //   const context = RequestContext.currentContext;
+    //   finalUserId = (context?.req as any)?.user?.id || 'system';
+    // }
+    // // Log before adding to queue
+    // this.logger.log(`[QueueHistory] Adding job to queue for app ${appVersionId}, action: ${actionType}`);
+    // const job = await this.historyQueue.add('capture-change', {
+    //   appVersionId,
+    //   actionType,
+    //   operationScope,
+    //   userId: finalUserId,
+    //   timestamp: Date.now(),
+    //   isAiGenerated: isAiGenerated || false,
+    // });
+    // this.logger.log(`[QueueHistory] Job ${job.id} added successfully for app ${appVersionId}`);
   }
 
   /**
    * Capture history for app version settings updates (homePageId, globalSettings, pageSettings)
    */
-  async captureSettingsUpdateHistory(
-    appVersion: AppVersion,
-    appVersionUpdateDto: AppVersionUpdateDto
-  ): Promise<void> {
+  async captureSettingsUpdateHistory(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto): Promise<void> {
     try {
       // Check if homePageId, globalSettings, or pageSettings are being updated
       const hasSettingsUpdate =
-        appVersionUpdateDto.homePageId ||
-        appVersionUpdateDto.globalSettings ||
-        appVersionUpdateDto.pageSettings;
+        appVersionUpdateDto.homePageId || appVersionUpdateDto.globalSettings || appVersionUpdateDto.pageSettings;
 
       if (hasSettingsUpdate) {
         // Determine the action type based on what's being updated
@@ -167,11 +156,7 @@ export class AppHistoryUtilService {
           operationScope.previousHomePageId = appVersion.homePageId;
         }
 
-        await this.queueHistoryCapture(
-          appVersion.id,
-          actionType,
-          operationScope
-        );
+        await this.queueHistoryCapture(appVersion.id, actionType, operationScope);
       }
     } catch (error) {
       console.error('Failed to queue history capture for settings update:', error);
