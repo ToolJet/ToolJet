@@ -8,6 +8,42 @@ import { DataBaseConstraints } from './db_constraints.constants';
 import { getEnvVars } from 'scripts/database-config-utils';
 import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
+import { BadRequestException } from '@nestjs/common';
+
+const PASSWORD_REGEX =
+  /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+
+export function validatePasswordServer(password: string | undefined | null) {
+  if (!password) {
+    return;
+  }
+
+  const isEE = String(process.env.TOOLJET_EDITION || '').toLowerCase() === 'ee';
+  const complexityEnabled = String(process.env.ENABLE_PASSWORD_COMPLEXITY_RULES ?? 'false').toLowerCase() === 'true';
+
+  if (isEE && complexityEnabled) {
+    if (!password.trim()) {
+      throw new BadRequestException('Password is required');
+    }
+    if (!PASSWORD_REGEX.test(password)) {
+      throw new BadRequestException(
+        'Password must be 12–24 characters and may include letters, numbers and special characters'
+      );
+    }
+    return;
+  }
+
+  // CE / fallback rules
+  if (!password.trim()) {
+    throw new BadRequestException('Password is required');
+  }
+  if (password.length < 5) {
+    throw new BadRequestException('Password must be at least 5 characters long');
+  }
+  if (password.length > 100) {
+    throw new BadRequestException('Password can be at max 100 characters long');
+  }
+}
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
