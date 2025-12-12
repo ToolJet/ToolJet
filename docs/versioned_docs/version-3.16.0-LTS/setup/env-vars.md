@@ -201,7 +201,7 @@ ToolJet allows you to enforce a stronger password complexity rule. By default, t
 
 - `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
 
-When enabled, passwords must meet all the following rules:
+When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
 | Rule | Requirement |
 |-----------|-------------|
 | Password length | 12-24 characters | 
@@ -210,8 +210,9 @@ When enabled, passwords must meet all the following rules:
 | Numbers | 0-9 |
 | Special characters | ! @ # $ % ^ & * ( ) _ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
 
-
-
+:::info
+These validations apply to both the instance and workspace levels.
+:::
 ### Third-Party Integrations
 
 #### Slack
