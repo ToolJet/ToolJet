@@ -1210,6 +1210,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         snapGridAll={true}
         onClick={(e) => {
+          // Check if the click is on a config handle button
+          const configHandleButton = e.inputEvent?.target?.closest('.config-handle-button');
+
+          // Only execute if clicked on the first child (component-name-btn) span, not on inspect, properties, or delete buttons
+          if (configHandleButton && !configHandleButton.classList.contains('component-name-btn')) {
+            // Clicked on inspect, properties, or delete buttons - don't execute
+            return;
+          }
+
           useStore.getState().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
           useStore.getState().setRightSidebarOpen(true);
         }}
