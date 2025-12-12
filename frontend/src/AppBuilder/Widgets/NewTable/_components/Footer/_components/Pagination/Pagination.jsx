@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PaginationButton } from './PaginationButton';
 import useTableStore from '../../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { OverlayTriggerComponent } from '../OverlayTriggerComponent';
 import Popover from 'react-bootstrap/Popover';
+// eslint-disable-next-line import/no-unresolved
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 // TODO: Need to replace all the default data
 
@@ -66,21 +68,23 @@ export const Pagination = function Pagination({
   const showPagesPopupBtn = !serverSidePagination && ((tableWidth <= 460 && pageCount > 1) || pageCount > 3);
 
   const PaginationPopoverContent = () => {
-    const allPages = Array.from({ length: pageCount }, (_, i) => i + 1);
+    const ref = useRef(null);
+    const virtualizer = useVirtualizer({
+      count: pageCount || 0,
+      getScrollElement: () => ref.current,
+      estimateSize: () => 32,
+      overscan: 15,
+    });
 
     useEffect(() => {
       // Use a small timeout to ensure the DOM is fully rendered
       const timeoutId = setTimeout(() => {
-        const popoverContainer = document.getElementsByClassName('pagination-scrollable-area')[0];
-        if (popoverContainer) {
-          const currentPageButton = popoverContainer.querySelector(`[data-cy="page-${pageIndex}-button-option"]`);
-          if (currentPageButton) {
-            // Scroll the current page button into view within the popover container when popover mounts
-            currentPageButton.scrollIntoView({
-              behavior: 'auto',
-              block: 'center',
-            });
-          }
+        if (ref.current) {
+          // Scroll the current page button into view within the popover container when popover mounts
+          virtualizer.scrollToIndex(pageIndex - 1, {
+            behavior: 'auto',
+            align: 'center',
+          });
         }
       }, 0);
 
@@ -88,23 +92,16 @@ export const Pagination = function Pagination({
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const getPopoverContainer = () => {
-      return document.getElementsByClassName('pagination-scrollable-area')[0];
-    };
-
     return (
       <Popover.Body>
         <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-b tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
           <PaginationButton
             key={'lastpage'}
             onClick={(e) => {
-              const popup = getPopoverContainer();
-              if (popup) {
-                popup.scrollTo({
-                  top: popup.scrollHeight,
-                  behavior: 'smooth',
-                });
-              }
+              virtualizer.scrollToIndex(pageCount - 1, {
+                behavior: 'smooth',
+                align: 'auto',
+              });
               e.target.blur(); // To remove focus styling that gets applied after clicking on the button
             }}
             dataCy={`last-page-button-option`}
@@ -114,32 +111,36 @@ export const Pagination = function Pagination({
           />
         </div>
 
-        <div className="pagination-scrollable-area tw-px-[8px] tw-overflow-auto tw-flex-1">
-          {allPages.map((pageNum) => (
-            <PaginationButton
-              key={pageNum}
-              onClick={() => {
-                goToPage(pageNum);
-              }}
-              dataCy={`page-${pageNum}-button-option`}
-              currentPageIndex={pageIndex}
-              pageIndex={pageNum}
-              className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-            />
-          ))}
+        <div ref={ref} className="tw-px-[8px] tw-overflow-auto tw-flex-1">
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const pageNum = virtualItem.index + 1;
+              return (
+                <PaginationButton
+                  key={virtualItem.key}
+                  ref={virtualizer.measureElement}
+                  data-index={virtualItem.index}
+                  dataCy={`page-${pageNum}-button-option`}
+                  currentPageIndex={pageIndex}
+                  pageIndex={pageNum}
+                  onClick={() => {
+                    goToPage(pageNum);
+                  }}
+                  className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+                />
+              );
+            })}
+          </div>
         </div>
 
         <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-t tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
           <PaginationButton
             key={'firstpage'}
             onClick={(e) => {
-              const popup = getPopoverContainer();
-              if (popup) {
-                popup.scrollTo({
-                  top: 0,
-                  behavior: 'smooth',
-                });
-              }
+              virtualizer.scrollToIndex(0, {
+                behavior: 'smooth',
+                align: 'auto',
+              });
               e.target.blur(); // To remove focus styling that gets applied after clicking on the button
             }}
             dataCy={`first-page-button-option`}
