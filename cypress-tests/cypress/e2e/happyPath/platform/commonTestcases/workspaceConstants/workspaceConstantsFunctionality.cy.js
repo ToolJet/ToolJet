@@ -16,6 +16,9 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 
 import { dataSourceSelector } from "Selectors/dataSource";
 import { setUpSlug } from "Support/utils/apps";
+import { sanitize } from "Support/utils/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+
 
 const data = {};
 
@@ -33,8 +36,8 @@ describe("Workspace constants", () => {
     });
 
     it("Verify global and secret constants in all areas", () => {
-        data.workspaceName = fake.firstName;
-        data.workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
+        data.workspaceName = `${sanitize(fake.firstName)}-ws-constants`;
+        data.workspaceSlug = `${sanitize(fake.firstName)}-ws-constants`;
         data.appName = `${fake.companyName}-App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
@@ -119,7 +122,7 @@ describe("Workspace constants", () => {
 
         cy.get(commonSelectors.dashboardIcon).click();
         importConstantsApp("cypress/fixtures/templates/workspace_constants.json");
-
+        cy.wait(2000);
         // Verify constants in textinput1 and range
         cy.get(
             commonWidgetSelector.draggableWidget("textinput1")
@@ -141,6 +144,10 @@ describe("Workspace constants", () => {
         verifySecretInStaticQueryRaw('[data-cy="list-query-secret_runjs"]');
 
         // Preview App
+        cy.reload();
+
+        cy.wait(3000);
+        cy.waitForElement(commonWidgetSelector.previewButton)
         previewAppAndVerify(3, 16, "Development environment testing");
 
         // Promote and verify through envs if enterprise
@@ -162,6 +169,8 @@ describe("Workspace constants", () => {
         });
 
         // Final housekeeping steps
+        cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+        cy.get(multiEnvSelector.environmentsTag("production")).click();
         cy.get(commonSelectors.releaseButton).click();
         cy.get(commonSelectors.yesButton).click();
         cy.wait(500);

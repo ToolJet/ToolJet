@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,

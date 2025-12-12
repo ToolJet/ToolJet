@@ -19,7 +19,7 @@ describe("Globals - Inspector", () => {
     const dataList = [
       ["email", `"dev@tooljet.io"`],
       ["firstName", `"The"`],
-      ["lastName", `"developer"`],
+      ["lastName", `"Developer"`],
       ["id", `"${Cypress.env("user_id").slice(0, 31)}...`],
       ["avatarId", `null`],
       ["groups", `[2]`],
@@ -67,6 +67,7 @@ describe("Globals - Inspector", () => {
     navigateAndVerifyInspector(["globals", "environment"], dataList);
 
     // Promote to staging
+    cy.apiPublishDraftVersion('v1')
     cy.apiPromoteAppVersion().then(() => {
       const stagingId = Cypress.env("stagingEnvId");
 
@@ -125,11 +126,11 @@ describe("Globals - Inspector", () => {
     const paramData = (updateURLData) =>
       Array.isArray(updateURLData) && updateURLData.length
         ? `?${updateURLData
-            .filter(([k]) => k)
-            .map(
-              ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
-            )
-            .join("&")}`
+          .filter(([k]) => k)
+          .map(
+            ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+          )
+          .join("&")}`
         : "";
 
     navigateAndVerifyInspector(["globals", "urlparams"], dataList);
