@@ -19,6 +19,7 @@ import { DataQueryStatus } from './services/status.service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
+import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
 
 @Injectable()
 export class DataQueriesUtilService implements IDataQueriesUtilService {
@@ -73,6 +74,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     let result;
     const queryStatus = new DataQueryStatus();
     const forwardRestCookies = this.configService.get<string>('FORWARD_RESTAPI_COOKIES') === 'true';
+    let abortCtrl = null;
 
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
@@ -102,9 +104,19 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         opts
       );
 
+      // Determine whether query timeout is set, to initiate abort controller
+      const queryTimeoutMs =
+        typeof parsedQueryOptions['query_timeout'] === 'string' && parsedQueryOptions['query_timeout'].trim() === ''
+          ? NaN
+          : Number(parsedQueryOptions['query_timeout']);
+      // Only if query timeout is set, abortController will be created
+      abortCtrl = new AbortControllerHandler(queryTimeoutMs);
+      abortCtrl.start();
+
       queryStatus.setOptions(parsedQueryOptions);
 
       try {
+        abortCtrl.throwIfAborted();
         // multi-auth will not work with public apps
         if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
@@ -140,9 +152,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           }
         }
 
+        abortCtrl.throwIfAborted();
         queryStatus.setStart();
 
-        result = await service.run(
+        const promises = [];
+        const queryPromise = service.run(
           sourceOptions,
           parsedQueryOptions,
           `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -156,7 +170,16 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             },
           }
         );
+        promises.push(queryPromise);
+
+        if (abortCtrl.canAbort) {
+          promises.push(abortCtrl.createAbortPromise());
+        }
+        result = await Promise.race(promises);
+        abortCtrl.cleanup();
       } catch (api_error) {
+        // Clear timeout set for Queries, incase of error.
+        abortCtrl.cleanup();
         if (api_error.constructor.name === 'OAuthUnauthorizedClientError') {
           const currentUserToken = sourceOptions['refresh_token']
             ? sourceOptions
@@ -170,7 +193,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
             try {
-              accessTokenDetails = await service.refreshToken(sourceOptions, dataSource.id, user?.id, appToUse?.isPublic);
+              accessTokenDetails = await service.refreshToken(
+                sourceOptions,
+                dataSource.id,
+                user?.id,
+                appToUse?.isPublic
+              );
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
                 // unauthorized error need to re-authenticate
@@ -232,7 +260,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               opts
             ));
             queryStatus.setOptions(parsedQueryOptions);
-            result = await service.run(
+            abortCtrl.start();
+
+            const promises = [];
+            const queryPromise = service.run(
               sourceOptions,
               parsedQueryOptions,
               `${dataSource.id}-${dataSourceOptions.environmentId}`,
@@ -242,6 +273,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
               }
             );
+            promises.push(queryPromise);
+
+            if (abortCtrl.canAbort) {
+              promises.push(abortCtrl.createAbortPromise());
+            }
+            result = await Promise.race(promises);
+            abortCtrl.cleanup();
           } else if (
             dataSource.kind === 'restapi' ||
             dataSource.kind === 'openapi' ||
@@ -273,14 +311,18 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           throw api_error;
         }
       }
+      // Final timeout check before marking query success
+      abortCtrl.throwIfAborted();
       queryStatus.setSuccess();
 
       //TODO: support workflow execute method().
       if (forwardRestCookies && dataQuery.kind === 'restapi' && result.responseHeaders) {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
+
       return result;
     } catch (queryError) {
+      abortCtrl.cleanup();
       queryStatus.setFailure({
         message: queryError?.message,
         description: queryError?.description,
@@ -289,6 +331,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       });
       throw queryError;
     } finally {
+      abortCtrl.cleanup();
       if (user) {
         // Get metadata from queryStatus
         const queryMetadata = queryStatus.getMetaData();
@@ -418,7 +461,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
       // Create an enhanced options object that includes bundle variables
       const enhancedOptions = { ...options };
-      
+
       // Get all template variables using the bundle-aware getQueryVariables
       const templateVariables = getQueryVariables(
         object,
@@ -431,7 +474,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
       // Merge template variables back into options for resolution
       Object.assign(enhancedOptions, templateVariables);
-      
+
       // Use the standard parseQueryOptions logic but with enhanced options
       return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
     }

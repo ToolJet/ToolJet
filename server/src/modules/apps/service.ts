@@ -61,7 +61,7 @@ export class AppsService implements IAppsService {
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -130,12 +130,12 @@ export class AppsService implements IAppsService {
         : versionName
           ? await this.versionRepository.findByName(versionName, app.id)
           : // Handle version retrieval based on env
-          await this.versionRepository.findLatestVersionForEnvironment(
-            app.id,
-            envId,
-            environmentName,
-            app.organizationId
-          );
+            await this.versionRepository.findLatestVersionForEnvironment(
+              app.id,
+              envId,
+              environmentName,
+              app.organizationId
+            );
 
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
@@ -427,6 +427,10 @@ export class AppsService implements IAppsService {
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,
+        editing_version: {
+          id: versionToLoad.id,
+          name: versionToLoad.name,
+        },
       };
     };
 
@@ -446,7 +450,12 @@ export class AppsService implements IAppsService {
       //check if the app version is eligible for release
       const currentEnvironment: AppEnvironment = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .select(['app_environments.id', 'app_environments.name', 'app_environments.isDefault', 'app_environments.priority'])
+        .select([
+          'app_environments.id',
+          'app_environments.name',
+          'app_environments.isDefault',
+          'app_environments.priority',
+        ])
         .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
         .where('app_versions.id = :versionToBeReleased', {
           versionToBeReleased,

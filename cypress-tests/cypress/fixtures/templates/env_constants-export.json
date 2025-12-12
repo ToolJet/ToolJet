@@ -1170,7 +1170,7 @@
                 ],
                 "workflowId": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
                 "method": "get",
-                "runOnPageLoad": true
+                "runOnPageLoad": false
               },
               "dataSourceId": "a03bd331-6f36-4216-bc06-5577f36c2d9c",
               "appVersionId": "421accc8-2358-4a08-bec4-89954bcda87b",
