@@ -12,6 +12,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { ArtifactRepository } from './repositories/artifact.repository';
 import { SubModule } from '@modules/app/sub-module';
 import { DataQueryRepository } from '@modules/data-queries/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
@@ -36,6 +37,7 @@ export class AiModule extends SubModule {
         await DataQueriesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await AppHistoryModule.register(configs),
         await DataSourcesModule.register(configs),
         await AppEnvironmentsModule.register(configs),
       ],
