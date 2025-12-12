@@ -45,8 +45,6 @@ module.exports = defineConfig({
     coverage: false,
     codeCoverageTasksRegistered: false,
 
-    // experimentalStudio: true,
-    // experimentalPromptCommand: true,
-    // projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
+    projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
   },
 });

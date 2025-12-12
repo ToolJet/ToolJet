@@ -114,7 +114,10 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
+# Install Redis 7.x from official Redis repository for BullMQ compatibility
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle

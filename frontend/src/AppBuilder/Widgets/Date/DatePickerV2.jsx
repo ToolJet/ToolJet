@@ -60,12 +60,13 @@ export const DatePickerV2 = ({
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date, format) => {
+  const setInputValue = (date, format, skipFireEvent = false) => {
     const unixTimestamp = getUnixTime(date, format ? format : dateFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
+    if (skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -97,7 +98,7 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(defaultValue);
+    setInputValue(defaultValue, null, true);
   }, [defaultValue]);
 
   useEffect(() => {

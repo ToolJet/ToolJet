@@ -31,6 +31,7 @@ export interface Terms {
     ai?: boolean;
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
+    scim?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {

@@ -16,7 +16,7 @@ describe("License - Multi-Environment Flow", () => {
 
     cy.apiUpdateLicense("valid");
 
-    cy.apiDeleteExistingApps();
+    cy.apiDeleteAllApps();
     deleteAllUIConstants();
 
     cy.visit("/");

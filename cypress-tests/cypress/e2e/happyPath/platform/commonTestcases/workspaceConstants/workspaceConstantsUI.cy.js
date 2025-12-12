@@ -1,5 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
+import { sanitize } from "Support/utils/common";
 import {
   constantsCRUDAndValidations,
   verifyConstantFormUI,
@@ -17,15 +18,15 @@ describe("Workspace constants", () => {
   data.constantsValue = "dJ_8Q~BcaMPd";
 
   beforeEach(() => {
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
     cy.skipWalkthrough();
     cy.viewport(2400, 2000);
   });
 
   it("Verify workspace constants UI and CRUD operations", () => {
     data.firstName = fake.firstName;
-    data.workspaceName = data.firstName;
-    data.workspaceSlug = data.firstName.toLowerCase();
+    data.workspaceName = `${sanitize(fake.firstName)}-ui-constants`;
+    data.workspaceSlug = `${sanitize(fake.firstName)}-ui-constants`;
 
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.visit(`${data.workspaceSlug}`);

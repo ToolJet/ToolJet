@@ -85,10 +85,10 @@ export const ConfigHandle = ({
 
   const getTooltip = () => {
     const permission = component.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -105,27 +105,27 @@ export const ConfigHandle = ({
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-        background: 'var(--interactive-selected)',
-        color: 'var(--text-default)',
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      }
+      background: 'var(--interactive-selected)',
+      color: 'var(--text-default)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    }
     : {
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-      };
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+    };
   if (isDynamicHeightEnabled) {
     getConfigHandleButtonStyle.background = '#9747FF';
     getConfigHandleButtonStyle.color = 'var(--text-inverse)';
@@ -179,8 +179,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-22px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-22px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -264,11 +264,12 @@ export const ConfigHandle = ({
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
-          deleteComponents();
+          !shouldFreeze && deleteComponents();
         }}
         message="Delete component"
         show={true}
         dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+        shouldHide={shouldFreeze}
       >
         <Trash size={12} color="var(--icon-inverse)" />
       </ConfigHandleButton>
