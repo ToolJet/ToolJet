@@ -76,7 +76,12 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-export const setupAppWithSlug = (appName, slug, appType = 'private') => {
+export const setupAppWithSlug = (
+  appName,
+  slug,
+  appType = "private",
+  makePublic = false
+) => {
   const defaultLayout = {
     desktop: { top: 90, left: 9, width: 6, height: 40 },
     mobile: { top: 90, left: 9, width: 6, height: 40 },
@@ -91,11 +96,17 @@ export const setupAppWithSlug = (appName, slug, appType = 'private') => {
       Cypress.env("appId"),
       commonWidgetSelector.draggableWidget(appType)
     );
+    cy.apiPublishDraftVersion("v1");
     appPromote("development", "production");
   });
-
+  cy.wait(2000);
   cy.apiReleaseApp(appName);
   cy.apiAddAppSlug(appName, slug);
+  if (makePublic === true) {
+    cy.apiMakeAppPublic();
+  }
+  cy.log(`App ${appName} with slug ${slug} is set up successfully.`);
+  cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
 export const verifyRestrictedAccess = () => {

@@ -1,7 +1,11 @@
 import React from 'react';
 import _ from 'lodash';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import defaultStyles from './styles';
+
+const CustomInput = (props) => {
+  return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
+};
 
 export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
   const selectRef = React.useRef(null);
@@ -25,6 +29,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     borderRadius,
     openMenuOnFocus = false,
     customClassPrefix = '',
+    dataCy = '',
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
@@ -75,8 +80,11 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${customClassPrefix} ${isDarkMode ? 'dark-theme' : ''} ${'react-select'}`}
-      data-cy={restProps['data-cy']}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      components={{
+        Input: CustomInput,
+        ...restProps.components,
+      }}
     />
   );
 };
