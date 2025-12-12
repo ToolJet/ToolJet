@@ -1,10 +1,11 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonEeSelectors,
   multiEnvSelector,
   instanceSettingsSelector,
   whiteLabellingSelectors,
+
 } from "Selectors/eeCommon";
 import { licenseSelectors } from "Selectors/license";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -26,6 +27,7 @@ import { licenseText } from "Texts/license";
 import { dashboardSelector } from "Selectors/dashboard";
 import { workflowSelector } from "Selectors/workflows";
 
+
 describe("License Page", () => {
   const data = {
     appName1: `${fake.companyName}-License-App-1`,
@@ -33,7 +35,9 @@ describe("License Page", () => {
   };
   beforeEach(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.apiDeleteAllApps();
+    cy.apiCreateApp(data.appName1);
+    cy.visit("/my-workspace");
     cy.intercept("GET", "/api/v2/group-permissions/**").as(
       "getGroupPermissions"
     );
@@ -45,7 +49,7 @@ describe("License Page", () => {
   });
 
   it("Should verify license page elements with the basic plan", () => {
-    cy.apiCreateApp(data.appName1);
+
     cy.apiCreateWorkflow(data.workflowName);
     common.navigateToSettingPage();
     cy.get(licenseSelectors.listOfItems(licenseText.license)).click();
@@ -200,17 +204,13 @@ describe("License Page", () => {
 
     cy.openApp(data.appName1);
 
-    cy.get(multiEnvSelector.currentEnvName).click();
-    cy.get(multiEnvSelector.envNameList)
-      .eq(1)
-      .within(() => {
-        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
-      });
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+    cy.get(multiEnvSelector.environmentsTag("staging")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
+    });
+    cy.get(multiEnvSelector.environmentsTag("production")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("exist");
+    });
 
-    cy.get(multiEnvSelector.envNameList)
-      .eq(2)
-      .within(() => {
-        cy.get(commonSelectors.enterpriseGradientSmIcon).should("not.exist");
-      });
   });
 });

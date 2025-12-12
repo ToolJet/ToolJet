@@ -271,7 +271,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).last().invoke("removeAttr", "target").click({ force: true });
+  cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -512,23 +512,6 @@ Cypress.Commands.add("visitSlug", ({ actualUrl }) => {
       cy.wait(2000);
     }
   });
-});
-
-Cypress.Commands.add("releaseApp", () => {
-  if (Cypress.env("environment") !== "Community") {
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-    cy.waitForAppLoad();
-    cy.wait(3000);
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-    cy.waitForAppLoad();
-    cy.wait(3000);
-  }
-  cy.get(commonSelectors.releaseButton).click();
-  cy.get(commonSelectors.yesButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-  cy.wait(1000);
 });
 
 Cypress.Commands.add("backToApps", () => {

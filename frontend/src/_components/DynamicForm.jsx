@@ -238,7 +238,7 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText: helpTextProp,
+    helpText: helpTextProp, // For marketplace compatibility
     help_text,
     description,
     type,
@@ -253,7 +253,7 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType: editorTypeProp,
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
     editor_type,
     spec_url = '',
     disabled = false,
@@ -668,13 +668,13 @@ const DynamicForm = ({
             enabled && (
               <div
                 className={cx({
-                  'my-2': type !== 'react-component-oauth',
+                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
                   'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
                   [className]: !!className,
                   'd-flex': isHorizontalLayout,
                   'dynamic-form-row': isHorizontalLayout,
                 })}
-                data-cy={`${generateCypressDataCy(key)}-section`}
+                data-cy={`${generateCypressDataCy(label ?? key)}-section`}
                 key={key}
               >
                 {!isSpecificComponent && (
@@ -683,9 +683,9 @@ const DynamicForm = ({
                       'form-label': isHorizontalLayout,
                       'align-items-center': !isHorizontalLayout,
                     })}
-                    style={{ minWidth: '100px' }}
+                    style={{ minWidth: '100px', marginBottom: '0' }}
                   >
-                    {label && renderLabel(label, fieldConfig.tooltip)}
+                    {label && renderLabel(label, obj[key].tooltip)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
                       <div className="mx-1 col">
@@ -697,6 +697,7 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                          data-cy={`button-${generateCypressDataCy(computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel')}`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
@@ -732,7 +733,7 @@ const DynamicForm = ({
                     {...elementProps}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
-                    dataCy={fieldConfig.key.replace(/_/g, '-')}
+                    dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}
                     isHorizontalLayout={isHorizontalLayout}
                   />
                 </div>
@@ -752,7 +753,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'}>
+          <div className={isHorizontalLayout ? '' : 'row'} data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div
@@ -762,6 +763,7 @@ const DynamicForm = ({
                 'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
+              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
             >
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
@@ -781,6 +783,7 @@ const DynamicForm = ({
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
                 />
               </div>
               {flipComponentDropdown.helpText && (
