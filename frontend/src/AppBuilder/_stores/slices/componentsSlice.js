@@ -355,31 +355,45 @@ export const createComponentsSlice = (set, get) => ({
     const { getAllExposedValues, getComponentTypeFromId } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
+
+    const updateResolvedValueForNonNullIndex = (resolvedValue, idx) => {
+      if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
+        componentResolvedValues[componentId] = [];
+      }
+
+      if (!componentResolvedValues[componentId][idx]) {
+        componentResolvedValues[componentId][idx] =
+          idx === 0 ? deepClone(DEFAULT_COMPONENT_STRUCTURE) : deepClone(componentResolvedValues[componentId][0]);
+      }
+
+      if (!componentResolvedValues[componentId][idx][paramType]) {
+        componentResolvedValues[componentId][idx][paramType] = {};
+      }
+
+      if (hasArrayNotation(property)) {
+        const keys = parsePropertyPath(property);
+        lodashSet(
+          componentResolvedValues,
+          [componentId, idx, paramType, ...keys],
+          getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+        );
+      } else {
+        componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
+      }
+    };
+
     if (length === 0) {
       const resolvedValue = shouldResolve
         ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables, false, [])
         : value;
-      if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
-        componentResolvedValues[componentId] = index === null ? deepClone(DEFAULT_COMPONENT_STRUCTURE) : [];
-      }
+
       if (index !== null) {
-        if (!componentResolvedValues[componentId][index]) {
-          componentResolvedValues[componentId][index] = deepClone(DEFAULT_COMPONENT_STRUCTURE);
-        }
-        if (!componentResolvedValues[componentId][index][paramType]) {
-          componentResolvedValues[componentId][index][paramType] = {};
-        }
-        if (hasArrayNotation(property)) {
-          const keys = parsePropertyPath(property);
-          lodashSet(
-            componentResolvedValues,
-            [componentId, index, paramType, ...keys],
-            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
-          );
-        } else {
-          componentResolvedValues[componentId][index][paramType][property] = resolvedValue;
-        }
+        updateResolvedValueForNonNullIndex(resolvedValue, index);
       } else {
+        if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
+          componentResolvedValues[componentId] = deepClone(DEFAULT_COMPONENT_STRUCTURE);
+        }
+
         if (!componentResolvedValues[componentId][paramType]) {
           componentResolvedValues[componentId][paramType] = {};
         }
@@ -401,17 +415,8 @@ export const createComponentsSlice = (set, get) => ({
         const resolvedValue = shouldResolve
           ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables[i], false, [])
           : value;
-        if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
-          componentResolvedValues[componentId] = [];
-        }
-        if (!componentResolvedValues[componentId][i]) {
-          componentResolvedValues[componentId][i] =
-            i === 0 ? deepClone(DEFAULT_COMPONENT_STRUCTURE) : deepClone(componentResolvedValues[componentId][0]);
-        }
-        if (!componentResolvedValues[componentId][i][paramType]) {
-          componentResolvedValues[componentId][i][paramType] = {};
-        }
-        componentResolvedValues[componentId][i][paramType][property] = resolvedValue;
+
+        updateResolvedValueForNonNullIndex(resolvedValue, i);
       }
     }
   },
@@ -1486,7 +1491,14 @@ export const createComponentsSlice = (set, get) => ({
         const length = Object.keys(customResolvables).length;
         const limit = length === 0 ? 1 : length;
         for (let i = 0; i < limit; i++) {
-          setResolvedComponentByProperty(componentId, paramType, property, updatedValue, i, moduleId);
+          setResolvedComponentByProperty(
+            componentId,
+            paramType,
+            property,
+            resolvedComponent[componentId][i][paramType][property],
+            i,
+            moduleId
+          );
         }
       } else {
         setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
