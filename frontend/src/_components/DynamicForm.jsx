@@ -263,9 +263,11 @@ const DynamicForm = ({
     subtext,
     oauth_configs,
     operation,
+    dependsOn,
     depends_on,
     label,
-    fx_enabled: fxEnabled = false,
+    fx_enabled,
+    fxEnabled
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -538,7 +540,7 @@ const DynamicForm = ({
       case 'dynamic-selector':
         return {
           operation: operation,
-          dependsOn: depends_on || [],
+          dependsOn: dependsOn || depends_on,
           selectedDataSource,
           currentAppEnvironmentId,
           optionchanged,
@@ -551,9 +553,8 @@ const DynamicForm = ({
           queryName,
           propertyKey: key,
           value: options?.[key]?.value || options?.[key],
-          depends_on,
           optionsChanged,
-          fxEnabled: fxEnabled,
+          fxEnabled: fxEnabled || fx_enabled
         };
       default:
         return {};
