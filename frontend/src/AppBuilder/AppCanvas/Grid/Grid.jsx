@@ -85,7 +85,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
-
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
