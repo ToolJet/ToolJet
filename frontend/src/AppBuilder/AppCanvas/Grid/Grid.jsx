@@ -67,7 +67,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
 
   const { startAutoScroll, stopAutoScroll, updateMousePosition, getScrollDelta } = useCanvasAutoScroll(
-    { threshold: 50, scrollSpeed: 10, containerSelector: '.canvas-content' },
+    {},
     boxList,
     virtualTarget,
     moveableRef
