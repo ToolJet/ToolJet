@@ -24,6 +24,7 @@ import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import VirtualizedUserList from './VirtualizedUserList';
 
 class BaseManageGroupPermissionResources extends React.Component {
   constructor(props) {
@@ -63,10 +64,19 @@ class BaseManageGroupPermissionResources extends React.Component {
       autoRoleChangeMessageType: '',
       updateParam: {},
     };
+    this.userListRef = React.createRef();
+    this.searchDebounceTimer = null;
   }
 
   componentDidMount() {
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
+  }
+
+  componentWillUnmount() {
+    // Clean up debounce timer
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -360,7 +370,13 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   handleUserSearchInGroup = (e) => {
-    this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value);
+    const searchValue = e?.target?.value;
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    this.searchDebounceTimer = setTimeout(() => {
+      this.fetchUsersInGroup(this.props.groupPermissionId, searchValue);
+    }, 300);
   };
 
   toggleUserTabSearchBox = () => {
@@ -754,8 +770,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                         </div>
                       )}
 
-                      <section className="group-users-list-container">
-                        {isLoadingGroup || isLoadingUsers ? (
+                      {isLoadingGroup || isLoadingUsers ? (
+                        <section className="group-users-list-container">
                           <tr>
                             <td className="col-auto">
                               <div className="row">
@@ -769,71 +785,17 @@ class BaseManageGroupPermissionResources extends React.Component {
                               <div className="skeleton-line w-10"></div>
                             </td>
                           </tr>
-                        ) : usersInGroup.length > 0 ? (
-                          usersInGroup.map((item) => {
-                            const user = item.user;
-                            const groupUserId = item.id;
-                            return (
-                              <div
-                                key={user.id}
-                                className="manage-group-users-row"
-                                data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
-                                style={{ alignItems: 'center' }}
-                              >
-                                <p className="tj-text-sm d-flex align-items-center">
-                                  <Avatar
-                                    className="name-avatar"
-                                    avatarId={user?.avatarId}
-                                    text={`${user.firstName ? user.firstName[0] : ''}${user.lastName ? user.lastName[0] : ''
-                                      }`}
-                                  />
-                                  <span data-cy="user-name">{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
-                                </p>
-                                <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
-                                  <span data-cy="user-email"> {user.email}</span>
-                                </p>
-                                <p className="tj-text-sm d-flex align-items-center">
-                                  <div className="d-flex align-items-center edit-role-btn">
-                                    {!isRoleGroup && (
-                                      <Link to="#" className="remove-decoration">
-                                        <ButtonSolid
-                                          variant="dangerSecondary"
-                                          className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                          onClick={() => {
-                                            this.removeUserFromGroup(groupUserId);
-                                          }}
-                                          leftIcon="remove"
-                                          fill="#F3B0A2"
-                                          iconWidth="18"
-                                          data-cy="remove-button"
-                                        >
-                                          {this.props.t('globals.remove', 'Remove')}
-                                        </ButtonSolid>
-                                      </Link>
-                                    )}
-                                  </div>
-                                  {isRoleGroup && (
-                                    <div className="edit-role-btn">
-                                      <ButtonSolid
-                                        variant="tertiary"
-                                        iconWidth="17"
-                                        fill="var(--slate9)"
-                                        className="apps-remove-btn remove-decoration tj-text-xsm font-weight-600"
-                                        leftIcon="editable"
-                                        onClick={() => {
-                                          this.openChangeRoleModal(user);
-                                        }}
-                                        data-cy="edit-role-button"
-                                      >
-                                        Edit role
-                                      </ButtonSolid>
-                                    </div>
-                                  )}
-                                </p>
-                              </div>
-                            );
-                          })
-                        ) : !showUserSearchBox ? (
+                        </section>
+                      ) : usersInGroup.length > 0 ? (
+                        <VirtualizedUserList
+                          users={usersInGroup}
+                          isRoleGroup={isRoleGroup}
+                          removeUserFromGroup={this.removeUserFromGroup}
+                          openChangeRoleModal={this.openChangeRoleModal}
+                          t={this.props.t}
+                        />
+                      ) : !showUserSearchBox ? (
+                        <section className="group-users-list-container">
                           <div className="manage-groups-no-apps-wrap">
                             <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <BulkIcon name="users" fill="#3E63DD" width="48" />
@@ -846,7 +808,9 @@ class BaseManageGroupPermissionResources extends React.Component {
                               <br /> permissions for them!
                             </span>
                           </div>
-                        ) : (
+                        </section>
+                      ) : (
+                        <section className="group-users-list-container">
                           <div className="manage-groups-no-apps-wrap">
                             <div className="manage-groups-no-apps-icon" data-cy="user-empty-page-icon">
                               <SolidIcon name="warning-user-notfound" width="48" />
@@ -859,8 +823,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                               try changing the filters and try again.
                             </span>
                           </div>
-                        )}
-                      </section>
+                        </section>
+                      )}
                     </div>
                   </div>
 
