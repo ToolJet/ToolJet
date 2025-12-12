@@ -8,7 +8,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { AppModal } from '@/_components/AppModal';
 import { PenLine } from 'lucide-react';
 
-function EditAppName () {
+function EditAppName() {
   const { moduleId } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode] = useStore(
     (state) => [

@@ -802,6 +802,16 @@
   
     &.pagination-popup {
       width: 110px;
+      display: flex;
+      flex-direction: column;
+
+      .popover-body {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0%;
+        padding: 0px !important;
+        overflow: hidden !important;
+      }
     }
   }
 }

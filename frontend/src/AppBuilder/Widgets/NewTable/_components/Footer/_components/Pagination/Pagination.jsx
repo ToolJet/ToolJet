@@ -71,7 +71,7 @@ export const Pagination = function Pagination({
     useEffect(() => {
       // Use a small timeout to ensure the DOM is fully rendered
       const timeoutId = setTimeout(() => {
-        const popoverContainer = document.getElementsByClassName('table-widget-popup')[0];
+        const popoverContainer = document.getElementsByClassName('pagination-scrollable-area')[0];
         if (popoverContainer) {
           const currentPageButton = popoverContainer.querySelector(`[data-cy="page-${pageIndex}-button-option"]`);
           if (currentPageButton) {
@@ -89,59 +89,65 @@ export const Pagination = function Pagination({
     }, []);
 
     const getPopoverContainer = () => {
-      return document.getElementsByClassName('table-widget-popup')[0];
+      return document.getElementsByClassName('pagination-scrollable-area')[0];
     };
 
     return (
       <Popover.Body>
-        <PaginationButton
-          key={'lastpage'}
-          onClick={(e) => {
-            const popup = getPopoverContainer();
-            if (popup) {
-              popup.scrollTo({
-                top: popup.scrollHeight,
-                behavior: 'smooth',
-              });
-            }
-            e.target.blur(); // To remove focus styling that gets applied after clicking on the button
-          }}
-          dataCy={`last-page-button-option`}
-          currentPageIndex={pageIndex}
-          pageIndex={'Last page'}
-          className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-        />
-
-        {allPages.map((pageNum) => (
+        <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-b tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
           <PaginationButton
-            key={pageNum}
-            onClick={() => {
-              goToPage(pageNum);
+            key={'lastpage'}
+            onClick={(e) => {
+              const popup = getPopoverContainer();
+              if (popup) {
+                popup.scrollTo({
+                  top: popup.scrollHeight,
+                  behavior: 'smooth',
+                });
+              }
+              e.target.blur(); // To remove focus styling that gets applied after clicking on the button
             }}
-            dataCy={`page-${pageNum}-button-option`}
+            dataCy={`last-page-button-option`}
             currentPageIndex={pageIndex}
-            pageIndex={pageNum}
+            pageIndex={'Last page'}
             className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
           />
-        ))}
+        </div>
 
-        <PaginationButton
-          key={'firstpage'}
-          onClick={(e) => {
-            const popup = getPopoverContainer();
-            if (popup) {
-              popup.scrollTo({
-                top: 0,
-                behavior: 'smooth',
-              });
-            }
-            e.target.blur(); // To remove focus styling that gets applied after clicking on the button
-          }}
-          dataCy={`first-page-button-option`}
-          currentPageIndex={pageIndex}
-          pageIndex={'First page'}
-          className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
-        />
+        <div className="pagination-scrollable-area tw-px-[8px] tw-overflow-auto tw-flex-1">
+          {allPages.map((pageNum) => (
+            <PaginationButton
+              key={pageNum}
+              onClick={() => {
+                goToPage(pageNum);
+              }}
+              dataCy={`page-${pageNum}-button-option`}
+              currentPageIndex={pageIndex}
+              pageIndex={pageNum}
+              className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+            />
+          ))}
+        </div>
+
+        <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-t tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
+          <PaginationButton
+            key={'firstpage'}
+            onClick={(e) => {
+              const popup = getPopoverContainer();
+              if (popup) {
+                popup.scrollTo({
+                  top: 0,
+                  behavior: 'smooth',
+                });
+              }
+              e.target.blur(); // To remove focus styling that gets applied after clicking on the button
+            }}
+            dataCy={`first-page-button-option`}
+            currentPageIndex={pageIndex}
+            pageIndex={'First page'}
+            className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
+          />
+        </div>
       </Popover.Body>
     );
   };
@@ -152,7 +158,9 @@ export const Pagination = function Pagination({
         id="popover-basic"
         data-cy="popover-card"
         className={`table-widget-popup pagination-popup ${darkMode && 'dark-theme'}`}
-        style={{ maxHeight: `${height - 79}px` }}
+        style={{
+          maxHeight: height - 79 > 128 ? `${height - 79}px` : '128px', // This is to ensure that if table height is small, the popover is still always showing the first, last and a single page buttons
+        }}
         placement="top-end"
       >
         <PaginationPopoverContent />
