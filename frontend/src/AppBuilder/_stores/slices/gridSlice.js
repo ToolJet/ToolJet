@@ -438,7 +438,7 @@ export const createGridSlice = (set, get) => ({
       reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
     }));
   },
-  handleCanvasContainerMouseDown: (e) => {
+  handleCanvasContainerMouseUp: (e) => {
     const {
       clearSelectedComponents,
       setActiveRightSideBarTab,
@@ -459,17 +459,17 @@ export const createGridSlice = (set, get) => ({
         '.inspector-event-manager-popover',
         '.inspector-steps-options-popover',
         '.table-column-popover',
+        '.table-action-popover',
         '.codebuilder-color-swatches-popover',
         '.boxshadow-picker-popover',
         '.color-picker-popover',
         '.dropdown-menu-container',
         '.inspector-select.react-select__menu-list',
         '.icon-widget-popover',
+        '.inspector-header-actions-menu',
       ].join(',');
-
       return !!document.querySelector(selector);
     };
-
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
