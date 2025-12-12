@@ -10,6 +10,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 export const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const getComponentDefinition = useStore((state) => state.getComponentDefinition);
@@ -119,6 +120,7 @@ export const EditorSelecto = () => {
           }
         }
       }
+
       return false;
     },
     [setSelectedComponents, setActiveRightSideBarTab, getSelectedComponents]

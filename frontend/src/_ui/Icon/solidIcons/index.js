@@ -279,6 +279,7 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import MarkerCircle from './MarkerCircle.jsx';
 import DataDatabase from './DataDatabase.jsx';
 import Flash from './Flash.jsx';
 import Json from './Json.jsx';
@@ -287,6 +288,9 @@ import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
 import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import Google from './Google.jsx';
+import GitHub from './GitHub.jsx';
+import PlayLucide from './PlayLucide.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -712,6 +716,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'markercircle':
+      return <MarkerCircle {...props} />;
     case 'workspace':
       return <Workspace {...props} />;
     case 'workflows':
@@ -867,6 +873,12 @@ const Icon = (props) => {
       return <AITopupWhite {...props} />;
     case 'ai-topup-grey':
       return <AITopupGrey {...props} />;
+    case 'google':
+      return <Google {...props} />;
+    case 'github':
+      return <GitHub {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
     default:
       return <Apps {...props} />;
   }

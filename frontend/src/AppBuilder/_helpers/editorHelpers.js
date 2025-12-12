@@ -1,72 +1,64 @@
-import { Button } from '@/Editor/Components/Button';
-import { Image } from '@/Editor/Components/Image/Image';
-import { Text } from '@/Editor/Components/Text';
-// import { Table } from '@/Editor/Components/Table/Table';
-// import { Table } from '@/AppBuilder/Widgets/Table/Table';
+import { Button } from '@/AppBuilder/Widgets/Button';
+import { Image } from '@/AppBuilder/Widgets/Image/Image';
+import { Text } from '@/AppBuilder/Widgets/Text';
 import { Table } from '@/AppBuilder/Widgets/NewTable/Table';
 
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
 import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
-import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
-import { DropDown } from '@/Editor/Components/DropDown';
-import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
-import { Checkbox } from '@/Editor/Components/Checkbox';
-import { Datepicker } from '@/Editor/Components/Datepicker';
+import { RichTextEditor } from '@/AppBuilder/Widgets/RichTextEditor';
+import { DropDown } from '@/AppBuilder/Widgets/DropDown';
+import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
+import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
+import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { PopoverMenu } from '@/AppBuilder/Widgets/PopoverMenu/PopoverMenu';
 import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
 import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
 import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
-import { Multiselect } from '@/Editor/Components/Multiselect';
-import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
-// import { Modal } from '@/Editor/Components/Modal';
-import { Chart } from '@/Editor/Components/Chart';
-import { Map as MapComponent } from '@/Editor/Components/Map/Map';
-import { QrScanner } from '@/Editor/Components/QrScanner/QrScanner';
-import { ToggleSwitch } from '@/Editor/Components/Toggle';
-import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
-import { RadioButton } from '@/Editor/Components/RadioButton';
-import { RadioButtonV2 } from '@/Editor/Components/RadioButtonV2/RadioButtonV2';
+import { Multiselect } from '@/AppBuilder/Widgets/Multiselect';
+import { MultiselectV2 } from '@/AppBuilder/Widgets/MultiselectV2/MultiselectV2';
+import { Chart } from '@/AppBuilder/Widgets/Chart';
+import { Map as MapComponent } from '@/AppBuilder/Widgets/Map/Map';
+import { QrScanner } from '@/AppBuilder/Widgets/QrScanner/QrScanner';
+import { ToggleSwitch } from '@/AppBuilder/Widgets/Toggle';
+import { ToggleSwitchV2 } from '@/AppBuilder/Widgets/ToggleV2';
+import { RadioButton } from '@/AppBuilder/Widgets/RadioButton';
+import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2';
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
-import { Divider } from '@/Editor/Components/Divider';
-import { FilePicker } from '@/Editor/Components/FilePicker';
+import { Divider } from '@/AppBuilder/Widgets/Divider';
+import { FilePicker } from '@/AppBuilder/Widgets/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
 import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput';
-// import { Calendar } from '@/Editor/Components/Calendar';
-// import { Listview } from '@/Editor/Components/Listview';
-import { IFrame } from '@/Editor/Components/IFrame';
-import { CodeEditor } from '@/Editor/Components/CodeEditor';
-import { Timer } from '@/Editor/Components/Timer';
-import { Statistics } from '@/Editor/Components/Statistics';
-import { Pagination } from '@/Editor/Components/Pagination';
-import { Tags } from '@/Editor/Components/Tags/Tags';
-import { Spinner } from '@/Editor/Components/Spinner';
-import { CircularProgressBar } from '@/Editor/Components/CirularProgressbar';
+import { IFrame } from '@/AppBuilder/Widgets/IFrame';
+import { CodeEditor } from '@/AppBuilder/Widgets/CodeEditor';
+import { Timer } from '@/AppBuilder/Widgets/Timer';
+import { Statistics } from '@/AppBuilder/Widgets/Statistics';
+import { Pagination } from '@/AppBuilder/Widgets/Pagination';
+import { Tags } from '@/AppBuilder/Widgets/Tags/Tags';
+import { Spinner } from '@/AppBuilder/Widgets/Spinner';
+import { CircularProgressBar } from '@/AppBuilder/Widgets/CirularProgressbar';
 import { RangeSlider } from '@/AppBuilder/Widgets/RangeSlider';
 import { RangeSliderV2 } from '@/AppBuilder/Widgets/RangeSliderV2';
-import { Timeline } from '@/Editor/Components/Timeline';
-import { SvgImage } from '@/Editor/Components/SvgImage';
-import { Html } from '@/Editor/Components/Html';
-import { ButtonGroup } from '@/Editor/Components/ButtonGroup';
-import { CustomComponent } from '@/Editor/Components/CustomComponent/CustomComponent';
-import { VerticalDivider } from '@/Editor/Components/VerticalDivider';
-import { ColorPicker } from '@/Editor/Components/ColorPicker';
-import { KanbanBoard } from '@/Editor/Components/KanbanBoard/KanbanBoard';
-// import { Kanban } from '@/Editor/Components/Kanban/Kanban';
-import { Steps } from '@/Editor/Components/Steps';
-import { TreeSelect } from '@/Editor/Components/TreeSelect';
-import { Icon } from '@/Editor/Components/Icon';
-import { Link } from '@/Editor/Components/Link/Link';
-// import { Form } from '@/Editor/Components/Form/Form';
-import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
+import { Timeline } from '@/AppBuilder/Widgets/Timeline';
+import { SvgImage } from '@/AppBuilder/Widgets/SvgImage';
+import { Html } from '@/AppBuilder/Widgets/Html';
+import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
+import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
+import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
+import { ColorPicker } from '@/AppBuilder/Widgets/ColorPicker';
+import { KanbanBoard } from '@/AppBuilder/Widgets/KanbanBoard/KanbanBoard';
+import { Steps } from '@/AppBuilder/Widgets/Steps';
+import { TreeSelect } from '@/AppBuilder/Widgets/TreeSelect';
+import { Icon } from '@/AppBuilder/Widgets/Icon';
+import { Link } from '@/AppBuilder/Widgets/Link/Link';
+// import { Form } from '@/AppBuilder/Widgets/Form/Form';
+import { BoundedBox } from '@/AppBuilder/Widgets/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { useEditorStore } from '@/_stores/editorStore';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
-import { Listview } from '@/AppBuilder/Widgets/Listview';
+import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
@@ -75,6 +67,8 @@ import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
+
+import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // import './requestIdleCallbackPolyfill';
 
@@ -164,7 +158,7 @@ export const AllComponents = {
   PopoverMenu,
 };
 if (isPDFSupported()) {
-  AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
+  AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);
 }
 
 export const getComponentToRender = (componentName) => {
@@ -341,48 +335,6 @@ export function generatePath(obj, targetKey, currentPath = '') {
   return null;
 }
 
-/**
- * Update the canvas background with the given parameters
- * @param {Object} params The parameters to update the canvas background with
- * @param {string} params.canvasBackgroundColor The new background color
- * @param {string} params.backgroundFxQuery The new background color formula
- * @param {boolean} [isUpdate=false] Whether to update the background color without
- *  re-calculating it from the given formula.
- */
-export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuery }, isUpdate = false) => {
-  const { setCanvasBackground } = useEditorStore.getState().actions;
-
-  /**
-   * If the background color should be updated, update it with the given parameters
-   */
-  if (isUpdate) {
-    return setCanvasBackground({
-      backgroundFxQuery,
-      canvasBackgroundColor,
-    });
-  }
-
-  /**
-   * If the background color formula is not empty, calculate the new background color
-   * and update it if it has changed
-   */
-  if (backgroundFxQuery !== '') {
-    const computedBackgroundColor = resolveWidgetFieldValue(
-      useEditorStore.getState().canvasBackground?.backgroundFxQuery
-    );
-
-    /**
-     * If the computed background color is different from the current one, update it
-     */
-    if (computedBackgroundColor !== canvasBackgroundColor) {
-      setCanvasBackground({
-        ...useEditorStore.getState().canvasBackground,
-        canvasBackgroundColor: computedBackgroundColor,
-      });
-    }
-  }
-};
-
 export function checkAndExtractEntityId(errorString) {
   const regex = /"([a-f0-9-]+)"/;
   const match = errorString.match(regex);
@@ -399,7 +351,7 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  // 45 = (height of header)
-  // 85 = (the height of the query panel header when minimised) + (height of header)
-  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + 45, 85)}px)`;
+  return `calc(${100}% - ${
+    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+  }px)`;
 };

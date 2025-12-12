@@ -193,7 +193,7 @@ export const emailinputConfig = {
     icon: {
       type: 'icon',
       displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconMailFilled' },
+      validation: { schema: { type: 'string' }, defaultValue: 'IconMail' },
       accordian: 'field',
       visibility: true,
     },
@@ -314,7 +314,7 @@ export const emailinputConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconMailFilled' },
+      icon: { value: 'IconMail' },
       iconVisibility: { value: true },
       widthType: { value: 'ofComponent' },
     },

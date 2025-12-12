@@ -1,35 +1,29 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import {
-    exportAppModalSelectors,
-    importSelectors,
-} from "Selectors/exportImport";
+import { dashboardSelector } from "Selectors/dashboard";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { importSelectors } from "Selectors/exportImport";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
-    logout,
+    navigateToAppEditor,
     navigateToManageGroups,
-    navigateToManageUsers,
-    selectAppCardOption,
+    navigateToManageUsers
 } from "Support/utils/common";
 import {
+    apiCreateGroup,
     inviteUserBasedOnRole,
     setupAndUpdateRole,
     setupWorkspaceAndInviteUser,
     updateRole,
-    verifyUserPrivileges
+    verifyUserPrivileges,
 } from "Support/utils/manageGroups";
-import { commonText } from "Texts/common";
-import { exportAppModalText, importText } from "Texts/exportImport";
+import { getGroupPermissionInput } from "Support/utils/userPermissions";
+import { importText } from "Texts/exportImport";
 import { groupsText } from "Texts/manageGroups";
 
 describe("Manage Groups", () => {
     let data = {};
     const isEnterprise = Cypress.env("environment") === "Enterprise";
-
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
 
     beforeEach(() => {
         data = {
@@ -37,7 +31,7 @@ describe("Manage Groups", () => {
             appName: fake.companyName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
             workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
-            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceSlug: `${fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, "")}-permissions`,
             folderName: fake.companyName,
             dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
@@ -46,7 +40,6 @@ describe("Manage Groups", () => {
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
-
     });
 
     it("should verify the last active admin role update protection", () => {
@@ -58,7 +51,6 @@ describe("Manage Groups", () => {
 
         navigateToManageGroups();
 
-        // Attempt to change last admin role
         cy.get(groupsSelector.groupLink("Admin")).click();
         cy.get(`[data-cy="dev@tooljet.io-user-row"] > :nth-child(3)`).click();
 
@@ -71,7 +63,6 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.confimButton).click();
         cy.get(groupsSelector.confimButton).click();
 
-        // Verify protection modal
         cy.get(groupsSelector.modalMessage).should("be.visible");
         cy.get(groupsSelector.modalHeader).should(
             "have.text",
@@ -193,120 +184,118 @@ describe("Manage Groups", () => {
         });
     });
 
-    it.skip("should verify query creation and import access for Builders and Admin", () => {
-        const firstName2 = fake.firstName;
-        const email2 = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-        const workspaceName2 = fake.firstName
-            .toLowerCase()
-            .replace(/[^A-Za-z]/g, "");
-        const workspaceSlug2 = fake.firstName
-            .toLowerCase()
-            .replace(/[^A-Za-z]/g, "");
+    it("should verify datasource granular access in app builder", () => {
+        const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
+        const appImportFile = "cypress/fixtures/templates/permission-export.json";
+        cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then((workspace) => {
+            Cypress.env("workspaceId", workspace.body.organization_id);
 
-        createQueryAndImportApp(
-            data.firstName,
-            data.email,
-            data.workspaceName,
-            data.workspaceSlug,
-            "Builder"
-        );
+            cy.visit(data.workspaceSlug);
 
-        cy.backToApps();
-        logout();
+            cy.ifEnv("Enterprise", () => {
+                cy.apiUpdateGroupPermission(
+                    "builder",
+                    getGroupPermissionInput(isEnterprise, false)
+                );
+                cy.apiDeleteGranularPermission("builder", []);
 
-        cy.defaultWorkspaceLogin();
+                cy.intercept("GET", "/api/apps/*").as("getApp");
 
-        createQueryAndImportApp(
-            firstName2,
-            email2,
-            workspaceName2,
-            workspaceSlug2,
-            "Admin"
-        );
-    });
+                cy.get(dashboardSelector.importAppButton).click();
+                cy.get(importSelectors.importOptionInput)
+                    .eq(0)
+                    .selectFile(appImportFile, { force: true });
+                cy.wait(2000);
 
-    const createQueryAndImportApp = (
-        firstName,
-        email,
-        workspaceName,
-        workspaceSlug,
-        role
-    ) => {
-        let currentVersion = "";
-        let exportedFilePath;
+                cy.get(importSelectors.importAppButton).click();
+                cy.verifyToastMessage(
+                    commonSelectors.toastMessage,
+                    importText.appImportedToastMessage
+                );
+                cy.wait(2000);
 
-        cy.apiCreateWorkspace(workspaceName, workspaceSlug);
-        cy.visit(workspaceSlug);
-        cy.wait(500);
+                cy.wait("@getApp").then((interception) => {
+                    const { id, editing_version, editorEnvironment, name } =
+                        interception.response.body;
+                    Cypress.env("appId", id);
+                    Cypress.env("editingVersionId", editing_version.id);
+                    Cypress.env("environmentId", editorEnvironment.id);
+                    data.importedAppName = name;
+                });
 
-        cy.apiCreateGDS(
-            `${Cypress.env("server_host")}/api/data-sources`,
-            `cypress-${data.dsName}-qc-postgresql`,
-            "postgresql",
-            [
-                { key: "host", value: Cypress.env("pg_host") },
-                { key: "port", value: 5432 },
-                { key: "database", value: Cypress.env("pg_user") },
-                { key: "username", value: Cypress.env("pg_user") },
-                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
-                { key: "ssl_enabled", value: false, encrypted: false },
-                { key: "ssl_certificate", value: "none", encrypted: false },
-            ]
-        );
+                cy.go("back");
+                cy.wait(1000);
 
-        //Onboard user
-        navigateToManageUsers();
-        inviteUserBasedOnRole(firstName, email, role);
+                apiCreateGroup(groupName).then((groupId) => {
+                    cy.apiCreateGranularPermission(
+                        groupName,
+                        `${data.importedAppName}_permission`,
+                        "app",
+                        { canEdit: true, canView: false },
+                        Cypress.env("appId"),
+                        false
+                    );
 
-        cy.wait(1000);
+                    cy.apiCreateGranularPermission(
+                        groupName,
+                        "datasource1_permission",
+                        "datasource",
+                        { canUse: true, canConfigure: false },
+                        ["datasource 1"],
+                        false
+                    );
+                });
 
-        cy.createApp(data.appName);
+                cy.apiFullUserOnboarding(
+                    data.firstName,
+                    data.email,
+                    "builder",
+                    "password",
+                    data.workspaceName,
+                    {},
+                    [groupName]
+                );
 
-        //Create and run postgres query in the app
-        // Need to enable once bug is fixed
-        /*
-                        
-                
-                        addQuery(
-                            "table_preview",
-                            `SELECT * FROM persons;`,
-                            `cypress-${data.dsName1}-postgresql`
-                        );
-                
-                        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
-                            "have.text",
-                            "table_preview "
-                        );
-                        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-                        verifyValueOnInspector("table_preview", "7 items ");
-                        */
+                cy.wait(1000);
 
-        cy.backToApps();
+                cy.apiLogout();
+                cy.apiLogin(data.email, "password");
+                cy.visit(data.workspaceSlug);
+                cy.wait(1000);
 
-        //Export and Import app
-        selectAppCardOption(
-            data.appName,
-            commonSelectors.appCardOptions(commonText.exportAppOption)
-        );
-        cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
-        cy.get(
-            exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
-        ).verifyVisibleElement("be.checked");
-        cy.get(
-            commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
-        ).click();
-        cy.exec("ls ./cypress/downloads/").then((result) => {
-            const downloadedAppExportFileName = result.stdout.split("\n")[0];
-            exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-            cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-            cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
-                force: true,
+                navigateToAppEditor("permission-export");
+                cy.wait(3000);
+
+                cy.get(dataSourceSelector.listQuery("user1-datasource"))
+                    .should("be.visible")
+                    .click();
+                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryCreateAndRunButton)
+                    .eq(0)
+                    .should("be.enabled");
+                cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
+                cy.get(dataSourceSelector.queryCardDeleteButton).click();
+                cy.get(dataSourceSelector.deleteModalConfirmButton).click();
+
+                cy.get(dataSourceSelector.listQuery("user2-datasource"))
+                    .should("be.visible")
+                    .click();
+                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryCreateAndRunButton)
+                    .eq(0)
+                    .should("be.enabled");
+                cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.disabled");
+
+                cy.get(dataSourceSelector.editorDSPopover).click();
+                cy.wait(500);
+
+                cy.get('[data-cy="ds-datasource 2"]').click();
+                cy.verifyToastMessage(
+                    commonSelectors.toastMessage,
+                    "Failed to create query: You do not have permission to access this resource"
+                );
             });
-            cy.get(importSelectors.importAppButton).click();
-            cy.get(".go3958317564")
-                .should("be.visible")
-                .and("have.text", importText.appImportedToastMessage);
         });
-        cy.exec("cd ./cypress/downloads/ && rm -rf *");
-    };
+    });
 });

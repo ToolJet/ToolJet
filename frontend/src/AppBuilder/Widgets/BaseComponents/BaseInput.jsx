@@ -3,7 +3,7 @@ import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 import './baseInput.scss';
@@ -42,6 +42,7 @@ export const BaseInput = ({
   inputType = 'text',
   additionalInputProps = {},
   rightIcon,
+  isDynamicHeightEnabled,
   id,
   classes = null,
 }) => {
@@ -161,6 +162,7 @@ export const BaseInput = ({
                   : 'var(--surfaces-surface-03)'
                 : 'var(--surfaces-surface-01)',
             boxShadow,
+            ...(isDynamicHeightEnabled && { minHeight: `${height}px` }), // Doubtfull about this
             ...(defaultAlignment === 'top' && { flex: 1 }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}

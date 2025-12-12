@@ -37,7 +37,6 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: './src/index.ejs',
     favicon: './assets/images/logo.svg',
-    hash: environment === 'production',
   }),
   new CompressionPlugin({
     test: /\.js(\?.*)?$/i,
@@ -88,6 +87,9 @@ module.exports = {
     minimize: environment === 'production',
     usedExports: true,
     runtimeChunk: 'single',
+    moduleIds: 'deterministic',
+    chunkIds: 'deterministic',
+    realContentHash: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
@@ -124,6 +126,7 @@ module.exports = {
     fallback: {
       process: require.resolve('process/browser.js'),
       path: require.resolve('path-browserify'),
+      util: require.resolve('util/'),
       '@ee/modules': emptyModulePath,
       '@cloud/modules': emptyModulePath,
     },
@@ -209,7 +212,15 @@ module.exports = {
           options: {
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
-              ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }, 'lodash'],
+              [
+                'import',
+                {
+                  libraryName: 'lodash',
+                  libraryDirectory: '',
+                  camel2DashComponentName: false,
+                },
+                'lodash',
+              ],
             ].filter(Boolean),
           },
         },
@@ -232,8 +243,12 @@ module.exports = {
     },
   },
   output: {
+    filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
+    chunkFilename: environment === 'production' ? '[name].[contenthash:8].chunk.js' : '[name].chunk.js',
+    assetModuleFilename: 'assets/[contenthash:8][ext][query]',
     publicPath: ASSET_PATH,
     path: path.resolve(__dirname, 'build'),
+    clean: true,
   },
   externals: {
     // global app config object
@@ -250,10 +265,10 @@ module.exports = {
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
       TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
-      WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.ai/signup',
+      WEBSITE_SIGNUP_URL: process.env.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup',
       TJ_SELFHOST_CREDITS_APP:
         process.env.TJ_SELFHOST_CREDITS_APP ||
-        'https://app.tooljet.ai/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
+        'https://app.tooljet.com/applications/c1ec8a6c-ee9a-4a7d-ba9b-3590bbeaf6b9',
     }),
   },
 };

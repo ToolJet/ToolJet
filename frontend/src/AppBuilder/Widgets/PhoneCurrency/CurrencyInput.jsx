@@ -5,7 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const CurrencyInput = (props) => {
@@ -174,6 +174,8 @@ export const CurrencyInput = (props) => {
     }
   }, []);
 
+  const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
+
   return (
     <>
       <div
@@ -207,6 +209,7 @@ export const CurrencyInput = (props) => {
           labelWidth={labelWidth}
           widthType={widthType}
           inputId={`component-${id}`}
+          classes={labelClasses}
         />
         <div
           className="d-flex h-100"

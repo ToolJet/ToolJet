@@ -1,11 +1,13 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { importSelectors } from "Selectors/exportImport";
+import { workflowSelector } from "Selectors/workflows";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText } from "Texts/common";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
-import { workflowSelector } from "../../constants/selectors/workflows";
+import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
+
 
 export const contantsNameValidation = (
   selector,
@@ -122,6 +124,7 @@ export const verifySearch = (data) => {
     "have.text",
     `${data.envName} (10)`
   );
+
   switchToConstantTab("Global");
   cy.clearAndType(workspaceConstantsSelectors.searchField, "globalconst");
   cy.get(workspaceConstantsSelectors.constantName("globalconst")).should(
@@ -377,8 +380,17 @@ export const importConstantsApp = (filePath, app = true) => {
     force: true,
   });
   if (app) {
+    cy.intercept("GET", "/api/apps/*").as("getAppData");
     cy.get(importSelectors.importAppButton).click();
     cy.get('[data-cy="draggable-widget-textinput1"]').should("be.visible");
+    cy.wait("@getAppData").then((interception) => {
+      const responseData = interception.response.body;
+
+      Cypress.env("editingVersionId", responseData.editing_version.id);
+      Cypress.env("appId", responseData.id);
+    });
+    cy.apiPublishDraftVersion("v1");
+
     cy.wait(3000);
   } else {
     cy.get(workflowSelector.importWorkFlowsButton).click();
@@ -444,8 +456,8 @@ export const promoteEnvAndVerify = (
   expectedValue
 ) => {
   appPromote(fromEnv, toEnv);
+  cy.waitForElement(versionModalSelector.versionLockInfoText)
   cy.wait(2000);
-  cy.get(".released-version-popup-container").invoke("css", "display", "none");
   cy.get(
     commonWidgetSelector.draggableWidget("textinput1")
   ).verifyVisibleElement("have.value", "customHeader");

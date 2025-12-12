@@ -488,6 +488,9 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
   // Create a virtual component representing the entire group
   const virtualGroupComponent = {
+    component: {
+      parent: targetParentId,
+    },
     layouts: {
       [layout]: {
         top: bounds.minTop,
@@ -611,6 +614,12 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
 
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
+
+    if (targetParentId !== component.component?.parent) {
+      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
+      width = Math.round((width * oldContainerWidth) / containerWidth);
+    }
 
     component.layouts[currentLayout] = {
       ...component.layouts[currentLayout],

@@ -89,7 +89,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .query-pane {
@@ -103,8 +103,7 @@ $border-radius: 4px;
   flex: 1 1 auto;
   font-size: 12px;
   line-height: 20px;
-  border-top: 1px solid var(--slate5);
-  border-width: 1px 0px 0px 0px;
+  border-top: 1px solid var(--border-weak);
   background-color: var(--base);
 
   &.expanded,
@@ -114,7 +113,8 @@ $border-radius: 4px;
 
 
   &#query-manager {
-    border-width: 3px 0px 0px 0px;
+    border-top-width: 2px;
+    transition: border-color 0.3s;
   }
 
   .vr {
@@ -127,8 +127,6 @@ $border-radius: 4px;
 
   .query-manager-toggle-button {
     border-radius: 5px;
-    margin-right: 16px;
-    width: 77px;
     text-align: center;
     cursor: pointer;
     color: var(--slate12) !important;
@@ -300,15 +298,14 @@ $border-radius: 4px;
     height: 100%;
 
     .header {
-      border: solid var(--slate5);
-      border-width: 0px 0px 1px 0px;
+      border-top: 0;
+      border-bottom: 1px solid var(--border-weak, #E4E7EB);
       background: var(--base);
       z-index: 3;
       min-height: 44px;
       max-height: 44px;
       height: 44px;
       font-weight: 500 !important;
-      border-top: 3px solid var(--slate5);
 
       .query-manager-header-query-name {
         color: var(--slate12);
@@ -371,8 +368,7 @@ $border-radius: 4px;
       background-color: var(--base);
 
       .queries-header {
-        border: solid var(--slate5);
-        border-width: 3px 0px 1px 0px;
+        border-bottom: 1px solid var(--border-weak);
         height: 44px;
         --tblr-gutter-x: 0rem;
         display: flex;
@@ -1922,4 +1918,9 @@ $border-radius: 4px;
     height: 100%;
     max-height: 100px;
   }
+}
+
+.query-manager-query-timeout {
+  max-width: 400px;
+  width: 330px;
 }

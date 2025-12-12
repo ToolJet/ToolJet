@@ -4,7 +4,7 @@ import { groupPermissionV2Service, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { FilterPreview, MultiSelectUser } from '@/_components';
@@ -273,7 +273,7 @@ class BaseManageGroupPermissionResources extends React.Component {
           <SolidIcon name="informationcircle" fill="#3E63DD" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -742,6 +742,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                             iconWidth="15"
                             fill="#889096"
                             className="search-user-group-btn"
+                            data-cy="user-group-search-btn"
                           />
                           <p className="tj-text-xsm" data-cy="name-header" style={{ padding: '10px' }}>
                             User name
@@ -783,14 +784,13 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   <Avatar
                                     className="name-avatar"
                                     avatarId={user?.avatarId}
-                                    text={`${user.firstName ? user.firstName[0] : ''}${
-                                      user.lastName ? user.lastName[0] : ''
-                                    }`}
+                                    text={`${user.firstName ? user.firstName[0] : ''}${user.lastName ? user.lastName[0] : ''
+                                      }`}
                                   />
-                                  <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
+                                  <span data-cy="user-name">{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
                                 </p>
                                 <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>
-                                  <span> {user.email}</span>
+                                  <span data-cy="user-email"> {user.email}</span>
                                 </p>
                                 <p className="tj-text-sm d-flex align-items-center">
                                   <div className="d-flex align-items-center edit-role-btn">
