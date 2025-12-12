@@ -114,24 +114,24 @@ export const ConfigHandle = ({
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-        background: 'var(--interactive-selected)',
-        color: 'var(--text-default)',
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-        height: '24px',
-      }
+      background: 'var(--interactive-selected)',
+      color: 'var(--text-default)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+      height: '24px',
+    }
     : {
-        color: 'var(--text-on-solid)',
-        padding: '2px 6px',
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: '6px',
-        height: '24px',
-      };
+      color: 'var(--text-on-solid)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+      height: '24px',
+    };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
     getConfigHandleButtonStyle.background = '#9747FF';
   }
@@ -196,8 +196,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-26px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-26px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -218,7 +218,7 @@ export const ConfigHandle = ({
       data-tooltip-html="Your plan is expired. <br/> Renew to use the modules."
       data-tooltip-place="right"
     >
-      <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover">
+      <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover component-name-btn">
         {isDynamicHeightEnabled && (
           <Popover
             open={isPopoverOpen}

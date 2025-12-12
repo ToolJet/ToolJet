@@ -21,6 +21,15 @@ export const modalV2Config = {
       },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Modal trigger visibility',
@@ -289,6 +298,7 @@ export const modalV2Config = {
     },
     properties: {
       loadingState: { value: `{{false}}` },
+      dynamicHeight: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },

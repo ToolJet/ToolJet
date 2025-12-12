@@ -41,7 +41,7 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-      developmentVersions.find((v) => v.id === version.parentVersionId)
+    developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
@@ -97,7 +97,7 @@ const VersionDropdownItem = ({
     !isDraft &&
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
-  const canCreateVersion = isDraft; // Show create version button for drafts
+  const canCreateVersion = isDraft && shouldShowActionButtons; // Show create version button for drafts
 
   const renderMenu = (
     <Popover
@@ -281,6 +281,7 @@ const VersionDropdownItem = ({
                     className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => {
                       e.stopPropagation();
+                      setOpenMenuVersionId?.(null);
                       onCreateVersion?.(version);
                     }}
                     data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
