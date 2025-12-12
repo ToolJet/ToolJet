@@ -17,3 +17,8 @@ export class AddSourceTagToAppVersions20251211120000 implements MigrationInterfa
         await queryRunner.dropColumn('app_versions', 'source_tag');
     }
 }
+/**
+ * Adds source_tag column to track version's sync state with GitHub tags:
+ * - null: Version created locally, not synced → creates GitHub tag on save
+ * - "{app_name}/{version_name}": Version synced with this tag (updated on every pull) → no tag created on save
+ */
