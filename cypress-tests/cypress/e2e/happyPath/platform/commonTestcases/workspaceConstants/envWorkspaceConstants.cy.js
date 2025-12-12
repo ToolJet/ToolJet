@@ -113,17 +113,17 @@ describe("Workspace constants", () => {
         verifyInputValues(3, 6, "Development environment testing");
         verifySecretConstantNotResolved("textinput2");
 
-        cy.get(".collapse-icon").click({ force: true });
-        cy.get('[data-cy="pages-name-workflow"]').click();
+        // cy.get(".collapse-icon").click({ force: true });
+        cy.get('[data-cy="pages-icon-workflow"]').click();
         cy.get('[data-cy="draggable-widget-textinput1"]').should('be.visible')
         // cy.get('[data-cy="draggable-widget-textinput1"]').verifyVisibleElement(
         //     "have.value",
         //     "Development environment testing"
         // );
 
-        cy.get('[data-cy="pages-name-home"]').click();
+        cy.get('[data-cy="pages-icon-home"]').click();
         previewAppAndVerify(3, 6, "Development environment testing");
-        cy.get('[data-cy="pages-name-workflow"]').click();
+        cy.get('[data-cy="pages-icon-workflow"]').click();
         cy.get('[data-cy="draggable-widget-textinput1"]').should('be.visible')
         // cy.get('[data-cy="draggable-widget-textinput1"]').verifyVisibleElement(
         //     "have.value",
@@ -172,7 +172,7 @@ describe("Workspace constants", () => {
         cy.wait(3000);
 
         verifyInputValues(3, 6, "Production environment testing");
-        cy.get('[data-cy="pages-name-workflow"]').click();
+        cy.get('[data-cy="pages-icon-workflow"]').click();
         cy.get('[data-cy="draggable-widget-textinput1"]').should('be.visible')
         // cy.get('[data-cy="draggable-widget-textinput1"]').verifyVisibleElement(
         //     "have.value",

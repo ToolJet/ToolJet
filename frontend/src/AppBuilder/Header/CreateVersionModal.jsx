@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
   versionId,
   onVersionCreated,
 }) => {
@@ -27,10 +27,7 @@ const CreateVersionModal = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
-  const isGitSyncEnabled =
-    orgGit?.git_ssh?.is_enabled ||
-    orgGit?.git_https?.is_enabled ||
-    orgGit?.git_lab?.is_enabled;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const {
     changeEditorVersionAction,
     environmentChangedAction,
@@ -100,6 +97,7 @@ const CreateVersionModal = ({
       if (versionToPromote) {
         setSelectedVersionForCreation(versionToPromote);
         setVersionName(versionToPromote.name);
+        setVersionDescription(versionToPromote.description || '');
       }
       return;
     }
@@ -110,6 +108,7 @@ const CreateVersionModal = ({
       if (selected) {
         setSelectedVersionForCreation(selected);
         setVersionName(selected.name);
+        setVersionDescription(selected.description || '');
         return;
       }
     }
@@ -118,6 +117,7 @@ const CreateVersionModal = ({
     if (developmentVersions.length > 0) {
       setSelectedVersionForCreation(developmentVersions[0]);
       setVersionName(developmentVersions[0].name);
+      setVersionDescription(developmentVersions[0].description || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, versionId, showCreateAppVersion]);
@@ -227,10 +227,12 @@ const CreateVersionModal = ({
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
-      } else {
+      } else if (error?.error) {
         toast.error(error?.error);
       }
-      toast.error('Error while creating version. Please try again.');
+      else {
+        toast.error('Error while creating version. Please try again.');
+      }
     } finally {
       setIsCreatingVersion(false);
     }
@@ -370,6 +372,7 @@ const CreateVersionModal = ({
                 size="lg"
                 onClick={() => {
                   setVersionName('');
+                  setVersionDescription('');
                   setShowCreateAppVersion(false);
                 }}
                 variant="tertiary"

@@ -279,6 +279,7 @@ import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
 import LoadingState from './LoadingState.jsx';
+import MarkerCircle from './MarkerCircle.jsx';
 import DataDatabase from './DataDatabase.jsx';
 import Flash from './Flash.jsx';
 import Json from './Json.jsx';
@@ -290,6 +291,7 @@ import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
 import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
+import PlayLucide from './PlayLucide.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -715,6 +717,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'markercircle':
+      return <MarkerCircle {...props} />;
     case 'workspace':
       return <Workspace {...props} />;
     case 'workflows':
@@ -876,6 +880,8 @@ const Icon = (props) => {
       return <GitHub {...props} />;
     case 'backwithoutarrow':
       return <BackWithoutArrow {...props} />;
+    case 'play-lucide':
+      return <PlayLucide {...props} />;
     default:
       return <Apps {...props} />;
   }
