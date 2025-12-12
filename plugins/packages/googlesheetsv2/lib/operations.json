@@ -8,7 +8,7 @@
     "majorDimension": "ROWS",
     "valueRenderOption": "FORMATTED_VALUE",
     "dateTimeRenderOption": "SERIAL_NUMBER",
-    "ValueInputOption":"RAW"
+    "ValueInputOption": "RAW"
   },
   "properties": {
     "operation": {
@@ -75,11 +75,13 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
-        "height": "36px",
-        "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id",
         "required": true
       },
@@ -98,68 +100,72 @@
       "sheet": {
         "label": "Sheet",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins",
         "required": true
       },
       "majorDimension": {
-      "label": "Major Dimensions",
-      "key": "majorDimension",
-      "type": "dropdown",
-      "description": "Single select dropdown for Major Dimensions",
-      "list": [
-        {
-          "value": "ROWS",
-          "name": "ROWS"
-        },
-        {
-          "value": "COLUMNS",
-          "name": "COLUMNS"
-        }
-      ]
+        "label": "Major Dimensions",
+        "key": "majorDimension",
+        "type": "dropdown",
+        "description": "Single select dropdown for Major Dimensions",
+        "list": [
+          {
+            "value": "ROWS",
+            "name": "ROWS"
+          },
+          {
+            "value": "COLUMNS",
+            "name": "COLUMNS"
+          }
+        ]
+      },
+      "valueRenderOption": {
+        "label": "Value render",
+        "key": "valueRenderOption",
+        "type": "dropdown",
+        "description": "Single select dropdown for Value Render",
+        "list": [
+          {
+            "value": "FORMATTED_VALUE",
+            "name": "FORMATTED_VALUE"
+          },
+          {
+            "value": "UNFORMATTED_VALUE",
+            "name": "UNFORMATTED_VALUE"
+          },
+          {
+            "value": "FORMULA",
+            "name": "FORMULA"
+          }
+        ]
+      },
+      "dateTimeRenderOption": {
+        "label": "Date Time",
+        "key": "dateTimeRenderOption",
+        "type": "dropdown",
+        "description": "Single select dropdown for Date Time",
+        "list": [
+          {
+            "value": "SERIAL_NUMBER",
+            "name": "SERIAL_NUMBER"
+          },
+          {
+            "value": "FORMATTED_STRING",
+            "name": "FORMATTED_STRING"
+          }
+        ]
+      }
     },
-    "valueRenderOption": {
-      "label": "Value render",
-      "key": "valueRenderOption",
-      "type": "dropdown",
-      "description": "Single select dropdown for Value Render",
-      "list": [
-        {
-          "value": "FORMATTED_VALUE",
-          "name": "FORMATTED_VALUE"
-        },
-        {
-          "value": "UNFORMATTED_VALUE",
-          "name": "UNFORMATTED_VALUE"
-        },
-        {
-          "value": "FORMULA",
-          "name": "FORMULA"
-        }
-      ]
-    },
-    "dateTimeRenderOption": {
-      "label": "Date Time",
-      "key": "dateTimeRenderOption",
-      "type": "dropdown",
-      "description": "Single select dropdown for Date Time",
-      "list": [
-        {
-          "value": "SERIAL_NUMBER",
-          "name": "SERIAL_NUMBER"
-        },
-        {
-          "value": "FORMATTED_STRING",
-          "name": "FORMATTED_STRING"
-        }
-      ]
-    }
-  },
     "create": {
       "title": {
         "label": "Title",
@@ -176,8 +182,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -220,8 +230,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -230,8 +244,15 @@
       "sheet": {
         "label": "Sheet",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet",
         "width": "320px",
@@ -253,8 +274,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -263,8 +288,15 @@
       "sheet": {
         "label": "Sheet",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "placeholder": "",
         "description": "Enter sheet name",
         "width": "320px",
@@ -292,13 +324,17 @@
         "description": "Enter an array of objects to update/insert. Example: [{\"id\":1,\"name\":\"John\"}]",
         "placeholder": "{'ID': 1, 'Status': 'Done'}, {'ID': 2, 'Status': 'In Progress'}]"
       }
-     },
-   "copy_spreadsheet": {
+    },
+    "copy_spreadsheet": {
       "source_spreadsheet_id": {
         "label": "Source Spreadsheet ID",
         "key": "source_spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter the ID of the source spreadsheet",
         "placeholder": "Enter source spreadsheet ID",
         "height": "36px",
@@ -307,8 +343,12 @@
       "destination_spreadsheet_id": {
         "label": "Destination Spreadsheet ID",
         "key": "destination_spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter the ID of the destination spreadsheet",
         "placeholder": "Enter destination spreadsheet ID",
         "height": "36px",
@@ -339,8 +379,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -349,8 +393,15 @@
       "sheet": {
         "label": "Sheet",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet",
         "width": "320px",
@@ -371,8 +422,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -383,8 +438,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -393,8 +452,15 @@
       "sheet": {
         "label": "GID",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "description": "Enter sheet",
         "width": "320px",
         "height": "36px",
@@ -417,8 +483,12 @@
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -438,8 +508,15 @@
       "sheet": {
         "label": "Sheet name",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "description": "Enter sheet name",
         "width": "320px",
         "height": "36px",
@@ -488,62 +565,16 @@
         "description": "Enter body"
       }
     },
-    "delete_by_range":{
+    "delete_by_range": {
       "spreadsheet_id": {
         "label": "Spreadsheet ID",
         "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "description": "Enter spreadsheet_id",
-        "height": "36px",
-        "className": "codehinter-plugins",
-        "placeholder": "Enter spreadsheet_id"
-      },
-      "spreadsheet_range": {
-        "label": "Range",
-        "key": "spreadsheet_range",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "placeholder": "A1:Z500",
-        "description": "Enter range",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins"
-      },
-      "sheet": {
-        "label": "Sheet",
-        "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
-        "placeholder": "Leave blank to use first sheet",
-        "description": "Enter sheet",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins"
-      },
-     "shiftDimension": {
-      "label": "Shift Dimension",
-      "key": "shiftDimension",
-      "type": "dropdown",
-      "description": "Single select dropdown for Date Time",
-      "list": [
-        {
-          "value": "ROWS",
-          "name": "ROWS"
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
         },
-        {
-          "value": "COLUMNS",
-          "name": "COLUMNS"
-        }
-      ]
-    }
-    },
-    "update_spreadsheet" : {
-      "spreadsheet_id": {
-        "label": "Spreadsheet ID",
-        "key": "spreadsheet_id",
-        "type": "codehinter",
-        "lineNumbers": false,
         "description": "Enter spreadsheet_id",
         "height": "36px",
         "className": "codehinter-plugins",
@@ -563,15 +594,83 @@
       "sheet": {
         "label": "Sheet",
         "key": "sheet",
-        "type": "codehinter",
-        "lineNumbers": false,
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
         "placeholder": "Leave blank to use first sheet",
         "description": "Enter sheet",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
       },
-       "values": {
+      "shiftDimension": {
+        "label": "Shift Dimension",
+        "key": "shiftDimension",
+        "type": "dropdown",
+        "description": "Single select dropdown for Date Time",
+        "list": [
+          {
+            "value": "ROWS",
+            "name": "ROWS"
+          },
+          {
+            "value": "COLUMNS",
+            "name": "COLUMNS"
+          }
+        ]
+      }
+    },
+    "update_spreadsheet": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "dynamic-selector",
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSpreadsheets",
+          "label": "Authenticate"
+        },
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "dynamic-selector",
+        "dependsOn": [
+          "spreadsheet_id"
+        ],
+        "fxEnabled": true,
+        "operation": {
+          "invokeMethod": "getSheets",
+          "label": "Fetch Sheets"
+        },
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "values": {
         "label": "Values",
         "key": "values",
         "type": "codehinter",
@@ -583,25 +682,25 @@
         "className": "codehinter-plugins"
       },
       "ValueInputOption": {
-      "label": "Input Options",
-      "key": "ValueInputOption",
-      "type": "dropdown",
-      "description": "Single select dropdown for Input Options",
-      "list": [
-        {
-          "value": "RAW",
-          "name": "RAW"
-        },
-        {
-          "value": "USER_ENTERED",
-          "name": "USER_ENTERED"
-        },
-        {
-          "value": "FORMULA",
-          "name": "FORMULA"
-        }
-      ]
-    }
+        "label": "Input Options",
+        "key": "ValueInputOption",
+        "type": "dropdown",
+        "description": "Single select dropdown for Input Options",
+        "list": [
+          {
+            "value": "RAW",
+            "name": "RAW"
+          },
+          {
+            "value": "USER_ENTERED",
+            "name": "USER_ENTERED"
+          },
+          {
+            "value": "FORMULA",
+            "name": "FORMULA"
+          }
+        ]
+      }
     }
   }
 }
