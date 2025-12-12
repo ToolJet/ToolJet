@@ -817,9 +817,9 @@
     box-shadow: none;
     display: flex;
     height: 40px !important;
-    padding: 8px 12px !important;
+    padding: 10px 12px !important;
     color: var(--text-placeholder) !important;
-    font-weight: 400 !important;
+    font-weight: 500 !important;
     font-size: 14px !important;
     outline: none !important;
     background-color: unset !important;
@@ -835,7 +835,7 @@
   .card-body {
     padding: 0px !important;
     display: flex;
-    gap: 6px;
+    gap: 10px;
     align-items: center;
   }
 
@@ -862,12 +862,6 @@
 
 .mobile-header {
   width: 100%;
-  .header-container {
-    background-color: unset !important;
-  }
-  .navbar {
-    border-bottom: 0px !important;
-  }
 }
 
 .bm-item {

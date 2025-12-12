@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -10,7 +9,7 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 //TODO: Remove this
-import { Confirm } from '@/Editor/Viewer/Confirm';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -43,6 +42,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         canDeleteDataSource()
       : true;
 
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
+
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
   const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
@@ -74,10 +75,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
 
   const getTooltip = () => {
     const permission = dataQuery.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -94,7 +95,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   return (

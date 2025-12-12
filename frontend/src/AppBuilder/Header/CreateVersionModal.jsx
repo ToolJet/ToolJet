@@ -8,6 +8,8 @@ import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -17,27 +19,30 @@ const CreateVersionModal = ({
   orgGit,
   fetchingOrgGit,
   handleCommitOnVersionCreation = () => {},
+  versionId,
+  onVersionCreated,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const isGitSyncEnabled =
-    orgGit?.org_git?.git_ssh?.is_enabled ||
-    orgGit?.org_git?.git_https?.is_enabled ||
-    orgGit?.org_git?.git_lab?.is_enabled;
-
+  const [versionDescription, setVersionDescription] = useState('');
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const {
-    createNewVersionAction,
+    changeEditorVersionAction,
+    environmentChangedAction,
     fetchDevelopmentVersions,
     developmentVersions,
     appId,
-    setCurrentVersionId,
     selectedVersion,
     currentMode,
+    currentEnvironment,
+    environments,
+    setIsEditorFreezed,
   } = useStore(
     (state) => ({
-      createNewVersionAction: state.createNewVersionAction,
+      changeEditorVersionAction: state.changeEditorVersionAction,
+      environmentChangedAction: state.environmentChangedAction,
       selectedEnvironment: state.selectedEnvironment,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
@@ -45,33 +50,87 @@ const CreateVersionModal = ({
       editingVersion: state.currentVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
-      setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
       currentMode: state.currentMode,
+      currentEnvironment: state.selectedEnvironment,
+      environments: state.environments,
+      setIsEditorFreezed: state.setIsEditorFreezed,
     }),
     shallow
   );
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
-  useEffect(() => {
-    fetchDevelopmentVersions(appId);
-  }, []);
+  const textareaRef = React.useRef(null);
+
+  const handleDescriptionInput = (e) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    const lineHeight = 24;
+    const maxLines = 4;
+    const maxHeight = lineHeight * maxLines;
+    textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  };
 
   useEffect(() => {
-    if (developmentVersions?.length && selectedVersion?.id) {
-      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id) || null;
-      setSelectedVersionForCreation(selected);
+    if (appId) {
+      fetchDevelopmentVersions(appId);
     }
-  }, [developmentVersions, selectedVersion]);
+  }, [appId, fetchDevelopmentVersions]);
+
+  // Set the version to promote when modal opens or when developmentVersions/versionId changes
+  useEffect(() => {
+    // Only run when modal is open
+    if (!showCreateAppVersion) {
+      return;
+    }
+
+    // Wait for developmentVersions to be loaded
+    if (!developmentVersions?.length) {
+      return;
+    }
+
+    // If versionId prop is provided, ONLY use that specific version
+    if (versionId) {
+      const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
+      if (versionToPromote) {
+        setSelectedVersionForCreation(versionToPromote);
+        setVersionName(versionToPromote.name);
+        setVersionDescription(versionToPromote.description || '');
+      }
+      return;
+    }
+
+    // If no versionId prop, use selectedVersion from store
+    if (selectedVersion?.id) {
+      const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
+      if (selected) {
+        setSelectedVersionForCreation(selected);
+        setVersionName(selected.name);
+        setVersionDescription(selected.description || '');
+        return;
+      }
+    }
+
+    // Fallback: if no version is selected or found, use the first development version
+    if (developmentVersions.length > 0) {
+      setSelectedVersionForCreation(developmentVersions[0]);
+      setVersionName(developmentVersions[0].name);
+      setVersionDescription(developmentVersions[0].description || '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [developmentVersions, versionId, showCreateAppVersion]);
 
   const { t } = useTranslation();
-  const options = developmentVersions.map((version) => {
-    return { label: version.name, value: version };
-  });
 
-  const createVersion = () => {
+  const createVersion = async () => {
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
+      return;
+    }
+    if (versionDescription.trim().length > 500) {
+      toast.error('Version description should not be longer than 500 characters');
       return;
     }
     if (versionName.trim() == '') {
@@ -79,42 +138,102 @@ const CreateVersionModal = ({
       return;
     }
 
-    if (selectedVersionForCreation === undefined) {
-      toast.error('Please select a version from.');
+    if (!selectedVersionForCreation) {
+      toast.error('Please wait while versions are loading...');
       return;
     }
 
     setIsCreatingVersion(true);
 
-    //TODO: pass environmentId to the func
-    createNewVersionAction(
-      appId,
-      versionName,
-      selectedVersionForCreation.id,
-      (newVersion) => {
-        toast.success('Version Created');
-        setVersionName('');
-        setIsCreatingVersion(false);
-        setShowCreateAppVersion(false);
-        appVersionService
-          .getAppVersionData(appId, newVersion.id, currentMode)
-          .then((data) => {
-            setCurrentVersionId(newVersion.id);
-            handleCommitOnVersionCreation(data);
-          })
-          .catch((error) => {
-            toast.error(error);
-          });
-      },
-      (error) => {
-        if (error?.data?.code === '23505') {
-          toast.error('Version name already exists.');
-        } else {
-          toast.error(error?.error);
-        }
-        setIsCreatingVersion(false);
+    try {
+      await appVersionService.save(appId, selectedVersionForCreation.id, {
+        name: versionName,
+        description: versionDescription,
+        // need to add commit changes logic here
+        status: 'PUBLISHED',
+      });
+      toast.success('Version Created successfully');
+      setVersionName('');
+      setVersionDescription('');
+      setSelectedVersionForCreation(null);
+      setIsCreatingVersion(false);
+      setShowCreateAppVersion(false);
+
+      // Fetch versions after creation
+      if (onVersionCreated) {
+        onVersionCreated();
       }
-    );
+      // Refresh development versions to update the lock status
+      fetchDevelopmentVersions(appId);
+      // Switch to the newly created published version properly
+      // The newly created version will be in the draft's environment (development)
+      // but with PUBLISHED status. We may need to switch environment first.
+      try {
+        const newVersionData = await appVersionService.getAppVersionData(
+          appId,
+          selectedVersionForCreation.id,
+          currentMode
+        );
+
+        // Set editor freeze state based on should_freeze_editor
+        if (newVersionData.should_freeze_editor !== undefined) {
+          setIsEditorFreezed(newVersionData.should_freeze_editor);
+        }
+
+        if (newVersionData.editing_version?.id) {
+          const newVersionEnvironmentId = newVersionData.editing_version.currentEnvironmentId;
+          const isDifferentEnvironment = newVersionEnvironmentId !== currentEnvironment?.id;
+
+          if (isDifferentEnvironment) {
+            // Need to switch environment first, then switch to the version
+            const targetEnvironment = environments.find((env) => env.id === newVersionEnvironmentId);
+            if (targetEnvironment) {
+              // First switch environment
+              await environmentChangedAction(targetEnvironment, () => {
+                // Then switch to the new version
+                changeEditorVersionAction(
+                  appId,
+                  newVersionData.editing_version.id,
+                  () => {
+                    console.log('Successfully switched environment and version');
+                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
+                  },
+                  (error) => {
+                    console.error('Error switching to newly created version:', error);
+                    toast.error('Version created but failed to switch to it');
+                  }
+                );
+              });
+            }
+          } else {
+            // Same environment, just switch version
+            await changeEditorVersionAction(
+              appId,
+              newVersionData.editing_version.id,
+              () => {
+                handleCommitOnVersionCreation(newVersionData, selectedVersion);
+              },
+              (error) => {
+                console.error('Error switching to newly created version:', error);
+                toast.error('Version created but failed to switch to it');
+              }
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error getting new version data:', error);
+        toast.error('Version created but failed to switch to it');
+      }
+    } catch (error) {
+      if (error?.data?.code === '23505') {
+        toast.error('Version name already exists.');
+      } else {
+        toast.error(error?.error);
+      }
+      toast.error('Error while creating version. Please try again.');
+    } finally {
+      setIsCreatingVersion(false);
+    }
   };
 
   return (
@@ -122,10 +241,12 @@ const CreateVersionModal = ({
       show={showCreateAppVersion}
       closeModal={() => {
         setVersionName('');
+        setVersionDescription('');
+        setSelectedVersionForCreation(null);
         setShowCreateAppVersion(false);
       }}
-      title={t('editor.appVersionManager.createVersion', 'Create new version')}
-      customClassName="git-sync-modal"
+      title={'Save version'}
+      customClassName="create-version-modal"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">
@@ -133,15 +254,15 @@ const CreateVersionModal = ({
         </div>
       ) : (
         <form
-          className="commit-form"
+          className="create-version-form"
           onSubmit={(e) => {
             e.preventDefault();
             createVersion();
           }}
         >
-          <div className="mb-3 pb-2">
+          <div className="create-version-body mb-3">
             <div className="col">
-              <label className="form-label" data-cy="version-name-label">
+              <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
               </label>
               <input
@@ -156,10 +277,35 @@ const CreateVersionModal = ({
                 minLength="1"
                 maxLength="25"
               />
+              <small className="version-name-helper-text" data-cy="version-name-helper-text">
+                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+              </small>
             </div>
-          </div>
+            <div className="col mt-2">
+              <label className="form-label mb-1 ms-1" data-cy="version-description-label">
+                {t('editor.appVersionManager.versionDescription', 'Version description')}
+              </label>
+              <textarea
+                type="text"
+                ref={textareaRef}
+                onInput={handleDescriptionInput}
+                onChange={(e) => setVersionDescription(e.target.value)}
+                className="form-control app-version-description"
+                data-cy="version-description-input-field"
+                placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
+                disabled={isCreatingVersion}
+                value={versionDescription}
+                autoFocus={true}
+                minLength="0"
+                maxLength="500"
+                rows={1}
+              />
+              <small className="version-description-helper-text" data-cy="version-description-helper-text">
+                {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
+              </small>
+            </div>
 
-          <div className="mb-4 pb-2 version-select">
+            {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
               {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
             </label>
@@ -175,81 +321,74 @@ const CreateVersionModal = ({
                 maxMenuHeight={100}
               />
             </div>
+          </div> */}
+
+            {isGitSyncEnabled && (
+              <div className="commit-changes mt-3">
+                <div>
+                  <input
+                    className="form-check-input"
+                    checked={canCommit}
+                    type="checkbox"
+                    onChange={handleCommitEnableChange}
+                    data-cy="git-commit-input"
+                  />
+                </div>
+                <div>
+                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                    Commit changes
+                  </div>
+                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                    This will commit the creation of the new version to the git repo
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="mt-3">
+              <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
+                <div
+                  className="d-flex align-items-center"
+                  style={{
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    width: '100%',
+                  }}
+                >
+                  <div className="create-version-helper-text" data-cy="create-version-helper-text">
+                    Saving the version will lock it. To make any edits afterwards, you&apos;ll need to create a draft
+                    version.
+                  </div>
+                </div>
+              </Alert>
+            </div>
           </div>
 
-          {isGitSyncEnabled && (
-            <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
-              <div>
-                <input
-                  className="form-check-input"
-                  checked={canCommit}
-                  type="checkbox"
-                  onChange={handleCommitEnableChange}
-                  data-cy="git-commit-input"
-                />
-              </div>
-              <div>
-                <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                  Commit changes
-                </div>
-                <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                  This will commit the creation of the new version to the git repo
-                </div>
-              </div>
-            </div>
-          )}
-
-          <Alert svg="tj-info">
-            <div
-              className="d-flex align-items-center"
-              style={{
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                width: '100%',
-              }}
-            >
-              <div className="" data-cy="workspace-constant-helper-text">
-                The new version will be created in development environment
-              </div>
-            </div>
-          </Alert>
-
-          <div className="mb-3">
+          <div className="create-version-footer">
+            <hr className="section-divider" style={{ marginLeft: '-1.5rem', marginRight: '-1.5rem' }} />
             <div className="col d-flex justify-content-end">
-              <button
-                className="btn mx-2"
-                data-cy="cancel-button"
+              <ButtonSolid
+                size="lg"
                 onClick={() => {
                   setVersionName('');
+                  setVersionDescription('');
                   setShowCreateAppVersion(false);
                 }}
-                type="button"
+                variant="tertiary"
+                className="mx-2"
+                data-cy="create-version-cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
-              </button>
-              <button
-                className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
-                data-cy="create-new-version-button"
+              </ButtonSolid>
+              <ButtonSolid
+                size="lg"
+                variant="primary"
+                className=""
                 type="submit"
+                disabled={!selectedVersionForCreation || isCreatingVersion}
+                data-cy="create-version-save-button"
               >
-                <svg
-                  className="icon"
-                  width="21"
-                  height="21"
-                  viewBox="0 0 21 21"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M6.34375 4.42643C5.88351 4.42643 5.51042 4.79953 5.51042 5.25977C5.51042 5.72 5.88351 6.0931 6.34375 6.0931C6.80399 6.0931 7.17708 5.72 7.17708 5.25977C7.17708 4.79953 6.80399 4.42643 6.34375 4.42643ZM3.84375 5.25977C3.84375 3.87905 4.96304 2.75977 6.34375 2.75977C7.72446 2.75977 8.84375 3.87905 8.84375 5.25977C8.84375 6.34828 8.14808 7.27431 7.17708 7.61751V12.902C7.88743 13.1531 8.45042 13.7161 8.7015 14.4264H13.0104C13.2314 14.4264 13.4434 14.3386 13.5997 14.1824C13.756 14.0261 13.8438 13.8141 13.8438 13.5931V11.4383L12.7663 12.5157C12.4409 12.8411 11.9133 12.8411 11.5878 12.5157C11.2624 12.1903 11.2624 11.6626 11.5878 11.3372L14.0878 8.83718C14.4133 8.51174 14.9409 8.51174 15.2663 8.83718L17.7663 11.3372C18.0918 11.6626 18.0918 12.1903 17.7663 12.5157C17.4409 12.8411 16.9133 12.8411 16.5878 12.5157L15.5104 11.4383V13.5931C15.5104 14.2561 15.247 14.892 14.7782 15.3609C14.3093 15.8297 13.6735 16.0931 13.0104 16.0931H8.7015C8.3583 17.0641 7.43227 17.7598 6.34375 17.7598C4.96304 17.7598 3.84375 16.6405 3.84375 15.2598C3.84375 14.1712 4.53942 13.2452 5.51042 12.902V7.61751C4.53942 7.27431 3.84375 6.34828 3.84375 5.25977ZM14.6771 4.42643C14.2168 4.42643 13.8438 4.79953 13.8438 5.25977C13.8438 5.72 14.2168 6.0931 14.6771 6.0931C15.1373 6.0931 15.5104 5.72 15.5104 5.25977C15.5104 4.79953 15.1373 4.42643 14.6771 4.42643ZM12.1771 5.25977C12.1771 3.87905 13.2964 2.75977 14.6771 2.75977C16.0578 2.75977 17.1771 3.87905 17.1771 5.25977C17.1771 6.64048 16.0578 7.75977 14.6771 7.75977C13.2964 7.75977 12.1771 6.64048 12.1771 5.25977ZM6.34375 14.4264C5.88351 14.4264 5.51042 14.7995 5.51042 15.2598C5.51042 15.72 5.88351 16.0931 6.34375 16.0931C6.80399 16.0931 7.17708 15.72 7.17708 15.2598C7.17708 14.7995 6.80399 14.4264 6.34375 14.4264Z"
-                    fill="#FDFDFE"
-                  />
-                </svg>
-
-                {t('editor.appVersionManager.createVersion', 'Create Version')}
-              </button>
+                {t('editor.appVersionManager.saveVersion', 'Save version')}
+              </ButtonSolid>
             </div>
           </div>
         </form>
