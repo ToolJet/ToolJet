@@ -2552,7 +2552,6 @@ function migrateProperties(
   if (PartialRevampedComponents.includes(componentType as PartialRevampedComponent)) {
     const defaultStylesByComponent: Record<string, Record<string, { value: string | number }>> = {
       CodeEditor: {
-        borderRadius: { value: 4 },
         borderColor: { value: 'var(--cc-weak-border)' },
         backgroundColor: { value: 'var(--cc-surface1-surface)' },
       },

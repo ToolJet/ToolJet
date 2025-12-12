@@ -3,7 +3,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 const DEFAULT_STYLES: Record<string, Record<string, { value: string | number }>> = {
   CodeEditor: {
     backgroundColor: { value: 'var(--cc-surface1-surface)' },
-    borderRadius: { value: 4 },
     borderColor: { value: 'var(--cc-weak-border)' },
   },
   PDF: {

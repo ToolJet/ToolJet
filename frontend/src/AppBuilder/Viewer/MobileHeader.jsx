@@ -61,19 +61,6 @@ const MobileHeader = ({
     switchPage(page?.id, pages.find((p) => page.id === p?.id)?.handle, Object.entries(queryParams));
   };
 
-  const switchToHomePage = () => {
-    if (currentPageId === homePageId) return;
-
-    const page = pages.find((p) => p.id === homePageId);
-
-    const queryParams = {
-      version: selectedVersionName,
-      env: selectedEnvironmentName,
-    };
-
-    switchPage(page?.id, pages.find((p) => page.id === p?.id)?.handle, Object.entries(queryParams));
-  };
-
   const _renderAppNameAndLogo = () => (
     <div
       className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]"
