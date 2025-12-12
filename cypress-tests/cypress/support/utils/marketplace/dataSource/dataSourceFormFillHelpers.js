@@ -146,7 +146,6 @@ const processFields = (fields) => {
 
 export function fillDSConnectionForm (formConfig, invalidFields = []) {
   if (Array.isArray(formConfig) && formConfig.length > 0 && typeof formConfig[0] === 'object' && formConfig[0].type) {
-    cy.log('Using old array format');
     processFields(formConfig);
     return;
   }
@@ -160,15 +159,7 @@ export function fillDSConnectionForm (formConfig, invalidFields = []) {
   }
 
   if (invalidFields && invalidFields.length > 0) {
-    invalidFields.forEach(fieldType => {
-      const invalidConfigKey = `invalid${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)}`;
-
-      const invalidConfig = formConfig[invalidConfigKey];
-
-      if (invalidConfig && Array.isArray(invalidConfig)) {
-        processFields(invalidConfig);
-      }
-    });
+    processFields(invalidFields);
   }
 }
 

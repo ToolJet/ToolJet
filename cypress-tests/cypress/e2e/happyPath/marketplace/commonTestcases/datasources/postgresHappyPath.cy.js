@@ -97,19 +97,19 @@ describe("PostgreSQL", () => {
 
         verifyConnectionFormUI(postgresUIConfig.defaultFields);
 
-        fillDSConnectionForm(postgresFormConfig, ['ssl']);
+        fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidSsl);
         verifyDSConnection("failed", "The server does not support SSL connections");
 
-        fillDSConnectionForm(postgresFormConfig, ['host']);
+        fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidHost);
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
-        fillDSConnectionForm(postgresFormConfig, ['username']);
+        fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidUsername);
         verifyDSConnection("failed", `password authentication failed for user "invalid-username"`);
 
-        fillDSConnectionForm(postgresFormConfig, ['password']);
+        fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidPassword);
         verifyDSConnection("failed", `password authentication failed for user "postgres"`);
 
-        fillDSConnectionForm(postgresFormConfig, ['port']);
+        fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidPort);
         verifyDSConnection("failed", "Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?");
     });
 });

@@ -5,7 +5,7 @@ export const dsCommonSelector = {
         return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
     },
     labelFieldName: (fieldName) => {
-        return `[data-cy="${cyParamName(fieldName)}-field-label"]`;
+        return `[data-cy="label-${cyParamName(fieldName)}"]`;
     },
     textField: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
