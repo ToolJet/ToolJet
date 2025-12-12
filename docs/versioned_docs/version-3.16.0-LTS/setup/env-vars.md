@@ -197,8 +197,7 @@ You can control workflow execution behavior using the following environment vari
 | `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
 
 #### Configure Stronger Password Validation Rules
-Weak passwords can put your application on a risk of compromise. To prevent weak or easily guessable passwords from compromising your application, ToolJet allows you to enforce stronger password complexity rules.  
-By default, the login password should be atleast 5 characters long and any character can be used. To enforce a stronger validation, use the following environment variable:
+ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
 
 - `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
 
