@@ -54,6 +54,9 @@ To configure the workspace-level authentication configuration
         | `DISABLE_PASSWORD_RETRY_LIMIT` | Set to `true` to disable the password retry limit feature. | `false` |
         | `PASSWORD_RETRY_LIMIT` | Specifies the maximum number of allowed retries before disabling authentication. | `5` |
 
+    :::info
+    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
+    :::
         
 ###  Automatic SSO Login
     

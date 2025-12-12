@@ -196,6 +196,23 @@ You can control workflow execution behavior using the following environment vari
 | `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
 | `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
 
+#### Configure Stronger Password Validation Rules
+ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
+
+- `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
+
+When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
+| Rule | Requirement |
+|-----------|-------------|
+| Password length | 12-24 characters | 
+| Uppercase letters | A-Z |
+| Lowercase letters | a-z |
+| Numbers | 0-9 |
+| Special characters | ! @ # $ % ^ & * ( ) _ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
+
+:::info
+These validations apply to both the instance and workspace levels.
+:::
 ### Third-Party Integrations
 
 #### Slack
