@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { positionGhostElement, positionGroupGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
@@ -29,10 +29,9 @@ const parseTransform = (element) => {
 };
 
 /**
- * Custom hook for auto-scrolling the canvas when dragging or resizing widgets near edges
- * Supports three modes:
+ * Custom hook for auto-scrolling the canvas when dragging widgets near edges
+ * Supports two modes:
  * - 'drag': Updates element position as canvas scrolls (for single widget drag operations)
- * - 'resize': Only scrolls container, lets Moveable handle position/size (for resize operations)
  * - 'groupDrag': Updates multiple elements' positions as canvas scrolls (for group drag operations)
  *
  * @param {Object} config - Configuration options
@@ -60,10 +59,9 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
   const mousePositionRef = useRef({ clientX: 0, clientY: 0 });
   const canvasHeightRef = useRef(null);
   const scrollDeltaRef = useRef({ x: 0, y: 0 }); // Cumulative scroll delta
-  const targetElementRef = useRef(null); // Track the dragged/resized element (single)
+  const targetElementRef = useRef(null); // Track the dragged element (single)
   const targetElementsRef = useRef([]); // Track multiple dragged elements (for group drag)
-  const modeRef = useRef('drag'); // 'drag', 'resize', or 'groupDrag' - controls position update behavior
-  const resizeDirectionRef = useRef([0, 0]); // [horizontal, vertical] resize direction: -1 = left/top, 1 = right/bottom, 0 = none
+  const modeRef = useRef('drag'); // 'drag' or 'groupDrag' - controls position update behavior
 
   /**
    * Check if widget(s) are near the bottom of canvas and need to extend it
@@ -100,16 +98,12 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
         });
       } else {
         // Single element mode
-        const currentDraggingId = useStore.getState().draggingComponentId;
-        const currentResizingId = useStore.getState().resizingComponentId;
-        const activeComponentId = currentDraggingId || currentResizingId;
-        maxComponentHeight = boxList.find((box) => box.id === activeComponentId)?.height || 0;
-
         const element = targetElementRef.current;
         const elementRect = element?.getBoundingClientRect();
 
         if (!elementRect) return;
 
+        maxComponentHeight = boxList.find((box) => box.id === element?.id)?.height || 0;
         maxWidgetBottomOnCanvas = container.scrollTop + (elementRect.bottom - containerRect.top);
       }
 
@@ -170,14 +164,13 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
   /**
    * Core scroll logic - checks MOUSE POSITION and scrolls if near viewport edges
    * Note: Vertical scroll is on .canvas-content, horizontal scroll is on .canvas-container
-   * Supports drag, resize, and groupDrag modes
+   * Supports drag and groupDrag modes
    */
   const scrollIfNeeded = useCallback(() => {
     const verticalContainer = document.querySelector(verticalContainerSelector);
     const horizontalContainer = document.querySelector(horizontalContainerSelector);
     if ((!verticalContainer && !horizontalContainer) || !isScrollingRef.current) return;
 
-    // Use mouse position instead of widget bounds
     const { clientX, clientY } = mousePositionRef.current;
 
     const verticalRect = verticalContainer?.getBoundingClientRect();
@@ -186,34 +179,20 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     let scrollX = 0;
     let scrollY = 0;
 
-    // Get resize direction for filtering (applies in resize mode)
-    const isResizeMode = modeRef.current === 'resize';
-    const [horizontalDir, verticalDir] = resizeDirectionRef.current;
-
     // Check vertical boundaries using MOUSE POSITION (on .canvas-content)
-    // In resize mode, only check top boundary if resizing upward (direction = -1)
-    const shouldCheckTop = !isResizeMode || verticalDir === -1;
-    // In resize mode, only check bottom boundary if resizing downward (direction = 1)
-    const shouldCheckBottom = !isResizeMode || verticalDir === 1;
-
-    if (verticalContainer && shouldCheckTop && clientY <= verticalRect.top + threshold) {
+    if (verticalContainer && clientY <= verticalRect.top + threshold) {
       // Mouse within threshold of top edge - scroll up
       const remainingTopScroll = Math.floor(verticalContainer.scrollTop);
       if (remainingTopScroll > 1) {
         scrollY = -Math.min(scrollSpeed, remainingTopScroll);
       }
-    } else if (verticalContainer && shouldCheckBottom && clientY >= verticalRect.bottom - threshold) {
+    } else if (verticalContainer && clientY >= verticalRect.bottom - threshold) {
       // Mouse within threshold of bottom edge - scroll down
       scrollY = scrollSpeed;
     }
 
     // Check horizontal boundaries using MOUSE POSITION (on .canvas-container)
-    // In resize mode, only check left boundary if resizing leftward (direction = -1)
-    const shouldCheckLeft = !isResizeMode || horizontalDir === -1;
-    // In resize mode, only check right boundary if resizing rightward (direction = 1)
-    const shouldCheckRight = !isResizeMode || horizontalDir === 1;
-
-    if (horizontalContainer && shouldCheckLeft) {
+    if (horizontalContainer) {
       let leftBoundary = horizontalRect.left + threshold;
       if (isLeftSidebarOpen) {
         const leftSidebar = document.querySelector('.left-sidebar-scrollbar');
@@ -234,7 +213,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
       }
     }
 
-    if (horizontalContainer && shouldCheckRight && scrollX === 0) {
+    if (horizontalContainer && scrollX === 0) {
       let rightBoundary = horizontalRect.right - threshold;
 
       if (isRightSidebarOpen) {
@@ -312,14 +291,13 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
 
   /**
    * Update mouse position and target element(s)
-   * Call this from onDrag/onResize/onDragGroup handlers
+   * Call this from onDrag/onDragGroup handlers
    * @param {number} clientX - Mouse X position
    * @param {number} clientY - Mouse Y position
-   * @param {HTMLElement|HTMLElement[]} target - The element(s) being dragged/resized (single or array for group)
-   * @param {Array} direction - Optional [horizontal, vertical] resize direction for resize mode
+   * @param {HTMLElement|HTMLElement[]} target - The element(s) being dragged (single or array for group)
    */
   const updateMousePosition = useCallback(
-    (clientX, clientY, target = null, direction = null) => {
+    (clientX, clientY, target = null) => {
       mousePositionRef.current = { clientX, clientY };
 
       // Update target(s) if provided
@@ -334,11 +312,6 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
         }
       }
 
-      // Update direction if provided (for resize mode)
-      if (direction) {
-        resizeDirectionRef.current = direction;
-      }
-
       // Start scroll loop if not already running
       if (isScrollingRef.current && !rafIdRef.current) {
         rafIdRef.current = requestAnimationFrame(scrollIfNeeded);
@@ -349,20 +322,18 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
 
   /**
    * Start auto-scroll monitoring
-   * Call this from onDragStart, onResizeStart, or onDragGroupStart handlers
+   * Call this from onDragStart or onDragGroupStart handlers
    * @param {number} clientX - Mouse X position
    * @param {number} clientY - Mouse Y position
-   * @param {HTMLElement|HTMLElement[]} target - The element(s) being dragged/resized (single element or array for group)
-   * @param {string} mode - 'drag', 'resize', or 'groupDrag' - controls position update behavior
-   * @param {Array} direction - [horizontal, vertical] resize direction: -1 = left/top, 1 = right/bottom, 0 = none
+   * @param {HTMLElement|HTMLElement[]} target - The element(s) being dragged (single element or array for group)
+   * @param {string} mode - 'drag' or 'groupDrag' - controls position update behavior
    */
   const startAutoScroll = useCallback(
-    (clientX, clientY, target = null, mode = 'drag', direction = [0, 0]) => {
+    (clientX, clientY, target = null, mode = 'drag') => {
       isScrollingRef.current = true;
       mousePositionRef.current = { clientX, clientY };
       scrollDeltaRef.current = { x: 0, y: 0 }; // Reset delta on start
-      modeRef.current = mode; // Set the mode for this scroll session
-      resizeDirectionRef.current = direction; // Store resize direction
+      modeRef.current = mode === 'groupDrag' ? 'groupDrag' : 'drag'; // Normalize mode for this scroll session
 
       // Store the target element(s)
       if (target) {
@@ -406,7 +377,6 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     targetElementRef.current = null;
     targetElementsRef.current = []; // Reset group targets
     modeRef.current = 'drag'; // Reset mode to default
-    resizeDirectionRef.current = [0, 0]; // Reset resize direction
   }, []);
 
   useEffect(() => {

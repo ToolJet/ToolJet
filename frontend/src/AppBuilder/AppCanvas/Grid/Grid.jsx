@@ -684,14 +684,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           if (e.height > 0) e.target.style.height = `${e.height}px`;
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
-
-          // Update autoscroll with current mouse position, target, and resize direction
-          // For resize events, mouse position is in inputEvent
-          const clientX = e.inputEvent?.clientX ?? 0;
-          const clientY = e.inputEvent?.clientY ?? 0;
-
-          // Pass resize direction to auto-scroll so it only checks the relevant boundary
-          updateMousePosition(clientX, clientY, e.target, e.direction);
         }}
         onResizeStart={(e) => {
           if (
@@ -1061,8 +1053,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let top = e.translate[1] + scrollDelta.y;
 
             if (currentDragCanvasId === 'canvas') {
-              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
-              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
+              left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
+              top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
 
               const _canvasWidth = NO_OF_GRIDS * _gridWidth;
               left = Math.max(0, Math.min(left, _canvasWidth - e.target.clientWidth));
@@ -1097,15 +1089,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
           // Snap to grid + add scroll delta to keep widget under cursor
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
+          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
+          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
           const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
-            left = e.translate[0] + scrollDelta.x;
-            top = e.translate[1] + scrollDelta.y;
+            left = e.translate[0] + scrollDelta.x || 0;
+            top = e.translate[1] + scrollDelta.y || 0;
           }
 
           // Special case for Modal
@@ -1179,8 +1171,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               useGridStore.getState().subContainerWidths?.[currentWidget?.component?.parent] || gridWidth;
 
             // Add scroll delta to position for smooth scrolling during group drag
-            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x;
-            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y;
+            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
+            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
 
             positions.push({ ev, left, top, currentWidget });
 
