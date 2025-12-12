@@ -1,8 +1,8 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
-import { allowPersonalWorkspace, updateInstanceSettings, passwordToggle } from "Support/utils/platform/eeCommon";
 import { dashboardSelector } from "Selectors/dashboard";
 import { logout } from "Support/utils/common";
+import { allowPersonalWorkspace, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 
 
 describe('Instance Login', () => {
@@ -91,7 +91,6 @@ describe('Instance Login', () => {
         cy.visit('/');
         cy.get("form[class='form-input-area']").should('be.visible');
     });
-
 
     it('Should verify workspace login and custom logout configurations', () => {
         //Workspace login configuration
