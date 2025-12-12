@@ -152,19 +152,14 @@ export const createAppSlice = (set, get) => ({
 
     const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
-      if (!layout) {
-        return max;
-      }
       const visibility =
         getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
         getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
 
-      // In view mode, skip components with visibility false or undefined
-      if (currentMode === 'view' && !visibility) {
+      const height = visibility ? layout.height : 10;
+      if (!layout) {
         return max;
       }
-
-      const height = visibility ? layout.height : 10;
       const sum = layout.top + height;
       return Math.max(max, sum);
     }, 0);
