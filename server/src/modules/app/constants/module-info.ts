@@ -43,6 +43,7 @@ import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature
 import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git-sync/constants/feature';
 import { FEATURES as CRM_FEATURES } from '@modules/CRM/constants/feature';
 import { FEATURES as METRICS } from '@modules/metrices/constants/features';
+import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -94,4 +95,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...APP_GIT_FEATURES,
   ...GIT_SYNC_FEATURES,
   ...CRM_FEATURES,
+  ...SCIM_FEATURES,
 };

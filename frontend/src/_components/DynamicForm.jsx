@@ -28,6 +28,7 @@ import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
+import DynamicSelector from '@/_ui/DynamicSelector';
 
 const DynamicForm = ({
   schema,
@@ -218,6 +219,8 @@ const DynamicForm = ({
         return Sharepoint;
       case 'react-component-oauth':
         return OAuthWrapper;
+      case 'dynamic-selector':
+        return DynamicSelector;
       default:
         return <div>Type is invalid</div>;
     }
@@ -235,7 +238,7 @@ const DynamicForm = ({
     key,
     list,
     rows = 5,
-    helpText: helpTextProp, // For marketplace compatibility
+    helpText: helpTextProp,
     help_text,
     description,
     type,
@@ -250,15 +253,19 @@ const DynamicForm = ({
     controller,
     encrypted,
     placeholders = {},
-    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editorType: editorTypeProp,
     editor_type,
     spec_url = '',
     disabled = false,
     buttonText: buttonTextProp,
-    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
+    button_text,
     text,
     subtext,
     oauth_configs,
+    operation,
+    depends_on,
+    label,
+    fx_enabled: fxEnabled = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -528,6 +535,26 @@ const DynamicForm = ({
           options,
           darkMode,
         };
+      case 'dynamic-selector':
+        return {
+          operation: operation,
+          dependsOn: depends_on || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          optionchanged,
+          options,
+          label: label,
+          description,
+          disabled,
+          computeSelectStyles,
+          disableMenuPortal,
+          queryName,
+          propertyKey: key,
+          value: options?.[key]?.value || options?.[key],
+          depends_on,
+          optionsChanged,
+          fxEnabled: fxEnabled,
+        };
       default:
         return {};
     }
@@ -579,7 +606,11 @@ const DynamicForm = ({
         <label
           className="form-label"
           data-cy={`label-${generateCypressDataCy(label)}`}
-          style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
+          style={{
+            textDecoration: tooltip ? 'underline 2px dashed' : 'none',
+            textDecorationColor: 'var(--slate8)',
+            marginBottom: '2px'
+          }}
         >
           {label}
         </label>
@@ -604,7 +635,16 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
+          const fieldConfig = obj[key];
+          const {
+            label,
+            type,
+            encrypted,
+            className,
+            key: propertyKey,
+            shouldRenderTheProperty = ''
+          } = fieldConfig;
+
           const Element = getElement(type);
           const isSpecificComponent = [
             'tooljetdb-operations',
@@ -617,11 +657,17 @@ const DynamicForm = ({
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
             : true;
 
+          const elementProps = getElementProps({
+            ...fieldConfig,
+            key,
+            type,
+          });
+
           return (
             enabled && (
               <div
                 className={cx({
-                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
+                  'my-2': type !== 'react-component-oauth',
                   'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
                   [className]: !!className,
                   'd-flex': isHorizontalLayout,
@@ -638,7 +684,7 @@ const DynamicForm = ({
                     })}
                     style={{ minWidth: '100px' }}
                   >
-                    {label && renderLabel(label, obj[key].tooltip)}
+                    {label && renderLabel(label, fieldConfig.tooltip)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
                       <div className="mx-1 col">
@@ -682,11 +728,10 @@ const DynamicForm = ({
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
-                    {...getElementProps(obj[key])}
+                    {...elementProps}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
-                    dataCy={obj[key].key.replace(/_/g, '-')}
-                    //to be removed after whole ui is same
+                    dataCy={fieldConfig.key.replace(/_/g, '-')}
                     isHorizontalLayout={isHorizontalLayout}
                   />
                 </div>
@@ -721,6 +766,7 @@ const DynamicForm = ({
                 <label
                   className={cx('form-label')}
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                  style={{ marginBottom: '2px' }}
                 >
                   {flipComponentDropdown.label}
                 </label>
