@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddSourceTagToAppVersions20251211120000 implements MigrationInterface {
+export class AddSourceTagToAppVersions1765630548010 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.addColumn(
             'app_versions',
