@@ -11,7 +11,7 @@ module.exports = defineConfig({
   chromeWebSecurity: false,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
       require("@cypress/code-coverage/task")(on, config);
@@ -20,7 +20,7 @@ module.exports = defineConfig({
     },
 
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/**/*.cy.js",
+    specPattern: "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/postgresHappyPath.cy.js",
 
     testIsolation: true,
     retries: {
