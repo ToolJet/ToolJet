@@ -117,12 +117,23 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
+        const configScope = config['configScope'];
         delete config['id'];
         delete config['organizationId'];
         delete config['createdAt'];
         delete config['updatedAt'];
 
-        configs[config.sso] = this.buildConfigs(config, configId);
+        // Handle OIDC as array only for organization-level (multi-tenant)
+        // Instance-level OIDC should be single object
+        if (config.sso === 'openid' && configScope === 'organization') {
+          if (!configs['openid']) {
+            configs['openid'] = [];
+          }
+          configs['openid'].push(this.buildConfigs(config, configId));
+        } else {
+          // Other SSO types and instance-level OIDC remain as single object
+          configs[config.sso] = this.buildConfigs(config, configId);
+        }
       }
     }
     return configs;
@@ -190,7 +201,16 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
     }
 
     for (const key in result) {
-      if (result[key]?.enabled === false) {
+      // Handle OIDC as array
+      if (key === 'openid' && Array.isArray(result[key])) {
+        // Filter out disabled configs
+        result[key] = result[key].filter((config) => config.enabled !== false);
+        // Remove the key if no enabled configs remain
+        if (result[key].length === 0) {
+          delete result[key];
+        }
+      } else if (result[key]?.enabled === false) {
+        // Other SSO types - remove if disabled
         delete result[key];
       }
     }

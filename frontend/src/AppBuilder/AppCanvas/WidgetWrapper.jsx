@@ -82,10 +82,6 @@ const WidgetWrapper = memo(
     if (!canShowInCurrentLayout || !layoutData) {
       return null;
     }
-    if (mode === 'view' && visibility === false) {
-      return null;
-    }
-    
 
     let newLayoutData = layoutData;
 

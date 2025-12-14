@@ -1,10 +1,9 @@
+import { commonSelectors } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import * as common from "Support/utils/common";
-import { ssoText } from "Texts/manageSSO";
 import * as SSO from "Support/utils/manageSSO";
-import { commonSelectors } from "Selectors/common";
+import { instanceSSOConfig, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
-import { updateInstanceSettings, instanceSSOConfig, passwordToggle, defaultInstanceSSO, openInstanceSettings } from "Support/utils/platform/eeCommon";
 
 describe("Manage SSO for multi workspace", () => {
   const data = {};
@@ -69,16 +68,19 @@ describe("Manage SSO for multi workspace", () => {
     common.navigateToManageSSO();
     SSO.gitSSOPageElements("workspace");
   });
+
   it("Should verify OIDC SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
     SSO.oidcSSOPageElements("workspace");
   });
+
   it("Should verify LDAP SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
     SSO.ldapSSOPageElements();
   });
+
   it("Should verify SAML SSO page elements", () => {
     SSO.defaultSSO(true);
     common.navigateToManageSSO();
