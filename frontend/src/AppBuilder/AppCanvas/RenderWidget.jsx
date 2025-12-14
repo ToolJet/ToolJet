@@ -224,6 +224,7 @@ const RenderWidget = ({
             adjustComponentPositions={adjustComponentPositions}
             componentCount={componentCount}
             dataCy={`draggable-widget-${componentName}`}
+            subContainerIndex={subContainerIndex}
           />
         </div>
       </OverlayTrigger>

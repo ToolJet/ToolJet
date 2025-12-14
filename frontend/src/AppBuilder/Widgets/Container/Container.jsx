@@ -25,6 +25,7 @@ export const Container = ({
   adjustComponentPositions,
   currentLayout,
   componentCount = 0,
+  subContainerIndex,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -149,6 +150,7 @@ export const Container = ({
               canvasWidth={width}
               darkMode={darkMode}
               componentType="Container"
+              index={subContainerIndex}
             />
           </div>
         </>
