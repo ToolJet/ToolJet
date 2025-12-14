@@ -6,7 +6,7 @@ import RecorderActionIcon from './RecorderActionIcon';
 import RecorderStatusDisplay from './RecorderStatusDisplay';
 import RecorderActions from './RecorderActions';
 import Waveform from './Waveform';
-import { blobToDataURL, blobToBinary } from '@/AppBuilder/_stores/utils';
+import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
@@ -44,11 +44,9 @@ export const AudioRecorder = ({
       audio: true,
       onStop: async (blobURL, blob) => {
         const dataURL = await blobToDataURL(blob);
-        const rawBinary = await blobToBinary(blob);
         setExposedVariables({
           blobURL,
           dataURL,
-          rawBinary,
         });
         fireEvent('onRecordingStop');
       },
@@ -147,7 +145,6 @@ export const AudioRecorder = ({
     setExposedVariables({
       blobURL: null,
       dataURL: null,
-      rawBinary: null,
     });
 
     if (audioRef.current) {

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
-import { blobToDataURL, blobToBinary } from '@/AppBuilder/_stores/utils';
+import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { Content } from './Content';
 import { Footer } from './Footer';
@@ -156,11 +156,9 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           const blobUrl = URL.createObjectURL(capturedImage.blob);
           savedImageUrlRef.current = blobUrl;
           const dataURL = await blobToDataURL(capturedImage.blob);
-          const rawBinary = await blobToBinary(capturedImage.blob);
           setExposedVariables({
             imageBlobURL: blobUrl,
             imageDataURL: dataURL,
-            imageRawBinary: rawBinary,
           });
           fireEvent('onPhotoCapture');
           clearCapturedImage({ revokePrevious: true });
@@ -172,7 +170,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           setExposedVariables({
             imageBlobURL: null,
             imageDataURL: null,
-            imageRawBinary: null,
           });
           clearCapturedImage({ revokePrevious: true });
         }
@@ -195,18 +192,15 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     } else if (status === 'stopped') {
       if (saveCapture) {
         const dataURL = await blobToDataURL(recordingResult?.blob);
-        const rawBinary = await blobToBinary(recordingResult?.blob);
         setExposedVariables({
           videoBlobURL: recordingResult?.url,
           videoDataURL: dataURL,
-          videoRawBinary: rawBinary,
         });
         fireEvent('onRecordingStop');
       } else {
         setExposedVariables({
           videoBlobURL: null,
           videoDataURL: null,
-          videoRawBinary: null,
         });
       }
       handleClearRecording();
