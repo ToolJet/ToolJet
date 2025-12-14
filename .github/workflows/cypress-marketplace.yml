@@ -61,6 +61,7 @@ jobs:
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
+        if: matrix.edition == 'ce'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -77,7 +78,10 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: docker/ee/ee-production.Dockerfile
+          file: cypress-tests/cypress-lts.Dockerfile
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ github.event.pull_request.head.ref }}
           push: true
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
           platforms: linux/amd64
@@ -116,11 +120,12 @@ jobs:
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
       - name: Update docker-compose file for CE
+        if: matrix.edition == 'ce'
         run: |
           # Update docker-compose.yaml with the new image
           sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
 
-      - name: Update docker-compose file for CE
+      - name: Update docker-compose file for EE
         if: matrix.edition == 'ee'
         run: |
           # Update docker-compose.yaml with the new image
