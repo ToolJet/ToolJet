@@ -78,6 +78,9 @@ export const kanbanConfig = {
     disabledState: { type: 'toggle', displayName: 'Disable' },
     visibility: { type: 'toggle', displayName: 'Visibility' },
     accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
+    borderColor: { type: 'color', displayName: 'Border color' },
+    borderRadius: { type: 'number', displayName: 'Border radius' },
   },
   actions: [
     {
@@ -158,6 +161,9 @@ export const kanbanConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },
+      backgroundColor: { value: '' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{0}}' },
     },
   },
 };

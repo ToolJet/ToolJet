@@ -22,6 +22,7 @@ export const customComponentConfig = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
   },
   exposedVariables: {
     data: { value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}` },
@@ -60,6 +61,7 @@ export const customComponentConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      backgroundColor: { value: '' },
     },
   },
 };

@@ -35,11 +35,14 @@ export const iframeConfig = {
       type: 'toggle',
       displayName: 'Disable',
       validation: {
-        schema: { type: 'boolean' },
         defaultValue: false,
       },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
+    borderColor: { type: 'color', displayName: 'Border color' },
+    borderRadius: { type: 'number', displayName: 'Border radius' },
   },
+
   exposedVariables: {},
   definition: {
     others: {
@@ -54,6 +57,9 @@ export const iframeConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      backgroundColor: { value: '' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{0}}' },
     },
   },
 };

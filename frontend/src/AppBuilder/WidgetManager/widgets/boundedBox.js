@@ -71,6 +71,9 @@ export const boundedBoxConfig = {
         defaultValue: false,
       },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
+    borderColor: { type: 'color', displayName: 'Border color' },
+    borderRadius: { type: 'number', displayName: 'Border radius' },
   },
   exposedVariables: {
     annotations: [
@@ -116,6 +119,9 @@ export const boundedBoxConfig = {
       visibility: { value: '{{true}}' },
 
       disabledState: { value: '{{false}}' },
+      backgroundColor: { value: '' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{0}}' },
     },
   },
 };

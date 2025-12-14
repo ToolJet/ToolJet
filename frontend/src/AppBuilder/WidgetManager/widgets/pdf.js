@@ -43,6 +43,7 @@ export const pdfConfig = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
   },
   exposedVariables: {},
   definition: {
@@ -68,6 +69,7 @@ export const pdfConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      backgroundColor: { value: '' },
     },
   },
 };

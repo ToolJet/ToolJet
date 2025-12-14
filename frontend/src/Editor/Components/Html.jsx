@@ -7,7 +7,7 @@ export const Html = function ({ height, properties, styles, darkMode, dataCy }) 
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
   };
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, backgroundColor, borderColor, borderRadius } = styles;
 
   const [rawHtml, setRawHtml] = useState('');
   useEffect(() => {
@@ -23,7 +23,18 @@ export const Html = function ({ height, properties, styles, darkMode, dataCy }) 
 
   return (
     <div
-      style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto', boxShadow }}
+      style={{
+        display: visibility ? '' : 'none',
+        width: '100%',
+        height,
+        overflowY: 'auto',
+        boxShadow,
+        backgroundColor,
+        borderColor,
+        borderRadius: Number(borderRadius),
+        borderWidth: borderColor ? '1px' : '0px',
+        borderStyle: borderColor ? 'solid' : 'none',
+      }}
       data-cy={dataCy}
     >
       {

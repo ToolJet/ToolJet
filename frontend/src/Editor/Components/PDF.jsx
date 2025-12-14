@@ -9,7 +9,7 @@ require('pdfjs-dist/build/pdf.worker.entry.js');
 // The above line is required to fix the issue of pdf becoming black when resizing
 
 export const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, backgroundColor } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
@@ -179,7 +179,7 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
+    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow, backgroundColor }} data-cy={dataCy}>
       <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
         <div
           className="scrollable h-100 col position-relative"
@@ -191,9 +191,8 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
-            className={`d-flex ${
-              pageControls ? 'justify-content-between' : 'justify-content-end'
-            } py-3 px-3 align-items-baseline border-top border-light`}
+            className={`d-flex ${pageControls ? 'justify-content-between' : 'justify-content-end'
+              } py-3 px-3 align-items-baseline border-top border-light`}
             style={{ backgroundColor: 'var(--cc-surface1-surface)', color: 'var(--cc-primary-text)' }}
           >
             {pageControls && (
