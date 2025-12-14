@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import { Video } from 'lucide-react';
 
 const playVideo = (videoElement) => {
   if (!videoElement) return;
@@ -10,7 +11,17 @@ const playVideo = (videoElement) => {
   }
 };
 
-export const Content = ({ stream, recordingUrl, status, permissionError, contentType, capturedImageUrl, videoRef }) => {
+export const Content = ({
+  stream,
+  recordingUrl,
+  status,
+  permissionError,
+  contentType,
+  capturedImageUrl,
+  videoRef,
+  textColor,
+  accentColor,
+}) => {
   const internalVideoRef = useRef(null);
   const resolvedVideoRef = videoRef ?? internalVideoRef;
 
@@ -96,6 +107,15 @@ export const Content = ({ stream, recordingUrl, status, permissionError, content
     return 'Camera preview is not available.';
   }, [permissionError]);
 
+  const openCameraPermissionsHelp = () => {
+    window.open('https://support.google.com/chrome/answer/2693767', '_blank');
+  };
+
+  const showLearnMore =
+    permissionError === 'NotAllowedError' ||
+    permissionError === 'PermissionDeniedError' ||
+    permissionError === 'permission_denied';
+
   return (
     <div className="camera-content">
       {showCapturedImage ? (
@@ -110,7 +130,21 @@ export const Content = ({ stream, recordingUrl, status, permissionError, content
           controls={status === 'stopped' && !!recordingUrl}
         />
       ) : (
-        <div className="camera-content-placeholder">{placeholderMessage}</div>
+        <div className="camera-content-placeholder-container">
+          <Video width={40} height={28} color="var(--icon-weak)" />
+          <div className="camera-content-placeholder" style={{ color: textColor }}>
+            {placeholderMessage}
+          </div>
+          {showLearnMore && (
+            <span
+              className="camera-content-learn-more"
+              style={{ color: accentColor }}
+              onClick={openCameraPermissionsHelp}
+            >
+              Learn more
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

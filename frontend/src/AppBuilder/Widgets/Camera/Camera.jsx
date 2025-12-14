@@ -1,14 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import './camera.scss';
-import { Content } from './Content';
-import { Footer } from './Footer';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { blobToDataURL, blobToBinary } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { Content } from './Content';
+import { Footer } from './Footer';
+import './camera.scss';
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
-  const { backgroundColor, borderRadius, borderColor } = styles;
+  // Props
+  const { backgroundColor, borderRadius, borderColor, boxShadow, textColor, accentColor } = styles;
   const { content: contentType, visibility, disabledState } = properties;
+
+  // State
   const [deviceLists, setDeviceLists] = useState({ cameras: [], microphones: [] });
   const [selectedCameraId, setSelectedCameraId] = useState(null);
   const [selectedMicrophoneId, setSelectedMicrophoneId] = useState(null);
@@ -17,15 +20,45 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const [recordingResult, setRecordingResult] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const containerRef = useRef(null);
-  const videoElementRef = useRef(null);
-  const capturedImageRef = useRef(null);
-  const savedImageUrlRef = useRef(null);
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isVisible: visibility,
     isDisabled: disabledState,
   });
 
+  // Refs
+  const containerRef = useRef(null);
+  const videoElementRef = useRef(null);
+  const capturedImageRef = useRef(null);
+  const savedImageUrlRef = useRef(null);
+
+  // Media recorder setup
+  const recorderOptions = useMemo(
+    () => ({
+      audio: true,
+      video: true,
+      customMediaStream: mediaStream,
+      stopStreamsOnStop: false,
+      onStart: () => {
+        setRecordingResult(null);
+        fireEvent('onRecordingStart');
+      },
+      onStop: (blobUrl, blob) => {
+        setRecordingResult({ url: blobUrl, blob });
+      },
+    }),
+    [mediaStream, fireEvent]
+  );
+
+  const {
+    status,
+    startRecording,
+    stopRecording,
+    mediaBlobUrl,
+    clearBlobUrl,
+    error: recorderError,
+  } = useReactMediaRecorder(recorderOptions);
+
+  // Helpers
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
@@ -54,211 +87,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     [updateCapturedImage]
   );
 
-  useBatchedUpdateEffectArray([
-    {
-      dep: visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-  ]);
-
-  useEffect(() => {
-    capturedImageRef.current = capturedImage;
-  }, [capturedImage]);
-
-  useEffect(() => {
-    return () => {
-      if (capturedImageRef.current?.url) {
-        URL.revokeObjectURL(capturedImageRef.current.url);
-      }
-      if (savedImageUrlRef.current) {
-        URL.revokeObjectURL(savedImageUrlRef.current);
-        savedImageUrlRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (contentType !== 'image' && capturedImage) {
-      clearCapturedImage();
-    }
-  }, [capturedImage, clearCapturedImage, contentType]);
-
-  useEffect(() => {
-    const mediaDevices = navigator?.mediaDevices;
-    if (!mediaDevices || !mediaDevices.enumerateDevices) {
-      return;
-    }
-
-    let isMounted = true;
-
-    const updateDeviceLists = async () => {
-      try {
-        const availableDevices = await mediaDevices.enumerateDevices();
-
-        const cameras = availableDevices
-          .filter((device) => device.kind === 'videoinput')
-          .map((device, index) => ({
-            id: device.deviceId || `camera-${index}`,
-            label: device.label || `Camera ${index + 1}`,
-            value: device.deviceId || `camera-${index}`,
-          }));
-
-        const microphones = availableDevices
-          .filter((device) => device.kind === 'audioinput')
-          .map((device, index) => ({
-            id: device.deviceId || `microphone-${index}`,
-            label: device.label || `Microphone ${index + 1}`,
-            value: device.deviceId || `microphone-${index}`,
-          }));
-
-        if (isMounted) {
-          setDeviceLists({ cameras, microphones });
-          setSelectedCameraId((prevSelected) => {
-            if (prevSelected && cameras.some((device) => device.value === prevSelected)) {
-              return prevSelected;
-            }
-            return cameras[0]?.value ?? null;
-          });
-          setSelectedMicrophoneId((prevSelected) => {
-            if (prevSelected && microphones.some((device) => device.value === prevSelected)) {
-              return prevSelected;
-            }
-            return microphones[0]?.value ?? null;
-          });
-        }
-      } catch (error) {
-        console.error('Failed to enumerate media devices', error);
-      }
-    };
-
-    updateDeviceLists();
-    mediaDevices.addEventListener?.('devicechange', updateDeviceLists);
-
-    return () => {
-      isMounted = false;
-      mediaDevices.removeEventListener?.('devicechange', updateDeviceLists);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const requestStream = async () => {
-      if (!navigator?.mediaDevices?.getUserMedia) {
-        setPermissionError('unsupported');
-        setMediaStream((prevStream) => {
-          if (prevStream) {
-            prevStream.getTracks().forEach((track) => track.stop());
-          }
-          return null;
-        });
-        return;
-      }
-
-      const constraints = {
-        video:
-          selectedCameraId && !(typeof selectedCameraId === 'string' && selectedCameraId.startsWith('camera-'))
-            ? { deviceId: { exact: selectedCameraId } }
-            : true,
-        audio:
-          selectedMicrophoneId &&
-          !(typeof selectedMicrophoneId === 'string' && selectedMicrophoneId.startsWith('microphone-'))
-            ? { deviceId: { exact: selectedMicrophoneId } }
-            : true,
-      };
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        setPermissionError(null);
-        setMediaStream((previousStream) => {
-          if (previousStream && previousStream !== stream) {
-            previousStream.getTracks().forEach((track) => track.stop());
-          }
-          return stream;
-        });
-      } catch (error) {
-        if (cancelled) return;
-        console.error('Failed to acquire media stream', error);
-        setPermissionError(error?.name || 'permission_denied');
-        setMediaStream((previousStream) => {
-          if (previousStream) {
-            previousStream.getTracks().forEach((track) => track.stop());
-          }
-          return null;
-        });
-      }
-    };
-
-    requestStream();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCameraId, selectedMicrophoneId]);
-
-  useEffect(() => {
-    return () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [mediaStream]);
-
-  const recorderOptions = useMemo(
-    () => ({
-      audio: true,
-      video: true,
-      customMediaStream: mediaStream,
-      stopStreamsOnStop: false,
-      onStart: () => {
-        setRecordingResult(null);
-        fireEvent('onRecordingStart');
-      },
-      onStop: (blobUrl, blob) => {
-        setRecordingResult({ url: blobUrl, blob });
-      },
-    }),
-    [mediaStream, fireEvent]
-  );
-
-  const {
-    status,
-    startRecording,
-    stopRecording,
-    mediaBlobUrl,
-    clearBlobUrl,
-    error: recorderError,
-  } = useReactMediaRecorder(recorderOptions);
-
-  const handleCameraSelect = (deviceId) => {
-    setSelectedCameraId(deviceId);
-  };
-
-  const handleMicrophoneSelect = (deviceId) => {
-    setSelectedMicrophoneId(deviceId);
-  };
-
-  const handleClearRecording = () => {
-    setRecordingResult(null);
-    clearBlobUrl();
-  };
-
   const isBusy = useMemo(
     () =>
       status === 'acquiring_media' ||
@@ -269,48 +97,43 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     [status]
   );
 
+  // Event handlers
+  const handleCameraSelect = (deviceId) => setSelectedCameraId(deviceId);
+
+  const handleMicrophoneSelect = (deviceId) => setSelectedMicrophoneId(deviceId);
+
+  const handleClearRecording = () => {
+    setRecordingResult(null);
+    clearBlobUrl();
+  };
+
   const capturePhoto = async () => {
     const videoElement = videoElementRef.current;
-    if (!videoElement) {
-      console.warn('Unable to capture photo: video element not ready.');
-      return;
-    }
+    if (!videoElement) return;
 
     if (videoElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       await new Promise((resolve) => {
-        const handler = () => {
-          videoElement.removeEventListener('loadeddata', handler);
-          resolve();
-        };
-        videoElement.addEventListener('loadeddata', handler, { once: true });
+        videoElement.addEventListener('loadeddata', resolve, { once: true });
       });
     }
 
     const width = videoElement.videoWidth || videoElement.clientWidth;
     const height = videoElement.videoHeight || videoElement.clientHeight;
 
-    if (!width || !height) {
-      console.warn('Unable to capture photo: video dimensions unavailable.');
-      return;
-    }
+    if (!width || !height) return;
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext('2d');
-    if (!context) {
-      console.warn('Unable to capture photo: canvas context missing.');
-      return;
-    }
+    if (!context) return;
+
     context.drawImage(videoElement, 0, 0, width, height);
 
     const blob = await new Promise((resolve, reject) => {
       canvas.toBlob((result) => {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(new Error('Failed to convert canvas to blob'));
-        }
+        if (result) resolve(result);
+        else reject(new Error('Failed to convert canvas to blob'));
       }, 'image/png');
     });
 
@@ -320,9 +143,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
 
   const handleCaptureToggle = async (saveCapture = false) => {
     if (!mediaStream || permissionError || isBusy) {
-      if (contentType !== 'image') {
-        return;
-      }
+      if (contentType !== 'image') return;
     }
 
     if (contentType === 'image') {
@@ -358,9 +179,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         return;
       }
 
-      if (capturedImage) {
-        return;
-      }
+      if (capturedImage) return;
 
       try {
         await capturePhoto();
@@ -370,10 +189,9 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       return;
     }
 
+    // Video recording logic
     if (status === 'recording') {
       stopRecording();
-    } else if (status === 'paused') {
-      // Nothing for now
     } else if (status === 'stopped') {
       if (saveCapture) {
         const dataURL = await blobToDataURL(recordingResult?.blob);
@@ -398,19 +216,195 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     }
   };
 
+  const handleFullscreenToggle = async () => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    try {
+      if (document.fullscreenElement === element) {
+        await document.exitFullscreen?.();
+      } else {
+        await element.requestFullscreen?.();
+      }
+    } catch (error) {
+      console.error('Failed to toggle fullscreen', error);
+    }
+  };
+
+  // Exposed variables sync
+  useBatchedUpdateEffectArray([
+    {
+      dep: visibility,
+      sideEffect: () => {
+        updateExposedVariablesState('isVisible', visibility);
+        setExposedVariable('isVisible', visibility);
+      },
+    },
+    {
+      dep: disabledState,
+      sideEffect: () => {
+        updateExposedVariablesState('isDisabled', disabledState);
+        setExposedVariable('isDisabled', disabledState);
+      },
+    },
+  ]);
+
+  // Effects
+  /* eslint-disable react-hooks/exhaustive-deps */
+
+  useEffect(() => {
+    setExposedVariables(exposedVariablesTemporaryState);
+  }, []);
+
+  useEffect(() => {
+    capturedImageRef.current = capturedImage;
+  }, [capturedImage]);
+
+  useEffect(() => {
+    return () => {
+      if (capturedImageRef.current?.url) {
+        URL.revokeObjectURL(capturedImageRef.current.url);
+      }
+      if (savedImageUrlRef.current) {
+        URL.revokeObjectURL(savedImageUrlRef.current);
+        savedImageUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (contentType !== 'image' && capturedImage) {
+      clearCapturedImage();
+    }
+  }, [contentType]);
+
+  // Device enumeration
+  useEffect(() => {
+    const mediaDevices = navigator?.mediaDevices;
+    if (!mediaDevices?.enumerateDevices) return;
+
+    let isMounted = true;
+
+    const updateDeviceLists = async () => {
+      try {
+        const availableDevices = await mediaDevices.enumerateDevices();
+
+        const cameras = availableDevices
+          .filter((device) => device.kind === 'videoinput')
+          .map((device, index) => ({
+            id: device.deviceId || `camera-${index}`,
+            label: device.label || `Camera ${index + 1}`,
+            value: device.deviceId || `camera-${index}`,
+          }));
+
+        const microphones = availableDevices
+          .filter((device) => device.kind === 'audioinput')
+          .map((device, index) => ({
+            id: device.deviceId || `microphone-${index}`,
+            label: device.label || `Microphone ${index + 1}`,
+            value: device.deviceId || `microphone-${index}`,
+          }));
+
+        if (isMounted) {
+          setDeviceLists({ cameras, microphones });
+          setSelectedCameraId((prev) =>
+            prev && cameras.some((d) => d.value === prev) ? prev : cameras[0]?.value ?? null
+          );
+          setSelectedMicrophoneId((prev) =>
+            prev && microphones.some((d) => d.value === prev) ? prev : microphones[0]?.value ?? null
+          );
+        }
+      } catch (error) {
+        console.error('Failed to enumerate media devices', error);
+      }
+    };
+
+    updateDeviceLists();
+    mediaDevices.addEventListener?.('devicechange', updateDeviceLists);
+
+    return () => {
+      isMounted = false;
+      mediaDevices.removeEventListener?.('devicechange', updateDeviceLists);
+    };
+  }, []);
+
+  // Media stream acquisition
+  useEffect(() => {
+    let cancelled = false;
+
+    const requestStream = async () => {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        setPermissionError('unsupported');
+        setMediaStream((prev) => {
+          prev?.getTracks().forEach((track) => track.stop());
+          return null;
+        });
+        return;
+      }
+
+      const constraints = {
+        video:
+          selectedCameraId && !selectedCameraId.startsWith?.('camera-')
+            ? { deviceId: { exact: selectedCameraId } }
+            : true,
+        audio:
+          selectedMicrophoneId && !selectedMicrophoneId.startsWith?.('microphone-')
+            ? { deviceId: { exact: selectedMicrophoneId } }
+            : true,
+      };
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        setPermissionError(null);
+        setMediaStream((prev) => {
+          if (prev && prev !== stream) {
+            prev.getTracks().forEach((track) => track.stop());
+          }
+          return stream;
+        });
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Failed to acquire media stream', error);
+        setPermissionError(error?.name || 'permission_denied');
+        setMediaStream((prev) => {
+          prev?.getTracks().forEach((track) => track.stop());
+          return null;
+        });
+      }
+    };
+
+    requestStream();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCameraId, selectedMicrophoneId]);
+
+  // Cleanup media stream on unmount
+  useEffect(() => {
+    return () => {
+      mediaStream?.getTracks().forEach((track) => track.stop());
+    };
+  }, [mediaStream]);
+
+  // Fullscreen handling
   useEffect(() => {
     const element = containerRef.current;
     const handleFullscreenChange = () => {
-      const currentlyFullscreen = document.fullscreenElement === element;
-      setIsFullscreen(currentlyFullscreen);
+      setIsFullscreen(document.fullscreenElement === element);
     };
 
     const events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
-
-    events.forEach((eventName) => document.addEventListener(eventName, handleFullscreenChange));
+    events.forEach((event) => document.addEventListener(event, handleFullscreenChange));
 
     return () => {
-      events.forEach((eventName) => document.removeEventListener(eventName, handleFullscreenChange));
+      events.forEach((event) => document.removeEventListener(event, handleFullscreenChange));
       if (document.fullscreenElement === element) {
         document.exitFullscreen?.();
       }
@@ -418,82 +412,36 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   }, []);
 
   useEffect(() => {
-    if (!isVisible && document.fullscreenElement === containerRef.current) {
+    if (!visibility && document.fullscreenElement === containerRef.current) {
       document.exitFullscreen?.();
     }
-  }, [isVisible]);
+  }, [visibility]);
 
-  const requestElementFullscreen = async (element) => {
-    if (!element) return;
-    const request =
-      element.requestFullscreen ||
-      element.webkitRequestFullscreen ||
-      element.mozRequestFullScreen ||
-      element.msRequestFullscreen;
-    if (!request) return;
-    const maybePromise = request.call(element);
-    if (maybePromise && typeof maybePromise.then === 'function') {
-      await maybePromise;
-    }
-  };
+  /* eslint-enable react-hooks/exhaustive-deps */
 
-  const exitFullscreen = async () => {
-    const exit =
-      document.exitFullscreen ||
-      document.webkitExitFullscreen ||
-      document.mozCancelFullScreen ||
-      document.msExitFullscreen;
-    if (!exit) return;
-    const maybePromise = exit.call(document);
-    if (maybePromise && typeof maybePromise.then === 'function') {
-      await maybePromise;
-    }
-  };
-
-  const handleFullscreenToggle = async () => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    try {
-      if (document.fullscreenElement === element) {
-        await exitFullscreen();
-      } else {
-        await requestElementFullscreen(element);
-      }
-    } catch (error) {
-      console.error('Failed to toggle fullscreen', error);
-    }
-  };
-
-  useEffect(() => {
-    setExposedVariables(exposedVariablesTemporaryState);
-  }, []);
-
-  const computedContainerStyles = {
-    backgroundColor,
-    border: `1px solid ${borderColor}`,
-    borderRadius: `${borderRadius}px`,
-  };
-  const isVisible = properties?.visibility ?? true;
+  // Computed values
+  const isVisible = visibility;
   const captureDisabled = !mediaStream || !!permissionError || isBusy;
   const hasPendingCapture = contentType === 'image' && !!capturedImage;
-
   const deviceSelectDisabled = status === 'recording' || isBusy;
-  const fullscreenSupported =
-    typeof document !== 'undefined' && (document.fullscreenEnabled === undefined ? true : document.fullscreenEnabled);
+  const fullscreenSupported = document.fullscreenEnabled ?? true;
   const fullscreenDisabled = !fullscreenSupported || permissionError === 'unsupported';
-  const containerClassName = `camera-container${isFullscreen ? ' camera-container--fullscreen' : ''}`;
 
+  // Inline styles
   const containerStyle = {
-    ...computedContainerStyles,
+    backgroundColor,
+    border: `1px solid ${borderColor}`,
+    borderRadius: isFullscreen ? 0 : `${borderRadius}px`,
     display: isVisible ? 'flex' : 'none',
-    ...(isFullscreen && { borderRadius: 0 }),
+    overflow: 'hidden',
+    boxShadow,
   };
 
+  // Render
   return (
     <div
       ref={containerRef}
-      className={containerClassName}
+      className={`camera-container${isFullscreen ? ' camera-container--fullscreen' : ''}`}
       style={containerStyle}
       data-permission-error={permissionError || undefined}
     >
@@ -505,6 +453,8 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         contentType={contentType}
         capturedImageUrl={capturedImage?.url}
         videoRef={videoElementRef}
+        textColor={textColor}
+        accentColor={accentColor}
       />
       <Footer
         cameraDevices={deviceLists.cameras}
