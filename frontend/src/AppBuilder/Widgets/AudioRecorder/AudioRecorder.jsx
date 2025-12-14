@@ -7,7 +7,6 @@ import RecorderStatusDisplay from './RecorderStatusDisplay';
 import RecorderActions from './RecorderActions';
 import Waveform from './Waveform';
 import { blobToDataURL, blobToBinary } from '@/AppBuilder/_stores/utils';
-import * as Icons from '@tabler/icons-react';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
@@ -33,6 +32,7 @@ export const AudioRecorder = ({
     isVisible: visibility,
     isDisabled: disabledState,
   });
+  const [IconElement, setIconElement] = useState(null);
 
   // Refs
   const audioRef = useRef(null);
@@ -54,10 +54,6 @@ export const AudioRecorder = ({
       },
     });
 
-  // Icons
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[recorderIcon] == undefined ? Icons['IconMicrophone'] : Icons[recorderIcon];
-
   // Helpers
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
@@ -72,25 +68,30 @@ export const AudioRecorder = ({
 
   // Event handlers
   const onClick = async () => {
-    if (status === 'idle') {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setMediaStream(stream);
-        startRecording();
-        fireEvent('onRecordingStart');
-      } catch (error) {
-        setPermissionState('denied');
-      }
-    } else if (status === 'recording') {
-      pauseRecording();
-    } else if (status === 'paused') {
-      resumeRecording();
-    } else if (status === 'stopped') {
-      if (isPlaying) {
-        onPause();
-        return;
-      }
-      onPlay();
+    switch (status) {
+      case 'idle':
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          setMediaStream(stream);
+          startRecording();
+          fireEvent('onRecordingStart');
+        } catch (error) {
+          setPermissionState('denied');
+        }
+        break;
+      case 'recording':
+        pauseRecording();
+        break;
+      case 'paused':
+        resumeRecording();
+        break;
+      case 'stopped':
+        if (isPlaying) {
+          onPause();
+          return;
+        }
+        onPlay();
+        break;
     }
   };
 
@@ -190,6 +191,7 @@ export const AudioRecorder = ({
 
   // Effects
   /* eslint-disable react-hooks/exhaustive-deps */
+
   useEffect(() => {
     setExposedVariables(exposedVariablesTemporaryState);
     return () => {
@@ -199,6 +201,16 @@ export const AudioRecorder = ({
       }
     };
   }, []);
+
+  // Icons - dynamically loaded
+  useEffect(() => {
+    import(`@tabler/icons-react/dist/esm/icons/${recorderIcon}.js`)
+      .then((mod) => setIconElement(() => mod.default))
+      .catch(() =>
+        import('@tabler/icons-react/dist/esm/icons/IconMicrophone.js').then((mod) => setIconElement(() => mod.default))
+      );
+  }, [recorderIcon]);
+
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // Inline styles

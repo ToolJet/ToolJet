@@ -5,20 +5,22 @@ function RecorderActionIcon({ permissionState, status, isPlaying, IconElement })
   if (permissionState === 'denied') {
     return <IconMicrophoneOff width={14} height={14} color="var(--cc-default-icon)" />;
   }
-  if (status === 'idle' || status === 'paused') {
-    return <IconElement width={14} height={14} color="#F6430D" />;
+
+  switch (status) {
+    case 'idle':
+    case 'paused':
+      return IconElement ? <IconElement width={14} height={14} color="#F6430D" /> : null;
+    case 'recording':
+      return <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />;
+    case 'stopped':
+      return isPlaying ? (
+        <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />
+      ) : (
+        <IconPlayerPlay width={14} height={14} color="var(--icon-strong)" />
+      );
+    default:
+      return IconElement ? <IconElement width={14} height={14} color="#F6430D" /> : null;
   }
-  if (status === 'recording') {
-    return <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />;
-  }
-  if (status === 'stopped') {
-    return isPlaying ? (
-      <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />
-    ) : (
-      <IconPlayerPlay width={14} height={14} color="var(--icon-strong)" />
-    );
-  }
-  return <IconElement width={14} height={14} color="#F6430D" />;
 }
 
 export default memo(RecorderActionIcon);

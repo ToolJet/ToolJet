@@ -10,7 +10,8 @@ function RecorderStatusDisplay({ permissionState, status, isPlaying, playTimerKe
       <div className="audio-recorder-timer-container">
         {status === 'stopped' && (
           <>
-            <RecordTimer isRunning={isPlaying} key={playTimerKey} />/
+            <RecordTimer isRunning={isPlaying} key={playTimerKey} />
+            <span>/</span>
           </>
         )}
         <RecordTimer isRunning={status === 'recording'} />
