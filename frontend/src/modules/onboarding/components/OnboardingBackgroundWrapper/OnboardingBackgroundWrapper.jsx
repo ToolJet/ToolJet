@@ -30,9 +30,9 @@ const OnboardingBackgroundWrapper = ({
         ) : (
           <div className="row h-100">
             <div
-              className={`col-12 col-md-${leftSize} leftside-wrapper d-flex 
+              className={`col-12 col-md-${leftSize} leftside-wrapper d-flex
               justify-content-center justify-content-md-start
-              align-items-center`}
+              align-items-center align-items-xxl-start`}
             >
               <LeftSideComponent />
             </div>
