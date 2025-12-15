@@ -22,6 +22,7 @@ import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
+import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -180,6 +181,7 @@ export class AuthService implements IAuthService {
   }
 
   async resetPassword(token: string, password: string) {
+    validatePasswordServer(password);
     const user = await this.userRepository.getUser({ forgotPasswordToken: token });
     if (!user) {
       throw new NotFoundException(

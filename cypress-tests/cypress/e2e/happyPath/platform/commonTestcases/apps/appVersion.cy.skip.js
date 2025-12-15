@@ -49,6 +49,7 @@ describe("App Version", () => {
     cy.defaultWorkspaceLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
+    cy.apiPublishDraftVersion("v1");
     cy.viewport(1400, 1400);
   });
 

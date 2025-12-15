@@ -27,22 +27,32 @@ const MobileNavigationMenu = ({
   bgStyles,
 }) => {
   const { moduleId } = useModuleContext();
-  const license = useStore((state) => state.license);
   const { toggleSidebar } = useSidebar();
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const currentLayout = useStore((state) => state.currentLayout, shallow);
+  const selectedVersion = useStore((state) => state.selectedVersion, shallow);
+  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
 
-  const isLicensed =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
+
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const { name, hideLogo, hideHeader } = properties ?? {};
 
+  const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
+  const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
+
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
-  const pagesTree = useMemo(() => (isLicensed ? buildTree(pages) : pages), [isLicensed, pages]);
+  const pagesTree = useMemo(
+    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages) : pages),
+    [hasAppPagesAddNavGroupEnabled, pages]
+  );
 
   const mainNavBarPages = useMemo(() => {
     return pagesTree.filter((page) => {
@@ -147,9 +157,11 @@ const MobileNavigationMenu = ({
       variant={'floating'}
       sidebarWidth="290px"
       sheetProps={{
-        container: document.getElementsByClassName('canvas-area')[0],
-        overlayClassName: 'tw-absolute tw-h-[100vh]',
-        className: 'tw-absolute tw-h-[100vh] tw-p-0 mobile-page-menu-popup',
+        container: isMobilePreviewMode
+          ? document.getElementsByClassName('canvas-area')[0]
+          : document.querySelector('.viewer.mobile-view'),
+        overlayClassName: 'tw-absolute tw-h-dvh',
+        className: 'tw-absolute tw-h-dvh tw-p-0 mobile-page-menu-popup',
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"
@@ -163,12 +175,12 @@ const MobileNavigationMenu = ({
           </div>
           <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
             <h1 className="navbar-brand d-flex align-items-center justify-content-center tw-gap-[12px] p-0">
-              {!hideLogo && (
+              {!logoHidden && (
                 <div data-cy="viewer-page-logo" onClick={switchToHomePage} className="cursor-pointer tw-flex-shrink-0">
                   <AppLogo height={32} isLoadingFromHeader={false} viewer={true} />
                 </div>
               )}
-              {!hideHeader && (
+              {!headerHidden && (
                 <OverflowTooltip childrenClassName="app-title">{name?.trim() ? name : appName}</OverflowTooltip>
               )}
             </h1>
@@ -177,7 +189,7 @@ const MobileNavigationMenu = ({
       </SidebarHeader>
       <SidebarContent className="mobile-navigation-area page-menu-scroll">
         <RenderPageAndPageGroup
-          isLicensed={isLicensed}
+          isLicensed={hasAppPagesAddNavGroupEnabled}
           switchPageWrapper={switchPageWrapper}
           pages={pages}
           labelStyle={labelStyle}
@@ -194,7 +206,7 @@ const MobileNavigationMenu = ({
       </SidebarContent>
       <SidebarFooter>
         {showDarkModeToggle && (
-          <div className="page-dark-mode-btn-wrapper">
+          <div className="page-dark-mode-btn-wrapper !tw-pb-[calc(env(safe-area-inset-bottom)+10px)]">
             <DarkModeToggle
               switchDarkMode={changeToDarkMode}
               darkMode={darkMode}

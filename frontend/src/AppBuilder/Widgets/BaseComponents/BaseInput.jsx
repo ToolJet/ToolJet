@@ -72,26 +72,26 @@ export const BaseInput = ({
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disable || loading
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disable || loading
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disable || loading
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     boxShadow,
     padding: showLeftIcon ? '8px 10px 8px 30px' : '8px 10px',
     overflow: 'hidden',
@@ -104,14 +104,14 @@ export const BaseInput = ({
     loaderStyle = {
       right:
         direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          defaultAlignment === 'side' &&
+          ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
           ? `${labelWidth + 11}px`
           : '11px',
       top:
         defaultAlignment === 'top'
           ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-            'calc(50% + 10px)'
+          'calc(50% + 10px)'
           : '',
       transform:
         defaultAlignment === 'top' &&
@@ -123,8 +123,8 @@ export const BaseInput = ({
     loaderStyle = {
       right:
         direction === 'right' &&
-        defaultAlignment === 'side' &&
-        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          defaultAlignment === 'side' &&
+          ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
           ? `${labelWidth + 11}px`
           : '11px',
       top: defaultAlignment === 'top' ? '30px' : '10px',
@@ -139,12 +139,11 @@ export const BaseInput = ({
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input scrollbar-container d-flex ${
-          defaultAlignment === 'top' &&
-          ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
+        className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
+            ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
             : inputType != 'textarea' && 'align-items-center'
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -181,10 +180,10 @@ export const BaseInput = ({
                 direction === 'right'
                   ? '11px'
                   : defaultAlignment === 'top'
-                  ? '11px'
-                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? `${labelWidth + 11}px`
-                  : '11px',
+                    ? '11px'
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                      ? `${labelWidth + 11}px`
+                      : '11px',
               position: 'absolute',
               top:
                 inputType === 'textarea'
@@ -192,10 +191,10 @@ export const BaseInput = ({
                     ? '38px'
                     : '18px'
                   : defaultAlignment === 'side'
-                  ? '50%'
-                  : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
-                  ? 'calc(50% + 10px)'
-                  : '50%',
+                    ? '50%'
+                    : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
+                      ? 'calc(50% + 10px)'
+                      : '50%',
               transform: 'translateY(-50%)',
               color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
@@ -208,9 +207,8 @@ export const BaseInput = ({
           data-cy={dataCy}
           ref={inputRef}
           type={inputType}
-          className={`tj-text-input-widget ${
-            !isValid && showValidationError ? 'is-invalid' : ''
-          } validation-without-icon`}
+          className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
+            } validation-without-icon`}
           value={value}
           onChange={handleChange}
           onBlur={handleBlur}

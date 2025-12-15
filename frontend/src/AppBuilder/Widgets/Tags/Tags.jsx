@@ -138,23 +138,23 @@ export const Tags = function Tags({
     pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
       ? {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
-          flexWrap: 'wrap',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
-          alignContent: 'flex-start',
-          alignItems: 'flex-start',
-          margin: '0 -3px -3px 0',
-        }
+        display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+        flexWrap: 'wrap',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
+        alignContent: 'flex-start',
+        alignItems: 'flex-start',
+        margin: '0 -3px -3px 0',
+      }
       : {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
-          flexWrap: 'nowrap',
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          whiteSpace: 'nowrap',
-          justifyContent: 'flex-start',
-        }),
+        display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+        flexWrap: 'nowrap',
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        whiteSpace: 'nowrap',
+        justifyContent: 'flex-start',
+      }),
   };
 
   function getTagIcon(tag, tagDataCy) {
@@ -163,8 +163,8 @@ export const Tags = function Tags({
       tag?.iconVisibility?.value !== undefined
         ? tag.iconVisibility.value
         : tag?.iconVisibility !== undefined
-        ? tag.iconVisibility
-        : false;
+          ? tag.iconVisibility
+          : false;
 
     if (!iconName || !iconVisible) return null;
 

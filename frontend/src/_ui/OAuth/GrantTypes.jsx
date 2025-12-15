@@ -66,7 +66,7 @@ const CommonOAuthFields = ({
   return (
     <>
       {isFieldAllowed('access_token_url', grant_type, oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="access-token-url-section">
           <label className="form-label mt-3" data-cy="label-access-token-url">
             Access token URL
           </label>
@@ -83,7 +83,7 @@ const CommonOAuthFields = ({
       )}
       {isFieldAllowed('access_token_custom_headers', grant_type, oauth_configs) && (
         <>
-          <div className="row mt-3">
+          <div className="row mt-3" data-cy="access-token-url-custom-headers-section">
             <div className="col">
               <label className="form-label pt-2" data-cy="label-access-token-url-custom-headers">
                 Access token URL custom headers
@@ -100,21 +100,22 @@ const CommonOAuthFields = ({
         </>
       )}
       {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
-        <div className="col-md-12">
-          <label className="form-label mt-3">OAuth type</label>
+        <div className="col-md-12" data-cy="oauth-type-section">
+          <label className="form-label mt-3" data-cy="oauth-type-label">OAuth type</label>
           <Select
             options={oauthTypeOptions}
             value={options?.oauth_type?.value}
             onChange={(value) => optionchanged('oauth_type', value)}
             width={'100%'}
             useMenuPortal={false}
+            dataCy="oauth-type"
           />
         </div>
       )}
       {showClientFields && (
         <>
           {isFieldAllowed('client_id', grant_type, oauth_configs) && (
-            <div className="col-md-12">
+            <div className="col-md-12" data-cy="client-id-section">
               <label className="form-label mt-3" data-cy="label-client-id">
                 Client ID
               </label>
@@ -130,7 +131,7 @@ const CommonOAuthFields = ({
             </div>
           )}
           {isFieldAllowed('client_secret', grant_type, oauth_configs) && (
-            <div className="col-md-12">
+            <div className="col-md-12" data-cy="client-secret-section">
               <EncryptedFieldWrapper
                 options={options}
                 selectedDataSource={selectedDataSource}
@@ -153,7 +154,7 @@ const CommonOAuthFields = ({
         </>
       )}
       {isFieldAllowed('scopes', grant_type, oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="scope-section">
           <label className="form-label mt-3" data-cy="label-scope">
             Scope(s)
           </label>
@@ -168,7 +169,7 @@ const CommonOAuthFields = ({
         </div>
       )}
       {isFieldAllowed('client_auth', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="client-authentication-section">
           <label className="form-label mt-3" data-cy="label-client-authentication">
             Client authentication
           </label>
@@ -223,7 +224,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
   return (
     <>
       {isFieldAllowed('add_token_to', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="add-access-token-to-section">
           <label className="form-label mt-3" data-cy="label-add-access-token-to">
             Add access token to
           </label>
@@ -233,11 +234,12 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
             onChange={(value) => optionchanged('add_token_to', value)}
             width={'100%'}
             useMenuPortal={false}
+            dataCy="add-access-token-to"
           />
         </div>
       )}
       {add_token_to === 'header' && isFieldAllowed('header_prefix', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="header-prefix-section">
           <label className="form-label mt-3" data-cy="label-header-prefix">
             Header prefix
           </label>
@@ -252,7 +254,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
         </div>
       )}
       {isFieldAllowed('auth_url', 'authorization_code', oauth_configs) && (
-        <div className="col-md-12">
+        <div className="col-md-12" data-cy="authorization-url-section">
           <label className="form-label mt-3" data-cy="label-authorization-url">
             Authorization URL
           </label>
@@ -269,7 +271,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
       )}
       {isFieldAllowed('custom_auth_params', 'authorization_code', oauth_configs) && (
         <>
-          <div className="row mt-3">
+          <div className="row mt-3" data-cy="custom-authentication-parameters-section">
             <div className="col">
               <label className="form-label pt-2" data-cy="label-custom-authentication-parameters">
                 Custom authentication parameters
@@ -287,7 +289,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
       )}
       {isFieldAllowed('custom_query_params', 'authorization_code', oauth_configs) && (
         <>
-          <div className="row mt-3">
+          <div className="row mt-3" data-cy="custom-query-parameters-section">
             <div className="col">
               <label className="form-label pt-2" data-cy="label-custom-query-parameters">
                 Custom query parameters
@@ -304,8 +306,8 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
         </>
       )}
       {isFieldAllowed('multiple_auth_enabled', 'authorization_code', oauth_configs) && (
-        <div>
-          <label className="form-check form-switch my-4">
+        <div data-cy="authentication-required-for-all-users-section">
+          <label className="form-check form-switch my-4" >
             <input
               data-cy="authentication-required-for-all-users-toggle-switch"
               className="form-check-input"
@@ -353,14 +355,15 @@ const OAuthConfiguration = ({
     <div>
       <div className="row">
         {(!allowed_grant_types || (allowed_grant_types && allowed_grant_types.length > 1)) && (
-          <div>
-            <label className="form-label mt-3">Grant type</label>
+          <div data-cy="grant-type-section">
+            <label className="form-label mt-3" data-cy="grant-type-label">Grant type</label>
             <Select
               options={grantTypeOptions()}
               value={grant_type}
               onChange={(value) => optionchanged('grant_type', value)}
               width={'100%'}
               useMenuPortal={false}
+              dataCy="grant-type"
             />
           </div>
         )}
