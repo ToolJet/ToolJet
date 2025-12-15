@@ -83,20 +83,6 @@ export const createEventsSlice = (set, get) => ({
   eventsSlice: {
     ...initialState,
     setEvents: (events, moduleId = 'canvas') => {
-      const entityReferencesInEvents = findAllEntityReferences(events, [])?.filter(
-        (entity) => entity && isValidUUID(entity)
-      );
-      // let newEvents = events;
-      // console.log(get().modules['canvas']);
-      // if (Array.isArray(entityReferencesInEvents) && entityReferencesInEvents?.length > 0) {
-      //   entityReferencesInEvents.forEach((entity) => {
-      //     const entityId = entity;
-      //     const entityName = get().getComponentNameFromId(entityId);
-      //     if (entityName) {
-      //       newEvents = dfs(events, entity, entityName);
-      //     }
-      //   });
-      // }
       set(
         (state) => {
           state.eventsSlice.module[moduleId].events = events;
@@ -177,6 +163,29 @@ export const createEventsSlice = (set, get) => ({
           get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
           toast.error(err?.error || 'An error occurred while creating the event handler');
         });
+    },
+    bulkCreateAppVersionEventHandlers: async (events, moduleId) => {
+      if (!events || events.length === 0) return [];
+
+      get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
+      const appId = get().appStore.modules[moduleId].app.appId;
+      const versionId = get().currentVersionId;
+
+      try {
+        const response = await appVersionService.bulkCreateAppVersionEventHandlers(appId, versionId, events);
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+
+        // Add all created events to the store
+        response.forEach((event) => {
+          get().eventsSlice.addEvent(event, moduleId);
+        });
+
+        return response;
+      } catch (err) {
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        toast.error(err?.error || 'An error occurred while creating event handlers');
+        return [];
+      }
     },
     deleteAppVersionEventHandler: async (eventId, index, moduleId = 'canvas') => {
       const appId = get().appStore.modules[moduleId].app.appId;
@@ -826,7 +835,6 @@ export const createEventsSlice = (set, get) => ({
               // let component = Object.values(getCurrentState()?.components ?? {}).filter(
               //   (component) => component.id === event.componentId
               // )[0];
-              const { event } = eventObj;
               if (!event.componentSpecificActionHandle) {
                 throw new Error('No component-specific action handle provided.');
               }

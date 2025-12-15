@@ -39,7 +39,7 @@ import {
   RadioTypeIcon,
 } from './_assets';
 import { getColumnIcon } from './utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
@@ -247,9 +247,9 @@ class TableComponent extends React.Component {
     const actionRef = { ref: `${action?.name}` };
 
     return (
-      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'} tw-max-w-80`}>
         <Popover.Body
-          className="table-action-popover d-flex flex-column custom-gap-16"
+          className="table-action-popover d-flex flex-column custom-gap-16 tw-w-[19rem]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="field tj-app-input">

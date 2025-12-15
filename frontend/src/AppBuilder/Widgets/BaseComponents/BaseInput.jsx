@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 const RenderInput = forwardRef((props, ref) => {
@@ -38,6 +38,7 @@ export const BaseInput = ({
   additionalInputProps = {},
   rightIcon,
   getCustomStyles,
+  isDynamicHeightEnabled,
   id,
 }) => {
   const {
@@ -65,6 +66,7 @@ export const BaseInput = ({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
+    ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
@@ -91,7 +93,7 @@ export const BaseInput = ({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow,
-    padding: showLeftIcon ? '8px 10px 8px 29px' : '8px 10px',
+    padding: showLeftIcon ? '8px 10px 8px 30px' : '8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
@@ -200,7 +202,7 @@ export const BaseInput = ({
               color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
               zIndex: 3,
             }}
-            stroke={1.5}
+            stroke={2}
           />
         )}
         <RenderInput

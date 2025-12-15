@@ -64,25 +64,6 @@ export default function generateColumnsData({
         }));
       }
 
-      // Handle select and multiselect options
-      let useDynamicOptions = false;
-      if (columnType === 'select' || columnType === 'newMultiSelect') {
-        useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
-        if (useDynamicOptions) {
-          const dynamicOptions = getResolvedValue(column?.dynamicOptions || []);
-          columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
-        } else {
-          const options = column?.options ?? [];
-          columnOptions.selectOptions =
-            options?.map((option) => ({
-              label: option.label,
-              value: option.value,
-              optionColor: option.optionColor,
-              labelColor: option.labelColor,
-            })) ?? [];
-        }
-      }
-
       // Handle disabled dates
       const disabledDates = getResolvedValue(column.disabledDates);
       const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
@@ -125,6 +106,7 @@ export default function generateColumnsData({
             : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
+          const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });
           switch (columnType) {
             case 'string':
             case undefined:
@@ -220,7 +202,23 @@ export default function generateColumnsData({
               );
 
             case 'select':
-            case 'newMultiSelect':
+            case 'newMultiSelect': {
+              // Handle select and multiselect options
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              if (useDynamicOptions) {
+                const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
+                columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+                columnOptions.selectOptions =
+                  options?.map((option) => ({
+                    label: option.label,
+                    value: option.value,
+                    optionColor: option.optionColor,
+                    labelColor: option.labelColor,
+                  })) ?? [];
+              }
+
               return (
                 <CustomSelectColumn
                   options={columnOptions.selectOptions}
@@ -231,9 +229,7 @@ export default function generateColumnsData({
                   containerWidth={columnSize}
                   defaultOptionsList={column?.defaultOptionsList || []}
                   optionsLoadingState={
-                    getResolvedValue(column?.useDynamicOptions) && getResolvedValue(column?.optionsLoadingState)
-                      ? true
-                      : false
+                    useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
                   }
                   autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
@@ -246,6 +242,7 @@ export default function generateColumnsData({
                   id={id}
                 />
               );
+            }
 
             case 'badge':
             case 'badges':

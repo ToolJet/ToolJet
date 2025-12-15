@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -10,7 +9,7 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 //TODO: Remove this
-import { Confirm } from '@/Editor/Viewer/Confirm';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -40,6 +39,8 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
       canReadDataSource(dataQuery?.data_source_id) ||
       canDeleteDataSource()
       : true;
+
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -72,10 +73,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
 
   const getTooltip = () => {
     const permission = dataQuery.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -92,7 +93,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   return (
@@ -104,7 +105,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
           if (isQuerySelected) return;
           if (!shouldFreeze) {
             const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
-            if (menuBtn.contains(e.target)) {
+            if (menuBtn && menuBtn.contains(e.target)) {
               e.stopPropagation();
             } else {
               toggleQueryHandlerMenu(false);
@@ -122,11 +123,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         </div>
         <div className="col query-row-query-name">
           {isRenaming ? (
-            <QueryRenameInput
-              dataQuery={dataQuery}
-              darkMode={darkMode}
-              onUpdate={updateQueryName}
-            />
+            <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
               <span
@@ -148,7 +145,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   <a
                     className="text-truncate"
                     data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.ai/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -163,18 +160,20 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             </div>
           )}
         </div>
-        {!shouldFreeze && <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
-          <ButtonComponent
-            iconOnly
-            leadingIcon="morevertical01"
-            onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
-            size="small"
-            variant="outline"
-            className=""
-            id={`query-handler-menu-${dataQuery?.id}`}
-            data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-          />
-        </div>}
+        {!shouldFreeze && hasPermissions && (
+          <div className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}>
+            <ButtonComponent
+              iconOnly
+              leadingIcon="morevertical01"
+              onClick={(e) => toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`)}
+              size="small"
+              variant="outline"
+              className=""
+              id={`query-handler-menu-${dataQuery?.id}`}
+              data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
+            />
+          </div>
+        )}
       </div>
       <Confirm
         show={isDeleting}

@@ -19,6 +19,7 @@ import {
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
   sanitizeSortPairs,
+  getTooljetEdition,
 } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
 import {
@@ -73,4 +74,5 @@ export {
   isPrivateIP,
   getSSRFConfig,
   getSSRFProtectionOptions,
+  getTooljetEdition,
 };

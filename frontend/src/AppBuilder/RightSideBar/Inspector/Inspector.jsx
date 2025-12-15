@@ -40,7 +40,6 @@ import { Select } from './Components/Select';
 import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-// import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
@@ -144,8 +143,7 @@ export const Inspector = ({
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
@@ -410,7 +408,7 @@ export const Inspector = ({
       setWidgetDeleteConfirmation(true);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionComponent) return;
       toggleComponentPermissionModal(true);
     }
     if (value === 'duplicate') {
@@ -458,8 +456,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
@@ -556,9 +554,8 @@ export const Inspector = ({
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
-            shouldFreeze && 'disabled'
-          }`}
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${shouldFreeze && 'disabled'
+            }`}
         >
           <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
@@ -587,13 +584,13 @@ export const Inspector = ({
                               <div
                                 className={classNames('list-item-option-menu-label', {
                                   'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !licenseValid,
+                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
                                 })}
                               >
                                 {option?.label}
                               </div>
                               {option.value === 'permission' &&
-                                !licenseValid &&
+                                !hasAppPermissionComponent &&
                                 option.trailingIcon &&
                                 option.trailingIcon}
                             </div>
@@ -602,9 +599,9 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'Component permissions are available only in paid plans'}
+                              message={'You don\'t have access to component permissions. Upgrade your plan to access this feature.'}
                               placement="left"
-                              show={!licenseValid}
+                              show={!hasAppPermissionComponent}
                             >
                               {optionBody}
                             </ToolTip>
@@ -656,13 +653,13 @@ const getDocsLink = (componentMeta) => {
     case 'ToggleSwitchV2':
       return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
     case 'DropdownV2':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'DropDown':
-      return 'https://docs.tooljet.ai/docs/widgets/dropdown';
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
     case 'MultiselectV2':
-      return 'https://docs.tooljet.ai/docs/widgets/multiselect';
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
-      return 'https://docs.tooljet.ai/docs/widgets/date-range-picker';
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }

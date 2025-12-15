@@ -13,7 +13,6 @@ import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 
 //TODO: Revisit the logic of height (dropRef)
@@ -76,10 +75,6 @@ const Container = React.memo(
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
-
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
       hover: (item, monitor) => {
@@ -133,8 +128,10 @@ const Container = React.memo(
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+          const scrollLeft = realCanvas.scrollLeft || 0;
+          const scrollTop = realCanvas.scrollTop || 0;
+          const x = e.clientX - rect.left + scrollLeft;
+          const y = e.clientY - rect.top + scrollTop;
           setLastCanvasClickPosition({ x, y });
         }
       },
