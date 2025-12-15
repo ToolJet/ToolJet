@@ -164,6 +164,14 @@ const CreateVersionModal = ({
         status: 'PUBLISHED',
       });
 
+      if (isGitSyncEnabled && isBranchingEnabled) {
+        try {
+          await gitSyncService.createGitTag(appId, selectedVersionForCreation.id);
+        } catch (tagError) {
+          toast.error('Version saved but failed to create git tag');
+        }
+      }
+
       toast.success('Version Created successfully');
       setVersionName('');
       setVersionDescription('');

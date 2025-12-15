@@ -26,6 +26,7 @@ export const gitSyncService = {
   switchBranch,
   updateGitConfigs,
   getGitConfigs,
+  createGitTag,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -333,4 +334,12 @@ function getGitConfigs(organizationId, versionId) {
   );
 }
 
+function createGitTag(appId, versionId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}/tag`, requestOptions).then(handleResponse);
+}
 // Remove all app-git api's to separate service from here.

@@ -11,4 +11,5 @@ export enum FEATURE_KEY {
   GET_ALL_BRANCHES = 'get_all_branches',
   CREATE_BRANCH = 'create_branch',
   FETCH_PULL_REQUESTS = 'fetch_pull_requests',
+  CREATE_GIT_TAG = 'CREATE_GIT_TAG',
 }
