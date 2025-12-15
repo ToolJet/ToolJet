@@ -8,5 +8,3 @@ export function useAppsPermissions() {
 }
 
 export default useAppsPermissions;
-
-

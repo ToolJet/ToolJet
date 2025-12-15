@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { AppsShellView } from '../components/AppsShellView';
-import { appsColumns } from '@/features/apps/columns';
-import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
-import { useResourceActions } from '@/features/apps/hooks/useResourceActions';
-import { useResourcePermissions } from '@/features/apps/hooks/useResourcePermissions';
+import { ResourceShellView, EmptyResource, ResourceTableSkeleton } from '@/features/commons/components';
+import { appsColumns } from '@/features/commons/columns';
+import {
+  useResourcePageAdapter,
+  useResourceActions,
+  useResourcePermissions,
+  useResourcePageState,
+} from '@/features/commons/hooks';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
-import { EmptyNoApps } from '../components/EmptyNoApps';
 import { ResourcePageHeader } from '@/components/ui/blocks/ResourcePageHeader';
 import { MOCK_MODULES_DATA, MOCK_MODULES_META } from '../stories/mockData';
-import { useResourcePageState } from '@/features/apps/hooks/useResourcePageState';
+import { transformAppsToAppRow } from '../adapters/homePageToAppRow';
 import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader';
 import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
 import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
-import { AppsTableSkeleton } from '@/features/apps/components/AppsTableSkeleton';
 import { AppsGrid } from '../components/AppsGrid';
 import { UpgradePromptDialog } from '@/components/ui/blocks/UpgradePromptDialog/UpgradePromptDialog';
 import { Button } from '@/components/ui/Button/Button';
@@ -151,6 +152,8 @@ function AppsPageAdapter({
       customizeIcon,
       moveToFolder,
     },
+    getPlayPath: (app) => `/${resolvedWorkspaceId}/applications/${app.slug}`,
+    getEditPath: (app) => `/${resolvedWorkspaceId}/apps/${app.slug}`,
   });
   const actions = useMemo(
     () => ({
@@ -181,10 +184,11 @@ function AppsPageAdapter({
     isEmpty: appsEmpty,
     error: adapterError,
   } = useResourcePageAdapter({
-    data: { apps, isLoading: appsIsLoading, error: appsError, meta },
-    filters: { appSearchKey, currentFolder },
+    data: { items: apps, isLoading: appsIsLoading, error: appsError, meta },
+    filters: { searchKey: appSearchKey, currentFolder },
     actions: { pageChanged, onSearch },
     columns: finalColumns,
+    transformFn: transformAppsToAppRow,
   });
 
   const {
@@ -193,14 +197,15 @@ function AppsPageAdapter({
     error: modulesAdapterError,
   } = useResourcePageAdapter({
     data: {
-      apps: modulesData.data,
+      items: modulesData.data,
       isLoading: modulesData.isLoading,
       error: modulesData.error,
       meta: modulesData.meta,
     },
-    filters: { appSearchKey, currentFolder },
+    filters: { searchKey: appSearchKey, currentFolder },
     actions: { pageChanged: undefined, onSearch },
     columns: finalColumns,
+    transformFn: transformAppsToAppRow,
   });
 
   const breadcrumbItems = useMemo(
@@ -329,7 +334,12 @@ function AppsPageAdapter({
     // Use pageIndex as key to force re-render when pagination changes
     const pageIndex = table.getState().pagination.pageIndex;
     return viewMode === 'list' ? (
-      <DataTable key={`table-page-${pageIndex}`} table={table} isLoading={isLoading} skeleton={<AppsTableSkeleton />} />
+      <DataTable
+        key={`table-page-${pageIndex}`}
+        table={table}
+        isLoading={isLoading}
+        skeleton={<ResourceTableSkeleton />}
+      />
     ) : (
       <AppsGrid table={table} actions={actions} perms={computedPerms} canDelete={canDeletePerm} />
     );
@@ -358,7 +368,7 @@ function AppsPageAdapter({
           />
         ) : null,
       empty: appsEmpty,
-      emptyState: <EmptyNoApps />,
+      emptyState: <EmptyResource title="You don't have any apps yet" />,
     },
     {
       id: 'modules',
@@ -373,7 +383,7 @@ function AppsPageAdapter({
         />
       ) : null,
       empty: modulesEmpty,
-      emptyState: <EmptyNoApps />,
+      emptyState: <EmptyResource title="You don't have any modules yet" />,
     },
   ];
 
@@ -382,9 +392,10 @@ function AppsPageAdapter({
 
   return (
     <>
-      <AppsShellView
+      <ResourceShellView
         searchValue={appSearchKey}
         onSearch={onSearch}
+        searchPlaceholder="Search apps..."
         workspaceName={workspaceName}
         workspaces={workspaces}
         onWorkspaceChange={onWorkspaceChange}
@@ -420,7 +431,7 @@ function AppsPageAdapter({
           />
           <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
         </ResourceErrorBoundary>
-      </AppsShellView>
+      </ResourceShellView>
       {isLimitReached && (
         <UpgradePromptDialog
           open={dialogOpen}

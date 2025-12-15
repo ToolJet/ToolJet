@@ -165,6 +165,7 @@
     "use-react-router-breadcrumbs": "^4.0.1",
     "util": "^0.12.5",
     "uuid": "9.0.0",
+    "vaul": "^1.1.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "y-websocket": "^1.4.5",
     "yjs": "^13.5.46",

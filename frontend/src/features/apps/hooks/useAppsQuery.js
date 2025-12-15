@@ -8,5 +8,3 @@ export function useAppsQuery() {
 }
 
 export default useAppsQuery;
-
-

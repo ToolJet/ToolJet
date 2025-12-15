@@ -1,15 +1,15 @@
-import React from 'react';
-import { AppsTable } from '../components/AppsTable';
-import { generateMockApps } from './utils';
-import { appsColumns } from '@/features/apps/columns';
-import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
+import React from "react";
+import { AppsTable } from "../components/AppsTable";
+import { generateMockApps } from "./utils";
+import { appsColumns } from "@/features/commons/columns";
+import { useResourcePageAdapter } from "@/features/apps/hooks/useResourcePageAdapter";
 
 const mockActions = {
-  play: (app) => console.log('Play:', app),
-  edit: (app) => console.log('Edit:', app),
-  delete: (app) => console.log('Delete:', app),
-  clone: (app) => console.log('Clone:', app),
-  export: (app) => console.log('Export:', app),
+  play: (app) => console.log("Play:", app),
+  edit: (app) => console.log("Edit:", app),
+  delete: (app) => console.log("Delete:", app),
+  clone: (app) => console.log("Clone:", app),
+  export: (app) => console.log("Export:", app),
 };
 
 const mockPerms = {
@@ -18,18 +18,22 @@ const mockPerms = {
 };
 
 export default {
-  title: 'Features/Apps/Components/AppsTable',
+  title: "Features/Apps/Components/AppsTable",
   component: AppsTable,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
 };
 
 function AppsTableWrapper({ apps, isLoading = false }) {
-  const columns = React.useMemo(() => appsColumns({ perms: mockPerms, actions: mockActions, canDelete: true }), []);
+  const columns = React.useMemo(
+    () =>
+      appsColumns({ perms: mockPerms, actions: mockActions, canDelete: true }),
+    []
+  );
   const { table } = useResourcePageAdapter({
     data: { apps, isLoading, error: null, meta: {} },
-    filters: { appSearchKey: '', currentFolder: {} },
+    filters: { appSearchKey: "", currentFolder: {} },
     actions: {},
     columns,
   });
@@ -49,4 +53,3 @@ export const Empty = () => {
 export const Loading = () => {
   return <AppsTableWrapper apps={[]} isLoading={true} />;
 };
-
