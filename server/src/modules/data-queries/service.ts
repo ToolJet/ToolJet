@@ -16,6 +16,7 @@ import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IDataQueriesService } from './interfaces/IService';
 import { App } from '@entities/app.entity';
+import { ColumnNormalizationService } from './services/column-normalization.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { ACTION_TYPE } from '@modules/app-history/constants';
 
@@ -25,8 +26,26 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
+    protected readonly columnNormalizationService: ColumnNormalizationService,
     protected readonly appHistoryUtilService: AppHistoryUtilService
   ) { }
+
+  protected async normalizeOptionsToUuids(
+    options: any,
+    dataSource: DataSource,
+    organizationId: string
+  ): Promise<any> {
+    return this.columnNormalizationService.normalizeOptionsToUuids(options, dataSource, organizationId);
+  }
+
+  protected async denormalizeOptionsFromUuids(
+    options: any,
+    dataSource: DataSource,
+    organizationId: string
+  ): Promise<any> {
+    return this.columnNormalizationService.denormalizeOptionsFromUuids(options, dataSource, organizationId);
+  }
+
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -34,7 +53,17 @@ export class DataQueriesService implements IDataQueriesService {
 
     // serialize
     for (const query of queries) {
+      const dataSource = query.dataSource;  // ← Save it first
       delete query['dataSource'];
+
+      // Denormalize UUIDs back to column names
+      if (dataSource) {
+        query.options = await this.denormalizeOptionsFromUuids(
+          query.options,
+          dataSource,
+          user.organizationId
+        );
+      }
 
       const decamelizeQuery = decamelizeKeys(query);
 
@@ -64,11 +93,17 @@ export class DataQueriesService implements IDataQueriesService {
       'You cannot create queries in the promoted version.'
     );
 
+    const normalizedOptions = await this.normalizeOptionsToUuids(
+      options,
+      dataSource,
+      user.organizationId
+    );
+
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
-          options,
+          options: normalizedOptions,
           dataSourceId: dataSource.id,
           appVersionId,
         },
@@ -107,8 +142,16 @@ export class DataQueriesService implements IDataQueriesService {
       'You cannot update queries in the promoted version.'
     );
 
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
+
+    const normalizedOptions = await this.normalizeOptionsToUuids(
+      options,
+      dataQuery.dataSource,
+      user.organizationId
+    );
+
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
+      await this.dataQueryRepository.updateOne(dataQueryId, { name, options: normalizedOptions }, manager);
     });
 
     // Queue history capture after successful data query update
@@ -164,7 +207,8 @@ export class DataQueriesService implements IDataQueriesService {
           where: { id, dataSource: { organizationId: user.organizationId } },
           relations: ['dataSource'],
         });
-        await this.dataQueryRepository.updateOne(id, { options }, manager);
+
+        // await this.dataQueryRepository.updateOne(id, { options }, manager);
       }
       if (!dataQueriesOptions.length) {
         return [];
@@ -190,13 +234,16 @@ export class DataQueriesService implements IDataQueriesService {
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
+
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
 
     if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
-      await this.dataQueryRepository.updateOne(dataQueryId, { options });
+
+      // await this.dataQueryRepository.updateOne(dataQueryId, { options: normalizedOptions });
       dataQuery['options'] = options;
     }
 
+    // DON'T normalize resolvedOptions - execution needs column names
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 

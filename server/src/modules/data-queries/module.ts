@@ -10,6 +10,7 @@ import { AppsRepository } from '@modules/apps/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { ColumnNormalizationService } from './services/column-normalization.service';
 import { AppHistoryModule } from '@modules/app-history/module';
 
 export class DataQueriesModule extends SubModule {
@@ -36,6 +37,7 @@ export class DataQueriesModule extends SubModule {
         OrganizationRepository,
         DataQueriesService,
         DataQueriesUtilService,
+        ColumnNormalizationService,
         AppFeatureAbilityFactory,
         DataSourceFeatureAbilityFactory,
       ],
