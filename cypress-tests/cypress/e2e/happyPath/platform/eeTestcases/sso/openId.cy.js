@@ -14,9 +14,9 @@ import { ssoText } from "Texts/manageSSO";
 import { usersText } from "Texts/manageUsers";
 
 import { fake } from "Fixtures/fake";
+import { sanitize } from "Support/utils/common";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
-import { sanitize } from "Support/utils/common";
 
 const config = {
     type: "openid",
@@ -64,7 +64,6 @@ describe("Verify OIDC user onboarding", () => {
         cy.apiUpdateSSOConfig(config, "instance");
     });
 
-
     it("Verify user onboarding using workspace OIDC", () => {
         defaultSSO(false);
         setSignupStatus(false, data.workspaceName);
@@ -72,6 +71,7 @@ describe("Verify OIDC user onboarding", () => {
         cy.wait(2000);
 
         cy.get(ssoEeSelector.oidc).click();
+        cy.get('[data-cy="add-oidc-provider-button"]').click();
         cy.get(ssoEeSelector.oidcToggle).click();
         cy.clearAndType(ssoEeSelector.nameInput, "Tooljet OIDC");
         cy.clearAndType(
@@ -170,17 +170,18 @@ describe("Verify OIDC user onboarding", () => {
     });
 
     if (envVar === "Enterprise") {
-        it("Verify user onboarding using instance level OIDC", () => {
+        it("Verify user onboarding using instance level OIDC is redirecting to the default workspace", () => {
             enableInstanceSignup();
             cy.apiLogout();
 
+            cy.wait(2000);
             cy.visit("/");
             cy.get(ssoEeSelector.oidcSSOText).click();
             cy.get(".admin-button").click();
             cy.wait(3000);
             cy.get(commonSelectors.workspaceName).verifyVisibleElement(
                 "have.text",
-                'My workspace'
+                "My workspace"
             );
             common.logout();
 
