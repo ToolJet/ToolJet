@@ -355,7 +355,16 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
-  logger.log(`OTEL_ENABLED: ${configService.get('ENABLE_OTEL') === 'true'}`);
+
+  const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
+  logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
+  if (otelEnabled) {
+    logger.log(`  - Edition: ${edition}`);
+    logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+  }
+
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);

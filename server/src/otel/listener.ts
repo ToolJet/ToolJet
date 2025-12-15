@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { IOtelListener } from './listener.interface';
+import { IOtelListener } from './interfaces/IListener';
 
 /**
  * Community Edition (CE) OTEL Listener
