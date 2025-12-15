@@ -868,7 +868,7 @@ export class AppImportExportService {
     isNormalizedAppDefinitionSchema: boolean,
     tooljetVersion: string | null,
     moduleResourceMappings?: Record<string, unknown>,
-    version?: AppVersion
+    createNewVersion?: boolean
   ): Promise<AppResourceMappings> {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -911,7 +911,7 @@ export class AppImportExportService {
       importingAppVersions,
       appResourceMappings,
       isNormalizedAppDefinitionSchema,
-      version
+      createNewVersion
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -2119,7 +2119,7 @@ export class AppImportExportService {
     appVersions: AppVersion[],
     appResourceMappings: AppResourceMappings,
     isNormalizedAppDefinitionSchema: boolean,
-    oldVersion: AppVersion
+    createNewVersion?: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -2140,34 +2140,20 @@ export class AppImportExportService {
         currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
-      // let version;
-      // // this case only happens in the AI flow when app is imported within an existing app
-      // if (importedApp.editingVersion) {
-      //   version = importedApp.editingVersion;
-      // } else {
-      //   version = await manager.create(AppVersion, {
-      //     appId: importedApp.id,
-      //     definition: appVersion.definition,
-      //     name: appVersion.name,
-      //     currentEnvironmentId,
-      //     createdAt: new Date(),
-      //     updatedAt: new Date(),
-      //     status: AppVersionStatus.DRAFT,
-      //     parent_version_id: appVersion?.id || null,
-      //   });
-      // }
-      const version = await manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: oldVersion?.definition || appVersion.definition,
-        name: oldVersion?.name || appVersion?.name,
-        currentEnvironmentId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        status: AppVersionStatus.DRAFT,
-        versionType: oldVersion?.versionType,
-        parent_version_id: appVersion?.id || null,
-      });
-
+      let version;
+      // this case only happens in the AI flow when app is imported within an existing app
+      if (importedApp.editingVersion && !createNewVersion) {
+        version = importedApp.editingVersion;
+      } else {
+        version = await manager.create(AppVersion, {
+          appId: importedApp.id,
+          definition: appVersion.definition,
+          name: appVersion.name,
+          currentEnvironmentId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
