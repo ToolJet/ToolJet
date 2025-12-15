@@ -92,6 +92,18 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
     logger.log('OTEL disabled (ENABLE_OTEL not set to true)');
     return;
   }
+  const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+  const importPath = await getImportPath(false, tooljetEdition);
+  const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
+  await licenseInitService.init();
+  const License = await import(`${importPath}/licensing/configs/License`);
+  const license = License.default;
+  const licenseInfo = license.Instance();
+
+  if (!licenseInfo.observabilityEnabled) {
+    logger.log('OTEL disabled (observability feature not enabled in license)');
+    return;
+  }
 
   try {
     logger.log('Initializing OpenTelemetry...');
