@@ -2152,6 +2152,9 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          versionType: appVersion.versionType,
+          parent_version_id: appVersion?.id || null,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
