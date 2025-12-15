@@ -22,7 +22,8 @@ ToolJet offers a wide range of data sources. If needed, you can develop and inte
 
 3. Once the data source is added, you'll be required to input the configuration details for establishing a connection. <br/>
    **_Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/development-lifecycle/environment/self-hosted/multi-environment)._**
-   <img className="screenshot-full" src="/img/datasource-reference/newui/overview/googlesheets-datasources.gif" alt="Overview of Data Sources" />
+   <img className="screenshot-full" img-m src="/img/datasource-reference/newui/overview/googlesheets-datasource" alt="Overview of Data Sources" />
+   <img className="screenshot-full" img m src="/img/datasource-reference/newui/overview/gs-dev" alt="Overview of Data Sources" />
 
 4. Return to your application query panel. The recently added data source will be accessible within the query panel under the **Available data sources** section. Data Sources that have been added can now be utilized in both **existing applications** and **newly created applications**.
    <img className="screenshot-full" src="/img/datasource-reference/overview/available-ds.png" alt="Overview of Data Sources" />
