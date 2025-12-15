@@ -1,6 +1,6 @@
 ---
 id: example-configuration
-title: Example Configuraiton
+title: Example Configuration
 ---
 
 This guide will walk you through setting up a multi-environment in ToolJet with a practical example. Imagine **Nexora Enterprises**, a company building an internal application using ToolJet.
