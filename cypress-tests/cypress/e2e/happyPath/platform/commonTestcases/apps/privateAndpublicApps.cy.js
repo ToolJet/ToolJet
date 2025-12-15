@@ -123,7 +123,6 @@ describe("Private and Public apps", () => {
     logout();
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("text1");
-    verifyPreviewIsDisabled();
   });
 
   it("should verify app private and public app visibility for the same workspace user", () => {
@@ -136,24 +135,19 @@ describe("Private and Public apps", () => {
     cy.wait(2000);
     cy.appUILogin(data.email, "password");
     verifyWidget("private");
-    verifyPreviewIsDisabled();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
-    
     cy.defaultWorkspaceLogin();
     cy.apiMakeAppPublic();
     cy.apiLogout();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
 
     cy.apiLogin(data.email, "password");
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
   });
 
   it("should verify app private and public app visibility for the same instance user", () => {
@@ -174,12 +168,10 @@ describe("Private and Public apps", () => {
 
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
 
     cy.apiLogin(data.email, "password");
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
   });
 
   it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
@@ -200,17 +192,13 @@ describe("Private and Public apps", () => {
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
     verifyWidget("public");
-    verifyPreviewIsDisabled();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
     verifyWidget("private");
-    verifyPreviewIsDisabled();
-
     cy.apiLogout();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
     verifyWidget("public");
-    verifyPreviewIsDisabled();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
     cy.wait("@whiteLabelling");

@@ -8,6 +8,7 @@ import {
   WaitTimes,
   TableValues,
 } from "Constants/constants/multiEnv";
+import { verifyPreviewIsDisabled } from "Support/utils/platform/eeCommon";
 import {
   setupWorkspaceConstant,
   setupPostgreSQLDataSource,
@@ -27,6 +28,7 @@ import {
 
 describe("Multi-Environment Behavior", () => {
   let testData = {};
+  let names = {};     
 
   beforeEach(() => {
     const uniqueId = `${fake.firstName.toLowerCase().replace(/[^a-z]/g, "")}_${Date.now()}`;
@@ -39,7 +41,7 @@ describe("Multi-Environment Behavior", () => {
     cy.apiLogin();
     cy.skipWalkthrough();
 
-    const names = {
+     names = {
       appName: testData.appName,
       globalConstantName: `${testData.baseId}_global`,
       secretConstantName: `${testData.baseId}_host`,
@@ -126,7 +128,11 @@ describe("Multi-Environment Behavior", () => {
     verifyPageSettingsDisabled();
     //verifyComponentInspectorDisabled();
 
-    releaseAndVisitApp(testData.appSlug);
+    cy.apiReleaseApp(names.appName);
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+
+    verifyPreviewIsDisabled();
     verifyEnvironmentData(DBValues.production, EnvironmentValues.production);
     // cy.get(commonWidgetSelector.draggableWidget("button1")).should(
     //   "be.visible"
