@@ -29,7 +29,11 @@ const OnboardingBackgroundWrapper = ({
           </div>
         ) : (
           <div className="row h-100">
-            <div className={`col-md-${leftSize} leftside-wrapper d-flex`}>
+            <div
+              className={`col-12 col-md-${leftSize} leftside-wrapper d-flex 
+              justify-content-center justify-content-md-start
+              align-items-center`}
+            >
               <LeftSideComponent />
             </div>
             <div className={`col-md-${rightSize} rightside-wrapper d-flex align-items-center justify-content-end`}>
