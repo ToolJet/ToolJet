@@ -94,7 +94,7 @@ const Googlesheets = ({
           </div>
         </div>
       </div>
-      {options?.authentication_type?.value === 'oauth2' && (
+      {(options?.authentication_type?.value === 'oauth2' && selectedDataSource?.kind !== 'googlesheetsv2') && (
         <div className="row mt-3">
           <center>
             {authStatus === 'waiting_for_token' && (
