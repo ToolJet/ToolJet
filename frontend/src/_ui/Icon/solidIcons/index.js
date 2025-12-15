@@ -290,6 +290,7 @@ import MobileEmptyStateIcon from './MobileEmptyStateIcon';
 import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
 import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
+import BackWithoutArrow from './BackWithoutArrow.jsx';
 import PlayLucide from './PlayLucide.jsx';
 
 const Icon = (props) => {
@@ -877,6 +878,8 @@ const Icon = (props) => {
       return <Google {...props} />;
     case 'github':
       return <GitHub {...props} />;
+    case 'backwithoutarrow':
+      return <BackWithoutArrow {...props} />;
     case 'play-lucide':
       return <PlayLucide {...props} />;
     default:
