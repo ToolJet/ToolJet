@@ -95,9 +95,8 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
     options: options,
   };
 
-  let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
-    environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
-  }?mode=${mode}`;
+  let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    }?mode=${mode}`;
 
   //For public/released apps
   if (!environmentId || !versionId) {
@@ -117,8 +116,7 @@ function preview(query, options, versionId, environmentId) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(
-    `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
-      environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
     }`,
     requestOptions
   ).then(handleResponse);
@@ -136,19 +134,20 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   );
 }
 
-function invoke(dataSourceId, methodName, environmentId) {
+function invoke(dataSourceId, methodName, environmentId, args) {
   const body = {
     method: methodName,
-    environmentId: environmentId
+    environmentId: environmentId,
+    args: args
   };
 
   const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
 
-  const requestOptions = { 
-    method: 'POST', 
-    headers: authHeader(), 
-    credentials: 'include', 
-    body: JSON.stringify(body) 
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body)
   };
   return fetch(url, requestOptions).then(handleResponse);
 }

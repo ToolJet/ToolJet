@@ -25,9 +25,9 @@ export const LEFT_SIDEBAR_WIDTH = {
 
 export const RIGHT_SIDEBAR_WIDTH = 300;
 
-export const PAGES_SIDEBAR_WIDTH_EXPANDED = 226;
+export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
-export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 44;
+export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
@@ -56,3 +56,5 @@ export const TAB_CANVAS_PADDING = 8;
 export const MODAL_CANVAS_PADDING = 5;
 
 export const LISTVIEW_CANVAS_PADDING = 7;
+
+export const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
