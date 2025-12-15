@@ -31,6 +31,34 @@ const COLORS = [
 
 const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
+  const hasScrolledOnOpenRef = useRef(false);
+  const menuListRef = useRef(null);
+
+  const firstSelectedIndex = props?.options?.findIndex(
+    opt =>
+      opt.value ===
+      (Array.isArray(selectProps?.value)
+        ? selectProps.value[0]?.value
+        : selectProps.value?.value)
+  );
+
+  useEffect(() => {
+    if (!selectProps?.menuIsOpen) {
+      hasScrolledOnOpenRef.current = false;
+      return;
+    }
+
+    if (hasScrolledOnOpenRef.current) return;
+    if (firstSelectedIndex < 0) return;
+
+    const menuEl = menuListRef.current;
+    const optionEl = menuEl?.children?.[firstSelectedIndex];
+
+    if (menuEl && optionEl) {
+      optionEl.scrollIntoView({ block: 'center' });
+      hasScrolledOnOpenRef.current = true;
+    }
+  }, [selectProps?.menuIsOpen, firstSelectedIndex]);
 
   return (
     <div
@@ -68,7 +96,7 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
         />
       </div>
       <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
-        <MenuList {...props} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
+        <MenuList {...props} innerRef={menuListRef} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
           {optionsLoadingState ? (
             <div className="text-center py-4">
               <div className="spinner-border text-primary" role="status">
@@ -298,8 +326,8 @@ export const CustomSelectColumn = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-        ? []
-        : {},
+          ? []
+          : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -308,8 +336,8 @@ export const CustomSelectColumn = ({
     if (isMulti && value?.length) {
       return isArray(value)
         ? options?.filter((option) =>
-            value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
-          )
+          value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
+        )
         : [];
     }
     return options?.find((option) => option.value === value) || [];
