@@ -89,7 +89,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .query-pane {
@@ -1918,4 +1918,9 @@ $border-radius: 4px;
     height: 100%;
     max-height: 100px;
   }
+}
+
+.query-manager-query-timeout {
+  max-width: 400px;
+  width: 330px;
 }

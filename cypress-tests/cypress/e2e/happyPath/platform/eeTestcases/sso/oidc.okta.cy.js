@@ -7,7 +7,7 @@ import {
   verifyUserRole,
 } from "Support/utils/manageGroups";
 import {
-  addOIDCConfig,
+  addOktaOIDCConfig,
   deleteOrganisationSSO,
   enableInstanceSignup,
   setSignupStatus,
@@ -46,7 +46,7 @@ describe("Okta OIDC", () => {
 
     apiCreateGroup(data.groupName);
 
-    addOIDCConfig({ Everyone: data.groupName }, "instance", {
+    addOktaOIDCConfig({ Everyone: data.groupName }, "instance", {
       organizationId: orgId,
       id: "1",
     });
@@ -61,6 +61,7 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "instance",
     });
 
     verifyUserRole("@userId", "end-user", [data.groupName]);
@@ -69,7 +70,7 @@ describe("Okta OIDC", () => {
 
     apiDeleteGroup(data.groupName);
     apiCreateGroup(data.groupName);
-    addOIDCConfig({ Everyone: "Admin", OIDC: data.groupName }, "instance", {
+    addOktaOIDCConfig({ Everyone: "Admin", OIDC: data.groupName }, "instance", {
       organizationId: orgId,
       id: "1",
     });
@@ -84,6 +85,7 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "instance",
     });
     verifyUserRole("@userId", "admin", ["admin", data.groupName]);
 
@@ -98,7 +100,7 @@ describe("Okta OIDC", () => {
       }
     });
 
-    addOIDCConfig({ Everyone: "Admin" });
+    addOktaOIDCConfig({ Everyone: "Admin" });
     cy.apiLogout();
     cy.wait(3000);
 
@@ -110,13 +112,14 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "workspace",
     });
 
     verifyUserRole("@userId", "admin");
     logout();
 
     cy.apiLogin();
-    addOIDCConfig({ Everyone: "Builder" });
+    addOktaOIDCConfig({ Everyone: "Builder" });
     cy.apiLogout();
     cy.wait(3000);
 
@@ -128,6 +131,7 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "workspace",
     });
 
     verifyUserRole("@userId", "builder");
@@ -137,7 +141,7 @@ describe("Okta OIDC", () => {
 
     cy.apiLogin();
 
-    addOIDCConfig({ Everyone: "End-user" });
+    addOktaOIDCConfig({ Everyone: "End-user" });
     cy.apiLogout();
     cy.wait(3000);
 
@@ -149,6 +153,7 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "workspace",
     });
 
     verifyUserRole("@userId", "end-user");
@@ -166,7 +171,7 @@ describe("Okta OIDC", () => {
       }
     });
 
-    addOIDCConfig({ Everyone: "builder", OIDC: data.groupName });
+    addOktaOIDCConfig({ Everyone: "builder", OIDC: data.groupName });
 
     cy.intercept("GET", "/api/authorize").as("openidResponse");
 
@@ -183,6 +188,7 @@ describe("Okta OIDC", () => {
       clientSecret: Cypress.env("okta_client_secret"),
       oktaDomain: Cypress.env("okta_domain"),
       organizationId: orgId,
+      level: "workspace",
     });
 
     // Wait for page to stabilize after OIDC login
