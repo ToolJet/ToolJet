@@ -1,6 +1,8 @@
 import React from 'react';
-import { DataTable } from '@/components/ui/blocks/DataTable';
+import { ResourceTable } from '@/features/commons/components';
 
 export function AppsTable({ table, isLoading }) {
-  return <DataTable table={table} isLoading={isLoading} />;
+  return <ResourceTable table={table} isLoading={isLoading} />;
 }
+
+export default AppsTable;

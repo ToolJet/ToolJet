@@ -1,18 +1,18 @@
-import React from 'react';
-import { AppsGrid } from '../components/AppsGrid';
-import { generateMockApps } from './utils';
-import { appsColumns } from '@/features/apps/columns';
-import { useResourcePageAdapter } from '@/features/apps/hooks/useResourcePageAdapter';
+import React from "react";
+import { AppsGrid } from "../components/AppsGrid";
+import { generateMockApps } from "./utils";
+import { appsColumns } from "@/features/commons/columns";
+import { useResourcePageAdapter } from "@/features/apps/hooks/useResourcePageAdapter";
 
 const mockActions = {
-  play: (app) => console.log('Play:', app),
-  edit: (app) => console.log('Edit:', app),
-  delete: (app) => console.log('Delete:', app),
-  clone: (app) => console.log('Clone:', app),
-  export: (app) => console.log('Export:', app),
-  rename: (app) => console.log('Rename:', app),
-  customizeIcon: (app) => console.log('Customize icon:', app),
-  moveToFolder: (app) => console.log('Move to folder:', app),
+  play: (app) => console.log("Play:", app),
+  edit: (app) => console.log("Edit:", app),
+  delete: (app) => console.log("Delete:", app),
+  clone: (app) => console.log("Clone:", app),
+  export: (app) => console.log("Export:", app),
+  rename: (app) => console.log("Rename:", app),
+  customizeIcon: (app) => console.log("Customize icon:", app),
+  moveToFolder: (app) => console.log("Move to folder:", app),
 };
 
 const mockPerms = {
@@ -21,17 +21,17 @@ const mockPerms = {
 };
 
 export default {
-  title: 'Features/Apps/Components/AppsGrid',
+  title: "Features/Apps/Components/AppsGrid",
   component: AppsGrid,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
 };
 
 function AppsGridWrapper({ apps, perms = mockPerms, canDelete = true }) {
   // Convert canDelete boolean to function if needed
   const canDeleteFn = React.useMemo(() => {
-    if (typeof canDelete === 'function') {
+    if (typeof canDelete === "function") {
       return canDelete;
     }
     return (_app) => canDelete;
@@ -43,12 +43,19 @@ function AppsGridWrapper({ apps, perms = mockPerms, canDelete = true }) {
   );
   const { table } = useResourcePageAdapter({
     data: { apps, isLoading: false, error: null, meta: {} },
-    filters: { appSearchKey: '', currentFolder: {} },
+    filters: { appSearchKey: "", currentFolder: {} },
     actions: {},
     columns,
   });
 
-  return <AppsGrid table={table} actions={mockActions} perms={perms} canDelete={canDeleteFn} />;
+  return (
+    <AppsGrid
+      table={table}
+      actions={mockActions}
+      perms={perms}
+      canDelete={canDeleteFn}
+    />
+  );
 }
 
 export const Default = () => {
@@ -68,8 +75,10 @@ export const Loading = () => {
 export const WithPermissions = () => {
   const apps = generateMockApps(8);
   const restrictedPerms = {
-    canPlay: (app) => app.id !== 'app-2',
-    canEdit: (app) => app.id !== 'app-3',
+    canPlay: (app) => app.id !== "app-2",
+    canEdit: (app) => app.id !== "app-3",
   };
-  return <AppsGridWrapper apps={apps} perms={restrictedPerms} canDelete={false} />;
+  return (
+    <AppsGridWrapper apps={apps} perms={restrictedPerms} canDelete={false} />
+  );
 };

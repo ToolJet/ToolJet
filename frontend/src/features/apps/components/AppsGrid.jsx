@@ -1,10 +1,7 @@
 import * as React from 'react';
 import { Smile } from 'lucide-react';
 import { ResourceCard } from '@/components/ui/blocks/ResourceCard/ResourceCard';
-import { ResourceGrid } from '@/components/ui/blocks/ResourceGrid/ResourceGrid';
-
-// Note: AppsGrid is a thin wrapper that provides app-specific formatting logic.
-// The generic ResourceGrid handles the grid layout, while AppsGrid handles app-specific rendering.
+import { ResourceGridComponent } from '@/features/commons/components';
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString) => {
@@ -64,5 +61,7 @@ export const AppsGrid = ({ table, actions, perms, canDelete }) => {
     );
   };
 
-  return <ResourceGrid items={items} renderItem={renderAppCard} />;
+  return <ResourceGridComponent items={items} renderItem={renderAppCard} />;
 };
+
+export default AppsGrid;

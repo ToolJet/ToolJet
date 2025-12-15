@@ -1,0 +1,281 @@
+{
+  "datasources": [
+    {
+      "id": "ds-001",
+      "name": "Production PostgreSQL",
+      "type": "postgres",
+      "updated_at": "2024-12-12T10:30:00Z",
+      "user": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "is_active": true,
+      "user_id": 1,
+      "created_at": "2024-11-15T09:00:00Z",
+      "created_by": {
+        "name": "Admin",
+        "email": "admin@example.com"
+      }
+    },
+    {
+      "id": "ds-002",
+      "name": "Main MySQL Database",
+      "type": "mysql",
+      "updated_at": "2024-12-12T08:15:00Z",
+      "user": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      },
+      "is_active": true,
+      "user_id": 2,
+      "created_at": "2024-11-22T14:30:00Z",
+      "created_by": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
+    },
+    {
+      "id": "ds-003",
+      "name": "MongoDB Atlas",
+      "type": "mongodb",
+      "updated_at": "2024-12-12T05:45:00Z",
+      "user": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      },
+      "is_active": true,
+      "user_id": 3,
+      "created_at": "2024-11-27T11:20:00Z",
+      "created_by": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      }
+    },
+    {
+      "id": "ds-004",
+      "name": "Redis Cache",
+      "type": "redis",
+      "updated_at": "2024-12-11T10:30:00Z",
+      "user": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      },
+      "is_active": true,
+      "user_id": 4,
+      "created_at": "2024-12-02T16:45:00Z",
+      "created_by": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      }
+    },
+    {
+      "id": "ds-005",
+      "name": "Stripe API",
+      "type": "restapi",
+      "updated_at": "2024-12-10T10:30:00Z",
+      "user": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      },
+      "is_active": true,
+      "user_id": 5,
+      "created_at": "2024-12-05T13:00:00Z",
+      "created_by": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      }
+    },
+    {
+      "id": "ds-006",
+      "name": "Analytics PostgreSQL",
+      "type": "postgres",
+      "updated_at": "2024-12-09T10:30:00Z",
+      "user": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "is_active": false,
+      "user_id": 1,
+      "created_at": "2024-12-07T09:30:00Z",
+      "created_by": {
+        "name": "Admin",
+        "email": "admin@example.com"
+      }
+    },
+    {
+      "id": "ds-007",
+      "name": "GraphQL Gateway",
+      "type": "graphql",
+      "updated_at": "2024-12-08T15:20:00Z",
+      "user": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      },
+      "is_active": true,
+      "user_id": 2,
+      "created_at": "2024-11-30T10:15:00Z",
+      "created_by": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
+    },
+    {
+      "id": "ds-008",
+      "name": "Elasticsearch Cluster",
+      "type": "elasticsearch",
+      "updated_at": "2024-12-07T12:00:00Z",
+      "user": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      },
+      "is_active": true,
+      "user_id": 3,
+      "created_at": "2024-11-25T08:45:00Z",
+      "created_by": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      }
+    },
+    {
+      "id": "ds-009",
+      "name": "AWS DynamoDB",
+      "type": "dynamodb",
+      "updated_at": "2024-12-06T09:30:00Z",
+      "user": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      },
+      "is_active": true,
+      "user_id": 4,
+      "created_at": "2024-11-20T14:00:00Z",
+      "created_by": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      }
+    },
+    {
+      "id": "ds-010",
+      "name": "Staging MySQL",
+      "type": "mysql",
+      "updated_at": "2024-12-05T11:45:00Z",
+      "user": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      },
+      "is_active": true,
+      "user_id": 5,
+      "created_at": "2024-11-18T10:30:00Z",
+      "created_by": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      }
+    },
+    {
+      "id": "ds-011",
+      "name": "Development PostgreSQL",
+      "type": "postgres",
+      "updated_at": "2024-12-04T16:20:00Z",
+      "user": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "is_active": true,
+      "user_id": 1,
+      "created_at": "2024-11-10T09:00:00Z",
+      "created_by": {
+        "name": "Admin",
+        "email": "admin@example.com"
+      }
+    },
+    {
+      "id": "ds-012",
+      "name": "Slack API",
+      "type": "restapi",
+      "updated_at": "2024-12-03T13:15:00Z",
+      "user": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      },
+      "is_active": true,
+      "user_id": 2,
+      "created_at": "2024-11-28T15:45:00Z",
+      "created_by": {
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
+    },
+    {
+      "id": "ds-013",
+      "name": "Testing MongoDB",
+      "type": "mongodb",
+      "updated_at": "2024-12-02T10:00:00Z",
+      "user": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      },
+      "is_active": false,
+      "user_id": 3,
+      "created_at": "2024-11-12T11:30:00Z",
+      "created_by": {
+        "name": "Bob Wilson",
+        "email": "bob@example.com"
+      }
+    },
+    {
+      "id": "ds-014",
+      "name": "Session Redis",
+      "type": "redis",
+      "updated_at": "2024-12-01T14:30:00Z",
+      "user": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      },
+      "is_active": true,
+      "user_id": 4,
+      "created_at": "2024-11-08T12:00:00Z",
+      "created_by": {
+        "name": "Alice Johnson",
+        "email": "alice@example.com"
+      }
+    },
+    {
+      "id": "ds-015",
+      "name": "GitHub API",
+      "type": "restapi",
+      "updated_at": "2024-11-30T09:45:00Z",
+      "user": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      },
+      "is_active": true,
+      "user_id": 5,
+      "created_at": "2024-11-05T10:15:00Z",
+      "created_by": {
+        "name": "Charlie Brown",
+        "email": "charlie@example.com"
+      }
+    }
+  ],
+  "environments": [
+    {
+      "id": "env-1",
+      "name": "Production",
+      "count": 15
+    },
+    {
+      "id": "env-2",
+      "name": "Staging",
+      "count": 8
+    },
+    {
+      "id": "env-3",
+      "name": "Development",
+      "count": 12
+    },
+    {
+      "id": "env-4",
+      "name": "Testing",
+      "count": 5
+    }
+  ]
+}
