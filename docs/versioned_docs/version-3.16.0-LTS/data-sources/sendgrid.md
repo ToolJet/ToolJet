@@ -49,8 +49,10 @@ The SendGrid API Datasource supports for interaction with the mail endpoint of t
 
 #### Optional Parameter
 - **Body as HTML**
+- **Sender Name**
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v2.png" alt="ToolJet - Query SendGrid"/>
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendGrid-query.png" alt="ToolJet - Query SendGrid"/>
+
 
 :::info
 **Send mail to** - accepts an array/list of emails separated by comma.
