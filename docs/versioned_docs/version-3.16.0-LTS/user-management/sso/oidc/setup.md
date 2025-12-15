@@ -66,23 +66,23 @@ For example, you can allow your team to access your ToolJet instance using their
 
 To enable this behavior, set the following environment variables:
 
-- `AUTH_ENABLE_NON_EMAIL_IDENTIFIER=<your_unique_identifier>`
+- `SSO_UNIQUE_ID_FIELD=<your_unique_identifier>`
 
-- `AUTH_NON_EMAIL_IDENTIFIER_FIELD=<example.com>`
+- `SSO_CUSTOM_EMAIL_DOMAIN=<example.com>`
 
 #### Environment Variables Explained
 
-- `AUTH_ENABLE_NON_EMAIL_IDENTIFIER`  
+- `SSO_UNIQUE_ID_FIELD`  
   This should be set to the name of the unique identifier field returned to ToolJet by your Identity Provider (IdP), such as employee_id, national_id, etc.
 
-- `AUTH_NON_EMAIL_IDENTIFIER_FIELD`  
-  This should be set to a domain name. ToolJet uses this domain to generate dummy email addresses for users. For example, if the unique id of a user is *1234* and the **AUTH_NON_EMAIL_IDENTIFIER_FIELD** is set to *tooljet.com*, the dummy email id created will be *1234@tooljet.com*.
+- `SSO_CUSTOM_EMAIL_DOMAIN`  
+  This should be set to a domain name. ToolJet uses this domain to generate dummy email addresses for users. For example, if the unique id of a user is *1234* and the **SSO_CUSTOM_EMAIL_DOMAIN** is set to *tooljet.com*, the dummy email id created will be *1234@tooljet.com*.
 
 **Example: Signing In With Keycloak**  
 For this example, we have setup an IdP server using keycloak and setup a ToolJet instance with the following environment variables:
 
-- `AUTH_ENABLE_NON_EMAIL_IDENTIFIER: employee_id`  
-- `AUTH_NON_EMAIL_IDENTIFIER_FIELD: organisation.com`
+- `SSO_UNIQUE_ID_FIELD: employee_id`  
+- `SSO_CUSTOM_EMAIL_DOMAIN: organisation.com`
 
 With this setup, employee_id is used as the login identifier for ToolJet. This is named as Employee ID in Keycloak.
 

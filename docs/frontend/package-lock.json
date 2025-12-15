@@ -1,0 +1,6 @@
+{
+  "name": "frontend",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {}
+}
