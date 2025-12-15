@@ -99,8 +99,6 @@ export const cameraConfig = {
         videoBlobURL: null,
         imageDataURL: null,
         videoDataURL: null,
-        imageRawBinary: null,
-        videoRawBinary: null,
     },
     actions: [
         {
@@ -112,7 +110,7 @@ export const cameraConfig = {
             handle: 'setDisable',
             displayName: 'Set disable',
             params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-        }
+        },
     ],
     definition: {
         others: {
