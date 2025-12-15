@@ -13,28 +13,29 @@ import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const ReleaseVersionButton = function DeployVersionButton() {
+const ReleaseVersionButton = function DeployVersionButton ({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
   const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
-  const { isVersionReleased, editingVersion, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
+  const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
     (state) => ({
-      isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
-      name: state?.selectedVersion?.name,
-      editingVersion: state.editingVersion,
+      isVersionReleased: version
+        ? state.releasedVersionId === version.id
+        : state.releasedVersionId === state.selectedVersion?.id,
+      name: version?.name || state?.selectedVersion?.name,
       isEditorFreezed: state.isEditorFreezed,
       updateReleasedVersionId: state.updateReleasedVersionId,
       appId: state.appStore.modules[moduleId].app.appId,
-      versionToBeReleased: state.currentVersionId,
+      versionToBeReleased: version?.id || state.currentVersionId,
       // selectedVersionId: state.selectedVersion.id,
     }),
     shallow
   );
   const { t } = useTranslation();
 
-  const releaseVersion = (editingVersion) => {
+  const releaseVersion = () => {
     setIsReleasing(true);
     appsService
       .releaseVersion(appId, versionToBeReleased)
@@ -54,13 +55,47 @@ const ReleaseVersionButton = function DeployVersionButton() {
       });
   };
 
-  const onReleaseButtonClick = () => {
+  const onReleaseButtonClick = (e) => {
+    if (e) e.stopPropagation();
     setShowConfirmation(true);
   };
 
   const onReleaseConfirm = () => {
-    releaseVersion(editingVersion);
+    releaseVersion();
   };
+
+  // Inline variant for dropdown
+  if (variant === 'inline') {
+    return (
+      <>
+        <ReleaseConfirmation
+          show={showConfirmation}
+          onClose={() => setShowConfirmation(false)}
+          onConfirm={onReleaseConfirm}
+        />
+        <ToolTip
+          message={
+            !isReleaseVersionEnabled
+              ? "You don't have access to release application. Contact admin to know more."
+              : 'Release this version'
+          }
+          placement="top"
+          show={true}
+        >
+          <button
+            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+            disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
+            onClick={onReleaseButtonClick}
+            data-cy="release-version-button"
+          >
+            {isReleasing ? 'Releasing...' : 'Release'}
+          </button>
+        </ToolTip>
+      </>
+    );
+  }
+
+  // Default variant (header button)
   return (
     <>
       <ReleaseConfirmation
@@ -77,7 +112,7 @@ const ReleaseVersionButton = function DeployVersionButton() {
           <Button
             variant="secondary"
             data-cy={`button-release`}
-            className={cx('tw-text-text-default',{
+            className={cx('tw-text-text-default', {
               'released-button': isVersionReleased,
             })}
             isLoading={isReleasing}

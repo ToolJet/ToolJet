@@ -21,6 +21,7 @@
 @import "./pages-sidebar.scss";
 @import "./modules.scss";
 @import "./rocket/card.scss";
+@import './widgets/datepicker.scss';
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -303,11 +304,11 @@ button {
 }
 
 .rc-slider-track {
-  background-color: $primary;
+  background-color: $primary !important;
 }
 
 .rc-slider-handle {
-  border-color: $primary;
+  border-color: $primary !important;
 }
 
 .auth-main {
@@ -2619,6 +2620,7 @@ hr {
     position: relative !important;
   }
 }
+
 .config-handle {
   top: -22px;
   position: fixed;
@@ -10894,7 +10896,7 @@ tbody {
 }
 
 .bounded-box {
-  .sc-iwsKbI.lmGPCf {
+  .sc-dxgOiQ.jcdOkx {
     height: 100%;
     margin: auto;
     width: max-content;
@@ -17495,6 +17497,12 @@ section.ai-message-prompt-input-wrapper {
 
   .accordion-body {
     border-bottom: 1px solid rgba(101, 109, 119, 0.16);
+  }
+
+  &:last-child {
+    .accordion-body {
+      border-bottom: none;
+    }
   }
 }
 

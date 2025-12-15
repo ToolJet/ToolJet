@@ -119,38 +119,43 @@ export default class MysqlQueryService implements QueryService {
   }
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    const props = sourceOptions.socket_path
-      ? { socketPath: sourceOptions.socket_path }
-      : {
-          host: sourceOptions.host,
-          port: +sourceOptions.port,
-          ssl: sourceOptions.ssl_enabled ?? false,
-        };
+  const props = sourceOptions.socket_path
+    ? { socketPath: sourceOptions.socket_path }
+    : {
+        host: sourceOptions.host,
+        port: +sourceOptions.port,
+      };
 
-    const sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') != 'none' };
-    if (sourceOptions.ssl_certificate === 'ca_certificate') {
-      sslObject['ca'] = sourceOptions.ca_cert;
-    }
-    if (sourceOptions.ssl_certificate === 'self_signed') {
-      sslObject['ca'] = sourceOptions.root_cert;
-      sslObject['key'] = sourceOptions.client_key;
-      sslObject['cert'] = sourceOptions.client_cert;
-    }
+    const shouldUseSSL = sourceOptions.ssl_enabled;
+    let sslObject: any = null;
 
-    const config: Knex.Config = {
-      client: 'mysql2',
-      connection: {
-        ...props,
-        user: sourceOptions.username,
-        password: sourceOptions.password,
-        database: sourceOptions.database,
-        multipleStatements: true,
-        ...(sourceOptions.ssl_enabled && { ssl: sslObject }),
-      },
-      ...this.connectionOptions(sourceOptions),
-    };
-    return knex(config);
+if (shouldUseSSL) {
+  sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
+  
+  if (sourceOptions.ssl_certificate === 'ca_certificate') {
+    sslObject.ca = sourceOptions.ca_cert;
+  } else if (sourceOptions.ssl_certificate === 'self_signed') {
+    sslObject.ca = sourceOptions.root_cert;
+    sslObject.key = sourceOptions.client_key;
+    sslObject.cert = sourceOptions.client_cert;
   }
+}
+
+  const config: Knex.Config = {
+    client: 'mysql2',
+    connection: {
+      ...props,
+      user: sourceOptions.username,
+      password: sourceOptions.password,
+      database: sourceOptions.database,
+      multipleStatements: true,
+      ...(shouldUseSSL ? { ssl: sslObject } : {}),
+    },
+    ...this.connectionOptions(sourceOptions),
+  };
+
+  return knex(config);
+}
 
   async getConnection(
     sourceOptions: SourceOptions,
