@@ -105,6 +105,10 @@ export class AppGitPullUpdateDto {
   @IsString()
   @IsOptional()
   currentVersionId?: string;
+
+  @IsString()
+  @IsOptional()
+  commitHash?: string;
 }
 export class AppGitUpdateDto {
   @IsBoolean()
