@@ -34,6 +34,9 @@ export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column({ name: 'name' })
   name: string;
 

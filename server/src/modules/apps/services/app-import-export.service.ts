@@ -53,6 +53,10 @@ interface AppResourceMappings {
   appDefaultEnvironmentMapping: Record<string, string[]>;
   pagesMapping: Record<string, string>;
   componentsMapping: Record<string, string>;
+  dataSourceMapping: Record<string, string>;
+  dataSourceOptionsMapping: Record<string, string>;
+  layoutMapping: Record<string, string>;
+  versionGitIdMapping: Record<string, string>;
 }
 
 type DefaultDataSourceName =
@@ -138,6 +142,19 @@ const INPUT_WIDGET_TYPES = [
   'MultiselectV2',
   'RadioButtonV2',
   'RangeSliderV2',
+];
+
+const entitiesToRemoveTimestamps = [
+  'components',
+  'pages',
+  'events',
+  'dataQueries',
+  'dataSources',
+  'appVersions',
+  'dataSourcesOptions',
+  'appEnvironments',
+  'modules',
+  'schemaDetails',
 ];
 
 @Injectable()
@@ -350,7 +367,6 @@ export class AppImportExportService {
         })
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
-
       appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
@@ -367,34 +383,13 @@ export class AppImportExportService {
       if (appToExport?.type === APP_TYPES.FRONT_END) {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
-
-      const files = {
-        'app.json': {
-          id: appToExport.id,
-          name: appToExport.name,
-          type: appToExport.type,
-          // other app metadata
-        },
-        'components.json': componentsWithPermissionGroups,
-        'pages.json': pagesWithPermissionGroups,
-        'events.json': events,
-        'queries.json': queriesWithPermissionGroups,
-        'dataSources.json': dataSources,
-        'versions.json': appVersions,
-        'environments.json': appEnvironments,
-        'dataSourceOptions.json': dataSourceOptions,
-        'schema.json': {
-          multiPages: true,
-          multiEnv: true,
-          globalDataSources: true,
-        },
-        ...(appToExport?.type === APP_TYPES.FRONT_END && {
-          'modules.json': moduleApps,
-        }),
-      };
-      // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
+      entitiesToRemoveTimestamps.forEach((entityName) => {
+        const entity = appToExport[entityName];
+        if (entity) {
+          this.removeTimestamps(entity); // Pass the object/array to removeTimestamps
+        }
+      });
       delete (appToExport as any).updatedAt;
-      console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
@@ -472,6 +467,17 @@ export class AppImportExportService {
     return moduleResourceMappings;
   }
 
+  removeTimestamps = (entity: any) => {
+    if (Array.isArray(entity)) {
+      entity.forEach((item) => {
+        delete item.createdAt;
+        delete item.updatedAt;
+      });
+    } else if (entity && typeof entity === 'object') {
+      delete entity.createdAt;
+      delete entity.updatedAt;
+    }
+  };
   async import(
     user: User,
     appParamsObj: any,
@@ -553,13 +559,137 @@ export class AppImportExportService {
     }, manager);
   }
 
-  async updateEntityReferencesForImportedApp(manager: EntityManager, resourceMapping: AppResourceMappings) {
+  /**
+   * Sets co_relation_id on an entity based on the mapping (oldId -> newId)
+   * Finds the old ID (key) that maps to the entity's current ID (value)
+   */
+  private setCoRelationId<T extends { id: string; co_relation_id?: string }>(
+    entity: T,
+    mapping: Record<string, string>
+  ): void {
+    const co_relation_id = Object.keys(mapping).find((key) => mapping[key] === entity.id);
+    if (co_relation_id) {
+      entity.co_relation_id = co_relation_id;
+    }
+  }
+
+  private async updateCoRelationIdsForEntities(
+    manager: EntityManager,
+    resourceMapping: AppResourceMappings
+  ): Promise<void> {
+    const newPageIds = Object.values(resourceMapping.pagesMapping);
+    const newDataSourceIds = Object.values(resourceMapping.dataSourceMapping);
+    const newDsoIds = Object.values(resourceMapping.dataSourceOptionsMapping);
+    const newLayoutIds = Object.values(resourceMapping.layoutMapping);
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
+
+    // Pages
+    if (newPageIds.length > 0) {
+      const pages = await manager
+        .createQueryBuilder(Page, 'pages')
+        .where('pages.id IN(:...pageIds)', { pageIds: newPageIds })
+        .select(['pages.id'])
+        .getMany();
+
+      const toUpdatePages = pages.map((page) => {
+        this.setCoRelationId(page, resourceMapping.pagesMapping);
+        return page;
+      });
+
+      if (!isEmpty(toUpdatePages)) {
+        await manager.save(toUpdatePages);
+      }
+    }
+
+    // DataSources
+    if (newDataSourceIds.length > 0) {
+      const dataSources = await manager
+        .createQueryBuilder(DataSource, 'dataSources')
+        .where('dataSources.id IN(:...dataSourceIds)', { dataSourceIds: newDataSourceIds })
+        .select(['dataSources.id'])
+        .getMany();
+
+      const toUpdateDataSources = dataSources.map((dataSource) => {
+        this.setCoRelationId(dataSource, resourceMapping.dataSourceMapping);
+        return dataSource;
+      });
+
+      if (!isEmpty(toUpdateDataSources)) {
+        await manager.save(toUpdateDataSources);
+      }
+    }
+
+    // DataSourceOptions
+    if (newDsoIds.length > 0) {
+      const dataSourceOptions = await manager
+        .createQueryBuilder(DataSourceOptions, 'dso')
+        .where('dso.id IN(:...dsoIds)', { dsoIds: newDsoIds })
+        .select(['dso.id'])
+        .getMany();
+
+      const toUpdateDso = dataSourceOptions.map((dso) => {
+        this.setCoRelationId(dso, resourceMapping.dataSourceOptionsMapping);
+        return dso;
+      });
+
+      if (!isEmpty(toUpdateDso)) {
+        await manager.save(toUpdateDso);
+      }
+    }
+
+    // Layouts
+    if (newLayoutIds.length > 0) {
+      const layouts = await manager
+        .createQueryBuilder(Layout, 'layouts')
+        .where('layouts.id IN(:...layoutIds)', { layoutIds: newLayoutIds })
+        .select(['layouts.id'])
+        .getMany();
+
+      const toUpdateLayouts = layouts.map((layout) => {
+        this.setCoRelationId(layout, resourceMapping.layoutMapping);
+        return layout;
+      });
+
+      if (!isEmpty(toUpdateLayouts)) {
+        await manager.save(toUpdateLayouts);
+      }
+    }
+
+    if (appVersionIds.length > 0) {
+      const appVersions = await manager
+        .createQueryBuilder(AppVersion, 'av')
+        .where('av.id IN(:...avIds)', { avIds: appVersionIds })
+        .select(['av.id'])
+        .getMany();
+
+      const toUpdateVersions = appVersions.map((av) => {
+        this.setCoRelationId(av, resourceMapping.appVersionMapping);
+        return av;
+      });
+
+      if (!isEmpty(toUpdateVersions)) {
+        await manager.save(toUpdateVersions);
+      }
+    }
+  }
+
+  async updateEntityReferencesForImportedApp(
+    manager: EntityManager,
+    resourceMapping: AppResourceMappings,
+    updateCoRelationIds = false
+  ) {
     const mappings = {
       ...resourceMapping.componentsMapping,
       ...resourceMapping.dataQueryMapping,
+      ...resourceMapping.pagesMapping,
+      ...resourceMapping.dataSourceMapping,
+      ...resourceMapping.dataSourceOptionsMapping,
+      ...resourceMapping.layoutMapping,
+      ...resourceMapping.appVersionMapping,
     };
     const newComponentIds = Object.values(resourceMapping.componentsMapping);
     const newQueriesIds = Object.values(resourceMapping.dataQueryMapping);
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
 
     if (newComponentIds.length > 0) {
       const components = await manager
@@ -578,9 +708,23 @@ export class AppImportExportService {
         ])
         .getMany();
 
-      const toUpdateComponents = components.filter((component) => {
-        return updateEntityReferences(component, mappings);
-      });
+      let toUpdateComponents;
+      if (updateCoRelationIds) {
+        toUpdateComponents = components.map((component) => {
+          const co_relation_id = Object.keys(resourceMapping.componentsMapping).find(
+            (key) => resourceMapping.componentsMapping[key] === component.id
+          );
+          if (co_relation_id) {
+            component.co_relation_id = co_relation_id; // Set the coRelationId
+          }
+          updateEntityReferences(component, mappings);
+          return component;
+        });
+      } else {
+        toUpdateComponents = components.filter((component) => {
+          return updateEntityReferences(component, mappings);
+        });
+      }
 
       if (!isEmpty(toUpdateComponents)) {
         await manager.save(toUpdateComponents);
@@ -596,16 +740,34 @@ export class AppImportExportService {
         .select(['dataQueries.id', 'dataQueries.options'])
         .getMany();
 
-      const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        return updateEntityReferences(dataQuery, mappings);
-      });
+      let toUpdateDataQueries;
+      if (updateCoRelationIds) {
+        toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+          const oldId = Object.keys(resourceMapping.dataQueryMapping).find(
+            (key) => resourceMapping.dataQueryMapping[key] === dataQuery.id
+          );
+          if (oldId) {
+            dataQuery.co_relation_id = oldId; // Set the coRelationId to the old ID
+          }
+          return updateEntityReferences(dataQuery, mappings);
+        });
+      } else {
+        toUpdateDataQueries = dataQueries.filter((dataQuery) => {
+          return updateEntityReferences(dataQuery, mappings);
+        });
+      }
 
       if (!isEmpty(toUpdateDataQueries)) {
         await manager.save(toUpdateDataQueries);
       }
     }
+
+    // Handle co_relation_id for Pages, DataSources, DataSourceOptions, Layouts (only when updateCoRelationIds is true)
+    if (updateCoRelationIds) {
+      await this.updateCoRelationIdsForEntities(manager, resourceMapping);
+    }
+
     // update Global settings of created versions
-    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
     const newAppVersions = await manager.find(AppVersion, {
       where: {
         id: In(appVersionIds),
@@ -623,6 +785,7 @@ export class AppImportExportService {
       await this.updateWorkflowDefinitionQueryReferences(manager, appVersionIds, resourceMapping);
     }
   }
+
   async createImportedAppForUser(
     manager: EntityManager,
     appParams: any,
@@ -724,6 +887,10 @@ export class AppImportExportService {
       appDefaultEnvironmentMapping: {},
       pagesMapping: {},
       componentsMapping: {},
+      dataSourceMapping: {},
+      dataSourceOptionsMapping: {},
+      layoutMapping: {},
+      versionGitIdMapping: {},
     };
     const {
       importingDataSources,
@@ -833,6 +1000,8 @@ export class AppImportExportService {
 
             const savedComponents = await manager.save(Component, mappedComponents);
 
+            const layoutIdToOldIdMap: { layout: Layout; oldId: string }[] = [];
+
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
               const sortedLayoutTypes = Object.keys(componentLayout).sort((a, b) => {
@@ -855,11 +1024,21 @@ export class AppImportExportService {
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
+                  layoutIdToOldIdMap.push({ layout: newLayout, oldId: layout.id });
                 }
               }
             }
 
-            await manager.save(Layout, componentLayouts);
+            // await manager.save(Layout, componentLayouts);
+
+            const savedLayouts = await manager.save(Layout, componentLayouts);
+            // Populate layoutMapping: oldId -> newId
+            savedLayouts.forEach((savedLayout, index) => {
+              const oldId = layoutIdToOldIdMap[index].oldId;
+              if (oldId) {
+                appResourceMappings.layoutMapping[oldId] = savedLayout.id;
+              }
+            });
 
             //Event handlers
 
@@ -1034,6 +1213,8 @@ export class AppImportExportService {
           user
         );
 
+        appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
+
         // TODO: Have version based conditional based on app versions
         // currently we are checking on existence of keys and handling
         // imports accordingly. Would be pragmatic to do:
@@ -1058,7 +1239,15 @@ export class AppImportExportService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
               });
-              await manager.save(dsOption);
+              const savedDsOption = await manager.save(dsOption);
+
+              // Find the matching old dataSourceOption ID for this environment
+              const oldDsOption = importingDataSourceOptions.find(
+                (dso) => dso.dataSourceId === importingDataSource.id && dso.environmentId === envId
+              );
+              if (oldDsOption) {
+                appResourceMappings.dataSourceOptionsMapping[oldDsOption.id] = savedDsOption.id;
+              }
             })
           );
         }
@@ -1125,6 +1314,7 @@ export class AppImportExportService {
 
         isHomePage = importingAppVersion.homePageId === page.id;
 
+        // can comment this after testing --> can uncomment this to fix this issue
         if (isHomePage) {
           updateHomepageId = pageCreated.id;
         }
@@ -1249,6 +1439,7 @@ export class AppImportExportService {
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
                 newLayout.component = savedComponent;
+                newLayout.co_relation_id = layout.id;
 
                 await manager.save(newLayout);
               })
