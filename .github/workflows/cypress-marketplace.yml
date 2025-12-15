@@ -47,6 +47,9 @@ jobs:
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
+      - name: Log the matrix edition
+        run: echo "MATRIX_EDITION=$(echo${{ matrix.edition }})"  
+
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
         run: |
