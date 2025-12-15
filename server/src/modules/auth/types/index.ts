@@ -21,6 +21,8 @@ export interface Features {
   [FEATURE_KEY.AI_ONBOARDING_SSO]: FeatureConfig;
   [FEATURE_KEY.AI_COOKIE_SET]: FeatureConfig;
   [FEATURE_KEY.AI_COOKIE_DELETE]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_REQUEST_OTP]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_VERIFY_OTP]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

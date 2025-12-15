@@ -1,7 +1,16 @@
 import React from 'react';
 import _ from 'lodash';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import defaultStyles from './styles';
+
+const CustomInput = (props) => {
+  return (
+    <components.Input
+      {...props}
+      data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`}
+    />
+  );
+};
 
 export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
   const selectRef = React.useRef(null);
@@ -25,6 +34,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     borderRadius,
     openMenuOnFocus = false,
     customClassPrefix = '',
+    dataCy = '',
   } = restProps;
 
   const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
@@ -33,11 +43,11 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     Array.isArray(options) && options.length === 0
       ? options
       : options?.map((option) => {
-          if (!option.hasOwnProperty('label')) {
-            return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
-          }
-          return option;
-        });
+        if (!option.hasOwnProperty('label')) {
+          return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
+        }
+        return option;
+      });
 
   const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
 
@@ -76,7 +86,10 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
       classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
-      data-cy={restProps['data-cy']}
+      components={{
+        Input: CustomInput,
+        ...restProps.components
+      }}
     />
   );
 };
