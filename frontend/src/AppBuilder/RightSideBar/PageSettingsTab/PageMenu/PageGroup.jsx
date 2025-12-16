@@ -28,7 +28,7 @@ const RenderPage = ({
 }) => {
   const isPageHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id)); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
   const isHomePage = page.id === homePageId;
-  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon ?? 'IconFile';
   const isActive = page?.id === currentPageId;
 
   if (isPageHidden || page.disabled || (page?.restricted && currentMode !== 'edit')) return null;
