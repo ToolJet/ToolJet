@@ -13,12 +13,12 @@ Releasing an app in ToolJet makes the selected version available to end users, a
 
 1. Save the required draft version.
 
-1. Promote the required version to the **[production environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)**.
+2. Promote the required version to the **[production environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)**.
 
-2. Click on the **Release** button beside the version name in **Production** environment.
+3. Click on the **Release** button beside the version name in **Production** environment.
     <img className="screenshot-full" src="/img/development-lifecycle/release/release/draft-version/release.png" alt="release"/>
 
-3. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Yes** button will release the current version of the app overriding the previous one.
+4. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Yes** button will release the current version of the app overriding the previous one.
     <img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/draft-version/confirm.png" alt="release"/>
 
 ## Rollback
