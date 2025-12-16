@@ -16,10 +16,10 @@ Releasing an app in ToolJet makes the selected version available to end users, a
 2. Promote the required version to the **[production environment](/docs/development-lifecycle/environment/self-hosted/multi-environment)**.
 
 3. Click on the **Release** button beside the version name in **Production** environment.
-    <img className="screenshot-full" src="/img/development-lifecycle/release/release/draft-version/release.png" alt="release"/>
+    <img className="screenshot-full border-none" src="/img/development-lifecycle/release/release/draft-version/release.png" alt="release"/>
 
 4. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Yes** button will release the current version of the app overriding the previous one.
-    <img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/draft-version/confirm.png" alt="release"/>
+    <img className="screenshot-full border-none" src="/img/development-lifecycle/release/release/draft-version/confirm.png" alt="release"/>
 
 ## Rollback
 
@@ -35,13 +35,13 @@ For example, after releasing a new version v1.2.0, users report failures of the 
 2. Click the desired version from the list to select it. 
 
 3. Click on the Release button beside the selected version.
-    <img className="screenshot-full" src="/img/development-lifecycle/release/version-control/draft-version/rollback.png" alt="app version"/>
+    <img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/rollback.png" alt="app version"/>
 
 4. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Release** button will release the current version of the app.
-    <img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/draft-version/confirm-v2.png" alt="release"/>
+    <img className="screenshot-full border-none" src="/img/development-lifecycle/release/release/draft-version/confirm-v2.png" alt="release"/>
 
 ## Release Application Permission
 
 Admin can configure the Release Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Release** button for users who do not have the required permission, allowing only authorized roles, such as managers, to release the application.
-<img className="screenshot-full img-s" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="release"/>
+<img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="release"/>
 
