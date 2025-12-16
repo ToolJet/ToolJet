@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { ResourceShellView, EmptyResource, ResourceTableSkeleton } from '@/features/commons/components';
-import { appsColumns } from '@/features/commons/columns';
+import { datasourcesColumns } from '@/features/commons/columns';
 import {
   useResourcePageAdapter,
   useResourceActions,
@@ -10,12 +10,14 @@ import {
 } from '@/features/commons/hooks';
 import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { ResourcePageHeader } from '@/components/ui/blocks/ResourcePageHeader';
-import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader';
 import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
 import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
 import { Button } from '@/components/ui/Button/Button';
+import { CommonDatasourceSheet } from '@/features/datasources/components/CommonDatasourceSheet';
+import { CreateDatasourceContent } from '@/features/datasources/components/CreateDatasourceContent';
+import { ConfigureDatasourceContent } from '@/features/datasources/components/ConfigureDatasourceContent';
 import { transformDatasourcesToDatasourceRow } from './homePageToDatasourceRow';
 
 function DatasourcesPageAdapter({
@@ -67,7 +69,20 @@ function DatasourcesPageAdapter({
   const { darkMode: initialDarkMode } = ui;
 
   const [isDarkMode, setIsDarkMode] = useState(initialDarkMode ?? false);
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+  const [configSheetOpen, setConfigSheetOpen] = useState(false);
+  const [selectedDatasource, setSelectedDatasource] = useState(null);
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
+
+  const handleCreateDatasource = () => {
+    setCreateSheetOpen(true);
+  };
+
+  const handleSelectDatasource = (datasource) => {
+    setCreateSheetOpen(false);
+    setSelectedDatasource(datasource);
+    setConfigSheetOpen(true);
+  };
 
   useEffect(() => {
     const body = document.body;
@@ -85,7 +100,7 @@ function DatasourcesPageAdapter({
     };
   }, [isDarkMode]);
 
-  const { activeTab, setActiveTab, viewMode, setViewMode, isLoading } = useResourcePageState({
+  const { activeTab, setActiveTab, isLoading } = useResourcePageState({
     initialTab: 'datasources',
     loadingStates: {
       datasources: datasourcesIsLoading,
@@ -115,10 +130,14 @@ function DatasourcesPageAdapter({
 
   const actions = useMemo(
     () => ({
-      edit: actionsHandlers.handleEdit,
-      delete: actionsHandlers.handleDelete,
+      configure: (datasource) => {
+        setSelectedDatasource(datasource);
+        setConfigSheetOpen(true);
+      },
+      rename: actionsHandlers.handleEdit,
       duplicate: actionsHandlers.handleClone,
-      testConnection: actionsHandlers.handleExport,
+      managePermissions: actionsHandlers.handleEdit,
+      delete: actionsHandlers.handleDelete,
     }),
     [actionsHandlers]
   );
@@ -130,7 +149,7 @@ function DatasourcesPageAdapter({
   });
 
   const finalColumns = useMemo(
-    () => appsColumns({ perms: computedPerms, actions, canDelete: canDeletePerm }),
+    () => datasourcesColumns({ perms: computedPerms, actions, canDelete: canDeletePerm }),
     [computedPerms, actions, canDeletePerm]
   );
 
@@ -146,33 +165,16 @@ function DatasourcesPageAdapter({
     transformFn: transformDatasourcesToDatasourceRow,
   });
 
-  const breadcrumbItems = useMemo(
-    () => [
-      { label: 'Data sources', href: null },
-      { label: currentEnvironment?.name || 'All environments', href: null },
-    ],
-    [currentEnvironment]
-  );
-
-  const tabsConfig = [
-    {
-      id: 'datasources',
-      label: 'Datasources',
-      count: meta?.total_count || 0,
-      loading: datasourcesIsLoading,
-    },
-  ];
-
   const normalActionButtons = useMemo(() => {
     if (isLimitReached) return null;
     if (!canCreateDatasource || (typeof canCreateDatasource === 'function' && !canCreateDatasource())) return null;
 
     return (
-      <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={createDatasource}>
+      <Button variant="secondary" size="default" isLucid leadingIcon="plus" onClick={handleCreateDatasource}>
         Create datasource
       </Button>
     );
-  }, [isLimitReached, createDatasource, canCreateDatasource]);
+  }, [isLimitReached, canCreateDatasource]);
 
   const datasourcesMenuItems = [
     {
@@ -195,6 +197,17 @@ function DatasourcesPageAdapter({
 
   const datasourcesError_ = datasourcesError || adapterError;
 
+  const emptyStateWithButton = (
+    <div className="tw-flex tw-flex-col tw-items-center">
+      <EmptyResource title="You don't have any datasources yet" />
+      {!isLimitReached && canCreateDatasource && (
+        <Button variant="primary" size="default" leadingIcon="plus" onClick={handleCreateDatasource} className="tw-mt-4">
+          Create datasource
+        </Button>
+      )}
+    </div>
+  );
+
   const tabs = [
     {
       id: 'datasources',
@@ -209,7 +222,7 @@ function DatasourcesPageAdapter({
         />
       ) : null,
       empty: datasourcesEmpty,
-      emptyState: <EmptyResource title="You don't have any datasources yet" />,
+      emptyState: emptyStateWithButton,
     },
   ];
 
@@ -242,21 +255,25 @@ function DatasourcesPageAdapter({
         footer={<PaginationFooter table={datasourcesTable} isLoading={isLoading} currentPage={currentPage} />}
       >
         <ResourceErrorBoundary>
-          <ResourceViewHeader
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            tabsConfig={tabsConfig}
-            breadcrumbItems={breadcrumbItems}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            folders={environments}
-            currentFolder={currentEnvironment}
-            onFolderChange={environmentChanged}
-            foldersLoading={environmentsLoading}
-          />
           <ResourceTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
         </ResourceErrorBoundary>
       </ResourceShellView>
+
+      <CommonDatasourceSheet
+        open={createSheetOpen}
+        onOpenChange={setCreateSheetOpen}
+        title="Select datasource"
+      >
+        <CreateDatasourceContent onSelectDatasource={handleSelectDatasource} />
+      </CommonDatasourceSheet>
+
+      <CommonDatasourceSheet
+        open={configSheetOpen}
+        onOpenChange={setConfigSheetOpen}
+        title={selectedDatasource ? `Configure ${selectedDatasource.name}` : 'Configure datasource'}
+      >
+        <ConfigureDatasourceContent datasource={selectedDatasource} />
+      </CommonDatasourceSheet>
     </>
   );
 }
