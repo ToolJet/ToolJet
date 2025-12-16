@@ -833,6 +833,14 @@ button {
   }
 }
 
+.editor-preview {
+  .main {
+    .canvas-container {
+      left: 0px;
+    }
+  }
+}
+
 .viewer {
   .header-container {
     max-width: 100%;

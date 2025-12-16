@@ -8,7 +8,12 @@ import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from './appCanvasConstants';
+import {
+  APP_HEADER_HEIGHT,
+  NO_OF_GRIDS,
+  PAGES_SIDEBAR_WIDTH_COLLAPSED,
+  PAGES_SIDEBAR_WIDTH_EXPANDED,
+} from './appCanvasConstants';
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -52,6 +57,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -113,7 +119,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
-
   useEffect(() => {
     if (moduleId === 'canvas') {
       const _canvasWidth =
@@ -127,11 +132,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
-      currentMode === 'view'
+      currentMode === 'view' && !isPreviewInEditor
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -143,15 +148,20 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     return {
       borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
-      height: currentMode === 'edit' ? canvasContainerHeight : '100%',
+      height:
+        currentMode === 'edit'
+          ? canvasContainerHeight
+          : isPreviewInEditor
+          ? `calc(100% - ${APP_HEADER_HEIGHT}px)`
+          : '100%',
       background: canvasBgColor,
       width: currentMode === 'edit' ? `calc(100% - 96px)` : '100%',
       alignItems: 'unset',
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
-      padding: currentMode === 'edit' && '8px',
-      paddingTop: currentMode === 'edit' && (isCurrentVersionLocked ? '38px' : '8px'),
-      paddingBottom: currentMode === 'edit' && '2px',
+      padding: (currentMode === 'edit' || isPreviewInEditor) && '8px',
+      paddingTop: (currentMode === 'edit' || isPreviewInEditor) && (isCurrentVersionLocked ? '38px' : '8px'),
+      paddingBottom: (currentMode === 'edit' || isPreviewInEditor) && '2px',
     };
   }, [
     currentMode,

@@ -60,6 +60,7 @@ export const PagesSidebarNavigation = ({
     shallow
   );
   const { appMode } = useStore((state) => state.globalSettings, shallow);
+  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
 
   const navRef = useRef(null);
   const headerRef = useRef(null);
@@ -560,7 +561,7 @@ export const PagesSidebarNavigation = ({
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
-          'no-preview-settings': isReleasedVersionId,
+          'no-preview-settings': isReleasedVersionId || isPreviewInEditor,
           'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
           'collapsable-only':
             !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',

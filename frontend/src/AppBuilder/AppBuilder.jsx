@@ -31,7 +31,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
-  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor, shallow);
+  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
   const isModuleEditor = appType === 'module';
 
@@ -64,7 +64,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     <div
       className={cx('wrapper', {
         editor: currentMode === 'edit',
-        'editor-preview': currentMode === 'view' && isPreviewInEditor,
+        'editor-preview': isPreviewInEditor,
       })}
     >
       <ErrorBoundary>
@@ -72,11 +72,13 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           <Suspense fallback={<div>Loading...</div>}>
             <EditorHeader darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
 
-            <LeftSidebar
-              switchDarkMode={changeToDarkMode}
-              darkMode={darkMode}
-              isUserInZeroToOneFlow={isUserInZeroToOneFlow}
-            />
+            {!isPreviewInEditor && (
+              <LeftSidebar
+                switchDarkMode={changeToDarkMode}
+                darkMode={darkMode}
+                isUserInZeroToOneFlow={isUserInZeroToOneFlow}
+              />
+            )}
           </Suspense>
           {isUserInZeroToOneFlow ? (
             <ArtifactPreview darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
@@ -85,9 +87,13 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
               <DndProvider backend={HTML5Backend}>
                 <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-                <QueryPanel darkMode={darkMode} />
-                <RightSidebarToggle darkMode={darkMode} />
-                <RightSideBar darkMode={darkMode} />
+                {!isPreviewInEditor && (
+                  <>
+                    <QueryPanel darkMode={darkMode} />
+                    <RightSidebarToggle darkMode={darkMode} />
+                    <RightSideBar darkMode={darkMode} />
+                  </>
+                )}
               </DndProvider>
               <Popups darkMode={darkMode} />
             </>
