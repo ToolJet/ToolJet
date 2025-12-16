@@ -29,7 +29,7 @@ return <your-array>;
 - Value represents the item you’re currently processing in the loop. You can access it with the ```{{value}}``` keyword.
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/example.png" alt="Loop Node Example" />
 
-## Example - Bulk Invoice Reminder Workflow
+## Example 1 - Bulk Invoice Reminder Workflow
 Consider a workflow that automatically sends a mail to the vendors with pending payments.  
 Here's an overview of the workflow:
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/invoiceReminder/sneakPeek.png" alt="Invoice Reminders Sneak Peek" />
@@ -59,3 +59,5 @@ Inside the Looped function, you can choose what action should happen for each ve
 In this example, we add an SMTP node that sends a payment reminder email to the vendor.
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/invoiceReminder/mailLoop.png" alt="Mail Loop" />
+
+## Example 2 - Process Orders and Update Inventory
