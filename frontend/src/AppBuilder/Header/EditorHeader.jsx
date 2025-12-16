@@ -18,12 +18,13 @@ import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, aiGenerationMetadata } = useStore(
+  const { isSaving, saveError, isVersionReleased, aiGenerationMetadata, currentMode } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
       aiGenerationMetadata: state.appStore.modules[moduleId].app?.aiGenerationMetadata,
+      currentMode: state.modeStore.modules[moduleId].currentMode,
     }),
     shallow
   );
@@ -65,7 +66,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                         className={cx('autosave-indicator tj-text-xsm', {
                           'autosave-indicator-saving': isSaving,
                           'text-danger': saveError,
-                          'd-none': isVersionReleased,
+                          'd-none': isVersionReleased || currentMode === 'view',
                         })}
                         data-cy="autosave-indicator"
                       >
@@ -91,7 +92,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                 classes={{ stepsContainer: 'tw-mx-auto' }}
               />
             )}
-            {!isUserInZeroToOneFlow && <HeaderActions darkMode={darkMode} />}
+            {!isUserInZeroToOneFlow && <HeaderActions moduleId={moduleId} darkMode={darkMode} />}
 
             {!isUserInZeroToOneFlow && (
               <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
@@ -102,7 +103,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>
-                        <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                        <RightTopHeaderButtons currentMode={currentMode} isModuleEditor={isModuleEditor} />
                       </>
                     )}
                   </div>

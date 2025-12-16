@@ -31,6 +31,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor, shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
   const isModuleEditor = appType === 'module';
 
@@ -60,7 +61,12 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     );
   }
   return (
-    <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
+    <div
+      className={cx('wrapper', {
+        editor: currentMode === 'edit',
+        'editor-preview': currentMode === 'view' && isPreviewInEditor,
+      })}
+    >
       <ErrorBoundary>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>

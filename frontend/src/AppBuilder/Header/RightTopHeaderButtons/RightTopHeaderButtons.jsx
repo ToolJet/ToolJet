@@ -10,12 +10,16 @@ import useStore from '@/AppBuilder/_stores/store';
 import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const RightTopHeaderButtons = ({ isModuleEditor }) => {
+const RightTopHeaderButtons = ({ currentMode, isModuleEditor }) => {
   return (
-    <div className="d-flex justify-content-end navbar-right-section">
+    <div className="d-flex justify-content-end navbar-right-section tw-ml-[4px]">
       <div className=" release-buttons">
-        <GitSyncManager />
-        <div className="tw-hidden navbar-seperator" />
+        {currentMode !== 'view' && (
+          <>
+            <GitSyncManager />
+            <div className="tw-hidden navbar-seperator" />
+          </>
+        )}
         <PreviewAndShareIcons />
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>

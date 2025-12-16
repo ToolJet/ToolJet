@@ -420,7 +420,7 @@ button {
   }
 }
 
-.editor {
+.editor, .editor-preview {
   header {
     position: fixed;
     width: 100%;
@@ -8367,7 +8367,7 @@ tbody {
   display: block;
 }
 
-.editor .navbar-brand {
+.editor .navbar-brand, .editor-preview .navbar-brand {
   width: 36px;
   height: 36px;
   display: flex;
@@ -13601,7 +13601,7 @@ tbody {
 
 // Editor revamp styles
 .main-wrapper {
-  .editor {
+  .editor, .editor-preview {
     .header>header.navbar {
       background-color: var(--surfaces-surface-01) !important;
       border-bottom: 1px solid var(--border-weak);

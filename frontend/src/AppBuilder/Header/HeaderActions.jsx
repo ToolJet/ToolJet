@@ -4,14 +4,11 @@ import { Tooltip } from 'react-tooltip';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
-import { Button } from '@/components/ui/Button/Button';
 import { Monitor, Smartphone, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
-const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
+const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
     canUndo,
@@ -22,6 +19,8 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
     showToggleLayoutBtn,
     showUndoRedoBtn,
     clearSelectedComponents,
+    currentMode,
+    toggleCurrentMode,
   } = useStore(
     (state) => ({
       currentLayout: state.currentLayout,
@@ -33,9 +32,12 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       handleUndo: state.handleUndo,
       handleRedo: state.handleRedo,
       clearSelectedComponents: state.clearSelectedComponents,
+      currentMode: state.modeStore.modules[moduleId]?.currentMode,
+      toggleCurrentMode: state.toggleCurrentMode,
     }),
     shallow
   );
+
   const clearSelectionBorder = useCallback(() => {
     clearSelectedComponents();
     const selectedElems = document.getElementsByClassName('active-target');
@@ -43,7 +45,7 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       element.classList.remove('active-target');
     }
   }, [clearSelectedComponents]);
-  const appPreviewLink = useAppPreviewLink();
+
   return (
     <div
       className={cx('tw-flex tw-gap-2 tw-items-center tw-justify-center editor-header-actions', {
@@ -61,29 +63,18 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
         />
       )}
       {showPreviewBtn && (
-
-
-        <Link
-          title="Preview"
-          to={appPreviewLink}
-          target="_blank"
-          rel="noreferrer"
+        <ButtonComponent
+          size="default"
+          variant="outline"
+          leadingIcon={currentMode === 'edit' ? 'play' : 'square-pen'}
           data-cy="preview-link-button"
-          className="text-decoration-none"
-          style={{ color: 'var(--text-default)' }}
+          style={{ padding: '7px 12px' }}
+          isLucid={true}
+          onClick={() => toggleCurrentMode()}
+          className={'tw-transition-all tw-duration-300 tw-ease-linear'}
         >
-          <ButtonComponent
-            size="default"
-            variant="outline"
-            leadingIcon="play01"
-            data-cy="preview-link-button"
-            style={{ padding: "7px 12px" }}
-
-          >
-
-            Preview
-          </ButtonComponent>
-        </Link>
+          {currentMode === 'edit' ? 'Preview' : 'Edit'}
+        </ButtonComponent>
       )}
 
       <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
