@@ -334,11 +334,12 @@ function getGitConfigs(organizationId, versionId) {
   );
 }
 
-function createGitTag(appId, versionId) {
+function createGitTag(appId, versionId, versionDescription) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
+    body: JSON.stringify({ message: versionDescription }),
   };
   return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}/tag`, requestOptions).then(handleResponse);
 }

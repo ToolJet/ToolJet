@@ -166,7 +166,7 @@ const CreateVersionModal = ({
 
       if (isGitSyncEnabled && isBranchingEnabled) {
         try {
-          await gitSyncService.createGitTag(appId, selectedVersionForCreation.id);
+          await gitSyncService.createGitTag(appId, selectedVersionForCreation.id, versionDescription);
         } catch (tagError) {
           toast.error('Version saved but failed to create git tag');
         }
