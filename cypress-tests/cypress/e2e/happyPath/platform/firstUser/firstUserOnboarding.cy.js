@@ -9,6 +9,7 @@ import {
 } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
+import { multiEnvSelector } from "Selectors/eeCommon";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
@@ -17,6 +18,32 @@ describe("Self host onboarding", () => {
     cy.visit("/setup");
     cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
     cy.intercept("GET", "/assets/translations/en.json").as("translations");
+  });
+
+  afterEach(() => {
+    // Check if the user exists in the database
+    cy.runSqlQuery(`SELECT id FROM users WHERE email='dev@tooljet.io';`).then(
+      (resp) => {
+        // If user doesn't exist in DB, create it
+        if (!resp.rows || resp.rows.length === 0) {
+          cy.request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/onboarding/setup-super-admin`,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              companyName: "ToolJet",
+              name: "The Developer",
+              workspaceName: "My workspace",
+              email: "dev@tooljet.io",
+              password: "password",
+            },
+            failOnStatusCode: false,
+          });
+        }
+      }
+    );
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -68,10 +95,10 @@ describe("Self host onboarding", () => {
         selector: commonSelectors.passwordLabel,
         text: commonText.passwordLabel,
       },
-      {
-        selector: commonSelectors.passwordHelperTextSignup,
-        text: commonText.passwordHelperText,
-      },
+      // {
+      //   selector: commonSelectors.passwordHelperTextSignup,
+      //   text: commonText.passwordHelperText,
+      // },
     ];
 
     labelChecks.forEach((check) => {
@@ -259,10 +286,9 @@ describe("Self host onboarding", () => {
 
     cy.wait("@getDataQueries");
     cy.wait(2000);
-    cy.get('[data-cy="button-release"]', { timeout: 20000 }).should(
-      "be.visible",
-      { timeout: 20000 }
-    );
+    cy.get(multiEnvSelector.environmentsTag("development"), {
+      timeout: 20000,
+    }).should("be.visible", { timeout: 20000 });
 
     cy.apiLogout();
     cy.visit("/my-workspace");

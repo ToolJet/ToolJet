@@ -5,7 +5,7 @@ import Body from './TabBody';
 import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import { CustomToggleSwitch } from '@/AppBuilder/QueryManager/Components/CustomToggleSwitch';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 

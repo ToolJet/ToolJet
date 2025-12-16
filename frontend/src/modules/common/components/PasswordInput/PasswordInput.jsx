@@ -59,7 +59,7 @@ const PasswordInput = ({
           value={value}
           onChange={handleChange}
           required
-          minLength={minLength}
+          // minLength={minLength}
           data-cy={`${dataCy}-input`}
         />
         <button
@@ -77,7 +77,6 @@ const PasswordInput = ({
         </p>
       ) : (
         <p className="password-input__hint" data-cy={`${dataCy}-hint`}>
-          {hint}
         </p>
       )}
     </div>

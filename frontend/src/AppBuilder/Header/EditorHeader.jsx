@@ -2,9 +2,9 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown, AppEnvironments } from '@/modules/Appbuilder/components';
+import { LogoNavDropdown } from '@/modules/Appbuilder/components';
 import HeaderActions from './HeaderActions';
-import { AppVersionsManager } from './AppVersionsManager';
+import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
@@ -14,7 +14,6 @@ import './styles/style.scss';
 
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
-import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -99,10 +98,9 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                   <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                     {!isModuleEditor && (
                       <>
-                        <AppEnvironments darkMode={darkMode} />
-                        <div className="tw-hidden navbar-seperator m-0" />
-                        <AppVersionsManager darkMode={darkMode} />
-                        <div className="navbar-seperator " style={{ marginLeft: '0px' }} />
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
                         <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                       </>
                     )}
@@ -115,14 +113,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
           </div>
         </div>
       </header>
-      <Tooltip
-        id="editor-header-tooltip"
-        className="tw-text-text-default tw-bg-background-inverse tw-p-3 tw-rounded-md tw-text-xs tw-font-medium"
-        style={{ zIndex: 9999 }}
-        place="bottom"
-        delayShow={300}
-        delayHide={100}
-      />
     </div>
   );
 };
