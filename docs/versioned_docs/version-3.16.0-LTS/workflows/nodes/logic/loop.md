@@ -31,13 +31,13 @@ return <your-array>;
 
 ## Example 1 - Bulk Invoice Reminder Workflow
 Consider a workflow that automatically sends a mail to the vendors with pending payments.  
-Here's an overview of the workflow:
+
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/invoiceReminder/sneakPeek.png" alt="Invoice Reminders Sneak Peek" />
 
 
 **Step 1 - Get list of vendors.**  
 First, add a ToolJet DB node (or any other data source tou prefer) to fetch a list of vendors who have unpaid invoices. Name this node ```fetchInvoices```.
-Here's a sample element from the list:
+Here's a sample vendor from the list:
 ```js
 {
     "id":1,
@@ -60,4 +60,29 @@ In this example, we add an SMTP node that sends a payment reminder email to the 
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/invoiceReminder/mailLoop.png" alt="Mail Loop" />
 
-## Example 2 - Process Orders and Update Inventory
+## Example 2 - Bulk User Deactivation Based on Inactivity
+Consider a workflow that fetches users inactive for a certain period of time and mark them as inactive.
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/sneakPeek.png" alt="Mail Loop" />
+
+<br /> <br />
+**Step 1 - Fetch inactive users**  
+Create a ToolJet database node to fetch users with last_activity older than 5 days and with status as *active* and name it `findOldActiveUsers`. Here's a sample user from the list.
+
+```js
+{
+  "id": 3,
+  "username": "test_3",
+  "last_activity": "2025-12-01T12:04:00+00:00",
+  "status": "active"
+}
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/findOldActiveUsers.png" alt="Find Old and Active Users" />
+
+<br /> <br />
+**Step 2 - Create a loop node**  
+Create a loop node named `makeInactive`. This node will loop over the data returned from **findOldActiveUsers** and mark the status of users to *inactive*.
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/makeInactive.png" alt="Find Old and Active Users" />
+
