@@ -144,30 +144,29 @@ export const openArchiveUserModal = (userName) => {
 };
 
 export const verifyArchiveUserModalUI = (userName, userEmail) => {
-  openArchiveUserModal(userEmail);
-  cy.get(commonEeSelectors.modalTitle).contains(
-    instanceAllUsersText.archiveModalTitle
-  );
-  cy.contains(userEmail).should("be.visible");
-  cy.contains(instanceAllUsersText.archiveModalMessage).should("be.visible");
-  cy.get(commonSelectors.cancelButton).should("be.visible");
-  cy.contains("button", instanceAllUsersText.archiveConfirmButton).should(
-    "be.visible"
-  );
-  cy.get(commonSelectors.cancelButton).click();
+    openArchiveUserModal(userName);
+    cy.get(commonEeSelectors.modalTitle).contains(
+        instanceAllUsersText.archiveModalTitle
+    );
+    cy.contains(userEmail).should("be.visible");
+    cy.contains(instanceAllUsersText.archiveModalMessage).should("be.visible");
+    cy.get(commonSelectors.cancelButton).should("be.visible");
+    cy.contains("button", instanceAllUsersText.archiveConfirmButton).should(
+        "be.visible"
+    );
+    cy.get(commonSelectors.cancelButton).click();
 
-  openArchiveUserModal(userEmail);
-  cy.get('[data-cy="confirm-button"]').click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "User has been archived from this instance successfully!"
-  );
-  cy.wait(1000);
-  cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
-    "have.text",
-    "archived"
-  );
-
+    openArchiveUserModal(userEmail);
+    cy.get('[data-cy="confirm-button"]').click();
+    cy.wait(1000);
+     cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "User has been archived from this instance successfully!"
+    );
+    cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
+        "have.text",
+        "archived"
+    );
 };
 
 export const openEditUserModal = (userEmail) => {
@@ -210,19 +209,17 @@ export const verifyUnarchiveUserModal = (userName, userEmail) => {
   );
   cy.get(commonSelectors.cancelButton).should("be.visible").click();
 
-  openArchiveUserModal(userEmail);
-  cy.get('[data-cy="confirm-button"]').click();
-
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    "User has been unarchived from this instance successfully!"
-  );
-
-  cy.wait(1000);
-  cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
-    "have.text",
-    "active"
-  );
+    openArchiveUserModal(userEmail);
+    cy.get('[data-cy="confirm-button"]').click();
+    cy.wait(1000);
+     cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "User has been unarchived from this instance successfully!"
+    );
+    cy.get(instanceSettingsSelector.userStatus(userName)).verifyVisibleElement(
+        "have.text",
+        "active"
+    );
 };
 
 export const loginAsUser = (email, password = usersText.password) => {
