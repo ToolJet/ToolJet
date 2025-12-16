@@ -61,39 +61,33 @@ Go to **Settings > Instance login**. <br/>
 Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
 
 ## Configuring ToolJet OIDC with Non Email Identifier
-If you want to authenticate users using a non-email identifier, ToolJet supports this. Under the hood, ToolJet generates a dummy email address for the user, which appears in the Profile settings. User can continue signing in with their non-email identifier without any issues.  
-For example, you can allow your team to access your ToolJet instance using their employee ID instead of an email address.
+ToolJet supports authenticating users using a non-email identifier. ToolJet generates a dummy email address for the user using the configured domain name and the unique id. For example, if the unique id of a user is *1234* and the domain is set to *example.com*, the dummy email address created will be *1234@example.com*.  
+Users can continue signing in with their non-email identifier via SSO. This feature allows your team to access ToolJet using any unique identifier instead of an email address, such as Employee ID or Student ID.
 
-To enable this behavior, set the following environment variables:
-
-- `SSO_UNIQUE_ID_FIELD=<your_unique_identifier>`
-
-- `SSO_CUSTOM_EMAIL_DOMAIN=<example.com>`
-
-#### Environment Variables Explained
+#### Configuring the Environment Variables
+To enable this behavior, you need to configure the following environment variables:
 
 - `SSO_UNIQUE_ID_FIELD`  
-  This should be set to the name of the unique identifier field returned to ToolJet by your Identity Provider (IdP), such as employee_id, national_id, etc.
-
+  Set this to the name of the unique identifier field received by ToolJet from your Identity Provider (IdP), such as *employee_id* or *student_id*.
 - `SSO_CUSTOM_EMAIL_DOMAIN`  
-  This should be set to a domain name. ToolJet uses this domain to generate dummy email addresses for users. For example, if the unique id of a user is *1234* and the **SSO_CUSTOM_EMAIL_DOMAIN** is set to *tooljet.com*, the dummy email id created will be *1234@tooljet.com*.
+  Set this to a domain name. ToolJet uses this domain to generate dummy email addresses for users.
 
 **Example: Signing In With Keycloak**  
-For this example, we have setup an IdP server using keycloak and setup a ToolJet instance with the following environment variables:
+In this example, we set up an IdP using Keycloak and configured a ToolJet instance with the following environment variables:
 
 - `SSO_UNIQUE_ID_FIELD: employee_id`  
 - `SSO_CUSTOM_EMAIL_DOMAIN: organisation.com`
 
-With this setup, employee_id is used as the login identifier for ToolJet. This is named as Employee ID in Keycloak.
+With this setup, employee_id is used as the login identifier for ToolJet. In Keycloak, Employee ID is a custom user attribute.
 
 - We created a user in our Keycloak server with the following credentials:
   <img className="screenshot-full img-m" src="/img/user-management/sso/oidc/uniqueID/keycloakUser.png" alt="Keycloak User Credentials" />
 
-- We login to our ToolJet instance using Keycloak.
+- We login to our ToolJet instance using Keycloak and are redirected to the Keycloak login page.
   <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/uniqueID/signInWithKeycloak.png" alt="Sign In with Keycloak" />
 
-- We enter the employee_id instead of email and we are able to login.
+- On the Keycloak login page, we sign in using the Keycloak credentials. We enter the employee_id instead of email and sign in.
   <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/uniqueID/keycloakLogin.png" alt="Sign In with Keycloak" />
 
-- We can see the dummy email in Profile settings.
+- After a successful login, you are redirected to your ToolJet workspace. To verify the setup, you can view the generated dummy email address in *Profile settings*.
   <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/uniqueID/userProfile.png" alt="Sign In with Keycloak" />
