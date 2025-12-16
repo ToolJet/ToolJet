@@ -31,8 +31,10 @@ export class MigrateDividerStylesContainer1765254280643 implements MigrationInte
         for (const component of components) {
             const styles = component.styles ? { ...component.styles } : {};
 
-            if (!styles.headerDividerColor.value) {
-                styles.headerDividerColor.value = "var(--cc-default-border)"
+            if (!styles.headerDividerColor) {
+                styles.headerDividerColor = {
+                    "value": "var(--cc-default-border)"
+                };
             }
 
             await queryRunner.query(

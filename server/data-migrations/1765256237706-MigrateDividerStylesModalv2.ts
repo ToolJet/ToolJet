@@ -31,12 +31,16 @@ export class MigrateDividerStylesModalv21765256237706 implements MigrationInterf
         for (const component of components) {
             const styles = component.styles ? { ...component.styles } : {};
 
-            if (!styles.headerDividerColor.value) {
-                styles.headerDividerColor.value = "var(--cc-default-border)";
+            if (!styles.headerDividerColor) {
+                styles.headerDividerColor = {
+                    "value": "var(--cc-default-border)"
+                };
             }
 
-            if (!styles.footerDividerColor.value) {
-                styles.footerDividerColor.value = "var(--cc-default-border)";
+            if (!styles.footerDividerColor) {
+                styles.footerDividerColor = {
+                    "value": "var(--cc-default-border)"
+                };
             }
 
             await queryRunner.query(
