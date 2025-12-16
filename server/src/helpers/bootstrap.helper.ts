@@ -92,18 +92,6 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
     logger.log('OTEL disabled (ENABLE_OTEL not set to true)');
     return;
   }
-  const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
-  const importPath = await getImportPath(false, tooljetEdition);
-  const licenseInitService = app.get<LicenseInitService>(LicenseInitService);
-  await licenseInitService.init();
-  const License = await import(`${importPath}/licensing/configs/License`);
-  const license = License.default;
-  const licenseInfo = license.Instance();
-
-  if (!licenseInfo.observabilityEnabled) {
-    logger.log('OTEL disabled (observability feature not enabled in license)');
-    return;
-  }
 
   try {
     logger.log('Initializing OpenTelemetry...');
@@ -128,13 +116,24 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
  * Replaces subpath placeholders in static assets
  */
 export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
   logger.log('Starting subpath placeholder replacement...');
+
+  const buildDir = join(__dirname, '../../../../', 'frontend/build');
+
+  // Get all files that need subpath replacement
+  // index.html is always present, runtime/main files may have contenthash in production
+  const allFiles = fs.readdirSync(buildDir);
+  const filesToReplaceAssetPath = [
+    'index.html',
+    ...allFiles.filter((f) => /^runtime(\.[a-f0-9]+)?\.js$/.test(f)),
+    ...allFiles.filter((f) => /^main(\.[a-f0-9]+)?\.js$/.test(f)),
+  ];
+
+  logger.log(`Files to process: ${filesToReplaceAssetPath.join(', ')}`);
 
   for (const fileName of filesToReplaceAssetPath) {
     try {
-      const file = join(__dirname, '../../../../', 'frontend/build', fileName);
+      const file = join(buildDir, fileName);
       logger.log(`Processing file: ${fileName}`);
 
       let newValue = process.env.SUB_PATH;

@@ -1,21 +1,17 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
-import axios from 'axios';
 import JSON5 from 'json5';
-import { executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
-import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+import { staticDataSources } from '@/AppBuilder/QueryManager/constants';
+import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 
 export const reservedKeyword = ['app', 'window'];
 
@@ -210,7 +206,7 @@ export function resolveReferences(
   const objectType = typeof object;
   let error;
 
-  const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+  const state = _state; // ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
 
   if (_state?.parameters) {
     state.parameters = { ..._state.parameters };
@@ -412,7 +408,7 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    const state = getCurrentState();
+    const state = {}; // getCurrentState();
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
@@ -607,133 +603,6 @@ export function constructSearchParams(params = {}) {
   return searchParams;
 }
 
-// eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
-  const isValidCode = validateMultilineCode(code, true);
-
-  if (isValidCode.status === 'failed') {
-    return isValidCode;
-  }
-
-  const currentState = getCurrentState();
-
-  let result = {},
-    error = null;
-
-  //if user passes anything other than object, params are reset to empty
-  if (typeof parameters !== 'object' || parameters === null) {
-    parameters = {};
-  }
-
-  const actions = generateAppActions(_ref, queryId, mode, isPreview);
-
-  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
-
-  const defaultParams =
-    queryDetails?.options?.parameters?.reduce(
-      (paramObj, param) => ({
-        ...paramObj,
-        [param.name]: resolveReferences(param.defaultValue, undefined), //default values will not be resolved with currentState
-      }),
-      {}
-    ) || {};
-
-  let formattedParams = {};
-  if (queryDetails) {
-    Object.keys(defaultParams).map((key) => {
-      /** The value of param is replaced with defaultValue if its passed undefined */
-      formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
-    });
-  } else {
-    //this will handle the preview case where you cannot find the queryDetails in state.
-    formattedParams = { ...parameters };
-  }
-
-  for (const key of Object.keys(currentState.queries)) {
-    currentState.queries[key] = {
-      ...currentState.queries[key],
-      run: (params) => {
-        if (typeof params !== 'object' || params === null) {
-          params = {};
-        }
-        const processedParams = {};
-        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
-        query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
-        return actions.runQuery(key, processedParams);
-      },
-
-      getData: () => {
-        return getCurrentState().queries[key].data;
-      },
-
-      getRawData: () => {
-        return getCurrentState().queries[key].rawData;
-      },
-
-      getloadingState: () => {
-        return getCurrentState().queries[key].isLoading;
-      },
-    };
-  }
-
-  try {
-    const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    const fnParams = [
-      'moment',
-      '_',
-      'components',
-      'queries',
-      'globals',
-      'page',
-      'axios',
-      'variables',
-      'actions',
-      'client',
-      'server',
-      'constants',
-      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
-      code,
-    ];
-    var evalFn = new AsyncFunction(...fnParams);
-
-    const fnArgs = [
-      moment,
-      _,
-      currentState.components,
-      currentState.queries,
-      currentState.globals,
-      currentState.page,
-      axios,
-      currentState.variables,
-      actions,
-      currentState?.client,
-      currentState?.server,
-      currentState?.constants,
-      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
-    ];
-    result = {
-      status: 'ok',
-      data: await evalFn(...fnArgs),
-    };
-  } catch (err) {
-    console.log('JS execution failed: ', err);
-    error = err.stack.split('\n')[0];
-    result = { status: 'failed', data: { message: error, description: error } };
-  }
-
-  if (hasCircularDependency(result)) {
-    return {
-      status: 'failed',
-      data: {
-        message: 'Circular dependency detected',
-        description: 'Cannot resolve circular dependency',
-      },
-    };
-  }
-
-  return result;
-}
-
 export function toQuery(params, delimiter = '&') {
   const keys = Object.keys(params);
 
@@ -820,238 +689,236 @@ export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
+//   const currentPageId = _ref.currentPageId;
+//   const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
+//     ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
+//     : {};
 
-export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
-  const currentPageId = _ref.currentPageId;
-  const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
-    ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
-    : {};
+//   const runQuery = (queryName = '', parameters) => {
+//     const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+//       const isFound = query.name === queryName;
+//       if (isPreview) {
+//         return isFound;
+//       } else {
+//         return isFound && isQueryRunnable(query);
+//       }
+//     });
 
-  const runQuery = (queryName = '', parameters) => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
-      const isFound = query.name === queryName;
-      if (isPreview) {
-        return isFound;
-      } else {
-        return isFound && isQueryRunnable(query);
-      }
-    });
+//     const processedParams = {};
+//     if (_.isEmpty(query) || queryId === query?.id) {
+//       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
+//       toast.error(errorMsg);
+//       return;
+//     }
 
-    const processedParams = {};
-    if (_.isEmpty(query) || queryId === query?.id) {
-      const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
-      toast.error(errorMsg);
-      return;
-    }
+//     if (!_.isEmpty(query?.options?.parameters)) {
+//       query.options.parameters?.forEach(
+//         (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
+//       );
+//     }
 
-    if (!_.isEmpty(query?.options?.parameters)) {
-      query.options.parameters?.forEach(
-        (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
-      );
-    }
+//     // if (isPreview) {
+//     //   return previewQuery(_ref, query, true, processedParams);
+//     // }
 
-    // if (isPreview) {
-    //   return previewQuery(_ref, query, true, processedParams);
-    // }
+//     const event = {
+//       actionId: 'run-query',
+//       queryId: query.id,
+//       queryName: query.name,
+//       parameters: processedParams,
+//     };
 
-    const event = {
-      actionId: 'run-query',
-      queryId: query.id,
-      queryName: query.name,
-      parameters: processedParams,
-    };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-    return executeAction(_ref, event, mode, {});
-  };
+//   const setVariable = (key = '', value = '') => {
+//     if (key) {
+//       const event = {
+//         actionId: 'set-custom-variable',
+//         key,
+//         value,
+//       };
+//       return executeAction(_ref, event, mode, {});
+//     }
+//   };
 
-  const setVariable = (key = '', value = '') => {
-    if (key) {
-      const event = {
-        actionId: 'set-custom-variable',
-        key,
-        value,
-      };
-      return executeAction(_ref, event, mode, {});
-    }
-  };
+//   const getVariable = (key = '') => {
+//     if (key) {
+//       const event = {
+//         actionId: 'get-custom-variable',
+//         key,
+//       };
+//       return executeAction(_ref, event, mode, {});
+//     }
+//   };
 
-  const getVariable = (key = '') => {
-    if (key) {
-      const event = {
-        actionId: 'get-custom-variable',
-        key,
-      };
-      return executeAction(_ref, event, mode, {});
-    }
-  };
+//   const unSetVariable = (key = '') => {
+//     if (key) {
+//       const event = {
+//         actionId: 'unset-custom-variable',
+//         key,
+//       };
+//       return executeAction(_ref, event, mode, {});
+//     }
+//   };
 
-  const unSetVariable = (key = '') => {
-    if (key) {
-      const event = {
-        actionId: 'unset-custom-variable',
-        key,
-      };
-      return executeAction(_ref, event, mode, {});
-    }
-  };
+//   const showAlert = (alertType = '', message = '') => {
+//     const event = {
+//       actionId: 'show-alert',
+//       alertType,
+//       message,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const showAlert = (alertType = '', message = '') => {
-    const event = {
-      actionId: 'show-alert',
-      alertType,
-      message,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const logout = () => {
+//     const event = {
+//       actionId: 'logout',
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const logout = () => {
-    const event = {
-      actionId: 'logout',
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const showModal = (modalName = '') => {
+//     let modal = '';
+//     for (const [key, value] of currentComponents) {
+//       if (value.component.name === modalName) {
+//         modal = key;
+//       }
+//     }
 
-  const showModal = (modalName = '') => {
-    let modal = '';
-    for (const [key, value] of currentComponents) {
-      if (value.component.name === modalName) {
-        modal = key;
-      }
-    }
+//     const event = {
+//       actionId: 'show-modal',
+//       modal,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-    const event = {
-      actionId: 'show-modal',
-      modal,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const closeModal = (modalName = '') => {
+//     let modal = '';
+//     for (const [key, value] of currentComponents) {
+//       if (value.component.name === modalName) {
+//         modal = key;
+//       }
+//     }
 
-  const closeModal = (modalName = '') => {
-    let modal = '';
-    for (const [key, value] of currentComponents) {
-      if (value.component.name === modalName) {
-        modal = key;
-      }
-    }
+//     const event = {
+//       actionId: 'close-modal',
+//       modal,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-    const event = {
-      actionId: 'close-modal',
-      modal,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const setLocalStorage = (key = '', value = '') => {
+//     const event = {
+//       actionId: 'set-localstorage-value',
+//       key,
+//       value,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const setLocalStorage = (key = '', value = '') => {
-    const event = {
-      actionId: 'set-localstorage-value',
-      key,
-      value,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const copyToClipboard = (contentToCopy = '') => {
+//     const event = {
+//       actionId: 'copy-to-clipboard',
+//       contentToCopy,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const copyToClipboard = (contentToCopy = '') => {
-    const event = {
-      actionId: 'copy-to-clipboard',
-      contentToCopy,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const goToApp = (slug = '', queryParams = []) => {
+//     const event = {
+//       actionId: 'go-to-app',
+//       slug,
+//       queryParams,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const goToApp = (slug = '', queryParams = []) => {
-    const event = {
-      actionId: 'go-to-app',
-      slug,
-      queryParams,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const generateFile = (fileName, fileType, data) => {
+//     if (!fileName || !fileType || !data) {
+//       return toast.error('Action failed: fileName, fileType and data are required');
+//     }
 
-  const generateFile = (fileName, fileType, data) => {
-    if (!fileName || !fileType || !data) {
-      return toast.error('Action failed: fileName, fileType and data are required');
-    }
+//     const event = {
+//       actionId: 'generate-file',
+//       fileName,
+//       data,
+//       fileType,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-    const event = {
-      actionId: 'generate-file',
-      fileName,
-      data,
-      fileType,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const setPageVariable = (key = '', value = '') => {
+//     const event = {
+//       actionId: 'set-page-variable',
+//       key,
+//       value,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const setPageVariable = (key = '', value = '') => {
-    const event = {
-      actionId: 'set-page-variable',
-      key,
-      value,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const getPageVariable = (key = '') => {
+//     const event = {
+//       actionId: 'get-page-variable',
+//       key,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const getPageVariable = (key = '') => {
-    const event = {
-      actionId: 'get-page-variable',
-      key,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const unsetPageVariable = (key = '') => {
+//     const event = {
+//       actionId: 'unset-page-variable',
+//       key,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-  const unsetPageVariable = (key = '') => {
-    const event = {
-      actionId: 'unset-page-variable',
-      key,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
+//   const switchPage = (pageHandle, queryParams = []) => {
+//     if (isPreview) {
+//       mode != 'view' &&
+//         toast('Page will not be switched for query preview', {
+//           icon: '⚠️',
+//         });
+//       return Promise.resolve();
+//     }
+//     const pages = _ref.appDefinition.pages;
+//     const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
 
-  const switchPage = (pageHandle, queryParams = []) => {
-    if (isPreview) {
-      mode != 'view' &&
-        toast('Page will not be switched for query preview', {
-          icon: '⚠️',
-        });
-      return Promise.resolve();
-    }
-    const pages = _ref.appDefinition.pages;
-    const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
+//     if (!pageId) {
+//       mode === 'edit' &&
+//         toast('Valid page handle is required', {
+//           icon: '⚠️',
+//         });
+//       return Promise.resolve();
+//     }
 
-    if (!pageId) {
-      mode === 'edit' &&
-        toast('Valid page handle is required', {
-          icon: '⚠️',
-        });
-      return Promise.resolve();
-    }
+//     const event = {
+//       actionId: 'switch-page',
+//       pageId,
+//       queryParams,
+//     };
+//     return executeAction(_ref, event, mode, {});
+//   };
 
-    const event = {
-      actionId: 'switch-page',
-      pageId,
-      queryParams,
-    };
-    return executeAction(_ref, event, mode, {});
-  };
-
-  return {
-    runQuery,
-    setVariable,
-    getVariable,
-    unSetVariable,
-    showAlert,
-    logout,
-    showModal,
-    closeModal,
-    setLocalStorage,
-    copyToClipboard,
-    goToApp,
-    generateFile,
-    setPageVariable,
-    getPageVariable,
-    unsetPageVariable,
-    switchPage,
-  };
-};
+//   return {
+//     runQuery,
+//     setVariable,
+//     getVariable,
+//     unSetVariable,
+//     showAlert,
+//     logout,
+//     showModal,
+//     closeModal,
+//     setLocalStorage,
+//     copyToClipboard,
+//     goToApp,
+//     generateFile,
+//     setPageVariable,
+//     getPageVariable,
+//     unsetPageVariable,
+//     switchPage,
+//   };
+// };
 
 export const loadPyodide = async () => {
   try {
@@ -1322,7 +1189,7 @@ export const defaultAppEnvironments = [
 
 export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}, appEnvId) => {
   const { appId } = useAppDataStore.getState();
-  const currentState = getCurrentState();
+  const currentState = {}; // getCurrentState();
   const resolvedParams = resolveReferences(params, currentState, {}, {});
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
@@ -1518,12 +1385,20 @@ export const validatePassword = (value) => {
   if (!value.trim()) {
     return 'Password is required';
   }
-  if (value.length < 5) {
-    return 'Password must be at least 5 characters long';
-  }
-  if (value.length > 100) {
-    return 'Password can be at max 100 characters long';
-  }
+
+  // const passwordRulesEnabled = config.ENABLE_PASSWORD_COMPLEXITY_RULES === 'true';
+  // const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+  // if (passwordRulesEnabled) {
+  //   if (!PASSWORD_REGEX.test(value)) {
+  //     return 'Password must be 12-24 characters long and can include letters, numbers, and special characters.';
+  //   }
+  // }
+  // if (value.length < 5) {
+  //   return 'Password must be at least 5 characters long';
+  // }
+  // if (value.length > 100) {
+  //   return 'Password can be at max 100 characters long';
+  // }
 };
 
 export const checkConditionsForRoute = (conditions, conditionsObj) => {
