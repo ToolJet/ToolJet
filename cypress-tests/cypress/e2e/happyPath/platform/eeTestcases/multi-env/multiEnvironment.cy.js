@@ -8,7 +8,6 @@ import {
   WaitTimes,
   TableValues,
 } from "Constants/constants/multiEnv";
-import { verifyPreviewIsDisabled } from "Support/utils/platform/eeCommon";
 import {
   setupWorkspaceConstant,
   setupPostgreSQLDataSource,
@@ -128,11 +127,7 @@ describe("Multi-Environment Behavior", () => {
     verifyPageSettingsDisabled();
     //verifyComponentInspectorDisabled();
 
-    cy.apiReleaseApp(names.appName);
-
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-
-    verifyPreviewIsDisabled();
+    releaseAndVisitApp(testData.appSlug);
     verifyEnvironmentData(DBValues.production, EnvironmentValues.production);
     // cy.get(commonWidgetSelector.draggableWidget("button1")).should(
     //   "be.visible"

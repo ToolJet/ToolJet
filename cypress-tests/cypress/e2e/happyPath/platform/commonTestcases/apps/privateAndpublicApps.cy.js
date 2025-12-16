@@ -153,6 +153,9 @@ describe("Private and Public apps", () => {
   it("should verify app private and public app visibility for the same instance user", () => {
     setupAppWithSlug(data.appName, data.slug);
 
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    verifyPreviewIsDisabled();
+
     cy.apiLogout();
     cy.ifEnv("Enterprise", () => {
       InstanceSSO(true, true, true);
@@ -172,6 +175,7 @@ describe("Private and Public apps", () => {
     cy.apiLogin(data.email, "password");
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
+    verifyPreviewIsDisabled();
   });
 
   it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
@@ -189,7 +193,6 @@ describe("Private and Public apps", () => {
     // cy.apiMakeAppPublic(publicAppId);
     setupAppWithSlug(data.appPrivateName, data.appPrivateSlug);
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
     verifyWidget("public");
 
@@ -217,7 +220,6 @@ describe("Private and Public apps", () => {
     cy.wait(15000); // Waiting for mailhog to receive the email
     fetchAndVisitInviteLinkViaMH(data.email);
     verifyWidget("private");
-    verifyPreviewIsDisabled();
 
     // cy.apiLogout();
 
