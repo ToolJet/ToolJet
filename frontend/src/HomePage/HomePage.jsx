@@ -393,7 +393,7 @@ class HomePageComponent extends React.Component {
 
     //  Check app limit before cloning
     if (!canAddUnlimited && current >= total) {
-      toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
+      toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
       return;
     }
     this.setState({ isCloningApp: true });
@@ -834,6 +834,8 @@ class HomePageComponent extends React.Component {
 
   importGitApp = () => {
     const { appsFromRepos, selectedAppRepo, orgGit } = this.state;
+    console.log('importGitApp -> selectedAppRepo', selectedAppRepo);
+    console.log('apps from repo', appsFromRepos);
     const appToImport = appsFromRepos[selectedAppRepo];
     const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
       appToImport;
@@ -844,12 +846,12 @@ class HomePageComponent extends React.Component {
       gitAppName: git_app_name,
       gitVersionName: git_version_name,
       gitVersionId: git_version_id,
-      lastCommitMessage: last_commit_message,
-      lastCommitUser: last_commit_user,
-      lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
       appName: this.state.importedAppName,
       allowEditing: this.state.isAppImportEditable,
+      ...(last_commit_message && { lastCommitMessage: last_commit_message }),
+      ...(last_commit_user && { lastCommitUser: last_commit_user }),
+      ...(lastpush_date && { lastPushDate: new Date(lastpush_date) }),
     };
     gitSyncService
       .importGitApp(body)
