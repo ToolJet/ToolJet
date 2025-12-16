@@ -6,7 +6,8 @@ import { get, debounce } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 
 import { shallow } from 'zustand/shallow';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+// import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const DynamicSelector = ({
