@@ -21,6 +21,7 @@ const BUFFER_HEIGHT = 1;
 
 export const ConfigHandle = ({
   id,
+  readOnly,
   widgetTop,
   widgetHeight,
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
@@ -38,20 +39,10 @@ export const ConfigHandle = ({
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
 
-  const parentComponentType = useStore((state) => {
-    const parentId = state.getComponentDefinition(id, moduleId)?.component?.parent;
-    if (!parentId) return null;
-    return state.getComponentDefinition(parentId, moduleId)?.component?.component;
-  }, shallow);
-
-  const isInReadOnlySubcontainer =
-    (parentComponentType === 'Kanban' || parentComponentType === 'Listview') &&
-    subContainerIndex !== 0 &&
-    subContainerIndex !== null;
-
-  if (isInReadOnlySubcontainer) {
+  if (readOnly) {
     return null;
   }
+
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow

@@ -146,6 +146,7 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
+              readOnly={readOnly}
               widgetTop={temporaryLayouts?.top ?? layoutData.top}
               widgetHeight={temporaryLayouts?.height ?? layoutData.height}
               showHandle={isWidgetActive}
