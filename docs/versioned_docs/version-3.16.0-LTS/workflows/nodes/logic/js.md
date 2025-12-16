@@ -32,10 +32,8 @@ return
 
 Consider a workflow that automatically assigns a priority tag to a ticket based on the message length.
 
-Here's an overview of the workflow.
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/sneakPeek.png" alt="Ticket Categoriser Sneak Peek" />
 
-**Input**  
 For this example, the data that the workflow receives is in the following format:
 ```js
 {
@@ -45,8 +43,8 @@ For this example, the data that the workflow receives is in the following format
 }
 ```
 
-**Create an outgoing ```JavaScript node``` from the trigger node.**  
-Add the following code to the node. This code checks for the message length and returns the original parameters along with a priority based on message length.
+**Categorising tasks using a JavaScript node.**  
+Add the following code to the JavaScript node. This code checks for the message length and returns the original parameters along with a priority based on message length.
 
 ```js
 const inputs = startTrigger.params;
@@ -71,7 +69,5 @@ return {
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/categoriseDataCode.png" alt="categoriseData Code" />
 
 **Output**  
-The output will be an object with 2 fields
-- inputs
-- priority
+The output will be an object containing the input field and the priority.
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/output.png" alt="Output" />

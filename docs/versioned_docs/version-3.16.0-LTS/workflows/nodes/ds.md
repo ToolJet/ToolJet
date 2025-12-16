@@ -43,8 +43,6 @@ For this example, the data that the workflow receives is in the following format
 }
 ```
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/v2/ds/customer-support-automation/testJSONParameters.png" alt="Test JSON parameters" />
-
 **Step 1 - From the Trigger node, drag a connection and add an OpenAI data source node. Name this node `generateResponse`**.
 
 **Step 2 - Configure the OpenAI Node.**  
@@ -119,6 +117,7 @@ go_memstats_alloc_bytes{job="prometheus"} / 1024 / 1024
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/v2/ds/prometheus-monitoring-system/prometheusNode.png" alt="Sample Prometheus Node" />
 
+<br /> <br />
 **Step - 3 Add an ```If condition``` node to check health status named ```checkOverallHealth```**.
 
 Prometheus returns results in a nested format. To get the actual metric value, we access:

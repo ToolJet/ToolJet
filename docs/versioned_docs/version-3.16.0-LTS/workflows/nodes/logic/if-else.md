@@ -18,7 +18,7 @@ When the condition evaluates to true, the outgoing node connected to the green a
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/example.png" alt="IF Else Node Example" />
 
-## Example: Reimbursement workflow
+## Example: Reimbursement Approval Workflow by Amount
 
 Consider a workflow for issuing reimbursements. If the amount is less than $500, it auto approves, else the CFO receives a mail for approval.  
 Here's an overview of the workflow:

@@ -26,7 +26,10 @@ The timeout for each workflow can be configured using the `WORKFLOW_TIMEOUT_SECO
 This example shows how you can centralise common tasks like logging, into a reusable workflow that other workflows can call.  
 Consider a centralised workflow that inserts event logs in a database. So any workflow that performs a critical task inserts a log.
 
+For this example we'll have a child and a parent workflow.
+
 **Child Workflow**  
+Child workflow will be the centralised logging workflow that adds entries to a database.
 Here's an overview of the child workflow (logger):
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/sneakPeakChild.png" alt="Child Workflow Sneak Peek" />
 For this example, the data that the child workflow receives is in the following format:
@@ -42,13 +45,11 @@ The child workflow receives the data and performs an insert operation to the dat
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/childWFResult.png" alt="Child Workflow Result" />
 
 **Parent Workflow**  
-We'll create a new parent workflow to integrate the child workflow.
-This workflow:
+We will create a workflow, which needs to log the event data in the database. This workflow:
 - Adds an employee to the company database.
 - Sends a welcome email to the employee.
-- Adds a failure/success log.
+- Adds a failure/success log using the earlier created workflow using workflow node.
 
-Here's an overview of the workflow:
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/sneakPeekParent.png" alt="Parent Workflow Sneak Peek" />
 
 For this example, the data that the parent workflow receives is in the following format:
@@ -59,12 +60,12 @@ For this example, the data that the parent workflow receives is in the following
   "phone_number": "+1111111111"
 }
 ```
-**Step - 1 Create a DB Node to insert the data to the DB named `addEmployee`.**  
-**Step - 2 Branch the `addEmployee` node.**  
+1. **Create a DB Node to insert the data to the DB named `addEmployee`.**  
+2. **Branch the `addEmployee` node.**  
 Click the branch icon to branch the `addEmployee` node. From the green port, create an SMTP Node to send a success mail to the employee named `mailTheEmployee`.  
 From the red port, create a workflow node and name it `logFailure`.  
-**Step - 3 From the `mailTheEmployee` node, create a workflow node and name it `logSuccess`.**  
-**Step - 4 Configure the `logSuccess` and `logFailure` nodes.**
+3. **From the `mailTheEmployee` node, create a workflow node and name it `logSuccess`.**  
+4. **Configure the `logSuccess` and `logFailure` nodes.**
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/logFailure.png" alt="Log Failure" />
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/logger/logSuccess.png" alt="Log Success" />
@@ -72,16 +73,15 @@ From the red port, create a workflow node and name it `logFailure`.
 **Result**  
 Both success and failure paths create a log entry, ensuring that the parent workflow’s actions are traceable.
 
-### Example 2 - Notification System
+### Example 2 - Centralised Notification Workflow
 Often, different workflows need to alert the right person when an incident occurs. To avoid repeating the same notification steps in every workflow, we can create one shared workflow for sending notifications.
 
-In simple terms:
+For this example:
 - The parent workflow deletes an S3 object and then calls the child workflow.
 - The child workflow sends notifications.
 - The parent workflow checks if the notification succeeded.
 
 **Child workflow**  
-Here's an overview of the child workflow which acts as a central notification system:
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/centralNotifcationSystem.png" alt="Central Notification System" />
 
