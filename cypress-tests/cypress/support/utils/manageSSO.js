@@ -341,8 +341,9 @@ export const oidcSSOPageElements = (pageName) => {
     cy.get(ssoSelector.statusLabel)
       .eq(0)
       .verifyVisibleElement("have.text", ssoText.enabledLabel);
-  }
 
+    cy.get('[data-cy="name-label"]').verifyVisibleElement("have.text", "Name");
+  }
   cy.clearAndType(ssoSelector.nameInput, ssoText.testName);
   cy.clearAndType(ssoSelector.clientIdInput, ssoText.testclientId);
   cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testclientSecret);
