@@ -394,7 +394,7 @@ export const PagesSidebarNavigation = ({
     switchPage(
       page?.id,
       pages.find((p) => page.id === p?.id)?.handle,
-      currentMode === 'view' ? Object.entries(queryParams) : []
+      currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
     );
     currentMode !== 'view' && setCurrentPageHandle(page.handle);
   };

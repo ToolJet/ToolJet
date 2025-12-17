@@ -1,5 +1,5 @@
 import { appsService, appVersionService } from '@/_services';
-import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { decimalToHex, APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
@@ -8,7 +8,6 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
-import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const initialState = {
   isSaving: false,
@@ -275,6 +274,7 @@ export const createAppSlice = (set, get) => ({
         canvas: { pages },
       },
       getCurrentMode,
+      isPreviewInEditor,
     } = get();
     const isPreview = getCurrentMode(moduleId) !== 'edit';
     //!TODO clear all queued tasks
@@ -301,9 +301,9 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
-        slug ?? appId
-      }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${
+        isPreview && !isPreviewInEditor ? 'applications' : `${getWorkspaceId() + '/apps'}`
+      }/${slug ?? appId}/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,
