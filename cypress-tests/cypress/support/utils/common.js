@@ -4,10 +4,10 @@ import {
   commonWidgetSelector,
   cyParamName,
 } from "Selectors/common";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { profileSelector } from "Selectors/profile";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonText, path } from "Texts/common";
-import { commonEeSelectors } from "Selectors/eeCommon";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.settingsIcon).click();
@@ -102,12 +102,16 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.contains('.homepage-app-card', appName).within(() => {
-    cy.get('.home-app-card-header .menu-ico')
-      .then(($el) => {
-        $el[0].style.setProperty('visibility', 'visible', 'important');
-      });
-
+  if (Cypress.env("environment") !== "Community") {
+    cy.waitForElement('[data-cy="ai-icon"]');
+  }
+  cy.contains(".homepage-app-card", appName, { timeout: 20000 }).within(() => {
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).parent().realHover();
+    cy.get('[data-cy="app-card-menu-icon"]')
+      .should("be.visible")
+      .should("not.be.disabled");
+    // .click({ timeout: 10000 });
+    cy.get(`[data-cy="${appName.toLowerCase()}-card"]`).click().realHover();
     cy.get('[data-cy="app-card-menu-icon"]').click();
   });
 };
@@ -131,7 +135,8 @@ export const verifyModal = (title, buttonText, inputFiledSelector) => {
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
     .should("be.visible")
     .and("have.text", commonText.cancelButton);
-  cy.get(commonSelectors.buttonSelector(buttonText)).first()
+  cy.get(commonSelectors.buttonSelector(buttonText))
+    .first()
     .should("be.visible")
     .and("have.text", buttonText);
 
@@ -230,7 +235,15 @@ export const navigateToworkspaceConstants = () => {
 export const releaseApp = () => {
   cy.ifEnv("Enterprise", () => {
     appPromote("development", "production");
+    cy.waitForElement(multiEnvSelector.environmentsTag("production"));
+    cy.get(multiEnvSelector.environmentsTag("production")).click();
   });
+  cy.ifEnv("Community", () => {
+    cy.waitForElement(multiEnvSelector.environmentsTag("development"));
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+  });
+
+  cy.waitForElement(commonSelectors.releaseButton);
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
@@ -259,3 +272,5 @@ export const navigateToSettingPage = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
+
+export const sanitize = (str) => str.toLowerCase().replace(/[^A-Za-z]/g, "");

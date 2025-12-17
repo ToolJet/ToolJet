@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ToolTip } from '@/_components/ToolTip';
-import { updateQuerySuggestions } from '@/_helpers/appUtils';
 // import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -10,13 +9,15 @@ import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 //TODO: Remove this
-import { Confirm } from '@/Editor/Viewer/Confirm';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 // TODO: enable delete query confirmation popup
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const queryNameEleRef = useRef(null);
+
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
   const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
   const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
@@ -37,9 +38,11 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
   const hasPermissions =
     selectedDataSourceScope === 'global'
       ? canUpdateDataSource(dataQuery?.data_source_id) ||
-      canReadDataSource(dataQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(dataQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
+
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
 
   const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
@@ -72,10 +75,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
 
   const getTooltip = () => {
     const permission = dataQuery.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return "Access restricted";
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return "Access restricted";
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -92,7 +95,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return "Access restricted";
   };
 
   return (
@@ -125,14 +128,15 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
             <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
           ) : (
             <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-              <span
-                className="text-truncate"
-                data-tooltip-id="query-card-name-tooltip"
-                data-tooltip-content={decodeEntities(dataQuery.name)}
-                data-tooltip-dynamic="true"
+              <ToolTip
+                message={decodeEntities(dataQuery.name)}
+                show={queryNameEleRef.current?.offsetWidth > 150}
+                tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
               >
-                {decodeEntities(dataQuery.name)}
-              </span>
+                <span ref={queryNameEleRef} className="text-truncate">
+                  {decodeEntities(dataQuery.name)}
+                </span>
+              </ToolTip>
               <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
                 <div className="d-flex align-items-center" style={{ marginLeft: '8px', marginRight: 'auto' }}>
                   {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
@@ -144,7 +148,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   <a
                     className="text-truncate"
                     data-tooltip-id="query-card-local-ds-info"
-                    href="https://docs.tooljet.ai/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                    href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
                     target="_blank"
                     rel="noreferrer"
                   >

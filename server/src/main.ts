@@ -6,13 +6,7 @@ import * as compression from 'compression';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
-import {
-  RequestMethod,
-  ValidationPipe,
-  VersioningType,
-  VERSION_NEUTRAL,
-  INestApplicationContext,
-} from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { custom } from 'openid-client';
 import { join } from 'path';
@@ -23,7 +17,6 @@ import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
 
 // Import helper functions
 import {
@@ -36,9 +29,9 @@ import {
   createLogger,
   logStartupInfo,
   logShutdownInfo,
+  initSentry,
+  initializeOtel,
 } from '@helpers/bootstrap.helper';
-
-let appContext: INestApplicationContext = undefined;
 
 async function bootstrap() {
   const logger = createLogger('Bootstrap');
@@ -83,6 +76,9 @@ async function bootstrap() {
     appLogger.log('Initializing licensing...');
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
+
+    // Initialize OTEL
+    await initializeOtel(app, appLogger);
 
     // Configure OIDC timeout
     appLogger.log('Configuring OIDC connection timeout...');
@@ -130,9 +126,15 @@ async function bootstrap() {
     await guardValidator.validateJwtGuard();
     appLogger.log('✅ Ability guard validation completed');
 
+    // Initialize Sentry
+    initSentry(appLogger, configService);
+
     // Start server
     const listen_addr = process.env.LISTEN_ADDR || '::';
     const port = parseInt(process.env.PORT) || 3000;
+
+    // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
+    app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
     appLogger.log(`Starting server on ${listen_addr}:${port}...`);
     await app.listen(port, listen_addr, async function () {
@@ -167,11 +169,6 @@ async function setupApplicationMiddleware(app: NestExpressApplication, appLogger
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-
-  if (process.env.ENABLE_OTEL === 'true') {
-    await startOpenTelemetry();
-    app.use(otelMiddleware);
-  }
 }
 
 function configureUrlPrefix() {
@@ -207,10 +204,6 @@ function setupBodyParsers(app: NestExpressApplication, configService: ConfigServ
       parameterLimit: 1000000,
     })
   );
-}
-
-export function getAppContext(): INestApplicationContext {
-  return appContext;
 }
 
 // Bootstrap global agent only if TOOLJET_HTTP_PROXY is set

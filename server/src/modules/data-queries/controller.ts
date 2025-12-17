@@ -128,7 +128,8 @@ export class DataQueriesController implements IDataQueriesController {
       ability,
       dataSource,
       response,
-      mode
+      mode,
+      app
     );
   }
 
@@ -142,7 +143,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Body() updateDataQueryDto: UpdateDataQueryDto,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response);
+    return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)
@@ -171,7 +172,7 @@ export class DataQueriesController implements IDataQueriesController {
       app,
     });
 
-    return this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response);
+    return this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE)

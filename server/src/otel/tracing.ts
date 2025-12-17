@@ -62,70 +62,76 @@ const sanitizeObject = (obj: any) => {
   return sanitized;
 };
 
-export const sdk = new NodeSDK({
-  resource: resource,
-  traceExporter: traceExporter,
-  spanProcessor: new BatchSpanProcessor(traceExporter),
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-  }),
-  textMapPropagator: new CompositePropagator({
-    propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
-  }),
-  instrumentations: [
-    new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
-    new HttpInstrumentation({
-      ignoreIncomingRequestHook: (request: any) => request.url === '/api/health',
+// SDK instance - created lazily in startOpenTelemetry()
+let sdk: NodeSDK | null = null;
+
+// Function to create the SDK (called only when startOpenTelemetry is invoked)
+function createSDK(): NodeSDK {
+  return new NodeSDK({
+    resource: resource,
+    traceExporter: traceExporter,
+    spanProcessor: new BatchSpanProcessor(traceExporter),
+    metricReader: new PeriodicExportingMetricReader({
+      exporter: metricExporter,
     }),
-    new ExpressInstrumentation({
-      requestHook: (span: Span, { request }) => {
-        const path = request.route?.path || request.path || '';
-        if (path.startsWith('/api/') && path !== '/api/health') {
-          span.updateName(`${request.method} ${path}`);
-          span.setAttribute('http.route', path);
-          span.setAttribute('http.method', request.method);
-
-          if (request.params && Object.keys(request.params).length > 0) {
-            span.setAttribute('http.params', JSON.stringify(sanitizeObject(request.params)));
-          }
-
-          if (request.query && Object.keys(request.query).length > 0) {
-            span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
-          }
-
-          if (request.body && Object.keys(request.body).length > 0) {
-            span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
-          }
-        }
-      },
+    textMapPropagator: new CompositePropagator({
+      propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
     }),
-    new NestInstrumentation(),
-    new PgInstrumentation({
-      enhancedDatabaseReporting: true,
-      responseHook: (span: Span, responseInfo: any) => {
-        // Add more detailed DB query information
-        if (responseInfo?.data) {
-          span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
-        }
-      },
-      requestHook: (span: Span, requestInfo: any) => {
-        // Add query execution context
-        if (requestInfo?.query) {
-          // Truncate very long queries for better readability
-          const query = requestInfo.query.text || requestInfo.query;
-          const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
-          span.setAttribute('db.statement', truncatedQuery);
+    instrumentations: [
+      new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
+      new HttpInstrumentation({
+        ignoreIncomingRequestHook: (request: any) => request.url === '/api/health',
+      }),
+      new ExpressInstrumentation({
+        requestHook: (span: Span, { request }) => {
+          const path = request.route?.path || request.path || '';
+          if (path.startsWith('/api/') && path !== '/api/health') {
+            span.updateName(`${request.method} ${path}`);
+            span.setAttribute('http.route', path);
+            span.setAttribute('http.method', request.method);
 
-          // Add query parameter count if available
-          if (requestInfo.query.values) {
-            span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
+            if (request.params && Object.keys(request.params).length > 0) {
+              span.setAttribute('http.params', JSON.stringify(sanitizeObject(request.params)));
+            }
+
+            if (request.query && Object.keys(request.query).length > 0) {
+              span.setAttribute('http.query', JSON.stringify(sanitizeObject(request.query)));
+            }
+
+            if (request.body && Object.keys(request.body).length > 0) {
+              span.setAttribute('http.body', JSON.stringify(sanitizeObject(request.body)));
+            }
           }
-        }
-      },
-    }),
-    new PinoInstrumentation(),
-  ],
-});
+        },
+      }),
+      new NestInstrumentation(),
+      new PgInstrumentation({
+        enhancedDatabaseReporting: true,
+        responseHook: (span: Span, responseInfo: any) => {
+          // Add more detailed DB query information
+          if (responseInfo?.data) {
+            span.setAttribute('db.rows_affected', responseInfo.data.rowCount || 0);
+          }
+        },
+        requestHook: (span: Span, requestInfo: any) => {
+          // Add query execution context
+          if (requestInfo?.query) {
+            // Truncate very long queries for better readability
+            const query = requestInfo.query.text || requestInfo.query;
+            const truncatedQuery = query.length > 500 ? query.substring(0, 500) + '...' : query;
+            span.setAttribute('db.statement', truncatedQuery);
+
+            // Add query parameter count if available
+            if (requestInfo.query.values) {
+              span.setAttribute('db.query_parameters_count', requestInfo.query.values.length);
+            }
+          }
+        },
+      }),
+      new PinoInstrumentation(),
+    ],
+  });
+}
 
 // Custom metrics
 let meter: any;
@@ -417,9 +423,17 @@ process.on('SIGTERM', () => {
 
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
+    // Create SDK lazily (only when this function is called)
+    if (!sdk) {
+      sdk = createSDK();
+    }
+
     await sdk.start();
     initializeCustomMetrics();
 
+    // Initialize audit log metrics
+    const { initializeAuditLogMetrics } = await import('./audit-metrics');
+    initializeAuditLogMetrics();
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
@@ -434,6 +448,8 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
+// Export audit metrics function for use in services
+export { recordAuditLogMetric } from './audit-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;
@@ -562,5 +578,3 @@ export const decrementActiveSessions = (attributes: {
     activeSessionsCounter.add(-1, metricAttributes);
   }
 };
-
-export default sdk;

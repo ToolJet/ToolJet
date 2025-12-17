@@ -21,6 +21,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
@@ -165,19 +166,19 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   let docLinkStatic = '';
   switch (selectedDataSource?.kind) {
-      case 'restapi':
-        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
-        break;
-      case 'tooljetdb':
-        docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
-        break;
-      case 'runjs':
-        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
-        break;
-      case 'runpy':
-        docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
-        break;
-    }
+    case 'restapi':
+      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/restapi/querying-rest-api`;
+      break;
+    case 'tooljetdb':
+      docLinkStatic = `https://docs.tooljet.com/docs/tooljet-db/querying-tooljet-db`;
+      break;
+    case 'runjs':
+      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-js`;
+      break;
+    case 'runpy':
+      docLinkStatic = `https://docs.tooljet.com/docs/data-sources/run-py`;
+      break;
+  }
 
   const renderQueryElement = () => {
     return (
@@ -199,7 +200,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                   <a
                     href={docLinkStatic}
                     target="_blank"
-                    style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                    style={{
+                      marginLeft: '0px !important',
+                      color: 'hsl(226, 70.0%, 55.5%)',
+                      textDecoration: 'underline',
+                    }}
                     rel="noreferrer"
                   >
                     {t('globals.readDocumentation', 'read documentation').toLowerCase()}
@@ -256,6 +261,21 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     );
   };
 
+  const renderTimeout = () => {
+    return (
+      <div className="d-flex">
+        <div className="form-label mt-2">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
+        <div className="query-manager-query-timeout">
+          <CodeHinter
+            theme={darkMode ? 'monokai' : 'base16-light'}
+            initialValue={selectedQuery?.options?.query_timeout ?? ''}
+            onChange={(value) => optionchanged('query_timeout', value)}
+          />
+        </div>
+      </div>
+    );
+  };
+
   const renderQueryOptions = () => {
     return (
       <div>
@@ -290,7 +310,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           </div>
         </div>
         <div className="d-flex">
-          <div className="form-label">{}</div>
+          <div className="form-label">{ }</div>
           <SuccessNotificationInputs
             // currentState={currentState}
             options={options}
@@ -299,6 +319,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           />
         </div>
         {renderEventManager()}
+        {renderTimeout()}
       </div>
     );
   };
@@ -312,10 +333,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     }
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const docLink = isSampleDb
-      ? 'https://docs.tooljet.ai/docs/data-sources/sample-data-sources'
+      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-      ? `https://docs.tooljet.ai/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-      : `https://docs.tooljet.ai/docs/data-sources/${selectedDataSource?.kind}`;
+        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -380,15 +401,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-        canReadDataSource(selectedQuery?.data_source_id) ||
-        canDeleteDataSource()
+      canReadDataSource(selectedQuery?.data_source_id) ||
+      canDeleteDataSource()
       : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
-        !hasPermissions || isFreezed ? 'disabled' : ''
-      }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${!hasPermissions || isFreezed ? 'disabled' : ''
+        }`}
       style={{
         height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
         overflowY: 'auto',

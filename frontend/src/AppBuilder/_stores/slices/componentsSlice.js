@@ -1,12 +1,10 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
-  // extractAndReplaceReferencesFromString,
   checkSubstringRegex,
   hasArrayNotation,
   parsePropertyPath,
-  resolveCode,
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -23,7 +21,7 @@ import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
-import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
+import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 
@@ -482,7 +480,6 @@ export const createComponentsSlice = (set, get) => ({
     const mandatory = validationObject?.mandatory?.value ?? validationObject?.mandatory;
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
-    const re = new RegExp(validationRegex, 'g');
 
     if (componentType === 'EmailInput' && widgetValue) {
       const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
@@ -495,11 +492,14 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    if (!re.test(widgetValue)) {
-      return {
-        isValid: false,
-        validationError: 'The input should match pattern',
-      };
+    if (validationRegex && validationRegex.trim() !== '') {
+      const re = new RegExp(validationRegex, 'g');
+      if (!re.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'The input should match pattern',
+        };
+      }
     }
 
     const resolvedMinLength = getResolvedValue(minLength, customResolveObjects) || 0;
@@ -771,6 +771,7 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
+    console.log('here--- initDependencyGraph--- ');
     const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
     const components = getCurrentPageComponents(moduleId);
 
@@ -997,17 +998,23 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageId,
       checkIfComponentIsModule,
       clearModuleFromStore,
+      getShouldFreeze,
+      performBatchComponentOperations,
+      getComponentDefinition,
+      getCurrentPageIndex,
     } = get();
+    const shouldFreeze = getShouldFreeze();
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
-    if (!_selectedComponents.length) return;
+    if (!_selectedComponents.length || shouldFreeze) return;
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
     const allComponents = getCurrentPageComponents(moduleId);
+    const affectedFormIds = new Set(); // Track which Forms need their fields updated
 
     const findAllChildComponents = (componentId) => {
       if (!toDeleteComponents.includes(componentId)) {
@@ -1025,7 +1032,15 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     _selectedComponents.forEach((componentId) => {
-      !skipFormUpdate && checkIfParentIsFormAndDeleteField(componentId, moduleId);
+      // Update form fields locally but skip the API call - we'll batch it
+      if (!skipFormUpdate) {
+        const formId = checkIfParentIsFormAndDeleteField(componentId, moduleId, false, {
+          skipSave: saveAfterAction,
+        });
+        if (formId) {
+          affectedFormIds.add(formId);
+        }
+      }
       findAllChildComponents(componentId);
     });
 
@@ -1077,33 +1092,73 @@ export const createComponentsSlice = (set, get) => ({
 
         const filteredEvents = appEvents.filter((event) => !toDeleteEvents.includes(event.id));
         state.eventsSlice.module[moduleId].events = filteredEvents;
-
-        if (saveAfterAction) {
-          saveComponentChanges(toDeleteComponents, 'components', 'delete', moduleId)
-            .then(() => {
-              get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
-              // Show delete toast message
-              if (!isCut) {
-                const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
-                const isMac = platform.toLowerCase().indexOf('mac') > -1;
-                const deleteMsg =
-                  toDeleteComponents.length && toDeleteComponents.length > 1
-                    ? `Selected components deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`
-                    : `Component deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`;
-                toast(deleteMsg, {
-                  icon: '🗑️',
-                });
-              }
-            })
-            .catch((error) => {
-              toast.error('App could not be saved.');
-              console.error('Error saving component changes:', error);
-            });
-        }
       }, skipUndoRedo),
       false,
       'deleteComponents'
     );
+
+    // Handle save after state update
+    if (saveAfterAction) {
+      const showToast = () => {
+        if (!isCut) {
+          const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+          const isMac = platform.toLowerCase().indexOf('mac') > -1;
+          const deleteMsg =
+            toDeleteComponents.length && toDeleteComponents.length > 1
+              ? `Selected components deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`
+              : `Component deleted! ${isMac ? '(⌘ + Z to undo)' : '(Ctrl + Z to undo)'}`;
+          toast(deleteMsg, {
+            icon: '🗑️',
+          });
+        }
+      };
+
+      // If Forms were affected, use batch operation to combine delete + form update
+      if (affectedFormIds.size > 0) {
+        // Build the form update diff
+        const currentPageIndex = getCurrentPageIndex(moduleId);
+        const formUpdateDiff = {};
+        affectedFormIds.forEach((formId) => {
+          const formComponent = get().modules[moduleId].pages[currentPageIndex].components[formId]?.component;
+          if (formComponent) {
+            const { events, exposedVariables, ...filteredDefinition } = formComponent.definition || {};
+            formUpdateDiff[formId] = {
+              component: {
+                ...formComponent,
+                definition: filteredDefinition,
+              },
+            };
+          }
+        });
+
+        performBatchComponentOperations(
+          {
+            updated: Object.keys(formUpdateDiff).length > 0 ? formUpdateDiff : undefined,
+            deleted: toDeleteComponents,
+          },
+          moduleId
+        )
+          .then(() => {
+            get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
+            showToast();
+          })
+          .catch((error) => {
+            toast.error('App could not be saved.');
+            console.error('Error saving component changes:', error);
+          });
+      } else {
+        // No Forms affected, use regular delete endpoint
+        saveComponentChanges(toDeleteComponents, 'components', 'delete', moduleId)
+          .then(() => {
+            get().multiplayer.broadcastUpdates({ selectedComponents: _selectedComponents }, 'components', 'delete');
+            showToast();
+          })
+          .catch((error) => {
+            toast.error('App could not be saved.');
+            console.error('Error saving component changes:', error);
+          });
+      }
+    }
 
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName, moduleId);
@@ -1111,25 +1166,62 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   pasteComponents: async (components, moduleId = 'canvas') => {
-    const { addComponentToCurrentPage, eventsSlice } = get();
+    const { addComponentToCurrentPage, saveComponentChanges, getCurrentPageId, eventsSlice } = get();
+    const currentPageId = getCurrentPageId(moduleId);
 
-    // Add the components to the current page and wait for it to complete
-    await addComponentToCurrentPage(components, moduleId);
+    // Add the components to the current page without saving (we'll save with events in batch)
+    const diff = await addComponentToCurrentPage(components, moduleId, {
+      saveAfterAction: false,
+      skipFormUpdate: true,
+    });
 
-    // Now that components are added, handle the events
+    // If no components were added, return early
+    if (!diff || Object.keys(diff).length === 0) {
+      return;
+    }
+
+    // Collect all events from all components for bulk creation
+    const allEvents = [];
     for (const component of components) {
       const events = component.events || [];
       for (const event of events) {
-        const newEvent = {
-          event: {
-            ...event?.event,
-          },
-          eventType: event?.target,
-          attachedTo: component.id,
-          index: event?.index,
-        };
-        await eventsSlice.createAppVersionEventHandlers(newEvent, moduleId);
+        // Only add events that have required fields
+        if (event?.event && event?.target && component.id != null && event?.index != null) {
+          allEvents.push({
+            event: {
+              ...event.event,
+            },
+            eventType: event.target,
+            attachedTo: component.id,
+            index: event.index,
+          });
+        }
       }
+    }
+
+    // Create components and events together in a single batch request
+    const batchDiff = {
+      create: {
+        diff: diff,
+        pageId: currentPageId,
+      },
+      events: allEvents,
+    };
+
+    try {
+      const response = await saveComponentChanges(batchDiff, 'components/batch', 'update', moduleId);
+
+      // Add created events to the local store
+      if (response?.events && response.events.length > 0) {
+        response.events.forEach((event) => {
+          eventsSlice.addEvent(event, moduleId);
+        });
+      }
+
+      get().multiplayer.broadcastUpdates(components, 'components', 'create');
+    } catch (error) {
+      console.error('Error pasting components with events:', error);
+      toast.error('Failed to paste components');
     }
   },
 
@@ -1157,11 +1249,17 @@ export const createComponentsSlice = (set, get) => ({
       checkValueAndResolve,
       checkParentAndUpdateFormFields,
       getCurrentPageIndex,
+      performBatchComponentOperations,
+      updateContainerAutoHeight,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
-    updateParent && checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId);
+    // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
+    // so we can batch the form field changes with the layout changes into a single API call
+    const formFieldsDiff = updateParent
+      ? checkParentAndUpdateFormFields(componentLayouts, newParentId, moduleId, { skipSave: saveAfterAction })
+      : null;
     set(
       withUndoRedo((state) => {
         const page = state.modules[moduleId].pages[currentPageIndex];
@@ -1273,8 +1371,43 @@ export const createComponentsSlice = (set, get) => ({
     }, {});
 
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components/layout', 'update', moduleId);
-      get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
+      // Check if we need to batch multiple operations together
+      if (updateParent) {
+        // Collect all component updates that need to be batched
+        let updatedDiff = formFieldsDiff || {};
+
+        // Update container auto-height for both old and new parents
+        // Get the diffs to include in the batch operation
+        const newParentHeightDiff = updateContainerAutoHeight(newParentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+        const oldParentHeightDiff = updateContainerAutoHeight(oldParentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+
+        if (newParentHeightDiff) {
+          updatedDiff = { ...updatedDiff, ...newParentHeightDiff };
+        }
+        if (oldParentHeightDiff) {
+          updatedDiff = { ...updatedDiff, ...oldParentHeightDiff };
+        }
+
+        // Use batch operations to combine layout changes and component updates in a single API call
+        // This creates only one history entry
+        performBatchComponentOperations(
+          {
+            updated: Object.keys(updatedDiff).length > 0 ? updatedDiff : undefined,
+            layout: diff,
+          },
+          moduleId
+        );
+      } else {
+        // Simple layout change (resize, move within same parent) - use the regular layout endpoint
+        saveComponentChanges(diff, 'components/layout', 'update', moduleId);
+        get().multiplayer.broadcastUpdates(diff, 'components/layout', 'update');
+      }
     }
   },
 
@@ -1538,9 +1671,9 @@ export const createComponentsSlice = (set, get) => ({
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
     set(
       (state) => {
-        state.selectedComponents = [componentId];
+        state.selectedComponents = componentId ? [componentId] : [];
         if (state.isRightSidebarOpen) {
-          state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
+          state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
       },
       false,
@@ -1874,10 +2007,10 @@ export const createComponentsSlice = (set, get) => ({
 
   getParentComponentType: (parentId, moduleId) => {
     if (!parentId) return null;
-    const { modules, getCurrentPageIndex } = get();
+    const { modules, getCurrentPageIndex, getBaseParentId } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     // Remove the tab id or any other details from the parent id (ie, -modal, -calendar, -0 from parentId)
-    const parentUUID = parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
+    const parentUUID = getBaseParentId(parentId);
     const component = modules[moduleId].pages[currentPageIndex].components[parentUUID];
     if (!component) return null;
 
@@ -2019,16 +2152,20 @@ export const createComponentsSlice = (set, get) => ({
   },
   checkIfComponentIsModule: (componentId, moduleId = 'canvas') =>
     get().getComponentDefinition(componentId, moduleId)?.component?.component === 'ModuleViewer',
-  updateContainerAutoHeight: (componentId) => {
+  updateContainerAutoHeight: (
+    componentId,
+    moduleId = 'canvas',
+    { saveAfterAction = true, returnDiff = false } = {}
+  ) => {
     if (
       !componentId ||
       componentId === 'canvas' ||
       componentId.includes('-header') ||
       componentId.includes('-footer')
     ) {
-      return;
+      return returnDiff ? null : undefined;
     }
-    const { currentLayout, getCurrentPageComponents, setComponentProperty } = get();
+    const { currentLayout, getCurrentPageComponents, setComponentProperty, getCurrentPageIndex } = get();
     const allComponents = getCurrentPageComponents();
 
     const childComponents = getAllChildComponents(allComponents, componentId);
@@ -2043,7 +2180,32 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false);
+    const currentCanvasHeight =
+      getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
+    if (currentCanvasHeight === maxHeight) {
+      return returnDiff ? null : undefined;
+    }
+
+    setComponentProperty(componentId, `canvasHeight`, maxHeight, 'properties', 'value', false, moduleId, {
+      saveAfterAction,
+    });
+
+    // Return the diff if requested (for batching with other operations)
+    if (returnDiff) {
+      const currentPageIndex = getCurrentPageIndex(moduleId);
+      const component = get().modules[moduleId].pages[currentPageIndex].components[componentId]?.component;
+      if (component) {
+        const { events, exposedVariables, ...filteredDefinition } = component.definition || {};
+        return {
+          [componentId]: {
+            component: {
+              ...component,
+              definition: filteredDefinition,
+            },
+          },
+        };
+      }
+    }
   },
 
   /**
@@ -2232,5 +2394,43 @@ export const createComponentsSlice = (set, get) => ({
           );
         }
       });
+  },
+  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+    const component = getComponentDefinition(componentId, moduleId)?.component;
+    const componentName = component?.name;
+    const parentId = component?.parent;
+    const parentType = getComponentTypeFromId(parentId);
+    if (parentType === 'Listview') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      return subcontainerParentComponent?.[componentName]?.[property];
+    } else if (parentType === 'Form') {
+      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const subcontainerParentComponent = parentComponent?.children?.[componentName];
+      return subcontainerParentComponent?.[property];
+    } else {
+      const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
+      return componentExposedProperty;
+    }
+  },
+
+  getCurrentAdditionalActionValue: (
+    componentId,
+    subContainerIndex,
+    property,
+    fallbackProperty,
+    moduleId = 'canvas'
+  ) => {
+    const { getResolvedComponent, getExposedPropertyForAdditionalActions } = get();
+    const component = getResolvedComponent(componentId, subContainerIndex, moduleId);
+    const componentExposedProperty = getExposedPropertyForAdditionalActions(
+      componentId,
+      subContainerIndex,
+      property,
+      moduleId
+    );
+    if (componentExposedProperty !== undefined) return componentExposedProperty;
+    return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
   },
 });

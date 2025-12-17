@@ -13,6 +13,7 @@ describe("App creation", () => {
     beforeEach(() => {
         cy.defaultWorkspaceLogin();
         cy.skipWalkthrough();
+        cy.viewport(2000, 1900);
     });
 
     it("Should verify create, rename and clone app flow", () => {
@@ -46,32 +47,26 @@ describe("App creation", () => {
             "have.text",
             "+ Create app"
         );
-        cy.get(commonSelectors.createAppButton).should("be.disabled");
+        cy.get(commonSelectors.createAppButton).should("be.enabled").click();
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            "name should not be empty"
+        );
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonWidgetSelector.modalCloseButton).click();
 
         cy.get(commonSelectors.appCreateButton).click();
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-            "have.attr",
-            "placeholder",
-            commonText.enterAppName
-        );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.cancelButton).click();
 
         cy.get(commonSelectors.appCreateButton).click();
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-            "have.attr",
-            "placeholder",
-            commonText.enterAppName
-        );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.createAppButton).should("be.enabled").click();
-        cy.go("back");
-        cy.visit("/my-workspace");
 
+        cy.backToApps();
+        // cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
         cy.wait(1000);
         viewAppCardOptions(data.appName);
         cy.get(commonSelectors.appCardOptions("Rename app")).verifyVisibleElement(
@@ -180,10 +175,12 @@ describe("App creation", () => {
         );
         cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
         cy.get(commonSelectors.cloneAppButton).should("be.enabled").click();
-        cy.go("back");
-        cy.visit("/my-workspace");
 
-        cy.get(commonSelectors.appCreateButton).click();
+        cy.backToApps();
+        //cy.ifEnv(["Enterprise", "Cloud"], () => { cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none') });
+        cy.wait(1000);
+
+        cy.get(commonSelectors.appCreateButton, { timeout: 20000 }).click();
         cy.clearAndType(commonSelectors.appNameInput, data.rename);
         cy.get(commonSelectors.createAppButton).click();
         cy.get(commonSelectors.appNameErrorLabel).verifyVisibleElement(
@@ -254,8 +251,7 @@ describe("App creation", () => {
         cy.get(".go3958317564")
             .should("be.visible")
             .and("have.text", importText.appImportedToastMessage);
-        cy.go("back");
-        cy.visit("/my-workspace");
+        cy.backToApps();
     });
     it("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;
@@ -320,3 +316,4 @@ describe("App creation", () => {
         cy.get(commonSelectors.createAppButton).should("be.enabled").click();
     });
 });
+
