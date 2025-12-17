@@ -9,6 +9,7 @@ import Waveform from './Waveform';
 import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const AudioRecorder = ({
   styles,
@@ -19,7 +20,16 @@ export const AudioRecorder = ({
   dataCy: _dataCy,
 }) => {
   // Props
-  const { recorderIcon, labelColor, accentColor, backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+  const {
+    recorderIcon,
+    recorderIconColor,
+    labelColor,
+    backgroundColor,
+    borderColor,
+    borderRadius,
+    boxShadow,
+    accentColor,
+  } = styles;
   const { label, loadingState, disabledState, visibility } = properties;
 
   // State
@@ -37,6 +47,7 @@ export const AudioRecorder = ({
   // Refs
   const audioRef = useRef(null);
   const endedListenerRef = useRef(null);
+  const mediaStreamRef = useRef(null);
 
   // Media recorder setup
   const { status, startRecording, stopRecording, pauseRecording, resumeRecording, mediaBlobUrl, clearBlobUrl } =
@@ -64,6 +75,15 @@ export const AudioRecorder = ({
     window.open('https://support.google.com/chrome/answer/2693767', '_blank');
   };
 
+  // Cleanup helper to stop all media stream tracks
+  const stopMediaStream = (stream) => {
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+    }
+  };
+
   // Event handlers
   const onClick = async () => {
     switch (status) {
@@ -71,6 +91,7 @@ export const AudioRecorder = ({
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           setMediaStream(stream);
+          mediaStreamRef.current = stream;
           startRecording();
           fireEvent('onRecordingStart');
         } catch (error) {
@@ -138,6 +159,9 @@ export const AudioRecorder = ({
 
   const onSave = () => {
     stopRecording();
+    stopMediaStream(mediaStreamRef.current);
+    mediaStreamRef.current = null;
+    setMediaStream(null);
   };
 
   const onReset = () => {
@@ -146,6 +170,11 @@ export const AudioRecorder = ({
       blobURL: null,
       dataURL: null,
     });
+
+    // Stop media stream tracks
+    stopMediaStream(mediaStreamRef.current);
+    mediaStreamRef.current = null;
+    setMediaStream(null);
 
     if (audioRef.current) {
       // stop and reset playback
@@ -213,6 +242,7 @@ export const AudioRecorder = ({
     });
     return () => {
       stopRecording();
+      stopMediaStream(mediaStreamRef.current);
       if (audioRef.current && endedListenerRef.current) {
         audioRef.current.removeEventListener('ended', endedListenerRef.current);
       }
@@ -241,6 +271,12 @@ export const AudioRecorder = ({
     boxShadow: boxShadow,
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     overflow: 'hidden',
+    '--audio-recorder-button-color': backgroundColor,
+    '--audio-recorder-button-hover-color': getModifiedColor(backgroundColor, 'hover'),
+    '--audio-recorder-button-active-color': getModifiedColor(backgroundColor, 'active'),
+    '--audio-recorder-accent-color': accentColor,
+    '--audio-recorder-accent-color-hover': getModifiedColor(accentColor, 'hover'),
+    '--audio-recorder-accent-color-active': getModifiedColor(accentColor, 'active'),
   };
 
   const buttonTextStyle = {
@@ -271,7 +307,7 @@ export const AudioRecorder = ({
         <div className="audio-recorder-button-container">
           <ButtonSolid
             variant="tertiary"
-            className="audio-recorder-button"
+            className="audio-recorder-button audio-recorder-transparent-button"
             size="md"
             onClick={onClick}
             aria-label={ariaLabel}
@@ -281,6 +317,7 @@ export const AudioRecorder = ({
               status={status}
               isPlaying={isPlaying}
               IconElement={IconElement}
+              recorderIconColor={recorderIconColor}
             />
           </ButtonSolid>
           <span style={buttonTextStyle}>
@@ -303,6 +340,7 @@ export const AudioRecorder = ({
           )}
           <div className="save-discard-button-container">
             <RecorderActions
+              accentColor={accentColor}
               status={status}
               permissionState={permissionState}
               onSave={onSave}

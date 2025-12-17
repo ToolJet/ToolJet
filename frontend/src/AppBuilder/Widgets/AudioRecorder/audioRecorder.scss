@@ -6,6 +6,26 @@
     align-items: center;
 }
 
+.audio-recorder-transparent-button {
+    background-color: var(--audio-recorder-button-color) !important;
+    &:hover {
+        background-color: var(--audio-recorder-button-hover-color) !important;
+    }
+    &:active {
+        background-color: var(--audio-recorder-button-active-color) !important;
+    }
+}
+
+.audio-recorder-save-button {
+    background-color: var(--audio-recorder-accent-color) !important;
+    &:hover {
+        background-color: var(--audio-recorder-accent-color-hover) !important;
+    }
+    &:active {
+        background-color: var(--audio-recorder-accent-color-active) !important;
+    }
+}
+
 .audio-recorder-button {
     height: 38px;
     width: 38px;

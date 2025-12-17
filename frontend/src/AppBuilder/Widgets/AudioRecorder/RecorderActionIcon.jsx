@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { IconMicrophoneOff, IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 
-function RecorderActionIcon({ permissionState, status, isPlaying, IconElement }) {
+function RecorderActionIcon({ permissionState, status, isPlaying, IconElement, recorderIconColor }) {
   if (permissionState === 'denied') {
     return <IconMicrophoneOff width={14} height={14} color="var(--cc-default-icon)" />;
   }
@@ -9,7 +9,7 @@ function RecorderActionIcon({ permissionState, status, isPlaying, IconElement })
   switch (status) {
     case 'idle':
     case 'paused':
-      return IconElement ? <IconElement width={14} height={14} color="#F6430D" /> : null;
+      return IconElement ? <IconElement width={14} height={14} color={recorderIconColor} /> : null;
     case 'recording':
       return <IconPlayerPause width={14} height={14} color="var(--icon-strong)" />;
     case 'stopped':
@@ -19,7 +19,7 @@ function RecorderActionIcon({ permissionState, status, isPlaying, IconElement })
         <IconPlayerPlay width={14} height={14} color="var(--icon-strong)" />
       );
     default:
-      return IconElement ? <IconElement width={14} height={14} color="#F6430D" /> : null;
+      return IconElement ? <IconElement width={14} height={14} color={recorderIconColor} /> : null;
   }
 }
 
