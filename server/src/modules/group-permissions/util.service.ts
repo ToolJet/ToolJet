@@ -47,7 +47,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly userRepository: UserRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
     protected readonly licenseUserService: LicenseUserService
-  ) { }
+  ) {}
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
     if (HUMANIZED_USER_LIST.includes(createGroupPermissionDto.name)) {
@@ -237,8 +237,16 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       const endUserRoleUsers = endUsers?.length
         ? endUsers
         : await this.rolesRepository.getRoleUsersList(USER_ROLE.END_USER, organizationId, userIds, manager);
-      if (isBuilderLevel && endUserRoleUsers.length) {
-        // Group is builder level and end users are to be added
+
+      // Check for builder-level environment permissions
+      const hasBuilderEnvironments = await this.roleUtilService.checkIfBuilderLevelEnvironmentPermissions(
+        groupId,
+        organizationId,
+        manager
+      );
+
+      if ((isBuilderLevel || hasBuilderEnvironments) && endUserRoleUsers.length) {
+        // Group has builder-level permissions or environment access and end users are to be added
         if (!allowRoleChange) {
           // Role change not allowed - Throw error
           throw new ConflictException({

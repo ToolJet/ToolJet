@@ -7,11 +7,13 @@ import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
+import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 import { validateName, decodeEntities } from '@/_helpers/utils';
+import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
 const { defaultIcon } = configs;
@@ -24,11 +26,13 @@ export default function AppCard({
   exportApp,
   appActionModal,
   canUpdateApp,
+  canViewApp,
   currentFolder,
   appType,
   ...props
 }) {
   const canUpdate = canUpdateApp(app);
+  const canView = canViewApp ? canViewApp(app) : false;
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -187,6 +191,41 @@ export default function AppCard({
       </div>
     );
 
+  const ViewButton = (
+    <div>
+      <button
+        type="button"
+        className="tj-primary-btn tj-text-xsm edit-button"
+        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+        onClick={() => {
+          const pageHandle = app.home_page_handle || 'home';
+          const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
+
+          const session = authenticationService.currentSessionValue;
+          const appPerms = session?.app_group_permissions;
+          const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+          const defaultEnv = getDefaultEnvironment(environmentAccess);
+
+          const previewQuery = queryString.stringify({ env: defaultEnv });
+          const previewUrl = `/applications/${slugOrId}/${pageHandle}?${previewQuery}`;
+          window.open(previewUrl, '_blank');
+        }}
+        data-cy="view-button"
+      >
+        {t('globals.view', 'View')}
+      </button>
+    </div>
+  );
+
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+  const hasOnlyReleasedAccess =
+    !environmentAccess.development &&
+    !environmentAccess.staging &&
+    !environmentAccess.production &&
+    environmentAccess.released;
+
   function AppNameDisplay({ tooltipRef }) {
     const AppName = (
       <h3
@@ -295,6 +334,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
+            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

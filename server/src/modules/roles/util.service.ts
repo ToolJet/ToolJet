@@ -194,4 +194,34 @@ export class RolesUtilService implements IRolesUtilService {
       return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions;
     }, manager);
   }
+
+  async checkIfBuilderLevelEnvironmentPermissions(
+    groupId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const allPermission = await this.groupPermissionsRepository.getAllGranularPermissions(
+        { groupId },
+        organizationId,
+        manager
+      );
+      if (!allPermission) {
+        return false;
+      }
+
+      const hasBuilderLevelEnvironments = allPermission
+        .filter((permissions) => permissions.type === ResourceType.APP)
+        .some((permissions) => {
+          const appPermission = permissions.appsGroupPermissions;
+          return (
+            appPermission.canAccessProduction === true ||
+            appPermission.canAccessDevelopment === true ||
+            appPermission.canAccessStaging === true
+          );
+        });
+
+      return hasBuilderLevelEnvironments;
+    }, manager);
+  }
 }

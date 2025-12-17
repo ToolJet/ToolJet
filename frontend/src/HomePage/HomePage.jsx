@@ -734,6 +734,10 @@ class HomePageComponent extends React.Component {
     return this.canUserPerform(this.state.currentUser, 'update', app);
   };
 
+  canViewApp = (app) => {
+    return this.canUserPerform(this.state.currentUser, 'read', app) && !this.canUpdateApp(app);
+  };
+
   canDeleteApp = (app) => {
     return this.canUserPerform(this.state.currentUser, 'delete', app);
   };
@@ -1955,6 +1959,7 @@ class HomePageComponent extends React.Component {
                     canCreateApp={this.canCreateApp}
                     canDeleteApp={this.canDeleteApp}
                     canUpdateApp={this.canUpdateApp}
+                    canViewApp={this.canViewApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
                     exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}

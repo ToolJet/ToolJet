@@ -18,6 +18,7 @@ import {
   VersionReleaseDto,
 } from './dto';
 import { APP_TYPES, FEATURE_KEY } from './constants';
+import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -148,12 +149,40 @@ export class AppsService implements IAppsService {
         app.organizationId
       );
 
-      // For view-only users, restrict access to production environment
-      if (!hasEditPermission && hasViewPermission && environment && environment.name.toLowerCase() === 'production') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          message: 'restricted-preview',
-        });
+      // For view-only users, validate environment access based on their permissions
+      if (!hasEditPermission && hasViewPermission && environment) {
+        const envName = environment.name.toLowerCase();
+
+        const request = RequestContext?.currentContext?.req as any;
+        const userPermissions = request?.tj_user_permissions;
+        const appPermissions = userPermissions?.APP;
+
+        let hasEnvironmentAccess = false;
+        if (appPermissions) {
+          switch (envName) {
+            case 'development':
+              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                appPermissions,
+                app.id,
+                'development'
+              );
+              break;
+            case 'staging':
+              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'staging');
+              break;
+            case 'production':
+              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'production');
+              break;
+            case 'released':
+              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'released');
+              break;
+          }
+        }
+
+        // If user doesn't have access to this environment, reject with restricted-preview
+        if (!hasEnvironmentAccess) {
+          throw new ForbiddenException('restricted-preview');
+        }
       }
       if (version) response['versionName'] = version.name;
       if (envId) response['environmentName'] = environment.name;
@@ -172,6 +201,19 @@ export class AppsService implements IAppsService {
         message: { error: 'App is not released yet', editPermission },
       };
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    // Check if user has permission to access released apps for this specific app
+    const request = RequestContext?.currentContext?.req as any;
+    const userPermissions = request?.tj_user_permissions;
+    const appPermissions = userPermissions?.APP;
+
+    if (appPermissions && !AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'released')) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
 
     const { id, slug } = app;

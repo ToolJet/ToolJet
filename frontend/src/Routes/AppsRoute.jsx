@@ -12,6 +12,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
 import { authenticationService } from '@/_services';
+import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
   const params = useParams();
@@ -59,20 +60,25 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
-      const { versionName, environmentName, ...restDetails } = accessDetails;
+      const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const envFromUrl = restQueryParams.env;
-        // Only coerce env for view-only users
+
+        // Get user's environment access permissions
         const session = authenticationService.currentSessionValue;
         const perms = session?.app_group_permissions;
         const hasEditPermission =
           perms?.is_all_editable ||
-          (slug && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(slug));
-        const isViewOnly = !hasEditPermission;
+          (appId && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(appId));
+
+        // Get environment access for this user - use appId instead of slug
+        const environmentAccess = getEnvironmentAccessFromPermissions(perms, appId);
+
+        // For all users (edit and view), validate environment access and use safe environment
+        // Even editors need to be restricted if they don't have permission to requested environment
         const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
-        const effectiveEnv =
-          isViewOnly && requestedEnv === 'production' ? 'development' : environmentName || envFromUrl;
+        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv);
 
         const search = queryString.stringify({
           // Keep other params but let env/version below override
@@ -89,7 +95,8 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
           { replace: true, state: location?.state }
         );
       }
-      setExtraProps(restDetails);
+      // Include appId in extraProps so it's available to the app
+      setExtraProps({ ...restDetails, id: appId });
       setLoading(false);
     }
   };
