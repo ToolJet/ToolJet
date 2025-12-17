@@ -196,6 +196,16 @@ You can control workflow execution behavior using the following environment vari
 | `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
 | `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
 
+#### Configuring Non Email Identifier for ToolJet OIDC
+You can setup OIDC using non email identifier for authenticating users to ToolJet (for example, an employee ID) by setting the following environment variables.
+
+| Variable | Description |
+|-----------|-------------|
+| `SSO_UNIQUE_ID_FIELD` | Unique identifier field name sent back by the IdP. |
+| `SSO_CUSTOM_EMAIL_DOMAIN` | Domain name that will be used to construct dummy email id. |
+
+ To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
+
 #### Configure Stronger Password Validation Rules
 ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
 
