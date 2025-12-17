@@ -18,7 +18,7 @@ The GitHub Configuration for GitSync introduces a more flexible way to connect y
 Role Required: **Admin**
 
 ### 1. Create a New Repository and Make an Initial Commit
-    Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty, then create an initial commit (for example, by adding a `README.md`). This first commit initializes the repository and creates the default branch (such as `main`).
+    Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty, then create an initial commit (for example, by adding a **README.md**). This first commit initializes the repository and creates the default branch (such as **main**).
 
 ### 2. Create the GitHub App
     [Setup a GitHub App](https://github.com/settings/apps/new) and make sure it is created by the same owner as the Git repository. If you have multiple ToolJet instances, use this same GitHub App across all instances. 
@@ -26,12 +26,7 @@ Role Required: **Admin**
     
     Enter your App details on the **Register new GitHub App** page and make sure to uncheck the **Expire user authorization tokens** and **Active** checkbox under **Identifying and authorizing users** and **Webhook** sections respectively.
 
-    The Homepage URL should be set to the URL of your ToolJet instance.    
-    | ToolJet Instance    | URL |
-    | -------- | ------- |
-    | Cloud  | `https://app.tooljet.com`    |
-    | Self-hosted | Your ToolJet instance URL     |
-
+    Set the Homepage URL to the URL of your ToolJet instance. For ToolJet Cloud, use `https://app.tooljet.com`. For self-hosted ToolJet, use the URL of your own ToolJet instance.
     
     :::note
     Add the following Repository permissions:
