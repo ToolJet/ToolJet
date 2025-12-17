@@ -55,6 +55,7 @@ const MultiLineCodeEditor = (props) => {
     renderCopilot,
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
+    foldGutter = true, // controls the left gray bar
   } = props;
   const editorRef = useRef(null);
 
@@ -142,7 +143,7 @@ const MultiLineCodeEditor = (props) => {
     lineNumbers: lineNumbers ?? true,
     syntaxHighlighting: true,
     bracketMatching: true,
-    foldGutter: true,
+    foldGutter: foldGutter,
     highlightActiveLine: false,
     autocompletion: hideSuggestion ?? true,
     highlightActiveLineGutter: false,
