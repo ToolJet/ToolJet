@@ -7,7 +7,9 @@ export const ssoText = {
     allowedDomainInput: "",
     allowedDomainHelperText: "Support multiple domains. Enter allowed domains names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
     superAdminUrlLabel: "Super admin login URL",
-    superAdminUrl: `${Cypress.config("baseUrl")}/login/super-admin`,
+    superAdminUrl: Cypress.env('proxy') === true
+      ? `${Cypress.config("server_host")}/login/super-admin`
+      : `${Cypress.config("baseUrl")}/login/super-admin`,
     superAdminUrlHelperText: "Use this URL for super admin to login via password",
     enableSignupLabel: "Enable Signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
@@ -104,7 +106,11 @@ export const ssoText = {
   saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
   passwordDisableWarning: "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
-  superAdminInfoText: `Super admin can still access their account via ${Cypress.config("baseUrl")}/login/super-admin`,
+  superAdminInfoText: `Super admin can still access their account via ${
+    Cypress.env('proxy') === true
+      ? Cypress.config("server_host")
+      : Cypress.config("baseUrl")
+  }/login/super-admin`,
   ssoToast: "Organization settings have been updated",
   workspaceSsoToast: "Organization settings have been updated",
   copySuccessToast: "Copied to clipboard!",
