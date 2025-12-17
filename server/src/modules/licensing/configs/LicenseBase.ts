@@ -227,10 +227,10 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return this.BASIC_PLAN_TERMS.app?.pages?.count || 5;
     }
-    if (!this._app) {
+    if (!this._app || this._app['pages']?.count === undefined) {
       return ''; //Not passed set to infinite for older licenses and trial
     }
-    return this._app['pages']?.limit;
+    return this._app['pages']?.count;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -531,7 +531,13 @@ export default class LicenseBase {
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
+      appPagesLimit: this.appPagesLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
+      google: this.google,
+      github: this.github,
+      externalApis: this.externalApis,
+      scim: this.scim,
+      observabilityEnabled: this.observabilityEnabled,
     };
   }
 

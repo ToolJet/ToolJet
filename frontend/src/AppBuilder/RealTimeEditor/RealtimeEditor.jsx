@@ -34,8 +34,6 @@ export const RealtimeEditor = (props) => {
   const multiPlayerEdit = window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   const setYMap = useStore((state) => state.multiplayer.setYMap);
   const processUpdate = useStore((state) => state.multiplayer.processUpdate);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
 
   React.useEffect(() => {
     /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
@@ -43,7 +41,7 @@ export const RealtimeEditor = (props) => {
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
-    if (multiPlayerEdit && multiPlayerEditEnabled) {
+    if (multiPlayerEdit) {
       //Enable multi-player editing only if the feature is enabled in license
       setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
 
@@ -82,7 +80,7 @@ export const RealtimeEditor = (props) => {
     color: '',
   };
 
-  if (multiPlayerEdit && multiPlayerEditEnabled) {
+  if (multiPlayerEdit) {
     if (!provider) return <Spinner />;
   } else {
     return <Editor {...props} />;

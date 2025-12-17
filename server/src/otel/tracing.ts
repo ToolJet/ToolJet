@@ -18,6 +18,11 @@ import {
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { ConfigService } from '@nestjs/config';
 
 const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
 const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
@@ -30,13 +35,13 @@ if (process.env.OTEL_LOG_LEVEL === 'debug') {
 // Define the trace exporter
 const traceExporter = new OTLPTraceExporter({
   url: OTEL_EXPORTER_OTLP_TRACES,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the metric exporter
 const metricExporter = new OTLPMetricExporter({
   url: OTEL_EXPORTER_OTLP_METRICS,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the log exporter
@@ -275,7 +280,7 @@ const initializeCustomMetrics = () => {
         // Report workspace-level aggregate
         observableResult.observe(users.size, {
           'workspace.id': workspaceId,
-          'metric_type': 'workspace_total',
+          metric_type: 'workspace_total',
         });
 
         // Report individual user metrics
@@ -283,7 +288,7 @@ const initializeCustomMetrics = () => {
           observableResult.observe(1, {
             'workspace.id': workspaceId,
             'user.id': userId,
-            'metric_type': 'per_user',
+            metric_type: 'per_user',
           });
         }
       }
@@ -296,7 +301,7 @@ const initializeCustomMetrics = () => {
       }
       observableResult.observe(totalUniqueUsers.size, {
         'workspace.id': 'all',
-        'metric_type': 'workspace_total',
+        metric_type: 'workspace_total',
       });
     } catch (error) {
       console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
@@ -359,49 +364,101 @@ const initializeCustomMetrics = () => {
   });
 };
 
+//Delete after review
+
 // Custom Express middleware for tracing and metrics
-export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
-  const span = trace.getSpan(context.active());
-  const route = req.route?.path || req.path || 'unknown_route';
-  const method = req.method || 'UNKNOWN_METHOD';
-  const startTime = Date.now();
+// export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
+//   const span = trace.getSpan(context.active());
+//   const route = req.route?.path || req.path || 'unknown_route';
+//   const method = req.method || 'UNKNOWN_METHOD';
+//   const startTime = Date.now();
 
-  if (span && route.startsWith('/api/') && route !== '/api/health') {
-    span.updateName(`${method} ${route}`);
-    span.setAttribute('http.route', route);
-    span.setAttribute('http.method', method);
+//   if (span && route.startsWith('/api/') && route !== '/api/health') {
+//     span.updateName(`${method} ${route}`);
+//     span.setAttribute('http.route', route);
+//     span.setAttribute('http.method', method);
 
-    // Track API hits
-    if (apiHitCounter) {
-      apiHitCounter.add(1, {
-        route: route,
-        method: method,
-      });
+//     // Track API hits
+//     if (apiHitCounter) {
+//       apiHitCounter.add(1, {
+//         route: route,
+//         method: method,
+//       });
+//     }
+
+//     const originalJson = res.json;
+//     res.json = function (body: any) {
+//       const statusCode = res.statusCode;
+//       const duration = Date.now() - startTime;
+
+//       span.setAttribute('http.status_code', statusCode);
+
+//       // Record API duration
+//       if (apiDurationHistogram) {
+//         apiDurationHistogram.record(duration, {
+//           route: route,
+//           method: method,
+//           status_code: statusCode,
+//         });
+//       }
+
+//       // eslint-disable-next-line prefer-rest-params
+//       return originalJson.apply(this, arguments);
+//     };
+//   }
+
+//   next();
+// };
+
+@Injectable()
+export class OtelMiddleware implements NestMiddleware {
+  constructor(
+    private readonly licenseTermsService: LicenseTermsService,
+    private readonly configService: ConfigService
+  ) {}
+
+  async use(req: Request, res: Response, next: NextFunction) {
+    //Only for EE add check if .env enabled
+    console.log('Otel Middleware called');
+
+    if (this.configService.get<string>('ENABLE_OTEL') !== 'true') {
+      return next();
+    }
+    if (!(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
+      return next();
     }
 
-    const originalJson = res.json;
-    res.json = function (body: any) {
-      const statusCode = res.statusCode;
-      const duration = Date.now() - startTime;
+    const span = trace.getSpan(context.active());
+    const route = req.route?.path || req.path || 'unknown_route';
+    const method = req.method || 'UNKNOWN_METHOD';
+    const startTime = Date.now();
 
-      span.setAttribute('http.status_code', statusCode);
+    if (span && route.startsWith('/api/') && route !== '/api/health') {
+      span.updateName(`${method} ${route}`);
+      span.setAttribute('http.route', route);
+      span.setAttribute('http.method', method);
 
-      // Record API duration
-      if (apiDurationHistogram) {
-        apiDurationHistogram.record(duration, {
-          route: route,
-          method: method,
+      apiHitCounter?.add(1, { route, method });
+
+      const originalJson = res.json.bind(res);
+      res.json = (body: any) => {
+        const statusCode = res.statusCode;
+        const duration = Date.now() - startTime;
+
+        span.setAttribute('http.status_code', statusCode);
+        apiDurationHistogram?.record(duration, {
+          route,
+          method,
           status_code: statusCode,
         });
-      }
 
-      // eslint-disable-next-line prefer-rest-params
-      return originalJson.apply(this, arguments);
-    };
+        return originalJson(body);
+      };
+    }
+
+    next();
   }
-
-  next();
-};
+}
 
 process.on('SIGTERM', () => {
   // Clear cleanup interval
@@ -523,11 +580,7 @@ export const trackUserActivity = (attributes: {
 };
 
 // Helper functions for user metrics tracking
-export const incrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const incrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -537,11 +590,7 @@ export const incrementConcurrentUsers = (attributes: {
   }
 };
 
-export const decrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const decrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;

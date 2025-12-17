@@ -37,6 +37,8 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
   const appBuilderMode = useStore((state) => state.appStore.modules[moduleId]?.app?.appBuilderMode ?? 'visual');
   const navigate = useNavigate();
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
 
   const isUserInZeroToOneFlow = appBuilderMode === 'ai';
 
@@ -76,7 +78,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
             <ArtifactPreview darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
           ) : (
             <>
-              {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
+              {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+                <RealtimeCursors />
+              )}
               <DndProvider backend={HTML5Backend}>
                 <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
                 <QueryPanel darkMode={darkMode} />
