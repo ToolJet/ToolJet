@@ -43,7 +43,8 @@ export default class Xero implements QueryService {
     }
 
     const scope = source_options?.scopes?.value;
-    const encodedScope = encodeURIComponent(scope);
+    const finalScope = scope.includes('offline_access') ? scope : `${scope} offline_access`;
+    const encodedScope = encodeURIComponent(finalScope);
     const baseUrl = `https://login.xero.com/identity/connect/authorize?response_type=code&client_id=${clientId}` +
       `&redirect_uri=${fullUrl}oauth2/authorize`;
 
