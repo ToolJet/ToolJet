@@ -32,7 +32,9 @@ export const ssoText = {
     allowedDomainInput: "",
     allowedDomainHelperText: "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
     workspaceLoginUrlLabel: "Login URL",
-    workspaceLoginUrl: `${Cypress.config("baseUrl")}/login/my-workspace`,
+    workspaceLoginUrl: Cypress.env('proxy') === true
+      ? `${Cypress.config("server_host")}/login/workspace`
+      : `${Cypress.config("baseUrl")}/login/my-workspace`,
     workspaceLoginUrlHelperText: "Use this URL to login directly to this workspace",
     enableSignupLabel: "Enable signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
