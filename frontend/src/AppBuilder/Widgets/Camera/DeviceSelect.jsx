@@ -4,7 +4,14 @@ import CheckIcon from '@/components/ui/Checkbox/CheckboxUtils/CheckIcon';
 // eslint-disable-next-line import/no-unresolved
 import * as Popover from '@radix-ui/react-popover';
 
-export const DeviceSelect = ({ icon = 'video', devices = [], selectedDeviceId, onSelect, disabled = false }) => {
+export const DeviceSelect = ({
+  icon = 'video',
+  devices = [],
+  selectedDeviceId,
+  onSelect,
+  disabled = false,
+  accentColor,
+}) => {
   const [open, setOpen] = useState(false);
 
   const IconElement = icon === 'video' ? IconVideo : IconMicrophone;
@@ -32,7 +39,7 @@ export const DeviceSelect = ({ icon = 'video', devices = [], selectedDeviceId, o
       }}
     >
       <Popover.Trigger
-        className="tj-base-btn tj-small-btn tj-tertiary-btn camera-device-select"
+        className="tj-base-btn tj-small-btn tj-tertiary-btn camera-device-select camera-transparent-button"
         aria-label={triggerLabel}
         type="button"
         disabled={isTriggerDisabled}
@@ -56,10 +63,13 @@ export const DeviceSelect = ({ icon = 'video', devices = [], selectedDeviceId, o
                       handleDeviceSelect(device);
                       setOpen(false);
                     }}
+                    style={{
+                      '--camera-accent-color': accentColor,
+                    }}
                     tabIndex={0}
                   >
                     <span className="camera-device-item-check">
-                      {isSelected && <CheckIcon size="large" fill="var(--indigo9)" />}
+                      {isSelected && <CheckIcon size="large" fill={accentColor} />}
                     </span>
                     <span className="camera-device-item-label">{device.label}</span>
                   </div>

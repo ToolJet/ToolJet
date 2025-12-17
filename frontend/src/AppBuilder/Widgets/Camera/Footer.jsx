@@ -29,6 +29,7 @@ export const Footer = ({
   permissionError,
   contentType,
   hasPendingCapture,
+  accentColor,
 }) => {
   const isRecording = recordingStatus === 'recording';
   const hasRecordingStopped = recordingStatus === 'stopped';
@@ -48,6 +49,7 @@ export const Footer = ({
           selectedDeviceId={selectedCameraId}
           onSelect={onCameraSelect}
           disabled={deviceSelectDisabled}
+          accentColor={accentColor}
         />
         {contentType === 'video' && (
           <DeviceSelect
@@ -56,6 +58,7 @@ export const Footer = ({
             selectedDeviceId={selectedMicrophoneId}
             onSelect={onMicrophoneSelect}
             disabled={deviceSelectDisabled}
+            accentColor={accentColor}
           />
         )}
       </div>
@@ -66,7 +69,7 @@ export const Footer = ({
           </ButtonSolid>
           <ButtonSolid
             variant="tertiary"
-            className="camera-discard-button"
+            className="camera-discard-button camera-transparent-button"
             size="md"
             onClick={() => onCaptureToggle(false)}
           >
@@ -77,7 +80,7 @@ export const Footer = ({
         <div className="camera-capture-button">
           <ButtonSolid
             variant="tertiary"
-            className={cx('camera-capture-button-trigger', {
+            className={cx('camera-capture-button-trigger camera-transparent-button', {
               'camera-capture-button-trigger-default': !isRecording && contentType === 'video',
             })}
             onClick={onCaptureToggle}

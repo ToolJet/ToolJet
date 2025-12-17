@@ -63,7 +63,10 @@ export const Content = ({
         videoElement.src = recordingUrl;
         videoElement.load();
       }
-      playVideo(videoElement);
+      // Only auto-play if recording is not stopped (i.e., during preview)
+      if (status !== 'stopped') {
+        playVideo(videoElement);
+      }
       return;
     }
 

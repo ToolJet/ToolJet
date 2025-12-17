@@ -10,6 +10,16 @@
     min-height: 0;
 }
 
+.camera-transparent-button {
+    background-color: var(--camera-button-color) !important;
+    &:hover {
+        background-color: var(--camera-button-hover-color) !important;
+    }
+    &:active {
+        background-color: var(--camera-button-active-color) !important;
+    }
+}
+
 .camera-container--fullscreen {
     padding: 16px;
     gap: 12px;
@@ -145,12 +155,12 @@
     transition: background-color 0.2s ease, color 0.2s ease;
 
     &:hover {
-        background: var(--interactive-overlays-fill-hover);
+        background: var(--interactive-overlays-fill-hover) !important;
     }
 
     &.selected {
-        background: var(--indigo3);
-        color: var(--indigo11);
+        background: transparent;
+        color: var(--camera-accent-color);
         font-weight: 500;
     }
 
@@ -244,6 +254,16 @@
     justify-content: center;
 }
 
+.camera-save-button {
+    background: var(--camera-accent-color) !important;
+    &:hover {
+        background: var(--camera-accent-color-hover) !important;
+    }
+    &:active {
+        background: var(--camera-accent-color-active) !important;
+    }
+}
+
 .camera-save-button, .camera-discard-button  {
    height: 36px;
    width: 36px;
@@ -251,4 +271,5 @@
    display: inline-flex;
    justify-content: center;
    align-items: center;
+
 }

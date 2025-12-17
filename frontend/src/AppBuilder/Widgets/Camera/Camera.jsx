@@ -5,6 +5,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { Content } from './Content';
 import { Footer } from './Footer';
 import './camera.scss';
+import { getModifiedColor } from '@/Editor/Components/utils';
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
@@ -450,6 +451,12 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     overflow: 'hidden',
     boxShadow,
+    '--camera-button-color': backgroundColor,
+    '--camera-button-hover-color': getModifiedColor(backgroundColor, 'hover'),
+    '--camera-button-active-color': getModifiedColor(backgroundColor, 'active'),
+    '--camera-accent-color': accentColor,
+    '--camera-accent-color-hover': getModifiedColor(accentColor, 'hover'),
+    '--camera-accent-color-active': getModifiedColor(accentColor, 'active'),
   };
 
   // Render
@@ -489,6 +496,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
         permissionError={permissionError}
         contentType={contentType}
         hasPendingCapture={hasPendingCapture}
+        accentColor={accentColor}
       />
     </div>
   );
