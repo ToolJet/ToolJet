@@ -1,17 +1,18 @@
 import { dsCommonSelector } from "Selectors/marketplace/common";
 
-export const fillDSConnectionTextField = (fieldName, text) => {
-  cy.clearAndType(dsCommonSelector.textField(fieldName), text);
+export const fillDSConnectionTextField = (field) => {
+  cy.clearAndType(dsCommonSelector.textField(field.fieldName), field.text);
 };
 
-export const fillDSConnectionDropdown = (fieldName, option) => {
-  cy.waitForElement(dsCommonSelector.dropdownField(fieldName))
+export const fillDSConnectionDropdown = (field) => {
+  cy.waitForElement(dsCommonSelector.dropdownField(field.fieldName))
     .click();
-  cy.contains("[id*=react-select-]", option).click();
+  cy.contains("[id*=react-select-]", field.option).click();
 };
 
-export const toggleDSConnectionButton = (buttonName, shouldBeChecked = true) => {
-  cy.get(dsCommonSelector.toggleInput(buttonName)).then(($checkbox) => {
+export const toggleDSConnectionButton = (field) => {
+  const shouldBeChecked = field.shouldBeChecked !== undefined ? field.shouldBeChecked : true;
+  cy.get(dsCommonSelector.toggleInput(field.fieldName)).then(($checkbox) => {
     const isChecked = $checkbox.is(":checked");
     if (isChecked !== shouldBeChecked) {
       cy.wrap($checkbox).click({ force: true });
@@ -19,8 +20,9 @@ export const toggleDSConnectionButton = (buttonName, shouldBeChecked = true) => 
   });
 };
 
-export const selectDSConnectionRadioButton = (buttonName, shouldBeSelected = true) => {
-  cy.get(dsCommonSelector.radioButtonInput(buttonName)).then(($radio) => {
+export const selectDSConnectionRadioButton = (field) => {
+  const shouldBeSelected = field.shouldBeSelected !== undefined ? field.shouldBeSelected : true;
+  cy.get(dsCommonSelector.radioButtonInput(field.fieldName)).then(($radio) => {
     const isSelected = $radio.is(":checked");
     if (isSelected !== shouldBeSelected) {
       cy.wrap($radio).click({ force: true });
@@ -28,25 +30,25 @@ export const selectDSConnectionRadioButton = (buttonName, shouldBeSelected = tru
   });
 };
 
-export const fillDSConnectionKeyValuePairs = (section, keyValueData) => {
-  cy.get(dsCommonSelector.subSection(section)).within(() => {
-    keyValueData.forEach((pair, index) => {
+export const fillDSConnectionKeyValuePairs = (field) => {
+  cy.get(dsCommonSelector.subSection(field.fieldName)).within(() => {
+    field.keyValueData.forEach((pair, index) => {
       cy.root().then(($section) => {
-        const keyFieldExists = $section.find(dsCommonSelector.keyInputField(section, index)).length > 0;
+        const keyFieldExists = $section.find(dsCommonSelector.keyInputField(field.fieldName, index)).length > 0;
         if (!keyFieldExists) {
-          cy.get(dsCommonSelector.addButton(section))
+          cy.get(dsCommonSelector.addButton(field.fieldName))
             .should('be.visible')
             .click();
           cy.wait(500);
         }
       });
 
-      cy.get(dsCommonSelector.keyInputField(section, index))
+      cy.get(dsCommonSelector.keyInputField(field.fieldName, index))
         .should('be.visible')
         .clear()
         .type(pair.key);
 
-      cy.get(dsCommonSelector.valueInputField(section, index))
+      cy.get(dsCommonSelector.valueInputField(field.fieldName, index))
         .should('be.visible')
         .clear()
         .type(pair.value);
@@ -102,8 +104,9 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
   }
 };
 
-export const fillDSConnectionEncryptedField = (fieldName, text, encrypted = true) => {
-  const fieldSelector = dsCommonSelector.textField(fieldName);
+export const fillDSConnectionEncryptedField = (field) => {
+  const fieldSelector = dsCommonSelector.textField(field.fieldName);
+  const encrypted = field.encrypted !== undefined ? field.encrypted : true;
 
   if (encrypted) {
     cy.get(fieldSelector).then(($field) => {
@@ -114,29 +117,29 @@ export const fillDSConnectionEncryptedField = (fieldName, text, encrypted = true
     });
   }
 
-  cy.clearAndType(fieldSelector, text);
+  cy.clearAndType(fieldSelector, field.text);
 };
 
 const processFields = (fields) => {
   fields.forEach((field) => {
     switch (field.type) {
       case 'input':
-        fillDSConnectionTextField(field.fieldName, field.text);
+        fillDSConnectionTextField(field);
         break;
       case 'encrypted':
-        fillDSConnectionEncryptedField(field.fieldName, field.text, field.encrypted);
+        fillDSConnectionEncryptedField(field);
         break;
       case 'dropdown':
-        fillDSConnectionDropdown(field.fieldName, field.option);
+        fillDSConnectionDropdown(field);
         break;
       case 'toggle':
-        toggleDSConnectionButton(field.fieldName, field.shouldBeChecked);
+        toggleDSConnectionButton(field);
         break;
       case 'radio':
-        selectDSConnectionRadioButton(field.fieldName, field.shouldBeSelected);
+        selectDSConnectionRadioButton(field);
         break;
       case 'keyValue':
-        fillDSConnectionKeyValuePairs(field.fieldName, field.keyValueData);
+        fillDSConnectionKeyValuePairs(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);

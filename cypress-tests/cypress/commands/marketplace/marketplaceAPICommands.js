@@ -77,28 +77,32 @@ Cypress.Commands.add("apiDeleteDataSource", (name, cachedHeader) => {
 
 Cypress.Commands.add(
     "apiUpdateDataSource",
-    ({ name, options, envName = "development", cachedHeader }) => {
+    ({ dataSourceName, options, envName = "development", cachedHeader }) => {
         cy.getAuthHeaders(cachedHeader).then((headers) => {
+
             cy.apiGetEnvironments().then((environments) => {
                 const environment = environments.find((env) => env.name === envName);
-                const environmentId = environment.id;
-                const dataSourceId = Cypress.env(`${name}-dataSource-id`);
 
-                cy.request({
-                    method: "PUT",
-                    url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${environmentId}`,
-                    headers: headers,
-                    body: {
-                        name: name,
-                        options: options,
-                    },
-                    log: false
-                }).then((response) => {
-                    expect(response.status).to.equal(200);
-                    Cypress.log({
-                        name: "Update Data Source",
-                        displayName: "Data source updated",
-                        message: `Name: '${name}'`,
+                cy.apiGetDataSourceIdByName(dataSourceName).then((dataSourceId) => {
+                    const environmentId = environment.id;
+
+                    cy.request({
+                        method: "PUT",
+                        url: `${Cypress.env("server_host")}/api/data-sources/${dataSourceId}?environment_id=${environmentId}`,
+                        headers: headers,
+                        body: {
+                            name: dataSourceName,
+                            options: options,
+                        },
+                        log: false
+                    }).then((response) => {
+
+                        expect(response.status).to.equal(200);
+                        Cypress.log({
+                            name: "Update Data Source",
+                            displayName: "Data source updated",
+                            message: `Name: '${dataSourceName}'`,
+                        });
                     });
                 });
             });
@@ -107,12 +111,12 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("apiGetDataSourceIdByName", (dataSourceName, cachedHeader) => {
-    cy.getAuthHeaders(cachedHeader).then((headers) => {
-        cy.request({
+    return cy.getAuthHeaders(cachedHeader).then((headers) => {
+        return cy.request({
             method: "GET",
             url: `${Cypress.env("server_host")}/api/data-sources/${Cypress.env("workspaceId")}`,
             headers: headers,
-            log
+            log: false
         }).then((response) => {
             expect(response.status).to.equal(200);
             const id = response.body.data_sources.find(
