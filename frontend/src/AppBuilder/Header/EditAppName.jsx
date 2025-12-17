@@ -8,7 +8,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { AppModal } from '@/_components/AppModal';
 import { PenLine } from 'lucide-react';
 
-function EditAppName () {
+function EditAppName() {
   const { moduleId } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode] = useStore(
     (state) => [
@@ -49,7 +49,7 @@ function EditAppName () {
             onClick={() => setShowRenameModal(true)}
           >
             <span
-              className="tw-font-title-large tw-truncate tw-w-full tw-block tw-text-start group-hover:tw-w-[calc(100%-24px)] text-black-000"
+              className="tw-font-title-large tw-truncate tw-w-full tw-block tw-text-start group-hover:tw-w-[calc(100%-24px)] tw-text-[var(--slate12)]"
               data-cy="editor-app-name-input"
             >
               {appName}

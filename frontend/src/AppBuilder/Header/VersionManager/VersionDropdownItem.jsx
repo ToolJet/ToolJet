@@ -97,7 +97,7 @@ const VersionDropdownItem = ({
     !isDraft &&
     !isReleased &&
     (featureAccess?.multiEnvironment ? isInProduction : isPublished);
-  const canCreateVersion = isDraft && shouldShowActionButtons; // Only show Save version button for drafts that are currently selected
+  const canCreateVersion = isDraft && shouldShowActionButtons; // Show create version button for drafts
 
   const renderMenu = (
     <Popover
