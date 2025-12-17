@@ -14,7 +14,6 @@ import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
 import { ResourceViewHeader } from '@/components/ui/blocks/ResourceViewHeader';
 import { WorkflowsGrid } from '@/features/workflows/WorkflowsGrid';
-import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
 import { Button } from '@/components/ui/Button/Button';
 import { CommonWorkflowSheet } from '@/features/workflows/components/CommonWorkflowSheet';
@@ -239,8 +238,6 @@ function WorkflowsPageAdapter({
     },
   ];
 
-  const pageIndex = workflowsTable.getState().pagination.pageIndex;
-
   const workflowsError_ = workflowsError || adapterError;
 
   const emptyStateWithButton = (
@@ -248,12 +245,20 @@ function WorkflowsPageAdapter({
       <EmptyResource
         title="You don't have any workflows yet"
         description="Create your first workflow to automate tasks"
-      />
-      {!isLimitReached && canCreateWorkflow && (
-        <Button variant="primary" size="default" leadingIcon="plus" onClick={handleCreateWorkflow} className="tw-mt-4">
-          Create workflow
-        </Button>
-      )}
+        resourceType="workflows"
+      >
+        {!isLimitReached && canCreateWorkflow && (
+          <Button
+            variant="outline"
+            size="default"
+            leadingIcon="plus"
+            onClick={handleCreateWorkflow}
+            className="tw-mt-4"
+          >
+            Create workflow
+          </Button>
+        )}
+      </EmptyResource>
     </div>
   );
   // Generic helper to render content based on view mode
@@ -281,7 +286,16 @@ function WorkflowsPageAdapter({
       content: workflowsContent,
       error: workflowsError_,
       errorState: workflowsError_ ? (
-        <ErrorState title="Failed to load workflows" error={workflowsError_} onRetry={() => window.location.reload()} />
+        <EmptyResource
+          title="Failed to load workflows"
+          description="Unable to fetch workflows. Please try again."
+          resourceType="workflows"
+          isError={true}
+        >
+          <Button variant="outline" size="default" onClick={() => window.location.reload()} className="tw-mt-4">
+            Retry
+          </Button>
+        </EmptyResource>
       ) : null,
       empty: workflowsEmpty,
       emptyState: emptyStateWithButton,

@@ -1,11 +1,6 @@
-import React from "react";
+import React from 'react';
 
-const MobileEmptyStateIcon = ({
-  className = "",
-  width = "24",
-  height = "24",
-  fill = "currentColor",
-}) => {
+const MobileEmptyStateIcon = ({ className = '', width = '24', height = '24', fill = 'currentColor' }) => {
   return (
     <svg
       width={width}
@@ -16,41 +11,13 @@ const MobileEmptyStateIcon = ({
       className={className}
     >
       <g clipPath="url(#clip0_5891_2407)">
-        <rect
-          x="0.85498"
-          y="0.336914"
-          width="174.29"
-          height="120.26"
-          rx="9.29547"
-          fill="#EAF1FA"
-        />
-        <rect
-          x="0.85498"
-          y="0.336914"
-          width="174.29"
-          height="112.127"
-          rx="9.29547"
-          fill="white"
-        />
+        <rect x="0.85498" y="0.336914" width="174.29" height="120.26" rx="9.29547" fill="#EAF1FA" />
+        <rect x="0.85498" y="0.336914" width="174.29" height="112.127" rx="9.29547" fill="white" />
         <circle cx="12.7648" cy="12.2466" r="2.61435" fill="#D8E6FF" />
         <circle cx="20.3174" cy="12.2464" r="2.61435" fill="#D8E6FF" />
         <circle cx="27.87" cy="12.2464" r="2.61435" fill="#D8E6FF" />
-        <rect
-          x="10.1505"
-          y="19.5087"
-          width="155.699"
-          height="84.8211"
-          rx="2.32387"
-          fill="#EAF1FA"
-        />
-        <rect
-          x="101.943"
-          y="28.804"
-          width="53.4489"
-          height="66.2302"
-          rx="3.4858"
-          fill="white"
-        />
+        <rect x="10.1505" y="19.5087" width="155.699" height="84.8211" rx="2.32387" fill="#EAF1FA" />
+        <rect x="101.943" y="28.804" width="53.4489" height="66.2302" rx="3.4858" fill="white" />
         <path
           d="M145.014 53.7052C147.282 62.6327 141.884 71.7087 132.957 73.977C124.029 76.2452 114.953 70.8469 112.685 61.9194C110.417 52.9919 115.815 43.916 124.742 41.6477C133.67 39.3794 142.746 44.7778 145.014 53.7052ZM121.575 59.6605C122.596 63.6779 126.68 66.1071 130.698 65.0864C134.715 64.0657 137.144 59.9815 136.124 55.9641C135.103 51.9468 131.019 49.5175 127.001 50.5382C122.984 51.559 120.555 55.6431 121.575 59.6605Z"
           fill="#F9FBFF"
@@ -67,134 +34,22 @@ const MobileEmptyStateIcon = ({
           d="M129.066 41.1355C133.367 41.1913 137.479 42.9063 140.545 45.9222C143.611 48.9382 145.394 53.022 145.521 57.3209C145.647 61.6198 144.108 65.8015 141.225 68.9929C138.342 72.1842 134.338 74.1384 130.048 74.4474L129.389 65.2981C131.319 65.159 133.121 64.2797 134.419 62.8436C135.716 61.4075 136.408 59.5257 136.351 57.5912C136.294 55.6567 135.492 53.819 134.113 52.4618C132.733 51.1046 130.882 50.3329 128.947 50.3077L129.066 41.1355Z"
           fill="#CFE1FF"
         />
-        <rect
-          x="105.927"
-          y="81.3547"
-          width="8.07396"
-          height="2.7976"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="126.344"
-          y="81.0908"
-          width="5.95278"
-          height="2.7976"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="105.927"
-          y="86.0239"
-          width="13.3669"
-          height="4.38959"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="126.167"
-          y="86.0239"
-          width="9.58623"
-          height="4.38959"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="18.284"
-          y="28.804"
-          width="35.439"
-          height="15.1051"
-          rx="3.4858"
-          fill="white"
-        />
-        <rect
-          x="22.2675"
-          y="31.827"
-          width="8.07396"
-          height="2.7976"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="22.2675"
-          y="36.3676"
-          width="13.3669"
-          height="4.38959"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="60.1136"
-          y="28.804"
-          width="35.439"
-          height="15.1051"
-          rx="3.4858"
-          fill="white"
-        />
-        <rect
-          x="67.8572"
-          y="31.827"
-          width="8.07396"
-          height="2.7976"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="67.8572"
-          y="36.4963"
-          width="13.3669"
-          height="4.38959"
-          rx="0.580967"
-          fill="#E6EFFF"
-        />
-        <rect
-          x="18.5745"
-          y="52.9141"
-          width="59.8396"
-          height="40.6677"
-          stroke="#D4DEFF"
-          strokeWidth="0.580967"
-        />
-        <rect
-          x="24.0937"
-          y="58.4336"
-          width="48.8012"
-          height="29.6293"
-          rx="3.4858"
-          fill="white"
-        />
-        <rect
-          x="75.2188"
-          y="49.1381"
-          width="6.9716"
-          height="6.9716"
-          rx="2.32387"
-          fill="#CFE1FF"
-        />
-        <rect
-          x="75.2186"
-          y="90.3864"
-          width="6.9716"
-          height="6.9716"
-          rx="2.32387"
-          fill="#CFE1FF"
-        />
-        <rect
-          x="14.7986"
-          y="49.1383"
-          width="6.9716"
-          height="6.9716"
-          rx="2.32387"
-          fill="#CFE1FF"
-        />
-        <rect
-          x="14.7977"
-          y="90.3864"
-          width="6.9716"
-          height="6.9716"
-          rx="2.32387"
-          fill="#CFE1FF"
-        />
+        <rect x="105.927" y="81.3547" width="8.07396" height="2.7976" rx="0.580967" fill="#E6EFFF" />
+        <rect x="126.344" y="81.0908" width="5.95278" height="2.7976" rx="0.580967" fill="#E6EFFF" />
+        <rect x="105.927" y="86.0239" width="13.3669" height="4.38959" rx="0.580967" fill="#E6EFFF" />
+        <rect x="126.167" y="86.0239" width="9.58623" height="4.38959" rx="0.580967" fill="#E6EFFF" />
+        <rect x="18.284" y="28.804" width="35.439" height="15.1051" rx="3.4858" fill="white" />
+        <rect x="22.2675" y="31.827" width="8.07396" height="2.7976" rx="0.580967" fill="#E6EFFF" />
+        <rect x="22.2675" y="36.3676" width="13.3669" height="4.38959" rx="0.580967" fill="#E6EFFF" />
+        <rect x="60.1136" y="28.804" width="35.439" height="15.1051" rx="3.4858" fill="white" />
+        <rect x="67.8572" y="31.827" width="8.07396" height="2.7976" rx="0.580967" fill="#E6EFFF" />
+        <rect x="67.8572" y="36.4963" width="13.3669" height="4.38959" rx="0.580967" fill="#E6EFFF" />
+        <rect x="18.5745" y="52.9141" width="59.8396" height="40.6677" stroke="#D4DEFF" strokeWidth="0.580967" />
+        <rect x="24.0937" y="58.4336" width="48.8012" height="29.6293" rx="3.4858" fill="white" />
+        <rect x="75.2188" y="49.1381" width="6.9716" height="6.9716" rx="2.32387" fill="#CFE1FF" />
+        <rect x="75.2186" y="90.3864" width="6.9716" height="6.9716" rx="2.32387" fill="#CFE1FF" />
+        <rect x="14.7986" y="49.1383" width="6.9716" height="6.9716" rx="2.32387" fill="#CFE1FF" />
+        <rect x="14.7977" y="90.3864" width="6.9716" height="6.9716" rx="2.32387" fill="#CFE1FF" />
         <g filter="url(#filter0_d_5891_2407)">
           <path
             d="M77.3497 79.4977C76.7169 79.1425 75.9534 79.6711 76.0623 80.3879L77.5469 90.1574C77.671 90.9742 78.7565 91.1759 79.1657 90.4579L81.1097 87.048C81.1814 86.9223 81.2807 86.8145 81.4001 86.7327C81.5194 86.6508 81.6558 86.5971 81.7989 86.5754L85.7345 85.9774C86.5547 85.8527 86.7535 84.7601 86.0292 84.3554L77.3497 79.4977Z"
@@ -202,15 +57,7 @@ const MobileEmptyStateIcon = ({
           />
         </g>
       </g>
-      <rect
-        x="1.15498"
-        y="0.636914"
-        width="173.69"
-        height="119.66"
-        rx="8.99547"
-        stroke="#CFE1FF"
-        strokeWidth="0.6"
-      />
+      <rect x="1.15498" y="0.636914" width="173.69" height="119.66" rx="8.99547" stroke="#CFE1FF" strokeWidth="0.6" />
       <defs>
         <filter
           id="filter0_d_5891_2407"
@@ -231,31 +78,12 @@ const MobileEmptyStateIcon = ({
           <feOffset dy="2.32387" />
           <feGaussianBlur stdDeviation="1.7429" />
           <feComposite in2="hardAlpha" operator="out" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-          />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_5891_2407"
-          />
-          <feBlend
-            mode="normal"
-            in="SourceGraphic"
-            in2="effect1_dropShadow_5891_2407"
-            result="shape"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_5891_2407" />
+          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_5891_2407" result="shape" />
         </filter>
         <clipPath id="clip0_5891_2407">
-          <rect
-            x="0.85498"
-            y="0.336914"
-            width="174.29"
-            height="120.26"
-            rx="9.29547"
-            fill="white"
-          />
+          <rect x="0.85498" y="0.336914" width="174.29" height="120.26" rx="9.29547" fill="white" />
         </clipPath>
       </defs>
     </svg>

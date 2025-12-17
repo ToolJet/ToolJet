@@ -12,7 +12,6 @@ import { PaginationFooter } from '@/components/ui/blocks/PaginationFooter';
 import { ResourcePageHeader } from '@/components/ui/blocks/ResourcePageHeader';
 import { ResourceTabs } from '@/components/ui/blocks/ResourceTabs';
 import { ResourceErrorBoundary } from '@/components/ui/blocks/ResourceErrorBoundary';
-import { ErrorState } from '@/components/ui/blocks/ErrorState';
 import { DataTable } from '@/components/ui/blocks/DataTable';
 import { Button } from '@/components/ui/Button/Button';
 import { CommonDatasourceSheet } from '@/features/datasources/components/CommonDatasourceSheet';
@@ -199,12 +198,23 @@ function DatasourcesPageAdapter({
 
   const emptyStateWithButton = (
     <div className="tw-flex tw-flex-col tw-items-center">
-      <EmptyResource title="You don't have any datasources yet" />
-      {!isLimitReached && canCreateDatasource && (
-        <Button variant="primary" size="default" leadingIcon="plus" onClick={handleCreateDatasource} className="tw-mt-4">
-          Create datasource
-        </Button>
-      )}
+      <EmptyResource
+        title="You don't have any datasources yet"
+        description="Connect to databases and APIs to power your applications"
+        resourceType="datasources"
+      >
+        {!isLimitReached && canCreateDatasource && (
+          <Button
+            variant="outline"
+            size="default"
+            leadingIcon="plus"
+            onClick={handleCreateDatasource}
+            className="tw-mt-4"
+          >
+            Create datasource
+          </Button>
+        )}
+      </EmptyResource>
     </div>
   );
 
@@ -215,11 +225,16 @@ function DatasourcesPageAdapter({
       content: datasourcesContent,
       error: datasourcesError_,
       errorState: datasourcesError_ ? (
-        <ErrorState
+        <EmptyResource
           title="Failed to load datasources"
-          error={datasourcesError_}
-          onRetry={() => window.location.reload()}
-        />
+          description="Unable to fetch datasources. Please try again."
+          resourceType="datasources"
+          isError={true}
+        >
+          <Button variant="outline" size="default" onClick={() => window.location.reload()} className="tw-mt-4">
+            Retry
+          </Button>
+        </EmptyResource>
       ) : null,
       empty: datasourcesEmpty,
       emptyState: emptyStateWithButton,
@@ -259,11 +274,7 @@ function DatasourcesPageAdapter({
         </ResourceErrorBoundary>
       </ResourceShellView>
 
-      <CommonDatasourceSheet
-        open={createSheetOpen}
-        onOpenChange={setCreateSheetOpen}
-        title="Select datasource"
-      >
+      <CommonDatasourceSheet open={createSheetOpen} onOpenChange={setCreateSheetOpen} title="Select datasource">
         <CreateDatasourceContent onSelectDatasource={handleSelectDatasource} />
       </CommonDatasourceSheet>
 

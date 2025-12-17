@@ -376,14 +376,25 @@ function AppsPageAdapter({
       content: modulesContent,
       error: modulesAdapterError,
       errorState: modulesAdapterError ? (
-        <ErrorState
+        <EmptyResource
           title="Failed to load modules"
-          error={modulesAdapterError}
-          onRetry={() => window.location.reload()}
-        />
+          description="Unable to fetch modules. Please try again."
+          resourceType="modules"
+          isError={true}
+        >
+          <Button variant="outline" size="default" onClick={() => window.location.reload()} className="tw-mt-4">
+            Retry
+          </Button>
+        </EmptyResource>
       ) : null,
       empty: modulesEmpty,
-      emptyState: <EmptyResource title="You don't have any modules yet" />,
+      emptyState: (
+        <EmptyResource
+          title="You don't have any modules yet"
+          description="Create reusable modules to use across multiple applications"
+          resourceType="modules"
+        />
+      ),
     },
   ];
 
