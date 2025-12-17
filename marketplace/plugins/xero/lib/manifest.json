@@ -20,11 +20,13 @@
     "customTesting": true
   },
   "defaults": {
-    "oauth_type": {
-      "value": "custom_app"
-    },
     "access_token_custom_headers": {
-      "value": [["Content-Type", "application/x-www-form-urlencoded"]]
+      "value": [
+        [
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        ]
+      ]
     },
     "redirect_url": {
       "value": "http://localhost:8082/oauth2/authorize"
@@ -50,7 +52,7 @@
     "access_token_url": {
       "value": "https://identity.xero.com/connect/token"
     }
-    },
+  },
   "properties": {
     "oauth": {
       "key": "oauth",
@@ -73,5 +75,9 @@
       }
     }
   },
-  "required": ["client_id", "client_secret","scopes"]
+  "required": [
+    "client_id",
+    "client_secret",
+    "scopes"
+  ]
 }
