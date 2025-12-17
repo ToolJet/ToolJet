@@ -17,14 +17,21 @@ The GitHub Configuration for GitSync introduces a more flexible way to connect y
 
 Role Required: **Admin**
 
-### 1. Create a New Repository
-    Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty.
+### 1. Create a New Repository and Make an Initial Commit
+    Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty, then create an initial commit (for example, by adding a `README.md`). This first commit initializes the repository and creates the default branch (such as `main`).
 
 ### 2. Create the GitHub App
     [Setup a GitHub App](https://github.com/settings/apps/new) and make sure it is created by the same owner as the Git repository. If you have multiple ToolJet instances, use this same GitHub App across all instances. 
     <img className="screenshot-full img-l" src="/img/gitsync/github-config/github-app-register.png" alt="GitSync" />
     
     Enter your App details on the **Register new GitHub App** page and make sure to uncheck the **Expire user authorization tokens** and **Active** checkbox under **Identifying and authorizing users** and **Webhook** sections respectively.
+
+    The Homepage URL should be set to the URL of your ToolJet instance.    
+    | ToolJet Instance    | URL |
+    | -------- | ------- |
+    | Cloud  | `https://app.tooljet.com`    |
+    | Self-hosted | Your ToolJet instance URL     |
+
     
     :::note
     Add the following Repository permissions:
@@ -43,7 +50,7 @@ Role Required: **Admin**
 ### 3. Install the GitHub App
     
     To install your GitHub App, follow these steps:
-    - Click on Install App on the **GitHub App Settings** page.
+    - Click on Install App on the **GitHub App Settings** page.<br />
         <img className="screenshot-full img-s" style={{ marginTop:'15px'}}  src="/img/gitsync/github-config/github-app2.png" alt="GitSync" />
     - Click the **Install** button next to your organization.
     - Select repositories option and select the repositories you want to connect to ToolJet.
