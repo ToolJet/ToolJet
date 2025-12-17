@@ -336,6 +336,66 @@ export class DataSourcesService implements IDataSourcesService {
       const result = await service.invokeMethod(methodName, sourceOptions, args);
       return { status: 'ok', data: result };
     } catch (error) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+        const currentUserToken = sourceOptions['refresh_token']
+          ? sourceOptions
+          : this.getCurrentUserToken(
+            sourceOptions['multiple_auth_enabled'],
+            sourceOptions['tokenData'],
+            user?.id,
+          );
+
+        if (currentUserToken && currentUserToken['refresh_token']) {
+          try {
+            const accessTokenDetails = await service.refreshToken(sourceOptions);
+
+            await this.dataSourcesUtilService.updateOAuthAccessToken(
+              accessTokenDetails,
+              dataSource.options,
+              dataSource.id,
+              user?.id,
+              user?.organizationId,
+              environmentId
+            );
+
+            // Re-fetch options to use the new token
+            const updatedDataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+              dataSource.id,
+              user.organizationId,
+              environmentId
+            );
+
+            const updatedSourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+              updatedDataSourceOptions.options,
+              user.organizationId,
+              updatedDataSourceOptions.environmentId,
+              user
+            );
+
+            // Retry invoke
+            const result = await service.invokeMethod(methodName, updatedSourceOptions, args);
+            return { status: 'ok', data: result };
+          } catch (refreshError) {
+            // If refresh fails or retry fails, return original or new error data
+            if (refreshError.constructor.name === 'QueryError') {
+              return {
+                status: 'failed',
+                data: refreshError.data,
+                errorMessage: refreshError.message,
+                metadata: refreshError.metadata
+              };
+            }
+
+            return {
+              status: 'failed',
+              data: error.data,
+              errorMessage: error.message,
+              metadata: error.metadata
+            };
+          }
+        }
+      }
+
       if (error.constructor.name === 'QueryError') {
         return {
           status: 'failed',
@@ -347,4 +407,19 @@ export class DataSourcesService implements IDataSourcesService {
       throw error;
     }
   }
+
+  protected getCurrentUserToken = (
+    isMultiAuthEnabled: boolean,
+    tokenData: any,
+    userId: string,
+  ) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return userId
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
+    } else {
+      return tokenData;
+    }
+  };
 }
