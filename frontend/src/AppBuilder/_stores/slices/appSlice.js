@@ -1,5 +1,5 @@
 import { appsService, appVersionService } from '@/_services';
-import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { decimalToHex, APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
@@ -8,7 +8,6 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
-import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const initialState = {
   isSaving: false,
@@ -130,6 +129,7 @@ export const createAppSlice = (set, get) => ({
       pageSettings,
       getPagesSidebarVisibility,
       license,
+      getCurrentAdditionalActionValue,
     } = get();
     const currentMode = getCurrentMode(moduleId);
 
@@ -152,14 +152,15 @@ export const createAppSlice = (set, get) => ({
 
     const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
-      const visibility =
-        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
-
-      const height = visibility ? layout.height : 10;
       if (!layout) {
         return max;
       }
+
+      const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+      if (currentMode === 'view' && !visibility) {
+        return max;
+      }
+      const height = visibility ? layout.height : 10;
       const sum = layout.top + height;
       return Math.max(max, sum);
     }, 0);
@@ -168,9 +169,10 @@ export const createAppSlice = (set, get) => ({
       .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
       .reduce((max, [componentId, layout]) => {
         const component = currentMainCanvasComponents.find((component) => componentId === component.id);
-        const visibility =
-          getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-          getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
+        const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+        if (currentMode === 'view' && !visibility) {
+          return max;
+        }
         const sum = layout.top + (visibility ? layout.height : 10);
         return Math.max(max, sum);
       }, 0);
@@ -296,9 +298,8 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
-        slug ?? appId
-      }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
+        }/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,

@@ -377,6 +377,8 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests
+        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests
@@ -385,6 +387,58 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary
+        run: |
+          OUTCOME="${{ steps.cypress-tests.outcome }}"
+          EDITION="${{ matrix.edition }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Tests - ${EDITION^^} Edition" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -747,10 +801,64 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-subpath
+        continue-on-error: true
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary-subpath
+        run: |
+          OUTCOME="${{ steps.cypress-tests-subpath.outcome }}"
+          EDITION="${{ matrix.edition }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Tests - ${EDITION^^} Edition (Subpath)" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -1128,10 +1236,64 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy
+        continue-on-error: true
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:4001"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary-proxy
+        run: |
+          OUTCOME="${{ steps.cypress-tests-proxy.outcome }}"
+          EDITION="${{ matrix.edition }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Tests - ${EDITION^^} Edition (Proxy)" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -1510,10 +1672,64 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy-subpath
+        continue-on-error: true
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:4001/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary-proxy-subpath
+        run: |
+          OUTCOME="${{ steps.cypress-tests-proxy-subpath.outcome }}"
+          EDITION="${{ matrix.edition }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Tests - ${EDITION^^} Edition (Proxy + Subpath)" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
