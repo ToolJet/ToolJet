@@ -388,6 +388,7 @@ export const createEventsSlice = (set, get) => ({
           'onTableDataDownload',
           'onRecordingStart',
           'onRecordingStop',
+          'onPhotoCapture',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);

@@ -139,6 +139,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
 
     const url = URL.createObjectURL(blob);
     updateCapturedImage({ blob, url });
+    fireEvent('onPhotoCapture');
   };
 
   const handleCaptureToggle = async (saveCapture = false) => {
@@ -160,7 +161,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
             imageBlobURL: blobUrl,
             imageDataURL: dataURL,
           });
-          fireEvent('onPhotoCapture');
           clearCapturedImage({ revokePrevious: true });
         } else {
           if (savedImageUrlRef.current) {
