@@ -56,6 +56,13 @@ export const audioRecorderConfig = {
             visibility: false,
             accordian: 'recorder',
         },
+        recorderIconColor: {
+            type: 'colorSwatches',
+            displayName: 'Icon color',
+            validation: { schema: { type: 'string' } },
+            defaultValue: '#F6430D',
+            accordian: 'recorder',
+        },
         labelColor: {
             type: 'colorSwatches',
             displayName: 'Label text',
@@ -142,6 +149,7 @@ export const audioRecorderConfig = {
         events: [],
         styles: {
             recorderIcon: { value: 'IconMicrophone' },
+            recorderIconColor: { value: '#F6430D' },
             labelColor: { value: 'var(--cc-primary-text)' },
             accentColor: { value: 'var(--cc-primary-brand)' },
             backgroundColor: { value: 'var(--cc-surface1-surface)' },
