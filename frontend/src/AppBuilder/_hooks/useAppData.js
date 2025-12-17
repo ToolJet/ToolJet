@@ -110,6 +110,7 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const isPreviewInEditor = useStore((state) => state.isPreviewInEditor, shallow);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -559,6 +560,16 @@ const useAppData = (
       });
     }
   }, [isComponentLayoutReady, moduleId]);
+
+  useEffect(() => {
+    // Run page events when user switches to preview mode inside editor
+    if (isPreviewInEditor) {
+      runOnLoadQueries(moduleId).then(() => {
+        const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+        handleEvent('onPageLoad', currentPageEvents, {});
+      });
+    }
+  }, [isPreviewInEditor, moduleId]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;
