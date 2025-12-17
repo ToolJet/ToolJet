@@ -206,6 +206,23 @@ You can setup OIDC using non email identifier for authenticating users to ToolJe
 
  To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 
+#### Configure Stronger Password Validation Rules
+ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
+
+- `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
+
+When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
+| Rule | Requirement |
+|-----------|-------------|
+| Password length | 12-24 characters | 
+| Uppercase letters | A-Z |
+| Lowercase letters | a-z |
+| Numbers | 0-9 |
+| Special characters | ! @ # $ % ^ & * ( ) _ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
+
+:::info
+These validations apply to both the instance and workspace levels.
+:::
 ### Third-Party Integrations
 
 #### Slack
