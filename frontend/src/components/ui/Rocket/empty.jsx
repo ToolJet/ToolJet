@@ -54,7 +54,11 @@ function EmptyMedia({ className, variant = 'default', ...props }) {
 
 function EmptyTitle({ className, ...props }) {
   return (
-    <div data-slot="empty-title" className={cn('tw-text-lg tw-font-medium tw-tracking-tight', className)} {...props} />
+    <div
+      data-slot="empty-title"
+      className={cn('tw-text-text-default tw-text-lg tw-font-medium tw-tracking-tight', className)}
+      {...props}
+    />
   );
 }
 
