@@ -3,6 +3,7 @@ import { positionGhostElement } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useGridStore } from '@/_stores/gridStore';
+import { GRID_HEIGHT } from '../../appCanvasConstants';
 
 const DEFAULT_CONFIG = {
   threshold: 30, // Distance from edge to trigger scrolling (px)
@@ -147,7 +148,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     let newX = currentPos.x;
     let newY = currentPos.y;
     newX = Math.round(newX / _gridWidth) * _gridWidth + scrollX;
-    newY = Math.round(newY / 10) * 10 + scrollY;
+    newY = Math.round(newY / GRID_HEIGHT) * GRID_HEIGHT + scrollY;
 
     // Clamp position to stay within canvas bounds
     // Left bound: newX >= 0
