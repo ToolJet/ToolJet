@@ -122,6 +122,10 @@ export const audioRecorderConfig = {
             displayName: 'Set loading',
             params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
+        {
+            handle: 'resetAudioCapture',
+            displayName: 'Reset audio capture',
+        }
     ],
     definition: {
         others: {

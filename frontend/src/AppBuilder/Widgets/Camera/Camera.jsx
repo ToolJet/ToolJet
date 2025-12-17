@@ -247,7 +247,29 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   /* eslint-disable react-hooks/exhaustive-deps */
 
   useEffect(() => {
-    setExposedVariables(exposedVariablesTemporaryState);
+    setExposedVariables({
+      ...exposedVariablesTemporaryState,
+      resetVideoCapture: () => {
+        setExposedVariables({
+          videoBlobURL: null,
+          videoDataURL: null,
+        });
+      },
+      resetCameraCapture: () => {
+        setExposedVariables({
+          imageBlobURL: null,
+          imageDataURL: null,
+        });
+      },
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', value);
+        updateExposedVariablesState('isVisible', value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', value);
+        updateExposedVariablesState('isDisabled', value);
+      },
+    });
   }, []);
 
   useEffect(() => {
@@ -414,7 +436,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // Computed values
-  const isVisible = visibility;
   const captureDisabled = !mediaStream || !!permissionError || isBusy;
   const hasPendingCapture = contentType === 'image' && !!capturedImage;
   const deviceSelectDisabled = status === 'recording' || isBusy;
@@ -426,7 +447,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: isFullscreen ? 0 : `${borderRadius}px`,
-    display: isVisible ? 'flex' : 'none',
+    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
     overflow: 'hidden',
     boxShadow,
   };

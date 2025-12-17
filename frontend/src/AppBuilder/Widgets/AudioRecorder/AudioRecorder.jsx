@@ -190,7 +190,27 @@ export const AudioRecorder = ({
   /* eslint-disable react-hooks/exhaustive-deps */
 
   useEffect(() => {
-    setExposedVariables(exposedVariablesTemporaryState);
+    setExposedVariables({
+      ...exposedVariablesTemporaryState,
+      resetAudioCapture: () => {
+        setExposedVariables({
+          blobURL: null,
+          dataURL: null,
+        });
+      },
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', value);
+        updateExposedVariablesState('isVisible', value);
+      },
+      setLoading: async function (value) {
+        setExposedVariable('isLoading', value);
+        updateExposedVariablesState('isLoading', value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', value);
+        updateExposedVariablesState('isDisabled', value);
+      },
+    });
     return () => {
       stopRecording();
       if (audioRef.current && endedListenerRef.current) {

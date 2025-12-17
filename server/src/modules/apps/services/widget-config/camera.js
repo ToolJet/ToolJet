@@ -111,6 +111,14 @@ export const cameraConfig = {
             displayName: 'Set disable',
             params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
+        {
+            handle: 'resetVideoCapture',
+            displayName: 'Reset video capture',
+        },
+        {
+            handle: 'resetCameraCapture',
+            displayName: 'Reset image capture',
+        },
     ],
     definition: {
         others: {
