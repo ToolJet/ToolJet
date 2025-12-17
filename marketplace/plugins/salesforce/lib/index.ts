@@ -87,15 +87,6 @@ export default class Salesforce implements QueryService {
         }
       }
     } catch (error) {
-      console.log(
-        'Salesforce Query Error: ---------- ',
-        error,
-        'error response',
-        error?.response,
-        error?.statusCode ?? 'no value',
-        error.response?.statusCode ?? 'no value'
-      );
-
       // Check for 401 status code in various locations where jsforce might set it
       const statusCode = error?.response?.statusCode || error?.statusCode || error?.response?.status;
 
@@ -200,12 +191,7 @@ export default class Salesforce implements QueryService {
       // Update the scopes as per your requirement.
       scope: `${source_options.scopes.value} refresh_token offline_access`,
     });
-    console.log(
-      'Salesforce Authorization URL: ',
-      authorizationUrl,
-      `${source_options.scopes.value} refresh_token offline_access`,
-      source_options
-    );
+
     // Note: Prompt for login each time, even if it's not multi-user auth ( Skip Salesforce session for Oauth flow )
     // if (source_options.multiple_auth_enabled) {
     authorizationUrl += '&prompt=login';
@@ -292,9 +278,7 @@ export default class Salesforce implements QueryService {
   }
 
   async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic): Promise<any> {
-    console.log('Salesforce Refresh Token Invoked: ', sourceOptions, dataSourceId, userId, isAppPublic);
     let refreshToken: string;
-    let accessToken: string;
     let instanceUrl: string;
     // If multi user authentication is enabled, we would need specific users refresh token.
     if (sourceOptions?.multiple_auth_enabled) {
@@ -309,14 +293,12 @@ export default class Salesforce implements QueryService {
         throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
       }
       refreshToken = currentToken['refresh_token'];
-      accessToken = currentToken['access_token'];
       instanceUrl = currentToken['instance_url'];
     } else {
       if (!sourceOptions?.refresh_token) {
         throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
       }
       refreshToken = sourceOptions['refresh_token'];
-      accessToken = sourceOptions['access_token'];
       instanceUrl = sourceOptions['instance_url'];
     }
 
@@ -337,31 +319,20 @@ export default class Salesforce implements QueryService {
       oauth2: oauth2,
       instanceUrl: instanceUrl,
       refreshToken: refreshToken,
-      // accessToken: accessToken,
     });
 
+    let tokenResponse = {};
     try {
-      console.log(
-        'Salesforce Refresh Token Call',
-        accessToken,
-        refreshToken,
-        conn['accessToken'],
-        conn['refreshToken']
-      );
-      // await conn.userInfo;
-      await conn.oauth2.refreshToken(refreshToken);
-      // await conn.identity();
+      tokenResponse = await conn.oauth2.refreshToken(refreshToken);
     } catch (error) {
-      console.log('Salesforce Refresh Token Error: ', error.message, error);
-      if (error.message.includes('invalid_grant')) {
+      if (error.message.includes('invalid_grant') || error.message.includes('token validity expired')) {
         // Refresh token is invalid - need to re-authenticate
-        console.log('Refresh token expired. User needs to re-authorize.');
-        // Redirect user to OAuth flow
+        throw new Error('Refresh token expired. User needs to re-authorize.');
       }
       throw new QueryError('Authorization Error', error.message, {});
     }
-    console.log('Salesforce Refresh Token Result: ', conn['accessToken'], conn['refreshToken']);
-    if (conn['accessToken']) accessTokenDetails['access_token'] = conn['accessToken'];
+
+    if (tokenResponse['access_token']) accessTokenDetails['access_token'] = tokenResponse['access_token'];
     if (conn['refreshToken']) accessTokenDetails['refresh_token'] = conn['refreshToken'];
     if (conn['instanceUrl']) accessTokenDetails['instance_url'] = conn['instanceUrl'];
 
