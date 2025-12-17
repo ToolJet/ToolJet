@@ -6,6 +6,11 @@ on:
     types: [labeled]
   # workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -436,6 +441,7 @@ jobs:
         if: always()
         uses: peter-evans/create-or-update-comment@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: /tmp/test-summary.md
           edit-mode: append
@@ -856,6 +862,7 @@ jobs:
         if: always()
         uses: peter-evans/create-or-update-comment@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: /tmp/test-summary.md
           edit-mode: append
@@ -1291,6 +1298,7 @@ jobs:
         if: always()
         uses: peter-evans/create-or-update-comment@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: /tmp/test-summary.md
           edit-mode: append
@@ -1727,6 +1735,7 @@ jobs:
         if: always()
         uses: peter-evans/create-or-update-comment@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: /tmp/test-summary.md
           edit-mode: append
