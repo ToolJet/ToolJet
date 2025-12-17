@@ -166,7 +166,7 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
 
   return (
     <>
-      {!selectedNodePath || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
+      {!selectedNodePath || !selectedData || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
         <div>
           <div style={{ margin: '8px 16px 12px 16px' }}>
             {/* <SearchBox
