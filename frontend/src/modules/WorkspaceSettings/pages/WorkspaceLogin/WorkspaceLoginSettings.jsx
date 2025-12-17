@@ -14,7 +14,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import ConfirmDisableAutoSSOModal from '@/_components/ConfirmDisableAutoSSOLoginModal';
 import { AutoSSOLogin, SSOConfigurationList } from './components';
 class OrganizationLogin extends React.Component {
-  protectedSSO = ['openid', 'ldap', 'saml'];
+  protectedSSO = ['openid', 'ldap', 'saml', 'google', 'github'];
   constructor(props) {
     super(props);
     this.state = {
