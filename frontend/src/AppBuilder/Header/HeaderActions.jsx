@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { Monitor, Smartphone, Play } from 'lucide-react';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import { usePreviewToggleAnimation } from '@/AppBuilder/_hooks/usePreviewToggleAnimation';
 
 const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
@@ -38,6 +39,8 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
     shallow
   );
 
+  const { isAnimating } = usePreviewToggleAnimation(moduleId);
+
   const clearSelectionBorder = useCallback(() => {
     clearSelectedComponents();
     const selectedElems = document.getElementsByClassName('active-target');
@@ -68,10 +71,11 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
           variant="outline"
           leadingIcon={currentMode === 'edit' ? 'play' : 'square-pen'}
           data-cy="preview-link-button"
-          style={{ padding: '7px 12px' }}
+          style={{ width: currentMode === 'edit' ? '92px' : '70px', padding: '7px 12px' }}
           isLucid={true}
           onClick={() => toggleCurrentMode()}
-          className={'tw-transition-all tw-duration-300 tw-ease-linear'}
+          className={'tw-transition-[width] tw-duration-300 tw-ease-linear'}
+          isLoading={isAnimating}
         >
           {currentMode === 'edit' ? 'Preview' : 'Edit'}
         </ButtonComponent>

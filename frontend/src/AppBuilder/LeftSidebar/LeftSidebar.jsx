@@ -23,6 +23,7 @@ import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -65,6 +66,10 @@ export const BaseLeftSidebar = ({
     ],
     shallow
   );
+
+  const { shouldMount, animationClasses, isPreviewInEditor } = usePreviewToggleAnimation({
+    animationType: 'width',
+  });
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
@@ -134,7 +139,12 @@ export const BaseLeftSidebar = ({
   };
 
   // TODO: Move this logic to a wrapper component and show components based on the mode
-  if (currentMode === 'view') {
+  if (currentMode === 'view' && !isPreviewInEditor) {
+    return null;
+  }
+
+  // Handle mount/unmount based on animation state
+  if (!shouldMount) {
     return null;
   }
 
@@ -217,7 +227,9 @@ export const BaseLeftSidebar = ({
 
   return (
     <div
-      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
+      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', animationClasses, {
+        'dark-theme theme-dark': darkMode,
+      })}
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999 }}
     >

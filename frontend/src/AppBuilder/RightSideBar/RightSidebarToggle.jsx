@@ -2,12 +2,12 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import cx from 'classnames';
-import Tooltip from 'react-bootstrap/Tooltip';
 import './rightSidebarToggle.scss';
 import { Plus, PencilRuler, BookOpen } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarItem } from './SidebarItem';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
   const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
@@ -19,6 +19,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
+  const { shouldMount, animationClasses, shouldHide } = usePreviewToggleAnimation({
+    animationType: 'width',
+  });
+
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
     if (item === activeRightSideBarTab && !isRightSidebarPinned) {
@@ -28,11 +32,20 @@ const RightSidebarToggle = ({ darkMode = false }) => {
     if (!isRightSidebarOpen) setRightSidebarOpen(true);
   };
 
+  if (!shouldMount) {
+    return null;
+  }
+
   return (
     <div
-      className={`tw-flex tw-flex-col tw-p-2 tw-gap-1.5 right-sidebar-toggle right-sidebar tw-bg-background-surface-layer-01 ${
-        darkMode ? 'dark-theme' : ''
-      }`}
+      className={cx(
+        'tw-flex tw-flex-col tw-gap-1.5 right-sidebar-toggle right-sidebar tw-bg-background-surface-layer-01',
+        animationClasses,
+        {
+          'dark-theme': darkMode,
+          'tw-p-2': !shouldHide,
+        }
+      )}
       data-cy="right-sidebar-inspector"
     >
       <SidebarItem

@@ -71,14 +71,11 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
             <EditorHeader darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
-
-            {!isPreviewInEditor && (
-              <LeftSidebar
-                switchDarkMode={changeToDarkMode}
-                darkMode={darkMode}
-                isUserInZeroToOneFlow={isUserInZeroToOneFlow}
-              />
-            )}
+            <LeftSidebar
+              switchDarkMode={changeToDarkMode}
+              darkMode={darkMode}
+              isUserInZeroToOneFlow={isUserInZeroToOneFlow}
+            />
           </Suspense>
           {isUserInZeroToOneFlow ? (
             <ArtifactPreview darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
@@ -87,13 +84,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
               {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
               <DndProvider backend={HTML5Backend}>
                 <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-                {!isPreviewInEditor && (
-                  <>
-                    <QueryPanel darkMode={darkMode} />
-                    <RightSidebarToggle darkMode={darkMode} />
-                    <RightSideBar darkMode={darkMode} />
-                  </>
-                )}
+                <QueryPanel darkMode={darkMode} />
+                <RightSidebarToggle darkMode={darkMode} />
+                {!isPreviewInEditor && <RightSideBar darkMode={darkMode} />}
               </DndProvider>
               <Popups darkMode={darkMode} />
             </>

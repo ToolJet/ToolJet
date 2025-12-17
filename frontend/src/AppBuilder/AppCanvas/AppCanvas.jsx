@@ -58,6 +58,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
+  const canvasBgColor =
+    currentMode === 'view' && !isPreviewInEditor
+      ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
+      : !isAppDarkMode
+      ? '#EBEBEF'
+      : '#2F3C4C';
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -130,14 +136,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isViewerSidebarPinned]);
 
-  const canvasContainerStyles = useMemo(() => {
-    const canvasBgColor =
-      currentMode === 'view' && !isPreviewInEditor
-        ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
-        : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+  useEffect(() => {
+    if (currentMode === 'edit' || isPreviewInEditor) {
+      const main = document.getElementsByClassName('main-wrapper')[0];
+      if (main) main.style.backgroundColor = canvasBgColor;
+    }
+  }, [currentMode, isPreviewInEditor]);
 
+  const canvasContainerStyles = useMemo(() => {
     if (isModuleMode) {
       return {
         borderLeft: 'none',
@@ -171,6 +177,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     canvasContainerHeight,
     isRightSidebarOpen,
     isCurrentVersionLocked,
+    canvasBgColor,
   ]);
 
   return (
@@ -179,6 +186,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         className={cx(`main main-editor-canvas position-relative`, {})}
         id="main-editor-canvas"
         onMouseUp={handleCanvasContainerMouseUp}
+        style={{ backgroundColor: canvasBgColor }}
       >
         <div id="sidebar-page-navigation" className="areas d-flex flex-rows">
           <div
@@ -188,7 +196,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
               { 'overflow-x-auto': currentMode === 'edit' },
               { 'position-top': position === 'top' || isPagesSidebarHidden },
-              { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
+              { 'overflow-x-hidden': moduleId !== 'canvas' }, // Disbling horizontal scroll for modules in view mode
+              { 'tw-transition-all tw-duration-300 tw-ease-linear': isPreviewInEditor }
             )}
             style={canvasContainerStyles}
           >

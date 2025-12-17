@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import { diff } from 'deep-object-diff';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -24,6 +25,9 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  const { shouldMount, animationClasses } = usePreviewToggleAnimation({
+    animationType: 'height',
+  });
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -153,10 +157,14 @@ export const QueryPanel = ({ darkMode }) => {
     setQueryPanelHeight(newIsExpanded ? height : 95);
   }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
 
+  if (!shouldMount) {
+    return null;
+  }
+
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
+        className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', animationClasses)}
         style={{
           height: 40,
           ...(isRightSidebarOpen && {
