@@ -97,6 +97,28 @@ jobs:
           echo "Disk space after build:"
           df -h
 
+      - name: Build CE Docker image
+        if: matrix.edition == 'ce'
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      # EE dockerfile build below
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
         run: |
@@ -120,7 +142,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'EE' || 'CE' }}" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -143,6 +165,13 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: clean up old docker containers
         run: |
@@ -224,7 +253,7 @@ jobs:
             --data-raw '{
               "companyName": "ToolJet",
               "name": "The Developer",
-              "workspaceName": "Tooljet'\''s workspace",
+              "workspaceName": "My workspace",
               "email": "dev@tooljet.io",
               "password": "password"
             }'
@@ -402,6 +431,7 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: clean up old docker containers
         run: |
