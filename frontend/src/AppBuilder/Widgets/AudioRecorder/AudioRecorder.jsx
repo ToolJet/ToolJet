@@ -59,7 +59,7 @@ export const AudioRecorder = ({
           blobURL,
           dataURL,
         });
-        fireEvent('onRecordingStop');
+        fireEvent('onRecordingSave');
       },
     });
 
@@ -221,7 +221,7 @@ export const AudioRecorder = ({
   useEffect(() => {
     setExposedVariables({
       ...exposedVariablesTemporaryState,
-      resetAudioCapture: () => {
+      resetAudio: () => {
         setExposedVariables({
           blobURL: null,
           dataURL: null,

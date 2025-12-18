@@ -46,7 +46,7 @@ export const audioRecorderConfig = {
     },
     events: {
         onRecordingStart: { displayName: 'On recording start' },
-        onRecordingStop: { displayName: 'On recording stop' },
+        onRecordingSave: { displayName: 'On recording save' },
     },
     styles: {
         recorderIcon: {
@@ -130,8 +130,8 @@ export const audioRecorderConfig = {
             params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
         {
-            handle: 'resetAudioCapture',
-            displayName: 'Reset audio capture',
+            handle: 'resetAudio',
+            displayName: 'Reset audio',
         }
     ],
     definition: {
