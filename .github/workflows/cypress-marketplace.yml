@@ -91,8 +91,14 @@ jobs:
           echo "Pushing CE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
+          echo "Removing local image to free space..."
+          docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce || true
+
           echo "Cleaning up build cache..."
           docker builder prune -af
+
+          echo "Cleaning up all Docker resources..."
+          docker system prune -af --volumes
 
           echo "Disk space after build:"
           df -h
@@ -114,8 +120,14 @@ jobs:
           echo "Pushing EE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
+          echo "Removing local image to free space..."
+          docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee || true
+
           echo "Cleaning up build cache..."
           docker builder prune -af
+
+          echo "Cleaning up all Docker resources..."
+          docker system prune -af --volumes
 
           echo "Disk space after build:"
           df -h
@@ -374,8 +386,14 @@ jobs:
           echo "Pushing CE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
+          echo "Removing local image to free space..."
+          docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce || true
+
           echo "Cleaning up build cache..."
           docker builder prune -af
+
+          echo "Cleaning up all Docker resources..."
+          docker system prune -af --volumes
 
           echo "Disk space after build:"
           df -h
