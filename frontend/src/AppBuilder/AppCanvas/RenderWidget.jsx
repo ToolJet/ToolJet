@@ -1,4 +1,5 @@
-import React, { memo, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
@@ -228,7 +229,7 @@ const RenderWidget = ({
               : ''
             }`} //required for custom CSS
         >
-          <Suspense fallback={null}>
+          <TrackedSuspense fallback={null}>
             <ComponentToRender
               id={id}
               key={key}
@@ -250,7 +251,7 @@ const RenderWidget = ({
               currentMode={currentMode}
               subContainerIndex={subContainerIndex}
             />
-          </Suspense>
+          </TrackedSuspense>
         </div>
       </OverlayTrigger>
     </ErrorBoundary>

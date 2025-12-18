@@ -19,6 +19,7 @@ import { DragResizeGhostWidget } from './GhostWidgets';
 
 import { Container } from './Container';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
+import { SuspenseCountProvider } from './SuspenseTracker';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
@@ -76,10 +77,16 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const minCanvasWidth = useCanvasMinWidth({ currentMode, position, isModuleMode, isViewerSidebarPinned });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
 
-  useEffect(() => {
+  // This is added to notify when all Suspense components have resolved
+  // If everything is ready, we set the isComponentLayoutReady to true which runs the onLoadQueries
+  const handleAllSuspenseResolved = useCallback(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
     setIsComponentLayoutReady(true, moduleId);
+  }, [setIsComponentLayoutReady, moduleId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, [moduleId, setIsComponentLayoutReady]);
 
@@ -232,27 +239,29 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 isModuleMode={isModuleMode}
               >
                 {environmentLoadingState !== 'loading' && (
-                  <div className={cx({ 'h-100': isModuleMode })}>
-                    <Container
-                      id={moduleId}
-                      gridWidth={gridWidth}
-                      canvasWidth={canvasWidth}
-                      canvasHeight={canvasHeight}
-                      darkMode={isAppDarkMode}
-                      canvasMaxWidth={canvasMaxWidth}
-                      isViewerSidebarPinned={isViewerSidebarPinned}
-                      pageSidebarStyle={pageSidebarStyle}
-                      pagePositionType={position}
-                      appType={appType}
-                    />
-                    {currentMode === 'edit' && (
-                      <>
-                        <DragResizeGhostWidget />
-                      </>
-                    )}
-                    <div id="component-portal" />
-                    {appType !== 'module' && <div id="component-portal" />}
-                  </div>
+                  <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved}>
+                    <div className={cx({ 'h-100': isModuleMode })}>
+                      <Container
+                        id={moduleId}
+                        gridWidth={gridWidth}
+                        canvasWidth={canvasWidth}
+                        canvasHeight={canvasHeight}
+                        darkMode={isAppDarkMode}
+                        canvasMaxWidth={canvasMaxWidth}
+                        isViewerSidebarPinned={isViewerSidebarPinned}
+                        pageSidebarStyle={pageSidebarStyle}
+                        pagePositionType={position}
+                        appType={appType}
+                      />
+                      {currentMode === 'edit' && (
+                        <>
+                          <DragResizeGhostWidget />
+                        </>
+                      )}
+                      <div id="component-portal" />
+                      {appType !== 'module' && <div id="component-portal" />}
+                    </div>
+                  </SuspenseCountProvider>
                 )}
 
                 {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
