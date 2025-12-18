@@ -1,6 +1,7 @@
-name: Cypress Platform
+name:
+  Cypress Platform
   # Cache invalidation - 2025-12-09
-  
+
 on:
   pull_request_target:
     types: [labeled]
@@ -810,6 +811,7 @@ jobs:
         id: cypress-tests-subpath
         continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
@@ -1246,9 +1248,12 @@ jobs:
         id: cypress-tests-proxy
         continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001"
+          config: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
 
       - name: Generate test summary
         if: always()
@@ -1683,9 +1688,12 @@ jobs:
         id: cypress-tests-proxy-subpath
         continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001/apps"
+          config: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
 
       - name: Generate test summary
         if: always()
