@@ -49,7 +49,7 @@ describe("Data sources SQL server connection and query", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-sql-server`,
       "mssql",
@@ -178,7 +178,7 @@ describe("Data sources SQL server connection and query", () => {
     const dsName = `cypress-${data.dataSourceName}-sql-server`;
     cy.get(commonSelectors.globalDataSourceIcon).click();
     //invalid database
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       "mssql",
@@ -205,7 +205,7 @@ describe("Data sources SQL server connection and query", () => {
 
     //invalid username
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "host", value: `${Cypress.env("sqlserver_host")}` },
@@ -230,7 +230,7 @@ describe("Data sources SQL server connection and query", () => {
 
     //invalid password
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "host", value: `${Cypress.env("sqlserver_host")}` },
@@ -251,7 +251,7 @@ describe("Data sources SQL server connection and query", () => {
 
     //valid data
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "host", value: `${Cypress.env("sqlserver_host")}` },
@@ -275,11 +275,11 @@ describe("Data sources SQL server connection and query", () => {
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
 
   it("Should verify elements of the Query section", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-sqlserver`,
       "mssql",
@@ -416,13 +416,13 @@ describe("Data sources SQL server connection and query", () => {
     performQueryAction("updated-table-creation", "duplicate");
     performQueryAction("updated-table-creation_copy", "delete");
     cy.apiDeleteApp(`${fake.companyName}-sqlserver`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-sqlserver`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-sqlserver`);
   });
 
   it("Should verify CRUD operations on SQL Query", () => {
     const dsName = `cypress-${data.dataSourceName}-crud-sqlserver`;
     const dsKind = "mssql";
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       dsKind,
@@ -602,13 +602,13 @@ describe("Data sources SQL server connection and query", () => {
     });
 
     cy.apiDeleteApp(`${fake.companyName}-sqlserver-CRUD-App`);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
 
   it("Should verify bulk update operation", () => {
     const dsName = `cypress-${data.dataSourceName}-bulk-sqlserver`;
     const dsKind = "mssql";
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       dsKind,
@@ -741,10 +741,10 @@ describe("Data sources SQL server connection and query", () => {
     });
 
     cy.apiDeleteApp(`${fake.companyName}-sqlserver-bulk`);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
   it("Should verify SQL parameters", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-sqlserver`,
       "mssql",
@@ -856,6 +856,6 @@ describe("Data sources SQL server connection and query", () => {
     });
 
     cy.apiDeleteApp(`${fake.companyName}-sql-param`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-sqlserver`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-sqlserver`);
   });
 });

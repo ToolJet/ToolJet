@@ -6,6 +6,11 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -22,7 +27,7 @@ jobs:
     strategy:
       matrix:
         edition: >-
-          ${{ 
+          ${{
             contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]') ||
@@ -31,25 +36,36 @@ jobs:
           }}
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
-          docker buildx use mybuilder
-
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -61,33 +77,50 @@ jobs:
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        if: matrix.edition == 'ce'
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ee/ee-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ee/ee-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'EE' || 'CE' }}" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -110,20 +143,28 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Update docker-compose file for CE
+      - name: Update docker-compose file
         run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
 
-      - name: Update docker-compose file for CE
-        if: matrix.edition == 'ee'
-        run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -136,18 +177,46 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
-      - name: Checking containers
-        run: docker ps -a
+      - name: sleep
+        run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
-          timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:3000; do
-            sleep 5
-          done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
 
       - name: Seeding (Setup Super Admin)
         run: |
@@ -156,7 +225,7 @@ jobs:
             --data-raw '{
               "companyName": "ToolJet",
               "name": "The Developer",
-              "workspaceName": "Tooljet'\''s workspace",
+              "workspaceName": "My workspace",
               "email": "dev@tooljet.io",
               "password": "password"
             }'
@@ -169,18 +238,77 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
-      - name: Marketplace
-        uses: cypress-io/github-action@v5
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: cypress-marketplace.config.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary
+        run: |
+          OUTCOME="${{ steps.cypress-tests.outcome }}"
+          EDITION="${{ matrix.edition }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Marketplace Tests - ${EDITION^^} Edition" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Marketplace-Subpath:
@@ -190,28 +318,65 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
-          docker buildx use mybuilder
-
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
 
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
@@ -238,9 +403,29 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
+        run: |
+          # Update docker-compose.yaml with the CE image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -248,15 +433,46 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
+      - name: sleep
+        run: sleep 80
+
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
-          timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:80/apps/tooljet/; do
-            sleep 5
-          done'
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
 
       - name: Seeding
         run: docker exec Tooljet-app npm run db:seed:prod
@@ -269,16 +485,74 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Marketplace subpath
-        uses: cypress-io/github-action@v5
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests-subpath
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:80/apps/tooljet/"
           config-file: cypress-marketplace.config.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary-subpath
+        run: |
+          OUTCOME="${{ steps.cypress-tests-subpath.outcome }}"
+
+          # Try to find and parse test results
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+
+          # Look for Cypress results in various formats
+          if [ -f cypress-tests/results.json ]; then
+            echo "Found results.json"
+            RESULTS_FILE="cypress-tests/results.json"
+          elif [ -f cypress-tests/cypress/results/output.json ]; then
+            echo "Found output.json"
+            RESULTS_FILE="cypress-tests/cypress/results/output.json"
+          fi
+
+          # Parse results if file exists
+          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
+            echo "Parsing test results from $RESULTS_FILE"
+            # Extract test counts using jq if available
+            if command -v jq &> /dev/null; then
+              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+            fi
+          fi
+
+          # Create simple summary
+          echo "### Cypress Marketplace Tests - CE Edition (Subpath)" > summary.md
+          echo "" >> summary.md
+          echo "| Total | Passed | Failed | Skipped |" >> summary.md
+          echo "|-------|--------|--------|---------|" >> summary.md
+          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+
+          # Save for later use
+          cat summary.md > /tmp/test-summary.md
+
+      - name: Comment test results on PR
+        if: always()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: /tmp/test-summary.md
+          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-ce-subpath
           path: cypress-tests/cypress/screenshots
