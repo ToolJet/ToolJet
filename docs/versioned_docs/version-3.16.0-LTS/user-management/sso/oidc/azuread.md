@@ -41,7 +41,7 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
 1. Go to **ToolJet > Workspace Settings > Workspace login > Enable OpenID Connect > Add provider**.
     <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/enable-oidc.png" alt="Microsoft Entra ID" />
 
-2. Without entering any details, click on **Save changes** and copy the **Redirect URL**.
+2. Without entering any details, click **Save changes** to generate and copy the **Redirect URL**.
 
 3. Go to [Microsoft Azure Portal](https://portal.azure.com) and navigate to [Manage Microsoft Entra ID](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview).
 
@@ -64,3 +64,26 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
 
 The users shall now be able to Sign In using Microsoft Entra ID.
 
+
+## Configuring Group Sync using Microsoft Entra ID
+
+1. Go to Azure Portal > [Enterprise Applications](https://portal.azure.com/#view/Microsoft_AAD_IAM/StartboardApplicationsMenuBlade/~/AppAppsPreview) > Your application.
+
+2. In the left panel, go to Manage > Single sign-on > Attributes & Claims > Edit > Add a group claim > Click on Go to Token configuration. 
+    <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/group-sync/token-configuration.png" alt="Token Configuration" />
+
+3. Click on Add groups claim > All groups (You can choose the group type according to your need) and click Add. A claim named **groups** will be created.
+    <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/group-sync/groups-claim.png" alt="Groups Claim" />
+
+4. Go to Azure Portal > Groups > All groups. Select the group you want to create a mapping for and copy the Object ID.
+    <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/group-sync/group-id.png" alt="Groups Object ID" />
+
+5. Go to **ToolJet > Workspace Settings > Workspace login > OpenID Connect > Your Microsoft Entra ID OIDC Configuration > Enable Group Sync**.
+
+6. Enter the **Claim Name** as `groups`. If the name you got in Step 3 was different, enter that.
+
+7. The **Group mapping** will be as follows:
+    ```js
+    Object ID from Step 4 -> ToolJet group name
+    ```
+    <img className="screenshot- border-none" src="/img/user-management/sso/oidc/microsoft-entra-id/group-sync/group-sync-configuration.png" alt="Group Sync COnfiguration" />
