@@ -44,20 +44,35 @@ export class ComponentsService implements IComponentsService {
   }
 
   async create(componentDiff: object, pageId: string, appVersionId: string, skipHistoryCapture: boolean = false) {
+    const operationStartTime = Date.now();
+    const componentIds = Object.keys(componentDiff);
+    console.log(
+      `[AppHistory:0-OPERATION] 🔄 COMPONENT_CREATE started | appVersionId=${appVersionId} | pageId=${pageId} | componentCount=${componentIds.length} | timestamp=${new Date(operationStartTime).toISOString()}`
+    );
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
     }, appVersionId);
 
+    const dbTime = Date.now() - operationStartTime;
+    console.log(
+      `[AppHistory:0-OPERATION] 💾 COMPONENT_CREATE DB completed | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms`
+    );
+
     if (skipHistoryCapture) {
+      const totalTime = Date.now() - operationStartTime;
+      console.log(
+        `[AppHistory:0-OPERATION] ⏭️ COMPONENT_CREATE finished (history skipped) | appVersionId=${appVersionId} | totalTime=${totalTime}ms`
+      );
       return result;
     }
 
     // Queue history capture after successful component creation
+    const historyQueueStartTime = Date.now();
     try {
       // Extract component IDs - let the queue processor resolve names from componentData
       const componentData = componentDiff as Record<string, any>;
-      const componentIds = Object.keys(componentData);
 
       // The queue processor will resolve names from componentData and previous state
       await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_ADD, {
@@ -66,9 +81,17 @@ export class ComponentsService implements IComponentsService {
         operation: 'create',
         componentData: componentDiff,
       });
+      const historyQueueTime = Date.now() - historyQueueStartTime;
+      const totalTime = Date.now() - operationStartTime;
+      console.log(
+        `[AppHistory:0-OPERATION] ✅ COMPONENT_CREATE finished | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms | historyQueueTime=${historyQueueTime}ms | totalTime=${totalTime}ms`
+      );
     } catch (error) {
       // Log the error but don't throw - component creation already succeeded
-      console.error('Failed to queue history capture for component creation:', error);
+      const totalTime = Date.now() - operationStartTime;
+      console.error(
+        `[AppHistory:0-OPERATION] ⚠️ COMPONENT_CREATE finished (history failed) | appVersionId=${appVersionId} | totalTime=${totalTime}ms | error=${error.message}`
+      );
       // History capture failure doesn't affect the component creation success
     }
 
@@ -76,6 +99,12 @@ export class ComponentsService implements IComponentsService {
   }
 
   async update(componentDiff: object, appVersionId: string) {
+    const operationStartTime = Date.now();
+    const componentIds = Object.keys(componentDiff);
+    console.log(
+      `[AppHistory:0-OPERATION] 🔄 COMPONENT_UPDATE started | appVersionId=${appVersionId} | componentCount=${componentIds.length} | timestamp=${new Date(operationStartTime).toISOString()}`
+    );
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
@@ -83,25 +112,43 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
+    const dbTime = Date.now() - operationStartTime;
+    console.log(
+      `[AppHistory:0-OPERATION] 💾 COMPONENT_UPDATE DB completed | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms`
+    );
+
     // Queue history capture after successful component update
+    const historyQueueStartTime = Date.now();
     try {
       // Extract component IDs - let the queue processor resolve names from componentData and previous state
-      const componentIds = Object.keys(componentDiff);
       if (componentIds.length > 0) {
         await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
           componentIds,
           operation: 'update',
           componentData: componentDiff,
         });
+        const historyQueueTime = Date.now() - historyQueueStartTime;
+        const totalTime = Date.now() - operationStartTime;
+        console.log(
+          `[AppHistory:0-OPERATION] ✅ COMPONENT_UPDATE finished | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms | historyQueueTime=${historyQueueTime}ms | totalTime=${totalTime}ms`
+        );
       }
     } catch (error) {
-      console.error('Failed to queue history capture for component update:', error);
+      const totalTime = Date.now() - operationStartTime;
+      console.error(
+        `[AppHistory:0-OPERATION] ⚠️ COMPONENT_UPDATE finished (history failed) | appVersionId=${appVersionId} | totalTime=${totalTime}ms | error=${error.message}`
+      );
     }
 
     return result;
   }
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
+    const operationStartTime = Date.now();
+    console.log(
+      `[AppHistory:0-OPERATION] 🔄 COMPONENT_DELETE started | appVersionId=${appVersionId} | componentCount=${componentIds.length} | isComponentCut=${isComponentCut} | timestamp=${new Date(operationStartTime).toISOString()}`
+    );
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
@@ -109,7 +156,13 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
+    const dbTime = Date.now() - operationStartTime;
+    console.log(
+      `[AppHistory:0-OPERATION] 💾 COMPONENT_DELETE DB completed | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms`
+    );
+
     // Queue history capture
+    const historyQueueStartTime = Date.now();
     try {
       await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_DELETE, {
         componentIds,
@@ -117,8 +170,16 @@ export class ComponentsService implements IComponentsService {
         isComponentCut,
         // No need to pre-fetch componentNames or pageName - queue processor will resolve from history
       });
+      const historyQueueTime = Date.now() - historyQueueStartTime;
+      const totalTime = Date.now() - operationStartTime;
+      console.log(
+        `[AppHistory:0-OPERATION] ✅ COMPONENT_DELETE finished | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms | historyQueueTime=${historyQueueTime}ms | totalTime=${totalTime}ms`
+      );
     } catch (error) {
-      console.error('Failed to queue history capture for component deletion:', error);
+      const totalTime = Date.now() - operationStartTime;
+      console.error(
+        `[AppHistory:0-OPERATION] ⚠️ COMPONENT_DELETE finished (history failed) | appVersionId=${appVersionId} | totalTime=${totalTime}ms | error=${error.message}`
+      );
     }
 
     return result;
@@ -129,6 +190,12 @@ export class ComponentsService implements IComponentsService {
     appVersionId: string,
     skipHistoryCapture: boolean = false
   ) {
+    const operationStartTime = Date.now();
+    const componentIds = Object.keys(componenstLayoutDiff);
+    console.log(
+      `[AppHistory:0-OPERATION] 🔄 LAYOUT_CHANGE started | appVersionId=${appVersionId} | componentCount=${componentIds.length} | timestamp=${new Date(operationStartTime).toISOString()}`
+    );
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
@@ -161,24 +228,41 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
+    const dbTime = Date.now() - operationStartTime;
+    console.log(
+      `[AppHistory:0-OPERATION] 💾 LAYOUT_CHANGE DB completed | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms`
+    );
+
     // Skip history capture if requested (e.g., when called from AI service)
     if (skipHistoryCapture) {
+      const totalTime = Date.now() - operationStartTime;
+      console.log(
+        `[AppHistory:0-OPERATION] ⏭️ LAYOUT_CHANGE finished (history skipped) | appVersionId=${appVersionId} | totalTime=${totalTime}ms`
+      );
       return result;
     }
 
     // Queue history capture after successful layout change
+    const historyQueueStartTime = Date.now();
     try {
       // Extract component IDs - let the queue processor resolve names from layoutData and previous state
-      const componentIds = Object.keys(componenstLayoutDiff);
       if (componentIds.length > 0) {
         await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
           componentIds,
           operation: 'layout_change',
           layoutData: componenstLayoutDiff,
         });
+        const historyQueueTime = Date.now() - historyQueueStartTime;
+        const totalTime = Date.now() - operationStartTime;
+        console.log(
+          `[AppHistory:0-OPERATION] ✅ LAYOUT_CHANGE finished | appVersionId=${appVersionId} | componentCount=${componentIds.length} | dbTime=${dbTime}ms | historyQueueTime=${historyQueueTime}ms | totalTime=${totalTime}ms`
+        );
       }
     } catch (error) {
-      console.error('Failed to queue history capture for component layout change:', error);
+      const totalTime = Date.now() - operationStartTime;
+      console.error(
+        `[AppHistory:0-OPERATION] ⚠️ LAYOUT_CHANGE finished (history failed) | appVersionId=${appVersionId} | totalTime=${totalTime}ms | error=${error.message}`
+      );
     }
 
     return result;
@@ -316,6 +400,28 @@ export class ComponentsService implements IComponentsService {
     },
     appVersionId: string
   ) {
+    const operationStartTime = Date.now();
+    // Calculate total component count for all operations
+    const allComponentIds = [
+      ...(batchOperations.create ? Object.keys(batchOperations.create.diff) : []),
+      ...(batchOperations.update ? Object.keys(batchOperations.update.diff) : []),
+      ...(batchOperations.delete ? batchOperations.delete.diff : []),
+      ...(batchOperations.layout ? Object.keys(batchOperations.layout.diff) : []),
+    ];
+    const operationTypes = [
+      batchOperations.create ? 'create' : null,
+      batchOperations.update ? 'update' : null,
+      batchOperations.delete ? 'delete' : null,
+      batchOperations.layout ? 'layout' : null,
+      batchOperations.events?.length ? 'events' : null,
+    ]
+      .filter(Boolean)
+      .join(',');
+
+    console.log(
+      `[AppHistory:0-OPERATION] 🔄 BATCH_UPDATE started | appVersionId=${appVersionId} | operations=${operationTypes} | componentCount=${allComponentIds.length} | timestamp=${new Date(operationStartTime).toISOString()}`
+    );
+
     // TODO: Consider moving batchOperations to a dedicated BatchOperationsService
     // to support batching across all entity types (components, events, queries, etc.)
     // This would make it reusable across the application and keep services focused
@@ -370,25 +476,30 @@ export class ComponentsService implements IComponentsService {
       return results;
     }, appVersionId);
 
-    // Queue history capture after successful batch operations
-    try {
-      // For batch operations, let the queue processor resolve names from batchData
-      // Extract all component IDs from all operations
-      const allComponentIds = [
-        ...(batchOperations.create ? Object.keys(batchOperations.create.diff) : []),
-        ...(batchOperations.update ? Object.keys(batchOperations.update.diff) : []),
-        ...(batchOperations.delete ? batchOperations.delete.diff : []),
-        ...(batchOperations.layout ? Object.keys(batchOperations.layout.diff) : []),
-      ];
+    const dbTime = Date.now() - operationStartTime;
+    console.log(
+      `[AppHistory:0-OPERATION] 💾 BATCH_UPDATE DB completed | appVersionId=${appVersionId} | operations=${operationTypes} | componentCount=${allComponentIds.length} | dbTime=${dbTime}ms`
+    );
 
+    // Queue history capture after successful batch operations
+    const historyQueueStartTime = Date.now();
+    try {
       await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.BATCH_UPDATE, {
         componentIds: allComponentIds,
         changeCount: allComponentIds.length,
         operation: 'batch_operations',
         batchData: batchOperations,
       });
+      const historyQueueTime = Date.now() - historyQueueStartTime;
+      const totalTime = Date.now() - operationStartTime;
+      console.log(
+        `[AppHistory:0-OPERATION] ✅ BATCH_UPDATE finished | appVersionId=${appVersionId} | operations=${operationTypes} | componentCount=${allComponentIds.length} | dbTime=${dbTime}ms | historyQueueTime=${historyQueueTime}ms | totalTime=${totalTime}ms`
+      );
     } catch (error) {
-      console.error('Failed to queue history capture for batch operations:', error);
+      const totalTime = Date.now() - operationStartTime;
+      console.error(
+        `[AppHistory:0-OPERATION] ⚠️ BATCH_UPDATE finished (history failed) | appVersionId=${appVersionId} | totalTime=${totalTime}ms | error=${error.message}`
+      );
     }
 
     return result;

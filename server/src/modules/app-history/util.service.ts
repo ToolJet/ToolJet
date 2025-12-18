@@ -82,6 +82,9 @@ export class AppHistoryUtilService {
     isAiGenerated?: boolean,
     userId?: string
   ): Promise<void> {
+    const queueStartTime = Date.now();
+    const timestamp = Date.now();
+
     // Get app type using a single query with relation
     const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.findOne(AppVersion, {
@@ -94,13 +97,21 @@ export class AppHistoryUtilService {
         },
       });
     });
+
+    const appVersionLookupTime = Date.now() - queueStartTime;
+
     if (!appVersion || !appVersion.app) {
-      this.logger.warn(`AppVersion ${appVersionId} not found or has no associated app`);
+      this.logger.warn(
+        `[AppHistory:1-QUEUE] ⚠️ AppVersion not found | appVersionId=${appVersionId} | lookupTime=${appVersionLookupTime}ms`
+      );
       return;
     }
     // Only process history for front-end apps
     if (appVersion.app.type !== APP_TYPES.FRONT_END) {
       // Skip history capture for non-frontend apps (workflow, module, etc.)
+      this.logger.log(
+        `[AppHistory:1-QUEUE] ⏭️ Skipped (non-frontend app) | appVersionId=${appVersionId} | appType=${appVersion.app.type}`
+      );
       return;
     }
     // Get userId from the current request context if not provided
@@ -110,10 +121,11 @@ export class AppHistoryUtilService {
       finalUserId = (context?.req as any)?.user?.id || 'system';
     }
     // Log before adding to queue with detailed info for debugging
-    const timestamp = Date.now();
     this.logger.log(
-      `[AppHistory:1-QUEUE] 📤 Adding job to queue | appVersionId=${appVersionId} | action=${actionType} | userId=${finalUserId}`
+      `[AppHistory:1-QUEUE] 📤 Adding job to queue | appVersionId=${appVersionId} | action=${actionType} | userId=${finalUserId} | timestamp=${new Date(timestamp).toISOString()}`
     );
+
+    const jobAddStartTime = Date.now();
     const job = await this.historyQueue.add('capture-change', {
       appVersionId,
       actionType,
@@ -122,8 +134,12 @@ export class AppHistoryUtilService {
       timestamp,
       isAiGenerated: isAiGenerated || false,
     });
+
+    const jobAddTime = Date.now() - jobAddStartTime;
+    const totalQueueTime = Date.now() - queueStartTime;
+
     this.logger.log(
-      `[AppHistory:1-QUEUE] ✅ Job added | jobId=${job.id} | appVersionId=${appVersionId} | action=${actionType} | waiting for processor...`
+      `[AppHistory:1-QUEUE] ✅ Job added | jobId=${job.id} | appVersionId=${appVersionId} | action=${actionType} | appVersionLookupTime=${appVersionLookupTime}ms | jobAddTime=${jobAddTime}ms | totalQueueTime=${totalQueueTime}ms | timestamp=${new Date(timestamp).toISOString()}`
     );
   }
 
