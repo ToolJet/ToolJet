@@ -5,7 +5,7 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { Content } from './Content';
 import { Footer } from './Footer';
 import './camera.scss';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
   // Props
