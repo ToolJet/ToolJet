@@ -22,9 +22,20 @@ const EditableTagsChip = (props) => {
         fontSize: '14px',
         lineHeight: '20px',
         color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+        maxWidth: '100%',
+        minWidth: 0,
       }}
     >
-      <span className="editable-tag-chip-label">{data.label}</span>
+      <span
+        className="editable-tag-chip-label"
+        style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {data.label}
+      </span>
       <span
         {...removeProps}
         className="editable-tag-chip-remove"
@@ -33,6 +44,7 @@ const EditableTagsChip = (props) => {
           display: 'flex',
           alignItems: 'center',
           marginLeft: '2px',
+          flexShrink: 0,
         }}
         onClick={(e) => {
           e.stopPropagation();

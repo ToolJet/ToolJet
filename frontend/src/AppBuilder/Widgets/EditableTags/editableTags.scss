@@ -22,9 +22,13 @@
   color: var(--text-primary);
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
+  max-width: 100%;
+  min-width: 0; // Allow shrinking for ellipsis
 
   &-label {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &-remove {
@@ -33,6 +37,7 @@
     align-items: center;
     margin-left: 2px;
     opacity: 0.7;
+    flex-shrink: 0; // Prevent X icon from shrinking
 
     &:hover {
       opacity: 1;

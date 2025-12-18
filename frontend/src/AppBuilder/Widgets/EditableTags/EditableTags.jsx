@@ -393,6 +393,7 @@ export const EditableTags = ({
     control: (provided, state) => ({
       ...provided,
       minHeight: _height,
+      height: 'auto', // Allow dynamic height growth when tags wrap
       boxShadow: boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
       borderColor: getInputBorderColor({
@@ -421,12 +422,16 @@ export const EditableTags = ({
       flexWrap: 'wrap',
       gap: '4px',
       alignItems: 'center',
+      maxWidth: '100%',
+      overflow: 'hidden',
     }),
     multiValue: (provided) => ({
       ...provided,
       backgroundColor: tagBackgroundColor || 'var(--surfaces-surface-03)',
       borderRadius: '2px',
       margin: '0',
+      maxWidth: '100%', // Ensure tag doesn't exceed container width
+      minWidth: 0, // Allow shrinking for ellipsis
     }),
     multiValueLabel: (provided) => ({
       ...provided,
@@ -435,6 +440,9 @@ export const EditableTags = ({
       lineHeight: '20px',
       padding: '2px 4px 2px 8px',
       fontWeight: 400,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     }),
     multiValueRemove: (provided) => ({
       ...provided,
@@ -442,6 +450,7 @@ export const EditableTags = ({
       cursor: 'pointer',
       paddingLeft: '2px',
       paddingRight: '6px',
+      flexShrink: 0, // Prevent X icon from shrinking
       '&:hover': {
         backgroundColor: 'transparent',
         color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
