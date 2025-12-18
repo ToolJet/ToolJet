@@ -396,8 +396,8 @@ export const createEventsSlice = (set, get) => ({
           'onClearHistory',
           'onTableDataDownload',
           'onRecordingStart',
-          'onRecordingStop',
-          'onPhotoCapture',
+          'onRecordingSave',
+          'onImageSave',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);

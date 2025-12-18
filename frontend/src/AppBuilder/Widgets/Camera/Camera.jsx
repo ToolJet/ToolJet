@@ -140,7 +140,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
 
     const url = URL.createObjectURL(blob);
     updateCapturedImage({ blob, url });
-    fireEvent('onPhotoCapture');
   };
 
   const handleCaptureToggle = async (saveCapture = false) => {
@@ -162,6 +161,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
             imageBlobURL: blobUrl,
             imageDataURL: dataURL,
           });
+          fireEvent('onImageSave');
           clearCapturedImage({ revokePrevious: true });
         } else {
           if (savedImageUrlRef.current) {
@@ -197,7 +197,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           videoBlobURL: recordingResult?.url,
           videoDataURL: dataURL,
         });
-        fireEvent('onRecordingStop');
+        fireEvent('onRecordingSave');
       } else {
         setExposedVariables({
           videoBlobURL: null,
@@ -250,13 +250,13 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   useEffect(() => {
     setExposedVariables({
       ...exposedVariablesTemporaryState,
-      resetVideoCapture: () => {
+      resetVideo: () => {
         setExposedVariables({
           videoBlobURL: null,
           videoDataURL: null,
         });
       },
-      resetCameraCapture: () => {
+      resetImage: () => {
         setExposedVariables({
           imageBlobURL: null,
           imageDataURL: null,

@@ -45,8 +45,8 @@ export const cameraConfig = {
     },
     events: {
         onRecordingStart: { displayName: 'On recording start' },
-        onRecordingStop: { displayName: 'On recording stop' },
-        onPhotoCapture: { displayName: 'On photo capture' },
+        onRecordingSave: { displayName: 'On recording save' },
+        onImageSave: { displayName: 'On image save' },
     },
     styles: {
         textColor: {
@@ -112,12 +112,12 @@ export const cameraConfig = {
             params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
         {
-            handle: 'resetVideoCapture',
-            displayName: 'Reset video capture',
+            handle: 'resetVideo',
+            displayName: 'Reset video',
         },
         {
-            handle: 'resetCameraCapture',
-            displayName: 'Reset image capture',
+            handle: 'resetImage',
+            displayName: 'Reset image',
         },
     ],
     definition: {
