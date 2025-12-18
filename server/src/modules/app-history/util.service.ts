@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { EntityManager } from 'typeorm';
 import { ACTION_TYPE } from '@modules/app-history/constants';
 import { RequestContext } from '@modules/request-context/service';

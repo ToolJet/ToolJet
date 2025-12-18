@@ -3,7 +3,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { getImportPath } from '@modules/app/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
 import { AppHistoryRepository } from '@modules/app-history/repository';
@@ -41,7 +41,7 @@ export class AppHistoryModule extends SubModule {
         defaultJobOptions: {
           removeOnComplete: 10,
           removeOnFail: 50,
-          attempts: 1,
+          attempts: 3,
           backoff: {
             type: 'exponential',
             delay: 2000,
@@ -50,7 +50,11 @@ export class AppHistoryModule extends SubModule {
       }),
     ];
 
-    if (isMainImport && !_configs?.IS_GET_CONTEXT) {
+    // Register queue processor only when WORKER=true
+    // This is consistent with workflows and other BullMQ-based features
+    // For self-hosted: run main server + worker with WORKER=true
+    // For cloud: main server (WORKER=false) + dedicated worker (WORKER=true)
+    if (process.env.WORKER === 'true' && isMainImport && !_configs?.IS_GET_CONTEXT) {
       const { HistoryQueueProcessor } = await import(`${importPath}/app-history/queue/history-queue.processor`);
       providers.push(HistoryQueueProcessor);
     }
