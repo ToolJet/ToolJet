@@ -109,17 +109,22 @@ export class AppHistoryUtilService {
       const context = RequestContext.currentContext;
       finalUserId = (context?.req as any)?.user?.id || 'system';
     }
-    // Log before adding to queue
-    this.logger.log(`[QueueHistory] Adding job to queue for app ${appVersionId}, action: ${actionType}`);
+    // Log before adding to queue with detailed info for debugging
+    const timestamp = Date.now();
+    this.logger.log(
+      `[AppHistory:1-QUEUE] 📤 Adding job to queue | appVersionId=${appVersionId} | action=${actionType} | userId=${finalUserId}`
+    );
     const job = await this.historyQueue.add('capture-change', {
       appVersionId,
       actionType,
       operationScope,
       userId: finalUserId,
-      timestamp: Date.now(),
+      timestamp,
       isAiGenerated: isAiGenerated || false,
     });
-    this.logger.log(`[QueueHistory] Job ${job.id} added successfully for app ${appVersionId}`);
+    this.logger.log(
+      `[AppHistory:1-QUEUE] ✅ Job added | jobId=${job.id} | appVersionId=${appVersionId} | action=${actionType} | waiting for processor...`
+    );
   }
 
   /**
