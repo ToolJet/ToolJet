@@ -103,7 +103,9 @@ jobs:
           echo "Building EE Docker image..."
           docker buildx build \
             --platform=linux/amd64 \
-            -f docker/ee/ee-production.Dockerfile \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
