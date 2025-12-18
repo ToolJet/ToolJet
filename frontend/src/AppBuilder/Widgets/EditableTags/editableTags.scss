@@ -1,0 +1,125 @@
+.editable-tags-widget {
+  width: 100%;
+
+  .editable-tags-values-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.editable-tag-chip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px 2px 8px;
+  background-color: var(--surfaces-surface-03);
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+
+  &-label {
+    white-space: nowrap;
+  }
+
+  &-remove {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.editable-tags-menu-list {
+  background-color: var(--surfaces-surface-01);
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.theme-dark {
+    background-color: var(--surfaces-surface-01);
+  }
+
+  .editable-tags-menu-list-body {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .editable-tags-no-options {
+    padding: 12px 16px;
+    color: var(--text-placeholder);
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .editable-tags-create-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid var(--borders-weak);
+    cursor: pointer;
+    background-color: var(--surfaces-surface-01);
+
+    &:hover {
+      background-color: var(--interactive-overlays-fill-hover);
+    }
+  }
+
+  .editable-tags-new-tag-preview {
+    background-color: var(--surfaces-surface-03);
+    color: var(--text-primary);
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+
+.editable-tags-option-chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--surfaces-surface-03);
+  color: var(--text-primary);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+}
+
+.editable-tags-create-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Override react-select default styles for editable tags
+.editable-tags-widget {
+  .css-1dimb5e-singleValue,
+  .css-qbdosj-Input {
+    margin: 0;
+    padding: 0;
+  }
+
+  // Ensure proper wrapping in value container
+  .css-1p3m7a8-multiValue {
+    margin: 0;
+  }
+
+  // Remove default focus ring
+  .css-t3ipsp-control:hover,
+  .css-t3ipsp-control {
+    box-shadow: none;
+  }
+}

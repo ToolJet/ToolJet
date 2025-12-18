@@ -66,6 +66,7 @@ import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
+import { editableTagsConfig } from './editableTags';
 
 export {
   buttonConfig,
@@ -136,4 +137,5 @@ export {
   moduleViewerConfig,
   rangeSliderV2Config,
   popoverMenuConfig,
+  editableTagsConfig,
 };
