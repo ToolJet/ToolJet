@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import classNames from 'classnames';
-import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
@@ -12,25 +11,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 
-const MobileHeader = ({
-  showHeader,
-  appName,
-  changeToDarkMode,
-  darkMode,
-  currentPageId,
-  switchPage,
-  setAppDefinitionFromVersion,
-  pages,
-  viewerWrapperRef,
-}) => {
+const MobileHeader = ({ appName, changeToDarkMode, darkMode, currentPageId, switchPage, pages, viewerWrapperRef }) => {
   const { moduleId } = useModuleContext();
-  const { isReleasedVersionId } = useStore(
-    (state) => ({
-      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
-    }),
-    shallow
-  );
-  const editingVersion = useStore((state) => state.editingVersion);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
   const { definition: { styles = {}, properties = {} } = {} } = pageSettings ?? {};
@@ -62,10 +44,7 @@ const MobileHeader = ({
   };
 
   const _renderAppNameAndLogo = () => (
-    <div
-      className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]"
-      style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
-    >
+    <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
       <h1 className={classNames('navbar-brand', 'd-flex align-items-center justify-content-center tw-gap-[12px] p-0')}>
         {!logoHidden && (
           <div data-cy="viewer-page-logo" onClick={switchToHomePage} className="cursor-pointer tw-flex-shrink-0">
@@ -103,16 +82,6 @@ const MobileHeader = ({
     />
   );
 
-  const _renderPreviewSettings = () =>
-    !isReleasedVersionId && (
-      <PreviewSettings
-        isMobileLayout
-        showHeader={showHeader}
-        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-        darkMode={darkMode}
-      />
-    );
-
   const MenuBtn = () => {
     const { toggleSidebar } = useSidebar();
 
@@ -132,9 +101,6 @@ const MobileHeader = ({
       className="!tw-min-h-0 !tw-block"
       style={bgStyles}
     >
-      {!isEmpty(editingVersion) && !isReleasedVersionId && (
-        <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
-      )}
       {(!isPagesSidebarHidden || !headerHidden || !logoHidden) && (
         <Header className={'mobile-nav-container'}>
           {!isPagesSidebarHidden && showOnMobile && <MenuBtn />}

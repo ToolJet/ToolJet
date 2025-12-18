@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useRef, useState, useCallback, useEffect } from 'react';
+import React, { Suspense, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '@/AppBuilder/_stores/store';
 import useAppData from '@/AppBuilder/_hooks/useAppData';
@@ -9,14 +9,13 @@ import cx from 'classnames';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import AppCanvas from '@/AppBuilder/AppCanvas';
-import DesktopHeader from './DesktopHeader';
-import MobileHeader from './MobileHeader';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
 import TooljetBanner from './TooljetBanner';
+import PreviewHeader from './PreviewHeader';
 
 export const Viewer = ({
   id: appId,
@@ -41,12 +40,9 @@ export const Viewer = ({
     editingVersion,
     selectedVersion,
     currentCanvasWidth,
-    currentPageId,
     globalSettings,
     pageSettings,
     updateCanvasHeight,
-    appName,
-    homePageId,
     isMaintenanceOn,
     setIsViewer,
     toggleCurrentLayout,
@@ -59,9 +55,6 @@ export const Viewer = ({
       editingVersion: state.editingVersion,
       selectedVersion: state.selectedVersion,
       currentCanvasWidth: state.currentCanvasWidth,
-      appName: state.appStore.modules[moduleId].app.appName,
-      homePageId: state.appStore.modules[moduleId].app.homepageId,
-      currentPageId: state.modules[moduleId].currentPageId,
       globalSettings: state.globalSettings,
       pageSettings: state.pageSettings,
       updateCanvasHeight: state.updateCanvasBottomHeight,
@@ -76,7 +69,6 @@ export const Viewer = ({
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
   const deviceWindowWidth = window.screen.width - 5;
 
   const hideSidebar = moduleMode || isPagesSidebarHidden || appType === 'module';
@@ -101,16 +93,9 @@ export const Viewer = ({
   const viewerWrapperRef = useRef(null);
   const isMobilePreviewMode = !moduleMode && selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
-  const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
   const isLicenseNotValid = checkIfLicenseNotValid();
-  const pages = useStore((state) => state.modules[moduleId].pages);
-
-  // ---remove
-  const handleAppEnvironmentChanged = useCallback((environment) => {
-    console.log('setAppVersionCurrentEnvironment', environment);
-  }, []);
 
   useEffect(() => {
     if (window.name && !getPatToken()) {
@@ -139,44 +124,6 @@ export const Viewer = ({
       setIsViewer(false, moduleId);
     };
   }, []);
-
-  const renderHeader = () => {
-    if (moduleMode) {
-      return null;
-    }
-
-    if (currentLayout !== 'mobile') {
-      return (
-        <DesktopHeader
-          showHeader={showHeader}
-          isAppLoaded={isAppLoaded}
-          appName={appName}
-          darkMode={darkMode}
-          currentPageId={currentPageId ?? homePageId}
-          handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-          changeToDarkMode={changeToDarkMode}
-        />
-      );
-    }
-
-    return (
-      <>
-        {currentLayout === 'mobile' && !isMobilePreviewMode && (
-          <MobileHeader
-            showHeader={showHeader}
-            appName={appName}
-            darkMode={darkMode}
-            currentPageId={currentPageId ?? homePageId}
-            handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-            changeToDarkMode={changeToDarkMode}
-            switchPage={switchPage}
-            pages={pages}
-            viewerWrapperRef={viewerWrapperRef}
-          />
-        )}
-      </>
-    );
-  };
 
   if (isEditorLoading) {
     return (
@@ -209,7 +156,9 @@ export const Viewer = ({
             >
               <DndProvider backend={HTML5Backend}>
                 <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType} isModuleEditor={false}>
-                  {renderHeader()}
+                  {currentLayout === 'desktop' && !moduleMode && (
+                    <PreviewHeader showHeader={showHeader} currentLayout={currentLayout} darkMode={darkMode} />
+                  )}
                   <div className="sub-section">
                     <div className="main">
                       <div
@@ -245,16 +194,10 @@ export const Viewer = ({
                               }}
                             >
                               {currentLayout === 'mobile' && isMobilePreviewMode && (
-                                <MobileHeader
-                                  showHeader={showHeader && isAppLoaded}
-                                  appName={appName}
+                                <PreviewHeader
+                                  showHeader={showHeader}
+                                  currentLayout={currentLayout}
                                   darkMode={darkMode}
-                                  currentPageId={currentPageId ?? homePageId}
-                                  handleAppEnvironmentChanged={handleAppEnvironmentChanged}
-                                  switchPage={switchPage}
-                                  changeToDarkMode={changeToDarkMode}
-                                  pages={pages}
-                                  viewerWrapperRef={viewerWrapperRef}
                                 />
                               )}
                               <AppCanvas
