@@ -97,28 +97,6 @@ jobs:
           echo "Disk space after build:"
           df -h
 
-      - name: Build CE Docker image
-        if: matrix.edition == 'ce'
-        run: |
-          echo "Building CE Docker image..."
-          docker buildx build \
-            --platform=linux/amd64 \
-            -f docker/ce-production.Dockerfile \
-            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
-            --no-cache \
-            --load \
-            .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-
-          echo "Cleaning up build cache..."
-          docker builder prune -af
-
-          echo "Disk space after build:"
-          df -h
-
-      # EE dockerfile build below
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
         run: |
@@ -166,12 +144,6 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-
-      - name: clean up old docker containers
-        run: |
-          docker system prune -af --volumes
-          echo "Disk space after Docker cleanup:"
-          df -h
 
       - name: clean up old docker containers
         run: |
