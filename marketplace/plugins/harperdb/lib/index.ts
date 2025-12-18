@@ -1,7 +1,69 @@
+import axios, { AxiosInstance } from 'axios';
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
-import harperive from 'harperive';
 import JSON5 from 'json5';
+
+class HarperDBClient {
+  private client: AxiosInstance;
+
+  constructor(config: { host: string; port: number; username: string; password: string; ssl?: boolean }) {
+    const protocol = config.ssl === false ? 'http' : 'https';
+
+    this.client = axios.create({
+      baseURL: `${protocol}://${config.host}:${config.port}/v1/harperdb`,
+      auth: {
+        username: config.username,
+        password: config.password,
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 30000,
+    });
+  }
+
+  private async request(body: Record<string, any>) {
+    const { data } = await this.client.post('', body);
+    return data;
+  }
+
+  // SQL
+  query(sql: string) {
+    return this.request({
+      operation: 'sql',
+      sql,
+    });
+  }
+
+  // NoSQL
+  insert(payload: any) {
+    return this.request({ operation: 'insert', ...payload });
+  }
+
+  update(payload: any) {
+    return this.request({ operation: 'update', ...payload });
+  }
+
+  delete(payload: any) {
+    return this.request({ operation: 'delete', ...payload });
+  }
+
+  searchByHash(payload: any) {
+    return this.request({ operation: 'search_by_hash', ...payload });
+  }
+
+  searchByValue(payload: any) {
+    return this.request({ operation: 'search_by_value', ...payload });
+  }
+
+  executeOperation(payload: any) {
+    return this.request(payload);
+  }
+
+  describeAll() {
+    return this.request({ operation: 'describe_all' });
+  }
+}
 
 export default class Harperdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -11,8 +73,7 @@ export default class Harperdb implements QueryService {
 
     try {
       if (mode === 'sql') {
-        const { sql_query } = queryOptions;
-        result = await harperdbClient.query(sql_query);
+        result = await harperdbClient.query(queryOptions.sql_query);
       }
 
       if (mode === 'nosql') {
@@ -21,108 +82,107 @@ export default class Harperdb implements QueryService {
             result = await harperdbClient.insert({
               schema: queryOptions.schema,
               table: queryOptions.table,
-              records: JSON5.parse(queryOptions.records)
-            })
+              records: JSON5.parse(queryOptions.records),
+            });
             break;
-          case 'update': {
+
+          case 'update':
             result = await harperdbClient.update({
               schema: queryOptions.schema,
               table: queryOptions.table,
-              records: JSON5.parse(queryOptions.records)
-            })
+              records: JSON5.parse(queryOptions.records),
+            });
             break;
-          }
-          case 'delete': {
+
+          case 'delete':
             result = await harperdbClient.delete({
               schema: queryOptions.schema,
               table: queryOptions.table,
-              hashValues: JSON5.parse(queryOptions.hash_values)
-            })
+              hash_values: JSON5.parse(queryOptions.hash_values),
+            });
             break;
-          }
-          case 'search_by_hash': {
+
+          case 'search_by_hash':
             result = await harperdbClient.searchByHash({
               schema: queryOptions.schema,
               table: queryOptions.table,
-              hashValues: JSON5.parse(queryOptions.hash_values),
-              attributes: JSON5.parse(queryOptions.attributes)
-            })
+              hash_values: JSON5.parse(queryOptions.hash_values),
+              get_attributes: JSON5.parse(queryOptions.attributes),
+            });
             break;
-          }
-          case 'search_by_value': {
+
+          case 'search_by_value':
             result = await harperdbClient.searchByValue({
               schema: queryOptions.schema,
               table: queryOptions.table,
-              searchAttribute: queryOptions.search_attribute,
-              searchValue: queryOptions.search_value,
-              attributes: JSON5.parse(queryOptions.attributes)
-            })
+              search_attribute: queryOptions.search_attribute,
+              search_value: queryOptions.search_value,
+              get_attributes: JSON5.parse(queryOptions.attributes),
+            });
             break;
-          }
-          case 'search_by_conditions': {
+
+          case 'search_by_conditions':
             result = await harperdbClient.executeOperation({
-              operation: "search_by_conditions",
+              operation: 'search_by_conditions',
               schema: queryOptions.schema,
               table: queryOptions.table,
-              ...(queryOptions?.operator && {operator: queryOptions.operator}),
-              ...(queryOptions?.offset && {offset: queryOptions.offset}),
-              ...(queryOptions?.limit && { limit: queryOptions.limit }),
+              ...(queryOptions.operator && { operator: queryOptions.operator }),
+              ...(queryOptions.offset && { offset: queryOptions.offset }),
+              ...(queryOptions.limit && { limit: queryOptions.limit }),
               get_attributes: JSON5.parse(queryOptions.attributes),
-              conditions: JSON5.parse(queryOptions.conditions)
-            })
-          }
+              conditions: JSON5.parse(queryOptions.conditions),
+            });
             break;
+
           default:
             break;
         }
       }
-    } catch (err) {
-      throw new QueryError('Query could not be completed', err.error, {})
+    } catch (err: any) {
+      throw new QueryError('Query could not be completed', err?.response?.data ?? err?.message, {});
     }
 
     return {
       status: 'ok',
-      data: result?.data ?? {},
+      data: result?.data ?? result ?? {},
     };
   }
 
   determineProtocol(sourceOptions: SourceOptions) {
-    const { ssl_enabled } = sourceOptions;
-    if (ssl_enabled === undefined) return 'https';
-    return ssl_enabled ? 'https' : 'http';
+    if (sourceOptions.ssl_enabled === undefined) return 'https';
+    return sourceOptions.ssl_enabled ? 'https' : 'http';
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { host, port, username, password } = sourceOptions
-    const protocol = this.determineProtocol(sourceOptions);
+  async getConnection(sourceOptions: SourceOptions): Promise<HarperDBClient> {
+    const { host, port, username, password } = sourceOptions;
 
-    const DB_CONFIG = {
-      harperHost: `${protocol}://${host}:${port}`,
-      username: username,
-      password: password,
-      token: '',
-      schema: ''
-    }
-
-    const Client = harperive.Client;
-    const client = new Client(DB_CONFIG);
-
-    return client;
+    return new HarperDBClient({
+      host,
+      port: Number(port),
+      username,
+      password,
+      ssl: sourceOptions.ssl_enabled,
+    });
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const harperdb = await this.getConnection(sourceOptions);
-
     try {
+      const harperdb = await this.getConnection(sourceOptions);
       const res = await harperdb.describeAll();
-      if (res.statusCode === 200) return { status: 'ok' };
-      return { status: 'failed', message: 'Invalid credentials' };
 
-    } catch (error) {
+      if (res?.statusCode === 200) {
+        return { status: 'ok' };
+      }
+
       return {
         status: 'failed',
-        message: error?.error ?? 'Invalid credentials'
-      }
+        message: 'Invalid credentials',
+      };
+    } catch (error: any) {
+      return {
+        status: 'failed',
+        message: error?.response?.data ?? 'Invalid credentials',
+      };
     }
   }
 }
