@@ -29,13 +29,9 @@ const PreviewHeader = ({ showHeader, currentLayout, darkMode, setAppDefinitionFr
       !isEmpty(editingVersion) &&
       !isReleasedVersionId && <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
     );
-  }
-
-  if (!isMobileDevice) {
+  } else {
     return !isReleasedVersionId && <Header>{_renderPreviewSettings()}</Header>;
   }
-
-  return null;
 };
 
 export default PreviewHeader;
