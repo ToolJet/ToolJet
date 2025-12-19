@@ -58,6 +58,27 @@
   visibility: visible;
 }
 
+.oidc-count-badge {
+  margin-left: 4px;
+  padding: 0 8px;
+  height: 16px;
+  background-color: #f1f3f5;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  color: #6a727c;
+  mix-blend-mode: multiply;
+}
+
+.dark-theme .oidc-count-badge {
+  mix-blend-mode: normal;
+}
+
 .switch {
   position: relative;
   display: inline-block;
