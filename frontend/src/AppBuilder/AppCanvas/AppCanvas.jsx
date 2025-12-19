@@ -141,7 +141,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       const main = document.getElementsByClassName('main-wrapper')[0];
       if (main) main.style.backgroundColor = canvasBgColor;
     }
-  }, [currentMode, isPreviewInEditor]);
+  }, [currentMode, isPreviewInEditor, canvasBgColor]);
 
   const canvasContainerStyles = useMemo(() => {
     if (isModuleMode) {
