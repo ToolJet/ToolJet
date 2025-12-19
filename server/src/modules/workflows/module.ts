@@ -66,6 +66,8 @@ export class WorkflowsModule extends SubModule {
       NpmRegistryService,
       BundleGenerationService,
       WorkflowBundlesController,
+      PythonExecutorService,
+      SecurityModeDetectorService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -86,6 +88,8 @@ export class WorkflowsModule extends SubModule {
       'services/npm-registry.service',
       'services/bundle-generation.service',
       'controllers/workflow-bundles.controller',
+      'services/python-executor.service',
+      'services/security-mode-detector.service',
     ]);
 
     // Get apps related providers
@@ -184,6 +188,8 @@ export class WorkflowsModule extends SubModule {
         FeatureAbilityFactory,
         NpmRegistryService,
         BundleGenerationService,
+        PythonExecutorService,
+        SecurityModeDetectorService,
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
