@@ -4,7 +4,9 @@ tmp/*
 **/dist/*
 
 # Version control and CI/CD
-.git
+# NOTE: .git and .gitmodules are needed for EE submodule initialization
+# .git
+# .gitmodules
 .github
 
 # Documentation

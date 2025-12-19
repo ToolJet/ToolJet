@@ -6,9 +6,15 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /app
 
-# Build arguments (kept for reference/compatibility, but git operations removed)
+# Build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
+
+# Install git for submodule initialization (rarely changes)
+RUN apt-get update -yq && \
+    apt-get install -y git && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install global npm tools first (rarely changes)
 RUN npm install -g @nestjs/cli@11.0.7 copyfiles
@@ -25,17 +31,21 @@ RUN npm --prefix frontend install
 RUN npm --prefix server install
 
 # Copy source code AFTER npm install (changes frequently)
-# Note: Submodules (ee-frontend, ee-server) will already be checked out by GitHub Actions
+# Note: Render clones the repo, so we need to initialize submodules here
 COPY ./plugins/ ./plugins/
 COPY ./frontend/ ./frontend/
 COPY ./server/ ./server/
+COPY ./.git ./.git
+COPY ./.gitmodules ./.gitmodules
 
-# Check if EE submodules are present, log warning if missing
-RUN if [ ! -d "./frontend/ee" ] || [ ! -d "./server/ee" ]; then \
-      echo "WARNING: EE submodules not found. Build may fail if EE features are required."; \
-      echo "Ensure GitHub Actions checkout includes submodules with 'recursive' option."; \
+# Initialize EE submodules (required for EE builds)
+RUN if [ -f .gitmodules ]; then \
+      echo "🔧 Initializing EE submodules..."; \
+      git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" && \
+      git submodule update --init --recursive && \
+      echo "✅ EE submodules initialized: frontend/ee and server/ee"; \
     else \
-      echo "✓ EE submodules detected: frontend/ee and server/ee"; \
+      echo "⚠️  No .gitmodules file found, skipping submodule initialization"; \
     fi
 
 # Build plugins
