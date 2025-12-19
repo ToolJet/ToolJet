@@ -1,47 +1,66 @@
 FROM node:22.15.1 AS builder
+
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN mkdir -p /app
-
 WORKDIR /app
 
-# Scripts for building
+# Install global npm tools first (rarely changes)
+RUN npm install -g @nestjs/cli@11.0.7 copyfiles
+
+# Copy ONLY package files first (changes occasionally)
 COPY ./package.json ./package.json
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+COPY ./server/package.json ./server/package-lock.json ./server/
+
+# Install dependencies (cached if package.json unchanged)
+RUN npm --prefix plugins install
+RUN npm --prefix frontend install
+RUN npm --prefix server install
+
+# Copy source code AFTER npm install (changes frequently)
+COPY ./plugins/ ./plugins/
+COPY ./frontend/ ./frontend/
+COPY ./server/ ./server/
 
 # Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
+RUN NODE_ENV=production npm --prefix plugins run build && \
+    npm --prefix plugins prune --production
 
 # Build frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
-RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
-
-ENV NODE_ENV=production
+RUN npm --prefix frontend run build --production && \
+    npm --prefix frontend prune --production
 
 # Build server
-COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
-COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
-RUN npm install -g copyfiles
+ENV NODE_ENV=production
 RUN npm --prefix server run build
 
+# ============================================
+# Runtime stage
+# ============================================
 FROM node:22.15.1-bullseye
-# copy postgrest executable
-COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 
-# Install Instantclient Basic Light Oracle and Dependencies
+# Install all system packages at once (rarely changes)
+RUN apt-get update -yq && \
+    apt-get install -y \
+    freetds-dev \
+    libaio1 \
+    wget \
+    supervisor \
+    curl \
+    gnupg \
+    lsb-release && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy PostgREST binary (rarely changes)
+COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Install Oracle Instant Client (rarely changes)
 WORKDIR /opt/oracle
 RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
     wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
@@ -50,53 +69,22 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
-# Set the Instant Client library paths
+
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
-WORKDIR /
+# Install PostgreSQL (rarely changes)
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && apt-get install -y postgresql-13 postgresql-client-13 && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
-# copy npm scripts
-COPY --from=builder /app/package.json ./app/package.json
-# copy plugins dependencies
-COPY --from=builder /app/plugins/dist ./app/plugins/dist
-COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
-COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
-COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
-COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
-# copy frontend build
-COPY --from=builder /app/frontend/build ./app/frontend/build
-# copy server build
-COPY --from=builder /app/server/package.json ./app/server/package.json
-COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/node_modules ./app/server/node_modules
-COPY --from=builder /app/server/templates ./app/server/templates
-COPY --from=builder /app/server/scripts ./app/server/scripts
-COPY --from=builder /app/server/dist ./app/server/dist
+# Setup PostgreSQL directories and initialize (rarely changes)
+RUN mkdir -p /var/lib/postgresql/13/main /var/log/supervisor /var/run/postgresql && \
+    chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
+    su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
-WORKDIR /app
-
-# Install PostgreSQL
-USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
-
-# Explicitly create PG main directory with correct ownership
-RUN mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
-
-RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
-    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
-
-# Remove existing data and create directory with proper ownership
-RUN rm -rf /var/lib/postgresql/13/main && \
-    mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
-
-# Initialize PostgreSQL
-RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
-
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+# Configure supervisord (rarely changes)
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
@@ -116,7 +104,26 @@ RUN echo "[supervisord] \n" \
     "stdout_logfile=/dev/stdout \n" \
     "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
-# ENV defaults
+WORKDIR /
+
+# Copy built artifacts from builder (changes every build)
+COPY --from=builder /app/package.json ./app/package.json
+COPY --from=builder /app/plugins/dist ./app/plugins/dist
+COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+COPY --from=builder /app/frontend/build ./app/frontend/build
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
+
+WORKDIR /app
+
+# Environment variables
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
     NODE_ENV=production \
@@ -140,7 +147,7 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-
 RUN chmod +x ./server/scripts/ce-preview.sh
+
 # Set the entrypoint
 ENTRYPOINT ["./server/scripts/ce-preview.sh"]

@@ -1,125 +1,100 @@
 FROM node:22.15.1 AS builder
+
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-RUN mkdir -p /app
+ENV TOOLJET_EDITION=ee
 
 WORKDIR /app
 
-# Set GitHub token, branch and repository URL as build arguments
+# Build arguments (kept for reference/compatibility, but git operations removed)
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
-# Clone and checkout the frontend repository
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+# Install global npm tools first (rarely changes)
+RUN npm install -g @nestjs/cli@11.0.7 copyfiles
 
-RUN git config --global http.version HTTP/1.1
-RUN git config --global http.postBuffer 524288000
-RUN git clone ${REPO_URL} .
+# Copy ONLY package files first (changes occasionally)
+COPY ./package.json ./package.json
+COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+COPY ./server/package.json ./server/package-lock.json ./server/
 
-# The branch name needs to be changed the branch with modularisation in CE repo
-RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
+# Install dependencies (cached if package.json unchanged)
+RUN npm --prefix plugins install
+RUN npm --prefix frontend install
+RUN npm --prefix server install
+
+# Copy source code AFTER npm install (changes frequently)
+# Note: Submodules (ee-frontend, ee-server) will already be checked out by GitHub Actions
+COPY ./plugins/ ./plugins/
+COPY ./frontend/ ./frontend/
+COPY ./server/ ./server/
+
+# Check if EE submodules are present, log warning if missing
+RUN if [ ! -d "./frontend/ee" ] || [ ! -d "./server/ee" ]; then \
+      echo "WARNING: EE submodules not found. Build may fail if EE features are required."; \
+      echo "Ensure GitHub Actions checkout includes submodules with 'recursive' option."; \
     else \
-      echo "Branch ${BRANCH_NAME} not found, falling back to lts-3.16"; \
-      git checkout lts-3.16; \
+      echo "✓ EE submodules detected: frontend/ee and server/ee"; \
     fi
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
-  echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
-  git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
-    else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
-      git checkout lts-3.16; \
-    fi"; \
-else \
-  echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
-  # Clone frontend/ee submodule directly
-  if [ ! -d "frontend/ee" ]; then \
-    mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
-  fi; \
-  # Clone server/ee submodule directly  
-  if [ ! -d "server/ee" ]; then \
-    mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
-  fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
-  cd frontend/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to lts-3.16"; \
-    git checkout lts-3.16; \
-  fi && \
-  cd ../..; \
-fi
-
-# Scripts for building
-COPY ./package.json ./package.json
-
 # Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
-
-ENV TOOLJET_EDITION=ee
+RUN NODE_ENV=production npm --prefix plugins run build && \
+    npm --prefix plugins prune --production
 
 # Build frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
-RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
-
-ENV NODE_ENV=production
-ENV TOOLJET_EDITION=ee
+RUN npm --prefix frontend run build --production && \
+    npm --prefix frontend prune --production
 
 # Build server
-COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
-COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
-RUN npm install -g copyfiles
+ENV NODE_ENV=production
 RUN npm --prefix server run build
 
+# ============================================
+# Runtime stage
+# ============================================
 FROM node:22.15.1-bullseye
-
-RUN apt-get update -yq \
-    && apt-get install curl gnupg zip -yq \
-    && apt-get install -yq build-essential \
-    && apt-get clean -y
-
-# copy postgrest executable
-COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-# Install Redis 7.x from official Redis repository for BullMQ compatibility
-RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
 
-# Install Instantclient Basic Light Oracle and Dependencies
+# Install all system packages at once (rarely changes)
+RUN apt-get update -yq && \
+    apt-get install -y \
+    curl \
+    gnupg \
+    zip \
+    build-essential \
+    freetds-dev \
+    libaio1 \
+    wget \
+    supervisor \
+    lsb-release && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy PostgREST binary (rarely changes)
+COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
+
+# Install Redis 7.x from official Redis repository for BullMQ compatibility (rarely changes)
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list && \
+    apt-get update && apt-get install -y redis-server && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Configure Redis directories and configuration (rarely changes)
+RUN mkdir -p /etc/redis /var/lib/redis /var/log/redis && \
+    chown -R redis:redis /var/lib/redis /var/log/redis && \
+    chmod 755 /var/lib/redis /var/log/redis
+
+COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
+RUN chown redis:redis /etc/redis/redis.conf && \
+    chmod 644 /etc/redis/redis.conf
+
+# Install Oracle Instant Client (rarely changes)
 WORKDIR /opt/oracle
 RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
     wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
@@ -128,65 +103,22 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
-# Set the Instant Client library paths
+
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
-WORKDIR /
+# Install PostgreSQL (rarely changes)
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && apt-get install -y postgresql-13 postgresql-client-13 --fix-missing && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
-# copy npm scripts
-COPY --from=builder /app/package.json ./app/package.json
-# copy plugins dependencies
-COPY --from=builder /app/plugins/dist ./app/plugins/dist
-COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
-COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
-COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
-COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
-# copy frontend build
-COPY --from=builder /app/frontend/build ./app/frontend/build
-# copy server build
-COPY --from=builder /app/server/package.json ./app/server/package.json
-COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
-COPY --from=builder /app/server/node_modules ./app/server/node_modules
-COPY --from=builder /app/server/templates ./app/server/templates
-COPY --from=builder /app/server/scripts ./app/server/scripts
-COPY --from=builder /app/server/dist ./app/server/dist
+# Setup PostgreSQL directories and initialize (rarely changes)
+RUN mkdir -p /var/lib/postgresql/13/main /var/log/supervisor /var/run/postgresql && \
+    chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
+    su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
-WORKDIR /app
-
-# Install PostgreSQL
-USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
-
-
-# Explicitly create PG main directory with correct ownership
-RUN mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
-
-RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
-    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
-
-# Remove existing data and create directory with proper ownership
-RUN rm -rf /var/lib/postgresql/13/main && \
-    mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
-
-# Initialize PostgreSQL
-RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
-
-# Configure Redis for BullMQ
-RUN mkdir -p /etc/redis /var/lib/redis /var/log/redis && \
-    chown -R redis:redis /var/lib/redis /var/log/redis && \
-    chmod 755 /var/lib/redis /var/log/redis
-
-# Copy Redis configuration
-COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
-RUN chown redis:redis /etc/redis/redis.conf && \
-    chmod 644 /etc/redis/redis.conf
-
-# Configure Supervisor to manage PostgREST and ToolJet
+# Configure supervisord (rarely changes)
 # Note: PostgreSQL and Redis are started directly in preview.sh
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
@@ -211,7 +143,27 @@ RUN echo "[supervisord] \n" \
     "stdout_logfile=/dev/stdout \n" \
     "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
 
-# ENV defaults
+WORKDIR /
+
+# Copy built artifacts from builder (changes every build)
+COPY --from=builder /app/package.json ./app/package.json
+COPY --from=builder /app/plugins/dist ./app/plugins/dist
+COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
+COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
+COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
+COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
+COPY --from=builder /app/frontend/build ./app/frontend/build
+COPY --from=builder /app/server/package.json ./app/server/package.json
+COPY --from=builder /app/server/.version ./app/server/.version
+COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
+COPY --from=builder /app/server/node_modules ./app/server/node_modules
+COPY --from=builder /app/server/templates ./app/server/templates
+COPY --from=builder /app/server/scripts ./app/server/scripts
+COPY --from=builder /app/server/dist ./app/server/dist
+
+WORKDIR /app
+
+# Environment variables
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
     NODE_ENV=production \
@@ -239,7 +191,7 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-
 RUN chmod +x ./server/scripts/preview.sh
+
 # Set the entrypoint
 ENTRYPOINT ["./server/scripts/preview.sh"]

@@ -2,3 +2,42 @@ docs/*
 tmp/*
 **/node_modules/*
 **/dist/*
+
+# Version control and CI/CD
+.git
+.github
+
+# Documentation
+*.md
+README*
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env*
+!.env.example
+
+# IDE directories
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+*.test.js
+*.spec.js
+__tests__/
+__mocks__/
+.nyc_output/
+
+# Build artifacts
+*.tgz
+*.tar.gz
