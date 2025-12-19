@@ -17,7 +17,8 @@ ToolJet requires the following to connect to your Airtable:
 You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
+    <img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-ds.png" alt="Airtable Data Source Connection" />
+    <img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-ds1.png" alt="Airtable Data Source Connection" />
 </div>
 
 </div>
@@ -36,7 +37,7 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/operations.png" alt="Airtable Data Source Operations" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-listOps.png" alt="Airtable Data Source list Operations" />
 
 </div>
 
@@ -79,7 +80,7 @@ This operation retrieves a list of records from the specified table.
 Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-listrec.png" alt="Airtable List Records Query" />
 
 
 <details id="tj-dropdown">
@@ -150,7 +151,7 @@ This operation fetches a specific record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v2.png" alt="Airtable Retrieve Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-retrvrec.png" alt="Airtable Retrieve Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -176,7 +177,7 @@ This operation creates a new record in the specified table.
 - **Table name**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/create-record-v2.png" alt="Airtable Create Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-createrec.png" alt="Airtable Create Record Query" />
 
 #### Example
 
@@ -218,7 +219,7 @@ Update a specific record by providing new data.
 - **Record ID**
 - **Body**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/update-record-v2.png" alt="Airtable Update Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-updaterec.png" alt="Airtable Update Record Query" />
 
 #### Example
 
@@ -256,7 +257,7 @@ This operation removes a record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v2.png" alt="Airtable Delete Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-delrec.png" alt="Airtable Delete Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
