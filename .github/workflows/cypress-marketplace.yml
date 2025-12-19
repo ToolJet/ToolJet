@@ -18,6 +18,9 @@ env:
 jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
+    outputs:
+      test-summary-ce: ${{ steps.set-output-ce.outputs.summary }}
+      test-summary-ee: ${{ steps.set-output-ee.outputs.summary }}
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') ||
@@ -288,6 +291,8 @@ jobs:
         run: |
           OUTCOME="${{ steps.cypress-tests.outcome }}"
           EDITION="${{ matrix.edition }}"
+          JOB_STATUS="${{ job.status }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Try to find and parse test results
           TOTAL_TESTS=0
@@ -316,24 +321,57 @@ jobs:
             fi
           fi
 
-          # Create simple summary
-          echo "### Cypress Marketplace Tests - ${EDITION^^} Edition" > summary.md
+          # Determine status emoji and message
+          if [ "$OUTCOME" = "success" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_MSG="All tests passed!"
+          else
+            STATUS_EMOJI="❌"
+            STATUS_MSG="Some tests failed"
+          fi
+
+          # Create enhanced summary
+          echo "## ${STATUS_EMOJI} Cypress Marketplace Tests - ${EDITION^^} Edition" > summary.md
           echo "" >> summary.md
-          echo "| Total | Passed | Failed | Skipped |" >> summary.md
-          echo "|-------|--------|--------|---------|" >> summary.md
-          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
+          echo "**Status:** ${STATUS_MSG}" >> summary.md
+          echo "**Job Status:** ${JOB_STATUS}" >> summary.md
+          echo "**Workflow Run:** [View Details](${RUN_URL})" >> summary.md
+          echo "" >> summary.md
+          echo "### Test Results" >> summary.md
+          echo "" >> summary.md
+          echo "| Metric | Count |" >> summary.md
+          echo "|--------|-------|" >> summary.md
+          echo "| ✅ Passed | $PASSED_TESTS |" >> summary.md
+          echo "| ❌ Failed | $FAILED_TESTS |" >> summary.md
+          echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> summary.md
+          echo "| 📊 **Total** | **$TOTAL_TESTS** |" >> summary.md
 
-          # Save for later use
-          cat summary.md > /tmp/test-summary.md
+          # Add failure details if available
+          if [ $FAILED_TESTS -gt 0 ] && [ -n "$RESULTS_FILE" ]; then
+            echo "" >> summary.md
+            echo "### ⚠️ Failed Tests" >> summary.md
+            echo "" >> summary.md
+            echo '```' >> summary.md
+            jq -r '.failures[]? | "- \(.fullTitle)\n  Error: \(.error)"' "$RESULTS_FILE" 2>/dev/null || echo "Details not available" >> summary.md
+            echo '```' >> summary.md
+          fi
 
-      - name: Comment test results on PR
-        if: always()
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: /tmp/test-summary.md
-          edit-mode: append
+          # Save summary as multiline output
+          {
+            echo "summary<<EOFMARKER"
+            cat summary.md
+            echo "EOFMARKER"
+          } >> $GITHUB_OUTPUT
+
+      - name: Set output for CE
+        if: always() && matrix.edition == 'ce'
+        id: set-output-ce
+        run: echo "Completed CE tests"
+
+      - name: Set output for EE
+        if: always() && matrix.edition == 'ee'
+        id: set-output-ee
+        run: echo "Completed EE tests"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -582,17 +620,8 @@ jobs:
           echo "|-------|--------|--------|---------|" >> summary.md
           echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
 
-          # Save for later use
+          # Save for later use (kept for potential future use)
           cat summary.md > /tmp/test-summary.md
-
-      - name: Comment test results on PR
-        if: always()
-        uses: peter-evans/create-or-update-comment@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: /tmp/test-summary.md
-          edit-mode: append
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -600,3 +629,53 @@ jobs:
         with:
           name: screenshots-ce-subpath
           path: cypress-tests/cypress/screenshots
+
+  create-marketplace-coverage-comment:
+    if: always() && github.event_name == 'pull_request_target'
+    needs: [Cypress-Marketplace]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Create Marketplace Test Results Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 🎯 Cypress Marketplace Test Coverage
+
+            ${{ needs.Cypress-Marketplace.outputs.test-summary-ce || '_(CE tests not run)_' }}
+
+            ---
+
+            ${{ needs.Cypress-Marketplace.outputs.test-summary-ee || '_(EE tests not run)_' }}
+          edit-mode: replace
+
+      - name: Add Job Summary
+        if: always()
+        run: |
+          echo "## 🎯 Cypress Marketplace Test Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Add CE summary if available
+          CE_SUMMARY='${{ needs.Cypress-Marketplace.outputs.test-summary-ce }}'
+          if [ -n "$CE_SUMMARY" ] && [ "$CE_SUMMARY" != "" ]; then
+            echo "$CE_SUMMARY" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Add EE summary if available
+          EE_SUMMARY='${{ needs.Cypress-Marketplace.outputs.test-summary-ee }}'
+          if [ -n "$EE_SUMMARY" ] && [ "$EE_SUMMARY" != "" ]; then
+            echo "$EE_SUMMARY" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
+          fi
