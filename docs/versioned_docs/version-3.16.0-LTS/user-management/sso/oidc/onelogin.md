@@ -34,3 +34,42 @@ At this point, the OneLogin application is ready. Next, you’ll collect the OID
 10. Go to your OneLogin Application > Configuration > Paste the Redirect URL into the Redirect URIs section and click **Save**.
     <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/redirect_url.png" alt="OneLogin: Redirect URL"/>
 
+## Configuring Group Sync with OneLogin
+
+To configure group sync with OneLogin, you need to follow these steps:
+
+1. Go to the OneLogin Admin Portal and navigate to Users → Roles → New Role. Create a role with the same name as the group you want to map. For example, to map the builder role in OneLogin to developer in ToolJet, name the role builder.
+
+2. Select your app to add to the role and click on Save.
+    <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/add_app_to_role.png" alt="OneLogin: Add Application To Role"/>
+
+3. Add the user to the role. Navigate to **Users > Roles > The role you created > Users**. Now check for the user, click **Add to role** and Save.
+    <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/add_user_to_role.png" alt="OneLogin: Add User To Role"/>
+
+4. Go to Applications -> Your OneLogin Application -> Parameters. Now edit the Groups configuration as follows:
+    - User Roles
+    - Semicolon Delimited input (Multi-value output)<br /><br /> 
+
+    <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/edit_field_groups.png" alt="OneLogin: Edit Field Groups"/>
+
+5. Go to **Rules > Add Rule**. Enter a name of your choice for the rule.. Add a rule with the action:  
+    `Set Groups in Application > Map from OneLogin > For each > member_of > with value that matches > .*`
+    <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/one_login_rule.png" alt="OneLogin: One Login Rule"/>
+
+6. Go to your ToolJet Application. Navigate to Workspace settings > Workspace login > OpenID Connect > Your OneLogin Configuration and Enable group sync.
+
+7. Claim name will be set to `groups`.
+
+8. Group mapping will be set as :
+    ```js
+    <your-onelogin-role> -> <tooljet-group-name>
+    ```
+    For example: If your OneLogin Role is **builder** and the ToolJet group name is **developer**, the mapping will be builder -> developer.
+    <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/tooljet_configuration.png" alt="OneLogin: ToolJet Configuration"/>
+
+Users will now be assigned to ToolJet groups based on their OneLogin roles.
+
+
+
+
+
