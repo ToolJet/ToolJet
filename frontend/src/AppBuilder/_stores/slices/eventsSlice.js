@@ -608,6 +608,10 @@ export const createEventsSlice = (set, get) => ({
               return Promise.reject(error);
             }
           }
+          case 'reset-query': {
+            const { queryId } = event;
+            return get().queryPanel.resetQuery(queryId, moduleId);
+          }
           case 'logout': {
             return logoutAction();
           }
@@ -1006,6 +1010,21 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {}, moduleId);
       };
 
+      const resetQuery = (queryName = '') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+        if (query) {
+          return executeAction(
+            {
+              actionId: 'reset-query',
+              queryId: query.id,
+            },
+            mode,
+            {},
+            moduleId
+          );
+        }
+      };
+
       const setVariable = (key = '', value = '') => {
         if (key) {
           const event = {
@@ -1279,6 +1298,7 @@ export const createEventsSlice = (set, get) => ({
         log,
         logError,
         toggleAppMode,
+        resetQuery,
       };
     },
     // Selectors

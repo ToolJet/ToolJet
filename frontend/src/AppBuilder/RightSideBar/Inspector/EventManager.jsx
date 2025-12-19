@@ -699,7 +699,7 @@ export const EventManager = ({
               </div>
             )}
 
-            {event.actionId === 'run-query' && (
+            {['run-query', 'reset-query'].includes(event.actionId) && (
               <>
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
@@ -742,7 +742,9 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+                {event.actionId === 'run-query' && (
+                  <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+                )}
               </>
             )}
 
