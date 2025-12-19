@@ -27,13 +27,13 @@ if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
 
-// Define the trace exporter
+// Define the trace exporters
 const traceExporter = new OTLPTraceExporter({
   url: OTEL_EXPORTER_OTLP_TRACES,
   ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
 });
 
-// Define the metric exporter
+// Define the metric exporters
 const metricExporter = new OTLPMetricExporter({
   url: OTEL_EXPORTER_OTLP_METRICS,
   ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
