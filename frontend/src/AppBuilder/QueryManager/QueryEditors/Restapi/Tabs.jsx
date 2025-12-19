@@ -4,7 +4,8 @@ import Params from './TabParams';
 import Body from './TabBody';
 import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import { Button } from '@/components/ui/Button/Button';
+import { CustomToggleSwitch } from '@/AppBuilder/QueryManager/Components/CustomToggleSwitch';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
@@ -51,17 +52,17 @@ function ControlledTabs({
                 />
               </>
             )}
-            <ButtonSolid
-              onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
+
+            <Button
+              isLucid
+              iconOnly
+              size="medium"
+              variant="ghost"
+              leadingIcon="plus"
               id="runjs-param-add-btn"
               data-cy={`runjs-add-param-button`}
-              variant="ghostBlack"
-              size="sm"
-              leftIcon="plus"
-              fill={darkMode ? 'var(--icons-default)' : bodyToggle && key === 'body' ? '#E4E7EB' : '#6A727C'}
-              iconWidth="18"
               disabled={bodyToggle && key === 'body'}
-              className="tw-px-[6px]"
+              onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
             />
           </div>
         </div>

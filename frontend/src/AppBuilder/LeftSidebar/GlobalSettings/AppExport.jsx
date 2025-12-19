@@ -41,7 +41,7 @@ const AppExport = ({ darkMode }) => {
             setIsExportingApp(true);
             document.getElementById('maintenance-app-modal').click();
           }}
-          data-cy="button-user-status-change"
+          data-cy="export-app-button"
         >
           Export app
         </Button>

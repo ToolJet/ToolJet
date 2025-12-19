@@ -58,6 +58,8 @@ export const dataSourceSelector = {
   editorDSPopover: '[data-cy="show-ds-popover-button"]',
   runjsQuery: '[data-cy="ds-run javascript code"]',
   runjsInputField: '[data-cy="runjs-input-field"]',
+  runjsAddParamButton: '[data-cy="runjs-add-param-button"]',
+  queryCardDeleteButton: '[data-cy="query-card-delete-button"]',
   headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
@@ -69,6 +71,7 @@ export const dataSourceSelector = {
   labelRecordsToUpdate: '[data-cy="label-records-to-update"]',
 
   queryTabAdvanced: '[data-cy="query-tab-advanced"]',
+  queryTabSettings: '[data-cy="query-tab-settings"]',
 
   labelRunQueryOnPageLoad: '[data-cy="run-on-app-load-toggle-label"]',
   labelRequestConfirmationOnRun:
@@ -107,7 +110,7 @@ export const dataSourceSelector = {
     return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
   },
   labelFieldName: (fieldName) => {
-    return `[data-cy="${cyParamName(fieldName)}-field-label"]`;
+    return `[data-cy="label-${cyParamName(fieldName)}"]`;
   },
   dataSourceNameButton: (dataSourceName) => {
     return `[data-cy="${cyParamName(dataSourceName)}-button"]`;
@@ -144,5 +147,14 @@ export const dataSourceSelector = {
   },
   labelFieldValidation: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-validation-label"]`;
+  },
+  listQuery: (queryName) => {
+    return `[data-cy="list-query-${cyParamName(queryName)}"]`;
+  },
+  queryHandlerMenu: (queryName) => {
+    return `[data-cy="query-handler-menu-${cyParamName(queryName)}"]`;
+  },
+  datasourceOption: (datasourceName) => {
+    return `[data-cy="ds-${cyParamName(datasourceName)}"]`;
   },
 };

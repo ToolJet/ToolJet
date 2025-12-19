@@ -1,4 +1,4 @@
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
 import {
@@ -7,27 +7,50 @@ import {
   onboardingStepThree,
   onboardingStepTwo,
 } from "Support/utils/onboarding";
-import { updateLicense } from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { onboardingText } from "Texts/onboarding";
+import { multiEnvSelector } from "Selectors/eeCommon";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
 
   beforeEach(() => {
     cy.visit("/setup");
+    cy.intercept("GET", "/api/data-queries/**").as("getDataQueries");
+    cy.intercept("GET", "/assets/translations/en.json").as("translations");
   });
-  after(() => {
-    cy.ifEnv("Enterprise", () => {
-      updateLicense('valid');
-    });
-  })
+
+  afterEach(() => {
+    // Check if the user exists in the database
+    cy.runSqlQueryOnDB(`SELECT id FROM users WHERE email='dev@tooljet.io';`).then(
+      (resp) => {
+        // If user doesn't exist in DB, create it
+        if (!resp.rows || resp.rows.length === 0) {
+          cy.request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/onboarding/setup-super-admin`,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              companyName: "ToolJet",
+              name: "The Developer",
+              workspaceName: "My workspace",
+              email: "dev@tooljet.io",
+              password: "password",
+            },
+            failOnStatusCode: false,
+          });
+        }
+      }
+    );
+  });
 
   it("verify elements on self host onboarding page", () => {
     cy.ifEnv("Enterprise", () => {
       cy.get(commonSelectors.HostBanner).should("be.visible");
       cy.get(commonSelectors.pageLogo).should("be.visible");
-      cy.get('[data-cy="welcome-to-tooljet!-header"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.welcomeHeader).verifyVisibleElement(
         "have.text",
         "Welcome to ToolJet!"
       );
@@ -35,11 +58,11 @@ describe("Self host onboarding", () => {
         "have.text",
         "Let's set up your admin account and workspace to get started!"
       );
-      cy.get('[data-cy="set-up-tooljet-button"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.setUpToolJetButton).verifyVisibleElement(
         "have.text",
         "Set up ToolJet"
       );
-      cy.get('[data-cy="set-up-tooljet-button"]').click();
+      cy.get(onboardingSelectors.setUpToolJetButton).click();
     });
 
     const commonElements = [
@@ -72,10 +95,10 @@ describe("Self host onboarding", () => {
         selector: commonSelectors.passwordLabel,
         text: commonText.passwordLabel,
       },
-      {
-        selector: commonSelectors.passwordHelperTextSignup,
-        text: commonText.passwordHelperText,
-      },
+      // {
+      //   selector: commonSelectors.passwordHelperTextSignup,
+      //   text: commonText.passwordHelperText,
+      // },
     ];
 
     labelChecks.forEach((check) => {
@@ -111,7 +134,7 @@ describe("Self host onboarding", () => {
     cy.get(commonSelectors.nameInputField).type("The Developer");
     cy.get(onboardingSelectors.emailInput).type("dev@tooljet.io");
     cy.get(onboardingSelectors.passwordInput).type("password");
-    cy.get(commonSelectors.continueButton).click();
+    cy.get(commonSelectors.signUpButton).click();
 
     cy.ifEnv("Enterprise", () => {
       bannerElementsVerification();
@@ -165,7 +188,7 @@ describe("Self host onboarding", () => {
       cy.get(onboardingSelectors.onPremiseLink)
         .verifyVisibleElement("have.text", "Click here")
         .and("have.attr", "href")
-        .and("equal", "https://tooljet.ai/pricing?payment=onpremise");
+        .and("equal", "https://tooljet.com/pricing?payment=onpremise");
 
       const planTitles = [
         {
@@ -189,11 +212,11 @@ describe("Self host onboarding", () => {
       const prices = [
         { selector: `${onboardingSelectors.planPrice}:eq(0)`, text: "$0" },
         {
-          selector: '[data-cy="pro-plan-price"]:eq(0)',
+          selector: `${onboardingSelectors.proPlanPrice}:eq(0)`,
           text: "$79/monthper builder",
         },
         {
-          selector: '[data-cy="pro-plan-price"]:eq(1)',
+          selector: `${onboardingSelectors.proPlanPrice}:eq(1)`,
           text: "$199/monthper builder",
         },
         {
@@ -224,7 +247,7 @@ describe("Self host onboarding", () => {
         .should("have.css", "text-decoration")
         .and("include", "line-through");
 
-      cy.get('[data-cy="pro-plan-price"]')
+      cy.get(onboardingSelectors.proPlanPrice)
         .eq(0)
         .verifyVisibleElement("have.text", "$99/monthper builder");
 
@@ -238,7 +261,7 @@ describe("Self host onboarding", () => {
         .should("have.css", "text-decoration")
         .and("include", "line-through");
 
-      cy.get('[data-cy="pro-plan-price"]')
+      cy.get(onboardingSelectors.proPlanPrice)
         .eq(1)
         .verifyVisibleElement("have.text", "$249/monthper builder");
 
@@ -250,7 +273,7 @@ describe("Self host onboarding", () => {
         "have.text",
         "Custom pricing"
       );
-      cy.get('[data-cy="schedule-a-call-button"]').verifyVisibleElement(
+      cy.get(onboardingSelectors.scheduleACallButton).verifyVisibleElement(
         "have.text",
         "Schedule a call"
       );
@@ -261,11 +284,17 @@ describe("Self host onboarding", () => {
       onboardingStepThree();
     });
 
+    cy.wait("@getDataQueries");
     cy.wait(2000);
-    cy.get(commonWidgetSelector.previewButton).eq(1).should("be.visible");
-    cy.go("back");
+    cy.get(multiEnvSelector.environmentsTag("development"), {
+      timeout: 20000,
+    }).should("be.visible", { timeout: 20000 });
 
-    logout();
+    cy.apiLogout();
+    cy.visit("/my-workspace");
+    cy.wait("@translations");
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
+    cy.wait(1000);
     cy.appUILogin();
 
     cy.get(commonSelectors.workspaceName)

@@ -4,10 +4,11 @@ import {
   ForbiddenException,
   Injectable,
   MethodNotAllowedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { GroupPermissionsRepository } from './repository';
 import { CreateDefaultGroupObject, GetUsersResponse } from './types';
-import { ERROR_HANDLER } from './constants/error';
+import { DATA_BASE_CONSTRAINTS, ERROR_HANDLER } from './constants/error';
 import {
   DEFAULT_GROUP_PERMISSIONS,
   DEFAULT_RESOURCE_PERMISSIONS,
@@ -30,8 +31,11 @@ import { UserRepository } from '@modules/users/repositories/repository';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { IGroupPermissionsUtilService } from './interfaces/IUtilService';
 import { GroupPermissionLicenseUtilService } from './util-services/license.util.service';
-import { getTooljetEdition } from '@helpers/utils.helper';
-import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { catchDbException, getTooljetEdition } from '@helpers/utils.helper';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { User } from '@entities/user.entity';
+import { LicenseUserService } from '@modules/licensing/services/user.service';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -41,8 +45,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly roleUtilService: RolesUtilService,
     protected readonly rolesRepository: RolesRepository,
     protected readonly userRepository: UserRepository,
-    protected readonly licenseUtilService: GroupPermissionLicenseUtilService
-  ) {}
+    protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
+    protected readonly licenseUserService: LicenseUserService
+  ) { }
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
     if (HUMANIZED_USER_LIST.includes(createGroupPermissionDto.name)) {
@@ -296,7 +301,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getAllGroupByOrganization(organizationId: string): Promise<GetUsersResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      const isFeatureEnabled = await this.licenseUtilService.isFeatureEnabled(organizationId);
       const result = await manager.findAndCount(GroupPermissions, {
         where: { organizationId },
         order: { type: 'DESC' },
@@ -305,7 +310,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         groupPermissions: result[0],
         length: result[1],
       };
-      if (!isLicenseValid) {
+      if (!isFeatureEnabled) {
         response.groupPermissions?.forEach((gp) => {
           if (gp.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
             gp.disabled = true;
@@ -314,5 +319,231 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       }
       return response;
     });
+  }
+  async updateGroup(
+    id: string,
+    user: User,
+    updateGroupPermissionDto: UpdateGroupPermissionDto,
+    manager?: EntityManager
+  ): Promise<any> {
+    return await dbTransactionWrap(async (manager) => {
+      const organizationId = user.organizationId;
+      const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
+      // License validation - Update not allowed on basic plan
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
+        throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
+      }
+
+      // Check if name is reserved
+      this.validateUpdateGroupOperation(group, updateGroupPermissionDto);
+
+      const { allowRoleChange } = updateGroupPermissionDto;
+      delete updateGroupPermissionDto.allowRoleChange;
+
+      // Some permission are enabled
+      const editPermissionsPresent = Object.keys(updateGroupPermissionDto).some(
+        (value) => typeof updateGroupPermissionDto?.[value] === 'boolean' && updateGroupPermissionDto?.[value] === true
+      );
+      if (editPermissionsPresent) {
+        const usersInGroup = await this.groupPermissionsRepository.getUsersInGroup(id, organizationId, null, manager);
+
+        if (usersInGroup?.length) {
+          // no need to proceed if there are no users in the group
+          const endUsersList = await this.rolesRepository.getRoleUsersList(
+            USER_ROLE.END_USER,
+            organizationId,
+            usersInGroup.map((groupUser) => groupUser.userId),
+            manager
+          );
+
+          if (endUsersList.length) {
+            if (!allowRoleChange) {
+              // Not allowed to change user roles, throwing error
+              throw new MethodNotAllowedException({
+                message: {
+                  error: ERROR_HANDLER.UPDATE_EDITABLE_PERMISSION_END_USER_GROUP,
+                  data: endUsersList?.map((user) => user.email),
+                  title: 'Cannot add this permission to the group',
+                  type: 'USER_ROLE_CHANGE',
+                },
+              });
+            }
+            // Permission is updated, converting end users to builders
+            await this.roleUtilService.changeEndUserToEditor(
+              organizationId,
+              endUsersList.map((user) => user.id),
+              endUsersList[0].userGroups[0].group.id,
+              manager
+            );
+          }
+        }
+      }
+      // Updating group permissions
+      await catchDbException(async () => {
+        await manager.update(GroupPermissions, id, updateGroupPermissionDto);
+      }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
+
+      // Validating license
+      await this.licenseUserService.validateUser(manager, organizationId);
+      //GROUP_PERMISSION_UPDATE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }, manager);
+  }
+
+  async create(user: User, name: string, manager?: EntityManager): Promise<GroupPermissions> {
+    const groupCreateObj: CreateDefaultGroupObject = { name };
+    this.validateCreateGroupOperation(groupCreateObj);
+    const groupPermissionResponse = await this.groupPermissionsRepository.createGroup(
+      user.organizationId,
+      groupCreateObj,
+      manager
+    );
+    return groupPermissionResponse;
+  }
+
+  async deleteGroup(id: string, user: User, manager?: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationId = user.organizationId;
+      const group = await this.groupPermissionsRepository.getGroup({ id, organizationId }, manager);
+
+      if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT) {
+        throw new BadRequestException(ERROR_HANDLER.DEFAULT_GROUP_UPDATE_NOT_ALLOWED);
+      }
+      //GROUP_PERMISSION_DELETE audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+      await manager.delete(GroupPermissions, id);
+    }, manager);
+  }
+
+  async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
+    const organizationId = user.organizationId;
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupUser = await this.groupPermissionsRepository.getGroupUser(id, manager);
+      this.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
+      await this.groupPermissionsRepository.removeUserFromGroup(id);
+      //USER_REMOVE_FROM_GROUP audit
+      const auditLogsData = {
+        userId: user.id,
+        organizationId: organizationId,
+        resourceId: groupUser?.group.id,
+        resourceName: groupUser?.group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }, manager);
+  }
+
+  async getGroupWithName(name: string, organizationId: string, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      console.log(name, 'siu');
+      const group = await this.groupPermissionsRepository.getGroup(
+        {
+          name,
+          organizationId,
+        },
+        manager
+      );
+      return group;
+    }, manager);
+  }
+  async getGroupUsers(groupIds: string[], organizationId: string, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupUsers = await manager
+        .createQueryBuilder(GroupUsers, 'groupUser')
+        .innerJoinAndSelect('groupUser.user', 'user')
+        .innerJoin(GroupPermissions, 'group', 'group.id = groupUser.groupId')
+        .where('group.id IN (:...groupIds)', { groupIds })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .select(['groupUser.groupId AS groupId', 'groupUser.userId AS userId', 'user.email AS userName'])
+        .getRawMany();
+
+      return groupUsers;
+      // Example:
+      // [
+      //   { groupId: 'group-1', userId: 'user-1', userName: 'user1@example.com' },
+      //   { groupId: 'group-2', userId: 'user-2', userName: 'user2@example.com' }
+      // ]
+    }, manager);
+  }
+
+  async deleteMultipleGroupUsers(
+    groupId: string,
+    userIds: string[],
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<void> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const groupUsersRepo = manager.getRepository(GroupUsers);
+
+      // Check group validity once
+      const group = await manager.getRepository(GroupPermissions).findOne({
+        where: { id: groupId },
+      });
+      if (!group) {
+        throw new NotFoundException(`Group with ID ${groupId} not found`);
+      }
+
+      this.validateDeleteGroupUserOperation(group, organizationId);
+
+      // 🧹 Delete multiple users (if userIds provided)
+      if (userIds && userIds.length > 0) {
+        await groupUsersRepo
+          .createQueryBuilder()
+          .delete()
+          .from(GroupUsers)
+          .where('group_id = :groupId', { groupId })
+          .andWhere('user_id IN (:...userIds)', { userIds })
+          .execute();
+        console.log(groupId);
+        console.log(userIds, ' sus');
+      } else {
+        // 🧹 Delete all users from the group
+        await groupUsersRepo
+          .createQueryBuilder()
+          .delete()
+          .from(GroupUsers)
+          .where('group_id = :groupId', { groupId })
+          .execute();
+      }
+    }, manager);
+  }
+  async renameGroup(
+    groupId: string,
+    organizationId: string,
+    newName: string,
+    manager?: EntityManager
+  ): Promise<GroupPermissions> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // 1️⃣ Fetch group
+      const group = await manager.findOne(GroupPermissions, {
+        where: { id: groupId, organizationId },
+      });
+
+      if (!group) {
+        throw new NotFoundException(`Group not found for id: ${groupId}`);
+      }
+
+      // 2️⃣ Validate rename operation
+      const updateDto = { name: newName } as Partial<UpdateGroupPermissionDto>;
+      this.validateUpdateGroupOperation(group, updateDto as UpdateGroupPermissionDto);
+
+      // 3️⃣ Update and save
+      group.name = newName;
+      await manager.save(GroupPermissions, group);
+
+      return group;
+    }, manager);
   }
 }

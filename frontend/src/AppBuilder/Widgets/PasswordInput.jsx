@@ -1,21 +1,20 @@
 import React from 'react';
+import { IconEyeClosed, IconEye } from '@tabler/icons-react';
+
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+
 export const PasswordInput = (props) => {
   const inputLogic = useInput(props);
   const toggleVisibility = () => {
     inputLogic.setIconVisibility(!inputLogic.iconVisibility);
   };
 
+  const TogglePasswordVisibilityIcon = !inputLogic.iconVisibility ? IconEye : IconEyeClosed;
+
   const passwordIcon = (
     <div onClick={toggleVisibility}>
-      <SolidIcon
-        width={16}
-        fill={'var(--icons-weak-disabled)'}
-        className="password-component-eye"
-        name={!inputLogic.iconVisibility ? 'eye1' : 'eyedisable'}
-      />
+      <TogglePasswordVisibilityIcon size={16} color="var(--icons-weak-disabled)" />
     </div>
   );
 

@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { User } from '@entities/user.entity';
 import { DataSource } from '@entities/data_source.entity';
+import { App } from '@entities/app.entity';
 import * as ivm from 'isolated-vm';
 
 export interface WorkflowExecutionOptions {
@@ -27,6 +28,7 @@ export interface IDataQueriesUtilService {
     response: Response,
     environmentId?: string,
     mode?: string,
+    app?: App,
     opts?: DataQueryExecutionOptions
   ): Promise<object>;
 

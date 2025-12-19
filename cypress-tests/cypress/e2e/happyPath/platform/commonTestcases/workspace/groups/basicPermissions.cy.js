@@ -3,12 +3,14 @@ import { commonSelectors } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import {
     navigateToManageGroups,
+    sanitize,
     selectAppCardOption,
+    releaseApp
 } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
     setupWorkspaceAndInviteUser,
-    updateRole
+    updateRole,
 } from "Support/utils/manageGroups";
 import {
     uiAppCRUDWorkflow,
@@ -19,32 +21,31 @@ import {
     uiWorkflowCRUDWorkflow,
     uiWorkspaceConstantCRUDWorkflow,
 } from "Support/utils/uiPermissions";
+import {
+    verifyBasicPermissions,
+    verifySettingsAccess,
+} from "Support/utils/userPermissions";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { groupsText } from "Texts/manageGroups";
-import { verifyBasicPermissions, verifySettingsAccess } from "Support/utils/userPermissions";
 
-describe("Manage Groups", () => {
+describe("Basic Permissions", () => {
     let data = {};
-
-    before(() => {
-        cy.exec("mkdir -p ./cypress/downloads/");
-        cy.wait(3000);
-    });
 
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
             appName: fake.companyName,
             email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
-            workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
-            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceName: `${sanitize(fake.lastName)}-basic`,
+            workspaceSlug: `${sanitize(fake.lastName)}-basic`,
             folderName: fake.companyName,
         };
 
-        cy.defaultWorkspaceLogin();
+        cy.apiLogin();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
+        cy.viewport(2000, 1900);
     });
 
     it("should verify end-user privileges", () => {
@@ -57,7 +58,6 @@ describe("Manage Groups", () => {
 
         verifyBasicPermissions(false);
         verifySettingsAccess(false);
-
     });
 
     it("should verify builder privileges", () => {
@@ -70,7 +70,6 @@ describe("Manage Groups", () => {
         );
 
         // UI-based privilege verification for Builder
-        cy.get('.basic-plan-migration-banner').invoke('css', 'display', 'none');
         uiVerifyBuilderPrivileges();
 
         // UI CRUD workflows validation
@@ -96,7 +95,9 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.dashboardIcon).click();
         cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.releaseApp();
+        cy.apiPublishDraftVersion('v1')
+
+        releaseApp();
 
         //verify clone access
         cy.visit(data.workspaceSlug);
@@ -110,7 +111,6 @@ describe("Manage Groups", () => {
             dashboardText.appClonedToast,
             false
         );
-
     });
 
     it("should verify admin privileges", () => {
@@ -203,7 +203,5 @@ describe("Manage Groups", () => {
             .trigger("mouseenter")
             .find(commonSelectors.editButton)
             .should("not.exist");
-
-
-    })
+    });
 });

@@ -74,17 +74,18 @@ export const DaterangePicker = ({
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
 
-  const onChange = (dates) => {
+  const onChange = (dates, skipFireEvent = false) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
     setExposedVariables({
       startDate: moment(start).format(format),
-      startDateInUnix: moment(start).valueOf(),
+      startDateInUnix: start ? moment(start).valueOf() : null,
       endDate: moment(end).format(format),
-      endDateInUnix: moment(end).valueOf(),
+      endDateInUnix: end ? moment(end).valueOf() : null,
       selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
     });
+    if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
     fireEvent('onSelect');
   };
 
@@ -108,10 +109,12 @@ export const DaterangePicker = ({
 
     if (startDate && endDate) {
       if (moment(startDate).isSameOrBefore(endDate)) {
-        onChange([startDate, endDate]);
+        onChange([startDate, endDate], true);
       } else {
-        onChange([startDate, null]);
+        onChange([startDate, null], true);
       }
+    } else {
+      onChange([startDate, endDate], true); // If any date (start or end) would be invalid then it would pe passed as null
     }
   }, [defaultStartDate, defaultEndDate, format]);
 
@@ -238,7 +241,7 @@ export const DaterangePicker = ({
 
   const componentProps = {
     className: 'input-field form-control validation-without-icon px-2',
-    popperClassName: cx('tj-daterange-widget', {
+    popperClassName: cx('tj-daterange-widget !tw-mt-0', {
       'theme-dark dark-theme': darkMode,
       'react-datepicker-month-component': datepickerMode === 'month',
       'react-datepicker-year-component': datepickerMode === 'year',
