@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ElevenLabs Agents",
+  "description": "Connect to ElevenLabs Conversational AI Agents",
+  "type": "api",
+  "source": {
+    "name": "ElevenLabs",
+    "kind": "elevenlabs-agents",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "auth_type": {
+      "label": "Authentication Type",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "list": [
+        { "value": "public", "name": "Public Agent" },
+        { "value": "private", "name": "Private Agent (API Key)" }
+      ]
+    },
+    "public": {
+      "agent_id": {
+        "label": "Agent ID",
+        "key": "agent_id",
+        "type": "text",
+        "description": "ElevenLabs Agent ID"
+      }
+    },
+    "private": {
+      "agent_id": {
+        "label": "Agent ID",
+        "key": "agent_id",
+        "type": "text",
+        "description": "ElevenLabs Agent ID"
+      },
+      "apiKey": {
+        "label": "API Key",
+        "key": "apiKey",
+        "type": "password",
+        "description": "ElevenLabs API Key",
+        "encrypted": true
+      }
+    }
+  },
+  "required": ["auth_type"]
+}
