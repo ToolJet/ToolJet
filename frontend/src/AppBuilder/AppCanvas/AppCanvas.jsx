@@ -178,6 +178,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isRightSidebarOpen,
     isCurrentVersionLocked,
     canvasBgColor,
+    isPreviewInEditor,
   ]);
 
   return (
