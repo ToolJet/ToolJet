@@ -73,7 +73,7 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
           data-cy="preview-link-button"
           style={{ width: currentMode === 'edit' ? '92px' : '70px', padding: '7px 12px' }}
           isLucid={true}
-          onClick={() => toggleCurrentMode()}
+          onClick={() => toggleCurrentMode(moduleId)}
           className={'tw-transition-[width] tw-duration-300 tw-ease-linear'}
           isLoading={isAnimating}
         >
