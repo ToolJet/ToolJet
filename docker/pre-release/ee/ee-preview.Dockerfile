@@ -31,22 +31,26 @@ RUN npm --prefix frontend install
 RUN npm --prefix server install
 
 # Copy source code AFTER npm install (changes frequently)
-# Note: Render clones the repo, so we need to initialize submodules here
 COPY ./plugins/ ./plugins/
 COPY ./frontend/ ./frontend/
 COPY ./server/ ./server/
-COPY ./.git ./.git
-COPY ./.gitmodules ./.gitmodules
 
-# Initialize EE submodules (required for EE builds)
-RUN if [ -f .gitmodules ]; then \
-      echo "🔧 Initializing EE submodules..."; \
-      git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" && \
-      git submodule update --init --recursive && \
-      echo "✅ EE submodules initialized: frontend/ee and server/ee"; \
-    else \
-      echo "⚠️  No .gitmodules file found, skipping submodule initialization"; \
-    fi
+# Clone EE submodules directly (Render's build context doesn't include .git)
+# This is faster than cloning the whole repo - only clones the submodules
+RUN echo "🔧 Cloning EE submodules..." && \
+    git clone --depth 1 --branch ${BRANCH_NAME:-main} \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git \
+      ./frontend/ee || \
+    git clone --depth 1 --branch main \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git \
+      ./frontend/ee && \
+    git clone --depth 1 --branch ${BRANCH_NAME:-main} \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git \
+      ./server/ee || \
+    git clone --depth 1 --branch main \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git \
+      ./server/ee && \
+    echo "✅ EE submodules cloned: frontend/ee and server/ee"
 
 # Build plugins
 RUN NODE_ENV=production npm --prefix plugins run build && \
