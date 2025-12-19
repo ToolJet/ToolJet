@@ -68,7 +68,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
-import { OtelMiddleware } from '@otel/tracing';
+import { OtelMiddleware } from './middlewares/otel.middleware';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
