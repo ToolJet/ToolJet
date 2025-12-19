@@ -4,6 +4,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
 
 import './baseInput.scss';
@@ -130,7 +131,12 @@ export const BaseInput = ({
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
           inputId={`component-${id}`}
-          classes={{ labelContainer: cn({ 'tw-self-center': inputType !== 'textarea' && defaultAlignment !== 'top' }) }}
+          classes={{
+            labelContainer: cn({
+              'tw-self-center': inputType !== 'textarea' && defaultAlignment !== 'top',
+              'tw-flex-shrink-0': defaultAlignment === 'top',
+            }),
+          }}
         />
 
         <div
@@ -163,7 +169,10 @@ export const BaseInput = ({
                 : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-            ...(defaultAlignment === 'top' && { flex: 1 }),
+            ...(defaultAlignment === 'top' && {
+              height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
+              flex: 1,
+            }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
         >
