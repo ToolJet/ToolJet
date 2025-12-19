@@ -351,7 +351,7 @@ export class DataSourcesService implements IDataSourcesService {
 
             await this.dataSourcesUtilService.updateOAuthAccessToken(
               accessTokenDetails,
-              dataSource.options,
+              dataSourceOptions.options,
               dataSource.id,
               user?.id,
               user?.organizationId,
