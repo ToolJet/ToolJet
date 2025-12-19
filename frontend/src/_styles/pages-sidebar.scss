@@ -226,7 +226,6 @@
         display: flex;
         flex-direction: column;
         box-sizing: content-box;
-        
         &.no-preview-settings {
             height: 100% !important;
         }
@@ -345,7 +344,6 @@
                 align-items: center;
                 justify-content: start;
                 gap: 10px;
-                
                 .page-name {
                     font-family: 'IBM Plex Sans';
                     font-weight: 500;

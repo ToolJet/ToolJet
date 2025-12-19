@@ -63,6 +63,7 @@ export const Color = ({
     return (
       <Popover
         className={classNames(
+          'color-picker-popover',
           { 'dark-theme': darkMode },
           // This is fix when color picker don't have much space to open in bottom side
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
