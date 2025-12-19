@@ -96,17 +96,14 @@ export const Pagination = function Pagination({
       <Popover.Body>
         <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-b tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
           <PaginationButton
-            key={'lastpage'}
+            key={'firstpage'}
             onClick={(e) => {
-              virtualizer.scrollToIndex(pageCount - 1, {
-                behavior: 'smooth',
-                align: 'auto',
-              });
+              goToPage(1);
               e.target.blur(); // To remove focus styling that gets applied after clicking on the button
             }}
-            dataCy={`last-page-button-option`}
+            dataCy={`first-page-button-option`}
             currentPageIndex={pageIndex}
-            pageIndex={'Last page'}
+            pageIndex={'First page'}
             className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
           />
         </div>
@@ -135,17 +132,14 @@ export const Pagination = function Pagination({
 
         <div className="tw-w-full tw-h-[48px] tw-p-[8px] tw-border-0 !tw-border-t tw-border-solid tw-border-[var(--cc-weak-border)] tw-shrink-0">
           <PaginationButton
-            key={'firstpage'}
+            key={'lastpage'}
             onClick={(e) => {
-              virtualizer.scrollToIndex(0, {
-                behavior: 'smooth',
-                align: 'auto',
-              });
+              goToPage(pageCount);
               e.target.blur(); // To remove focus styling that gets applied after clicking on the button
             }}
-            dataCy={`first-page-button-option`}
+            dataCy={`last-page-button-option`}
             currentPageIndex={pageIndex}
-            pageIndex={'First page'}
+            pageIndex={'Last page'}
             className="!tw-w-full !tw-h-[32px] justify-content-start tw-px-[8px]"
           />
         </div>
