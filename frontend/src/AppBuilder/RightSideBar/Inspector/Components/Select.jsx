@@ -14,8 +14,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
-import { sortArray } from '@/Editor/Components/DropdownV2/utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { sortArray } from '@/AppBuilder/Widgets/DropdownV2/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -282,7 +282,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
+        style={{ minWidth: '248px' }}
+      >
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">

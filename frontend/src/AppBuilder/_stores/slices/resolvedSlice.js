@@ -1,5 +1,4 @@
 import { resolveDynamicValues } from '../utils';
-// import { extractAndReplaceReferencesFromString, resolveCode, resolveDynamicValues } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import _ from 'lodash';
@@ -495,6 +494,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   getPagesSidebarVisibility: (moduleId = 'canvas') => {
+    // Tells whether the navigation items are visible or not (main header can still be visible due to app logo and title)
     return get().resolvedStore.modules[moduleId].others.isPagesSidebarHidden;
   },
 
@@ -581,7 +581,7 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   resolveReferences: (
-    moduleId,
+    moduleId = 'canvas',
     object,
     _state,
     defaultValue,

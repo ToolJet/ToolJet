@@ -135,11 +135,16 @@ export const createGridSlice = (set, get) => ({
       const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
 
       // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
-      const transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
+      let transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
 
       // If the component is a container, we need to calculate the height of the container
       let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
+
+      // If the component is a modal, change id further to include the body
+      if (componentType === 'ModalV2') {
+        transformedComponentId = `${transformedComponentId}-body`;
+      }
 
       // Determine component visibility by checking multiple sources in priority order
       const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
@@ -295,8 +300,8 @@ export const createGridSlice = (set, get) => ({
         isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
           ? containerHeight
           : visibility
-            ? componentElement.offsetHeight
-            : HIDDEN_COMPONENT_HEIGHT;
+          ? componentElement.offsetHeight
+          : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
@@ -406,7 +411,7 @@ export const createGridSlice = (set, get) => ({
       }
 
       if (isContainer) {
-        if (componentType !== 'Listview') {
+        if (componentType !== 'Listview' && componentType !== 'ModalV2') {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
@@ -439,29 +444,50 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
-      get();
+    const {
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      isRightSidebarOpen,
+      isGroupResizing,
+      isGroupDragging,
+      activeRightSideBarTab,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
 
-    // Check if any codehinter preview popover is currently open
-    const isCodehinterPreviewOpen = () => {
-      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
-      return popovers.length > 0;
+    // Check if any inspector popover is currently open
+    const isInspectorPopoverOpen = () => {
+      const selector = [
+        '#codehinter-preview-box-popover',
+        '.inspector-select-options-popover',
+        '.inspector-event-manager-popover',
+        '.inspector-steps-options-popover',
+        '.table-column-popover',
+        '.table-action-popover',
+        '.codebuilder-color-swatches-popover',
+        '.boxshadow-picker-popover',
+        '.color-picker-popover',
+        '.dropdown-menu-container',
+        '.inspector-select.react-select__menu-list',
+        '.icon-widget-popover',
+        '.inspector-header-actions-menu',
+      ].join(',');
+      return !!document.querySelector(selector);
     };
-
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
       !selectedText &&
-      !isCodehinterPreviewOpen() &&
+      !isInspectorPopoverOpen() &&
       !isGroupResizing &&
       !isGroupDragging
     ) {
       clearSelectedComponents();
       if (isRightSidebarOpen) {
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+        activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+          ? setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES)
+          : setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       }
     }
   },

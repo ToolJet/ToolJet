@@ -14,6 +14,7 @@ const createAndReleaseApp = (appName, appSlug) => {
     cy.apiCreateApp(appName);
     cy.openApp();
     cy.apiAddComponentToApp(appName, "text1");
+    cy.apiPublishDraftVersion('v1')
     cy.apiPromoteAppVersion().then(() => {
         const stagingId = Cypress.env("stagingEnvId");
         cy.apiPromoteAppVersion(stagingId);
@@ -104,7 +105,7 @@ const configureEnterpriseGranularPermissions = ({
 
         //Create datasource 
         datasourceNames.forEach((datasource) => {
-            cy.apiCreateGDS(
+            cy.apiCreateDataSource(
                 `${Cypress.env("server_host")}/api/data-sources`,
                 datasource,
                 "restapi",

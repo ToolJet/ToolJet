@@ -202,10 +202,6 @@ export function findNearestSubstring(inputStr, currentCurosorPos) {
   let substring = '';
   const inputSubstring = inputStr.substring(0, end + 1);
 
-  console.log(`Initial cursor position: ${currentCurosorPos}`);
-  console.log(`Character at cursor: '${inputStr[end]}'`);
-  console.log(`Input substring: '${inputSubstring}'`);
-
   // Iterate backwards from the character before the cursor
   for (let i = end; i >= 0; i--) {
     if (inputStr[i] === ' ') {

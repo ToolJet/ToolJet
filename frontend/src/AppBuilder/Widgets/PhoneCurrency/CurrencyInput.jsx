@@ -5,7 +5,7 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const CurrencyInput = (props) => {
@@ -35,7 +35,7 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US', showFlag = true } = properties;
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -240,6 +240,7 @@ export const CurrencyInput = (props) => {
             showValidationError={showValidationError}
             darkMode={darkMode}
             isCurrencyInput={true}
+            showFlag={showFlag}
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);

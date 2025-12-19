@@ -17,8 +17,7 @@ const QueryCardMenu = ({ darkMode }) => {
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
-  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const hasAppPermissionQuery = useStore((state) => state?.license?.featureAccess?.appPermissionQuery ?? false);
   const targetBtnForMenu = useStore((state) => state.queryPanel.targetBtnForMenu);
   const targetElement = document.getElementById(targetBtnForMenu);
   const showQueryHandlerMenu = useStore((state) => state.queryPanel.showQueryHandlerMenu);
@@ -79,7 +78,7 @@ const QueryCardMenu = ({ darkMode }) => {
       debouncedDuplicateQuery(selectedQuery?.id, appId);
     }
     if (value === 'permission') {
-      if (!licenseValid) return;
+      if (!hasAppPermissionQuery) return;
       toggleQueryPermissionModal(true);
     }
     if (value === 'delete') {
@@ -161,21 +160,24 @@ const QueryCardMenu = ({ darkMode }) => {
                   <div
                     className={classNames('list-item-option-menu-label', {
                       'color-tomato9': option.value === 'delete',
-                      'color-disabled': option.value === 'permission' && !licenseValid,
+                      'color-disabled': option.value === 'permission' && !hasAppPermissionQuery,
                     })}
                   >
                     {option?.label}
                   </div>
-                  {option.value === 'permission' && !licenseValid && option.trailingIcon && option.trailingIcon}
+                  {option.value === 'permission' &&
+                    !hasAppPermissionQuery &&
+                    option.trailingIcon &&
+                    option.trailingIcon}
                 </div>
               );
 
               return option.value === 'permission' ? (
                 <ToolTip
                   key={option.value}
-                  message={'Query permissions are available only in paid plans'}
-                  placement="left"
-                  show={!licenseValid}
+                  message={"You don't have access to query permissions. Upgrade your plan to access this feature."}
+                  placement="right"
+                  show={!hasAppPermissionQuery}
                 >
                   {optionBody}
                 </ToolTip>

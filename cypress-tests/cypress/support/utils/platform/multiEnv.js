@@ -1,11 +1,9 @@
-import { commonEeSelectors } from "Selectors/eeCommon";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { appVersionText } from "Texts/exportImport";
-import { multiEnvText } from "Texts/eeCommon";
-import { appEditorSelector } from "Selectors/multiEnv";
 import { Environments, WidgetPositions } from "Constants/constants/multiEnv";
-import { multiEnvSelector } from "Selectors/eeCommon";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonEeSelectors, multiEnvSelector, versionModalSelector } from "Selectors/eeCommon";
+import { appVersionSelectors } from "Selectors/exportImport";
+import { appEditorSelector } from "Selectors/multiEnv";
+import { appVersionText } from "Texts/exportImport";
 
 export const promoteApp = () => {
   cy.get(commonEeSelectors.promoteButton).click();
@@ -15,6 +13,8 @@ export const promoteApp = () => {
 };
 
 export const releaseApp = () => {
+  cy.get(multiEnvSelector.environmentsTag("production")).click();
+
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
@@ -30,12 +30,25 @@ export const launchApp = () => {
   });
 };
 
+export const createVersionFromDraft = (version) => {
+  cy.get(multiEnvSelector.environmentsTag("development")).click();
+  cy.get(versionModalSelector.saveVersionButton(version)).click();
+  cy.get(versionModalSelector.createVersionModal.saveButton).click();
+  cy.get(versionModalSelector.versionLockInfoText, { timeout: 10000 }).verifyVisibleElement(
+    "have.text",
+    "This version is locked. To make edits, create a draft version."
+  );
+
+};
+
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
-    cy.waitForElement(commonEeSelectors.promoteButton);
+    cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+
+    cy.waitForElement(commonEeSelectors.promoteVersionButton);
     cy.wait(200);
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+    cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
     cy.waitForAppLoad();
     cy.wait(2000);
   };
@@ -125,7 +138,7 @@ export const setupPostgreSQLDataSource = (
   secretConstantName,
   dbNameConstant
 ) => {
-  cy.apiCreateGDS(
+  cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,
     dsName,
     "postgresql",
@@ -216,6 +229,7 @@ export const selectEnvironment = (envName) => {
 };
 
 export const releaseAndVisitApp = (appSlug) => {
+  cy.get(multiEnvSelector.environmentsTag("production")).click();
   cy.get(commonSelectors.releaseButton).click();
   cy.get(commonSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
@@ -242,7 +256,10 @@ export const verifyQueryEditorDisabled = () => {
 };
 
 export const verifyGlobalSettingsDisabled = () => {
-  cy.contains(multiEnvText.releasedAppText).should("be.visible");
+  cy.get(versionModalSelector.versionLockInfoText, { timeout: 10000 }).verifyVisibleElement(
+    "have.text",
+    "This version is locked. To make edits, create a draft version."
+  );
   cy.get(appEditorSelector.settings.settingsSidebarIcon).click({ force: true });
   cy.get(appEditorSelector.settings.maintenanceToggle)
     .parents(".disabled")
@@ -281,10 +298,13 @@ export const verifyComponentsManagerDisabled = () => {
 
 export const verifyPageSettingsDisabled = () => {
   cy.get(appEditorSelector.editor.pages.pagesTabButton).click();
-  cy.contains(multiEnvText.releasedAppText, { timeout: 8000 }).should(
-    "be.visible"
+  cy.get(versionModalSelector.versionLockInfoText).verifyVisibleElement(
+    "have.text",
+    "This version is locked. To make edits, create a draft version."
   );
-  cy.get("#page-settings-tabpane-properties .disabled").should("exist");
+  cy.get("#page-settings-tabpane-properties .disabled", {
+    timeout: 8000,
+  }).should("exist");
   cy.get("#page-settings-tabpane-styles .disabled").should("exist");
   cy.forceClickOnCanvas();
 };
@@ -292,8 +312,9 @@ export const verifyPageSettingsDisabled = () => {
 export const verifyComponentInspectorDisabled = () => {
   cy.get(commonWidgetSelector.draggableWidget("button1")).click();
   cy.wait(500);
-  cy.contains(multiEnvText.releasedAppText, { timeout: 5000 }).should(
-    "be.visible"
+  cy.get(versionModalSelector.versionLockInfoText).verifyVisibleElement(
+    "have.text",
+    "This version is locked. To make edits, create a draft version."
   );
   cy.get("#inspector-tabpane-properties .disabled").should("exist");
   cy.get("#inspector-tabpane-styles .disabled").should("exist");
