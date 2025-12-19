@@ -3,7 +3,7 @@ id: mongodb
 title: MongoDB
 ---
 
-ToolJet can connect to MongoDB to read and write data.
+A built-in integration in ToolJet that lets you connect to your MongoDB databases and perform CRUD operations directly from your internal tools or apps without writing backend code. You can configure connections using either host/port credentials or a connection string, and then build, run, and transform queries (like finding, inserting, updating, and deleting documents) through the ToolJet query manager UI.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -16,12 +16,12 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 :::
 
 ### Connection Format
-- **Standard(mongodb)**
+**Standard(mongodb)**
 
-Use this option when connecting to a specific MongoDB host and port.
+  Use this option when connecting to a specific MongoDB host and port.
 It requires manually entering server details and is suitable for standalone MongoDB deployments or custom network setups.
 
-- **DNS Seed list (mongodb + srv)**
+ **DNS Seed List (mongodb + srv)**
 
 Use this option for MongoDB Atlas or replica set clusters.
 It automatically discovers hosts using DNS, reduces configuration effort, and is the recommended approach for scalable and managed MongoDB deployments.
@@ -45,7 +45,7 @@ ToolJet requires the following to connect to your MongoDB.
   - **CA Certificate**: Requires a CA certificate to verify the server certificate.
   - **Client Certificate**: Requires a client certificate, client key, and CA certificate to authenticate with the server.
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
 
 </div>
 
