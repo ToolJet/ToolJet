@@ -300,8 +300,8 @@ export const createGridSlice = (set, get) => ({
         isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
           ? containerHeight
           : visibility
-            ? componentElement.offsetHeight
-            : HIDDEN_COMPONENT_HEIGHT;
+          ? componentElement.offsetHeight
+          : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
@@ -465,9 +465,6 @@ export const createGridSlice = (set, get) => ({
       !isGroupDragging
     ) {
       clearSelectedComponents();
-      if (isRightSidebarOpen) {
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-      }
     }
   },
 });

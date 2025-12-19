@@ -34,9 +34,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const variant = component?.component?.definition?.properties?.variant?.value;
-  const prevVariant = usePrevious(variant)
-  console.log("variant", component?.component?.definition);
-
+  const prevVariant = usePrevious(variant);
 
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
@@ -59,14 +57,13 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
   useEffect(() => {
     const completedLabelColor = component?.component?.definition?.styles?.completedLabel?.value;
     if (variant !== prevVariant) {
-      if (variant === "numbers" && completedLabelColor === "#1B1F24") {
-        paramUpdated({ name: 'completedLabel' }, 'value', "#FFFFFF", 'styles', false, {});
-      } else if (variant === "titles" && completedLabelColor === "#FFFFFF") {
-        paramUpdated({ name: 'completedLabel' }, 'value', "#1B1F24", 'styles', false, {});
+      if (variant === 'numbers' && completedLabelColor === '#1B1F24') {
+        paramUpdated({ name: 'completedLabel' }, 'value', '#FFFFFF', 'styles', false, {});
+      } else if (variant === 'titles' && completedLabelColor === '#FFFFFF') {
+        paramUpdated({ name: 'completedLabel' }, 'value', '#1B1F24', 'styles', false, {});
       }
     }
-
-  }, [variant])
+  }, [variant]);
 
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
@@ -394,15 +391,15 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                   )}
                   {isDynamicStepsEnabled
                     ? renderElement(
-                      component,
-                      componentMeta,
-                      paramUpdated,
-                      dataQueries,
-                      'schema',
-                      'properties',
-                      currentState,
-                      allComponents
-                    )
+                        component,
+                        componentMeta,
+                        paramUpdated,
+                        dataQueries,
+                        'schema',
+                        'properties',
+                        currentState,
+                        allComponents
+                      )
                     : _renderOptions()}
                 </>
               );
