@@ -1,14 +1,14 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import * as common from "Support/utils/common";
+import {
+  instanceSSOConfig,
+  openInstanceSettings,
+  passwordToggle,
+  verifyTooltipDisabled,
+} from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
-import {
-  openInstanceSettings,
-  verifyTooltipDisabled,
-  instanceSSOConfig,
-  passwordToggle,
-} from "Support/utils/platform/eeCommon";
 
 export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
@@ -315,10 +315,13 @@ export const gitSSOPageElements = (pageName) => {
 export const oidcSSOPageElements = (pageName) => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcTitle).verifyVisibleElement(
-    "have.text",
-    ssoText.oidcTitle
-  );
+  if (pageName === "workspace") {
+    cy.get('[data-cy="add-oidc-provider-button"]').click();
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", "OIDC 1");
+  }
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", ssoText.oidcTitle);
+  }
   cy.get(ssoSelector.statusLabel)
     .eq(0)
     .should("be.visible")
@@ -338,18 +341,29 @@ export const oidcSSOPageElements = (pageName) => {
     cy.get(ssoSelector.statusLabel)
       .eq(0)
       .verifyVisibleElement("have.text", ssoText.enabledLabel);
-  }
 
+    cy.get('[data-cy="name-label"]').verifyVisibleElement("have.text", "Name");
+  }
   cy.clearAndType(ssoSelector.nameInput, ssoText.testName);
   cy.clearAndType(ssoSelector.clientIdInput, ssoText.testclientId);
   cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testclientSecret);
   cy.clearAndType(ssoSelector.wellKnownUrlInput, ssoText.testWellknownUrl);
   cy.get(ssoSelector.cancelButton).eq(1).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="oidc-modal-cancel-button"]').click();
+  }
+
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcEnableToggle).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="provider-name-oidc-1"]').click();
+  }
+
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcEnableToggle).click();
+  }
 
   if (pageName === "workspace") {
-    cy.get(ssoSelector.nameInput).should("have.value", "");
+    cy.get(ssoSelector.nameInput).should("have.value", "OIDC 1");
     cy.get(ssoSelector.clientIdInput).should("have.value", "");
     cy.get(ssoSelector.clientSecretInput).should(
       "have.value",
@@ -914,12 +928,13 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
-export const addOIDCConfig = (
+export const addOktaOIDCConfig = (
   groupMapping,
   level = "workspace",
   extra = {}
 ) => {
   const config = {
+    ...(level === "workspace" ? { configId: "22f22523-7bc2-4134-891d-88bdfec073cd" } : {}),
     type: "openid",
     configs: {
       name: "",
@@ -1027,12 +1042,12 @@ export const gitHubSignInWithAssertion = (
  * @param {string} email - The email of the user to delete
  */
 export const cleanupTestUser = (email) => {
-  cy.runSqlQuery(
+  cy.runSqlQueryOnDB(
     `SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`
   ).then((result) => {
     cy.log("User existence :", JSON.stringify(result?.rows?.[0]?.exists));
     if (result?.rows?.[0]?.exists) {
-      cy.runSqlQuery(`CALL delete_users(ARRAY['${email}']::text[]);`);
+      cy.runSqlQueryOnDB(`CALL delete_users(ARRAY['${email}']::text[]);`);
     }
   });
 };

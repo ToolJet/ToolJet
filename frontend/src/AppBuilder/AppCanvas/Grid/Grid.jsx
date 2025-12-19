@@ -4,7 +4,6 @@ import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
 import _, { isArray, isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
-import { cn } from '@/lib/utils';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
@@ -94,7 +93,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
-
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
@@ -605,7 +603,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
   if (mode !== 'edit') return null;
-
   return (
     <>
       <Moveable
@@ -978,6 +975,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         onDragEnd={(e) => {
           stopAutoScroll();
           handleDeactivateTargets();
+          setCanvasBounds({ ...CANVAS_BOUNDS });
+          hideGridLines();
+          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+
+          /* if the drag end is on the virtual ghost element(component drop), return */
           if (e.target.id === 'moveable-virtual-ghost-element') {
             return;
           }
@@ -986,7 +988,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
-            // Reset per-drag-session flag
 
             const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent ?? 'canvas';
             prevDragParentId.current = null;
@@ -1013,7 +1014,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             let scrollDelta = computeScrollDeltaOnDrag(target.slotId);
 
             if (isParentChangeAllowed && !isModalToCanvas && !isParentModuleContainer) {
-              // Special case for Modal; If source widget is modal, prevent drops to canvas
               const parent = target.slotId === 'real-canvas' ? null : target.slotId;
               handleDragEnd([{ id: e.target.id, x: left, y: top + scrollDelta, parent }]);
             } else {
@@ -1039,9 +1039,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           } catch (error) {
             console.error('Error in onDragEnd:', error);
           }
-          setCanvasBounds({ ...CANVAS_BOUNDS });
-          hideGridLines();
-          clearActiveTargetClassNamesAfterSnapping(selectedComponents);
+
           toggleCanvasUpdater();
         }}
         onDrag={(e) => {
@@ -1261,7 +1259,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
-        bounds={canvasBounds}
+        bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{
@@ -1294,6 +1292,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
         snapGridAll={true}
         onClick={(e) => {
+          // Check if the click is on a config handle button
+          const configHandleButton = e.inputEvent?.target?.closest('.config-handle-button');
+
+          // Only execute if clicked on the first child (component-name-btn) span, not on inspect, properties, or delete buttons
+          if (configHandleButton && !configHandleButton.classList.contains('component-name-btn')) {
+            // Clicked on inspect, properties, or delete buttons - don't execute
+            return;
+          }
+
           useStore.getState().setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
           useStore.getState().setRightSidebarOpen(true);
         }}

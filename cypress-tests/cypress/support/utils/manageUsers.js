@@ -344,20 +344,20 @@ export const fetchAndVisitInviteLink = (
 ) => {
   let invitationToken, organizationToken, workspaceId, userId;
 
-  cy.runSqlQuery(`select invitation_token from users where email='${email}';`)
+  cy.runSqlQueryOnDB(`select invitation_token from users where email='${email}';`)
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
-      return cy.runSqlQuery(
+      return cy.runSqlQueryOnDB(
         `select id from organizations where name='${workspaceName}';`
       );
     })
     .then((resp) => {
       workspaceId = resp.rows[0]?.id;
-      return cy.runSqlQuery(`select id from users where email='${email}';`);
+      return cy.runSqlQueryOnDB(`select id from users where email='${email}';`);
     })
     .then((resp) => {
       userId = resp.rows[0]?.id;
-      return cy.runSqlQuery(
+      return cy.runSqlQueryOnDB(
         `select invitation_token from organization_users where user_id='${userId}';`
       );
     })
@@ -554,7 +554,7 @@ export const cleanAllUsers = () => {
       );
       const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
 
-      return cy.runSqlQuery(`CALL delete_users(${emailsArrayLiteral});`);
+      return cy.runSqlQueryOnDB(`CALL delete_users(${emailsArrayLiteral});`);
     });
 };
 

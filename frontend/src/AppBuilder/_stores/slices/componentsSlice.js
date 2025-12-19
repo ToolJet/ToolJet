@@ -2152,7 +2152,11 @@ export const createComponentsSlice = (set, get) => ({
   },
   checkIfComponentIsModule: (componentId, moduleId = 'canvas') =>
     get().getComponentDefinition(componentId, moduleId)?.component?.component === 'ModuleViewer',
-  updateContainerAutoHeight: (componentId, moduleId = 'canvas', { saveAfterAction = true, returnDiff = false } = {}) => {
+  updateContainerAutoHeight: (
+    componentId,
+    moduleId = 'canvas',
+    { saveAfterAction = true, returnDiff = false } = {}
+  ) => {
     if (
       !componentId ||
       componentId === 'canvas' ||
@@ -2176,7 +2180,8 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    const currentCanvasHeight = getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
+    const currentCanvasHeight =
+      getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
     if (currentCanvasHeight === maxHeight) {
       return returnDiff ? null : undefined;
     }
@@ -2408,5 +2413,24 @@ export const createComponentsSlice = (set, get) => ({
       const componentExposedProperty = getExposedValueOfComponent(componentId, moduleId)?.[property];
       return componentExposedProperty;
     }
+  },
+
+  getCurrentAdditionalActionValue: (
+    componentId,
+    subContainerIndex,
+    property,
+    fallbackProperty,
+    moduleId = 'canvas'
+  ) => {
+    const { getResolvedComponent, getExposedPropertyForAdditionalActions } = get();
+    const component = getResolvedComponent(componentId, subContainerIndex, moduleId);
+    const componentExposedProperty = getExposedPropertyForAdditionalActions(
+      componentId,
+      subContainerIndex,
+      property,
+      moduleId
+    );
+    if (componentExposedProperty !== undefined) return componentExposedProperty;
+    return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
   },
 });
