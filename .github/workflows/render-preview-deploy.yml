@@ -13,8 +13,7 @@ permissions:
   issues: write
 
 jobs:
-
-# Community Edition CE
+  # Community Edition CE ssdvc
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
@@ -300,7 +299,6 @@ jobs:
               console.log(e)
             }
 
-     
   suspend-ce-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ce-review-app' }}
     runs-on: ubuntu-latest
@@ -372,16 +370,13 @@ jobs:
               console.log(e)
             }
 
-
-
-# Enterprise Edition
+  # Enterprise Edition
 
   create-ee-review-app:
     if: |
       (github.event.action == 'labeled' && (github.event.label.name == 'create-ee-review-app' || github.event.label.name == 'create-ee-lts-review-app' || github.event.label.name == 'review-app')) ||
       (github.event.action == 'created' && (contains(github.event.comment.body, '/deploy-ee') || contains(github.event.comment.body, '/deploy-ee-lts')))
     runs-on: ubuntu-latest
-
     steps:
       - name: Get PR details for issue_comment events
         if: github.event_name == 'issue_comment'
@@ -657,7 +652,7 @@ jobs:
             } catch (e) {
               console.log(e)
             }
-            
+
             try {
               await github.rest.issues.removeLabel({
                 issue_number: context.issue.number,
@@ -730,8 +725,6 @@ jobs:
               console.log(e)
             }
 
-
-
   suspend-ee-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-ee-review-app' }}
     runs-on: ubuntu-latest
@@ -803,8 +796,6 @@ jobs:
               console.log(e)
             }
 
-
-
   redeploy-review-app:
     if: ${{ github.event.action == 'synchronize' || github.event.action == 'opened' }}
     runs-on: ubuntu-latest
@@ -842,7 +833,6 @@ jobs:
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
 
-
       - name: Redeploy EE review app if active
         if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         id: redeploy_ee
@@ -863,7 +853,6 @@ jobs:
           DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
-
 
   render-bot-check-deployment:
     runs-on: ubuntu-latest
@@ -1035,4 +1024,3 @@ jobs:
             } catch (e) {
               console.log(e)
             }
-            
