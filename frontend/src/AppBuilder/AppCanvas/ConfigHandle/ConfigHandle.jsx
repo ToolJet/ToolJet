@@ -38,11 +38,6 @@ export const ConfigHandle = ({
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
-
-  if (readOnly) {
-    return null;
-  }
-
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow
@@ -175,6 +170,11 @@ export const ConfigHandle = ({
       </div>
     </div>
   );
+
+  if (readOnly) {
+    return null;
+  }
+
 
   return (
     <div
