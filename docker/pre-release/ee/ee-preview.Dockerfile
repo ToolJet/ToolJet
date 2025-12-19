@@ -6,9 +6,15 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /app
 
-# Build arguments (kept for reference/compatibility, but git operations removed)
+# Build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
+
+# Install git for submodule initialization (rarely changes)
+RUN apt-get update -yq && \
+    apt-get install -y git && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install global npm tools first (rarely changes)
 RUN npm install -g @nestjs/cli@11.0.7 copyfiles
@@ -25,18 +31,26 @@ RUN npm --prefix frontend install
 RUN npm --prefix server install
 
 # Copy source code AFTER npm install (changes frequently)
-# Note: Submodules (ee-frontend, ee-server) will already be checked out by GitHub Actions
 COPY ./plugins/ ./plugins/
 COPY ./frontend/ ./frontend/
 COPY ./server/ ./server/
 
-# Check if EE submodules are present, log warning if missing
-RUN if [ ! -d "./frontend/ee" ] || [ ! -d "./server/ee" ]; then \
-      echo "WARNING: EE submodules not found. Build may fail if EE features are required."; \
-      echo "Ensure GitHub Actions checkout includes submodules with 'recursive' option."; \
-    else \
-      echo "✓ EE submodules detected: frontend/ee and server/ee"; \
-    fi
+# Clone EE submodules directly (Render's build context doesn't include .git)
+# This is faster than cloning the whole repo - only clones the submodules
+RUN echo "🔧 Cloning EE submodules..." && \
+    git clone --depth 1 --branch ${BRANCH_NAME:-main} \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git \
+      ./frontend/ee || \
+    git clone --depth 1 --branch main \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git \
+      ./frontend/ee && \
+    git clone --depth 1 --branch ${BRANCH_NAME:-main} \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git \
+      ./server/ee || \
+    git clone --depth 1 --branch main \
+      https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git \
+      ./server/ee && \
+    echo "✅ EE submodules cloned: frontend/ee and server/ee"
 
 # Build plugins
 RUN NODE_ENV=production npm --prefix plugins run build && \
@@ -97,8 +111,13 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
     rm -rf /var/lib/apt/lists/*
 
 # Setup PostgreSQL directories and initialize (rarely changes)
+# CRITICAL: Remove existing data directory before initializing
+# PostgreSQL apt package creates /var/lib/postgresql/13/main with files, but initdb requires empty dir
 RUN mkdir -p /var/lib/postgresql/13/main /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
+    rm -rf /var/lib/postgresql/13/main && \
+    mkdir -p /var/lib/postgresql/13/main && \
+    chown -R postgres:postgres /var/lib/postgresql && \
     su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
 # Configure supervisord (rarely changes)
