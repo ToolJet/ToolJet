@@ -6,3 +6,4 @@
 /cypress/videos
 /coverage
 /.nyc_output
+/cypress/.webpack_cache

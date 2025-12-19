@@ -1,24 +1,36 @@
 .config-handle-button {
+    height: 24px;
     button {
         border-radius: 6px !important;
         font-size: 11px; 
         font-weight: 500;
-        line-height: 16px;
         text-transform: none;
         cursor: move;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: transparent;
+            transition: background 0.15s ease;
+        }
     }
 
     &:not(.no-hover) {
-        button:hover {
-            background: var(--background-accent-strong) !important;
+        button:hover::after {
+            background: var(--interactive-hover);
         }
 
-        button.badge:active {
-            background: linear-gradient(0deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.12)),
-             linear-gradient(0deg, var(--background-accent-strong, #4368E3), var(--background-accent-strong, #4368E3)) !important;
+        button.badge:active::after {
+            background: var(--interactive-selected);
         }
     }
-
-   
-      
 }

@@ -51,7 +51,7 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-bigquery`,
       "bigquery",
@@ -110,7 +110,7 @@ describe("Data source BigQuery", () => {
 
   it("Should verify the functionality of BigQuery connection form.", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-bigquery`,
       "bigquery",
@@ -133,6 +133,6 @@ describe("Data source BigQuery", () => {
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-bigquery`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-bigquery`);
   });
 });
