@@ -382,6 +382,11 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests
@@ -806,6 +811,11 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -1246,6 +1256,11 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -1688,6 +1703,11 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
