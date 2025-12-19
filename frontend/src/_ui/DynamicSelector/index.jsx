@@ -35,7 +35,13 @@ const DynamicSelector = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const [isFxMode, setIsFxMode] = useState(false);
+    const [isFxMode, setIsFxMode] = useState(() => {
+        if (options?.[`${propertyKey}_fx`] !== undefined) {
+            return options[`${propertyKey}_fx`];
+        }
+
+        return false;
+    });
 
     const depKeys = Array.isArray(dependsOn) ? dependsOn : [];
     const depValues = Object.fromEntries(depKeys.map(key => [key, options?.[key]?.value ?? options?.[key]]));
@@ -292,6 +298,13 @@ const DynamicSelector = ({
     const handleFxChange = () => {
         const newFxMode = !isFxMode;
         setIsFxMode(newFxMode);
+
+        const updatedOptions = {
+            ...options,
+            [`${propertyKey}_fx`]: newFxMode
+        };
+        optionsChanged(updatedOptions);
+
         if (!newFxMode) {
             // When switching back to dropdown, if the value is dynamic, we might want to clear it or keep it?
             // Usually if it's dynamic code, it won't match a dropdown option.
