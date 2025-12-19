@@ -97,8 +97,13 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
     rm -rf /var/lib/apt/lists/*
 
 # Setup PostgreSQL directories and initialize (rarely changes)
+# CRITICAL: Remove existing data directory before initializing
+# PostgreSQL apt package creates /var/lib/postgresql/13/main with files, but initdb requires empty dir
 RUN mkdir -p /var/lib/postgresql/13/main /var/log/supervisor /var/run/postgresql && \
     chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
+    rm -rf /var/lib/postgresql/13/main && \
+    mkdir -p /var/lib/postgresql/13/main && \
+    chown -R postgres:postgres /var/lib/postgresql && \
     su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
 # Configure supervisord (rarely changes)
