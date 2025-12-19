@@ -454,9 +454,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -832,13 +831,23 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'control-component': {
             try {
+              const { getComponentDefinition } = get();
               // let component = Object.values(getCurrentState()?.components ?? {}).filter(
               //   (component) => component.id === event.componentId
               // )[0];
               if (!event.componentSpecificActionHandle) {
                 throw new Error('No component-specific action handle provided.');
               }
-              const component = getExposedValueOfComponent(event.componentId);
+              const componentDefinition = getComponentDefinition(event.componentId, moduleId);
+              const componentName = componentDefinition?.component?.name;
+              const parent = componentDefinition?.component?.parent;
+              const parentDefinition = getComponentDefinition(parent, moduleId);
+              const parentType = parentDefinition?.component?.component;
+              let component = getExposedValueOfComponent(event.componentId);
+              if (parentType === 'Form' && componentName) {
+                component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+              }
+
               if (!event.componentId || !Object.keys(component).length) {
                 throw new Error('No component ID provided for control-component action.');
               }

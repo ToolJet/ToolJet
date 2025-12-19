@@ -6,7 +6,7 @@ import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { deepClone, deepCloneWithFunctions } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -276,10 +276,9 @@ const FormComponent = (props) => {
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
     );
 
-    const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
-      ...(!advanced && { children: formattedChildDataClone }),
-      data: removeFunctionObjects(formattedChildDataClone),
+      ...(!advanced && { children: deepCloneWithFunctions(formattedChildData) }),
+      data: removeFunctionObjects(deepClone(formattedChildData)),
       isValid: childValidation,
       formData, // Expose formData
     };
@@ -321,20 +320,11 @@ const FormComponent = (props) => {
   };
 
   function onComponentOptionChangedForSubcontainer(component, key, value, id = '') {
-    if (typeof value === 'function') {
-      return Promise.resolve();
-    }
     onOptionChange(key, value, id, component);
   }
 
   function onComponentOptionsChangedForSubcontainer(component, exposedValues, id) {
-    const transformedExposedValues = Object.entries(exposedValues).reduce((acc, [key, value]) => {
-      if (typeof value === 'function') {
-        return acc;
-      }
-      return { ...acc, [key]: value };
-    }, {});
-    onOptionsChange(transformedExposedValues, id, component);
+    onOptionsChange(exposedValues, id, component);
   }
 
   const onOptionChange = useCallback(
