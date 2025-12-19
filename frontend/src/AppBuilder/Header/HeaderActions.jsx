@@ -39,7 +39,7 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
     shallow
   );
 
-  const { isAnimating } = usePreviewToggleAnimation(moduleId);
+  const { isAnimating } = usePreviewToggleAnimation({ animationType: 'width', moduleId });
 
   const clearSelectionBorder = useCallback(() => {
     clearSelectedComponents();
