@@ -25,17 +25,22 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
+      fail-fast: false
       matrix:
-        edition: >-
-          ${{
-            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && fromJson('["ee"]') ||
-            fromJson('[]')
-          }}
+        edition: ${{
+          (contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]')) ||
+          (contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]')) ||
+          (contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]')) ||
+          (contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && fromJson('["ee"]')) ||
+          fromJson('[]')
+        }}
 
     steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
       - name: Free up disk space
         run: |
           echo "Available disk space before cleanup:"
@@ -184,6 +189,18 @@ jobs:
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
+
+      - name: Pull Docker image
+        run: |
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            echo "Pulling CE Docker image..."
+            docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            echo "Pulling EE Docker image..."
+            docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+          fi
+          echo "Disk space after pull:"
+          df -h
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -446,6 +463,13 @@ jobs:
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
+
+      - name: Pull Docker image
+        run: |
+          echo "Pulling CE Docker image..."
+          docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+          echo "Disk space after pull:"
+          df -h
 
       - name: Run docker-compose file
         run: docker-compose up -d
