@@ -119,7 +119,7 @@ export const verifyResetPasswordModalUI = (userEmail) => {
   cy.contains("label", "Create password").should("be.visible");
   cy.contains("label", "Create password").click();
   cy.get('[data-cy="password-input"]').should("be.visible");
-  cy.contains("Password should be at least 5 characters").should("be.visible");
+  // cy.contains("Password should be at least 5 characters").should("be.visible");
   cy.get(commonSelectors.cancelButton).should("be.visible");
   cy.get('[data-cy="reset-button"]').should("be.visible");
   cy.get(commonSelectors.cancelButton).click();

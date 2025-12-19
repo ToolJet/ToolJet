@@ -31,7 +31,6 @@ import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
-  const scrollTimeoutRef = useRef(null);
   const canvasContentRef = useRef(null);
   const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);

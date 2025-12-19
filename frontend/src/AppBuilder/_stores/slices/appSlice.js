@@ -129,6 +129,7 @@ export const createAppSlice = (set, get) => ({
       pageSettings,
       getPagesSidebarVisibility,
       license,
+      getCurrentAdditionalActionValue,
     } = get();
     const currentMode = getCurrentMode(moduleId);
 
@@ -154,15 +155,11 @@ export const createAppSlice = (set, get) => ({
       if (!layout) {
         return max;
       }
-      const visibility =
-        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
 
-      // In view mode, skip components with visibility false or undefined
+      const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
       if (currentMode === 'view' && !visibility) {
         return max;
       }
-
       const height = visibility ? layout.height : 10;
       const sum = layout.top + height;
       return Math.max(max, sum);
@@ -172,9 +169,10 @@ export const createAppSlice = (set, get) => ({
       .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
       .reduce((max, [componentId, layout]) => {
         const component = currentMainCanvasComponents.find((component) => componentId === component.id);
-        const visibility =
-          getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-          getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
+        const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+        if (currentMode === 'view' && !visibility) {
+          return max;
+        }
         const sum = layout.top + (visibility ? layout.height : 10);
         return Math.max(max, sum);
       }, 0);

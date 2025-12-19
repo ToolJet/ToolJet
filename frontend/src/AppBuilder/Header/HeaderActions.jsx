@@ -67,12 +67,12 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
       )}
       {showPreviewBtn && (
         <ButtonComponent
+          isLucid
           size="default"
           variant="outline"
           leadingIcon={currentMode === 'edit' ? 'play' : 'square-pen'}
           data-cy="preview-link-button"
           style={{ width: currentMode === 'edit' ? '92px' : '70px', padding: '7px 12px' }}
-          isLucid={true}
           onClick={() => toggleCurrentMode(moduleId)}
           className={'tw-transition-[width] tw-duration-300 tw-ease-linear'}
           isLoading={isAnimating}

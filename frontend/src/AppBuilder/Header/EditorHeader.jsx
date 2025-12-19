@@ -14,7 +14,6 @@ import './styles/style.scss';
 
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
-import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -115,14 +114,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
           </div>
         </div>
       </header>
-      <Tooltip
-        id="editor-header-tooltip"
-        className="tw-text-text-default tw-bg-background-inverse tw-p-3 tw-rounded-md tw-text-xs tw-font-medium"
-        style={{ zIndex: 9999 }}
-        place="bottom"
-        delayShow={300}
-        delayHide={100}
-      />
     </div>
   );
 };

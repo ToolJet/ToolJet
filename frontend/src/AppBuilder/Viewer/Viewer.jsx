@@ -32,6 +32,7 @@ export const Viewer = ({
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
   const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
+  const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
 
   const {
     isEditorLoading,
@@ -110,7 +111,7 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts, triggerCanvasUpdater]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);

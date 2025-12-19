@@ -198,12 +198,14 @@ export const BaseLeftSidebar = ({
         {!isUserInZeroToOneFlow && (
           <>
             {renderCommonItems()}
-            <AppHistoryIcon
+            {/* App history temporarily disabled: setup is incomplete in cloud environment and caused a prod bug.
+                TODO: Re-enable queueing only after the setup flow is finished and validated end-to-end in cloud environment. */}
+            {/* <AppHistoryIcon
               darkMode={darkMode}
               selectedSidebarItem={selectedSidebarItem}
               handleSelectedSidebarItem={handleSelectedSidebarItem}
               setSideBarBtnRefs={setSideBarBtnRefs}
-            />
+            /> */}
             <SidebarItem
               icon="settings"
               selectedSidebarItem={selectedSidebarItem}
@@ -248,6 +250,9 @@ export const BaseLeftSidebar = ({
         side="right"
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
+        contentProps={{
+          onOpenAutoFocus: (e) => e.preventDefault(),
+        }}
       />
       <div className="left-sidebar-stack-bottom">
         <div className="tw-flex tw-flex-col tw-gap-2">

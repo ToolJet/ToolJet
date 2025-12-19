@@ -82,10 +82,6 @@ const WidgetWrapper = memo(
     if (!canShowInCurrentLayout || !layoutData) {
       return null;
     }
-    if (mode === 'view' && visibility === false) {
-      return null;
-    }
-    
 
     let newLayoutData = layoutData;
 
@@ -109,8 +105,9 @@ const WidgetWrapper = memo(
           : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
-      border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
+      border: !visibility && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
       boxSizing: 'content-box',
+      display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
     const isModuleContainer = componentType === 'ModuleContainer';
