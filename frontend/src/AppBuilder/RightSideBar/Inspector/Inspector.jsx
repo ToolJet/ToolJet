@@ -126,6 +126,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CircularProgressBar',
   'CustomComponent',
   'Html',
+  'CodeEditor',
+  'Form',
 ];
 
 export const Inspector = ({

@@ -745,7 +745,7 @@ export const tableConfig = {
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       tableType: { value: 'table-classic' },
       maxRowHeight: { value: 'auto' },
       maxRowHeightValue: { value: '{{0}}' }, // Setting it here as 0 since TableRowHeightInput component will set the value
