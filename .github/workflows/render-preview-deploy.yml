@@ -812,23 +812,118 @@ jobs:
             });
             return labels.data.map(l => l.name);
 
+      - name: Checkout code for cache detection
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: refs/pull/${{ github.event.number }}/head
+
+      - name: Detect cache policy
+        id: detect_cache
+        run: |
+          chmod +x .github/scripts/detect-cache-policy.sh
+          OUTPUT=$(.github/scripts/detect-cache-policy.sh)
+          echo "$OUTPUT"
+          CACHE_POLICY=$(echo "$OUTPUT" | grep "CACHE_POLICY=" | cut -d'=' -f2)
+          echo "policy=$CACHE_POLICY" >> $GITHUB_OUTPUT
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Apply label overrides
+        id: final_cache_policy
+        env:
+          LABELS: ${{ steps.get_labels.outputs.result }}
+          DETECTED_POLICY: ${{ steps.detect_cache.outputs.policy }}
+        run: |
+          # Check for override labels
+          if echo "$LABELS" | grep -q "force-cache-clear"; then
+            CACHE_POLICY="clear"
+            OVERRIDE_REASON="force-cache-clear label"
+          elif echo "$LABELS" | grep -q "preserve-cache"; then
+            CACHE_POLICY="preserve"
+            OVERRIDE_REASON="preserve-cache label"
+          else
+            CACHE_POLICY="$DETECTED_POLICY"
+            OVERRIDE_REASON="auto-detected"
+          fi
+
+          echo "policy=$CACHE_POLICY" >> $GITHUB_OUTPUT
+          echo "reason=$OVERRIDE_REASON" >> $GITHUB_OUTPUT
+          echo "📊 Final cache policy: $CACHE_POLICY (reason: $OVERRIDE_REASON)"
+
+      - name: Comment cache decision on PR
+        if: "!contains(steps.get_labels.outputs.result, 'test-cache-behavior')"
+        uses: actions/github-script@v6
+        env:
+          CACHE_POLICY: ${{ steps.final_cache_policy.outputs.policy }}
+          OVERRIDE_REASON: ${{ steps.final_cache_policy.outputs.reason }}
+          DETECTION_OUTPUT: ${{ steps.detect_cache.outputs.output }}
+        with:
+          script: |
+            const policy = process.env.CACHE_POLICY;
+            const reason = process.env.OVERRIDE_REASON;
+            const detectionOutput = process.env.DETECTION_OUTPUT;
+
+            const emoji = policy === 'clear' ? '🧹' : '✅';
+            const action = policy === 'clear' ? 'Clearing cache' : 'Preserving cache';
+
+            const body = `## ${emoji} Render Build Cache Policy
+
+            **Decision**: ${action}
+            **Reason**: ${reason}
+
+            <details>
+            <summary>Detection Details</summary>
+
+            \`\`\`
+            ${detectionOutput}
+            \`\`\`
+
+            </details>
+
+            ---
+            💡 **Manual overrides available:**
+            - Add \`force-cache-clear\` label to always clear cache
+            - Add \`preserve-cache\` label to preserve cache (testing only)
+            - Add \`test-cache-behavior\` label to suppress this comment
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
       - name: Redeploy CE review app if active
         if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         id: redeploy_ce
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           PR_NUMBER: ${{ github.event.number }}
+          CACHE_POLICY: ${{ steps.final_cache_policy.outputs.policy }}
         run: |
           SERVICE_ID=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+
+          # Conditionally set cache clearing parameter
+          if [ "$CACHE_POLICY" = "clear" ]; then
+            DATA='{"clearCache":"clear"}'
+            echo "🧹 Deploying CE with cache clear"
+          else
+            DATA='{}'
+            echo "✅ Deploying CE with cache preserved"
+          fi
+
           DEPLOY_RESPONSE=$(curl --request POST \
             --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" \
-            --data '{"clearCache":"clear"}')
+            --data "$DATA")
           DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
@@ -839,17 +934,28 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           PR_NUMBER: ${{ github.event.number }}
+          CACHE_POLICY: ${{ steps.final_cache_policy.outputs.policy }}
         run: |
           SERVICE_ID=$(curl --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
             --header 'accept: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" | jq -r '.[0].service.id')
+
+          # Conditionally set cache clearing parameter
+          if [ "$CACHE_POLICY" = "clear" ]; then
+            DATA='{"clearCache":"clear"}'
+            echo "🧹 Deploying EE with cache clear"
+          else
+            DATA='{}'
+            echo "✅ Deploying EE with cache preserved"
+          fi
+
           DEPLOY_RESPONSE=$(curl --request POST \
             --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
             --header 'accept: application/json' \
             --header 'content-type: application/json' \
             --header "authorization: Bearer $RENDER_API_KEY" \
-            --data '{"clearCache":"clear"}')
+            --data "$DATA")
           DEPLOY_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           echo "DEPLOY_ID=$DEPLOY_ID" >> $GITHUB_ENV
