@@ -120,13 +120,36 @@ async function bootstrap() {
     }
     console.log('✓ Keys are different');
 
-    // Backup confirmation (skip in dry-run)
-    if (!isDryRun) {
-      console.log('\nStep 4: Backup confirmation...');
-      await promptBackupConfirmation();
-    } else {
-      console.log('\nStep 4: Backup confirmation (skipped in dry-run)');
+    // For dry-run, test with database and exit early without making changes
+    if (isDryRun) {
+      console.log('\nStep 4: Connecting to database...');
+      const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }), {
+        logger: ['error', 'warn'],
+      });
+      console.log('✓ Database connection established');
+
+      console.log('\nStep 5: Testing decryption with old key...');
+      const entityManager = nestApp.get(EntityManager);
+      await testDecryptionWithOldKey(entityManager, dualKeyService);
+      console.log('✓ Successfully verified old key can decrypt existing data');
+
+      await nestApp.close();
+
+      console.log('\n' + '═'.repeat(60));
+      console.log('✓ DRY RUN COMPLETED SUCCESSFULLY');
+      console.log('\n✓ Key validation passed');
+      console.log('✓ Old key can decrypt existing data');
+      console.log('✓ New key is ready to use');
+      console.log('\n⚠️  No changes were made to the database.');
+      console.log('   Run without --dry-run to perform actual rotation.');
+      console.log('═'.repeat(60) + '\n');
+
+      process.exit(0);
     }
+
+    // Production mode: Backup confirmation and actual rotation
+    console.log('\nStep 4: Backup confirmation...');
+    await promptBackupConfirmation();
 
     // Initialize NestJS application context for database connection
     console.log('\nStep 5: Connecting to database...');
@@ -144,39 +167,20 @@ async function bootstrap() {
 
     // Use dbTransactionWrap for automatic transaction management
     await dbTransactionWrap(async (entityManager: EntityManager) => {
-      try {
-        // Rotate all tables
-        await rotateCredentials(entityManager, dualKeyService, progress, isDryRun);
-        await rotateOrgConstants(entityManager, dualKeyService, progress, isDryRun);
-        await rotateSSOConfigs(entityManager, dualKeyService, progress, isDryRun);
-        await rotateTJDBConfigs(entityManager, dualKeyService, progress, isDryRun);
-        await rotateUserDetails(entityManager, dualKeyService, progress, isDryRun);
+      // Rotate all tables
+      await rotateCredentials(entityManager, dualKeyService, progress);
+      await rotateOrgConstants(entityManager, dualKeyService, progress);
+      await rotateSSOConfigs(entityManager, dualKeyService, progress);
+      await rotateTJDBConfigs(entityManager, dualKeyService, progress);
+      await rotateUserDetails(entityManager, dualKeyService, progress);
 
-        progress.complete();
+      progress.complete();
 
-        // Verify rotation
-        if (!isDryRun) {
-          console.log('\nStep 6: Verifying rotation...');
-          await verifyRotation(entityManager, newKey);
-          console.log('✓ Rotation verified successfully');
-          console.log('\nStep 7: Committing changes...');
-        }
-
-        // For dry-run, throw error to rollback transaction
-        if (isDryRun) {
-          console.log('\n🔍 DRY RUN: Rolling back all changes...');
-          throw new Error('DRY_RUN_ROLLBACK');
-        }
-      } catch (error) {
-        if (error.message === 'DRY_RUN_ROLLBACK') {
-          console.log('✓ Changes rolled back (dry run)');
-          // Don't re-throw for dry run
-          return;
-        }
-        console.error('\n❌ ERROR during rotation:', error.message);
-        console.log('\nRolling back all changes...');
-        throw error;
-      }
+      // Verify rotation
+      console.log('\nStep 6: Verifying rotation...');
+      await verifyRotation(entityManager, newKey);
+      console.log('✓ Rotation verified successfully');
+      console.log('\nStep 7: Committing changes...');
     });
 
     // Cleanup
@@ -184,16 +188,11 @@ async function bootstrap() {
 
     // Success message
     console.log('\n' + '═'.repeat(60));
-    if (isDryRun) {
-      console.log('✓ DRY RUN COMPLETED SUCCESSFULLY');
-      console.log('\nNo changes were made. Run without --dry-run to perform rotation.');
-    } else {
-      console.log('✓ ROTATION COMPLETED SUCCESSFULLY');
-      console.log('\n⚠️  IMPORTANT NEXT STEPS:');
-      console.log('1. Restart your application');
-      console.log('   - LOCKBOX_MASTER_KEY in .env is already set to the new key');
-      console.log('   - Your application will now use the new key for all encryption');
-    }
+    console.log('✓ ROTATION COMPLETED SUCCESSFULLY');
+    console.log('\n⚠️  IMPORTANT NEXT STEPS:');
+    console.log('1. Restart your application');
+    console.log('   - LOCKBOX_MASTER_KEY in .env is already set to the new key');
+    console.log('   - Your application will now use the new key for all encryption');
     console.log('═'.repeat(60) + '\n');
 
     process.exit(0);
@@ -279,8 +278,7 @@ async function promptBackupConfirmation(): Promise<void> {
 async function rotateCredentials(
   entityManager: EntityManager,
   dualKeyService: DualKeyEncryptionService,
-  progress: RotationProgress,
-  dryRun: boolean
+  progress: RotationProgress
 ): Promise<void> {
   const credentials = await entityManager.find(Credential);
   progress.startTable('credentials', credentials.length);
@@ -298,10 +296,8 @@ async function rotateCredentials(
       // Encrypt with new key
       const newCiphertext = await dualKeyService.encryptWithNewKey('credentials', 'value', plainValue);
 
-      if (!dryRun) {
-        cred.valueCiphertext = newCiphertext;
-        await entityManager.save(cred);
-      }
+      cred.valueCiphertext = newCiphertext;
+      await entityManager.save(cred);
 
       progress.incrementRow();
     } catch (error) {
@@ -316,8 +312,7 @@ async function rotateCredentials(
 async function rotateOrgConstants(
   entityManager: EntityManager,
   dualKeyService: DualKeyEncryptionService,
-  progress: RotationProgress,
-  dryRun: boolean
+  progress: RotationProgress
 ): Promise<void> {
   const constants = await entityManager.find(OrgEnvironmentConstantValue, {
     relations: ['organizationConstant'],
@@ -339,10 +334,8 @@ async function rotateOrgConstants(
       // Encrypt with new key
       const newCiphertext = await dualKeyService.encryptWithNewKey('org_environment_constant_values', orgId, plainValue);
 
-      if (!dryRun) {
-        constant.value = newCiphertext;
-        await entityManager.save(constant);
-      }
+      constant.value = newCiphertext;
+      await entityManager.save(constant);
 
       progress.incrementRow();
     } catch (error) {
@@ -357,8 +350,7 @@ async function rotateOrgConstants(
 async function rotateSSOConfigs(
   entityManager: EntityManager,
   dualKeyService: DualKeyEncryptionService,
-  progress: RotationProgress,
-  dryRun: boolean
+  progress: RotationProgress
 ): Promise<void> {
   const ssoConfigs = await entityManager.find(SSOConfigs);
   progress.startTable('sso_configs', ssoConfigs.length);
@@ -392,7 +384,7 @@ async function rotateSSOConfigs(
         }
       }
 
-      if (modified && !dryRun) {
+      if (modified) {
         config.configs = configsObj;
         await entityManager.save(config);
       }
@@ -410,8 +402,7 @@ async function rotateSSOConfigs(
 async function rotateTJDBConfigs(
   entityManager: EntityManager,
   dualKeyService: DualKeyEncryptionService,
-  progress: RotationProgress,
-  dryRun: boolean
+  progress: RotationProgress
 ): Promise<void> {
   const configs = await entityManager.find(OrganizationTjdbConfigurations);
   progress.startTable('organization_tjdb_configurations', configs.length);
@@ -437,10 +428,8 @@ async function rotateTJDBConfigs(
         plainPassword
       );
 
-      if (!dryRun) {
-        config.pgPassword = newCiphertext;
-        await entityManager.save(config);
-      }
+      config.pgPassword = newCiphertext;
+      await entityManager.save(config);
 
       progress.incrementRow();
     } catch (error) {
@@ -455,8 +444,7 @@ async function rotateTJDBConfigs(
 async function rotateUserDetails(
   entityManager: EntityManager,
   dualKeyService: DualKeyEncryptionService,
-  progress: RotationProgress,
-  dryRun: boolean
+  progress: RotationProgress
 ): Promise<void> {
   const userDetails = await entityManager.find(UserDetails);
   progress.startTable('user_details', userDetails.length);
@@ -474,10 +462,8 @@ async function rotateUserDetails(
       // Encrypt with new key
       const newCiphertext = await dualKeyService.encryptWithNewKey('user_details', 'userMetadata', plainMetadata);
 
-      if (!dryRun) {
-        detail.userMetadata = newCiphertext;
-        await entityManager.save(detail);
-      }
+      detail.userMetadata = newCiphertext;
+      await entityManager.save(detail);
 
       progress.incrementRow();
     } catch (error) {
@@ -534,6 +520,71 @@ async function verifyRotation(entityManager: EntityManager, newKey: string): Pro
   if (userDetail?.userMetadata) {
     await testService.decryptWithOldKey('user_details', 'userMetadata', userDetail.userMetadata);
     console.log('  ✓ User details table verified');
+  }
+}
+
+/**
+ * Test decryption with old key (for dry-run validation)
+ * This is a read-only operation that verifies the old key can decrypt existing data
+ */
+async function testDecryptionWithOldKey(
+  entityManager: EntityManager,
+  dualKeyService: DualKeyEncryptionService
+): Promise<void> {
+  let testedCount = 0;
+
+  // Test credentials
+  const credential = await entityManager.findOne(Credential, { where: {} });
+  if (credential?.valueCiphertext) {
+    await dualKeyService.decryptWithOldKey('credentials', 'value', credential.valueCiphertext);
+    console.log('  ✓ Credentials table - old key works');
+    testedCount++;
+  }
+
+  // Test org constants
+  const orgConstant = await entityManager.findOne(OrgEnvironmentConstantValue, {
+    where: {},
+    relations: ['organizationConstant'],
+  });
+  if (orgConstant?.value) {
+    const orgId = orgConstant.organizationConstant.organizationId;
+    await dualKeyService.decryptWithOldKey('org_environment_constant_values', orgId, orgConstant.value);
+    console.log('  ✓ Organization constants table - old key works');
+    testedCount++;
+  }
+
+  // Test SSO configs
+  const ssoConfig = await entityManager.findOne(SSOConfigs, { where: {} });
+  if (ssoConfig?.configs) {
+    const configsObj = typeof ssoConfig.configs === 'string' ? JSON.parse(ssoConfig.configs) : ssoConfig.configs;
+    for (const [key, value] of Object.entries(configsObj)) {
+      if (key.toLowerCase().includes('secret') && typeof value === 'string' && value.length > 0) {
+        await dualKeyService.decryptWithOldKey('ssoConfigs', key, value);
+        console.log('  ✓ SSO configs table - old key works');
+        testedCount++;
+        break;
+      }
+    }
+  }
+
+  // Test TJDB configs
+  const tjdbConfig = await entityManager.findOne(OrganizationTjdbConfigurations, { where: {} });
+  if (tjdbConfig?.pgPassword) {
+    await dualKeyService.decryptWithOldKey('organization_tjdb_configurations', 'pg_password', tjdbConfig.pgPassword);
+    console.log('  ✓ TJDB configurations table - old key works');
+    testedCount++;
+  }
+
+  // Test user details
+  const userDetail = await entityManager.findOne(UserDetails, { where: {} });
+  if (userDetail?.userMetadata) {
+    await dualKeyService.decryptWithOldKey('user_details', 'userMetadata', userDetail.userMetadata);
+    console.log('  ✓ User details table - old key works');
+    testedCount++;
+  }
+
+  if (testedCount === 0) {
+    console.log('  ⚠️  No encrypted data found to test (database might be empty)');
   }
 }
 
