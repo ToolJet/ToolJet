@@ -8,9 +8,9 @@ The Xero Plugin for ToolJet enables the integration between ToolJet applications
 ## Connection
 
 You will need the following credential to connect with Xero :
- - **Client ID**
- - **Client Secret**
-  - **Scope**
+ - Client ID
+ - Client Secret
+ - Scope
 
 ## Supported Operations
 
