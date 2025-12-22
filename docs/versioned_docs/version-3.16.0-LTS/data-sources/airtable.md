@@ -80,7 +80,7 @@ This operation retrieves a list of records from the specified table.
 Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
 :::
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-listrec.png" alt="Airtable List Records Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/listRec.png" alt="Airtable List Records Query" />
 
 
 <details id="tj-dropdown">
@@ -151,7 +151,7 @@ This operation fetches a specific record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-retrvrec.png" alt="Airtable Retrieve Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/retrieveRec.png" alt="Airtable Retrieve Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -177,7 +177,7 @@ This operation creates a new record in the specified table.
 - **Table name**
 - **Records**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-createrec.png" alt="Airtable Create Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/createRec.png" alt="Airtable Create Record Query" />
 
 #### Example
 
@@ -219,7 +219,7 @@ Update a specific record by providing new data.
 - **Record ID**
 - **Body**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-updaterec.png" alt="Airtable Update Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/updateRec.png" alt="Airtable Update Record Query" />
 
 #### Example
 
@@ -257,7 +257,7 @@ This operation removes a record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/airtable-delrec.png" alt="Airtable Delete Record Query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/airtable/deleteRec.png" alt="Airtable Delete Record Query" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
