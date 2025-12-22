@@ -823,12 +823,6 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Verify Chrome is available
-        run: |
-          echo "Checking Chrome installation..."
-          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
-          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
-
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-subpath
@@ -1277,12 +1271,6 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
-
-      - name: Verify Chrome is available
-        run: |
-          echo "Checking Chrome installation..."
-          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
-          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -1734,12 +1722,6 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
-
-      - name: Verify Chrome is available
-        run: |
-          echo "Checking Chrome installation..."
-          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
-          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
