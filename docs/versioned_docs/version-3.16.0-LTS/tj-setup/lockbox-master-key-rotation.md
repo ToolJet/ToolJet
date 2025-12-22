@@ -14,27 +14,6 @@ This guide explains how to securely rotate the `LOCKBOX_MASTER_KEY` in your self
 
 The `LOCKBOX_MASTER_KEY` is a master encryption key that ToolJet uses to encrypt sensitive data stored in your PostgreSQL database. It uses **AES-256-GCM** encryption with **HKDF-SHA384** key derivation. Periodic key rotation is an important security practice to maintain data protection and meet compliance requirements.
 
-## When to Rotate Keys
-
-### Recommended Rotation Frequency
-
-- **Standard security**: Annually
-- **High-security environments**: Every 90 days
-
-### Mandatory Rotation Scenarios
-
-You **must** rotate the `LOCKBOX_MASTER_KEY` when:
-
-- **Key exposure or suspected compromise** - If the key is accidentally exposed in logs, code repositories, or to unauthorized personnel
-- **Employee departure** - When an employee with access to the key leaves the organization
-- **Security incident** - After any security breach or incident affecting your infrastructure
-- **Security audit findings** - If an audit identifies the need for key rotation
-- **Compliance mandates** - When required by security frameworks or regulations
-
-:::warning
-Never rotate keys during peak usage hours. Plan for a maintenance window as the application must be stopped from incoming traffic during rotation.
-:::
-
 ## Prerequisites
 
 Before starting the key rotation process, ensure you have:
