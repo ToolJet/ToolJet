@@ -582,6 +582,8 @@
             "general": "General",
             "validation": "Validation",
             "structure": "Structure",
+            "data": "Data",
+            "additionalActions": "Additional Actions",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",
             "componentNameExistsError": "Component name already exists",
@@ -651,6 +653,9 @@
             "enableTimeSelection": "Enable time selection?",
             "enableDateSelection": "Enable date selection?",
             "disabledDates": "Disabled dates",
+            "minDate": "Min Date",
+            "maxDate": "Max Date",
+            "makeThisFieldMandatory": "Make this field mandatory",
             "setChecked": "Set checked",
             "status": "status",
             "defaultStatus": "Default status",
@@ -702,6 +707,9 @@
             "parseContent": "Parse content",
             "fileType": "File type",
             "dateFormat": "Date format",
+            "timeFormat": "Time Format",
+            "displayIn": "Display in",
+            "storeIn": "Store in",
             "defaultDate": "Default date",
             "events": "Events",
             "resources": "Resources",
@@ -1039,6 +1047,22 @@
         "Back": {
             "text": "Back",
             "tip": "Back to Home"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
         }
     }
 }

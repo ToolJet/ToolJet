@@ -21,6 +21,7 @@ export const RadioButtonV2 = ({
   validate,
   validation,
   id,
+  subContainerIndex,
 }) => {
   const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
@@ -248,8 +249,12 @@ export const RadioButtonV2 = ({
             <div className="">
               {selectOptions.map((option, index) => {
                 const isChecked = checkedValue == option.value;
+                const inputId = `${id}${
+                  subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
+                }-option-${index}`;
+
                 return (
-                  <label key={index} className="radio-button-container" htmlFor={`${id}-option-${index}`}>
+                  <label key={index} className="radio-button-container" htmlFor={inputId}>
                     <span
                       style={{
                         color:
@@ -275,7 +280,7 @@ export const RadioButtonV2 = ({
                         fireEvent('onSelectionChange');
                       }}
                       disabled={option.isDisabled}
-                      id={`${id}-option-${index}`}
+                      id={inputId}
                     />
                     <span
                       className="checkmark"
