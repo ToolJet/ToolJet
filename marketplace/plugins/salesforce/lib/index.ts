@@ -279,7 +279,6 @@ export default class Salesforce implements QueryService {
 
   async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic): Promise<any> {
     let refreshToken: string;
-    let instanceUrl: string;
     // If multi user authentication is enabled, we would need specific users refresh token.
     if (sourceOptions?.multiple_auth_enabled) {
       const currentToken = getCurrentToken(
@@ -293,13 +292,11 @@ export default class Salesforce implements QueryService {
         throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
       }
       refreshToken = currentToken['refresh_token'];
-      instanceUrl = currentToken['instance_url'];
     } else {
       if (!sourceOptions?.refresh_token) {
         throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
       }
       refreshToken = sourceOptions['refresh_token'];
-      instanceUrl = sourceOptions['instance_url'];
     }
 
     const accessTokenDetails = {};
@@ -315,15 +312,9 @@ export default class Salesforce implements QueryService {
       redirectUri: redirect_uri,
     });
 
-    const conn = new jsforce.Connection({
-      oauth2: oauth2,
-      instanceUrl: instanceUrl,
-      refreshToken: refreshToken,
-    });
-
     let tokenResponse = {};
     try {
-      tokenResponse = await conn.oauth2.refreshToken(refreshToken);
+      tokenResponse = await oauth2.refreshToken(refreshToken);
     } catch (error) {
       if (error.message.includes('invalid_grant') || error.message.includes('token validity expired')) {
         // Refresh token is invalid - need to re-authenticate
@@ -333,8 +324,8 @@ export default class Salesforce implements QueryService {
     }
 
     if (tokenResponse['access_token']) accessTokenDetails['access_token'] = tokenResponse['access_token'];
-    if (conn['refreshToken']) accessTokenDetails['refresh_token'] = conn['refreshToken'];
-    if (conn['instanceUrl']) accessTokenDetails['instance_url'] = conn['instanceUrl'];
+    if (tokenResponse['refresh_token']) accessTokenDetails['refresh_token'] = tokenResponse['refresh_token'];
+    if (tokenResponse['instance_url']) accessTokenDetails['instance_url'] = tokenResponse['instance_url'];
 
     return accessTokenDetails;
   }
