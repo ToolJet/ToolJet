@@ -69,7 +69,9 @@ Store this new key securely. You'll update your environment configuration with i
 ## Rotation Procedure
 
 :::info Deployment Support
-Key rotation is currently available for **Docker Compose**, **Kubernetes**, and **AWS EC2/Traditional Server** deployments. Support for **AWS ECS**, **Azure Container Instances**, and **Google Cloud Run** will be added soon.
+Key rotation is available for all deployment types:
+- **Docker Compose**, **Kubernetes**, **AWS EC2/Traditional Server** - Run rotation script directly in your environment
+- **AWS ECS**, **Azure Container Instances**, **Google Cloud Run** - Run rotation via Docker from your local machine
 :::
 
 ### Preparation Steps
@@ -93,13 +95,13 @@ nano .env
 # Update: LOCKBOX_MASTER_KEY=<new-key>
 
 # Step 4: Run rotation in dry-run mode (test first)
-docker-compose run --rm server npm run rotate:keys -- --dry-run
+docker-compose run --rm server npm run rotate:keys:prod -- --dry-run
 
 # When prompted, enter your OLD key (current production key):
 # Please enter the old key: <old-key-here>
 
 # Step 5: If dry-run succeeds, run actual rotation
-docker-compose run --rm server npm run rotate:keys
+docker-compose run --rm server npm run rotate:keys:prod
 
 # Step 6: Restart application
 docker-compose up -d
@@ -124,12 +126,12 @@ kubectl edit secret tooljet-secrets -n tooljet
 kubectl scale deployment tooljet --replicas=1 -n tooljet
 
 # Step 5: Run rotation (dry-run first)
-kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys -- --dry-run
+kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys:prod -- --dry-run
 
 # When prompted, enter OLD key
 
 # Step 6: Run actual rotation
-kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys
+kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys:prod
 
 # Step 7: Scale deployment back up
 kubectl scale deployment tooljet --replicas=3 -n tooljet
@@ -152,12 +154,12 @@ nano .env
 # Update: LOCKBOX_MASTER_KEY=<new-key>
 
 # Step 4: Run rotation (dry-run first)
-npm run rotate:keys -- --dry-run
+npm run rotate:keys:prod -- --dry-run
 
 # When prompted, enter OLD key
 
 # Step 5: Run actual rotation
-npm run rotate:keys
+npm run rotate:keys:prod
 
 # Step 6: Restart service
 sudo systemctl start nest
@@ -166,6 +168,148 @@ sudo systemctl start nest
 sudo systemctl status nest
 journalctl -u nest -f
 ```
+
+### Serverless Deployments (AWS ECS, Azure Container Instances, GCP Cloud Run)
+
+For serverless deployments, run the rotation script from your local machine using Docker. This approach works by connecting directly to your cloud database.
+
+#### Prerequisites
+
+- Docker installed on your local machine
+- Database connection details (host, port, credentials)
+- Network access to your database from your machine
+- New LOCKBOX_MASTER_KEY generated
+
+#### General Steps
+
+**Step 1: Stop incoming traffic**
+- Scale your service to 0 replicas or enable maintenance mode
+
+**Step 2: Backup your database**
+- Use your cloud provider's backup tools
+
+**Step 3: Create a `.env` file with your database credentials and new key**
+
+```bash
+cat > rotation.env << EOF
+PG_HOST=your-database-host.com
+PG_PORT=5432
+PG_DB=tooljet
+PG_USER=tooljet_user
+PG_PASS=your-password
+LOCKBOX_MASTER_KEY= # New generated key using the command openssl rand -hex 32
+EOF
+```
+
+**Step 4: Run rotation using Docker (dry-run first)**
+
+```bash
+docker run -it --rm \
+  --env-file rotation.env \
+  tooljet/tooljet:ee-lts-latest \
+  npm run rotate:keys:prod -- --dry-run
+```
+
+When prompted, enter your OLD key (current production key).
+
+**Step 5: Run actual rotation** (remove `--dry-run`):
+
+```bash
+docker run -it --rm \
+  --env-file rotation.env \
+  tooljet/tooljet:ee-lts-latest \
+  npm run rotate:keys:prod
+```
+
+**Step 6: Update your deployment** with the new LOCKBOX_MASTER_KEY and restart the service.
+
+#### AWS ECS + RDS
+
+**Database Access:**
+- Temporarily allow your IP in RDS security group
+- Use RDS endpoint as `PG_HOST`
+- SSL is enabled by default for RDS
+
+**Example `.env` file:**
+```bash
+PG_HOST=tooljet-db.abc123.us-east-1.rds.amazonaws.com
+PG_PORT=5432
+PG_DB=tooljet
+PG_USER=tooljet_user
+PG_PASS=your-password
+LOCKBOX_MASTER_KEY= # New generated key using the command openssl rand -hex 32
+```
+
+Then run: `docker run -it --rm --env-file rotation.env tooljet/tooljet:ee-lts-latest npm run rotate:keys:prod`
+
+**After rotation:**
+1. Update ECS task definition with new `LOCKBOX_MASTER_KEY` secret
+2. Deploy new task definition
+3. Scale service back up
+4. Remove your IP from security group
+
+#### Azure Container Instances + Azure Database for PostgreSQL
+
+**Database Access:**
+- Add your IP to Azure Database firewall rules temporarily
+- Use Azure Database hostname as `PG_HOST`
+- SSL is required for Azure Database
+
+**Example `.env` file:**
+```bash
+PG_HOST=tooljet-db.postgres.database.azure.com
+PG_PORT=5432
+PG_DB=tooljet
+PG_USER=tooljet_user@tooljet-db
+PG_PASS=your-password
+LOCKBOX_MASTER_KEY= # New generated key using the command openssl rand -hex 32
+```
+
+Then run: `docker run -it --rm --env-file rotation.env tooljet/tooljet:ee-lts-latest npm run rotate:keys:prod`
+
+**After rotation:**
+1. Update container instance environment variables with new `LOCKBOX_MASTER_KEY`
+2. Restart container instance
+3. Remove your IP from firewall rules
+
+#### GCP Cloud Run + Cloud SQL
+
+**Option 1: Using Cloud SQL Proxy** (Recommended)
+
+Start Cloud SQL proxy locally:
+```bash
+cloud_sql_proxy -instances=PROJECT:REGION:INSTANCE=tcp:5432
+```
+
+Create `.env` file for localhost:
+```bash
+PG_HOST=localhost
+PG_PORT=5432
+PG_DB=tooljet
+PG_USER=tooljet_user
+PG_PASS=your-password
+LOCKBOX_MASTER_KEY= # New generated key using the command openssl rand -hex 32
+```
+
+Run rotation:
+```bash
+docker run -it --rm \
+  --network="host" \
+  --env-file rotation.env \
+  tooljet/tooljet:ee-lts-latest \
+  npm run rotate:keys:prod
+```
+
+**Option 2: Using Public IP**
+
+- Enable public IP for Cloud SQL instance
+- Add your IP to authorized networks
+- Create `.env` file with Cloud SQL public IP as `PG_HOST`
+
+**After rotation:**
+1. Update Cloud Run service environment variables with new `LOCKBOX_MASTER_KEY`
+2. Deploy new revision
+3. Remove temporary network access
 
 ## Understanding the Rotation Process
 
