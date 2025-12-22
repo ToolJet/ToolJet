@@ -117,7 +117,7 @@ export const editableTagsConfig = {
       displayName: 'Allow new tags',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
       accordian: 'Options',
     },
@@ -145,6 +145,15 @@ export const editableTagsConfig = {
         defaultValue: false,
       },
       accordian: 'Options',
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
     },
     loadingState: {
       type: 'toggle',
@@ -344,10 +353,11 @@ export const editableTagsConfig = {
       label: { value: 'Tags' },
       values: { value: [] },
       advanced: { value: `{{false}}` },
-      allowNewTags: { value: '{{false}}' },
+      allowNewTags: { value: '{{true}}' },
       caseEnforcement: { value: 'none' },
       optionsLoadingState: { value: '{{false}}' },
       placeholder: { value: 'Add or select a tag' },
+      dynamicHeight: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },

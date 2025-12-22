@@ -16,10 +16,13 @@ import EditableTagsChip from './EditableTagsChip';
 import EditableTagsValueContainer from './EditableTagsValueContainer';
 import EditableTagsMenuList from './EditableTagsMenuList';
 import EditableTagsOption from './EditableTagsOption';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 export const EditableTags = ({
   id,
   height,
+  width,
   properties,
   styles,
   setExposedVariable,
@@ -30,6 +33,10 @@ export const EditableTags = ({
   validate,
   validation,
   componentName,
+  adjustComponentPositions,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
 }) => {
   const {
     label,
@@ -40,6 +47,7 @@ export const EditableTags = ({
     caseEnforcement,
     loadingState: tagsLoadingState,
     optionsLoadingState,
+    dynamicHeight,
   } = properties;
 
   const {
@@ -79,6 +87,24 @@ export const EditableTags = ({
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Dynamic height support
+  // isDynamicHeightEnabled is for grid system (only in view mode)
+  // dynamicHeight is used for visual styles (works in both edit and view modes)
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(tagsRef, dynamicHeight);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
+  });
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -393,9 +419,10 @@ export const EditableTags = ({
     control: (provided, state) => ({
       ...provided,
       minHeight: _height,
-      height: 'auto', // Allow dynamic height growth when tags wrap
+      height: dynamicHeight ? 'auto' : _height,
       boxShadow: boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
+      alignItems: 'flex-start',
       borderColor: getInputBorderColor({
         isFocused: state.isFocused || isMenuOpen,
         isValid,
@@ -419,11 +446,14 @@ export const EditableTags = ({
       ...provided,
       padding: '4px 10px',
       display: 'flex',
-      flexWrap: 'wrap',
+      flexWrap: dynamicHeight ? 'wrap' : 'nowrap',
       gap: '4px',
-      alignItems: 'center',
-      maxWidth: '100%',
+      alignItems: 'flex-start',
+      alignContent: 'flex-start',
+      maxWidth: 'calc(100% - 40px)',
       overflow: 'hidden',
+      flex: 1,
+      height: dynamicHeight ? 'auto' : '100%',
     }),
     multiValue: (provided) => ({
       ...provided,
@@ -468,6 +498,8 @@ export const EditableTags = ({
     indicatorsContainer: (provided) => ({
       ...provided,
       marginRight: '10px',
+      alignSelf: 'center',
+      flexShrink: 0,
     }),
     placeholder: (provided) => ({
       ...provided,
@@ -554,7 +586,7 @@ export const EditableTags = ({
           id={`${id}-label`}
         />
         <div
-          className="px-0 h-100"
+          className={cx('px-0', { 'h-100': !dynamicHeight })}
           onClick={handleClickInside}
           onTouchEnd={handleClickInside}
           style={{
