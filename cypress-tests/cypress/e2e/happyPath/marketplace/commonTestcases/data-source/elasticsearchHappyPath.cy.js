@@ -50,7 +50,7 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-elasticsearch`,
       "elasticsearch",

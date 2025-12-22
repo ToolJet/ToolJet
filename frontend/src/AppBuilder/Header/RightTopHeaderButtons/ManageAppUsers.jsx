@@ -190,17 +190,20 @@ class ManageAppUsersComponent extends React.Component {
     const { isHovered } = this.state.isHovered;
 
     return (
-      <div title={'Share'} className="manage-app-users" data-cy="share-button-link">
-        <Button
-          variant="ghost"
-          iconOnly
-          onClick={() => {
-            this.validateThePreExistingSlugs();
-            this.setState({ showModal: true });
-          }}
-        >
-          <Share2 width="16" height="16" className="tw-text-icon-strong" />
-        </Button>
+      <div className="manage-app-users" data-cy="share-button-link">
+        <ToolTip message="Share" placement="bottom">
+          <Button
+            variant="ghost"
+            iconOnly
+            onClick={() => {
+              this.validateThePreExistingSlugs();
+              this.setState({ showModal: true });
+            }}
+          >
+            <Share2 width="16" height="16" className="tw-text-icon-strong" />
+          </Button>
+        </ToolTip>
+
         <Modal
           show={this.state.showModal}
           size="lg"
