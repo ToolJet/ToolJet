@@ -72,7 +72,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
     moveableRef
   );
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
-  const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
+  const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const canvasWidth = NO_OF_GRIDS * gridWidth;
@@ -426,7 +426,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       const hasParentChanged = newParent !== oldParent;
       setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: hasParentChanged });
 
-      toggleCanvasUpdater();
+      incrementCanvasUpdater();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
@@ -764,7 +764,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
-          toggleCanvasUpdater();
+          incrementCanvasUpdater();
         }}
         onResizeGroupStart={({ events }) => {
           showGridLines();
@@ -871,7 +871,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             console.error('Error resizing group', error);
           }
           handleDeactivateTargets();
-          toggleCanvasUpdater();
+          incrementCanvasUpdater();
           clearActiveTargetClassNamesAfterSnapping(selectedComponents);
         }}
         checkInput
@@ -1040,7 +1040,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             console.error('Error in onDragEnd:', error);
           }
 
-          toggleCanvasUpdater();
+          incrementCanvasUpdater();
         }}
         onDrag={(e) => {
           if (e.target.id === 'moveable-virtual-ghost-element') {
@@ -1237,7 +1237,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         onDragGroupEnd={(e) => {
           // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler
           handleDragGroupEnd(e);
-          toggleCanvasUpdater();
+          incrementCanvasUpdater();
         }}
         onClickGroup={(e) => {
           const targetId =
