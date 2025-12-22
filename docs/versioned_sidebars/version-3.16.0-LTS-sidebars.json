@@ -637,7 +637,8 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "tj-setup/observability-otel"
+        "tj-setup/observability-otel",
+        "tj-setup/lockbox-master-key-rotation"
       ]
     },
     {
