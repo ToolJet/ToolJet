@@ -394,6 +394,12 @@ export const EditableTags = ({
 
   const handleClickInside = () => {
     if (isTagsDisabled || isTagsLoading) return;
+
+    // Focus the input when clicking anywhere in the component
+    if (selectRef.current) {
+      selectRef.current.focus();
+    }
+
     if (isMenuOpen) {
       setIsMenuOpen(false);
       fireEvent('onBlur');
