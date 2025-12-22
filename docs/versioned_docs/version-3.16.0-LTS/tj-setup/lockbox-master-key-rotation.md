@@ -1,6 +1,6 @@
 ---
 id: lockbox-master-key-rotation
-title: LOCKBOX_MASTER_KEY Rotation
+title: Lockbox Master Key Rotation
 ---
 
 <div className="badge badge--self-hosted">
@@ -10,7 +10,7 @@ title: LOCKBOX_MASTER_KEY Rotation
 
 This guide explains how to securely rotate the `LOCKBOX_MASTER_KEY` in your self-hosted ToolJet deployment.
 
-## What is LOCKBOX_MASTER_KEY?
+## What is Lockbox Master Key?
 
 The `LOCKBOX_MASTER_KEY` is a master encryption key that ToolJet uses to encrypt sensitive data stored in your PostgreSQL database. It uses **AES-256-GCM** encryption with **HKDF-SHA384** key derivation. Periodic key rotation is an important security practice to maintain data protection and meet compliance requirements.
 
