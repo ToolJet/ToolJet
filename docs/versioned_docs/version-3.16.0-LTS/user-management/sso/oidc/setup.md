@@ -62,7 +62,7 @@ Upon saving, OIDC SSO will be successfully enabled using your configured Identit
 
 ## Configuring Multiple OIDC Providers
 
-ToolJet allows you to configure multiple OpenID Connect (OIDC) providers simultaneously. This enables you to authenticate users using different identity providers such as Okta, Auth0, Azure AD, or Google within the same ToolJet workspace.
+ToolJet allows you to configure multiple OpenID Connect (OIDC) configurations simultaneously. This enables you to authenticate users using different identity providers such as Okta, Auth0, Microsoft Entra ID, Google or multiple tenants of the same provider within the same ToolJet workspace.
 
 Each OIDC provider is configured independently and can be enabled or disabled as needed, allowing organizations to support multiple authentication sources for different teams or user groups.
 
