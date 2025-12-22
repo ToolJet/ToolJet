@@ -19,11 +19,11 @@ const ConfigHandleButton = ({
   }
   return (
     <span className={`config-handle-button ${className}`}>
-      <ToolTip message={message} show={show}>
+      <ToolTip message={message} show={show} delay={{ show: 500, hide: 50 }}>
         <button
           style={{
-            background: 'var(--background-inverse)',
-            color: 'var(--text-inverse)',
+            background: 'var(--background-accent-strong)',
+            color: 'var(--text-on-solid)',
             ...customStyles,
           }}
           className="badge text-truncate"

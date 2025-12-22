@@ -89,7 +89,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .query-pane {
@@ -414,7 +414,7 @@ $border-radius: 4px;
                 font-size: 12px;
                 font-weight: 400;
                 line-height: 20px;
-                border: 1px solid var(--slate-07, #D7DBDF);
+                border: 1px solid var(--slate-07, #D7DBDF) !important;
                 color: var(--slate12);
                 padding-left: 12px !important;
 
@@ -424,7 +424,7 @@ $border-radius: 4px;
 
                 &:focus {
                   height: 28px;
-                  border: 1px solid var(--indigo9);
+                  border: 1px solid var(--indigo9) !important;
                   background-color: var(--indigo2);
                   box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
                   overflow: hidden;

@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,
@@ -452,6 +452,11 @@ export const createPageMenuSlice = (set, get) => {
           newOptions[key] = hexCode;
         }
       }
+
+      set((state) => {
+        state.pageSettings.definition[type] = { ...state.pageSettings.definition[type], ...newOptions };
+      });
+
       const { getAppId, currentVersionId, currentPageId } = get();
       const appId = getAppId('canvas');
       try {
@@ -463,9 +468,6 @@ export const createPageMenuSlice = (set, get) => {
           currentPageId,
           'update'
         );
-        set((state) => {
-          state.pageSettings.definition[type] = { ...state.pageSettings.definition[type], ...newOptions };
-        });
       } catch (error) {
         toast.error('Page settings could not be saved.');
         console.error('Error updating page:', error);

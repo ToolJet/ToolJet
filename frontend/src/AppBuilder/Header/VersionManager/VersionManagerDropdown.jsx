@@ -72,6 +72,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
   const [versionToPromote, setVersionToPromote] = useState(null);
   const [versionToEdit, setVersionToEdit] = useState(null);
+  const [openMenuVersionId, setOpenMenuVersionId] = useState(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
@@ -94,7 +95,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   useEffect(() => {
     if (currentEnvironment && isDropdownOpen) {
       if (appId && currentEnvironment.id) {
-        fetchVersionsForEnvironment(appId, currentEnvironment.id);
+        // Use a small delay to ensure state is ready
+        const timer = setTimeout(() => {
+          fetchVersionsForEnvironment(appId, currentEnvironment.id);
+        }, 0);
+        return () => clearTimeout(timer);
       }
     }
   }, [isDropdownOpen, currentEnvironment, appId, fetchVersionsForEnvironment]);
@@ -142,6 +147,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleEnvironmentChange = (env) => {
+    // Close any open menus when switching environments
+    setOpenMenuVersionId(null);
     // Update local filter and lazy load versions for the selected environment
     setSelectedEnvironmentFilter(env);
     if (appId && env.id) {
@@ -334,6 +341,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   onDelete={(v) => openDeleteModal(v)}
                   appId={appId}
                   darkMode={darkMode}
+                  openMenuVersionId={openMenuVersionId}
+                  setOpenMenuVersionId={setOpenMenuVersionId}
                 />
               );
             })

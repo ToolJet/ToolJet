@@ -8,6 +8,7 @@ import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 export const Modal = function Modal({
   id,
@@ -69,40 +70,6 @@ export const Modal = function Modal({
     setModalOpenOnCanvas(id, showModal);
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
-
-  // Side effects for modal, which include dom manipulation to hide overflow when opening
-  // And cleaning up dom when modal is closed
-
-  const onShowSideEffects = () => {
-    const canvasElement = document.querySelector('.page-container.canvas-container');
-    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
-    const modalContainer = allModalContainers[allModalContainers.length - 1];
-
-    if (canvasElement && realCanvasEl && modalContainer) {
-      const currentScroll = canvasElement.scrollTop;
-      canvasElement.style.overflowY = 'hidden';
-
-      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
-      modalContainer.style.top = `${currentScroll}px`;
-    }
-  };
-
-  const onHideSideEffects = () => {
-    const canvasElement = document.querySelector('.page-container.canvas-container');
-    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    const allModalContainers = realCanvasEl?.querySelectorAll('.modal');
-    const modalContainer = allModalContainers?.[allModalContainers.length - 1];
-    const hasManyModalsOpen = allModalContainers?.length > 1;
-
-    if (canvasElement && realCanvasEl && modalContainer) {
-      modalContainer.style.height = ``;
-      modalContainer.style.top = ``;
-    }
-    if (canvasElement && !hasManyModalsOpen) {
-      canvasElement.style.overflow = 'auto';
-    }
-  };
 
   // useEventListener('resize', onShowSideEffects, window);
 
@@ -189,18 +156,7 @@ export const Modal = function Modal({
       isInitialRender.current = false;
       return;
     }
-    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
-    // Scroll to top of canvas content when modal is opened and disbale page overflow
-    if (showModal) {
-      if (canvasContent) {
-        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
-        canvasContent.style.setProperty('overflow', 'hidden', 'important');
-      }
-    } else {
-      if (canvasContent) {
-        canvasContent.style.setProperty('overflow', 'auto', 'important');
-      }
-    }
+
     fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
@@ -353,6 +309,9 @@ const Component = ({ children, ...restProps }) => {
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalBodyClick = (event) => {
+    // If shift is pressed, don't select the component since its used for multi select
+    const isShiftPressed = event.shiftKey || event.nativeEvent?.shiftKey || false;
+    if (isShiftPressed) return;
     const clickedComponentId = event.target.getAttribute('component-id');
 
     // Check if the clicked element is part of the modal canvas & same widget with id
