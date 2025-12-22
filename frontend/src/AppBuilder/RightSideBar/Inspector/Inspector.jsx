@@ -830,6 +830,7 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
+      case 'EditableTags':
         return <Select {...restProps} />;
 
       case 'Tags':

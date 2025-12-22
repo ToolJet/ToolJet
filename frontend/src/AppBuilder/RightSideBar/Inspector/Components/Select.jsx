@@ -33,6 +33,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
+  const isEditableTags = component?.component?.component === 'EditableTags';
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -78,7 +79,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
+    } else if (
+      componentMeta?.properties[key]?.accordian === 'Options' ||
+      componentMeta?.properties[key]?.accordian === 'Tags'
+    ) {
       optionsProperties.push(key);
     } else {
       properties.push(key);
@@ -492,7 +496,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: 'Options',
+    title: isEditableTags ? 'Tags' : 'Options',
     isOpen: true,
     children: (
       <>
@@ -558,6 +562,28 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'sort',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isEditableTags &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'allowNewTags',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isEditableTags &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'caseEnforcement',
             'properties',
             currentState,
             allComponents

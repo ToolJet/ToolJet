@@ -86,7 +86,7 @@ export const editableTagsConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      accordian: 'Options',
+      accordian: 'Tags',
     },
     value: {
       type: 'code',
@@ -101,7 +101,7 @@ export const editableTagsConfig = {
           schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
         },
       },
-      accordian: 'Options',
+      accordian: 'Tags',
     },
     schema: {
       type: 'code',
@@ -110,16 +110,28 @@ export const editableTagsConfig = {
         key: 'advanced',
         value: true,
       },
-      accordian: 'Options',
+      accordian: 'Tags',
+    },
+    sort: {
+      type: 'switch',
+      displayName: 'Sort tags',
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      options: [
+        { displayName: 'None', value: 'none' },
+        { displayName: 'a-z', value: 'asc' },
+        { displayName: 'z-a', value: 'desc' },
+      ],
+      accordian: 'Tags',
+      isFxNotRequired: true,
     },
     allowNewTags: {
       type: 'toggle',
       displayName: 'Allow new tags',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
+        defaultValue: false,
       },
-      accordian: 'Options',
+      accordian: 'Tags',
     },
     caseEnforcement: {
       type: 'switch',
@@ -130,7 +142,7 @@ export const editableTagsConfig = {
         { displayName: 'Lowercase', value: 'lowercase' },
         { displayName: 'Uppercase', value: 'uppercase' },
       ],
-      accordian: 'Options',
+      accordian: 'Tags',
       isFxNotRequired: true,
       conditionallyRender: {
         key: 'allowNewTags',
@@ -139,12 +151,12 @@ export const editableTagsConfig = {
     },
     optionsLoadingState: {
       type: 'toggle',
-      displayName: 'Options loading state',
+      displayName: 'Tags loading state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      accordian: 'Options',
+      accordian: 'Tags',
     },
     dynamicHeight: {
       type: 'toggle',
@@ -353,8 +365,9 @@ export const editableTagsConfig = {
       label: { value: 'Tags' },
       values: { value: [] },
       advanced: { value: `{{false}}` },
-      allowNewTags: { value: '{{true}}' },
+      allowNewTags: { value: '{{false}}' },
       caseEnforcement: { value: 'none' },
+      sort: { value: 'none' },
       optionsLoadingState: { value: '{{false}}' },
       placeholder: { value: 'Add or select a tag' },
       dynamicHeight: { value: '{{true}}' },

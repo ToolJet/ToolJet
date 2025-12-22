@@ -48,6 +48,7 @@ export const EditableTags = ({
     loadingState: tagsLoadingState,
     optionsLoadingState,
     dynamicHeight,
+    sort,
   } = properties;
 
   const {
@@ -125,8 +126,8 @@ export const EditableTags = ({
             isDisabled: data?.disable ?? false,
           }))
       : [];
-    return _selectOptions;
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+    return sortArray(_selectOptions, sort);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
 
   // Combine predefined options with session-created tags
   const allOptions = useMemo(() => {
