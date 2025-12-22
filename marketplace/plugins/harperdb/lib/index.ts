@@ -8,9 +8,10 @@ class HarperDBClient {
 
   constructor(config: { host: string; port: number; username: string; password: string; ssl?: boolean }) {
     const protocol = config.ssl === false ? 'http' : 'https';
+    const portPart = config.port ? `:${config.port}` : '';
 
     this.client = axios.create({
-      baseURL: `${protocol}://${config.host}:${config.port}/v1/harperdb`,
+      baseURL: `${protocol}://${config.host}${portPart}`,
       auth: {
         username: config.username,
         password: config.password,
@@ -127,8 +128,8 @@ export default class Harperdb implements QueryService {
               schema: queryOptions.schema,
               table: queryOptions.table,
               ...(queryOptions.operator && { operator: queryOptions.operator }),
-              ...(queryOptions.offset && { offset: queryOptions.offset }),
-              ...(queryOptions.limit && { limit: queryOptions.limit }),
+              ...(queryOptions.offset !== undefined && { offset: queryOptions.offset }),
+              ...(queryOptions.limit !== undefined && { limit: queryOptions.limit }),
               get_attributes: JSON5.parse(queryOptions.attributes),
               conditions: JSON5.parse(queryOptions.conditions),
             });
@@ -170,18 +171,21 @@ export default class Harperdb implements QueryService {
       const harperdb = await this.getConnection(sourceOptions);
       const res = await harperdb.describeAll();
 
-      if (res?.statusCode === 200) {
-        return { status: 'ok' };
+      if (res?.error) {
+        return {
+          status: 'failed',
+          message: res.error,
+        };
       }
 
       return {
-        status: 'failed',
-        message: 'Invalid credentials',
+        status: 'ok',
+        data: res,
       };
     } catch (error: any) {
       return {
         status: 'failed',
-        message: error?.response?.data ?? 'Invalid credentials',
+        message: error?.response?.data || error || 'Invalid credentials',
       };
     }
   }
