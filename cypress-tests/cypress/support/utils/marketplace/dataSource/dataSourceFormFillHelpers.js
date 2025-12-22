@@ -6,8 +6,9 @@ export const fillDSConnectionTextField = (field) => {
 
 export const fillDSConnectionDropdown = (field) => {
   cy.waitForElement(dsCommonSelector.dropdownField(field.fieldName))
+  cy.get(dsCommonSelector.dropdownField(field.fieldName))
     .click();
-  cy.contains("[id*=react-select-]", field.option).click();
+  cy.contains("[id*=react-select-]", field.text).click();
 };
 
 export const toggleDSConnectionButton = (field) => {
@@ -26,6 +27,16 @@ export const selectDSConnectionRadioButton = (field) => {
     const isSelected = $radio.is(":checked");
     if (isSelected !== shouldBeSelected) {
       cy.wrap($radio).click({ force: true });
+    }
+  });
+};
+
+export const selectDSConnectionCheckbox = (field) => {
+  const shouldBeChecked = field.shouldBeChecked !== undefined ? field.shouldBeChecked : true;
+  cy.get(dsCommonSelector.checkboxInput(field.fieldName)).then(($checkbox) => {
+    const isChecked = $checkbox.is(":checked");
+    if (isChecked !== shouldBeChecked) {
+      cy.wrap($checkbox).click({ force: true });
     }
   });
 };
@@ -80,10 +91,16 @@ export const saveAndDiscardDSChanges = (option) => {
 };
 
 export const verifyDSConnection = (expectedStatus = "success", customMessage = null) => {
+  cy.intercept('POST', '**/api/data-sources/*/test-connection').as('testConnection');
+  cy.waitForElement('[data-cy="test-connection-button"]', 60000);
+
   cy.get('[data-cy="test-connection-button"]')
     .should("be.visible")
     .should("contain.text", "Test connection")
     .click();
+
+  // Wait for the API call to complete
+  cy.wait('@testConnection', { timeout: 60000 });
 
   switch (expectedStatus) {
     case "success":
@@ -93,12 +110,15 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
       break;
 
     case "failed":
+      cy.waitForElement('[data-cy="test-connection-failed-text"]', 60000);
       cy.get('[data-cy="test-connection-failed-text"]')
-        .should("be.visible", { timeout: 10000 })
+        .scrollIntoView()
+        .should("be.visible", { timeout: 30000 })
         .should("contain.text", "could not connect");
 
       cy.get('[data-cy="connection-alert-text"]')
-        .should("be.visible", { timeout: 10000 })
+        .scrollIntoView()
+        .should("be.visible", { timeout: 40000 })
         .verifyVisibleElement("have.text", customMessage);
       break;
   }
@@ -140,6 +160,9 @@ const processFields = (fields) => {
         break;
       case 'keyValue':
         fillDSConnectionKeyValuePairs(field);
+        break;
+      case 'checkbox':
+        selectDSConnectionCheckbox(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);
