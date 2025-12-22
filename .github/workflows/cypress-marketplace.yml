@@ -111,6 +111,7 @@ jobs:
           echo "Disk space after build:"
           df -h
 
+      # EE dockerfile build below
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
         run: |
@@ -158,7 +159,7 @@ jobs:
           echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
@@ -192,18 +193,6 @@ jobs:
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
-
-      - name: Pull Docker image
-        run: |
-          if [ "${{ matrix.edition }}" = "ce" ]; then
-            echo "Pulling CE Docker image..."
-            docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          elif [ "${{ matrix.edition }}" = "ee" ]; then
-            echo "Pulling EE Docker image..."
-            docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          fi
-          echo "Disk space after pull:"
-          df -h
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -291,8 +280,6 @@ jobs:
         run: |
           OUTCOME="${{ steps.cypress-tests.outcome }}"
           EDITION="${{ matrix.edition }}"
-          JOB_STATUS="${{ job.status }}"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           # Try to find and parse test results
           TOTAL_TESTS=0
@@ -301,6 +288,7 @@ jobs:
           SKIPPED_TESTS=0
 
           # Look for Cypress results in various formats
+          RESULTS_FILE=""
           if [ -f cypress-tests/results.json ]; then
             echo "Found results.json"
             RESULTS_FILE="cypress-tests/results.json"
@@ -314,64 +302,57 @@ jobs:
             echo "Parsing test results from $RESULTS_FILE"
             # Extract test counts using jq if available
             if command -v jq &> /dev/null; then
-              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              TOTAL_TESTS=$(jq '.totalTests // .stats.tests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              PASSED_TESTS=$(jq '.totalPassed // .stats.passes // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              FAILED_TESTS=$(jq '.totalFailed // .stats.failures // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
+              SKIPPED_TESTS=$(jq '.totalPending // .stats.pending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
             fi
           fi
 
-          # Determine status emoji and message
+          # Determine status emoji
           if [ "$OUTCOME" = "success" ]; then
             STATUS_EMOJI="✅"
-            STATUS_MSG="All tests passed!"
+            STATUS_TEXT="Passed"
           else
             STATUS_EMOJI="❌"
-            STATUS_MSG="Some tests failed"
+            STATUS_TEXT="Failed"
           fi
 
-          # Create enhanced summary
-          echo "## ${STATUS_EMOJI} Cypress Marketplace Tests - ${EDITION^^} Edition" > summary.md
-          echo "" >> summary.md
-          echo "**Status:** ${STATUS_MSG}" >> summary.md
-          echo "**Job Status:** ${JOB_STATUS}" >> summary.md
-          echo "**Workflow Run:** [View Details](${RUN_URL})" >> summary.md
-          echo "" >> summary.md
-          echo "### Test Results" >> summary.md
-          echo "" >> summary.md
-          echo "| Metric | Count |" >> summary.md
-          echo "|--------|-------|" >> summary.md
-          echo "| ✅ Passed | $PASSED_TESTS |" >> summary.md
-          echo "| ❌ Failed | $FAILED_TESTS |" >> summary.md
-          echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> summary.md
-          echo "| 📊 **Total** | **$TOTAL_TESTS** |" >> summary.md
-
-          # Add failure details if available
-          if [ $FAILED_TESTS -gt 0 ] && [ -n "$RESULTS_FILE" ]; then
-            echo "" >> summary.md
-            echo "### ⚠️ Failed Tests" >> summary.md
-            echo "" >> summary.md
-            echo '```' >> summary.md
-            jq -r '.failures[]? | "- \(.fullTitle)\n  Error: \(.error)"' "$RESULTS_FILE" 2>/dev/null || echo "Details not available" >> summary.md
-            echo '```' >> summary.md
-          fi
-
-          # Save summary as multiline output
+          # Create summary and save to output
           {
             echo "summary<<EOFMARKER"
-            cat summary.md
+            echo "## ${STATUS_EMOJI} Cypress Marketplace Tests - ${EDITION^^} Edition"
+            echo ""
+            echo "**Status:** ${STATUS_TEXT}"
+            echo ""
+            echo "| Metric | Count |"
+            echo "|--------|-------|"
+            echo "| ✅ Passed | ${PASSED_TESTS} |"
+            echo "| ❌ Failed | ${FAILED_TESTS} |"
+            echo "| ⏭️ Skipped | ${SKIPPED_TESTS} |"
+            echo "| 📊 **Total** | **${TOTAL_TESTS}** |"
             echo "EOFMARKER"
           } >> $GITHUB_OUTPUT
 
       - name: Set output for CE
         if: always() && matrix.edition == 'ce'
         id: set-output-ce
-        run: echo "Completed CE tests"
+        run: |
+          {
+            echo "summary<<EOFMARKER"
+            echo '${{ steps.test-summary.outputs.summary }}'
+            echo "EOFMARKER"
+          } >> $GITHUB_OUTPUT
 
       - name: Set output for EE
         if: always() && matrix.edition == 'ee'
         id: set-output-ee
-        run: echo "Completed EE tests"
+        run: |
+          {
+            echo "summary<<EOFMARKER"
+            echo '${{ steps.test-summary.outputs.summary }}'
+            echo "EOFMARKER"
+          } >> $GITHUB_OUTPUT
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -469,7 +450,7 @@ jobs:
           echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
@@ -501,13 +482,6 @@ jobs:
         run: |
           curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           chmod +x /usr/local/bin/docker-compose
-
-      - name: Pull Docker image
-        run: |
-          echo "Pulling CE Docker image..."
-          docker pull tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          echo "Disk space after pull:"
-          df -h
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -629,53 +603,3 @@ jobs:
         with:
           name: screenshots-ce-subpath
           path: cypress-tests/cypress/screenshots
-
-  create-marketplace-coverage-comment:
-    if: always() && github.event_name == 'pull_request_target'
-    needs: [Cypress-Marketplace]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-
-    steps:
-      - name: Create Marketplace Test Results Comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 🎯 Cypress Marketplace Test Coverage
-
-            ${{ needs.Cypress-Marketplace.outputs.test-summary-ce || '_(CE tests not run)_' }}
-
-            ---
-
-            ${{ needs.Cypress-Marketplace.outputs.test-summary-ee || '_(EE tests not run)_' }}
-          edit-mode: replace
-
-      - name: Add Job Summary
-        if: always()
-        run: |
-          echo "## 🎯 Cypress Marketplace Test Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add CE summary if available
-          CE_SUMMARY='${{ needs.Cypress-Marketplace.outputs.test-summary-ce }}'
-          if [ -n "$CE_SUMMARY" ] && [ "$CE_SUMMARY" != "" ]; then
-            echo "$CE_SUMMARY" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add EE summary if available
-          EE_SUMMARY='${{ needs.Cypress-Marketplace.outputs.test-summary-ee }}'
-          if [ -n "$EE_SUMMARY" ] && [ "$EE_SUMMARY" != "" ]; then
-            echo "$EE_SUMMARY" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
-          fi
