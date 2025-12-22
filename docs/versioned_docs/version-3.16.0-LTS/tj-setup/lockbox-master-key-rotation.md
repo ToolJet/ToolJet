@@ -82,7 +82,8 @@ Key rotation is available for all deployment types:
 4. **Update environment variable** - Set `LOCKBOX_MASTER_KEY` to your new key value
 5. **Keep old key accessible** - You'll be prompted to enter it during rotation
 
-### Docker Compose Deployment
+<details id="tj-dropdown">
+    <summary>Docker Compose Deployment</summary>
 
 ```bash
 # Step 1: Stop the application
@@ -110,7 +111,10 @@ docker-compose up -d
 docker-compose logs -f server
 ```
 
-### Kubernetes Deployment
+</details>
+
+<details id="tj-dropdown">
+    <summary>Kubernetes Deployment</summary>
 
 ```bash
 # Step 1: Scale down deployment
@@ -140,7 +144,10 @@ kubectl scale deployment tooljet --replicas=3 -n tooljet
 kubectl logs -f deployment/tooljet -n tooljet
 ```
 
-### AWS EC2 / Traditional Server Deployment
+</details>
+
+<details id="tj-dropdown">
+    <summary>AWS EC2 / Traditional Server Deployment</summary>
 
 ```bash
 # Step 1: Stop ToolJet service
@@ -169,7 +176,10 @@ sudo systemctl status nest
 journalctl -u nest -f
 ```
 
-### Serverless Deployments (AWS ECS, Azure Container Instances, GCP Cloud Run)
+</details>
+
+<details id="tj-dropdown">
+    <summary>Serverless Deployments (AWS ECS, Azure Container Instances, GCP Cloud Run)</summary>
 
 For serverless deployments, run the rotation script from your local machine using Docker. This approach works by connecting directly to your cloud database.
 
@@ -310,6 +320,8 @@ docker run -it --rm \
 1. Update Cloud Run service environment variables with new `LOCKBOX_MASTER_KEY`
 2. Deploy new revision
 3. Remove temporary network access
+
+</details>
 
 ## Understanding the Rotation Process
 
