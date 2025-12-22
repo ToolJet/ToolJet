@@ -231,6 +231,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
             placeholder="Select.."
             useCustomStyles={true}
             styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+            customClassPrefix="inspector-select"
           />
         )}
       </div>
@@ -320,6 +321,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                           placeholder="Select.."
                           useCustomStyles={true}
                           styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
+                          customClassPrefix="inspector-select"
                         />
                       )}
                     </div>

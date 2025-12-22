@@ -55,6 +55,7 @@ export const codeEditorConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      accordian: 'container',
     },
     disabledState: {
       type: 'toggle',
@@ -63,14 +64,34 @@ export const codeEditorConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      accordian: 'container',
     },
     borderRadius: {
       type: 'code',
       displayName: 'Border radius',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 4,
+        defaultValue: '{{6}}',
       },
+      accordian: 'container',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'container',
+    },
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -98,7 +119,9 @@ export const codeEditorConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      backgroundColor: { value: 'var(--cc-surface1-surface)' },
     },
   },
 };
