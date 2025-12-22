@@ -307,31 +307,6 @@ export const EditableTags = ({
         setIsTagsDisabled(!!value);
         setExposedVariable('isDisabled', !!value);
       },
-      selectTags: async function (tags) {
-        if (Array.isArray(tags)) {
-          const newSelected = [...selected];
-          tags.forEach((tag) => {
-            const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
-            if (
-              allOptions.some((option) => option.value === tagValue) &&
-              !selected.some((option) => option.value === tagValue)
-            ) {
-              const optionsToAdd = allOptions.filter(
-                (option) => option.value === tagValue && !selected.some((s) => s.value === tagValue)
-              );
-              newSelected.push(...optionsToAdd);
-            }
-          });
-          setInputValues(newSelected);
-        }
-      },
-      deselectTags: async function (tags) {
-        if (Array.isArray(tags)) {
-          const tagValues = tags.map((tag) => (typeof tag === 'object' && tag?.value ? tag.value : tag));
-          const newSelected = selected.filter((option) => !tagValues.includes(option.value));
-          setInputValues(newSelected);
-        }
-      },
       label: label,
       isVisible: properties.visibility,
       isLoading: tagsLoadingState,
