@@ -18,7 +18,7 @@ The `LOCKBOX_MASTER_KEY` is a master encryption key that ToolJet uses to encrypt
 
 Before starting the key rotation process, ensure you have:
 
-- **Super Admin access** - Required for database operations and script execution
+- **Database user with read/write access** - The `PG_USER` must have read and write permissions to perform database transactions
 - **Application downtime planned** - ToolJet must be stopped from incoming traffic during rotation
 - **Database backup** - Full PostgreSQL backup (script will prompt for confirmation)
 - **Old key available** - Current `LOCKBOX_MASTER_KEY` value (you'll be prompted to enter it)
