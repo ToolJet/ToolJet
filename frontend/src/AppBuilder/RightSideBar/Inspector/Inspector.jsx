@@ -106,6 +106,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'EditableTags',
   'Button',
   'Icon',
   'Image',

@@ -21,7 +21,7 @@ const EditableTagsChip = (props) => {
         borderRadius: '2px',
         fontSize: '14px',
         lineHeight: '20px',
-        color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+        color: selectedTextColor,
         maxWidth: '100%',
         minWidth: 0,
       }}

@@ -13,10 +13,11 @@ const EditableTagsMenuList = ({
   inputValue,
   optionsLoadingState,
   darkMode,
-  tagBackgroundColor,
-  selectedTextColor,
   ...props
 }) => {
+  // Use default neutral colors for dropdown "add" preview (not tagBackgroundColor)
+  const optionBackgroundColor = 'var(--surfaces-surface-03)';
+  const optionTextColor = 'var(--text-primary)';
   const menuId = selectProps?.menuId;
   const hasChildren = React.Children.count(children) > 0;
   const showCreateFooter = allowNewTags && inputValue?.trim();
@@ -90,8 +91,8 @@ const EditableTagsMenuList = ({
                 <span
                   className="editable-tags-new-tag-preview"
                   style={{
-                    backgroundColor: tagBackgroundColor || 'var(--surfaces-surface-03)',
-                    color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+                    backgroundColor: optionBackgroundColor,
+                    color: optionTextColor,
                     padding: '2px 8px',
                     borderRadius: '2px',
                     fontSize: '14px',

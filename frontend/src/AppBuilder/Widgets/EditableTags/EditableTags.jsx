@@ -466,7 +466,7 @@ export const EditableTags = ({
     }),
     multiValueLabel: (provided) => ({
       ...provided,
-      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+      color: selectedTextColor,
       fontSize: '14px',
       lineHeight: '20px',
       padding: '2px 4px 2px 8px',
@@ -477,14 +477,14 @@ export const EditableTags = ({
     }),
     multiValueRemove: (provided) => ({
       ...provided,
-      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+      color: selectedTextColor,
       cursor: 'pointer',
       paddingLeft: '2px',
       paddingRight: '6px',
       flexShrink: 0, // Prevent X icon from shrinking
       '&:hover': {
         backgroundColor: 'transparent',
-        color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+        color: selectedTextColor,
       },
     }),
     input: (provided) => ({
@@ -513,7 +513,7 @@ export const EditableTags = ({
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
-      color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--text-primary)',
+      color: 'var(--text-primary)', // Use default text color for dropdown options
       borderRadius: state.isFocused ? '8px' : '0',
       padding: '8px 12px',
       opacity: state.isDisabled ? 0.3 : 1,
@@ -652,6 +652,7 @@ export const EditableTags = ({
             // Custom props
             allowNewTags={allowNewTags}
             tagBackgroundColor={tagBackgroundColor}
+            selectedTextColor={selectedTextColor}
           />
         </div>
       </div>

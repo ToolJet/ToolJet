@@ -54,6 +54,7 @@ export function renderCustomStyles(
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
+    componentConfig.component == 'EditableTags' ||
     componentConfig.component == 'Button' ||
     componentConfig.component == 'Image' ||
     componentConfig.component == 'ModalV2' ||
