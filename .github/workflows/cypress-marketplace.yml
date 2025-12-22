@@ -30,13 +30,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        edition: ${{
-          (contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]')) ||
-          (contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]')) ||
-          (contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]')) ||
-          (contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && fromJson('["ee"]')) ||
-          fromJson('[]')
-        }}
+        edition:
+          - ${{
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && 'ee' || ''
+            }}
+        exclude:
+          - edition: ""
 
     steps:
       - name: Debug labels and matrix edition
@@ -99,14 +101,8 @@ jobs:
           echo "Pushing CE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
-          echo "Removing local image to free space..."
-          docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce || true
-
           echo "Cleaning up build cache..."
           docker builder prune -af
-
-          echo "Cleaning up all Docker resources..."
-          docker system prune -af --volumes
 
           echo "Disk space after build:"
           df -h
@@ -129,14 +125,8 @@ jobs:
           echo "Pushing EE Docker image..."
           docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
-          echo "Removing local image to free space..."
-          docker rmi tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee || true
-
           echo "Cleaning up build cache..."
           docker builder prune -af
-
-          echo "Cleaning up all Docker resources..."
-          docker system prune -af --volumes
 
           echo "Disk space after build:"
           df -h
