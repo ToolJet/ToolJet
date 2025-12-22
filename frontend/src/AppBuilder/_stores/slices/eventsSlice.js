@@ -379,6 +379,8 @@ export const createEventsSlice = (set, get) => ({
           'onTabSwitch',
           'onFocus',
           'onBlur',
+          'onTagAdded',
+          'onTagDeleted',
           'onOpen',
           'onClose',
           'onRowClicked',
