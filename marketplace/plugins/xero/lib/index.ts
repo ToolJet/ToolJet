@@ -411,7 +411,7 @@ export default class Xero implements QueryService {
         data: tenants.map((tenant: any) => ({
           key: tenant.tenantId,
           value: tenant.tenantId,
-          label: `${tenant.tenantName} (${tenant.id})`,
+          label: `${tenant.tenantName} (${tenant.tenantId})`,
           name: tenant.tenantName,
           type: tenant.tenantType,
           createdDate: tenant.createdDateUtc,
