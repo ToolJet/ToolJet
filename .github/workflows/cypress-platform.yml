@@ -823,14 +823,11 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Install Chrome
+      - name: Verify Chrome is available
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          google-chrome --version
-          echo "CHROME_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
+          echo "Checking Chrome installation..."
+          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
+          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -842,8 +839,6 @@ jobs:
           config: "baseUrl=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CYPRESS_BROWSER: chrome
-          CYPRESS_BROWSER_PATH: ${{ env.CHROME_PATH }}
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
@@ -1283,14 +1278,11 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Install Chrome
+      - name: Verify Chrome is available
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          google-chrome --version
-          echo "CHROME_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
+          echo "Checking Chrome installation..."
+          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
+          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -1302,8 +1294,6 @@ jobs:
           config: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CYPRESS_BROWSER: chrome
-          CYPRESS_BROWSER_PATH: ${{ env.CHROME_PATH }}
           CYPRESS_proxy: true
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
@@ -1745,14 +1735,11 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Install Chrome
+      - name: Verify Chrome is available
         run: |
-          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          google-chrome --version
-          echo "CHROME_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
+          echo "Checking Chrome installation..."
+          which google-chrome-stable || which google-chrome || echo "Chrome not found in PATH"
+          google-chrome --version || google-chrome-stable --version || echo "Could not get Chrome version"
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -1764,8 +1751,6 @@ jobs:
           config: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
-          CYPRESS_BROWSER: chrome
-          CYPRESS_BROWSER_PATH: ${{ env.CHROME_PATH }}
           CYPRESS_proxy: true
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
