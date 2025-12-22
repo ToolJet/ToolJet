@@ -880,8 +880,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             startAutoScroll(e.clientX, e.clientY, e.target);
             return true;
           }
-          // Start autoscroll monitoring
-          startAutoScroll(e.clientX, e.clientY, e.target);
 
           // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
@@ -1072,6 +1070,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           }
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
+            // Start autoscroll monitoring
+            startAutoScroll(e.clientX, e.clientY, e.target);
             useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             handleActivateNonDraggingComponents();
