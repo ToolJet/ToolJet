@@ -823,6 +823,21 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Verify Chrome and Cypress browser detection
+        working-directory: ./cypress-tests
+        run: |
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Browser Detection ==="
+          npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Available Browsers ==="
+          npx cypress verify || echo "Cypress verification failed"
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-subpath
