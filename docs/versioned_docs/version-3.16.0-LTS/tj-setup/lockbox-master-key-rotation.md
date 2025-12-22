@@ -23,7 +23,7 @@ The `LOCKBOX_MASTER_KEY` is a master encryption key that ToolJet uses to encrypt
 
 ### Mandatory Rotation Scenarios
 
-You **must** rotate the LOCKBOX_MASTER_KEY when:
+You **must** rotate the `LOCKBOX_MASTER_KEY` when:
 
 - **Key exposure or suspected compromise** - If the key is accidentally exposed in logs, code repositories, or to unauthorized personnel
 - **Employee departure** - When an employee with access to the key leaves the organization
@@ -32,7 +32,7 @@ You **must** rotate the LOCKBOX_MASTER_KEY when:
 - **Compliance mandates** - When required by security frameworks or regulations
 
 :::warning
-Never rotate keys during peak usage hours. Plan for a maintenance window as the application must be stopped during rotation.
+Never rotate keys during peak usage hours. Plan for a maintenance window as the application must be stopped from incoming traffic during rotation.
 :::
 
 ## Prerequisites
@@ -40,38 +40,42 @@ Never rotate keys during peak usage hours. Plan for a maintenance window as the 
 Before starting the key rotation process, ensure you have:
 
 - **Super Admin access** - Required for database operations and script execution
-- **Application downtime planned** - ToolJet must be completely stopped during rotation
+- **Application downtime planned** - ToolJet must be stopped from incoming traffic during rotation
 - **Database backup** - Full PostgreSQL backup (script will prompt for confirmation)
 - **Old key available** - Current `LOCKBOX_MASTER_KEY` value (you'll be prompted to enter it)
-- **New key generated** - A new 64-character hexadecimal key (see generation instructions below)
+- **New key generated** - A new hexadecimal key (see generation instructions below)
 - **Staging environment tested** - Test the rotation with `--dry-run` flag first
 
-:::tip
+:::tip Important
 Always test the rotation process in a staging environment before performing it in production.
 :::
 
 ## Generating a New Key
 
-Generate a cryptographically secure 256-bit key (64 hexadecimal characters) using OpenSSL:
+Generate a cryptographically secure 256-bit key using OpenSSL:
 
 ```bash
 # Generate a new key
 openssl rand -hex 32
 
 # Example output:
-# 81a591705f8fea18d4f459e9ee07a2c61c4d53a0a5de7fb5c8d1245b134f500b
+cc41792c28a7ecd2e2c84089d25eb40e2f2e28660ca4a20a9d8d3a7df26b5776
 ```
 
 :::info
-The key must be exactly 64 hexadecimal characters (0-9, a-f, A-F). Store this new key securely - you'll update your environment configuration with it.
+Store this new key securely. You'll update your environment configuration with it.
 :::
 
 ## Rotation Procedure
 
+:::info Deployment Support
+Key rotation is currently available for **Docker Compose**, **Kubernetes**, and **AWS EC2/Traditional Server** deployments. Support for **AWS ECS**, **Azure Container Instances**, and **Google Cloud Run** will be added soon.
+:::
+
 ### Preparation Steps
 
 1. **Notify users** - Inform users of the upcoming maintenance window
-2. **Stop ToolJet application** - Ensure no writes occur during rotation
+2. **Stop incoming traffic** - Ensure no writes occur during rotation
 3. **Backup database** - Create a full PostgreSQL backup
 4. **Update environment variable** - Set `LOCKBOX_MASTER_KEY` to your new key value
 5. **Keep old key accessible** - You'll be prompted to enter it during rotation
@@ -86,7 +90,7 @@ docker-compose down
 
 # Step 3: Update .env file with NEW key
 nano .env
-# Update: LOCKBOX_MASTER_KEY=<new-key-64-hex-chars>
+# Update: LOCKBOX_MASTER_KEY=<new-key>
 
 # Step 4: Run rotation in dry-run mode (test first)
 docker-compose run --rm server npm run rotate:keys -- --dry-run
@@ -107,36 +111,30 @@ docker-compose logs -f server
 ### Kubernetes Deployment
 
 ```bash
-# Step 1: Scale down deployment to stop application
+# Step 1: Scale down deployment
 kubectl scale deployment tooljet --replicas=0 -n tooljet
 
 # Step 2: Backup database (use your backup method)
 
-# Step 3: Update secret with NEW key
+# Step 3: Update secret with new key
 kubectl edit secret tooljet-secrets -n tooljet
-# Update LOCKBOX_MASTER_KEY with new key (base64 encoded)
-# echo -n '<new-key>' | base64
+# Update LOCKBOX_MASTER_KEY with new key (base64 encoded: echo -n '<new-key>' | base64)
 
-# Step 4: Run rotation job (dry-run first)
-kubectl run key-rotation --rm -it \
-  --image=tooljet/tooljet:latest \
-  --env="LOCKBOX_MASTER_KEY=<new-key>" \
-  --namespace=tooljet \
-  --command -- npm run rotate:keys -- --dry-run
+# Step 4: Scale up single pod for rotation
+kubectl scale deployment tooljet --replicas=1 -n tooljet
+
+# Step 5: Run rotation (dry-run first)
+kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys -- --dry-run
 
 # When prompted, enter OLD key
 
-# Step 5: Run actual rotation
-kubectl run key-rotation --rm -it \
-  --image=tooljet/tooljet:latest \
-  --env="LOCKBOX_MASTER_KEY=<new-key>" \
-  --namespace=tooljet \
-  --command -- npm run rotate:keys
+# Step 6: Run actual rotation
+kubectl exec -it deployment/tooljet -n tooljet -- npm run rotate:keys
 
-# Step 6: Scale deployment back up
+# Step 7: Scale deployment back up
 kubectl scale deployment tooljet --replicas=3 -n tooljet
 
-# Step 7: Verify logs
+# Step 8: Verify logs
 kubectl logs -f deployment/tooljet -n tooljet
 ```
 
@@ -151,7 +149,7 @@ sudo systemctl stop nest
 # Step 3: Update .env file with NEW key
 cd ~/app
 nano .env
-# Update: LOCKBOX_MASTER_KEY=<new-key-64-hex-chars>
+# Update: LOCKBOX_MASTER_KEY=<new-key>
 
 # Step 4: Run rotation (dry-run first)
 npm run rotate:keys -- --dry-run
@@ -173,7 +171,7 @@ journalctl -u nest -f
 
 The rotation script performs the following steps automatically:
 
-1. **Validates new key** - Checks that `LOCKBOX_MASTER_KEY` in .env is properly formatted (64 hex chars)
+1. **Validates new key** - Checks that `LOCKBOX_MASTER_KEY` in .env is properly formatted
 2. **Prompts for old key** - Secure interactive prompt for your current production key
 3. **Tests both keys** - Verifies both keys can encrypt and decrypt test data
 4. **Backup confirmation** - Prompts for manual confirmation that database backup exists
@@ -188,7 +186,7 @@ All tables are rotated in a **single atomic database transaction**. If any error
 
 ### Check Application Logs
 
-After restarting the application, monitor logs for any decryption errors:
+After restarting the application, monitor logs for any decryption errors
 
 ```bash
 # Docker Compose
@@ -200,12 +198,6 @@ journalctl -u nest -f
 # Kubernetes
 kubectl logs -f deployment/tooljet -n tooljet
 ```
-
-Look for error messages such as:
-- `Decryption failed`
-- `Invalid key`
-- `Authentication tag mismatch`
-- `Could not decrypt`
 
 :::warning
 If you see any decryption errors in the logs, **immediately stop the application** and follow the rollback procedure.
@@ -222,7 +214,7 @@ Rotation was successful if:
 - ToolJet Database queries execute (if used)
 - User profiles display correctly
 
-## Rollback Procedure (Emergency Recovery)
+## Rollback Procedure
 
 :::warning Critical
 Only perform rollback if critical errors occur after rotation. This requires restoring the database backup.
@@ -243,18 +235,9 @@ Store the old encryption key securely for **24-48 hours** after rotation in case
 
 ## Security Best Practices
 
-Follow these security practices when rotating encryption keys:
-
 - **Never commit keys to version control** - Always use .env files or secrets management systems
-- **Store old key securely** - Keep old key in encrypted password manager for 24-48 hours for emergency rollback
-- **Limit key access** - Only Super Admins should have access to `LOCKBOX_MASTER_KEY`
-- **Use secrets management** - For production, use AWS Secrets Manager, HashiCorp Vault, Azure Key Vault, or similar
-- **Audit key changes** - Document who performed rotation, when, and why in your security logs
-- **Test in staging first** - Always use `--dry-run` flag and test in non-production environment
-- **Plan maintenance window** - Rotate during low-traffic periods to minimize user impact
-- **Monitor post-rotation** - Watch application logs for 24 hours after rotation to catch any issues early
-- **Rotate regularly** - Set calendar reminders for annual or quarterly rotation
-- **Document the process** - Keep internal documentation of your rotation procedures and emergency contacts
+- **Store old key securely** - Keep in encrypted password manager for emergency rollback
+- **Test in staging first** - Always use `--dry-run` flag before production rotation
 
 :::tip Secrets Management
 For enterprise deployments, integrate ToolJet with a secrets management system:
@@ -276,16 +259,16 @@ Rotation time depends on your database size:
 - **Medium databases** (1,000-10,000 rows): 2-5 minutes
 - **Large databases** (&gt;10,000 rows): 5-15 minutes
 
-The `--dry-run` mode takes approximately the same time as actual rotation since it processes all data (but rolls back instead of committing).
+The **--dry-run** mode takes approximately the same time as actual rotation since it processes all data (but rolls back instead of committing).
 
-**Tip**: Run `--dry-run` first to get an accurate time estimate for your deployment.
+**Tip**: Run **--dry-run** first to get an accurate time estimate for your deployment.
 
 </details>
 
 <details id="tj-dropdown">
     <summary>Can I rotate keys without downtime?</summary>
 
-No. The application **must be stopped** during key rotation to prevent:
+No. The application **must be stopped from incoming traffic** during key rotation to prevent:
 
 - Write operations using the old key during rotation
 - Data inconsistency between old and new encrypted data
@@ -304,12 +287,7 @@ You must plan for a **maintenance window**. The downtime is typically:
 
 The rotation script uses a **database transaction** for safety. If any error occurs:
 
-All changes are **automatically rolled back**
-Database remains in **original state** with old encryption
-**No data is lost or corrupted**
-You can **retry** after fixing the issue (wrong key, database connection, etc.)
-
-The transaction ensures atomicity - either all 5 tables are rotated successfully, or none are rotated. There's no "partial rotation" state.
+All changes are **automatically rolled back** Database remains in **original state** with old encryption **No data is lost or corrupted**. You can **retry** after fixing the issue (wrong key, database connection, etc.)
 
 </details>
 
@@ -345,7 +323,6 @@ While the rotation script can be run non-interactively, it's **not recommended**
 **For automation (advanced users only):**
 - Modify script to accept old key via secure environment variable
 - Implement automatic backup verification
-- Use CI/CD with encrypted secret injection
 - Ensure monitoring and alerting for failures
 
 **Recommendation**: Manual rotation with proper testing and oversight is safer for most organizations. The security benefits of careful manual rotation outweigh automation convenience.
@@ -356,12 +333,6 @@ While the rotation script can be run non-interactively, it's **not recommended**
     <summary>Does rotation affect ToolJet Cloud users?</summary>
 
 **No.** Key rotation is **only for self-hosted deployments**.
-
-ToolJet Cloud users benefit from:
-- **Automated key rotation** - Managed by ToolJet Cloud infrastructure
-- **Zero-downtime rotation** - No maintenance windows required
-- **Compliance-aligned schedules** - Automatic rotation per security best practices
-- **SOC 2 Type II compliance** - Enterprise-grade key management
 
 Self-hosted users must perform manual key rotation as documented in this guide.
 
@@ -387,25 +358,6 @@ If you lose the old encryption key:
 - Check secrets management system
 - Check with team members who have access
 - If truly lost and no backup exists, database restoration from backup may be required
-
-</details>
-
-<details id="tj-dropdown">
-    <summary>Can I rotate keys for specific tables only?</summary>
-
-**No.** The rotation script processes **all 5 encrypted tables** in a single operation:
-
-1. credentials
-2. org_environment_constant_values
-3. sso_configs
-4. organization_tjdb_configurations
-5. user_details
-
-**Why all tables?**
-- LOCKBOX_MASTER_KEY is the **master key** for all encrypted data
-- All tables use derived keys from the same master key
-- Partial rotation would create inconsistent encryption states
-- Single transaction ensures atomicity across all tables
 
 </details>
 
