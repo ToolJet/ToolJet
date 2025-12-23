@@ -25,7 +25,7 @@ const WidgetWrapper = memo(
     parentId,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
-    const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
+    const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
@@ -75,7 +75,7 @@ const WidgetWrapper = memo(
     });
 
     useEffect(() => {
-      toggleCanvasUpdater();
+      incrementCanvasUpdater();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visibility]);
 
@@ -147,6 +147,7 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
+              readOnly={readOnly}
               widgetTop={temporaryLayouts?.top ?? layoutData.top}
               widgetHeight={temporaryLayouts?.height ?? layoutData.height}
               showHandle={isWidgetActive}
