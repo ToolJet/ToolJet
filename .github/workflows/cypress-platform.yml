@@ -20,9 +20,6 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
-    outputs:
-      test-summary-ce: ${{ steps.set-output-ce.outputs.summary }}
-      test-summary-ee: ${{ steps.set-output-ee.outputs.summary }}
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
@@ -399,67 +396,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
-      - name: Generate test summary
-        if: always()
-        id: test-summary
-        run: |
-          OUTCOME="${{ steps.cypress-tests.outcome }}"
-          EDITION="${{ matrix.edition }}"
-
-          # Try to find and parse test results
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
-          SKIPPED_TESTS=0
-
-          # Look for Cypress results in various formats
-          if [ -f cypress-tests/results.json ]; then
-            echo "Found results.json"
-            RESULTS_FILE="cypress-tests/results.json"
-          elif [ -f cypress-tests/cypress/results/output.json ]; then
-            echo "Found output.json"
-            RESULTS_FILE="cypress-tests/cypress/results/output.json"
-          fi
-
-          # Parse results if file exists
-          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
-            echo "Parsing test results from $RESULTS_FILE"
-            # Extract test counts using jq if available
-            if command -v jq &> /dev/null; then
-              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-            fi
-          fi
-
-          # Create enhanced summary
-          echo "## Cypress Platform Tests - ${EDITION^^} Edition" > summary.md
-          echo "" >> summary.md
-          echo "| Metric | Count |" >> summary.md
-          echo "|--------|-------|" >> summary.md
-          echo "| ✅ Passed | $PASSED_TESTS |" >> summary.md
-          echo "| ❌ Failed | $FAILED_TESTS |" >> summary.md
-          echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> summary.md
-          echo "| 📊 **Total** | **$TOTAL_TESTS** |" >> summary.md
-
-          # Save summary as multiline output
-          {
-            echo "summary<<EOFMARKER"
-            cat summary.md
-            echo "EOFMARKER"
-          } >> $GITHUB_OUTPUT
-
-      - name: Set output for CE
-        if: always() && matrix.edition == 'ce'
-        id: set-output-ce
-        run: echo "Completed CE tests"
-
-      - name: Set output for EE
-        if: always() && matrix.edition == 'ee'
-        id: set-output-ee
-        run: echo "Completed EE tests"
-
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
@@ -469,9 +405,6 @@ jobs:
 
   Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04
-    outputs:
-      test-summary-subpath-ce: ${{ steps.set-output-subpath-ce.outputs.summary }}
-      test-summary-subpath-ee: ${{ steps.set-output-subpath-ee.outputs.summary }}
 
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
 
@@ -856,64 +789,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
-      - name: Generate test summary
-        if: always()
-        id: test-summary-subpath
-        run: |
-          OUTCOME="${{ steps.cypress-tests-subpath.outcome }}"
-          EDITION="${{ matrix.edition }}"
-
-          # Try to find and parse test results
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
-          SKIPPED_TESTS=0
-
-          # Look for Cypress results in various formats
-          if [ -f cypress-tests/results.json ]; then
-            echo "Found results.json"
-            RESULTS_FILE="cypress-tests/results.json"
-          elif [ -f cypress-tests/cypress/results/output.json ]; then
-            echo "Found output.json"
-            RESULTS_FILE="cypress-tests/cypress/results/output.json"
-          fi
-
-          # Parse results if file exists
-          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
-            echo "Parsing test results from $RESULTS_FILE"
-            # Extract test counts using jq if available
-            if command -v jq &> /dev/null; then
-              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-            fi
-          fi
-
-          # Create simple summary
-          echo "### Cypress Tests - ${EDITION^^} Edition (Subpath)" > summary.md
-          echo "" >> summary.md
-          echo "| Total | Passed | Failed | Skipped |" >> summary.md
-          echo "|-------|--------|--------|---------|" >> summary.md
-          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
-
-          # Save summary as multiline output
-          {
-            echo "summary<<EOFMARKER"
-            cat summary.md
-            echo "EOFMARKER"
-          } >> $GITHUB_OUTPUT
-
-      - name: Set output for Subpath CE
-        if: always() && matrix.edition == 'ce'
-        id: set-output-subpath-ce
-        run: echo "Completed Subpath CE tests"
-
-      - name: Set output for Subpath EE
-        if: always() && matrix.edition == 'ee'
-        id: set-output-subpath-ee
-        run: echo "Completed Subpath EE tests"
-
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
@@ -923,9 +798,6 @@ jobs:
 
   Cypress-Platform-Proxy:
     runs-on: ubuntu-22.04
-    outputs:
-      test-summary-proxy-ce: ${{ steps.set-output-proxy-ce.outputs.summary }}
-      test-summary-proxy-ee: ${{ steps.set-output-proxy-ee.outputs.summary }}
 
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
@@ -1306,64 +1178,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
-      - name: Generate test summary
-        if: always()
-        id: test-summary-proxy
-        run: |
-          OUTCOME="${{ steps.cypress-tests-proxy.outcome }}"
-          EDITION="${{ matrix.edition }}"
-
-          # Try to find and parse test results
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
-          SKIPPED_TESTS=0
-
-          # Look for Cypress results in various formats
-          if [ -f cypress-tests/results.json ]; then
-            echo "Found results.json"
-            RESULTS_FILE="cypress-tests/results.json"
-          elif [ -f cypress-tests/cypress/results/output.json ]; then
-            echo "Found output.json"
-            RESULTS_FILE="cypress-tests/cypress/results/output.json"
-          fi
-
-          # Parse results if file exists
-          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
-            echo "Parsing test results from $RESULTS_FILE"
-            # Extract test counts using jq if available
-            if command -v jq &> /dev/null; then
-              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-            fi
-          fi
-
-          # Create simple summary
-          echo "### Cypress Tests - ${EDITION^^} Edition (Proxy)" > summary.md
-          echo "" >> summary.md
-          echo "| Total | Passed | Failed | Skipped |" >> summary.md
-          echo "|-------|--------|--------|---------|" >> summary.md
-          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
-
-          # Save summary as multiline output
-          {
-            echo "summary<<EOFMARKER"
-            cat summary.md
-            echo "EOFMARKER"
-          } >> $GITHUB_OUTPUT
-
-      - name: Set output for Proxy CE
-        if: always() && matrix.edition == 'ce'
-        id: set-output-proxy-ce
-        run: echo "Completed Proxy CE tests"
-
-      - name: Set output for Proxy EE
-        if: always() && matrix.edition == 'ee'
-        id: set-output-proxy-ee
-        run: echo "Completed Proxy EE tests"
-
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
@@ -1373,9 +1187,6 @@ jobs:
 
   Cypress-Platform-Proxy-Subpath:
     runs-on: ubuntu-22.04
-    outputs:
-      test-summary-proxy-subpath-ce: ${{ steps.set-output-proxy-subpath-ce.outputs.summary }}
-      test-summary-proxy-subpath-ee: ${{ steps.set-output-proxy-subpath-ee.outputs.summary }}
 
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
@@ -1757,64 +1568,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
-      - name: Generate test summary
-        if: always()
-        id: test-summary-proxy-subpath
-        run: |
-          OUTCOME="${{ steps.cypress-tests-proxy-subpath.outcome }}"
-          EDITION="${{ matrix.edition }}"
-
-          # Try to find and parse test results
-          TOTAL_TESTS=0
-          PASSED_TESTS=0
-          FAILED_TESTS=0
-          SKIPPED_TESTS=0
-
-          # Look for Cypress results in various formats
-          if [ -f cypress-tests/results.json ]; then
-            echo "Found results.json"
-            RESULTS_FILE="cypress-tests/results.json"
-          elif [ -f cypress-tests/cypress/results/output.json ]; then
-            echo "Found output.json"
-            RESULTS_FILE="cypress-tests/cypress/results/output.json"
-          fi
-
-          # Parse results if file exists
-          if [ -n "$RESULTS_FILE" ] && [ -f "$RESULTS_FILE" ]; then
-            echo "Parsing test results from $RESULTS_FILE"
-            # Extract test counts using jq if available
-            if command -v jq &> /dev/null; then
-              TOTAL_TESTS=$(jq '.totalTests // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              PASSED_TESTS=$(jq '.totalPassed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              FAILED_TESTS=$(jq '.totalFailed // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-              SKIPPED_TESTS=$(jq '.totalPending // 0' "$RESULTS_FILE" 2>/dev/null || echo 0)
-            fi
-          fi
-
-          # Create simple summary
-          echo "### Cypress Tests - ${EDITION^^} Edition (Proxy + Subpath)" > summary.md
-          echo "" >> summary.md
-          echo "| Total | Passed | Failed | Skipped |" >> summary.md
-          echo "|-------|--------|--------|---------|" >> summary.md
-          echo "| $TOTAL_TESTS | $PASSED_TESTS | $FAILED_TESTS | $SKIPPED_TESTS |" >> summary.md
-
-          # Save summary as multiline output
-          {
-            echo "summary<<EOFMARKER"
-            cat summary.md
-            echo "EOFMARKER"
-          } >> $GITHUB_OUTPUT
-
-      - name: Set output for Proxy-Subpath CE
-        if: always() && matrix.edition == 'ce'
-        id: set-output-proxy-subpath-ce
-        run: echo "Completed Proxy-Subpath CE tests"
-
-      - name: Set output for Proxy-Subpath EE
-        if: always() && matrix.edition == 'ee'
-        id: set-output-proxy-subpath-ee
-        run: echo "Completed Proxy-Subpath EE tests"
-
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
         if: always()
@@ -1822,172 +1575,3 @@ jobs:
           name: screenshots-${{ matrix.edition }}-proxy-subpath-${{ env.TIMESTAMP }}
           path: cypress-tests/cypress/screenshots
           retention-days: 7
-
-  create-platform-coverage-comment:
-    if: always() && github.event_name == 'pull_request_target'
-    needs: [Cypress-Platform, Cypress-Platform-Subpath, Cypress-Platform-Proxy, Cypress-Platform-Proxy-Subpath]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-
-    steps:
-      - name: Create Platform Test Results Comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 🎯 Cypress Platform Test Coverage
-
-            ### Base Deployment
-
-            ${{ needs.Cypress-Platform.outputs.test-summary-ce || '_(CE tests not run)_' }}
-
-            ---
-
-            ${{ needs.Cypress-Platform.outputs.test-summary-ee || '_(EE tests not run)_' }}
-
-            ---
-
-            ### Subpath Deployment
-
-            ${{ needs.Cypress-Platform-Subpath.outputs.test-summary-subpath-ce || '_(CE tests not run)_' }}
-
-            ---
-
-            ${{ needs.Cypress-Platform-Subpath.outputs.test-summary-subpath-ee || '_(EE tests not run)_' }}
-
-            ---
-
-            ### Proxy Deployment
-
-            ${{ needs.Cypress-Platform-Proxy.outputs.test-summary-proxy-ce || '_(CE tests not run)_' }}
-
-            ---
-
-            ${{ needs.Cypress-Platform-Proxy.outputs.test-summary-proxy-ee || '_(EE tests not run)_' }}
-
-            ---
-
-            ### Proxy + Subpath Deployment
-
-            ${{ needs.Cypress-Platform-Proxy-Subpath.outputs.test-summary-proxy-subpath-ce || '_(CE tests not run)_' }}
-
-            ---
-
-            ${{ needs.Cypress-Platform-Proxy-Subpath.outputs.test-summary-proxy-subpath-ee || '_(EE tests not run)_' }}
-          edit-mode: replace
-
-      - name: Add Job Summary
-        if: always()
-        run: |
-          echo "## 🎯 Cypress Platform Test Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "### Base Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Base CE summary if available
-          BASE_CE='${{ needs.Cypress-Platform.outputs.test-summary-ce }}'
-          if [ -n "$BASE_CE" ] && [ "$BASE_CE" != "" ]; then
-            echo "$BASE_CE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Base EE summary if available
-          BASE_EE='${{ needs.Cypress-Platform.outputs.test-summary-ee }}'
-          if [ -n "$BASE_EE" ] && [ "$BASE_EE" != "" ]; then
-            echo "$BASE_EE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Subpath Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Subpath CE summary if available
-          SUBPATH_CE='${{ needs.Cypress-Platform-Subpath.outputs.test-summary-subpath-ce }}'
-          if [ -n "$SUBPATH_CE" ] && [ "$SUBPATH_CE" != "" ]; then
-            echo "$SUBPATH_CE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Subpath EE summary if available
-          SUBPATH_EE='${{ needs.Cypress-Platform-Subpath.outputs.test-summary-subpath-ee }}'
-          if [ -n "$SUBPATH_EE" ] && [ "$SUBPATH_EE" != "" ]; then
-            echo "$SUBPATH_EE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Proxy Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Proxy CE summary if available
-          PROXY_CE='${{ needs.Cypress-Platform-Proxy.outputs.test-summary-proxy-ce }}'
-          if [ -n "$PROXY_CE" ] && [ "$PROXY_CE" != "" ]; then
-            echo "$PROXY_CE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Proxy EE summary if available
-          PROXY_EE='${{ needs.Cypress-Platform-Proxy.outputs.test-summary-proxy-ee }}'
-          if [ -n "$PROXY_EE" ] && [ "$PROXY_EE" != "" ]; then
-            echo "$PROXY_EE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Proxy + Subpath Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Proxy-Subpath CE summary if available
-          PROXY_SUBPATH_CE='${{ needs.Cypress-Platform-Proxy-Subpath.outputs.test-summary-proxy-subpath-ce }}'
-          if [ -n "$PROXY_SUBPATH_CE" ] && [ "$PROXY_SUBPATH_CE" != "" ]; then
-            echo "$PROXY_SUBPATH_CE" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(CE tests not run)_" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add Proxy-Subpath EE summary if available
-          PROXY_SUBPATH_EE='${{ needs.Cypress-Platform-Proxy-Subpath.outputs.test-summary-proxy-subpath-ee }}'
-          if [ -n "$PROXY_SUBPATH_EE" ] && [ "$PROXY_SUBPATH_EE" != "" ]; then
-            echo "$PROXY_SUBPATH_EE" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "_(EE tests not run)_" >> $GITHUB_STEP_SUMMARY
-          fi
