@@ -127,7 +127,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "nest-winston": "^1.9.4",
-    "nestjs-otel": "^7.0.1",
+    "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
@@ -163,7 +163,8 @@
   "overrides": {
     "@nestjs/platform-ws": {
       "ws": "$ws"
-    }
+    },
+    "systeminformation": "5.27.14"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
