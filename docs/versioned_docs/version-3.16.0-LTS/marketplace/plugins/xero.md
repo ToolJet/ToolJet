@@ -34,7 +34,6 @@ To use the Xero Plugin in ToolJet, you must first configure it as a data source.
 - In your Xero app settings, add the Redirect URI provided by ToolJet.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
-</div>
 
 
 ## Connection
@@ -52,7 +51,6 @@ You can modify the scopes based on your use case.
 **⚠️ Ensure the scopes entered here exactly match the scopes configured in your Xero app.**
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-connection.png" alt="Configuring Xero in ToolJet" />
-</div>
 
 - **Redirect URI**: ToolJet automatically generates a Redirect URI.
 
@@ -60,7 +58,6 @@ You can modify the scopes based on your use case.
   <summary>**Response Example**</summary>
 ```json
 {
-Example:
 http://localhost:8082/oauth2/authorize
 }
 ```
@@ -95,12 +92,13 @@ Xero in ToolJet supports the following operations:
 - **GET/ Accounts** : Retrieves the full chart of accounts
 - **PUT /Accounts** : Creates a new charts of accounts
 
-{ACCOUNTID}
-- **GET /Accounts/{AccountID}** : Retrieves a single chart of accounts by using a unique account Id
-- **POST /Accounts/{AccountID}** : Updates a chart of accounts
-- **DELETE /Accounts/{AccountID}** : Deletes a chart of accounts
-- **GET /Accounts/{AccountID}/Attachments** : Retrieves atatchments for a specific accounts by using a unique account Id
-- **GET /Accounts/{AccountID}/Attachments/{AttachmentID}** : Retrieves a specific atatchment for a specific account using a unique attachment Id
-- **GET /Accounts/{AccountID}/Attachments/{FileName}** : Retrieves an attachment for a specific account by filename
-- **POST /Accounts/{AccountID}/Attachments/{FileName}** : Updates attachment on a specific account by filename
-- **PUT /Accounts/{AccountID}/Attachments/{FileName}** : Creates an attachment on a specific account
+### Account ID
+
+- **GET `/Accounts/{AccountID}`** : Retrieves a single chart of accounts using a unique account ID  
+- **POST `/Accounts/{AccountID}`** : Updates a chart of accounts  
+- **DELETE `/Accounts/{AccountID}`** : Deletes a chart of accounts  
+- **GET `/Accounts/{AccountID}/Attachments`** : Retrieves attachments for a specific account  
+- **GET `/Accounts/{AccountID}/Attachments/{AttachmentID}`** : Retrieves a specific attachment using a unique attachment ID  
+- **GET `/Accounts/{AccountID}/Attachments/{FileName}`** : Retrieves an attachment by filename  
+- **POST `/Accounts/{AccountID}/Attachments/{FileName}`** : Updates an attachment by filename  
+- **PUT `/Accounts/{AccountID}/Attachments/{FileName}`** : Creates an attachment on a specific account
