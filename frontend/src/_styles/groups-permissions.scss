@@ -98,8 +98,8 @@
         border-bottom: 1px solid var(--slate5);
         margin: 0; /* Ensure no margin */
         padding: 0; /* Ensure no padding */
-        max-height: calc(100vh - 300px - 100px);
-        min-height: calc(100vh - 300px - 100px);
+        max-height: calc(100vh - 300px - 115px);
+        min-height: calc(100vh - 300px - 115px);
     }
 
 
@@ -127,6 +127,9 @@
     width: 100% !important;
     justify-content: flex-start;
     padding-left: 1rem;
+    &:hover {
+        border: 0px !important;
+    }
 }
 
 .permission-manager-modal {

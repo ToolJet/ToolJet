@@ -279,7 +279,7 @@
 
 
 .edit-icon-container {
-  max-width: 10px;
+  min-width: 20px;
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
@@ -303,10 +303,8 @@
 .manage-granular-permission-header {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  gap: 10px;
+  padding: 8px 0px;
   border-bottom: 1px solid var(--slate5);
-  background-color: var(--slate2);
   
   p {
     margin: 0;
@@ -314,7 +312,7 @@
     font-weight: 500;
     
     &:nth-child(1) {
-      width: 195px;
+      width: 132px;
       padding-right: 10px;
     }
     
@@ -324,13 +322,11 @@
     }
     
     &:nth-child(3) {
-      width: 165px;
+      width: 150px;
     }
     
     &:nth-child(4) {
       flex: 1;
-      min-width: 120px;
-      margin-right: 10px;
     }
   }
 }
@@ -341,7 +337,6 @@
   display: flex;
   align-items: flex-start;
   padding: 12px;
-  gap: 10px;
 
   .tj-text-xxsm {
     color: var(--slate11)
@@ -350,7 +345,7 @@
   .resource-name {
     display: flex;
     gap: 5px;
-    width: 195px;
+    min-width: 132px;
     padding-right: 10px;
 
     .resource-icon {}
@@ -370,13 +365,16 @@
   .environment-column {
     display: flex;
     align-items: flex-start;
-    width: 150px;
+    min-width: 150px;
     padding-top: 2px;
   }
   
   > div:nth-child(4) {
     flex: 1;
-    min-width: 120px;
+    width: 85px !important;
+    .text-muted {
+      min-width: 85px !important;
+    }
   }
 
   &:hover {
@@ -460,6 +458,11 @@
     align-items: left;
     gap: 8px;
     padding: 16px 32px;
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+    }
 
 
     .modal-icon-container {

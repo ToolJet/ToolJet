@@ -11,6 +11,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
+import { useLocation } from 'react-router-dom';
 
 const MobileHeader = ({
   showHeader,
@@ -23,6 +24,7 @@ const MobileHeader = ({
   pages,
   viewerWrapperRef,
 }) => {
+  const location = useLocation();
   const { moduleId } = useModuleContext();
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -30,6 +32,10 @@ const MobileHeader = ({
     }),
     shallow
   );
+
+  // Check if we're in preview mode (has env or version query params)
+  const searchParams = new URLSearchParams(location.search);
+  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
   const editingVersion = useStore((state) => state.editingVersion);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
@@ -104,7 +110,7 @@ const MobileHeader = ({
   );
 
   const _renderPreviewSettings = () =>
-    !isReleasedVersionId && (
+    isPreviewMode && (
       <PreviewSettings
         isMobileLayout
         showHeader={showHeader}
@@ -132,7 +138,7 @@ const MobileHeader = ({
       className="!tw-min-h-0 !tw-block"
       style={bgStyles}
     >
-      {!isEmpty(editingVersion) && !isReleasedVersionId && (
+      {!isEmpty(editingVersion) && isPreviewMode && (
         <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
       )}
       {(!isPagesSidebarHidden || !headerHidden || !logoHidden) && (

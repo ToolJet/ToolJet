@@ -124,8 +124,11 @@ const getPreviewQueryParams = (slug) => {
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, slug);
   const safeEnv = hasEditPermission ? envParam : getSafeEnvironment(environmentAccess, envParam);
 
+  // Only add environment_name if there's an explicit env query param
+  // Don't add default environment for apps not in editable_apps_id yet (newly created apps)
+  // The backend will determine actual permissions including ownership
   return {
     ...(queryParams['version'] && { version_name: queryParams.version }),
-    ...(safeEnv && { environment_name: safeEnv }),
+    ...(envParam && safeEnv && { environment_name: safeEnv }),
   };
 };

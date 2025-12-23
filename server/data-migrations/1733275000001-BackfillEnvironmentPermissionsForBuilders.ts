@@ -33,14 +33,14 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
     `);
     console.log(`Admin groups: All environments enabled for front-end apps (${adminResult[1]} rows updated)`);
 
-    // 2. Builder groups: Enable all environments for front-end apps (backfill)
-    // Builders should have access to all environments: Development, Staging, Production, Released
+    // 2. Builder groups: Enable dev, staging, and released environments for front-end apps (backfill)
+    // Builders should have access to Development, Staging, and Released (but NOT Production)
     const builderResult = await queryRunner.query(`
       UPDATE apps_group_permissions agp
       SET 
         can_access_development = true,
         can_access_staging = true,
-        can_access_production = true,
+        can_access_production = false,
         can_access_released = true
       FROM granular_permissions gp
       JOIN permission_groups g ON gp.group_id = g.id
@@ -49,7 +49,9 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
         AND g.type = 'default'
         AND agp.app_type = 'front-end'
     `);
-    console.log(`Builder groups: All environments enabled for front-end apps (${builderResult[1]} rows updated)`);
+    console.log(
+      `Builder groups: Dev, staging, and released environments enabled for front-end apps (${builderResult[1]} rows updated)`
+    );
 
     // 3. End-user groups: Only Released environment for front-end apps (backfill)
     // End-users can only access Released apps, not Development, Staging, or Production
@@ -138,14 +140,14 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
           `Custom group "${group.group_name}" (${group.group_id}): End-user group, only Released enabled (${customEndUserResult[1]} rows)`
         );
       } else if (group.user_role === 'builder') {
-        // Custom group with builders: Enable all environments
+        // Custom group with builders: Enable dev, staging, and released (NOT production)
         const customBuilderResult = await queryRunner.query(
           `
           UPDATE apps_group_permissions agp
           SET 
             can_access_development = true,
             can_access_staging = true,
-            can_access_production = true,
+            can_access_production = false,
             can_access_released = true
           FROM granular_permissions gp
           WHERE agp.granular_permission_id = gp.id
@@ -155,7 +157,7 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
           [group.group_id]
         );
         console.log(
-          `Custom group "${group.group_name}" (${group.group_id}): Builder group, all environments enabled (${customBuilderResult[1]} rows)`
+          `Custom group "${group.group_name}" (${group.group_id}): Builder group, dev/staging/released enabled (${customBuilderResult[1]} rows)`
         );
       }
     }

@@ -206,13 +206,17 @@ export default function AppCard({
           const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
           const defaultEnv = getDefaultEnvironment(environmentAccess);
 
-          const previewQuery = queryString.stringify({ env: defaultEnv });
-          const previewUrl = `/applications/${slugOrId}/${pageHandle}?${previewQuery}`;
+          // Don't add env param for free/basic plan, expired or invalid license
+          const queryParams = props.basicPlan ? {} : { env: defaultEnv };
+          const previewQuery = queryString.stringify(queryParams);
+
+          const previewUrl = `/applications/${slugOrId}/${pageHandle}${previewQuery ? `?${previewQuery}` : ''}`;
+
           window.open(previewUrl, '_blank');
         }}
-        data-cy="view-button"
+        data-cy="preview-button"
       >
-        {t('globals.view', 'View')}
+        {t('globals.preview', 'Preview')}
       </button>
     </div>
   );
@@ -225,6 +229,10 @@ export default function AppCard({
     !environmentAccess.staging &&
     !environmentAccess.production &&
     environmentAccess.released;
+
+  // Check if user has edit permission for this app
+  const hasEditPermission =
+    appPerms?.is_all_editable || (appPerms?.editable_apps_id && appPerms.editable_apps_id.includes(app.id));
 
   function AppNameDisplay({ tooltipRef }) {
     const AppName = (
@@ -334,7 +342,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && hasEditPermission && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

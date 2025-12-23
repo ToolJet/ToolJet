@@ -103,7 +103,6 @@ export class AppsService implements IAppsService {
     // Enforce access type for viewer users: only access_type=view is allowed
     const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
-    console.log({ hasEditPermission, hasViewPermission });
     if (!hasEditPermission) {
       // Viewer role: require access_type=view explicitly; reject edit or missing
       if (accessType?.toLowerCase() !== 'view') {
@@ -150,38 +149,43 @@ export class AppsService implements IAppsService {
       );
 
       // For view-only users, validate environment access based on their permissions
+      // Users with edit permission can access any environment for preview
       if (!hasEditPermission && hasViewPermission && environment) {
         const envName = environment.name.toLowerCase();
 
-        const request = RequestContext?.currentContext?.req as any;
-        const userPermissions = request?.tj_user_permissions;
-        const appPermissions = userPermissions?.APP;
+        // Always allow access to released environment for all users who can view the app
+        if (envName !== 'released') {
+          const request = RequestContext?.currentContext?.req as any;
+          const userPermissions = request?.tj_user_permissions;
+          const appPermissions = userPermissions?.APP;
 
-        let hasEnvironmentAccess = false;
-        if (appPermissions) {
-          switch (envName) {
-            case 'development':
-              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
-                appPermissions,
-                app.id,
-                'development'
-              );
-              break;
-            case 'staging':
-              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'staging');
-              break;
-            case 'production':
-              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'production');
-              break;
-            case 'released':
-              hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'released');
-              break;
+          let hasEnvironmentAccess = false;
+          if (appPermissions) {
+            switch (envName) {
+              case 'development':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'development'
+                );
+                break;
+              case 'staging':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'staging');
+                break;
+              case 'production':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'production'
+                );
+                break;
+            }
           }
-        }
 
-        // If user doesn't have access to this environment, reject with restricted-preview
-        if (!hasEnvironmentAccess) {
-          throw new ForbiddenException('restricted-preview');
+          // If user doesn't have access to this environment, reject with restricted-preview
+          if (!hasEnvironmentAccess) {
+            throw new ForbiddenException('restricted-preview');
+          }
         }
       }
       if (version) response['versionName'] = version.name;
@@ -203,18 +207,8 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    // Check if user has permission to access released apps for this specific app
-    const request = RequestContext?.currentContext?.req as any;
-    const userPermissions = request?.tj_user_permissions;
-    const appPermissions = userPermissions?.APP;
-
-    if (appPermissions && !AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'released')) {
-      throw new ForbiddenException(
-        JSON.stringify({
-          organizationId: app.organizationId,
-        })
-      );
-    }
+    // Released apps are accessible to all users who can view the app
+    // No environment permission check needed - everyone gets access to launched/released apps
 
     const { id, slug } = app;
     return {

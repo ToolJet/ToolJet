@@ -2,7 +2,7 @@ import React from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
@@ -20,6 +20,7 @@ const DesktopHeader = ({
   isAppLoaded,
   changeToDarkMode,
 }) => {
+  const location = useLocation();
   const { showDarkModeToggle, isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
@@ -27,6 +28,10 @@ const DesktopHeader = ({
     }),
     shallow
   );
+
+  // Check if we're in preview mode (has env or version query params)
+  const searchParams = new URLSearchParams(location.search);
+  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
 
   const _renderAppNameAndLogo = () => (
     <div
@@ -55,7 +60,7 @@ const DesktopHeader = ({
   if (!showHeader) {
     return (
       <>
-        {!isReleasedVersionId && (
+        {isPreviewMode && (
           <PreviewSettings
             isMobileLayout={false}
             showHeader={showHeader}
@@ -72,18 +77,16 @@ const DesktopHeader = ({
     );
   }
   return (
-    !isReleasedVersionId && (
-      <Header>
-        {
-          <PreviewSettings
-            isMobileLayout={false}
-            showHeader={showHeader}
-            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-            darkMode={darkMode}
-          />
-        }
-      </Header>
-    )
+    <Header>
+      {isPreviewMode && (
+        <PreviewSettings
+          isMobileLayout={false}
+          showHeader={showHeader}
+          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+          darkMode={darkMode}
+        />
+      )}
+    </Header>
   );
 };
 

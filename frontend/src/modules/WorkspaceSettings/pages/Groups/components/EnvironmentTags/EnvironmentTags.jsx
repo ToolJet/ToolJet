@@ -5,7 +5,7 @@ const ENVIRONMENT_CONFIG = [
   { key: 'canAccessDevelopment', label: 'Development', dataCy: 'env-tag-dev' },
   { key: 'canAccessStaging', label: 'Staging', dataCy: 'env-tag-staging' },
   { key: 'canAccessProduction', label: 'Production', dataCy: 'env-tag-prod' },
-  { key: 'canAccessReleased', label: 'Released', dataCy: 'env-tag-released' },
+  { key: 'canAccessReleased', label: 'Released app', dataCy: 'env-tag-released' },
 ];
 
 function EnvironmentTags({ permissions, isAll = false, resourceType = 'app' }) {

@@ -492,7 +492,11 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals(
+          'environment',
+          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          moduleId
+        );
         setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
@@ -698,6 +702,7 @@ const useAppData = (
         }
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
         setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });

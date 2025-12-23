@@ -114,8 +114,8 @@ export const getSafeEnvironment = (environmentAccess, requestedEnv) => {
  * Get environment access from app group permissions
  *
  * Resolution logic (matches backend):
- * 1. If appId is provided and has specific override (from custom groups), use that
- * 2. Otherwise, use default permissions (from default groups)
+ * 1. If appId is provided and has specific permissions, merge with default permissions
+ * 2. User gets union of both default and app-specific permissions
  * 3. If neither exists, deny access
  *
  * @param {Object} appGroupPermissions - App group permissions object
@@ -123,10 +123,7 @@ export const getSafeEnvironment = (environmentAccess, requestedEnv) => {
  * @returns {Object} Environment access object
  */
 export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId = null) => {
-  console.log('[getEnvironmentAccessFromPermissions] called with:', { appId, appGroupPermissions });
-
   if (!appGroupPermissions) {
-    console.log('[getEnvironmentAccessFromPermissions] No appGroupPermissions, returning all false');
     return {
       development: false,
       staging: false,
@@ -135,47 +132,45 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
     };
   }
 
-  // If appId is provided, check for app-specific overrides first
-  if (appId) {
-    console.log('[getEnvironmentAccessFromPermissions] Checking app-specific overrides for appId:', appId);
+  // Get default permissions from default groups
+  const defaultAccess = appGroupPermissions.environment_access || appGroupPermissions.environmentAccess || {};
 
+  // If appId is provided, check for app-specific permissions and merge with default
+  if (appId) {
     const appSpecificAccess =
       appGroupPermissions.app_specific_environment_access?.[appId] ||
       appGroupPermissions.appSpecificEnvironmentAccess?.[appId];
 
-    console.log(
-      '[getEnvironmentAccessFromPermissions] app_specific_environment_access:',
-      appGroupPermissions.app_specific_environment_access
-    );
-    console.log('[getEnvironmentAccessFromPermissions] appSpecificAccess for this app:', appSpecificAccess);
-
     if (appSpecificAccess) {
-      // App has specific override from custom groups - use it
-      const result = {
-        development: appSpecificAccess.development === true,
-        staging: appSpecificAccess.staging === true,
-        production: appSpecificAccess.production === true,
-        released: appSpecificAccess.released === true,
+      // Merge app-specific and default permissions - user gets union of both
+      let result = {
+        development: appSpecificAccess.development === true || defaultAccess.development === true,
+        staging: appSpecificAccess.staging === true || defaultAccess.staging === true,
+        production: appSpecificAccess.production === true || defaultAccess.production === true,
+        released: appSpecificAccess.released === true || defaultAccess.released === true,
       };
-      console.log('[getEnvironmentAccessFromPermissions] Using app-specific override:', result);
+
+      // If user has no access to dev/staging/production, grant development access as fallback
+      if (!result.development && !result.staging && !result.production) {
+        result.development = true;
+      }
+
       return result;
-    } else {
-      console.log('[getEnvironmentAccessFromPermissions] No app-specific override found, falling back to default');
     }
   }
 
-  // Fall back to default permissions from default groups
-  // Check for both snake_case and camelCase (backend sends snake_case)
-  const defaultAccess = appGroupPermissions.environment_access || appGroupPermissions.environmentAccess;
+  // Return default permissions
+  let result = {
+    development: defaultAccess.development === true,
+    staging: defaultAccess.staging === true,
+    production: defaultAccess.production === true,
+    released: defaultAccess.released === true,
+  };
 
-  console.log('[getEnvironmentAccessFromPermissions] Using default access:', defaultAccess);
+  // If user has no access to dev/staging/production, grant development access as fallback
+  if (!result.development && !result.staging && !result.production) {
+    result.development = true;
+  }
 
-  return (
-    defaultAccess || {
-      development: false,
-      staging: false,
-      production: false,
-      released: false,
-    }
-  );
+  return result;
 };

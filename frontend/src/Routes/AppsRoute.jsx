@@ -80,12 +80,22 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
         const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
         const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv);
 
-        const search = queryString.stringify({
+        // Check if license is invalid/expired (basic plan) - from store
+        const storeState = useStore.getState();
+        const featureAccess = storeState?.license?.featureAccess;
+        const isBasicPlan = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+
+        // Don't add env param for free/basic plan, expired or invalid license
+        const queryParams = {
           // Keep other params but let env/version below override
           ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
-          env: effectiveEnv,
           version: versionName || restQueryParams.version,
-        });
+          // Only add env if not basic plan
+          ...(!isBasicPlan && { env: effectiveEnv }),
+        };
+
+        const search = queryString.stringify(queryParams);
+
         /* means. the User is trying to load old preview URL. Let's change these to query params */
         navigate(
           {

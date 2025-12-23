@@ -1,7 +1,7 @@
 import React from 'react';
 import ModalBase from '@/_ui/Modal';
-import User from '@/_ui/Icon/solidIcons/User';
-import Lock from '@/_ui/Icon/solidIcons/Lock';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
 import '../../resources/styles/group-permissions.styles.scss';
 
 function ChangeRoleModal({
@@ -19,8 +19,13 @@ function ChangeRoleModal({
     if (isAddUserScenario && autoRoleChangeModalList.length === 1) {
       return (
         <div className="role-change-modal-content">
-          <div className="modal-icon-container">
-            <User fill="#E54D2E" width="40" />
+          <div className="d-flex align-items-start justify-content-between">
+            <div className="modal-icon-container">
+              <SolidIcon fill="var(--tomato9)" name="usergear" width="40" />
+            </div>
+            <div onClick={handleAutoRoleChangeModalClose} className="icon-btn">
+              <SolidIcon fill="var(--slate9)" name="remove" width="16" />
+            </div>
           </div>
           <h3 className="modal-title">Cannot add an end-user to this group</h3>
           <div className="modal-description">
@@ -54,8 +59,13 @@ function ChangeRoleModal({
 
     return (
       <div className="role-change-modal-content">
-        <div className="modal-icon-container">
-          <Lock fill="#E54D2E" width="40" />
+        <div className="d-flex align-items-start justify-content-between">
+          <div className="modal-icon-container">
+            <SolidIcon fill="var(--tomato9)" name="lock" width="40" />
+          </div>
+          <div onClick={handleAutoRoleChangeModalClose} className="icon-btn">
+            <SolidIcon fill="var(--slate9)" name="remove" width="16" />
+          </div>
         </div>
         <div style={{ width: '100%' }}>
           <h3 className="modal-title">Cannot add this permission to the group</h3>
@@ -99,13 +109,11 @@ function ChangeRoleModal({
 
   return (
     <ModalBase
-      title={renderUserChangeTitle()}
-      handleConfirm={handleConfirmation}
-      confirmBtnProps={{ title: 'Continue', tooltipMessage: false }}
+      showHeader={false}
+      showFooter={false}
       show={showAutoRoleChangeModal}
       handleClose={handleAutoRoleChangeModalClose}
       darkMode={darkMode}
-      isLoading={isLoading}
       className="edit-role-confirm role-change-modal"
     >
       {renderModalContent()}

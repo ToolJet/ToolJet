@@ -879,14 +879,20 @@ class BaseManageGranularAccess extends React.Component {
                 </div>
               ) : (
                 <>
-                  {granularPermissions.map((permissions, index) => {
-                    return this.renderResourcePermissions({
-                      permissions,
-                      currentGroupPermission,
-                      isBasicPlan,
-                      index,
-                    });
-                  })}
+                  {[...granularPermissions]
+                    .sort((a, b) => {
+                      // Define the desired order: Apps, Data Sources, Workflows
+                      const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+                      return order.indexOf(a.type) - order.indexOf(b.type);
+                    })
+                    .map((permissions, index) => {
+                      return this.renderResourcePermissions({
+                        permissions,
+                        currentGroupPermission,
+                        isBasicPlan,
+                        index,
+                      });
+                    })}
                 </>
               )}
             </div>
