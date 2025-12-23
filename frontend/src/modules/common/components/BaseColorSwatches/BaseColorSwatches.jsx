@@ -67,6 +67,7 @@ const BaseColorSwatches = ({
     return (
       <Popover
         className={classNames(
+          'codebuilder-color-swatches-popover',
           { 'dark-theme': darkMode },
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}

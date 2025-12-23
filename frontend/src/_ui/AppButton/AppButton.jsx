@@ -2,6 +2,7 @@ import React from 'react';
 import './AppButton.scss';
 import SolidIcon from '../Icon/solidIcons/index';
 import { Spinner } from 'react-bootstrap';
+import * as Icons from '@tabler/icons-react';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -27,11 +28,18 @@ export const ButtonBase = function ButtonBase(props) {
     iconWidth,
     customStyles = {},
     iconViewBox,
+    isTablerIcon = false,
     ...restProps
   } = props;
 
   const isAnchor = (!!restProps.href || as === 'a') && !disabled;
   const Element = as ? as : isAnchor ? 'a' : 'button';
+
+  const TablerIcon = ({ name, ...props }) => {
+    // eslint-disable-next-line import/namespace
+    const IconElement = Icons[name] === undefined ? Icons['IconHome2'] : Icons[name];
+    return <IconElement {...props} />;
+  };
 
   return (
     <Element
@@ -48,7 +56,9 @@ export const ButtonBase = function ButtonBase(props) {
     >
       {!isLoading && leftIcon && (
         <span className="tj-btn-left-icon">
-          {
+          {isTablerIcon ? (
+            <TablerIcon name={leftIcon} color={fill} size={iconWidth} className={iconCustomClass} />
+          ) : (
             <SolidIcon
               fill={fill}
               className={iconCustomClass}
@@ -56,7 +66,7 @@ export const ButtonBase = function ButtonBase(props) {
               width={iconWidth}
               viewBox={iconViewBox}
             />
-          }
+          )}
         </span>
       )}
       {isLoading ? (
@@ -68,7 +78,11 @@ export const ButtonBase = function ButtonBase(props) {
       )}
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
-          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} width={iconWidth} />}
+          {isTablerIcon ? (
+            <TablerIcon name={rightIcon} color={fill} size={iconWidth} className={iconCustomClass} />
+          ) : (
+            <SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} width={iconWidth} />
+          )}
         </span>
       )}
     </Element>
