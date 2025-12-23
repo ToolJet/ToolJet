@@ -1,43 +1,38 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
-import { InstanceSettings } from '@entities/instance_settings.entity';
-import { INSTANCE_CONFIGS_DATA_TYPES } from '@modules/instance-settings/constants';
-import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+import { MigrationInterface, QueryRunner } from 'typeorm';
+import {
+  INSTANCE_CONFIGS_DATA_TYPES,
+  INSTANCE_SETTINGS_TYPE,
+} from '@modules/instance-settings/constants';
+
 export class AddGranularDomainSettings1765958549099 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        const entityManager = queryRunner.manager;
+    const passwordAllowedKey = 'PASSWORD_ALLOWED_DOMAINS';
+    const passwordRestrictedKey = 'PASSWORD_RESTRICTED_DOMAINS';
 
-        // Query existing ALLOWED_DOMAINS to prefill PASSWORD_ALLOWED_DOMAINS
-        const existingAllowedDomains = await entityManager.findOne(InstanceSettings, {
-            where: { key: INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS }
-        });
-        const existingAllowedDomainsValue = existingAllowedDomains?.value || '';
+    await queryRunner.query(
+      `
+      INSERT INTO instance_settings (key, label, data_type, value, type)
+      VALUES
+        ($1, $2, $3, $4, $5),
+        ($6, $7, $8, $9, $10)
+      ON CONFLICT (key) DO NOTHING
+      `,
+      [
+        passwordAllowedKey,
+        'Password Allowed Domains',
+        INSTANCE_CONFIGS_DATA_TYPES.TEXT,
+        '',
+        INSTANCE_SETTINGS_TYPE.SYSTEM,
 
-        const newSettings = [
-            {
-                key: 'PASSWORD_ALLOWED_DOMAINS',
-                label: 'Password Allowed Domains',
-                dataType: INSTANCE_CONFIGS_DATA_TYPES.TEXT,
-                value: existingAllowedDomainsValue,
-                type: INSTANCE_SETTINGS_TYPE.SYSTEM,
-                createdAt: new Date(),
-            },
-            {
-                key: 'PASSWORD_RESTRICTED_DOMAINS',
-                label: 'Password Restricted Domains',
-                dataType: INSTANCE_CONFIGS_DATA_TYPES.TEXT,
-                value: '',
-                type: INSTANCE_SETTINGS_TYPE.SYSTEM,
-                createdAt: new Date(),
-            }
-        ];
-
-        for (const setting of newSettings) {
-            // Use upsert or check existence to prevent errors if you run this twice
-            await entityManager.insert(InstanceSettings, setting);
-        }
-    }
-
+        passwordRestrictedKey,
+        'Password Restricted Domains',
+        INSTANCE_CONFIGS_DATA_TYPES.TEXT,
+        '',
+        INSTANCE_SETTINGS_TYPE.SYSTEM,
+      ],
+    );
+  }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`DELETE FROM instance_settings WHERE key IN ('PASSWORD_ALLOWED_DOMAINS', 'PASSWORD_RESTRICTED_DOMAINS')`);

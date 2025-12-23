@@ -14,11 +14,6 @@ export class AddPasswordDomainColumnsToOrganizations1766224841342 implements Mig
         isNullable: true,
       }),
     ]);
-
-    // Prefill password_allowed_domains with existing domain values
-    await queryRunner.query(
-      `UPDATE organizations SET password_allowed_domains = domain WHERE domain IS NOT NULL AND domain != ''`
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
