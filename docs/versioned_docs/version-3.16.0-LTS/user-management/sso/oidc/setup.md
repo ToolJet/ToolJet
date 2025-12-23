@@ -51,14 +51,26 @@ Go to **Settings > Instance login**. <br/>
 3. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of OpenID Connect.
     <img className="screenshot-full img-full" src="/img/user-management/sso/oidc/sso-menu.png" alt="Add user button" />
 
-4. After turning it on, a modal will appear with input fields for parameters such as Name, Client ID, and Well known URL. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
-    <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/config-v2.png" alt="Add user button" />
+4. After turning it on, a modal will appear. Click on **App provider** and fill the input fields for parameters such as Name, Client ID, and Well known URL. At the top right of the modal, there is a toggle to enable this provider. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
+    <img className="screenshot-full img-m" src="/img/user-management/sso/oidc/multi-tenant/config-v2.png" alt="Add user button" />
 
 5. Open the modal again and choose the Grant type. ToolJet supports Authorization Code, which requires a Client ID and Client Secret, and Authorization Code with PKCE, which does not require a Client Secret.
 
 6. After selecting the grant type, provide the Client ID, Client Secret / Code Verifier, and Well-Known URL from your identity provider. Once done, click Save changes at the bottom of the modal.
 
 Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
+
+## Configuring Multiple OIDC Providers
+
+ToolJet allows you to configure multiple OpenID Connect (OIDC) configurations simultaneously. This enables you to authenticate users using different identity providers such as Okta, Auth0, Microsoft Entra ID, Google or multiple tenants of the same provider within the same ToolJet workspace.
+
+Each OIDC provider is configured independently and can be enabled or disabled as needed, allowing organizations to support multiple authentication sources for different teams or user groups.
+
+To add a new provider, click **Add provider** in the bottom-right corner of the OIDC configuration modal.
+    <img className="screenshot-full img-m" src="/img/user-management/sso/oidc/multi-tenant/multiple_oidc.png" alt="Add user button" />
+<br /> <br />
+At sign-in, users can choose their preferred OIDC provider, making it easy to support multiple providers within a single ToolJet workspace.
+    <img className="screenshot-full" src="/img/user-management/sso/oidc/multi-tenant/sign_in_page.png" alt="Add user button" />
 
 ## Configuring ToolJet OIDC with Non Email Identifier
 ToolJet supports authenticating users using a non-email identifier. ToolJet generates a dummy email address for the user using the configured domain name and the unique id. For example, if the unique id of a user is *1234* and the domain is set to *example.com*, the dummy email address created will be *1234@example.com*.  
