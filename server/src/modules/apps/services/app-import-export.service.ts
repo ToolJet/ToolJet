@@ -62,6 +62,8 @@ type DefaultDataSourceName =
   | 'tooljetdbdefault'
   | 'workflowsdefault';
 
+type PartialRevampedComponent = 'CodeEditor' | 'PDF' | 'Calendar' | 'CustomComponent';
+
 type NewRevampedComponent =
   | 'Text'
   | 'TextInput'
@@ -86,7 +88,9 @@ type NewRevampedComponent =
   | 'StarRating'
   | 'Tags'
   | 'CircularProgressBar'
-  | 'Html';
+  | 'Html'
+  | 'Chat'
+  | 'CurrencyInput';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -120,7 +124,11 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Tags',
   'CircularProgressBar',
   'Html',
+  'Chat',
+  'CurrencyInput'
 ];
+
+const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
 
 const INPUT_WIDGET_TYPES = [
   'TextInput',
@@ -149,7 +157,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) {}
+  ) { }
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -267,10 +275,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -282,10 +290,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -293,16 +301,16 @@ export class AppImportExportService {
       const components =
         pages.length > 0
           ? await manager
-              .createQueryBuilder(Component, 'components')
-              .leftJoinAndSelect('components.layouts', 'layouts')
-              .leftJoinAndSelect('components.permissions', 'permission')
-              .leftJoinAndSelect('permission.users', 'componentUser')
-              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-              .where('components.pageId IN(:...pageId)', {
-                pageId: pages.map((v) => v.id),
-              })
-              .orderBy('components.created_at', 'ASC')
-              .getMany()
+            .createQueryBuilder(Component, 'components')
+            .leftJoinAndSelect('components.layouts', 'layouts')
+            .leftJoinAndSelect('components.permissions', 'permission')
+            .leftJoinAndSelect('permission.users', 'componentUser')
+            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+            .where('components.pageId IN(:...pageId)', {
+              pageId: pages.map((v) => v.id),
+            })
+            .orderBy('components.created_at', 'ASC')
+            .getMany()
           : [];
 
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
@@ -329,10 +337,10 @@ export class AppImportExportService {
           ...component,
           permissions: groupPermission
             ? {
-                permissionGroup: groupPermission.users
-                  .map((user) => user.permissionGroup?.name)
-                  .filter((name): name is string => Boolean(name)),
-              }
+              permissionGroup: groupPermission.users
+                .map((user) => user.permissionGroup?.name)
+                .filter((name): name is string => Boolean(name)),
+            }
             : undefined,
         };
       });
@@ -387,11 +395,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-            .createQueryBuilder(App, 'app')
-            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-            .distinct(true)
-            .getMany()
+          .createQueryBuilder(App, 'app')
+          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+          .distinct(true)
+          .getMany()
         : [];
 
     // Process each module from the import data
@@ -1468,10 +1476,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-              importingQuery.options,
-              externalResourceMappings['tooljet_database'],
-              organizationId
-            )
+            importingQuery.options,
+            externalResourceMappings['tooljet_database'],
+            organizationId
+          )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2199,10 +2207,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-                query.options,
-                externalResourceMappings['tooljet_database'],
-                user?.organizationId
-              )
+              query.options,
+              externalResourceMappings['tooljet_database'],
+              user?.organizationId
+            )
             : query.options,
       });
       await manager.save(newQuery);
@@ -2527,9 +2535,9 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent,
   component: Component,
-  componentTypes: NewRevampedComponent[],
+  componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
 ) {
   const properties = { ...component.properties };
@@ -2543,6 +2551,35 @@ function migrateProperties(
 
   const shouldHandleBackwardCompatibility = isVersionGreaterThanOrEqual(tooljetVersion, '2.29.0') ? false : true;
 
+  if (PartialRevampedComponents.includes(componentType as PartialRevampedComponent)) {
+    const defaultStylesByComponent: Record<string, Record<string, { value: string | number }>> = {
+      CodeEditor: {
+        borderColor: { value: 'var(--cc-weak-border)' },
+        backgroundColor: { value: 'var(--cc-surface1-surface)' },
+      },
+      PDF: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      Calendar: {
+        borderRadius: { value: 0 },
+        borderColor: { value: '#00000000' },
+      },
+      CustomComponent: {
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        borderColor: { value: 'var(--cc-default-border)' },
+      },
+    };
+
+    const defaults = defaultStylesByComponent[componentType];
+    if (defaults) {
+      for (const [key, value] of Object.entries(defaults)) {
+        if (!styles[key]) {
+          styles[key] = value;
+        }
+      }
+    }
+  }
   // Check if the component type is included in the specified component types
   if (componentTypes.includes(componentType as NewRevampedComponent)) {
     if (styles.visibility) {
@@ -2595,6 +2632,12 @@ function migrateProperties(
           validation.maxValue = properties?.maxValue;
         }
         delete properties.maxValue;
+      }
+    }
+
+    if (componentType === 'Chat') {
+      if (!styles.borderRadius) {
+        styles.borderRadius = { value: 6 };
       }
     }
 
@@ -2779,7 +2822,15 @@ function migrateProperties(
         styles.labelStyle = { value: 'legacy' };
       }
     }
+
+    // CurrencyInput
+    if (componentType === 'CurrencyInput') {
+      if (properties.showFlag == undefined) {
+        properties.showFlag = { value: true };
+      }
+    }
   }
+
   // To support backward compatibility, we are setting widthType to deprecated value ofField for input widget types
   if (INPUT_WIDGET_TYPES.includes(componentType)) {
     if (!styles.widthType) {

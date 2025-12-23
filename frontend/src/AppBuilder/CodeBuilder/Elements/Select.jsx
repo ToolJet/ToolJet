@@ -94,7 +94,7 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           height={32}
           styles={selectCustomStyles(width)}
           useCustomStyles={true}
-          classNamePrefix="inspector-select"
+          customClassPrefix="inspector-select"
           components={{
             IndicatorSeparator: () => null,
             Option,
