@@ -236,6 +236,15 @@ export const chatConfig = {
             },
             accordian: 'Container',
         },
+        borderRadius: {
+            type: 'numberInput',
+            displayName: 'Border radius',
+            validation: {
+                schema: { type: 'number' },
+                defaultValue: 6,
+            },
+            accordian: 'Container',
+        },
     },
     exposedVariables: {
         history: [],
@@ -362,6 +371,7 @@ export const chatConfig = {
             containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
             borderColorContainer: { value: 'var(--cc-weak-border)' },
             boxShadowContainer: { value: '#121212' },
+            borderRadius: { value: '{{6}}' },
         },
     },
 };
