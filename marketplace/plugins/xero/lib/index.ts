@@ -376,9 +376,9 @@ export default class Xero implements QueryService {
     }
   }
 
-  async invokeMethod(methodName: string, sourceOptions: any, args?: any): Promise<any> {
+  async invokeMethod(methodName: string, sourceOptions: any, args?: any, userId?: string): Promise<any> {
     if (methodName === 'getTenants') {
-      return await this.getTenants(sourceOptions);
+      return await this.getTenants(sourceOptions, userId);
     }
 
     throw new QueryError('Method not found', `Method ${methodName} is not supported for Xero plugin`, {
@@ -386,8 +386,16 @@ export default class Xero implements QueryService {
     });
   }
 
-  private async getTenants(sourceOptions: any): Promise<any> {
-    const accessToken = sourceOptions['access_token'];
+  private async getTenants(sourceOptions: any, userId?: string): Promise<any> {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    let accessToken;
+
+    if (isMultiAuthEnabled) {
+      // Find userId's token from tokenData
+      accessToken = sourceOptions['tokenData'].find((token: any) => token.user_id === userId)?.access_token;
+    } else {
+      accessToken = sourceOptions['access_token'];
+    }
 
     if (!accessToken) {
       throw new QueryError('Authentication required', 'Xero access token not found. Please authenticate first.', {
