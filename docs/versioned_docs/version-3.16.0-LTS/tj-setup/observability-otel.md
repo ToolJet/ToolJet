@@ -1,6 +1,6 @@
 ---
 id: observability-otel
-title: Observability
+title: Observability Overview
 ---
 
 ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze system health through metrics.

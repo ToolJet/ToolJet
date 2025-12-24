@@ -637,7 +637,18 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "tj-setup/observability-otel"
+        {
+          "type": "category",
+          "label": "Observability",
+          "link": {
+            "type": "doc",
+            "id": "tj-setup/observability-otel"
+          },
+          "items": [
+            "tj-setup/observability-otel",
+            "tj-setup/observability/datadog"
+          ]
+        }
       ]
     },
     {
