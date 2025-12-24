@@ -1164,7 +1164,7 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Debug - Chrome Browser Detection
+      - name: Debug - Chrome Browser Detections
         run: |
           echo "========================================="
           echo "DEBUGGING CHROME BROWSER DETECTION"
