@@ -3,8 +3,7 @@ id: datadog
 title: Datadog
 ---
 
-
-ToolJet supports OpenTelemetry (OTel)–based observability. When using Datadog, ToolJet does not ship a Datadog Agent by default. You must run a Datadog Agent alongside ToolJet and configure ToolJet to export telemetry to it.
+ToolJet supports OpenTelemetry (OTel) based observability. When using Datadog, ToolJet does not ship a Datadog Agent by default. You must run a Datadog Agent alongside ToolJet and configure ToolJet to export telemetry to it.
 
 This guide walks through setting up observability using Datadog.
 
@@ -18,7 +17,7 @@ It is a 3 step process:
 
 <img src="https://datadog-docs.imgix.net/images/opentelemetry/setup/dd-agent-otlp-ingest.5c618e65990e9be5954c60e908ab5f09.png?auto=format" alt="Datadog observability setup" />
 
-### Step 1: Running a Datadog Agent
+### Step 1: Run a Datadog Agent
 :::info
 For an in-depth guide on running the Datadog Agent, refer to the [official Datadog documentation](https://docs.datadoghq.com/containers/docker).
 :::
@@ -54,7 +53,7 @@ dd-agent:
     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
 ```
 
-### Step 2: Setting Up Environment Variables in ToolJet
+### Step 2: Set Up Environment Variables in ToolJet
 
 Set up the following environment variables in the **.env** file while running ToolJet:
 ```js
@@ -84,4 +83,4 @@ OTEL_LOG_LEVEL=debug
 Only the Datadog Agent hostname changes based on your deployment. All other environment variables remain the same.
 :::
 
-Your ToolJet instance will now begin sending traces and metrics to Datadog, which can be viewed in Datadog APM.
+Your ToolJet instance will now begin streaming traces and metrics to Datadog, which can be viewed in Datadog APM.
