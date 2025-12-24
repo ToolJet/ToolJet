@@ -112,7 +112,7 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       hideFromDashboard: false,
       canAccessDevelopment: true,
       canAccessStaging: true,
-      canAccessProduction: true,
+      canAccessProduction: false,
       canAccessReleased: true,
     },
     [ResourceType.DATA_SOURCE]: {

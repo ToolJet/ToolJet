@@ -33,6 +33,11 @@ const DesktopHeader = ({
   const searchParams = new URLSearchParams(location.search);
   const isPreviewMode = searchParams.has('env') || searchParams.has('version');
 
+  // Don't render header at all if not in preview mode
+  if (!isPreviewMode) {
+    return null;
+  }
+
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
@@ -60,14 +65,12 @@ const DesktopHeader = ({
   if (!showHeader) {
     return (
       <>
-        {isPreviewMode && (
-          <PreviewSettings
-            isMobileLayout={false}
-            showHeader={showHeader}
-            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-            darkMode={darkMode}
-          />
-        )}
+        <PreviewSettings
+          isMobileLayout={false}
+          showHeader={showHeader}
+          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+          darkMode={darkMode}
+        />
         {showDarkModeToggle && isAppLoaded && (
           <span className="released-version-no-header-dark-mode-icon">
             <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
@@ -78,14 +81,12 @@ const DesktopHeader = ({
   }
   return (
     <Header>
-      {isPreviewMode && (
-        <PreviewSettings
-          isMobileLayout={false}
-          showHeader={showHeader}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          darkMode={darkMode}
-        />
-      )}
+      <PreviewSettings
+        isMobileLayout={false}
+        showHeader={showHeader}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        darkMode={darkMode}
+      />
     </Header>
   );
 };
