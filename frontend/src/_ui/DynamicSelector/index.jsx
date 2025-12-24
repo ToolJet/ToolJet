@@ -28,8 +28,6 @@ const DynamicSelector = ({
 }) => {
     const isDependentField = dependsOn?.length > 0;
 
-    const currentUser = useStore((state) => state.user);
-
     const operationLabel = operation?.label || operation?.name || 'Fetch';
 
     const [isLoading, setIsLoading] = useState(false);
