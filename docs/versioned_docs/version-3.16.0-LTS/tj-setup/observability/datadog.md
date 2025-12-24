@@ -84,4 +84,4 @@ OTEL_LOG_LEVEL=debug
 Only the Datadog Agent hostname changes based on your deployment. All other environment variables remain the same.
 :::
 
-Your ToolJet instace will now start streaming Telemetry data to Datadog, which can be seen in APM.
+Your ToolJet instance will now begin sending traces and metrics to Datadog, which can be viewed in Datadog APM.
