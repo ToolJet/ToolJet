@@ -3,15 +3,13 @@ id: datadog
 title: Datadog
 ---
 
-This document covers setting up observability for your ToolJet instace using Datadog.
-
-## Setting Up Obervability Using Datadog
 
 ToolJet supports OpenTelemetry (OTel)–based observability. When using Datadog, ToolJet does not ship a Datadog Agent by default. You must run a Datadog Agent alongside ToolJet and configure ToolJet to export telemetry to it.
 
 This guide walks through setting up observability using Datadog.
 
-## Overview
+## Setting Up Obervability Using Datadog
+### Overview
 ToolJet doesn't automatically send telemetry to Datadog, instead we need a Datadog agent as a middleman to forward the data to datadog.
 It is a 3 step process:
 - ToolJet emits traces and metrics using OpenTelemetry
