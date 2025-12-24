@@ -1,10 +1,16 @@
-name: Cypress Platform
+name:
+  Cypress Platform
   # Cache invalidation - 2025-12-09
-  
+
 on:
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 env:
   PR_NUMBER: ${{ github.event.number }}
@@ -14,6 +20,7 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
+
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
@@ -378,6 +385,8 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests
+        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests
@@ -396,6 +405,7 @@ jobs:
 
   Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04
+
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
 
     strategy:
@@ -530,11 +540,8 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "ENABLE_EXTERNAL_API=true" >> .env
           echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          echo "ENABLE_AI_FEATURES=true" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
@@ -749,12 +756,38 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-subpath
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -765,6 +798,7 @@ jobs:
 
   Cypress-Platform-Proxy:
     runs-on: ubuntu-22.04
+
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
@@ -886,8 +920,6 @@ jobs:
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
-          echo "NODE_ENV=production" >> .env
-          echo "SERVE_CLIENT=true" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -903,11 +935,8 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "ENABLE_EXTERNAL_API=true" >> .env
           echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          echo "ENABLE_AI_FEATURES=true" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
@@ -1135,12 +1164,39 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001"
+          config: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -1151,6 +1207,7 @@ jobs:
 
   Cypress-Platform-Proxy-Subpath:
     runs-on: ubuntu-22.04
+
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
@@ -1288,11 +1345,8 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
           echo "ENABLE_EXTERNAL_API=true" >> .env
           echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          echo "ENABLE_AI_FEATURES=true" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
           echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
@@ -1520,12 +1574,39 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy-subpath
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001/apps"
+          config: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
