@@ -297,22 +297,25 @@ const DynamicSelector = ({
                     </div>
                 )}
 
-                {!isFxMode && !dependsOn.length && <ButtonSolid
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleFetch(false)}
-                    disabled={isLoading || disabled}
-                    className="btn rounded-lg tw-ml-2"
-                >
-                    {isLoading ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" />
-                            Loading...
-                        </>
-                    ) : (
-                        operationLabel || 'Fetch'
-                    )}
-                </ButtonSolid>}
+                {!dependsOn.length && (
+                    <ButtonSolid
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleFetch(false)}
+                        disabled={isLoading || disabled || isFxMode}
+                        className="btn rounded-lg tw-ml-2"
+                        style={{ visibility: isFxMode ? 'hidden' : 'visible' }}
+                    >
+                        {isLoading ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" />
+                                Loading...
+                            </>
+                        ) : (
+                            operationLabel || 'Fetch'
+                        )}
+                    </ButtonSolid>
+                )}
             </div>
 
             {error && (
