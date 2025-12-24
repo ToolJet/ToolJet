@@ -40,6 +40,8 @@ services:
     platform: linux/x86_64
     depends_on:
       - postgres
+      - redis
+      - postgrest
     volumes:
       - ./server:/app/server:delegated
       - ./plugins:/app/plugins
@@ -51,7 +53,27 @@ services:
     environment:
       - SERVE_CLIENT=false
       - FORCE_COLOR=1
+      - TOOLJET_EDITION=${TOOLJET_EDITION:-ce}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PG_HOST=postgres
+      - PGRST_HOST=postgrest
+      - PGRST_SERVER_PORT=3000
     command: npm run --prefix server start:dev
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgrest:
     container_name: postgrest
@@ -78,3 +100,4 @@ services:
 
 volumes:
   postgres:
+  redis:
