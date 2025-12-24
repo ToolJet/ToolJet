@@ -3,8 +3,8 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 13,
-    height: 480,
+    width: 15,
+    height: 450,
   },
   component: 'Container',
   others: {
@@ -70,27 +70,19 @@ export const containerConfig = {
       displayName: 'ContainerText',
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
       defaultValue: {
         text: 'Container title',
         fontWeight: 'bold',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
       },
     },
   ],
   events: {},
   styles: {
-    backgroundColor: {
-      type: 'colorSwatches',
-      displayName: 'Background',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
-      },
-      accordian: 'container',
-    },
     headerBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -100,12 +92,31 @@ export const containerConfig = {
       },
       accordian: 'header',
     },
+
+    backgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'container',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'container',
     },
@@ -167,8 +178,9 @@ export const containerConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
