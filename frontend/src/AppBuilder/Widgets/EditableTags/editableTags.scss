@@ -127,4 +127,23 @@
   .css-t3ipsp-control {
     box-shadow: none;
   }
+
+  // Scrollbar styling for control (matching scrollbar-container)
+  [class*='-control'] {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+    }
+  }
 }

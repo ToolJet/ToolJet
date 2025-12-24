@@ -5,7 +5,6 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useEditorStore } from '@/_stores/editorStore';
-import { CustomDropdownIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
@@ -89,11 +88,9 @@ export const EditableTags = ({
   const [userInteracted, setUserInteracted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Dynamic height support
-  // isDynamicHeightEnabled is for grid system (only in view mode)
-  // dynamicHeight is used for visual styles (works in both edit and view modes)
+  // Dynamic height support - only enabled in view mode (same as TextArea)
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
-  const heightChangeValue = useHeightObserver(tagsRef, dynamicHeight);
+  const heightChangeValue = useHeightObserver(tagsRef, isDynamicHeightEnabled);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -401,10 +398,12 @@ export const EditableTags = ({
     control: (provided, state) => ({
       ...provided,
       minHeight: _height,
-      height: dynamicHeight ? 'auto' : _height,
+      height: isDynamicHeightEnabled ? 'auto' : _height,
       boxShadow: boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
       alignItems: 'flex-start',
+      overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
+      overflowX: 'hidden',
       borderColor: getInputBorderColor({
         isFocused: state.isFocused || isMenuOpen,
         isValid,
@@ -428,14 +427,14 @@ export const EditableTags = ({
       ...provided,
       padding: '4px 10px',
       display: 'flex',
-      flexWrap: dynamicHeight ? 'wrap' : 'nowrap',
+      flexWrap: isDynamicHeightEnabled ? 'wrap' : 'nowrap',
       gap: '4px',
       alignItems: 'flex-start',
       alignContent: 'flex-start',
-      maxWidth: 'calc(100% - 40px)',
-      overflow: 'hidden',
+      maxWidth: '100%',
+      overflow: 'visible',
       flex: 1,
-      height: dynamicHeight ? 'auto' : '100%',
+      height: isDynamicHeightEnabled ? 'auto' : '100%',
     }),
     multiValue: (provided) => ({
       ...provided,
@@ -477,19 +476,12 @@ export const EditableTags = ({
     indicatorSeparator: () => ({
       display: 'none',
     }),
-    indicatorsContainer: (provided) => ({
-      ...provided,
-      marginRight: '10px',
-      alignSelf: 'center',
-      flexShrink: 0,
+    indicatorsContainer: () => ({
+      display: 'none',
     }),
     placeholder: (provided) => ({
       ...provided,
       color: 'var(--text-placeholder)',
-    }),
-    dropdownIndicator: (provided) => ({
-      ...provided,
-      padding: '0px',
     }),
     option: (provided, state) => ({
       ...provided,
@@ -568,7 +560,7 @@ export const EditableTags = ({
           id={`${id}-label`}
         />
         <div
-          className={cx('px-0', { 'h-100': !dynamicHeight })}
+          className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}
           onClick={handleClickInside}
           onTouchEnd={handleClickInside}
           style={{
@@ -619,7 +611,7 @@ export const EditableTags = ({
               ),
               Option: EditableTagsOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-              DropdownIndicator: isTagsLoading ? () => null : CustomDropdownIndicator,
+              DropdownIndicator: () => null,
             }}
             isClearable={false}
             isMulti
