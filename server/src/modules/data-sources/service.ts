@@ -333,7 +333,7 @@ export class DataSourcesService implements IDataSourcesService {
     );
 
     try {
-      const result = await service.invokeMethod(methodName, sourceOptions, args);
+      const result = await service.invokeMethod(methodName, sourceOptions, args, user?.id);
       return { status: 'ok', data: result };
     } catch (error) {
       if (error.constructor.name === 'OAuthUnauthorizedClientError') {
@@ -373,7 +373,7 @@ export class DataSourcesService implements IDataSourcesService {
             );
 
             // Retry invoke
-            const result = await service.invokeMethod(methodName, updatedSourceOptions, args);
+            const result = await service.invokeMethod(methodName, updatedSourceOptions, args, user?.id);
             return { status: 'ok', data: result };
           } catch (refreshError) {
             // If refresh fails or retry fails, return original or new error data
