@@ -5,7 +5,7 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useEditorStore } from '@/_stores/editorStore';
-import { getInputBackgroundColor, getInputBorderColor, sortArray } from '../DropdownV2/utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
   getLabelWidthOfInput,
@@ -399,7 +399,8 @@ export const EditableTags = ({
       ...provided,
       minHeight: _height,
       height: isDynamicHeightEnabled ? 'auto' : _height,
-      boxShadow: boxShadow,
+      boxShadow:
+        state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
       alignItems: 'flex-start',
       overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
@@ -420,7 +421,10 @@ export const EditableTags = ({
         isDisabled: isTagsDisabled,
       }),
       '&:hover': {
-        borderColor: getModifiedColor(fieldBorderColor, 24),
+        borderColor:
+          state.isFocused || isMenuOpen
+            ? getInputFocusedColor({ accentColor })
+            : getModifiedColor(fieldBorderColor, 24),
       },
     }),
     valueContainer: (provided) => ({
@@ -429,8 +433,7 @@ export const EditableTags = ({
       display: 'flex',
       flexWrap: isDynamicHeightEnabled ? 'wrap' : 'nowrap',
       gap: '4px',
-      alignItems: 'flex-start',
-      alignContent: 'flex-start',
+      alignItems: selected.length > 0 ? 'flex-start' : 'center',
       maxWidth: '100%',
       overflow: 'visible',
       flex: 1,
@@ -476,8 +479,10 @@ export const EditableTags = ({
     indicatorSeparator: () => ({
       display: 'none',
     }),
-    indicatorsContainer: () => ({
-      display: 'none',
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      display: 'flex',
+      alignItems: 'center',
     }),
     placeholder: (provided) => ({
       ...provided,

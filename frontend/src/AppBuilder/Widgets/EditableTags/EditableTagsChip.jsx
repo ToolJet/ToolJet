@@ -15,8 +15,8 @@ const EditableTagsChip = (props) => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '2px',
-        padding: '2px 6px 2px 8px',
+        gap: '4px',
+        padding: '2px 8px',
         backgroundColor: tagBackgroundColor,
         borderRadius: '2px',
         fontSize: '14px',
