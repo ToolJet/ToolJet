@@ -91,13 +91,38 @@ const DynamicSelector = ({
             if (isDependentField) {
                 // Store in cache based on dependency value
                 const cacheKey = `${propertyKey}_cache`;
-                const parentValue = compositeDependencyKey;
-                const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+                const existingCache = get(options, cacheKey) || {};
 
-                const newCache = {
-                    isMultiAuth,
-                    [parentValue]: items
-                };
+                const parentKey = compositeDependencyKey;
+                const parentValue = compositeDependencyKey;
+
+                const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+                const userId = currentUser?.id;
+
+                let newCache = { ...existingCache };
+
+                // Invalidate cache if auth mode changed
+                if (existingCache.isMultiAuth !== undefined && existingCache.isMultiAuth !== isMultiAuth) {
+                    newCache = {};
+                }
+
+                newCache.isMultiAuth = isMultiAuth;
+
+                if (isMultiAuth) {
+                    if (!userId) {
+                        throw new Error('[DynamicSelector] Multi-user auth enabled but no user ID found');
+                    } else {
+                        // Replace the user's cache with the new data, discarding previous dependency values
+                        newCache[userId] = {
+                            [parentValue]: items
+                        };
+                    }
+                } else {
+                    newCache = {
+                        isMultiAuth: isMultiAuth,
+                        [parentValue]: items
+                    };
+                }
 
                 const updatedOptions = {
                     ...options,
@@ -108,6 +133,7 @@ const DynamicSelector = ({
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
                 const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+                const userId = currentUser?.id;
 
                 let newCache = { ...existingCache };
 
@@ -115,7 +141,19 @@ const DynamicSelector = ({
                     newCache = {};
                 }
                 newCache.isMultiAuth = isMultiAuth;
-                newCache['nonDependentCache'] = items;
+
+                if (isMultiAuth) {
+                    if (userId) {
+                        newCache[userId] = {
+                            'nonDependentCache': items
+                        };
+                    }
+                } else {
+                    newCache = {
+                        isMultiAuth: isMultiAuth,
+                        'nonDependentCache': items
+                    };
+                }
 
                 const updatedOptions = {
                     ...options,
@@ -146,9 +184,11 @@ const DynamicSelector = ({
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
 
+                const parentKey = compositeDependencyKey;
                 const parentValue = compositeDependencyKey;
 
                 const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+                const userId = currentUser?.id;
 
                 // Validate cache mode
                 if (existingCache.isMultiAuth !== undefined && existingCache.isMultiAuth !== isMultiAuth) {
@@ -156,9 +196,17 @@ const DynamicSelector = ({
                     return;
                 }
 
-                const cachedData = existingCache[parentValue];
+                let cachedData = null;
+                if (isMultiAuth) {
+                    if (userId && existingCache[userId]) {
+                        cachedData = existingCache[userId][parentValue];
+                    }
+                } else {
+                    cachedData = existingCache[parentValue];
+                }
 
                 if (!cachedData) {
+                    // Fetch data for the current dependency state and store in cache
                     handleFetch()
                 } else {
                     setFetchedData(cachedData);
@@ -168,12 +216,21 @@ const DynamicSelector = ({
                 const existingCache = get(options, cacheKey) || {};
 
                 const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+                const userId = currentUser?.id;
 
                 if (existingCache.isMultiAuth !== undefined && existingCache.isMultiAuth !== isMultiAuth) {
                     handleFetch();
                     return;
                 }
-                const cachedData = existingCache['nonDependentCache'];
+
+                let cachedData = null;
+                if (isMultiAuth) {
+                    if (userId && existingCache[userId]) {
+                        cachedData = existingCache[userId]['nonDependentCache'];
+                    }
+                } else {
+                    cachedData = existingCache['nonDependentCache'];
+                }
 
                 if (cachedData) {
                     setFetchedData(cachedData);
@@ -189,14 +246,22 @@ const DynamicSelector = ({
             const cacheKey = `${propertyKey}_cache`;
             const existingCache = get(options, cacheKey) || {};
 
-            const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+            const isMultiAuth = selectedDataSource?.options?.multiple_auth_enabled;
+            const userId = currentUser?.id;
 
             if (existingCache.isMultiAuth !== undefined && existingCache.isMultiAuth !== isMultiAuth) {
                 handleFetch();
                 return;
             }
 
-            const cachedData = existingCache[compositeDependencyKey];
+            let cachedData = null;
+            if (isMultiAuth) {
+                if (userId && existingCache[userId]) {
+                    cachedData = existingCache[userId][compositeDependencyKey];
+                }
+            } else {
+                cachedData = existingCache[compositeDependencyKey];
+            }
 
             if (cachedData) {
                 setFetchedData(cachedData);
