@@ -490,31 +490,28 @@ export const EditableTags = ({
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
+      // backgroundColor: state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
+      backgroundColor: 'var(--surfaces-surface-01)',
       color: 'var(--text-primary)', // Use default text color for dropdown options
-      borderRadius: state.isFocused ? '8px' : '0',
-      padding: '8px 12px',
       opacity: state.isDisabled ? 0.3 : 1,
-      '&:hover': {
-        backgroundColor: state.isDisabled ? 'var(--surfaces-surface-01)' : 'var(--interactive-overlays-fill-hover)',
-        borderRadius: '8px',
-      },
       cursor: 'pointer',
+      padding: '8px 12px',
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '4px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '4px',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
+      padding:"0",
     }),
     menu: (provided) => ({
       ...provided,
+      padding: '0px',
       marginTop: '5px',
-      borderRadius: '8px',
-      boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.16)',
+      borderRadius: '9px',
+      boxShadow: 'var(--elevation-300-box-shadow)',
+      border :"1px solid var(--border-weak)",
     }),
   };
 

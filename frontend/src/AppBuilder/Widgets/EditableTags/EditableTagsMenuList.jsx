@@ -3,6 +3,7 @@ import { components } from 'react-select';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { CornerDownLeft } from 'lucide-react';
 
 const { MenuList } = components;
 
@@ -41,7 +42,6 @@ const EditableTagsMenuList = ({
             style={{
               maxHeight: selectProps?.maxMenuHeight || 300,
               overflowY: 'auto',
-              padding: '4px',
             }}
           >
             {hasChildren ? (
@@ -71,7 +71,7 @@ const EditableTagsMenuList = ({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '8px 12px',
-                borderTop: '1px solid var(--borders-weak)',
+                borderTop: '1px solid var(--border-weak)',
                 cursor: 'pointer',
               }}
               onClick={(e) => {
@@ -102,14 +102,7 @@ const EditableTagsMenuList = ({
                   {inputValue}
                 </span>
               </div>
-              <span
-                style={{
-                  color: 'var(--text-placeholder)',
-                  fontSize: '12px',
-                }}
-              >
-                Enter
-              </span>
+              <CornerDownLeft size={14} color="var(--text-placeholder)" />
             </div>
           )}
         </>

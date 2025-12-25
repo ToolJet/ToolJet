@@ -57,6 +57,7 @@
   .editable-tags-menu-list-body {
     max-height: 300px;
     overflow-y: auto;
+    padding: "0px" !important;
   }
 
   .editable-tags-no-options {
@@ -75,9 +76,9 @@
     cursor: pointer;
     background-color: var(--surfaces-surface-01);
 
-    &:hover {
-      background-color: var(--interactive-overlays-fill-hover);
-    }
+    // &:hover {
+    //   background-color: var(--interactive-overlays-fill-hover);
+    // }
   }
 
   .editable-tags-new-tag-preview {
@@ -91,7 +92,7 @@
 }
 
 .editable-tags-option-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   background-color: var(--surfaces-surface-03);
   color: var(--text-primary);
@@ -101,6 +102,12 @@
   line-height: 20px;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
+}
+
+.editable-tags-create-option-wrapper {
+  border-top: 1px solid var(--border-weak) !important;
+  margin: 0  !important;
+  padding: 8px 12px !important;
 }
 
 .editable-tags-create-option {
