@@ -11,7 +11,25 @@ fi
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
   echo "Starting Redis server locally..."
+
+  # Check if Redis config file exists
+  if [ ! -f /etc/redis/redis.conf ]; then
+    echo "Error: Redis configuration file not found at /etc/redis/redis.conf"
+    exit 1
+  fi
+
+  # Start Redis server in background
   redis-server /etc/redis/redis.conf &
+  REDIS_PID=$!
+
+  # Wait for Redis to be ready
+  echo "Waiting for Redis to be ready..."
+  if ! ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=30 -- echo "Redis is up"; then
+    echo "Error: Redis failed to start"
+    exit 1
+  fi
+
+  echo "Redis started successfully (PID: $REDIS_PID)"
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else

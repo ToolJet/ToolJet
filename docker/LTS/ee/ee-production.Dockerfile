@@ -197,6 +197,10 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
+# Copy Redis configuration file for BullMQ optimization
+COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
+RUN chown appuser:0 /etc/redis/redis.conf && chmod 644 /etc/redis/redis.conf
+
 ENV HOME=/home/appuser
 # Switch back to appuser
 USER appuser
