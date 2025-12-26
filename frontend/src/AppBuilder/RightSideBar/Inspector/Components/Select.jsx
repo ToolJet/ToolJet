@@ -577,17 +577,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
-        {isEditableTags &&
-          renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'caseEnforcement',
-            'properties',
-            currentState,
-            allComponents
-          )}
       </>
     ),
   });
