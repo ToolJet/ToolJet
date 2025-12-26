@@ -348,6 +348,7 @@ export const editableTagsConfig = {
     },
   },
   exposedVariables: {
+    values: [],
     tags: [],
     newTagsAdded: [],
     selectedTags: [],
