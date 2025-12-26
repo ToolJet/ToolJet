@@ -2,7 +2,7 @@
 
 # =============================================================================
 # STAGE 1: SOURCE FETCHER
-# Purpose: Clone repository, checkout branch, and handle submodules
+# Purpose: Clone repository and checkout branch
 # Cache: Invalidated on every new commit (expected)
 # =============================================================================
 FROM node:22.15.1 AS source-fetcher
@@ -24,50 +24,17 @@ RUN git config --global http.postBuffer 524288000
 # Clone and checkout repository
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
+RUN git submodule update --init --recursive
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
-RUN if git submodule update --init --recursive; then \
-  echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to main
-  git submodule foreach " \
-    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-      git checkout ${BRANCH_NAME}; \
-    else \
-      echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to main'; \
-      git checkout main; \
-    fi"; \
-else \
-  echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
-  # Clone frontend/ee submodule directly
-  if [ ! -d "frontend/ee" ]; then \
-    mkdir -p frontend/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
-  fi; \
-  # Clone server/ee submodule directly  
-  if [ ! -d "server/ee" ]; then \
-    mkdir -p server/ee; \
-    git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
-  fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to main
-  cd frontend/ee && \
+# Checkout same branch in submodules if exists, otherwise fallback to lts-3.16
+RUN git submodule foreach " \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
   else \
-    echo "Branch ${BRANCH_NAME} not found in frontend/ee, falling back to main"; \
-    git checkout main; \
-  fi && \
-  cd ../../server/ee && \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
-    git checkout ${BRANCH_NAME}; \
-  else \
-    echo "Branch ${BRANCH_NAME} not found in server/ee, falling back to main"; \
-    git checkout main; \
-  fi && \
-  cd ../..; \
-fi
+    echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
+    git checkout lts-3.16; \
+  fi"
 
 # =============================================================================
 # STAGE 2: PLUGINS BUILDER
@@ -81,17 +48,12 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only plugins package files first (better layer caching)
-COPY --from=source-fetcher /source/plugins/package.json /source/plugins/package-lock.json ./plugins/
+# Copy only plugins directory and necessary package files
+COPY --from=source-fetcher /source/plugins ./plugins
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# Install plugins dependencies
-RUN npm --prefix plugins install
-
-# Copy plugins source code
-COPY --from=source-fetcher /source/plugins ./plugins
-
 # Build plugins
+RUN npm --prefix plugins install
 RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
@@ -107,17 +69,12 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only frontend package files first (better layer caching)
-COPY --from=source-fetcher /source/frontend/package.json /source/frontend/package-lock.json ./frontend/
+# Copy only frontend directory and necessary package files
+COPY --from=source-fetcher /source/frontend ./frontend
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# Install frontend dependencies
-RUN npm --prefix frontend install
-
-# Copy frontend source code (including ee submodule)
-COPY --from=source-fetcher /source/frontend ./frontend
-
 # Build frontend
+RUN npm --prefix frontend install
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
@@ -134,21 +91,16 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only server package files first (better layer caching)
-COPY --from=source-fetcher /source/server/package.json /source/server/package-lock.json ./server/
+# Copy only server directory and necessary package files
+COPY --from=source-fetcher /source/server ./server
 COPY --from=source-fetcher /source/package.json ./package.json
 
 # Install global dependencies needed for server build
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 
-# Install server dependencies
-RUN npm --prefix server install
-
-# Copy server source code (including ee submodule)
-COPY --from=source-fetcher /source/server ./server
-
 # Build server
+RUN npm --prefix server install
 RUN npm --prefix server run build
 
 # =============================================================================
