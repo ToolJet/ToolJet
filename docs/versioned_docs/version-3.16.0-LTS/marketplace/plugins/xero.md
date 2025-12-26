@@ -543,7 +543,6 @@ Access payroll features for UK-based businesses, like employee and pay run data.
 | POST   | `/Timesheets/{TimesheetID}/RevertToDraft` | Reverts a specific timesheet to draft.  |
 | PUT    | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Updates a specific timesheet line for a specific timesheet. |
 | DELETE | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Deletes a specific timesheet line. |
-| GET    | `/PayRunCalendars/{PayRunCalendarID}` | Retrieves a specific payrun calendar by using a unique payrun calendar ID. |
 
 #### PAYRUNCALENDARID
 | Method | API Endpoint | Description |
@@ -567,6 +566,210 @@ Access payroll features for UK-based businesses, like employee and pay run data.
 | GET    | `/Settings/trackingCategories`   | Retrieves tracking categories. |
 
 
-- **Payroll NZ**
-- **Projects**
-- **Files**
+### PAYROLL NZ
+Manage payroll functions for New Zealand businesses with the NZ payroll API.
+
+| Method | API Endpoint                  | Description                                             |
+|--------|-------------------------------|---------------------------------------------------------|
+| GET    | `/Employees`                  | Retrieves employees.                                    |
+| POST   | `/Employees`                  | Creates an employees.                                   |
+| GET    | `/Deductions`                 | Retrieves deductions for a specific employee.           |
+| POST   | `/Deductions`                 | Creates a new deduction for a specific employee.        |
+| GET    | `/StatutoryDeductions`        | Retrieves statutory deductions.                         |
+| GET    | `/Superannuations`            | Retrieves superannuations.                              |
+| POST   | `/Superannuations`            | Creates a new superannuation.                           |
+| GET    | `/EarningsRates`              | Retrieves earnings rates.                               |
+| POST   | `/EarningsRates`              | Creates a new earnings rate.                            |
+| GET    | `/LeaveTypes`                 | Retrieves leave types.                                  |
+| POST   | `/LeaveTypes`                 | Creates a new leave type.                               |
+| GET    | `/Reimbursements`             | Retrieves reimbursements.                               |
+| POST   | `/Reimbursements`             | Creates a new reimbursement.                            |
+| GET    | `/Timesheets`                 | Retrieves timesheets.                                   |
+| POST   | `/Timesheets`                 | Creates a new timesheet.                                |
+| GET    | `/PayRunCalendars`            | Retrieves payrun calendars.                             |
+| POST   | `/PayRunCalendars`            | Creates a new payrun calendar.                          |
+| GET    | `/PayRuns`                    | Retrieves pay runs.                                     |
+| POST   | `/PayRuns`                    | Creates a pay run.                                      |
+| GET    | `/Payslips`                   | Retrieves payslips.                                     |
+| GET    | `/Settings`                   | Retrieves settings.                                     |
+
+#### EMPLOYEEID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Employees/{EmployeeID}`     | Retrieves an employees using a unique employee ID.                                                               |
+| PUT    | `/Employees/{EmployeeID}`     | Updates an existing employee.                           |
+| POST   | `/Employees/{EmployeeID}/Employment`| Creates an employment detail for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/Tax` | Retrieves tax records for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/Tax` | Updates the tax records for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/OpeningBalances`  | Retrieves the opening balance for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/OpeningBalances` | Creates opening balances for a specific employee.   |
+| GET    | `/Employees/{EmployeeID}/Leave` | Retrieves leave records for a specific employee. |
+| POST   | `/Employees/{EmployeeID}/Leave` | Creates leave records for a specific employee.  |
+| PUT    | `/Employees/{EmployeeID}/Leave/{LeaveID}`  | Updates leave records for a specific employee.  |
+| DELETE  | `/Employees/{EmployeeID}/Leave/{LeaveID}`  | Deletes a leave record for a specific employee.   |
+| GET    | `/Employees/{EmployeeID}/LeaveBalances`  | Retrieves leave balances for a specific employee.  |
+| GET    | `/Employees/{EmployeeID}/LeavePeriods` | Retrieves leave periods for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/LeaveSetup` | Creates a leave set-up for a specific employee. This is required before viewing, configuring and requesting leave for an employee. |
+| GET    | `/Employees/{EmployeeID}/LeaveTypes`  | Retrieves leave types for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/LeaveTypes` | Creates leave type records for a specific employee.  |
+| GET    | `/Employees/{EmployeeID}/PaymentMethods` | Retrieves available payment methods for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/PaymentMethods`  | Creates a payment method for an employee. |
+| GET    | `/Employees/{EmployeeID}/PayTemplates`  | Retrieves pay templates for a specific employee.  |
+| POST   | `/Employees/{EmployeeID}/PayTemplates/Earnings`  | Creates earnings template records for an employee.  |
+| PUT    | `/Employees/{EmployeeID}/PayTemplates/Earnings/{PayTemplateEarningID}` | Updates an earnings template records for an employee.  |
+| DELETE  | `/Employees/{EmployeeID}/PayTemplates/Earnings/{PayTemplateEarningID}` | Deletes an employee's earnings template record. |
+| POST   | `/Employees/{EmployeeID}/PayTemplateEarnings` | Creates multiple employee earnings template records for a specific employee. |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages` | Retrieves an employee's salary and wages record. |
+| POST   | `/Employees/{EmployeeID}/SalaryAndWages`  | Creates an employee salary and wage record.   |
+| GET    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Retrieves an employee's salary and wages record by using a unique salary and wage ID. |
+| PUT    | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}` | Updates an employee's salary and wages record.   |
+| DELETE  | `/Employees/{EmployeeID}/SalaryAndWages/{SalaryAndWagesID}`   | Deletes an employee's salary and wages record.  |
+| GET    | `/Employees/{EmployeeID}/Working-Patterns`  | Retrieves employee's working patterns. |
+| POST   | `/Employees/{EmployeeID}/Working-Patterns` | Creates an employee working pattern.  |
+| GET    | `/Employees/{EmployeeID}/Working-Patterns/{EmployeeWorkingPatternID}`  | Retrieves employee's working patterns. |
+| DELETE  | `/Employees/{EmployeeID}/Working-Patterns/{EmployeeWorkingPatternID}`  | Deletes employee's working patterns.                                   |
+
+#### DEDUCTIONID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Deductions/{deductionId}`                       | Retrieves a single deduction by using a unique deduction ID.                                 |
+
+#### ID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/StatutoryDeductions/{id}`                       | Retrieves a specific statutory deduction by using a unique statutory deductions id.          |
+
+#### SUPERANNUATIONID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Superannuations/{SuperannuationID}`             | Retrieves a specific superannuation using a unique superannuation ID.                        |
+
+#### EARNINGSRATEDID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/EarningsRates/{EarningsRateID}`                 | Retrieves a specific earnings rates by using a unique earnings rate id.                      |
+
+#### LEAVETYPEID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/LeaveTypes/{LeaveTypeID}`                       | Retrieves a specific leave type by using a unique leave type ID.                             |
+
+#### REIMBURSEMENTID
+
+| Method | API Endpoint                                      | Description                                                                                  |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------------------------|
+| GET    | `/Reimbursements/{ReimbursementID}`               | Retrieves a specific reimbursement by using a unique reimbursement ID.                       |
+
+#### TIMESHEETID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Timesheets/{TimesheetID}` | Retrieves a specific timesheet by using a unique timesheet ID. |
+| DELETE | `/Timesheets/{TimesheetID}` | Deletes a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/Lines` | Creates a new timesheet line for a specific timesheet using a unique timesheet ID. |
+| POST   | `/Timesheets/{TimesheetID}/Approve` | Approves a specific timesheet. |
+| POST   | `/Timesheets/{TimesheetID}/RevertToDraft` | Reverts a specific timesheet to draft.  |
+| PUT    | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Updates a specific timesheet line for a specific timesheet. |
+| DELETE | `/Timesheets/{TimesheetID}/Lines/{TimesheetLineID}` | Deletes a specific timesheet line. |
+
+#### PAYRUNCALENDARID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRunCalendars/{PayRunCalendarID}` | Retrieves a specific payrun calendar by using a unique payrun calendar ID. |
+
+#### PAYRUNID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/PayRuns/{PayRunID}` | Retrieves a specific pay run by using a unique pay run ID. |
+| PUT    | `/PayRuns/{PayRunID}` | Updates a specific pay run. |
+
+#### PAYSLIPID
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET    | `/Payslips/{PayslipID}` | Retrieves a specific payslip by using a unique payslip ID. |
+| PUT    | `/Payslips/{PayslipID}` | Creates an employee Payslip. |
+
+#### TRACKINGCATEGORIES
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Settings/trackingCategories`   | Retrieves tracking categories. |
+
+
+### PROJECTS
+Track project time, costs, and profitability (for service and project-based businesses).
+
+| Method | API Endpoint                                           | Description                                                                                     |
+|--------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| GET    | `/Projects`                                            | Retrieves all projects.                                                                         |
+| POST   | `/Projects`                                            | Creates one or more new projects.                                                               |
+| GET    | `/ProjectsUsers`                                       | Retrieves a list of all project users.                                                          |
+
+#### PROJECTID
+
+| Method | API Endpoint                                           | Description                                                                             |
+|--------|--------------------------------------------------------|--------------------------------------------------------------------------------------- -|
+
+| GET    | `/Projects/{projectId}`                                | Retrieves a single project.                                                             |
+| PUT    | `/Projects/{projectId}`                                | Updates a specific project.                                                             |
+| GET    | `/Projects/{projectId}/Tasks`                          | Retrieves all project tasks.                                                            |
+| POST   | `/Projects/{projectId}/Tasks`                          | Allows you to create a task.                                                            |
+| GET    | `/Projects/{projectId}/Tasks/{taskId}`                 | Retrieves a single project task.                                                        |
+| PUT    | `/Projects/{projectId}/Tasks/{taskId}`                 | Allows you to update a task.                                                            |
+| DELETE | `/Projects/{projectId}/Tasks/{taskId}`                 | Allows you to delete a task.                                                            |
+| GET    | `/Projects/{projectId}/Time`                           | Retrieves all time entries associated with a specific project.                          |
+| POST   | `/Projects/{projectId}/Time`                           | Creates a time entry for a specific project.                                            |
+| GET    | `/Projects/{projectId}/Time/{timeEntryId}`             | Retrieves a single time entry for a specific project.                                   |
+| PUT    | `/Projects/{projectId}/Time/{timeEntryId}`             | Updates a time entry for a specific project.                                            |
+| DELETE | `/Projects/{projectId}/Time/{timeEntryId}`             | Deletes a time entry for a specific project.                                            |
+
+
+### FILES
+Upload, retrieve, and attach documents like receipts and invoices to records in Xero.
+
+| Method | API Endpoint                                               | Description                                                                                      |
+|--------|------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| GET    | `/Files`                                                   | Retrieves files.                                                                                |
+| POST   | `/Files`                                                   | Uploads a file to the inbox.                                                                    |
+| GET    | `/Folders`                                                 | Retrieves folders.                                                                              |
+| POST   | `/Folders`                                                 | Creates a new folder.                                                                           |
+| GET    | `/Inbox`                                                   | Retrieves inbox folder.                                                                         |
+
+#### FILEDID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Files/{FileId}`                                          | Retrieves a file by a unique file ID.  |
+| PUT    | `/Files/{FileId}`                                          | Updates a file.   |
+| DELETE | `/Files/{FileId}`                                          | Deletes a specific file.    |
+| GET    | `/Files/{FileId}/Content`                                  | Retrieves the content of a specific file.    |
+| GET    | `/Files/{FileId}/Associations`                             | Retrieves a specific file associations.   |
+| POST   | `/Files/{FileId}/Associations`                             | Creates a new file association.  |
+| DELETE | `/Files/{FileId}/Associations/{ObjectId}`                  | Deletes an existing file association.  |
+
+#### FOLDERID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| POST   | `/Files/{FolderId}`                                        | Uploads a file to a specific folder. |
+| GET    | `/Folders/{FolderId}`                                      | Retrieves a specific folder by using a unique folder ID. |
+| PUT    | `/Folders/{FolderId}`                                      | Updates an existing folder. |
+| DELETE | `/Folders/{FolderId}`                                      | Deletes a folder. |
+
+#### FOLDERID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Associations/{ObjectId}`                                 | Retrieves an association object using a unique object ID.  |
+
+
+#### FOLDERID
+
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Associations/Count`                                      | Retrieves a count of associations for a list of objects. |
