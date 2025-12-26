@@ -77,17 +77,21 @@ fi
 FROM node:22.15.1 AS plugins-builder
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only plugins directory and necessary package files
-COPY --from=source-fetcher /source/plugins ./plugins
+# Copy only plugins package files first (better layer caching)
+COPY --from=source-fetcher /source/plugins/package.json /source/plugins/package-lock.json ./plugins/
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# Build plugins
+# Install plugins dependencies
 RUN npm --prefix plugins install
+
+# Copy plugins source code
+COPY --from=source-fetcher /source/plugins ./plugins
+
+# Build plugins
 RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
@@ -99,32 +103,28 @@ RUN npm --prefix plugins prune --production
 FROM node:22.15.1 AS frontend-builder
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only frontend directory and necessary package files
-COPY --from=source-fetcher /source/frontend ./frontend
+# Copy only frontend package files first (better layer caching)
+COPY --from=source-fetcher /source/frontend/package.json /source/frontend/package-lock.json ./frontend/
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# Build frontend
+# Install frontend dependencies
 RUN npm --prefix frontend install
 
-# Install webpack-cli to avoid interactive prompt
-RUN npm --prefix frontend install -D webpack-cli
+# Copy frontend source code (including ee submodule)
+COPY --from=source-fetcher /source/frontend ./frontend
 
-# Build without --production flag (causes webpack-cli prompt)
-RUN npm --prefix frontend run build
-
-# Prune dev dependencies after build
+# Build frontend
+RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 # =============================================================================
 # STAGE 4: SERVER BUILDER
 # Purpose: Build server independently
 # Cache: Only invalidates when server/ directory changes
-# NOTE: Server depends on @tooljet/plugins, so we copy plugins artifacts
 # =============================================================================
 FROM node:22.15.1 AS server-builder
 
@@ -134,21 +134,21 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy package.json first
+# Copy only server package files first (better layer caching)
+COPY --from=source-fetcher /source/server/package.json /source/server/package-lock.json ./server/
 COPY --from=source-fetcher /source/package.json ./package.json
-
-# Copy plugins artifacts - server depends on @tooljet/plugins
-COPY --from=plugins-builder /build/plugins ./plugins
-
-# Copy only server directory
-COPY --from=source-fetcher /source/server ./server
 
 # Install global dependencies needed for server build
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 
-# Build server
+# Install server dependencies
 RUN npm --prefix server install
+
+# Copy server source code (including ee submodule)
+COPY --from=source-fetcher /source/server ./server
+
+# Build server
 RUN npm --prefix server run build
 
 # =============================================================================
