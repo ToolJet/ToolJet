@@ -499,11 +499,11 @@ export const EditableTags = ({
     }),
     menu: (provided) => ({
       ...provided,
-      padding: '0px',
+      padding: '0',
       marginTop: '5px',
       borderRadius: '9px',
       boxShadow: 'var(--elevation-300-box-shadow)',
-      border :"1px solid var(--border-weak)",
+      border: '1px solid var(--border-weak)',
     }),
   };
 
@@ -563,7 +563,6 @@ export const EditableTags = ({
             ...(auto && {
               flex: 1,
               minWidth: 0,
-              
             }),
           }}
         >
