@@ -16,7 +16,6 @@ if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
 
   # Try to start Redis with custom BullMQ-optimized config if it exists
   if [ -f /etc/redis/redis.conf ]; then
-    echo "Found custom Redis configuration at /etc/redis/redis.conf"
     redis-server /etc/redis/redis.conf >> /var/log/redis/redis.log 2>&1 &
     REDIS_PID=$!
 
@@ -25,10 +24,10 @@ if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
 
     # Check if Redis started successfully with custom config
     if ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=10 -- echo "Redis is up" 2>/dev/null; then
-      echo "Redis started successfully with custom config (PID: $REDIS_PID)"
+      echo "Redis started successfully"
       REDIS_STARTED=true
     else
-      echo "Warning: Redis failed to start with custom config, falling back to default configuration"
+      echo "Warning: Redis failed to start, falling back to default configuration"
       # Kill the failed Redis process if it's still running
       kill $REDIS_PID 2>/dev/null || true
       sleep 1
