@@ -57,7 +57,24 @@
   .editable-tags-menu-list-body {
     max-height: 300px;
     overflow-y: auto;
-    padding: "0px" !important;
+    padding: 0px !important;
+
+    scrollbar-width: thin;
+    margin :4px 0;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+    }
   }
 
   .editable-tags-no-options {
