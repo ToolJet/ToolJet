@@ -372,11 +372,8 @@ export const EditableTags = ({
       selectRef.current.focus();
     }
 
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-      fireEvent('onBlur');
-      setInputValue('');
-    } else {
+    // Always open menu when focused/clicked inside
+    if (!isMenuOpen) {
       setIsMenuOpen(true);
       fireEvent('onFocus');
     }
