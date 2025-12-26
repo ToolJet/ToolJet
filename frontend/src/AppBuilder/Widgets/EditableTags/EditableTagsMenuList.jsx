@@ -20,7 +20,6 @@ const EditableTagsMenuList = ({
   const optionBackgroundColor = 'var(--surfaces-surface-03)';
   const optionTextColor = 'var(--text-primary)';
   const menuId = selectProps?.menuId;
-  const hasChildren = React.Children.count(children) > 0;
   const selectedValues = selectProps?.value || [];
 
   // Check if inputValue already exists in selected tags or all options (case-insensitive)

@@ -4,7 +4,6 @@ import { components } from 'react-select';
 const { ValueContainer } = components;
 
 const EditableTagsValueContainer = ({ children, ...props }) => {
-  const { selectProps, hasValue } = props;
 
   return (
     <ValueContainer {...props}>
