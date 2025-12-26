@@ -29,7 +29,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly pluginsSelectorService: PluginsServiceSelector
-  ) { }
+  ) {}
   async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appVersionId) {
@@ -184,11 +184,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           const currentUserToken = sourceOptions['refresh_token']
             ? sourceOptions
             : this.getCurrentUserToken(
-              sourceOptions['multiple_auth_enabled'],
-              sourceOptions['tokenData'],
-              user?.id,
-              appToUse?.isPublic
-            );
+               sourceOptions['multiple_auth_enabled'],
+               sourceOptions['tokenData'],
+               user?.id,
+               appToUse?.isPublic
+             );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
@@ -511,7 +511,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       const templateVariables = getQueryVariables(
         object,
         enhancedOptions,
-        () => { }, // addLog function - use empty for data queries
+        () => {}, // addLog function - use empty for data queries
         opts.workflow.bundleContent,
         opts.workflow.isolate,
         opts.workflow.context

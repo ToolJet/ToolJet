@@ -24,7 +24,7 @@ import { QueryAuthGuard } from './guards/query-auth.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
-  constructor(protected dataQueriesService: DataQueriesService) { }
+  constructor(protected dataQueriesService: DataQueriesService) {}
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
