@@ -490,12 +490,17 @@ export const EditableTags = ({
     }),
     option: (provided, state) => ({
       ...provided,
-      // backgroundColor: state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
       backgroundColor: 'var(--surfaces-surface-01)',
       color: 'var(--text-primary)', // Use default text color for dropdown options
       opacity: state.isDisabled ? 0.3 : 1,
       cursor: 'pointer',
       padding: '8px 12px',
+      '&:active': {
+        backgroundColor: 'var(--interactive-overlays-fill-pressed)',
+      },
+      '&:hover': {
+        backgroundColor: 'var(--interactive-overlays-fill-hover)',
+      },
     }),
     menuList: (provided) => ({
       ...provided,
@@ -615,6 +620,7 @@ export const EditableTags = ({
                   darkMode={darkMode}
                   tagBackgroundColor={tagBackgroundColor}
                   selectedTextColor={selectedTextColor}
+                  allOptions={allOptions}
                 />
               ),
               Option: EditableTagsOption,

@@ -40,7 +40,6 @@ const EditableTagsChip = (props) => {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          marginLeft: '2px',
           flexShrink: 0,
         }}
         onClick={(e) => {
@@ -48,7 +47,7 @@ const EditableTagsChip = (props) => {
           removeProps.onClick(e);
         }}
       >
-        <IconX size={14} stroke={2} />
+        <IconX size={16} stroke={2} fill={'#000'} opacity={0.2} />
       </span>
     </div>
   );

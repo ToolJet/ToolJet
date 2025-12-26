@@ -60,7 +60,6 @@
     padding: 0px !important;
 
     scrollbar-width: thin;
-    margin :4px 0;
 
     &::-webkit-scrollbar {
       width: 8px;
@@ -78,10 +77,10 @@
   }
 
   .editable-tags-no-options {
-    padding: 12px 16px;
-    color: var(--text-placeholder);
-    text-align: center;
+    padding: 8px 12px !important;
+    color: var(--text-placeholder) !important;
     font-size: 14px;
+    text-align: left !important;
   }
 
   .editable-tags-create-footer {
@@ -93,9 +92,12 @@
     cursor: pointer;
     background-color: var(--surfaces-surface-01);
 
-    // &:hover {
-    //   background-color: var(--interactive-overlays-fill-hover);
-    // }
+    &:hover {
+      background-color: var(--interactive-overlays-fill-hover);
+    }
+    &:active {
+      background-color: var(--interactive-overlays-fill-pressed);
+    }
   }
 
   .editable-tags-new-tag-preview {

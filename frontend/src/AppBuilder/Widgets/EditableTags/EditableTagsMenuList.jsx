@@ -13,6 +13,7 @@ const EditableTagsMenuList = ({
   inputValue,
   optionsLoadingState,
   darkMode,
+  allOptions = [],
   ...props
 }) => {
   // Use default neutral colors for dropdown "add" preview (not tagBackgroundColor)
@@ -20,12 +21,22 @@ const EditableTagsMenuList = ({
   const optionTextColor = 'var(--text-primary)';
   const menuId = selectProps?.menuId;
   const hasChildren = React.Children.count(children) > 0;
-  const showCreateFooter = allowNewTags && inputValue?.trim();
+  const selectedValues = selectProps?.value || [];
 
-  // Check if the "Create" option is already shown by react-select/creatable
-  const hasCreateOption = React.Children.toArray(children).some(
-    (child) => child?.props?.data?.__isNew__
+  // Check if inputValue already exists in selected tags or all options (case-insensitive)
+  const trimmedInput = inputValue?.trim()?.toLowerCase();
+  const isAlreadyExists = trimmedInput && (
+    selectedValues.some((tag) => tag.value?.toLowerCase() === trimmedInput) ||
+    allOptions.some((opt) => opt.value?.toLowerCase() === trimmedInput)
   );
+
+  // Only show create footer if value doesn't already exist
+  const showCreateFooter = allowNewTags && inputValue?.trim() && !isAlreadyExists;
+
+  // Check children for create option and regular options
+  const childrenArray = React.Children.toArray(children);
+  const hasCreateOption = childrenArray.some((child) => child?.props?.data?.__isNew__);
+  const hasRegularOptions = childrenArray.some((child) => !child?.props?.data?.__isNew__);
 
   return (
     <div
@@ -43,26 +54,26 @@ const EditableTagsMenuList = ({
               overflowY: 'auto',
             }}
           >
-            {hasChildren ? (
+            {hasRegularOptions ? (
               <MenuList {...props} selectProps={selectProps}>
                 {children}
               </MenuList>
-            ) : !showCreateFooter ? (
+            ) : (
               <div
                 className="editable-tags-no-options"
                 style={{
-                  padding: '12px 16px',
+                  padding: '8px 12px',
                   color: 'var(--text-placeholder)',
-                  textAlign: 'center',
+                  textAlign: 'left',
                 }}
               >
-                No options
+                {inputValue?.trim() ? 'No results' : 'No options'}
               </div>
-            ) : null}
+            )}
           </div>
 
-          {/* Custom "add" footer - only show if not already shown via creatable */}
-          {showCreateFooter && !hasCreateOption && (
+          {/* Custom "add" footer - show when creating is allowed and either no creatable option or no regular options visible */}
+          {showCreateFooter && (!hasCreateOption || !hasRegularOptions) && (
             <div
               className="editable-tags-create-footer"
               style={{
