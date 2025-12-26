@@ -15,6 +15,7 @@ ToolJet requires the following to connect to your Appwrite:
 
 - **Host (API endpoint)**
 - **Project ID**
+- **Database ID**
 - **Secret Key**
 
 You'll find the Secret Key and other credentials on your Appwrite's project settings page. You may need to create a new key if you don't have one already.
@@ -25,7 +26,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/appwrite/connect-v3.png" alt="Appwrite intro"/>
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-cnctn.png" alt="Appwrite intro"/>
 
 </div>
 
@@ -42,7 +43,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
 
 </div>
 
@@ -81,7 +82,7 @@ This operation is used to get a list of all the user documents.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/list-v3.png" alt="Appwrite List" />
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-listdoc.png" alt="Appwrite List" />
 
 </div>
 
@@ -96,7 +97,7 @@ Use this operation to get a document from a collection by its unique ID.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/get-v3.png" alt="Appwrite get" />
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-getdoc.png" alt="Appwrite get" />
 
 </div>
 
@@ -111,7 +112,7 @@ Use this operation to create a new document in a collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/add-v3.png" alt="Appwrite add" />
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-adddoc.png" alt="Appwrite add" />
 
 </div>
 
@@ -127,7 +128,7 @@ Use this operation to update a document.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/upd-v3.png" alt="Appwrite update" />
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-updatedoc.png" alt="Appwrite update" />
 
 </div>
 
@@ -142,7 +143,7 @@ Use this operation for deleting a document in the collection.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/del-v3.png" alt="Appwrite delete"/>
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-deldoc.png" alt="Appwrite delete"/>
 
 </div>
 
