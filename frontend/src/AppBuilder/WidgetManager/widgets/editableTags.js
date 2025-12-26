@@ -133,22 +133,6 @@ export const editableTagsConfig = {
       },
       accordian: 'Tags',
     },
-    caseEnforcement: {
-      type: 'switch',
-      displayName: 'Case enforcement',
-      validation: { schema: { type: 'string' }, defaultValue: 'none' },
-      options: [
-        { displayName: 'None', value: 'none' },
-        { displayName: 'Lowercase', value: 'lowercase' },
-        { displayName: 'Uppercase', value: 'uppercase' },
-      ],
-      accordian: 'Tags',
-      isFxNotRequired: true,
-      conditionallyRender: {
-        key: 'allowNewTags',
-        value: true,
-      },
-    },
     optionsLoadingState: {
       type: 'toggle',
       displayName: 'Tags loading state',
@@ -383,7 +367,6 @@ export const editableTagsConfig = {
       values: { value: [] },
       advanced: { value: `{{false}}` },
       allowNewTags: { value: '{{false}}' },
-      caseEnforcement: { value: 'none' },
       sort: { value: 'none' },
       optionsLoadingState: { value: '{{false}}' },
       placeholder: { value: 'Add or select a tag' },

@@ -43,7 +43,6 @@ export const EditableTags = ({
     advanced,
     schema,
     allowNewTags,
-    caseEnforcement,
     loadingState: tagsLoadingState,
     optionsLoadingState,
     dynamicHeight,
@@ -131,13 +130,6 @@ export const EditableTags = ({
     return [...selectOptions, ...newTagsAdded];
   }, [selectOptions, newTagsAdded]);
 
-  // Apply case enforcement
-  const enforceCase = (value) => {
-    if (caseEnforcement === 'lowercase') return value.toLowerCase();
-    if (caseEnforcement === 'uppercase') return value.toUpperCase();
-    return value;
-  };
-
   // Check for duplicate values (case-insensitive)
   const isDuplicate = (value) => {
     const normalized = value.toLowerCase();
@@ -176,11 +168,9 @@ export const EditableTags = ({
     const trimmedValue = newValue.trim();
     if (!trimmedValue) return;
 
-    const enforcedValue = enforceCase(trimmedValue);
-
-    if (isDuplicate(enforcedValue)) {
+    if (isDuplicate(trimmedValue)) {
       // If duplicate exists, just select it if not already selected
-      const existingOption = allOptions.find((opt) => opt.value.toLowerCase() === enforcedValue.toLowerCase());
+      const existingOption = allOptions.find((opt) => opt.value.toLowerCase() === trimmedValue.toLowerCase());
       if (existingOption && !selected.some((s) => s.value === existingOption.value)) {
         const newSelected = [...selected, existingOption];
         setInputValues(newSelected);
@@ -190,7 +180,7 @@ export const EditableTags = ({
       return;
     }
 
-    const newTag = { label: enforcedValue, value: enforcedValue };
+    const newTag = { label: trimmedValue, value: trimmedValue };
     const updatedNewTags = [...newTagsAdded, newTag];
     setNewTagsAdded(updatedNewTags);
     setExposedVariable('newTagsAdded', updatedNewTags.map(({ label, value }) => ({ label, value })));
