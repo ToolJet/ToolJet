@@ -1,8 +1,5 @@
 import React from 'react';
-import { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
-
-const { MultiValue } = components;
 
 const EditableTagsChip = (props) => {
   const { data, removeProps, selectProps } = props;

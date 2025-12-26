@@ -5,7 +5,7 @@ import { CornerDownLeft } from 'lucide-react';
 const { Option } = components;
 
 const EditableTagsOption = (props) => {
-  const { data, selectProps, isSelected, isFocused } = props;
+  const { data } = props;
   // Use default neutral background for dropdown options (not tagBackgroundColor)
   const optionBackgroundColor = 'var(--surfaces-surface-03)';
   const optionTextColor = 'var(--text-primary)';

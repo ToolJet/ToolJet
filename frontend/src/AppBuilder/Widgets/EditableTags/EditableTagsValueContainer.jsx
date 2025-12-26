@@ -1,7 +1,7 @@
 import React from 'react';
 import { components } from 'react-select';
 
-const { ValueContainer, Placeholder } = components;
+const { ValueContainer } = components;
 
 const EditableTagsValueContainer = ({ children, ...props }) => {
   const { selectProps, hasValue } = props;

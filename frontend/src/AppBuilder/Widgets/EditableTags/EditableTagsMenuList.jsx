@@ -1,8 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { components } from 'react-select';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { CornerDownLeft } from 'lucide-react';
 
 const { MenuList } = components;
