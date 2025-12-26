@@ -24,7 +24,7 @@ import { QueryAuthGuard } from './guards/query-auth.guard';
 @Controller('data-queries')
 @InitModule(MODULES.DATA_QUERY)
 export class DataQueriesController implements IDataQueriesController {
-  constructor(protected dataQueriesService: DataQueriesService) {}
+  constructor(protected dataQueriesService: DataQueriesService) { }
 
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, ValidateAppVersionGuard, ValidateQueryAppGuard, AppFeatureAbilityGuard)
@@ -144,6 +144,18 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
+  }
+
+  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
+  @Post(':dataSourceId/list-tables')
+  async listTables(
+    @User() user: UserEntity,
+    @AppDecorator() app: App,
+    @DataSource() dataSource: DataSourceEntity,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.dataQueriesService.listTablesForApp(user, dataSource, response, app);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)
