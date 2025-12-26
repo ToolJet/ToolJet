@@ -13,8 +13,8 @@
 .editable-tag-chip {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 6px 2px 8px;
+  gap: 4px;
+  padding: 2px 8px;
   background-color: var(--surfaces-surface-03);
   border-radius: 2px;
   font-size: 14px;
@@ -35,10 +35,8 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    margin-left: 2px;
     opacity: 0.7;
     flex-shrink: 0; // Prevent X icon from shrinking
-
     &:hover {
       opacity: 1;
     }
@@ -88,9 +86,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    border-top: 1px solid var(--borders-weak);
+    border-top: 1px solid var(--border-weak);
     cursor: pointer;
     background-color: var(--surfaces-surface-01);
+    gap: 8px;
 
     &:hover {
       background-color: var(--interactive-overlays-fill-hover);
@@ -99,14 +98,28 @@
       background-color: var(--interactive-overlays-fill-pressed);
     }
   }
+  .editable-tags-new-tag-preview{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    .add-text{
+      font-size: 14px;
+      color: var(--text-placeholder);
+      flex-shrink: 0;
+    }
+  }
 
-  .editable-tags-new-tag-preview {
-    background-color: var(--surfaces-surface-03);
-    color: var(--text-primary);
+  .editable-tags-new-tag-preview-text {
     padding: 2px 8px;
     border-radius: 2px;
     font-size: 14px;
     line-height: 20px;
+    word-break: break-all;
+    min-width: 0;
+    background-color: var(--surfaces-surface-03);
+    color: var(--text-primary);
   }
 }
 
@@ -121,6 +134,8 @@
   line-height: 20px;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
+  word-break: break-all;
+  
 }
 
 .editable-tags-create-option-wrapper {
@@ -133,6 +148,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: space-between;
+  width: 100%;
 }
 
 // Override react-select default styles for editable tags

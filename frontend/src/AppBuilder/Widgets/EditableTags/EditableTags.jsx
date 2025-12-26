@@ -439,27 +439,14 @@ export const EditableTags = ({
       color: selectedTextColor,
       fontSize: '14px',
       lineHeight: '20px',
-      padding: '2px 4px 2px 8px',
       fontWeight: 400,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     }),
-    multiValueRemove: (provided) => ({
-      ...provided,
-      color: selectedTextColor,
-      cursor: 'pointer',
-      paddingLeft: '2px',
-      paddingRight: '6px',
-      flexShrink: 0, // Prevent X icon from shrinking
-      '&:hover': {
-        backgroundColor: 'transparent',
-        color: selectedTextColor,
-      },
-    }),
     input: (provided) => ({
       ...provided,
-      color: darkMode ? 'white' : 'black',
+      color: 'var(--text-placeholder)',
       margin: '0px',
       padding: '0',
     }),
@@ -478,7 +465,7 @@ export const EditableTags = ({
     option: (provided, state) => ({
       ...provided,
       backgroundColor: 'var(--surfaces-surface-01)',
-      color: 'var(--text-primary)', // Use default text color for dropdown options
+      color: 'var(--text-primary)',
       opacity: state.isDisabled ? 0.3 : 1,
       cursor: 'pointer',
       padding: '8px 12px',
@@ -559,7 +546,6 @@ export const EditableTags = ({
           onTouchEnd={handleClickInside}
           style={{
             ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
-            // When auto width is ON, use flex properties to prevent overflow expansion
             ...(auto && {
               flex: 1,
               minWidth: 0,

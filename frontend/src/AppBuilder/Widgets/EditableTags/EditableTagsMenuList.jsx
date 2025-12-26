@@ -16,9 +16,6 @@ const EditableTagsMenuList = ({
   allOptions = [],
   ...props
 }) => {
-  // Use default neutral colors for dropdown "add" preview (not tagBackgroundColor)
-  const optionBackgroundColor = 'var(--surfaces-surface-03)';
-  const optionTextColor = 'var(--text-primary)';
   const menuId = selectProps?.menuId;
   const selectedValues = selectProps?.value || [];
 
@@ -48,24 +45,13 @@ const EditableTagsMenuList = ({
         <>
           <div
             className="editable-tags-menu-list-body"
-            style={{
-              maxHeight: selectProps?.maxMenuHeight || 300,
-              overflowY: 'auto',
-            }}
           >
             {hasRegularOptions ? (
               <MenuList {...props} selectProps={selectProps}>
                 {children}
               </MenuList>
             ) : (
-              <div
-                className="editable-tags-no-options"
-                style={{
-                  padding: '8px 12px',
-                  color: 'var(--text-placeholder)',
-                  textAlign: 'left',
-                }}
-              >
+              <div className="editable-tags-no-options">
                 {inputValue?.trim() ? 'No results' : 'No options'}
               </div>
             )}
@@ -75,42 +61,19 @@ const EditableTagsMenuList = ({
           {showCreateFooter && (!hasCreateOption || !hasRegularOptions) && (
             <div
               className="editable-tags-create-footer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 12px',
-                borderTop: '1px solid var(--border-weak)',
-                cursor: 'pointer',
-                gap: '8px',
-              }}
               onClick={(e) => {
                 e.stopPropagation();
                 selectProps?.onCreateOption?.(inputValue);
               }}
             >
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+              <div className="editable-tags-new-tag-preview">
                 <span
-                  style={{
-                    color: 'var(--text-placeholder)',
-                    fontSize: '14px',
-                    flexShrink: 0,
-                  }}
+                 className='add-text'
                 >
                   add
                 </span>
                 <span
-                  className="editable-tags-new-tag-preview"
-                  style={{
-                    backgroundColor: optionBackgroundColor,
-                    color: optionTextColor,
-                    padding: '2px 8px',
-                    borderRadius: '2px',
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                    wordBreak: 'break-all',
-                    minWidth: 0,
-                  }}
+                  className="editable-tags-new-tag-preview-text"
                 >
                   {inputValue}
                 </span>
@@ -120,7 +83,7 @@ const EditableTagsMenuList = ({
           )}
         </>
       ) : (
-        <div className="text-center py-4" style={{ minHeight: '100px' }}>
+        <div className="text-center py-4">
           <Loader style={{ zIndex: 3, position: 'absolute' }} width="36" />
         </div>
       )}
