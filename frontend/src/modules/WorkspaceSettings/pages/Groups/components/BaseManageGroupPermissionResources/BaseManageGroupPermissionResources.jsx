@@ -934,6 +934,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                                         disablePermissionUpdate={disablePermissionUpdate}
                                         updateGroupPermission={this.updateGroupPermission}
                                         updateState={this.updateParamState}
+                                        featureAccess={featureAccess}
+                                        isBasicPlan={isBasicPlan}
                                       />
                                     </div>
                                   </div>
