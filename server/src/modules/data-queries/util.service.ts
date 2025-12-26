@@ -184,11 +184,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           const currentUserToken = sourceOptions['refresh_token']
             ? sourceOptions
             : this.getCurrentUserToken(
-               sourceOptions['multiple_auth_enabled'],
-               sourceOptions['tokenData'],
-               user?.id,
-               appToUse?.isPublic
-             );
+                sourceOptions['multiple_auth_enabled'],
+                sourceOptions['tokenData'],
+                user?.id,
+                appToUse?.isPublic
+              );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
             let accessTokenDetails;
