@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { QueryRunner } from 'typeorm';
+import { EntityManager, QueryRunner } from 'typeorm';
 import { AppHistory } from '@entities/app_history.entity';
 import { RETENTION_BUFFER_LIMIT } from '@modules/app-history/constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -106,29 +106,85 @@ export class AppHistoryRepository {
     });
   }
 
-  async getNearestSnapshot(appVersionId: string, targetSequence: number): Promise<AppHistory | null> {
-    return await dbTransactionWrap(async (manager) => {
-      return await manager
-        .createQueryBuilder(AppHistory, 'history')
-        .where('history.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('history.historyType = :historyType', { historyType: 'snapshot' })
-        .andWhere('history.sequenceNumber <= :targetSequence', { targetSequence })
-        .orderBy('history.sequenceNumber', 'DESC')
-        .getOne();
-    });
+  async getNearestSnapshot(
+    appVersionId: string,
+    targetSequence: number,
+    existingManager?: EntityManager
+  ): Promise<AppHistory | null> {
+    const executeQuery = async (manager: EntityManager) => {
+      const results = await manager.query(
+        `SELECT * FROM app_history
+         WHERE app_version_id = $1
+           AND history_type = 'snapshot'
+           AND sequence_number <= $2
+         ORDER BY sequence_number DESC
+         LIMIT 1`,
+        [appVersionId, targetSequence]
+      );
+      if (results.length === 0) return null;
+      // Map snake_case columns to camelCase properties
+      const row = results[0];
+      return {
+        id: row.id,
+        appVersionId: row.app_version_id,
+        userId: row.user_id,
+        sequenceNumber: row.sequence_number,
+        parentId: row.parent_id,
+        historyType: row.history_type,
+        actionType: row.action_type,
+        operationScope: row.operation_scope,
+        description: row.description,
+        changePayload: row.change_payload,
+        isAiGenerated: row.is_ai_generated,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      } as AppHistory;
+    };
+
+    if (existingManager) {
+      return executeQuery(existingManager);
+    }
+    return dbTransactionWrap(executeQuery);
   }
 
-  async getDeltasInRange(appVersionId: string, startSequence: number, endSequence: number): Promise<AppHistory[]> {
-    return await dbTransactionWrap(async (manager) => {
-      return await manager
-        .createQueryBuilder(AppHistory, 'history')
-        .where('history.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('history.historyType = :historyType', { historyType: 'delta' })
-        .andWhere('history.sequenceNumber > :startSequence', { startSequence })
-        .andWhere('history.sequenceNumber <= :endSequence', { endSequence })
-        .orderBy('history.sequenceNumber', 'ASC')
-        .getMany();
-    });
+  async getDeltasInRange(
+    appVersionId: string,
+    startSequence: number,
+    endSequence: number,
+    existingManager?: EntityManager
+  ): Promise<AppHistory[]> {
+    const executeQuery = async (manager: EntityManager) => {
+      const results = await manager.query(
+        `SELECT * FROM app_history
+         WHERE app_version_id = $1
+           AND history_type = 'delta'
+           AND sequence_number > $2
+           AND sequence_number <= $3
+         ORDER BY sequence_number ASC`,
+        [appVersionId, startSequence, endSequence]
+      );
+      // Map snake_case columns to camelCase properties
+      return results.map((row: any) => ({
+        id: row.id,
+        appVersionId: row.app_version_id,
+        userId: row.user_id,
+        sequenceNumber: row.sequence_number,
+        parentId: row.parent_id,
+        historyType: row.history_type,
+        actionType: row.action_type,
+        operationScope: row.operation_scope,
+        description: row.description,
+        changePayload: row.change_payload,
+        isAiGenerated: row.is_ai_generated,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      })) as AppHistory[];
+    };
+
+    if (existingManager) {
+      return executeQuery(existingManager);
+    }
+    return dbTransactionWrap(executeQuery);
   }
 
   async pruneOldHistoryEntries(appVersionId: string): Promise<void> {
