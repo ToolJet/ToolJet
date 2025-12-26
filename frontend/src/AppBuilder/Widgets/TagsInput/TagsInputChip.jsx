@@ -1,27 +1,27 @@
 import React from 'react';
 import { IconX } from '@tabler/icons-react';
 
-const EditableTagsChip = (props) => {
+const TagsInputChip = (props) => {
   const { data, removeProps, selectProps } = props;
   const tagBackgroundColor = selectProps?.tagBackgroundColor || 'var(--surfaces-surface-03)';
   const selectedTextColor = selectProps?.selectedTextColor || 'var(--text-primary)';
 
   return (
     <div
-      className="editable-tag-chip"
+      className="tags-input-chip"
       style={{
         backgroundColor: tagBackgroundColor,
         color: selectedTextColor,
       }}
     >
       <span
-        className="editable-tag-chip-label"
+        className="tags-input-chip-label"
       >
         {data.label}
       </span>
       <span
         {...removeProps}
-        className="editable-tag-chip-remove"
+        className="tags-input-chip-remove"
         onClick={(e) => {
           e.stopPropagation();
           removeProps.onClick(e);
@@ -33,4 +33,4 @@ const EditableTagsChip = (props) => {
   );
 };
 
-export default EditableTagsChip;
+export default TagsInputChip;

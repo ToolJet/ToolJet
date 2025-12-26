@@ -188,6 +188,7 @@ const WidgetIcon = (props) => {
     case 'tabs':
       return <Tabs {...props} />;
     case 'tags':
+    case 'tagsinput':
       return <Tags {...props} />;
     case 'text':
       return <Text {...props} />;

@@ -14,7 +14,7 @@ const NEW_WIDGETS = [
   'CurrencyInput',
   'RangeSliderV2',
   'PopoverMenu',
-  'EditableTags',
+  'TagsInput',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

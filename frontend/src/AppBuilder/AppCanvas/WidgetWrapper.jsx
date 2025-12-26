@@ -7,7 +7,7 @@ import RenderWidget from './RenderWidget';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 
-const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'EditableTags'];
+const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'TagsInput'];
 
 const WidgetWrapper = memo(
   ({

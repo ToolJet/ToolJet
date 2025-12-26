@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import './editableTags.scss';
+import './tagsInput.scss';
 import cx from 'classnames';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -11,14 +11,14 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
-import EditableTagsChip from './EditableTagsChip';
-import EditableTagsValueContainer from './EditableTagsValueContainer';
-import EditableTagsMenuList from './EditableTagsMenuList';
-import EditableTagsOption from './EditableTagsOption';
+import TagsInputChip from './TagsInputChip';
+import TagsInputValueContainer from './TagsInputValueContainer';
+import TagsInputMenuList from './TagsInputMenuList';
+import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
-export const EditableTags = ({
+export const TagsInput = ({
   id,
   height,
   width,
@@ -205,11 +205,57 @@ export const EditableTags = ({
 
   // Handle keyboard events
   const handleKeyDown = (e) => {
-    if (!allowNewTags) return;
+    // Escape closes the menu
+    if (e.key === 'Escape') {
+      setIsMenuOpen(false);
+      setInputValue('');
+      return;
+    }
 
-    if (['Enter', ',', 'Tab'].includes(e.key) && inputValue.trim()) {
+    // Backspace on empty input - let react-select handle removing last tag
+    if (e.key === 'Backspace' && !inputValue) {
+      return; // react-select handles this
+    }
+
+    // Arrow keys for navigation - let react-select handle
+    if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+      if (!isMenuOpen) {
+        setIsMenuOpen(true);
+      }
+      return; // react-select handles navigation
+    }
+
+    // Enter key - select highlighted option OR create new tag
+    if (e.key === 'Enter') {
+      // If allowNewTags and there's input that doesn't match any option, create it
+      if (allowNewTags && inputValue.trim()) {
+        const trimmedInput = inputValue.trim().toLowerCase();
+        const matchingOption = filteredOptions.find(
+          (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
+        );
+        // If no exact match in filtered options, create new tag
+        if (!matchingOption) {
+          e.preventDefault();
+          handleCreate(inputValue);
+          return;
+        }
+      }
+      // Otherwise let react-select handle the selection
+      return;
+    }
+
+    // Comma creates tag (only if allowNewTags)
+    if (e.key === ',' && allowNewTags && inputValue.trim()) {
       e.preventDefault();
       handleCreate(inputValue);
+      return;
+    }
+
+    // Tab - create tag if input exists and allowNewTags, otherwise let it move focus
+    if (e.key === 'Tab' && allowNewTags && inputValue.trim()) {
+      e.preventDefault();
+      handleCreate(inputValue);
+      return;
     }
   };
 
@@ -340,7 +386,7 @@ export const EditableTags = ({
 
   // Handle click outside
   const handleClickOutside = (event) => {
-    let menu = document.getElementById(`editable-tags-menu-${id}`);
+    let menu = document.getElementById(`tags-input-menu-${id}`);
     if (
       isMenuOpen &&
       tagsRef.current &&
@@ -464,7 +510,9 @@ export const EditableTags = ({
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: state.isFocused
+        ? 'var(--interactive-overlays-fill-hover)'
+        : 'var(--surfaces-surface-01)',
       color: 'var(--text-primary)',
       opacity: state.isDisabled ? 0.3 : 1,
       cursor: 'pointer',
@@ -506,7 +554,7 @@ export const EditableTags = ({
       <div
         ref={tagsRef}
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={cx('editable-tags-widget', 'd-flex', {
+        className={cx('tags-input-widget', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
@@ -581,10 +629,10 @@ export const EditableTags = ({
             formatCreateLabel={(input) => `add "${input}"`}
             isValidNewOption={(input) => allowNewTags && input.trim().length > 0}
             components={{
-              MultiValue: EditableTagsChip,
-              ValueContainer: EditableTagsValueContainer,
+              MultiValue: TagsInputChip,
+              ValueContainer: TagsInputValueContainer,
               MenuList: (props) => (
-                <EditableTagsMenuList
+                <TagsInputMenuList
                   {...props}
                   allowNewTags={allowNewTags}
                   inputValue={inputValue}
@@ -595,7 +643,7 @@ export const EditableTags = ({
                   allOptions={allOptions}
                 />
               ),
-              Option: EditableTagsOption,
+              Option: TagsInputOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
               DropdownIndicator: () => null,
             }}

@@ -66,7 +66,7 @@ import {
   currencyinputConfig,
   chatConfig,
   popoverMenuConfig,
-  editableTagsConfig,
+  tagsInputConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -105,7 +105,7 @@ export const widgets = [
   //Select inputs
   dropdownV2Config,
   multiselectV2Config,
-  editableTagsConfig,
+  tagsInputConfig,
   checkboxConfig,
   toggleSwitchV2Config,
   radiobuttonV2Config,

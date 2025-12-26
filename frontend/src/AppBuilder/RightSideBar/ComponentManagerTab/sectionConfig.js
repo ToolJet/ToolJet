@@ -25,7 +25,7 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['EditableTags', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),  
+    valueSet: new Set(['TagsInput', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),  
   },
   dateTimeInputs: {
     title: 'Date and time inputs',

@@ -6,7 +6,7 @@ import { CornerDownLeft } from 'lucide-react';
 
 const { MenuList } = components;
 
-const EditableTagsMenuList = ({
+const TagsInputMenuList = ({
   children,
   selectProps,
   allowNewTags,
@@ -36,22 +36,22 @@ const EditableTagsMenuList = ({
 
   return (
     <div
-      id={`editable-tags-menu-${menuId}`}
-      className={cx('editable-tags-menu-list', { 'theme-dark dark-theme': darkMode })}
+      id={`tags-input-menu-${menuId}`}
+      className={cx('tags-input-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
     >
       {!optionsLoadingState ? (
         <>
           <div
-            className="editable-tags-menu-list-body"
+            className="tags-input-menu-list-body"
           >
             {hasRegularOptions ? (
               <MenuList {...props} selectProps={selectProps}>
                 {children}
               </MenuList>
             ) : (
-              <div className="editable-tags-no-options">
+              <div className="tags-input-no-options">
                 {inputValue?.trim() ? 'No results' : 'No options'}
               </div>
             )}
@@ -60,20 +60,20 @@ const EditableTagsMenuList = ({
           {/* Custom "add" footer - show when creating is allowed and either no creatable option or no regular options visible */}
           {showCreateFooter && (!hasCreateOption || !hasRegularOptions) && (
             <div
-              className="editable-tags-create-footer"
+              className="tags-input-create-footer"
               onClick={(e) => {
                 e.stopPropagation();
                 selectProps?.onCreateOption?.(inputValue);
               }}
             >
-              <div className="editable-tags-new-tag-preview">
+              <div className="tags-input-new-tag-preview">
                 <span
                  className='add-text'
                 >
                   add
                 </span>
                 <span
-                  className="editable-tags-new-tag-preview-text"
+                  className="tags-input-new-tag-preview-text"
                 >
                   {inputValue}
                 </span>
@@ -91,4 +91,4 @@ const EditableTagsMenuList = ({
   );
 };
 
-export default EditableTagsMenuList;
+export default TagsInputMenuList;

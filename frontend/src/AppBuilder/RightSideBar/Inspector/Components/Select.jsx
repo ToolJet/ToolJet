@@ -33,7 +33,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
-  const isEditableTags = component?.component?.component === 'EditableTags';
+  const isTagsInput = component?.component?.component === 'TagsInput';
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -496,7 +496,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: isEditableTags ? 'Tags' : 'Options',
+    title: isTagsInput ? 'Tags' : 'Options',
     isOpen: true,
     children: (
       <>
@@ -566,7 +566,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
-        {isEditableTags &&
+        {isTagsInput &&
           renderElement(
             component,
             componentMeta,

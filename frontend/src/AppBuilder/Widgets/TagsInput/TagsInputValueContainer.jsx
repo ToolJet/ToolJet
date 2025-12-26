@@ -3,12 +3,12 @@ import { components } from 'react-select';
 
 const { ValueContainer } = components;
 
-const EditableTagsValueContainer = ({ children, ...props }) => {
+const TagsInputValueContainer = ({ children, ...props }) => {
 
   return (
     <ValueContainer {...props}>
       <div
-        className="editable-tags-values-wrapper"
+        className="tags-input-values-wrapper"
       >
         {/* Render the MultiValue (chips) and Input components */}
         {React.Children.map(children, (child) => {
@@ -20,4 +20,4 @@ const EditableTagsValueContainer = ({ children, ...props }) => {
   );
 };
 
-export default EditableTagsValueContainer;
+export default TagsInputValueContainer;

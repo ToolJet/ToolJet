@@ -106,7 +106,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
-  'EditableTags',
+  'TagsInput',
   'Button',
   'Icon',
   'Image',
@@ -831,7 +831,7 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
-      case 'EditableTags':
+      case 'TagsInput':
         return <Select {...restProps} />;
 
       case 'Tags':

@@ -4,7 +4,7 @@ import { CornerDownLeft } from 'lucide-react';
 
 const { Option } = components;
 
-const EditableTagsOption = (props) => {
+const TagsInputOption = (props) => {
   const { data } = props;
   // Check if this is a "create new" option from react-select/creatable
   const isCreateOption = data?.__isNew__;
@@ -20,18 +20,18 @@ const EditableTagsOption = (props) => {
             e.stopPropagation();
             props.selectOption(props.data);
           },
-          className: `${props.innerProps?.className || ''} editable-tags-create-option-wrapper`,
+          className: `${props.innerProps?.className || ''} tags-input-create-option-wrapper`,
         }}
       >
         <div
-          className="editable-tags-new-tag-preview"
+          className="tags-input-new-tag-preview"
         >
           <div className='add-text'>
             <span>
               add
             </span>
             <span
-              className='editable-tags-new-tag-preview-text'
+              className='tags-input-new-tag-preview-text'
             >
               {data.value}
             </span>
@@ -55,7 +55,7 @@ const EditableTagsOption = (props) => {
       }}
     >
       <div
-        className="editable-tags-option-chip d-inline-flex"
+        className="tags-input-option-chip d-inline-flex"
       >
         {data.label}
       </div>
@@ -63,4 +63,4 @@ const EditableTagsOption = (props) => {
   );
 };
 
-export default EditableTagsOption;
+export default TagsInputOption;

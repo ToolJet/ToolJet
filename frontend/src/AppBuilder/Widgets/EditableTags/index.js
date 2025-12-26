@@ -1,1 +1,0 @@
-export { EditableTags } from './EditableTags';

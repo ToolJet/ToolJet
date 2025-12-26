@@ -1,12 +1,12 @@
-export const editableTagsConfig = {
-  name: 'EditableTags',
-  displayName: 'Editable Tags',
+export const tagsInputConfig = {
+  name: 'TagsInput',
+  displayName: 'Tags Input',
   description: 'Tag input with create, select, and delete functionality',
   defaultSize: {
     width: 10,
     height: 40,
   },
-  component: 'EditableTags',
+  component: 'TagsInput',
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

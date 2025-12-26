@@ -44,7 +44,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'CircularProgressBar',
   'Kanban',
   'Html',
-  'EditableTags',
+  'TagsInput',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

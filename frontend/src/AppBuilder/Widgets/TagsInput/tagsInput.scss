@@ -1,7 +1,7 @@
-.editable-tags-widget {
+.tags-input-widget {
   width: 100%;
 
-  .editable-tags-values-wrapper {
+  .tags-input-values-wrapper {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -10,7 +10,7 @@
   }
 }
 
-.editable-tag-chip {
+.tags-input-chip {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -43,7 +43,7 @@
   }
 }
 
-.editable-tags-menu-list {
+.tags-input-menu-list {
   background-color: var(--surfaces-surface-01);
   border-radius: 8px;
   overflow: hidden;
@@ -52,7 +52,7 @@
     background-color: var(--surfaces-surface-01);
   }
 
-  .editable-tags-menu-list-body {
+  .tags-input-menu-list-body {
     max-height: 300px;
     overflow-y: auto;
     padding: 0px !important;
@@ -74,14 +74,14 @@
     }
   }
 
-  .editable-tags-no-options {
+  .tags-input-no-options {
     padding: 8px 12px !important;
     color: var(--text-placeholder) !important;
     font-size: 14px;
     text-align: left !important;
   }
 
-  .editable-tags-create-footer {
+  .tags-input-create-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -98,7 +98,7 @@
       background-color: var(--interactive-overlays-fill-pressed);
     }
   }
-  .editable-tags-new-tag-preview{
+  .tags-input-new-tag-preview{
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -111,7 +111,7 @@
     }
   }
 
-  .editable-tags-new-tag-preview-text {
+  .tags-input-new-tag-preview-text {
     padding: 2px 8px;
     border-radius: 2px;
     font-size: 14px;
@@ -123,7 +123,7 @@
   }
 }
 
-.editable-tags-option-chip {
+.tags-input-option-chip {
   display: flex;
   align-items: center;
   background-color: var(--surfaces-surface-03);
@@ -135,16 +135,16 @@
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
   word-break: break-all;
-  
+
 }
 
-.editable-tags-create-option-wrapper {
+.tags-input-create-option-wrapper {
   border-top: 1px solid var(--border-weak) !important;
   margin: 0  !important;
   padding: 8px 12px !important;
 }
 
-.editable-tags-create-option {
+.tags-input-create-option {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -152,8 +152,8 @@
   width: 100%;
 }
 
-// Override react-select default styles for editable tags
-.editable-tags-widget {
+// Override react-select default styles for tags input
+.tags-input-widget {
   .css-1dimb5e-singleValue,
   .css-qbdosj-Input {
     margin: 0;
