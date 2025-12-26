@@ -1,23 +1,26 @@
-FROM node:22.15.1 AS builder
+# =============================================================================
+# STAGE 1: SOURCE FETCHER
+# Purpose: Clone repository, checkout branch, and handle submodules
+# Cache: Invalidated on every new commit (expected)
+# =============================================================================
+FROM node:22.15.1 AS source-fetcher
+
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN mkdir -p /app
-
-WORKDIR /app
+WORKDIR /source
 
 # Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 
-# Clone and checkout the frontend repository
+# Configure Git
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
-RUN git clone https://github.com/ToolJet/ToolJet.git .
 
-# The branch name needs to be changed the branch with modularisation in CE repo
+# Clone and checkout repository
+RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
@@ -64,49 +67,96 @@ else \
   cd ../..; \
 fi
 
-# Scripts for building
-COPY ./package.json ./package.json
+# =============================================================================
+# STAGE 2: PLUGINS BUILDER
+# Purpose: Build plugins independently
+# Cache: Only invalidates when plugins/ directory changes
+# =============================================================================
+FROM node:22.15.1 AS plugins-builder
 
-# Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
-RUN NODE_ENV=production npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
-
-ENV TOOLJET_EDITION=ee
-
-# Build frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
-RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
-
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 
-# Build server
-COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
-COPY ./server/ ./server/
+WORKDIR /build
+
+# Copy only plugins directory and necessary package files
+COPY --from=source-fetcher /source/plugins ./plugins
+COPY --from=source-fetcher /source/package.json ./package.json
+
+# Build plugins
+RUN npm --prefix plugins install
+RUN npm --prefix plugins run build
+RUN npm --prefix plugins prune --production
+
+# =============================================================================
+# STAGE 3: FRONTEND BUILDER
+# Purpose: Build frontend independently
+# Cache: Only invalidates when frontend/ directory changes
+# =============================================================================
+FROM node:22.15.1 AS frontend-builder
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_ENV=production
+ENV TOOLJET_EDITION=ee
+
+WORKDIR /build
+
+# Copy only frontend directory and necessary package files
+COPY --from=source-fetcher /source/frontend ./frontend
+COPY --from=source-fetcher /source/package.json ./package.json
+
+# Build frontend
+RUN npm --prefix frontend install
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
+# =============================================================================
+# STAGE 4: SERVER BUILDER
+# Purpose: Build server independently
+# Cache: Only invalidates when server/ directory changes
+# =============================================================================
+FROM node:22.15.1 AS server-builder
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_ENV=production
+ENV TOOLJET_EDITION=ee
+
+WORKDIR /build
+
+# Copy only server directory and necessary package files
+COPY --from=source-fetcher /source/server ./server
+COPY --from=source-fetcher /source/package.json ./package.json
+
+# Install global dependencies needed for server build
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
+
+# Build server
+RUN npm --prefix server install
 RUN npm --prefix server run build
 
+# =============================================================================
+# STAGE 5: FINAL RUNTIME IMAGE
+# Purpose: Assemble final image with all built artifacts
+# =============================================================================
 FROM node:22.15.1-bullseye
 
+# Install system dependencies
 RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
 
-# copy postgrest executable
+# Copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
+# Set environment variables
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Install additional system dependencies
 RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
@@ -118,29 +168,33 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
 WORKDIR /
 
-# copy npm scripts
-COPY --from=builder /app/package.json ./app/package.json
-# copy plugins dependencies
-COPY --from=builder /app/plugins/dist ./app/plugins/dist
-COPY --from=builder /app/plugins/client.js ./app/plugins/client.js
-COPY --from=builder /app/plugins/node_modules ./app/plugins/node_modules
-COPY --from=builder /app/plugins/packages/common ./app/plugins/packages/common
-COPY --from=builder /app/plugins/package.json ./app/plugins/package.json
-# copy frontend build
-COPY --from=builder /app/frontend/build ./app/frontend/build
-# copy server build
-COPY --from=builder /app/server/package.json ./app/server/package.json
-COPY --from=builder /app/server/.version ./app/server/.version
-COPY --from=builder /app/server/ee/keys ./app/server/ee/keys
-COPY --from=builder /app/server/node_modules ./app/server/node_modules
-COPY --from=builder /app/server/templates ./app/server/templates
-COPY --from=builder /app/server/scripts ./app/server/scripts
-COPY --from=builder /app/server/dist ./app/server/dist
+# Copy npm scripts
+COPY --from=source-fetcher /source/package.json ./app/package.json
+
+# Copy plugins artifacts from builder stage
+COPY --from=plugins-builder /build/plugins/dist ./app/plugins/dist
+COPY --from=plugins-builder /build/plugins/client.js ./app/plugins/client.js
+COPY --from=plugins-builder /build/plugins/node_modules ./app/plugins/node_modules
+COPY --from=plugins-builder /build/plugins/packages/common ./app/plugins/packages/common
+COPY --from=plugins-builder /build/plugins/package.json ./app/plugins/package.json
+
+# Copy frontend artifacts from builder stage
+COPY --from=frontend-builder /build/frontend/build ./app/frontend/build
+
+# Copy server artifacts from builder stage
+COPY --from=server-builder /build/server/package.json ./app/server/package.json
+COPY --from=source-fetcher /source/server/.version ./app/server/.version
+COPY --from=source-fetcher /source/server/ee/keys ./app/server/ee/keys
+COPY --from=server-builder /build/server/node_modules ./app/server/node_modules
+COPY --from=source-fetcher /source/server/templates ./app/server/templates
+COPY --from=source-fetcher /source/server/scripts ./app/server/scripts
+COPY --from=server-builder /build/server/dist ./app/server/dist
 
 WORKDIR /app
 
@@ -149,7 +203,6 @@ USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
-
 
 # Explicitly create PG main directory with correct ownership
 RUN mkdir -p /var/lib/postgresql/13/main && \
@@ -210,7 +263,7 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-
 RUN chmod +x ./server/scripts/preview.sh
+
 # Set the entrypoint
 ENTRYPOINT ["./server/scripts/preview.sh"]
