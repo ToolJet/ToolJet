@@ -26,6 +26,7 @@ export const INPUT_COMPONENTS_FOR_FORM = [
   'DaterangePicker',
   'TextArea',
   'StarRating',
+  'EditableTags',
 ];
 
 export const JSON_DIFFERENCE = {
