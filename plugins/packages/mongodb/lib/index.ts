@@ -204,7 +204,7 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
+async getConnection(sourceOptions: SourceOptions): Promise<any> {
   let db = null;
   let client;
   const connectionType = sourceOptions['connection_type'];
