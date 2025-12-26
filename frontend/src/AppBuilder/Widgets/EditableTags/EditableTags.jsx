@@ -567,6 +567,12 @@ export const EditableTags = ({
           onTouchEnd={handleClickInside}
           style={{
             ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
+            // When auto width is ON, use flex properties to prevent overflow expansion
+            ...(auto && {
+              flex: 1,
+              minWidth: 0,
+              
+            }),
           }}
         >
           <CreatableSelect

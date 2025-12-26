@@ -73,17 +73,19 @@ const EditableTagsMenuList = ({
                 padding: '8px 12px',
                 borderTop: '1px solid var(--border-weak)',
                 cursor: 'pointer',
+                gap: '8px',
               }}
               onClick={(e) => {
                 e.stopPropagation();
                 selectProps?.onCreateOption?.(inputValue);
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
                 <span
                   style={{
                     color: 'var(--text-placeholder)',
                     fontSize: '14px',
+                    flexShrink: 0,
                   }}
                 >
                   add
@@ -97,12 +99,14 @@ const EditableTagsMenuList = ({
                     borderRadius: '2px',
                     fontSize: '14px',
                     lineHeight: '20px',
+                    wordBreak: 'break-all',
+                    minWidth: 0,
                   }}
                 >
                   {inputValue}
                 </span>
               </div>
-              <CornerDownLeft size={14} color="var(--text-placeholder)" />
+              <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
             </div>
           )}
         </>

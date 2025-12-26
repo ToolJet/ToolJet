@@ -34,13 +34,15 @@ const EditableTagsOption = (props) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             width: '100%',
+            gap: '8px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
             <span
               style={{
                 color: 'var(--text-placeholder)',
                 fontSize: '14px',
+                flexShrink: 0,
               }}
             >
               add
@@ -53,12 +55,14 @@ const EditableTagsOption = (props) => {
                 borderRadius: '2px',
                 fontSize: '14px',
                 lineHeight: '20px',
+                wordBreak: 'break-all',
+                minWidth: 0,
               }}
             >
               {data.value}
             </span>
           </div>
-          <CornerDownLeft size={16} color="var(--text-placeholder)" />
+          <CornerDownLeft size={16} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
         </div>
       </Option>
     );
@@ -87,6 +91,7 @@ const EditableTagsOption = (props) => {
           borderRadius: '2px',
           fontSize: '14px',
           lineHeight: '20px',
+          wordBreak: 'break-all',
         }}
       >
         {data.label}
