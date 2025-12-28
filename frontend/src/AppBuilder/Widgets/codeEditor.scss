@@ -3,6 +3,13 @@
         .cm-scroller {
             background-color: var(--cc-surface1-surface);
         }
+        .cm-editor  {
+            border: none;
+        }
+
+        .cm-content {
+            background-color: var(--cc-code-editor-background-color);
+        }
    }
 
    .code-editor-widget {

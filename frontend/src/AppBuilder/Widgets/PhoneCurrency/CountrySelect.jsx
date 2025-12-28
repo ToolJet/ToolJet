@@ -10,6 +10,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const {
     isCountryChangeEnabled,
     isCurrencyInput = false,
+    showFlag,
     disabledState,
     borderRadius,
     isValid,
@@ -131,6 +132,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         useCustomStyles={true}
         menuPortalTarget={document.body}
         isCurrencyInput={isCurrencyInput}
+        showFlag={showFlag}
         isCountryChangeEnabled={isCountryChangeEnabled}
         {...(filterOption && { filterOption })}
         components={{

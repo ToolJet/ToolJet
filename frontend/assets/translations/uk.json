@@ -462,9 +462,12 @@
       "properties": "Властивості",
       "events": "Події",
       "layout": "Шар",
+      "devices": "Пристрої",
       "styles": "Стилі",
       "general": "Основне",
       "validation": "Валідація",
+      "data": "Дані",
+      "additionalActions": "Додаткові дії",
       "documentation": "{{componentMeta}} документація",
       "widgetNameEmptyError": "Ім'я віджету не може бути порожнім",
       "componentNameExistsError": "Ім'я компонента вже існує",
@@ -584,6 +587,14 @@
       "parseContent": "Скинути контент",
       "fileType": "Тип файлу",
       "dateFormat": "Формат дати",
+      "timeFormat": "Формат часу",
+      "minTime": "Мінімальний час",
+      "maxTime": "Максимальний час",
+      "displayIn": "Відображати в",
+      "storeIn": "Зберігати в",
+      "minDate": "Мінімальна дата",
+      "maxDate": "Максимальна дата",
+      "makeThisFieldMandatory": "Зробити це поле обов'язковим",
       "defaultDate": "Дата за замовчуванням",
       "events": "Події",
       "resources": "Ресурси",
@@ -913,6 +924,22 @@
     "Back": {
       "text": "Назад",
       "tip": "Додому"
+    }
+  },
+  "datepicker": {
+    "months": {
+      "january": "Січень",
+      "february": "Лютий",
+      "march": "Березень",
+      "april": "Квітень",
+      "may": "Травень",
+      "june": "Червень",
+      "july": "Липень",
+      "august": "Серпень",
+      "september": "Вересень",
+      "october": "Жовтень",
+      "november": "Листопад",
+      "december": "Грудень"
     }
   }
 }
