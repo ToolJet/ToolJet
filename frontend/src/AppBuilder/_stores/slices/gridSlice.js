@@ -7,7 +7,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 const initialState = {
   hoveredComponentForGrid: '',
   hoveredComponentBoundaryId: '',
-  triggerCanvasUpdater: false,
+  triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
@@ -34,17 +34,20 @@ export const createGridSlice = (set, get) => ({
   },
   setHoveredComponentBoundaryId: (id) =>
     set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
-  toggleCanvasUpdater: () =>
-    set((state) => ({ triggerCanvasUpdater: !state.triggerCanvasUpdater }), false, { type: 'toggleCanvasUpdater' }),
-  debouncedToggleCanvasUpdater: debounce(() => {
-    get().toggleCanvasUpdater();
+  incrementCanvasUpdater: () =>
+    set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
+      type: 'incrementCanvasUpdater',
+    }),
+  debouncedIncrementCanvasUpdater: debounce(() => {
+    get().incrementCanvasUpdater();
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
   setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
   moveComponentPosition: (direction) => {
-    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
+    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedIncrementCanvasUpdater } =
+      get();
     let layouts = {};
     const selectedComponents = getSelectedComponentsDefinition();
     selectedComponents.forEach((selectedComponent) => {
@@ -87,7 +90,7 @@ export const createGridSlice = (set, get) => ({
       };
     });
     setComponentLayout(layouts);
-    debouncedToggleCanvasUpdater();
+    debouncedIncrementCanvasUpdater();
   },
   setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
   setLastCanvasClickPosition: (position) => {
@@ -118,7 +121,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
-      toggleCanvasUpdater,
+      incrementCanvasUpdater,
       temporaryLayouts,
       adjustComponentPositions,
       getResolvedComponent,
@@ -300,8 +303,8 @@ export const createGridSlice = (set, get) => ({
         isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
           ? containerHeight
           : visibility
-          ? componentElement.offsetHeight
-          : HIDDEN_COMPONENT_HEIGHT;
+            ? componentElement.offsetHeight
+            : HIDDEN_COMPONENT_HEIGHT;
 
       // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
@@ -419,7 +422,7 @@ export const createGridSlice = (set, get) => ({
 
       setTemporaryLayouts(updatedLayouts);
 
-      toggleCanvasUpdater();
+      incrementCanvasUpdater();
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
         adjustComponentPositions(
           isContainer && isTruthyOrZero(subContainerIndex)

@@ -367,7 +367,7 @@ export const useCanvasAutoScroll = (config = {}, boxList = [], virtualTarget = n
     }
 
     // Reset the inline canvas height style - the actual height will be
-    // recalculated by updateCanvasBottomHeight via toggleCanvasUpdater
+    // recalculated by updateCanvasBottomHeight via incrementCanvasUpdater
     const realCanvas = document.getElementById('real-canvas');
     if (realCanvas && canvasHeightRef.current) {
       canvasHeightRef.current = null;
