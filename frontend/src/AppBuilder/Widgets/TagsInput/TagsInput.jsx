@@ -133,10 +133,9 @@ export const TagsInput = ({
     return [...selectOptions, ...newTagsAdded];
   }, [selectOptions, newTagsAdded]);
 
-  // Check for duplicate values (case-insensitive)
-  const isDuplicate = (value) => {
-    const normalized = value.toLowerCase();
-    return allOptions.some((opt) => opt.value.toLowerCase() === normalized);
+  // Check for duplicate labels (case-sensitive)
+  const isDuplicate = (label) => {
+    return allOptions.some((opt) => opt.label === label);
   };
 
   // Find default items based on options
@@ -175,7 +174,7 @@ export const TagsInput = ({
 
     if (isDuplicate(trimmedValue)) {
       // If duplicate exists, just select it if not already selected
-      const existingOption = allOptions.find((opt) => opt.value.toLowerCase() === trimmedValue.toLowerCase());
+      const existingOption = allOptions.find((opt) => opt.label === trimmedValue);
       if (existingOption && !selected.some((s) => s.value === existingOption.value)) {
         const newSelected = [...selected, existingOption];
         setInputValues(newSelected);
@@ -236,10 +235,8 @@ export const TagsInput = ({
 
     // Enter key - select highlighted option OR create new tag
     if (e.key === 'Enter') {
-      const trimmedInput = inputValue.trim().toLowerCase();
-      const matchingOption = filteredOptions.find(
-        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
-      );
+      const trimmedInput = inputValue.trim();
+      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
 
       // When search is disabled, handle selection directly
       if (!enableSearch && inputValue.trim()) {
@@ -270,10 +267,8 @@ export const TagsInput = ({
     // Comma - select existing option or create new tag
     if (e.key === ',' && inputValue.trim()) {
       e.preventDefault();
-      const trimmedInput = inputValue.trim().toLowerCase();
-      const matchingOption = filteredOptions.find(
-        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
-      );
+      const trimmedInput = inputValue.trim();
+      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
       if (matchingOption) {
         const newSelected = [...selected, matchingOption];
         setInputValues(newSelected);
@@ -287,10 +282,8 @@ export const TagsInput = ({
 
     // Tab - select existing option or create new tag, otherwise let it move focus
     if (e.key === 'Tab' && inputValue.trim()) {
-      const trimmedInput = inputValue.trim().toLowerCase();
-      const matchingOption = filteredOptions.find(
-        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
-      );
+      const trimmedInput = inputValue.trim();
+      const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
       if (matchingOption) {
         e.preventDefault();
         const newSelected = [...selected, matchingOption];
@@ -694,6 +687,7 @@ export const TagsInput = ({
               isClearable={false}
               isMulti
               hideSelectedOptions={true}
+              filterOption={(option, inputValue) => option.label?.includes(inputValue)}
               closeMenuOnSelect={false}
               tabSelectsValue={false}
               onKeyDown={handleKeyDown}
