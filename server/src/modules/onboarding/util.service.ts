@@ -9,7 +9,7 @@ import { LicenseCountsService } from '../licensing/services/count.service';
 import { LICENSE_TRIAL_API, ORGANIZATION_INSTANCE_KEY } from '../licensing/constants';
 import got from 'got/dist/source';
 import { HttpException } from '@nestjs/common';
-import { fullName, generateNextNameAndSlug, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { fullName, generateNextNameAndSlug, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
 import { NotAcceptableException } from '@nestjs/common';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
@@ -17,6 +17,7 @@ import {
   getUserStatusAndSource,
   lifecycleEvents,
   SOURCE,
+  USER_STATUS,
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from '@modules/users/constants/lifecycle';
@@ -405,7 +406,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     existingUser: User,
     signingUpOrganization: Organization,
     redirectTo?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: any
   ) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
@@ -442,6 +444,23 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         lastName: user.lastName,
         role: user.role,
       });
+      
+      // Auto-activate users for non-cloud editions (skip email verification)
+      const edition = getTooljetEdition();
+      const isCloudEdition = edition === 'cloud';
+      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+        await this.userRepository.updateOne(
+          user.id,
+          {
+            status: USER_STATUS.ACTIVE,
+            invitationToken: null,
+          },
+          manager
+        );
+        user.status = USER_STATUS.ACTIVE;
+        user.invitationToken = null;
+      }
+      
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -451,20 +470,43 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
+        
+        // Auto-activate organization user for non-cloud editions
+        if (!isCloudEdition && organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
+        }
+        
         await this.licenseUserService.validateUser(manager, organizationId);
-        this.eventEmitter.emit('emailEvent', {
-          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-          payload: {
-            to: user.email,
-            name: user.firstName,
-            invitationtoken: user.invitationToken,
-            organizationInvitationToken: organizationUser.invitationToken,
-            organizationId: signingUpOrganization.id,
-            organizationName: signingUpOrganization.name,
-            sender: null,
-            redirectTo: redirectTo,
-          },
-        });
+        
+        // For non-cloud editions, return login payload to auto-login user
+        if (!isCloudEdition && response) {
+          return await this.sessionUtilService.generateLoginResultPayload(
+            response,
+            user,
+            signingUpOrganization,
+            false,
+            true,
+            null,
+            manager
+          );
+        }
+        
+        // Only send verification email for cloud edition
+        if (isCloudEdition) {
+          this.eventEmitter.emit('emailEvent', {
+            type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+            payload: {
+              to: user.email,
+              name: user.firstName,
+              invitationtoken: user.invitationToken,
+              organizationInvitationToken: organizationUser.invitationToken,
+              organizationId: signingUpOrganization.id,
+              organizationName: signingUpOrganization.name,
+              sender: null,
+              redirectTo: redirectTo,
+            },
+          });
+        }
         // this.eventEmitter.emit(
         //   'auditLogEntry',
         //   {
@@ -479,15 +521,39 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // );
         return {};
       } else {
-        await this.licenseUserService.validateUser(manager, organizationId);
-        this.eventEmitter.emit('emailEvent', {
-          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-          payload: {
-            to: user.email,
-            name: user.firstName,
-            invitationtoken: user.invitationToken,
-          },
-        });
+        // Auto-activate users for non-cloud editions (skip email verification)
+        const edition = getTooljetEdition();
+        const isCloudEdition = edition === 'cloud';
+        if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+          await this.userRepository.updateOne(
+            user.id,
+            {
+              status: USER_STATUS.ACTIVE,
+              invitationToken: null,
+            },
+            manager
+          );
+          user.status = USER_STATUS.ACTIVE;
+          user.invitationToken = null;
+        }
+        
+        // Use user's default organization ID if signingUpOrganization is null
+        const orgIdForValidation = user.defaultOrganizationId || organizationId;
+        if (orgIdForValidation) {
+          await this.licenseUserService.validateUser(manager, orgIdForValidation);
+        }
+        
+        // Only send verification email for cloud edition
+        if (isCloudEdition) {
+          this.eventEmitter.emit('emailEvent', {
+            type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+            payload: {
+              to: user.email,
+              name: user.firstName,
+              invitationtoken: user.invitationToken,
+            },
+          });
+        }
 
         // this.eventEmitter.emit(
         //   'auditLogEntry',
@@ -610,7 +676,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     userParams: { email: string; password: string; firstName: string; lastName: string },
     defaultWorkspace: Organization,
     redirectTo?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: any
   ) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
@@ -640,7 +707,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       );
 
       // Create organization user entry
-      await this.organizationUserRepository.createOne(
+      const organizationUser = await this.organizationUserRepository.createOne(
         user,
         defaultWorkspace,
         true,
@@ -648,18 +715,54 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         WORKSPACE_USER_SOURCE.SIGNUP
       );
 
+      // Auto-activate users for non-cloud editions (skip email verification)
+      const edition = getTooljetEdition();
+      const isCloudEdition = edition === 'cloud';
+      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+        await this.userRepository.updateOne(
+          user.id,
+          {
+            status: USER_STATUS.ACTIVE,
+            invitationToken: null,
+          },
+          manager
+        );
+        user.status = USER_STATUS.ACTIVE;
+        user.invitationToken = null;
+        
+        // Also activate the organization user for non-cloud editions
+        if (organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
+        }
+      }
+
       // Validate license
       await this.licenseUserService.validateUser(manager, user?.defaultOrganizationId);
 
-      // Send welcome email
-      this.eventEmitter.emit('emailEvent', {
-        type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-        payload: {
-          to: user.email,
-          name: user.firstName,
-          invitationtoken: user.invitationToken,
-        },
-      });
+      // For non-cloud editions, return login payload to auto-login user
+      if (!isCloudEdition && response) {
+        return await this.sessionUtilService.generateLoginResultPayload(
+          response,
+          user,
+          defaultWorkspace,
+          false,
+          true,
+          null,
+          manager
+        );
+      }
+
+      // Only send verification email for cloud edition
+      if (isCloudEdition) {
+        this.eventEmitter.emit('emailEvent', {
+          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+          payload: {
+            to: user.email,
+            name: user.firstName,
+            invitationtoken: user.invitationToken,
+          },
+        });
+      }
 
       return {};
     }, manager);
