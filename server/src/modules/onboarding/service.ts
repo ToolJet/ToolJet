@@ -109,6 +109,13 @@ export class OnboardingService implements IOnboardingService {
         ) {
           throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
         }
+      } else {
+        // No organization provided - validate against instance-level settings
+        if (
+          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        }
       }
 
       const names = { firstName: '', lastName: '' };
