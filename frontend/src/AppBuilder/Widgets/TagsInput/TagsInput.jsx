@@ -664,7 +664,13 @@ export const TagsInput = ({
               menuIsOpen={enableSearch && isMenuOpen}
               placeholder={placeholder}
               formatCreateLabel={(input) => `add "${input}"`}
-              isValidNewOption={(input) => allowNewTags && input.trim().length > 0}
+              isValidNewOption={(input) => {
+                if (!allowNewTags || !input.trim()) return false;
+                // Don't show create option if label already exists (case-sensitive)
+                const trimmedInput = input.trim();
+                const labelExists = allOptions.some((opt) => opt.label === trimmedInput);
+                return !labelExists;
+              }}
               components={{
                 MultiValue: TagsInputChip,
                 ValueContainer: TagsInputValueContainer,
