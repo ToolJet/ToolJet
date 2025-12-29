@@ -7,8 +7,8 @@
 # =============================================================================
 FROM node:22.15.1 AS source-fetcher
 
-# Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+# Moderate heap for git operations (4GB sufficient)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 WORKDIR /source
 
@@ -43,8 +43,8 @@ RUN git submodule foreach " \
 # =============================================================================
 FROM node:22.15.1 AS plugins-builder
 
-# Increase heap for plugins build (it's memory intensive)
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+# Higher heap for plugins build (5GB - most memory intensive)
+ENV NODE_OPTIONS="--max-old-space-size=5120"
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
@@ -53,16 +53,9 @@ WORKDIR /build
 COPY --from=source-fetcher /source/plugins ./plugins
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# Build plugins with lower concurrency to reduce memory usage
+# Build plugins
 RUN npm --prefix plugins install
-
-# Build packages one at a time to avoid memory spikes
-RUN cd plugins && npm run create:client
-RUN cd plugins && npm run create:server
-RUN cd plugins && npm run build:packages
-RUN cd plugins && npm run build:server
-RUN cd plugins && npm run create:operations
-
+RUN npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # =============================================================================
@@ -72,7 +65,8 @@ RUN npm --prefix plugins prune --production
 # =============================================================================
 FROM node:22.15.1 AS frontend-builder
 
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+# Moderate heap for frontend build (4GB)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
@@ -83,37 +77,25 @@ COPY --from=source-fetcher /source/package.json ./package.json
 
 # Build frontend
 RUN npm --prefix frontend install
-
-# Install webpack-cli to avoid interactive prompt
-RUN npm --prefix frontend install -D webpack-cli
-
-# Build without --production flag
-RUN npm --prefix frontend run build
-
+RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 # =============================================================================
 # STAGE 4: SERVER BUILDER
 # Purpose: Build server independently
 # Cache: Only invalidates when server/ directory changes
-# NOTE: Server depends on @tooljet/plugins, so we copy plugins artifacts
 # =============================================================================
 FROM node:22.15.1 AS server-builder
 
-ENV NODE_OPTIONS="--max-old-space-size=8192"
-ENV NODE_ENV=production
+# Moderate heap for server build (4GB)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy package.json first
-COPY --from=source-fetcher /source/package.json ./package.json
-
-# Copy plugins artifacts - server depends on @tooljet/plugins
-COPY --from=plugins-builder /build/plugins ./plugins
-
-# Copy only server directory
+# Copy only server directory and necessary package files
 COPY --from=source-fetcher /source/server ./server
+COPY --from=source-fetcher /source/package.json ./package.json
 
 # Install global dependencies needed for server build
 RUN npm install -g @nestjs/cli
@@ -138,10 +120,10 @@ RUN apt-get update -yq \
 # Copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
-# Set environment variables
+# Set environment variables - Lower heap for runtime (3GB)
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 
 # Install additional system dependencies
 RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
@@ -149,7 +131,7 @@ RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
 RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
-    wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.zip && \
+    wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
     unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
     unzip instantclient-basiclite-linux.x64-11.2.0.4.0.zip && rm -f instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
