@@ -62,7 +62,7 @@ RUN npm --prefix plugins prune --production
 # STAGE 3: FRONTEND BUILDER
 # Purpose: Build frontend independently
 # Cache: Only invalidates when frontend/ directory changes
-# DEPENDENCY: Waits for plugins-builder to complete (forces sequential)
+# DEPENDENCY: Requires plugins artifacts (frontend imports @tooljet/plugins/client)
 # =============================================================================
 FROM node:22.15.1 AS frontend-builder
 
@@ -71,12 +71,15 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy frontend directory
-COPY --from=source-fetcher /source/frontend ./frontend
+# Copy package.json first
 COPY --from=source-fetcher /source/package.json ./package.json
 
-# CRITICAL: Reference plugins-builder to force sequential execution
-COPY --from=plugins-builder /build/plugins/package.json /tmp/plugins-ready
+# CRITICAL: Copy plugins artifacts - frontend depends on @tooljet/plugins/client
+# This also forces sequential execution after plugins-builder
+COPY --from=plugins-builder /build/plugins ./plugins
+
+# Copy frontend directory
+COPY --from=source-fetcher /source/frontend ./frontend
 
 # Build frontend
 RUN npm --prefix frontend install
