@@ -8,7 +8,7 @@
 FROM node:22.15.1 AS source-fetcher
 
 # Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 WORKDIR /source
 
@@ -43,7 +43,7 @@ RUN git submodule foreach " \
 # =============================================================================
 FROM node:22.15.1 AS plugins-builder
 
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
@@ -64,7 +64,7 @@ RUN npm --prefix plugins prune --production
 # =============================================================================
 FROM node:22.15.1 AS frontend-builder
 
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
@@ -85,7 +85,7 @@ RUN npm --prefix frontend prune --production
 # =============================================================================
 FROM node:22.15.1 AS server-builder
 
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 
@@ -121,7 +121,7 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 # Set environment variables
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
-ENV NODE_OPTIONS="--max-old-space-size=6144"
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 
 # Install additional system dependencies
 RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
