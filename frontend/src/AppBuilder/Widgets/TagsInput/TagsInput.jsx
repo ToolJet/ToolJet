@@ -49,6 +49,7 @@ export const TagsInput = ({
     dynamicHeight,
     sort,
     tooltip,
+    enableSearch = true,
   } = properties;
 
   const {
@@ -221,44 +222,85 @@ export const TagsInput = ({
       return; // react-select handles this
     }
 
-    // Arrow keys for navigation - let react-select handle
+    // Arrow keys for navigation - only open menu if search is enabled
     if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
-      if (!isMenuOpen) {
+      if (enableSearch && !isMenuOpen) {
         setIsMenuOpen(true);
+      }
+      if (!enableSearch) {
+        e.preventDefault(); // Prevent menu from opening when search is disabled
+        return;
       }
       return; // react-select handles navigation
     }
 
     // Enter key - select highlighted option OR create new tag
     if (e.key === 'Enter') {
-      // If allowNewTags and there's input that doesn't match any option, create it
-      if (allowNewTags && inputValue.trim()) {
-        const trimmedInput = inputValue.trim().toLowerCase();
-        const matchingOption = filteredOptions.find(
-          (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
-        );
-        // If no exact match in filtered options, create new tag
-        if (!matchingOption) {
-          e.preventDefault();
+      const trimmedInput = inputValue.trim().toLowerCase();
+      const matchingOption = filteredOptions.find(
+        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
+      );
+
+      // When search is disabled, handle selection directly
+      if (!enableSearch && inputValue.trim()) {
+        e.preventDefault();
+        if (matchingOption) {
+          // Select the matching existing option
+          const newSelected = [...selected, matchingOption];
+          setInputValues(newSelected);
+          setInputValue('');
+          fireEvent('onTagAdded');
+        } else if (allowNewTags) {
+          // Create new tag if allowed
           handleCreate(inputValue);
-          return;
         }
+        return;
+      }
+
+      // When search is enabled, create new tag if no match and allowNewTags
+      if (allowNewTags && inputValue.trim() && !matchingOption) {
+        e.preventDefault();
+        handleCreate(inputValue);
+        return;
       }
       // Otherwise let react-select handle the selection
       return;
     }
 
-    // Comma creates tag (only if allowNewTags)
-    if (e.key === ',' && allowNewTags && inputValue.trim()) {
+    // Comma - select existing option or create new tag
+    if (e.key === ',' && inputValue.trim()) {
       e.preventDefault();
-      handleCreate(inputValue);
+      const trimmedInput = inputValue.trim().toLowerCase();
+      const matchingOption = filteredOptions.find(
+        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
+      );
+      if (matchingOption) {
+        const newSelected = [...selected, matchingOption];
+        setInputValues(newSelected);
+        setInputValue('');
+        fireEvent('onTagAdded');
+      } else if (allowNewTags) {
+        handleCreate(inputValue);
+      }
       return;
     }
 
-    // Tab - create tag if input exists and allowNewTags, otherwise let it move focus
-    if (e.key === 'Tab' && allowNewTags && inputValue.trim()) {
-      e.preventDefault();
-      handleCreate(inputValue);
+    // Tab - select existing option or create new tag, otherwise let it move focus
+    if (e.key === 'Tab' && inputValue.trim()) {
+      const trimmedInput = inputValue.trim().toLowerCase();
+      const matchingOption = filteredOptions.find(
+        (opt) => opt.label?.toLowerCase() === trimmedInput || opt.value?.toLowerCase() === trimmedInput
+      );
+      if (matchingOption) {
+        e.preventDefault();
+        const newSelected = [...selected, matchingOption];
+        setInputValues(newSelected);
+        setInputValue('');
+        fireEvent('onTagAdded');
+      } else if (allowNewTags) {
+        e.preventDefault();
+        handleCreate(inputValue);
+      }
       return;
     }
   };
@@ -406,9 +448,12 @@ export const TagsInput = ({
       selectRef.current.focus();
     }
 
-    // Always open menu when focused/clicked inside
-    if (!isMenuOpen) {
+    // Only open menu when enableSearch is true
+    if (enableSearch && !isMenuOpen) {
       setIsMenuOpen(true);
+      fireEvent('onFocus');
+    } else if (!enableSearch && !isMenuOpen) {
+      // Still fire focus event even when search is disabled
       fireEvent('onFocus');
     }
   };
@@ -623,7 +668,7 @@ export const TagsInput = ({
                   setInputValue(value);
                 }
               }}
-              menuIsOpen={isMenuOpen}
+              menuIsOpen={enableSearch && isMenuOpen}
               placeholder={placeholder}
               formatCreateLabel={(input) => `add "${input}"`}
               isValidNewOption={(input) => allowNewTags && input.trim().length > 0}
