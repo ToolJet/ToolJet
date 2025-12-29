@@ -139,8 +139,12 @@
 }
 
 .tags-input-create-option-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
   border-top: 1px solid var(--border-weak) !important;
-  margin: 0  !important;
+  margin: 0 !important;
   padding: 8px 12px !important;
 }
 
