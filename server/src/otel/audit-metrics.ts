@@ -296,7 +296,10 @@ export const initializeAuditLogMetrics = () => {
  *
  * @param auditLogData - The audit log data to record
  */
-export const recordAuditLogMetric = (auditLogData: AuditLogFields) => {
+export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled: boolean) => {
+   if (!isOtelEnabled) {
+   return;
+ }
   if (!auditLogCounter) {
     console.warn('Audit log metrics not initialized. Skipping metric recording.');
     return;
