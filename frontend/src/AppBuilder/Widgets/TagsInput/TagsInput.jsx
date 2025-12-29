@@ -137,13 +137,15 @@ export const TagsInput = ({
   };
 
   // Find default items based on options
-  function findDefaultItem(values, isAdvanced, isDefault) {
+  function findDefaultItem(values, isAdvanced=false, isDefault=false) {
     if (isAdvanced) {
       const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
     }
     if (isDefault) {
-      return Array.isArray(allOptions) ? allOptions.filter((item) => values?.find((val) => val === item.value)) : [];
+      return Array.isArray(allOptions)
+        ? allOptions.filter((item) => item?.default || values?.find((val) => val === item.value))
+        : [];
     } else {
       return Array.isArray(allOptions)
         ? allOptions.filter((item) => selected?.find((val) => val.value === item.value))
@@ -259,25 +261,19 @@ export const TagsInput = ({
     }
   };
 
-  // Initialize with default values
-  useEffect(() => {
-    let foundItem = findDefaultItem(properties?.values, advanced);
-    setInputValues(foundItem);
-  }, [selectOptions]);
-
-  useEffect(() => {
-    if (advanced) {
-      let foundItem = findDefaultItem(properties?.values, advanced, true);
-      setInputValues(foundItem);
-    }
-  }, [advanced, JSON.stringify(properties?.values), JSON.stringify(schema)]);
-
+  // Restore selection when options change (static mode only)
   useEffect(() => {
     if (!advanced) {
-      let foundItem = findDefaultItem(properties?.values, advanced, true);
+      let foundItem = findDefaultItem(properties?.values, advanced);
       setInputValues(foundItem);
     }
-  }, [advanced, JSON.stringify(properties?.values)]);
+  }, [selectOptions]);
+
+  // Apply defaults when mode, values, or schema changes
+  useEffect(() => {
+    let foundItem = findDefaultItem(properties?.values, advanced, true);
+    setInputValues(foundItem);
+  }, [advanced, JSON.stringify(properties?.values), JSON.stringify(schema)]);
 
   // Exposed variable updates
   useEffect(() => {

@@ -377,7 +377,7 @@ export const tagsInputConfig = {
       loadingState: { value: '{{false}}' },
       schema: {
         value:
-          "{{[\t{label: 'Newport',value: 'newport',visible: true,default: false},{label: 'New York',value: 'new_york',visible: true,default: false},{label: 'San Clemente',value: 'san_clemente',visible: true,default: false}\t]}}",
+          "{{[\t{label: 'Newport',value: 'newport',visible: true,default: false, disable:false},{label: 'New York',value: 'new_york',visible: true,default: false, disable:false},{label: 'San Clemente',value: 'san_clemente',visible: true,default: false, disable:false}\t]}}",
       },
       options: {
         value: [
