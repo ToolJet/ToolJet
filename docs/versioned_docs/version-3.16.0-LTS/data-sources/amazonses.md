@@ -18,7 +18,7 @@ ToolJet requires the following to connect to Amazon SES:
 - **Access key**
 - **Secret key**
 
-You can also choose "AWS Instance Credentials" or "AWS ARN Role" as authentication methods from the dropdown. These options allow you to authenticate using AWS-managed roles instead of manually providing IAM access keys, depending on how your AWS environment is configured.
+You may also select **AWS Instance Credentials** or **AWS ARN Role** as authentication methods from the dropdown. These options enable authentication through AWS-managed roles, eliminating the need to manually supply IAM access keys and allowing integration based on the configuration of your AWS environment.
 
 **Note:** It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
 
@@ -60,7 +60,7 @@ You can also choose "AWS Instance Credentials" or "AWS ARN Role" as authenticati
 - **CC Addresses**
 - **BCC Addresses**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/amazonses/awsSES-query.png" alt="Amazon SES" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/amazonses/ses-query.png" alt="Amazon SES" />
 
 
 :::info
