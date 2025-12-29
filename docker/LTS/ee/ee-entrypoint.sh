@@ -23,7 +23,7 @@ if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
     sleep 2
 
     # Check if Redis started successfully with custom config
-    if ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=10 -- echo "Redis is up" 2>/dev/null; then
+    if ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=10 2>/dev/null; then
       echo "Redis started successfully"
       REDIS_STARTED=true
     else
@@ -44,7 +44,7 @@ if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
     REDIS_PID=$!
 
     # Wait for Redis to be ready with default config
-    if ! ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=30 -- echo "Redis is up"; then
+    if ! ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=30; then
       echo "Error: Redis failed to start even with default configuration"
       exit 1
     fi
@@ -58,7 +58,7 @@ else
   echo "Using external Redis at $REDIS_HOST:$REDIS_PORT."
 
   # Validate external Redis connection
-  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300 -- echo "Redis is up"; then
+  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300; then
     echo "Error: Unable to connect to Redis at $REDIS_HOST:$REDIS_PORT."
     exit 1
   fi
