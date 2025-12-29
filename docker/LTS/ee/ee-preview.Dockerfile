@@ -8,7 +8,7 @@
 FROM node:22.15.1 AS source-fetcher
 
 # Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 WORKDIR /source
 
