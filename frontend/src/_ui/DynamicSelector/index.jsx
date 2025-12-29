@@ -8,6 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
 const DynamicSelector = ({
     operation,
@@ -34,6 +35,7 @@ const DynamicSelector = ({
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [noAccessError, setNoAccessError] = useState(false);
 
     const [isFxMode, setIsFxMode] = useState(() => {
         if (options?.[`${propertyKey}_fx`] !== undefined) {
@@ -89,13 +91,13 @@ const DynamicSelector = ({
             const payload = response?.data ?? response;
             const items = payload?.data || [];
             setFetchedData(items);
+            validateSelectedValue(items);
 
             if (isDependentField) {
                 // Store in cache based on dependency value
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
 
-                const parentKey = compositeDependencyKey;
                 const parentValue = compositeDependencyKey;
 
                 const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
@@ -186,7 +188,6 @@ const DynamicSelector = ({
                 const cacheKey = `${propertyKey}_cache`;
                 const existingCache = get(options, cacheKey) || {};
 
-                const parentKey = compositeDependencyKey;
                 const parentValue = compositeDependencyKey;
 
                 const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
@@ -208,10 +209,11 @@ const DynamicSelector = ({
                 }
 
                 if (!cachedData) {
-                    // Fetch data for the current dependency state and store in cache
-                    handleFetch()
+                    // No cache for this user - validate with empty array to trigger no-access warning if value is set
+                    validateSelectedValue([]);
                 } else {
                     setFetchedData(cachedData);
+                    validateSelectedValue(cachedData);
                 }
             } else {
                 const cacheKey = `${propertyKey}_cache`;
@@ -236,6 +238,9 @@ const DynamicSelector = ({
 
                 if (cachedData) {
                     setFetchedData(cachedData);
+                    validateSelectedValue(cachedData);
+                } else {
+                    validateSelectedValue([]);
                 }
             }
         }
@@ -267,6 +272,7 @@ const DynamicSelector = ({
 
             if (cachedData) {
                 setFetchedData(cachedData);
+                validateSelectedValue(cachedData);
             } else {
                 handleFetch();
             }
@@ -276,6 +282,9 @@ const DynamicSelector = ({
 
     const handleSelectionChange = (selectedOption) => {
         const selectedValue = selectedOption?.value ?? selectedOption;
+
+        // Clear no access error since user is making a new valid selection
+        setNoAccessError(false);
 
         // Update the options based on the new selection
         const updatedOptions = {
@@ -304,29 +313,55 @@ const DynamicSelector = ({
             [`${propertyKey}_fx`]: newFxMode
         };
         optionsChanged(updatedOptions);
-
-        if (!newFxMode) {
-            // When switching back to dropdown, if the value is dynamic, we might want to clear it or keep it?
-            // Usually if it's dynamic code, it won't match a dropdown option.
-            // But let's leave it as is, the Select component handles unmatched values gracefully usually or shows empty.
-        }
     };
-
 
 
     // Get the current selected value to display
     const getCurrentValue = () => {
-        const currentValue = options[propertyKey]?.value ?? value;
-        if (!currentValue || !fetchedData.length) return null;
+        const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
+        if (!currentValue) return null;
 
-        const selectedOption = fetchedData.find(option => String(option.value) === String(currentValue));
-        return selectedOption || null;
+        // If we have fetched data, try to find the matching option
+        if (fetchedData.length) {
+            const selectedOption = fetchedData.find(option => String(option.value) === String(currentValue));
+            if (selectedOption) {
+                return selectedOption;
+            }
+        }
+
+        // Fallback: show the stored value even if not in fetchedData
+        // This handles the case where another user's selection is stored but not in current user's accessible options
+        return {
+            value: currentValue,
+            label: currentValue,
+        };
     };
 
+    // Validate if the selected value exists in user's accessible options
+    const validateSelectedValue = (cachedData) => {
+        const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
+
+        if (!currentValue) {
+            setNoAccessError(false);
+            return;
+        }
+
+        if (!cachedData?.length) {
+            setNoAccessError(true);
+            return;
+        }
+
+        const hasAccess = cachedData.some(option => String(option.value) === String(currentValue));
+        if (!hasAccess) {
+            setNoAccessError(true);
+        } else {
+            setNoAccessError(false);
+        }
+    };
 
     return (
         <div className="dynamic-selector-container">
-            <div className="d-flex align-items-center gap-2 mb-3">
+            <div className="d-flex align-items-center gap-2 mb-1">
                 <div className="flex-grow-1">
                     {isFxMode ? (
                         <CodeHinter
@@ -339,17 +374,22 @@ const DynamicSelector = ({
                             className="dynamic-selector-code-hinter"
                         />
                     ) : (
-                        <Select
-                            options={fetchedData}
-                            value={getCurrentValue()}
-                            onChange={handleSelectionChange}
-                            placeholder={`Select ${label ?? ''}`}
-                            isDisabled={disabled || (isDependentField && !depsReady) || fetchedData?.length === 0}
-                            isLoading={isLoading}
-                            useMenuPortal={disableMenuPortal ? false : !!queryName}
-                            styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
-                            useCustomStyles={!!computeSelectStyles}
-                        />
+                        <div style={{
+                            border: (error || noAccessError) ? '1px solid #E54D2E' : 'none',
+                            borderRadius: '6px'
+                        }}>
+                            <Select
+                                options={fetchedData}
+                                value={getCurrentValue()}
+                                onChange={handleSelectionChange}
+                                placeholder={`Select ${label ?? ''}`}
+                                isDisabled={disabled || (isDependentField && !depsReady)}
+                                isLoading={isLoading}
+                                useMenuPortal={disableMenuPortal ? false : !!queryName}
+                                styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                                useCustomStyles={!!computeSelectStyles}
+                            />
+                        </div>
                     )}
                 </div>
 
@@ -384,13 +424,21 @@ const DynamicSelector = ({
             </div>
 
             {error && (
-                <div className="alert alert-danger alert-sm mb-3">
-                    {error}
+                <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
+                    <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {noAccessError && !error && (
+                <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
+                    <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
+                    <span>You do not have access to the selected {label || 'item'}. Once switched to an available one, this selection will be lost.</span>
                 </div>
             )}
 
             {description && (
-                <small className="text-muted d-block mb-3">
+                <small className="text-muted d-block mt-2">
                     {description}
                 </small>
             )}
