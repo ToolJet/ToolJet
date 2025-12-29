@@ -157,45 +157,33 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
-# Set group write permissions for frontend build files to support RedHat arbitrary user assignment
-RUN chmod -R g+w /app/frontend/build
-
-
-# Create directory /home/appuser and set ownership to appuser
-RUN mkdir -p /home/appuser \
-    && chown -R appuser:0 /home/appuser \
-    && chmod g+s /home/appuser \
-    && chmod -R g=u /home/appuser \
-    && npm cache clean --force
-
-# Create rsyslog directory for audit logs with proper permissions
-RUN mkdir -p /home/appuser/rsyslog \
-    && chown -R appuser:0 /home/appuser/rsyslog \
-    && chmod g+s /home/appuser/rsyslog \
-    && chmod -R g=u /home/appuser/rsyslog
-
-# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/ \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/ \
-    && chmod g+s /tmp/.npm/npm-cache/ \
-    && chmod -R g=u /tmp/.npm/npm-cache \
-    && npm cache clean --force
+# Set group write permissions for frontend build files and create all directories with proper permissions for RedHat/OpenShift arbitrary UID support
+RUN chmod -R g+w /app/frontend/build && \
+    mkdir -p /home/appuser/rsyslog \
+             /tmp/.npm/npm-cache/_logs \
+             /var/lib/redis /var/log/redis /etc/redis && \
+    chown -R appuser:0 /home/appuser \
+                       /tmp/.npm/npm-cache \
+                       /var/lib/redis \
+                       /var/log/redis \
+                       /etc/redis && \
+    chmod g+s /home/appuser \
+              /home/appuser/rsyslog \
+              /tmp/.npm/npm-cache \
+              /tmp/.npm/npm-cache/_logs \
+              /var/lib/redis \
+              /var/log/redis \
+              /etc/redis && \
+    chmod -R g=u /home/appuser \
+                 /tmp/.npm/npm-cache \
+                 /var/lib/redis \
+                 /var/log/redis \
+                 /etc/redis && \
+    npm cache clean --force
 
 # Set npm cache directory globally
 RUN npm config set cache /tmp/.npm/npm-cache/ --global
 ENV npm_config_cache /tmp/.npm/npm-cache/
-
-# Create directory /tmp/.npm/npm-cache/_logs and set ownership to appuser
-RUN mkdir -p /tmp/.npm/npm-cache/_logs \
-    && chown -R appuser:0 /tmp/.npm/npm-cache/_logs \
-    && chmod g+s /tmp/.npm/npm-cache/_logs \
-    && chmod -R g=u /tmp/.npm/npm-cache/_logs
-
-# Create Redis data, log, and configuration directories
-RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
-    && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
-    && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
-    && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
 # Copy Redis configuration file for BullMQ optimization
 COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
