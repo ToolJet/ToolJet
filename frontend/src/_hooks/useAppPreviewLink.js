@@ -33,14 +33,15 @@ export function useAppPreviewLink() {
   const [appPreviewLink, setAppPreviewLink] = useState('');
 
   useEffect(() => {
-    // Check if license is invalid/expired (basic plan)
-    const isBasicPlan = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
-    // Don't add env param for free/basic plan, expired or invalid license
-    const shouldIncludeEnv = featureAccess?.multiEnvironment && !isBasicPlan;
+    // Only exclude env if license is explicitly expired or invalid
+    // If license status is undefined (not loaded yet), default to including env
+    const isBasicPlan =
+      featureAccess?.licenseStatus?.isExpired === true || featureAccess?.licenseStatus?.isLicenseValid === false;
 
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
-      ...(shouldIncludeEnv ? { env: selectedEnvironment?.name } : {}),
+      // Include env param unless license is invalid/expired
+      ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
     });
 
     const link = editingVersion

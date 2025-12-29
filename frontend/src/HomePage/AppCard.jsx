@@ -123,6 +123,24 @@ export default function AppCard({
     console.error('App icon not found', app.icon);
   }
 
+  // Calculate released app access before LaunchButton definition
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+  const hasOnlyReleasedAccess =
+    !environmentAccess.development &&
+    !environmentAccess.staging &&
+    !environmentAccess.production &&
+    environmentAccess.released;
+
+  // Check if user is a builder (has any editable apps)
+  const isBuilder = appPerms?.editable_apps_id?.length > 0 || appPerms?.is_all_editable;
+
+  // Check if user can access released apps
+  // End-users (non-builders) always have released app access
+  // Builders need explicit canAccessReleased permission
+  const canAccessReleased = !isBuilder || environmentAccess.released;
+
   const LaunchButton =
     appType === 'workflow' ? (
       <div>
@@ -149,6 +167,8 @@ export default function AppCard({
           message={
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+              : !canAccessReleased
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
               : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
@@ -156,12 +176,14 @@ export default function AppCard({
             type="button"
             className={cx(
               ` launch-button tj-text-xsm ${
-                app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
+                  ? 'tj-disabled-btn '
+                  : 'tj-tertiary-btn'
               }`
             )}
-            disabled={app?.current_version_id === null || app?.is_maintenance_on}
+            disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
-              if (app?.current_version_id) {
+              if (app?.current_version_id && canAccessReleased) {
                 window.open(
                   urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
                 );
@@ -175,7 +197,7 @@ export default function AppCard({
               name="rightarrrow"
               width="14"
               fill={
-                app?.current_version_id === null || app?.is_maintenance_on
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
                   ? '#FDFDFE'
@@ -204,9 +226,12 @@ export default function AppCard({
           const session = authenticationService.currentSessionValue;
           const appPerms = session?.app_group_permissions;
           const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-          const defaultEnv = getDefaultEnvironment(environmentAccess);
 
-          // Don't add env param for free/basic plan, expired or invalid license
+          // Check if user is a builder
+          const isBuilder = appPerms?.is_all_editable || appPerms?.editable_apps_id?.includes(app.id) || false;
+          // For preview, use first available environment from user's actual permissions
+          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+          // Don't add env param if license is invalid or multi-environment feature is not available
           const queryParams = props.basicPlan ? {} : { env: defaultEnv };
           const previewQuery = queryString.stringify(queryParams);
 
@@ -220,19 +245,6 @@ export default function AppCard({
       </button>
     </div>
   );
-
-  const session = authenticationService.currentSessionValue;
-  const appPerms = session?.app_group_permissions;
-  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-  const hasOnlyReleasedAccess =
-    !environmentAccess.development &&
-    !environmentAccess.staging &&
-    !environmentAccess.production &&
-    environmentAccess.released;
-
-  // Check if user has edit permission for this app
-  const hasEditPermission =
-    appPerms?.is_all_editable || (appPerms?.editable_apps_id && appPerms.editable_apps_id.includes(app.id));
 
   function AppNameDisplay({ tooltipRef }) {
     const AppName = (
@@ -342,7 +354,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && hasEditPermission && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

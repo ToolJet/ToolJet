@@ -18,6 +18,23 @@ export function defineAppAbility(
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
+  // Helper function to check if user can access released environment for an app
+  const canAccessReleasedEnv = (appId: string): boolean => {
+    if (!userAppPermissions) {
+      return false;
+    }
+
+    // Check app-specific override first
+    if (userAppPermissions.appSpecificEnvironmentAccess?.[appId]) {
+      const hasAccess = userAppPermissions.appSpecificEnvironmentAccess[appId].released;
+      return hasAccess;
+    }
+
+    // Fall back to default environment access
+    const hasAccess = userAppPermissions.environmentAccess?.released ?? false;
+    return hasAccess;
+  };
+
   // App listing is available to all
   can(FEATURE_KEY.GET, App);
 
@@ -52,19 +69,22 @@ export function defineAppAbility(
     isAllAppsEditable ||
     (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
   ) {
-    can(
-      [
-        FEATURE_KEY.UPDATE,
-        FEATURE_KEY.GET_ASSOCIATED_TABLES,
-        FEATURE_KEY.GET_ONE,
-        FEATURE_KEY.GET_BY_SLUG,
-        FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-        FEATURE_KEY.UPDATE_ICON,
-        FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        FEATURE_KEY.APP_PUBLIC_UPDATE,
-      ],
-      App
-    );
+    const permissions = [
+      FEATURE_KEY.UPDATE,
+      FEATURE_KEY.GET_ASSOCIATED_TABLES,
+      FEATURE_KEY.GET_ONE,
+      FEATURE_KEY.GET_BY_SLUG,
+      FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
+      FEATURE_KEY.UPDATE_ICON,
+      FEATURE_KEY.APP_PUBLIC_UPDATE,
+    ];
+
+    // Only grant released app access if user has canAccessReleased permission
+    if (appId && canAccessReleasedEnv(appId)) {
+      permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
+    }
+
+    can(permissions, App);
     if (isAllAppsDeletable) {
       // Gives delete permission only for editable apps
       can(FEATURE_KEY.DELETE, App);
@@ -76,15 +96,17 @@ export function defineAppAbility(
     isAllAppsViewable ||
     (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
   ) {
-    // add view permissions for all apps or specific app
-    can(
-      [
-        FEATURE_KEY.GET_ONE,
-        FEATURE_KEY.GET_BY_SLUG,
-        FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-      ],
-      App
-    );
+    // End-users (viewers without builder role) always have access to released apps
+    // Builders with view-only access to this app need canAccessReleased permission
+    const permissions = [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS];
+
+    // Use isBuilder flag from UserAllPermissions instead of checking editableAppsId
+    // isBuilder is true if user has the Builder role, regardless of which apps they can edit
+    if (!isBuilder || (appId && canAccessReleasedEnv(appId))) {
+      // Grant access if: user is NOT a builder (end-user) OR has released permission for this app
+      permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
+    }
+
+    can(permissions, App);
   }
 }

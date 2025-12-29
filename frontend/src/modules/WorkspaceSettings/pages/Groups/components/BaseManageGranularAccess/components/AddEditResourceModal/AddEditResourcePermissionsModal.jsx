@@ -23,6 +23,8 @@ function AddEditResourcePermissionsModal({
   addableApps,
   darkMode,
   groupName,
+  isBuilderLevel,
+  hasEndUsers,
   selectedEnvironments,
   setSelectedEnvironments,
 }) {
@@ -100,6 +102,8 @@ function AddEditResourcePermissionsModal({
             selectedEnvironments={selectedEnvironments}
             setSelectedEnvironments={setSelectedEnvironments}
             groupName={groupName}
+            isBuilderLevel={isBuilderLevel}
+            hasEndUsers={hasEndUsers}
           />
         );
 

@@ -93,16 +93,23 @@ export class AppsService implements IAppsService {
     });
   }
 
-  async validatePrivateAppAccess(app: App, ability: AppAbility, validateAppAccessDto: ValidateAppAccessDto) {
+  async validatePrivateAppAccess(
+    app: App,
+    ability: AppAbility,
+    user: User,
+    validateAppAccessDto: ValidateAppAccessDto
+  ) {
     const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
       slug: app.slug,
       type: app.type,
     };
-    // Enforce access type for viewer users: only access_type=view is allowed
+    // Check permissions
     const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+    // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
       // Viewer role: require access_type=view explicitly; reject edit or missing
       if (accessType?.toLowerCase() !== 'view') {
@@ -207,14 +214,7 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    // Released apps are accessible to all users who can view the app
-    // No environment permission check needed - everyone gets access to launched/released apps
-
-    const { id, slug } = app;
-    return {
-      slug: slug,
-      id: id,
-    };
+    return { id: app.id, slug: app.slug };
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {

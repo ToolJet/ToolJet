@@ -1258,6 +1258,10 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const hasMultiEnvironment = featureAccess?.multiEnvironment || false;
+    // Only exclude env param if license is invalid/expired (basic plan)
+    // If license is valid but multi-environment feature is not available, still include env param
+    const shouldExcludeEnvParam = invalidLicense;
     const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
@@ -1974,7 +1978,7 @@ class HomePageComponent extends React.Component {
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
-                    basicPlan={invalidLicense}
+                    basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
                   />

@@ -717,11 +717,11 @@ class BaseManageGranularAccess extends React.Component {
       resourceType,
       hasChanges,
     } = this.state;
-    console.log(granularPermissions, 'granularPermissions');
 
     const { addableDs = [], resourcesOptions } = this.props;
 
     const currentGroupPermission = this.props?.groupPermission;
+
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const addPermissionTooltipMessage = !newPermissionName
@@ -829,6 +829,8 @@ class BaseManageGranularAccess extends React.Component {
             }}
             darkMode={this.props.darkMode}
             groupName={currentGroupPermission.name}
+            isBuilderLevel={currentGroupPermission.isBuilderLevel}
+            hasEndUsers={this.props.hasEndUsers}
           />
         )}
         {this.state.showEmptyResourceContainer && !isLoading ? (

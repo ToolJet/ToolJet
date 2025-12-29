@@ -47,13 +47,20 @@ export const getAccessibleEnvironments = (environmentAccess) => {
 /**
  * Get the default environment for a user (first accessible environment based on priority)
  * @param {Object} environmentAccess - Object with environment access flags
+ * @param {boolean} isBuilder - Whether the user is a builder (has edit capabilities)
+ * @param {boolean} forceFirstAvailable - If true, return first available env instead of forcing development for builders
  * @returns {string} Default environment name or 'development' as fallback
  */
-export const getDefaultEnvironment = (environmentAccess) => {
-  if (!environmentAccess) return ENVIRONMENT_NAMES.DEVELOPMENT;
+export const getDefaultEnvironment = (environmentAccess, isBuilder = false, forceFirstAvailable = false) => {
+  if (!environmentAccess) {
+    return ENVIRONMENT_NAMES.DEVELOPMENT;
+  }
 
   const accessible = getAccessibleEnvironments(environmentAccess);
-  if (accessible.length === 0) return ENVIRONMENT_NAMES.DEVELOPMENT;
+
+  if (accessible.length === 0) {
+    return ENVIRONMENT_NAMES.DEVELOPMENT;
+  }
 
   // Return first environment based on priority order that user has access to
   for (const env of ENVIRONMENT_PRIORITY) {
@@ -94,11 +101,12 @@ export const hasEnvironmentAccess = (environmentAccess, environmentName) => {
  * fall back to default accessible environment
  * @param {Object} environmentAccess - Object with environment access flags
  * @param {string} requestedEnv - Requested environment name
+ * @param {boolean} isBuilder - Whether the user is a builder (has edit capabilities)
  * @returns {string} Safe environment name user has access to
  */
-export const getSafeEnvironment = (environmentAccess, requestedEnv) => {
+export const getSafeEnvironment = (environmentAccess, requestedEnv, isBuilder = false) => {
   if (!requestedEnv) {
-    return getDefaultEnvironment(environmentAccess);
+    return getDefaultEnvironment(environmentAccess, isBuilder);
   }
 
   // If user has access to requested environment, use it
@@ -107,7 +115,7 @@ export const getSafeEnvironment = (environmentAccess, requestedEnv) => {
   }
 
   // Otherwise, return default accessible environment
-  return getDefaultEnvironment(environmentAccess);
+  return getDefaultEnvironment(environmentAccess, isBuilder);
 };
 
 /**
@@ -117,6 +125,7 @@ export const getSafeEnvironment = (environmentAccess, requestedEnv) => {
  * 1. If appId is provided and has specific permissions, merge with default permissions
  * 2. User gets union of both default and app-specific permissions
  * 3. If neither exists, deny access
+ * 4. Builders always get development access as it's the entry point for new apps
  *
  * @param {Object} appGroupPermissions - App group permissions object
  * @param {string} appId - Optional app ID to check specific app permissions
@@ -131,6 +140,13 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
       released: false,
     };
   }
+
+  // Check if user is a builder (has any editable apps or is all editable)
+  const isBuilder =
+    appGroupPermissions.is_all_editable ||
+    appGroupPermissions.isAllEditable ||
+    (appGroupPermissions.editable_apps_id && appGroupPermissions.editable_apps_id.length > 0) ||
+    (appGroupPermissions.editableAppsId && appGroupPermissions.editableAppsId.length > 0);
 
   // Get default permissions from default groups
   const defaultAccess = appGroupPermissions.environment_access || appGroupPermissions.environmentAccess || {};
@@ -150,8 +166,8 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
         released: appSpecificAccess.released === true || defaultAccess.released === true,
       };
 
-      // If user has no access to dev/staging/production, grant development access as fallback
-      if (!result.development && !result.staging && !result.production) {
+      // If user has no access to any environment, grant development as fallback
+      if (!result.development && !result.staging && !result.production && !result.released) {
         result.development = true;
       }
 
@@ -167,8 +183,8 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
     released: defaultAccess.released === true,
   };
 
-  // If user has no access to dev/staging/production, grant development access as fallback
-  if (!result.development && !result.staging && !result.production) {
+  // If user has no access to any environment, grant development as fallback
+  if (!result.development && !result.staging && !result.production && !result.released) {
     result.development = true;
   }
 

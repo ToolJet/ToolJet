@@ -78,32 +78,42 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
         // For all users (edit and view), validate environment access and use safe environment
         // Even editors need to be restricted if they don't have permission to requested environment
         const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
-        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv);
+        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv, hasEditPermission);
 
         // Check if license is invalid/expired (basic plan) - from store
         const storeState = useStore.getState();
         const featureAccess = storeState?.license?.featureAccess;
-        const isBasicPlan = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+        // Only exclude env if license is explicitly expired or invalid
+        // If license status is undefined (not loaded yet), default to including env
+        const isBasicPlan =
+          featureAccess?.licenseStatus?.isExpired === true || featureAccess?.licenseStatus?.isLicenseValid === false;
 
         // Don't add env param for free/basic plan, expired or invalid license
+        // Also don't add env if it wasn't in the original URL (user didn't request specific env)
+        const shouldIncludeEnv = !isBasicPlan && (envFromUrl || environmentName);
+
         const queryParams = {
           // Keep other params but let env/version below override
           ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
           version: versionName || restQueryParams.version,
-          // Only add env if not basic plan
-          ...(!isBasicPlan && { env: effectiveEnv }),
+          // Only add env if license is valid AND env was explicitly requested in URL
+          ...(shouldIncludeEnv && effectiveEnv ? { env: effectiveEnv } : {}),
         };
 
-        const search = queryString.stringify(queryParams);
+        const newSearch = queryString.stringify(queryParams);
+        const currentSearch = location.search?.replace('?', '');
 
-        /* means. the User is trying to load old preview URL. Let's change these to query params */
-        navigate(
-          {
-            pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
-            search,
-          },
-          { replace: true, state: location?.state }
-        );
+        // Only navigate if the search params actually changed to avoid infinite loops
+        if (newSearch !== currentSearch) {
+          /* means. the User is trying to load old preview URL. Let's change these to query params */
+          navigate(
+            {
+              pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
+              search: newSearch,
+            },
+            { replace: true, state: location?.state }
+          );
+        }
       }
       // Include appId in extraProps so it's available to the app
       setExtraProps({ ...restDetails, id: appId });

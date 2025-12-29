@@ -40,7 +40,7 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
       SET 
         can_access_development = true,
         can_access_staging = true,
-        can_access_production = false,
+        can_access_production = true,
         can_access_released = true
       FROM granular_permissions gp
       JOIN permission_groups g ON gp.group_id = g.id

@@ -64,14 +64,29 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // Check environment access and fallback to safe environment if needed
       if (appId) {
         const environmentAccess = getEnvironmentAccessFromPermissions(app_group_permissions, appId);
-        const requestedEnvName = previewInitialEnvironmentId
+        let requestedEnvName = previewInitialEnvironmentId
           ? response.environments.find((env) => env.id === previewInitialEnvironmentId)?.name
           : selectedEnvironment?.name;
+
+        // Builders should start in development when they have access to it (entry point for all apps)
+        // If they don't have development access, fallback to their first available environment
+        if (hasEditPermission && !previewInitialEnvironmentId) {
+          const hasDevelopmentAccess = hasEnvironmentAccess(environmentAccess, 'development');
+          if (hasDevelopmentAccess && requestedEnvName !== 'development') {
+            requestedEnvName = 'development';
+            const developmentEnvironment = response.environments.find((env) => env.name === 'development');
+            if (developmentEnvironment) {
+              selectedEnvironment = developmentEnvironment;
+            }
+          } else if (!hasDevelopmentAccess) {
+            // Let it fallback to getSafeEnvironment logic below
+          }
+        }
 
         // Check if user has access to the requested environment
         if (requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
           // User doesn't have access, find the closest available environment
-          const safeEnvName = getSafeEnvironment(environmentAccess, requestedEnvName);
+          const safeEnvName = getSafeEnvironment(environmentAccess, requestedEnvName, hasEditPermission);
           const safeEnvironment = response.environments.find((env) => env.name === safeEnvName);
 
           if (safeEnvironment) {

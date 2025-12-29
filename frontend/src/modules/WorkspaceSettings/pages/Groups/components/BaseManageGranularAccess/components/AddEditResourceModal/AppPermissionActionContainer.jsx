@@ -12,6 +12,8 @@ function AppPermissionsActions({
   selectedEnvironments,
   setSelectedEnvironments,
   groupName,
+  isBuilderLevel,
+  hasEndUsers,
 }) {
   return (
     <>
@@ -119,6 +121,8 @@ function AppPermissionsActions({
           onChange={setSelectedEnvironments}
           allowSelectAll={true}
           groupName={groupName}
+          isBuilderLevel={isBuilderLevel}
+          hasEndUsers={hasEndUsers}
           data-cy="environment-select"
         />
       </div>

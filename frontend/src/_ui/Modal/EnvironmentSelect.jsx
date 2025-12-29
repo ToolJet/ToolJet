@@ -19,12 +19,15 @@ export function EnvironmentSelect(props) {
     const onMouseUp = () => setIsActive(false);
     const onMouseLeave = () => setIsActive(false);
 
-    const isEndUser = props.groupName?.toLowerCase() === 'end-user';
+    // Check if this is an end-user group (either default end-user or custom group with isBuilderLevel=false)
+    // For custom groups, also check if the group contains any end-user role users
+    const isEndUserGroup =
+      props.groupName?.toLowerCase() === 'end-user' || props.isBuilderLevel === false || props.hasEndUsers === true;
     const isBuilderOnlyEnvironment =
       rest.data.value === 'canAccessProduction' ||
       rest.data.value === 'canAccessDevelopment' ||
       rest.data.value === 'canAccessStaging';
-    const shouldDisable = isDisabled || (isEndUser && isBuilderOnlyEnvironment);
+    const shouldDisable = isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment);
 
     const style = {
       alignItems: 'center',
@@ -41,7 +44,7 @@ export function EnvironmentSelect(props) {
       style,
     };
 
-    if (isEndUser && isBuilderOnlyEnvironment) {
+    if (isEndUserGroup && isBuilderOnlyEnvironment) {
       return (
         <OverlayTrigger
           placement="left"
