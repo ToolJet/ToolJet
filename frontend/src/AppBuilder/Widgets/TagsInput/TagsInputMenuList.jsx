@@ -14,6 +14,8 @@ const TagsInputMenuList = ({
   optionsLoadingState,
   darkMode,
   allOptions = [],
+  tagBackgroundColor,
+  selectedTextColor,
   ...props
 }) => {
   const menuId = selectProps?.menuId;
@@ -74,6 +76,10 @@ const TagsInputMenuList = ({
                 </span>
                 <span
                   className="tags-input-new-tag-preview-text"
+                  style={{
+                    backgroundColor: tagBackgroundColor || undefined,
+                    color: selectedTextColor || undefined,
+                  }}
                 >
                   {inputValue}
                 </span>

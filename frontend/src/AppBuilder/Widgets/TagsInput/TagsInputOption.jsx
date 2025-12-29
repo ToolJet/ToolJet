@@ -5,7 +5,8 @@ import { CornerDownLeft } from 'lucide-react';
 const { Option } = components;
 
 const TagsInputOption = (props) => {
-  const { data } = props;
+  const { data, selectProps } = props;
+  const { tagBackgroundColor, selectedTextColor } = selectProps || {};
   // Check if this is a "create new" option from react-select/creatable
   const isCreateOption = data?.__isNew__;
 
@@ -25,7 +26,15 @@ const TagsInputOption = (props) => {
       >
         <div className="tags-input-new-tag-preview">
           <span className="add-text">add</span>
-          <span className="tags-input-new-tag-preview-text">{data.value}</span>
+          <span
+            className="tags-input-new-tag-preview-text"
+            style={{
+              backgroundColor: tagBackgroundColor || undefined,
+              color: selectedTextColor || undefined,
+            }}
+          >
+            {data.value}
+          </span>
         </div>
         <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
       </Option>
@@ -46,6 +55,10 @@ const TagsInputOption = (props) => {
     >
       <div
         className="tags-input-option-chip d-inline-flex"
+        style={{
+          backgroundColor: tagBackgroundColor || undefined,
+          color: selectedTextColor || undefined,
+        }}
       >
         {data.label}
       </div>
