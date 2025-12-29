@@ -58,7 +58,7 @@ else
   echo "Using external Redis at $REDIS_HOST:$REDIS_PORT."
 
   # Validate external Redis connection
-  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300; then
+  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300 -- echo "Redis is up"; then
     echo "Error: Unable to connect to Redis at $REDIS_HOST:$REDIS_PORT."
     exit 1
   fi
