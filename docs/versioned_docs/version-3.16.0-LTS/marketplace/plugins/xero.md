@@ -16,7 +16,7 @@ The Xero Plugin uses OAuth 2.0 authentication and allows you to interact with mu
 - Copy the generated Client ID and Client Secret.
 - In your Xero app settings, add the Redirect URI provided by ToolJet.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-clientId-secret.png" alt="Fetching Creds from Xero Developer Portal" />
 
 
 ## Connection
@@ -33,7 +33,7 @@ You can modify the scopes based on your use case.
 
 **⚠️ Ensure the scopes entered here exactly match the scopes configured in your Xero app.**
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-connection.png" alt="Configuring Xero in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-connection.png" alt="Configuring Xero in ToolJet" />
 
 - **Redirect URI**: ToolJet automatically generates a Redirect URI.
 
@@ -48,12 +48,31 @@ http://localhost:8082/oauth2/authorize
 
 This redirect URI is required for completing the OAuth authentication flow.
 
+## Selecting Tenant ID 
+
+The Xero Plugin in ToolJet provides a **Tenant selection mechanism** within the query builder to identify the Xero organization against which API operations are executed.
+
+Each Xero API request must be associated with a **Tenant ID**, which represents a specific Xero organization (tenant) that the authenticated user has access to.
+
+
+## Get Tenants
+
+The **Get Tenants** option allows ToolJet to dynamically fetch available Xero tenants after a successful and secure OAuth connection.
+
+
+## Manual Tenant ID Entry
+
+ToolJet also supports **manual Tenant ID input** for advanced use cases using the `fx` Expression Editor
+
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/get-tenant-xero.png" alt="Configuring Xero in ToolJet" />
+
 
 ## Supported Operations
 
 Xero in ToolJet supports the following operations:
 
-### Accounts 
+### ACCOUNTS
 Manage and retrieve the chart of accounts used for categorizing financial transactions in Xero.
 
 | Method | API Endpoint | Description |
@@ -74,7 +93,7 @@ Manage and retrieve the chart of accounts used for categorizing financial transa
 | POST   | `/Accounts/{AccountID}/Attachments/{FileName}` | Updates an attachment by filename. |
 | PUT    | `/Accounts/{AccountID}/Attachments/{FileName}` | Creates an attachment on a specific account. |
 
-### Contacts
+### CONTACTS
 Create, read, update, and manage business contact records like customers and suppliers.
 
 | Method | API Endpoint | Description |
@@ -460,10 +479,10 @@ Access payroll features for UK-based businesses, like employee and pay run data.
 
 #### EMPLOYEEID
 
-| Method | API Endpoint | Description |
-|--------|--------------|--------------|
-| GET | `/Employees/{EmployeeID}` | Retrieves specific employees' by using unique employee id. |
-| PUT | `/Employees/{EmployeeID}` | Updates a specific employee's detail. |
+| Method |            API Endpoint                        | Description                                                                   |
+|--------|------------------------------------------------|-------------------------------------------------------------------------------|
+| GET    | `/Employees/{EmployeeID}`                      | Retrieves specific employees' by using unique employee id. |
+| PUT | `/Employees/{EmployeeID}`                         | Updates a specific employee's detail. |
 | POST| `/Employees/{EmployeeID}/Employment` |  Creates employment detail for a specific employee using a unique employee ID. |
 | GET | `/Employees/{EmployeeID}/Tax` | Retrieves tax records for a specific employee using a unique employee ID. |
 | GET | ` /Employees/{EmployeeID}/ukopeningbalances` | Retrieves a specific employee's opening balances using a unique employee ID. |
@@ -704,29 +723,28 @@ Manage payroll functions for New Zealand businesses with the NZ payroll API.
 ### PROJECTS
 Track project time, costs, and profitability (for service and project-based businesses).
 
-| Method | API Endpoint                                           | Description                                                                                     |
-|--------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| GET    | `/Projects`                                            | Retrieves all projects.                                                                         |
-| POST   | `/Projects`                                            | Creates one or more new projects.                                                               |
-| GET    | `/ProjectsUsers`                                       | Retrieves a list of all project users.                                                          |
+| Method | API Endpoint  | Description                                                                                     |
+|--------|---------------|-------------------------------------------------------------------------------------------------|
+| GET    | `/Projects`   | Retrieves all projects.                                                                         |
+| POST   | `/Projects`   | Creates one or more new projects.                                                               |
+| GET    | `/ProjectsUsers` | Retrieves a list of all project users.                                                       |
 
 #### PROJECTID
 
-| Method | API Endpoint                                           | Description                                                                             |
-|--------|--------------------------------------------------------|--------------------------------------------------------------------------------------- -|
-
-| GET    | `/Projects/{projectId}`                                | Retrieves a single project.                                                             |
-| PUT    | `/Projects/{projectId}`                                | Updates a specific project.                                                             |
-| GET    | `/Projects/{projectId}/Tasks`                          | Retrieves all project tasks.                                                            |
-| POST   | `/Projects/{projectId}/Tasks`                          | Allows you to create a task.                                                            |
-| GET    | `/Projects/{projectId}/Tasks/{taskId}`                 | Retrieves a single project task.                                                        |
-| PUT    | `/Projects/{projectId}/Tasks/{taskId}`                 | Allows you to update a task.                                                            |
-| DELETE | `/Projects/{projectId}/Tasks/{taskId}`                 | Allows you to delete a task.                                                            |
-| GET    | `/Projects/{projectId}/Time`                           | Retrieves all time entries associated with a specific project.                          |
-| POST   | `/Projects/{projectId}/Time`                           | Creates a time entry for a specific project.                                            |
-| GET    | `/Projects/{projectId}/Time/{timeEntryId}`             | Retrieves a single time entry for a specific project.                                   |
-| PUT    | `/Projects/{projectId}/Time/{timeEntryId}`             | Updates a time entry for a specific project.                                            |
-| DELETE | `/Projects/{projectId}/Time/{timeEntryId}`             | Deletes a time entry for a specific project.                                            |
+| Method | API Endpoint                     | Description                 |
+|--------|----------------------------------|-----------------------------|
+| GET    | `/Projects/{projectId}`          | Retrieves a project.        |
+| PUT    | `/Projects/{projectId}` | Updates a specific project. |
+| GET    | `/Projects/{projectId}/Tasks` | Retrieves all project tasks. |
+| POST   | `/Projects/{projectId}/Tasks` | Allows you to create a task. |
+| GET    | `/Projects/{projectId}/Tasks/{taskId}` | Retrieves a single project task. |
+| PUT    | `/Projects/{projectId}/Tasks/{taskId}` | Allows you to update a task. |
+| DELETE | `/Projects/{projectId}/Tasks/{taskId}` | Allows you to delete a task. |
+| GET    | `/Projects/{projectId}/Time`  | Retrieves all time entries associated with a specific project. |
+| POST   | `/Projects/{projectId}/Time`  | Creates a time entry for a specific project. |
+| GET    | `/Projects/{projectId}/Time/{timeEntryId}` | Retrieves a single time entry for a specific project. |
+| PUT    | `/Projects/{projectId}/Time/{timeEntryId}` | Updates a time entry for a specific project. |
+| DELETE | `/Projects/{projectId}/Time/{timeEntryId}` | Deletes a time entry for a specific project. |
 
 
 ### FILES
@@ -763,13 +781,90 @@ Upload, retrieve, and attach documents like receipts and invoices to records in 
 
 #### FOLDERID
 
-| Method | API Endpoint                     | Description                 |
-|--------|----------------------------------|-----------------------------|
-| GET    | `/Associations/{ObjectId}`                                 | Retrieves an association object using a unique object ID.  |
+| Method | API Endpoint                     | Description                                                |
+|--------|----------------------------------|------------------------------------------------------------|
+| GET    | `/Associations/{ObjectId}`       | Retrieves an association object using a unique object ID.  |
 
 
 #### FOLDERID
 
-| Method | API Endpoint                     | Description                 |
-|--------|----------------------------------|-----------------------------|
-| GET    | `/Associations/Count`                                      | Retrieves a count of associations for a list of objects. |
+| Method | API Endpoint                     | Description                                              |
+|--------|----------------------------------|----------------------------------------------------------|
+| GET    | `/Associations/Count`            | Retrieves a count of associations for a list of objects. |
+
+
+## Example Queries
+
+### Accounts 
+
+Get Accounts fetches all accounts associated with the selected Xero tenant. 
+
+Operation : GET ` /Accounts`
+
+**Optional Parameters**
+- where
+- order
+
+<details id="tj-dropdown">
+<summary> **Query Response Example** </summary>
+```
+{
+  "Id": "05263684-a3fe-48bf-ad06-4fa1835f9df1",
+  "Status": "OK",
+  "ProviderName": "test",
+  "DateTimeUTC": "/Date(1767007119760)/",
+  "Accounts": [
+    {
+      "AccountID": "d7c6f5e4",
+      "Name": "Sales",
+      "Type": "REVENUE",
+      "Code": "200",
+      "Status": "ACTIVE",
+      "TaxType": "OUTPUT"
+    }
+  ]
+}
+
+```
+</details>
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-eg-query-getacc.png" alt="Example query in Xero" />
+
+### Contacts
+
+Get Contacts fetches contacts associated with the selected Xero tenant.
+
+Operation : GET `/Contacts`
+
+**Optional Parameters**
+- where  
+- order  
+- IDs  
+- page  
+- includeArchived  
+- summaryOnly  
+- searchTerm  
+- pageSize  
+
+
+<details id="tj-dropdown">
+<summary>**Query Response Example**</summary>
+```
+{
+  "Id": "3411c4a6-3db0-4a32-a4f7-8720c476aaab",
+  "Status": "OK",
+  "Contacts": [
+    {
+      "ContactID": "c1a2b3c4",
+      "Name": "ABC Traders",
+      "EmailAddress": "info@abctraders.com",
+      "ContactStatus": "ACTIVE",
+      "IsCustomer": true,
+      "IsSupplier": false
+    }
+  ]
+}
+```
+</details>
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-eg-query-getcontacts.png" alt="Example query in Xero" />
