@@ -5,8 +5,6 @@ title: HTML Viewer
 
 **HTML** component can be used to create your own HTML-CSS layout.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Properties
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
@@ -26,62 +24,49 @@ title: HTML Viewer
     </main>
 </body>
 </html>
-
 ```
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setRawHTML( )  | Sets the Raw HTML property of the component.     | `components.html1.rawHTML` |
+| setVisibility( )| Sets the visibility of the component.     | `components.html1.setVisibility(false)` |
+| setLoading( )   | Sets the loading state of the component.  | `components.html1.setLoading(true)` |
+| setDisable( )   | Disables the component.                   | `components.html1.setDisable(true)` |
 
 ## Exposed Variables
 
-There are currently no exposed variables for the component.
+| Variable | Description | How To Access |
+|:--------|:-----------|:------------|
+| isLoading | Indicates if the component is loading. | `{{components.html1.isLoading}}` |
+| isVisible | Indicates if the component is visible. | `{{components.html1.isVisible}}` |
+| isDisabled | Indicates if the component is disabled. | `{{components.html1.isDisabled}}` |
 
-</div>
+## Additional Actions
 
-<div style={{paddingTop:'24px'}}>
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with the isLoading property to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip  | Provides additional information on hover. Set a display string.  | String |
 
-## General
+## Devices
 
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Layout
-
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:--------------| :-------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
----
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>      |
-|:---------- | :------------- |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
-
-</div>

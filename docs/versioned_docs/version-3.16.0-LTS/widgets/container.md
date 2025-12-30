@@ -50,6 +50,13 @@ The following actions of the component can be controlled using the component-spe
 
 ## Styles
 
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the header.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
 ### Container
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
@@ -58,12 +65,6 @@ The following actions of the component can be controlled using the component-spe
 | Border color | Sets the color of the border. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border radius | Sets the radius of the component. | Enter a number or click on **fx** and input a number programmatically using code.   |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
-
-### Header
-
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
-|:----------------|:------------|:--------------|
-| Background | Sets the background color of the header.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 
 

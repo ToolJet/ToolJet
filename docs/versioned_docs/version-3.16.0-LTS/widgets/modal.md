@@ -11,12 +11,12 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div>                                                                                                |
-| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Header                                         | Enable or Disable header section in the modal.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.                        |
-| Footer                                         | Enable or Disable footer section in the modal.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.                        |
-| Width                                          | Select the width for modal component.             | Select from dropdown - small, medium, large, fullscreen or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Height                                         | Specifies the height of the modal.                | Enter the height in pixel or dynamically configure the value by clicking on **fx** and entering a logical expression.                               |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"200px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Header | Enable or Disable header section in the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Footer | Enable or Disable footer section in the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Width | Select the width for modal component. | Select from dropdown - small, medium, large, fullscreen or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Height | Specifies the height of the modal. | Enter the height in pixel or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Events
 
@@ -63,18 +63,51 @@ The following actions of the component can be controlled using the component-spe
 
 ## Additional Actions
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                            | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
-| :------------------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable modal window                         | Disables the modal pop-up.                                                   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Close on escape key                          | Closes the modal when escape key is pressed.                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Close on clicking outside                    | Closes the modal when clicked outside the modal.                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Hide close button                            | Hides close button from the modal header.                                    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover.                                    | String (e.g., `Enter your password here.` ).                                                                                 |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the modal's height based on its content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable modal window | Disables the modal pop-up. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Close on escape key | Closes the modal when escape key is pressed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Close on clicking outside | Closes the modal when clicked outside the modal. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Hide close button | Hides close button from the modal header. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. | String (e.g., `Enter your password here.` ). |
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>                                                                              |
-| :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Trigger Button
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div>                  | <div style={{ width:"250px"}}> Configuration Options </div>                                      |
+| :--------------------------------------------- | :----------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| Icon                                           | Add an icon to the modal trigger button.                           | Choose from the icon library.                                                                    |
+| Icon color                                     | Select the icon color.                                             | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
+| Icon position                                  | Decide whether the icon should be positioned to the left or right. | Choose from the position switch.                                                                 |
+| Background                                     | Sets the background color of the trigger button.                   | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
+| Text                                           | Sets the text color of the trigger button.                         | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the header.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the container.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+### Footer
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background | Sets the background color of the footer.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
