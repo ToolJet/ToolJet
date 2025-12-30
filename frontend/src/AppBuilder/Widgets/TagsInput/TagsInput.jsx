@@ -393,15 +393,17 @@ export const TagsInput = ({
       if (Array.isArray(tags)) {
         const newSelected = [...selected];
         tags.forEach((tag) => {
+          // Support both value and label extraction from object
           const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
-          if (
-            allOptions.some((option) => option.value === tagValue) &&
-            !selected.some((option) => option.value === tagValue)
-          ) {
-            const optionsToAdd = allOptions.filter(
-              (option) => option.value === tagValue && !selected.some((s) => s.value === tagValue)
-            );
-            newSelected.push(...optionsToAdd);
+          const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
+
+          // Find matching option by value first, then by label as fallback
+          const matchingOption = allOptions.find(
+            (option) => option.value === tagValue || option.label === tagLabel
+          );
+
+          if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
+            newSelected.push(matchingOption);
           }
         });
         setInputValues(newSelected);
@@ -410,8 +412,17 @@ export const TagsInput = ({
 
     setExposedVariable('deselectTags', async function (tags) {
       if (Array.isArray(tags)) {
-        const tagValues = tags.map((tag) => (typeof tag === 'object' && tag?.value ? tag.value : tag));
-        const newSelected = selected.filter((option) => !tagValues.includes(option.value));
+        const tagIdentifiers = tags.map((tag) => ({
+          value: typeof tag === 'object' && tag?.value ? tag.value : tag,
+          label: typeof tag === 'object' && tag?.label ? tag.label : tag,
+        }));
+        // Filter out options that match by value OR label
+        const newSelected = selected.filter(
+          (option) =>
+            !tagIdentifiers.some(
+              (identifier) => option.value === identifier.value || option.label === identifier.label
+            )
+        );
         setInputValues(newSelected);
       }
     });
