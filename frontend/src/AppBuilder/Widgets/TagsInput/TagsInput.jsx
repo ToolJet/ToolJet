@@ -564,6 +564,7 @@ export const TagsInput = ({
       opacity: state.isDisabled ? 0.3 : 1,
       cursor: 'pointer',
       padding: '8px 12px',
+      borderRadius:'8px',
       '&:active': {
         backgroundColor: 'var(--interactive-overlays-fill-pressed)',
       },
@@ -577,7 +578,7 @@ export const TagsInput = ({
       flexDirection: 'column',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
-      padding:"0",
+      padding:"4px",
     }),
     menu: (provided) => ({
       ...provided,
@@ -695,6 +696,7 @@ export const TagsInput = ({
                     tagBackgroundColor={tagBackgroundColor}
                     selectedTextColor={selectedTextColor}
                     allOptions={allOptions}
+                    onCreateTag={handleCreate}
                   />
                 ),
                 Option: TagsInputOption,

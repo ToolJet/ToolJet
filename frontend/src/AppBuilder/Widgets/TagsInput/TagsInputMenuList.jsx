@@ -16,6 +16,7 @@ const TagsInputMenuList = ({
   allOptions = [],
   tagBackgroundColor,
   selectedTextColor,
+  onCreateTag,
   ...props
 }) => {
   const menuId = selectProps?.menuId;
@@ -36,10 +37,18 @@ const TagsInputMenuList = ({
   const hasCreateOption = childrenArray.some((child) => child?.props?.data?.__isNew__);
   const hasRegularOptions = childrenArray.some((child) => !child?.props?.data?.__isNew__);
 
+  // Handler for creating tag from footer
+  const handleCreateFromFooter = () => {
+    if (inputValue?.trim() && onCreateTag) {
+      onCreateTag(inputValue);
+    }
+  };
+
   return (
     <div
       id={`tags-input-menu-${menuId}`}
       className={cx('tags-input-menu-list', { 'theme-dark dark-theme': darkMode })}
+      onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
     >
@@ -63,9 +72,26 @@ const TagsInputMenuList = ({
           {showCreateFooter && (!hasCreateOption || !hasRegularOptions) && (
             <div
               className="tags-input-create-footer"
-              onClick={(e) => {
+              role="button"
+              tabIndex={0}
+              onMouseDown={(e) => {
+                // Use mousedown to fire BEFORE react-select's blur handling
+                // preventDefault stops the subsequent click event from firing
+                e.preventDefault();
                 e.stopPropagation();
-                selectProps?.onCreateOption?.(inputValue);
+                handleCreateFromFooter(e);
+              }}
+              onTouchEnd={(e) => {
+                // Touch devices need separate handling
+                e.preventDefault();
+                e.stopPropagation();
+                handleCreateFromFooter(e);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCreateFromFooter(e);
+                }
               }}
             >
               <div className="tags-input-new-tag-preview">

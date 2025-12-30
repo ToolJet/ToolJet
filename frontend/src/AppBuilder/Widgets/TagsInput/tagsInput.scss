@@ -90,12 +90,18 @@
     cursor: pointer;
     background-color: var(--surfaces-surface-01);
     gap: 8px;
+    user-select: none;
 
     &:hover {
       background-color: var(--interactive-overlays-fill-hover);
     }
     &:active {
       background-color: var(--interactive-overlays-fill-pressed);
+    }
+
+    // Ensure child elements don't block click events
+    > * {
+      pointer-events: none;
     }
   }
   .tags-input-new-tag-preview{
