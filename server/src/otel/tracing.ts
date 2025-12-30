@@ -80,7 +80,10 @@ function createSDK(): NodeSDK {
     instrumentations: [
       new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
       new HttpInstrumentation({
-        ignoreIncomingRequestHook: (request: any) => request.url === '/api/health',
+        ignoreIncomingRequestHook: (request: any) => {
+          const url = request.url || '';
+          return url.includes('/api/health') || url === '/api/health';
+        },
       }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
