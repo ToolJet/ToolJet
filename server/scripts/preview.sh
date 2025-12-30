@@ -28,7 +28,7 @@ until redis-cli ping > /dev/null 2>&1; do
   echo "Redis is unavailable - waiting..."
   sleep 1
 done
-echo "✓ Redis is ready! checking server changes..."
+echo "✓ Redis is ready!"
 
 # Export the PORT variable to be used by the application
 export PORT=${PORT:-80}
