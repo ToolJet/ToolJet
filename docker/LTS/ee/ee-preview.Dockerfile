@@ -75,7 +75,6 @@ WORKDIR /build
 COPY --from=source-fetcher /source/package.json ./package.json
 
 # CRITICAL: Copy plugins artifacts - frontend depends on @tooljet/plugins/client
-# This also forces sequential execution after plugins-builder
 COPY --from=plugins-builder /build/plugins ./plugins
 
 # Copy frontend directory
@@ -90,7 +89,7 @@ RUN npm --prefix frontend prune --production
 # STAGE 4: SERVER BUILDER
 # Purpose: Build server independently
 # Cache: Only invalidates when server/ directory changes
-# DEPENDENCY: Requires plugins artifacts (forces sequential after plugins)
+# DEPENDENCY: Requires plugins artifacts (server imports @tooljet/plugins)
 # =============================================================================
 FROM node:22.15.1 AS server-builder
 
@@ -104,7 +103,6 @@ WORKDIR /build
 COPY --from=source-fetcher /source/package.json ./package.json
 
 # CRITICAL: Copy plugins artifacts - server depends on @tooljet/plugins
-# This also forces sequential execution after plugins-builder
 COPY --from=plugins-builder /build/plugins ./plugins
 
 # Copy server directory
@@ -138,8 +136,8 @@ ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install additional system dependencies
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+# Install additional system dependencies including Redis
+RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -184,24 +182,18 @@ WORKDIR /app
 USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor --fix-missing
+RUN apt update && apt -y install postgresql-13 postgresql-client-13 --fix-missing
 
-# Explicitly create PG main directory with correct ownership
-RUN mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
+# Create required directories with proper ownership
+RUN mkdir -p /var/lib/postgresql/13/main /var/run/postgresql /var/log/supervisor /var/lib/redis /var/log/redis && \
+    chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
+    chown -R redis:redis /var/lib/redis /var/log/redis && \
+    chmod 0700 /var/lib/postgresql/13/main
 
-RUN mkdir -p /var/log/supervisor /var/run/postgresql && \
-    chown -R postgres:postgres /var/run/postgresql /var/log/supervisor
+# NOTE: PostgreSQL initialization (initdb) is handled by preview.sh
+# Do NOT run initdb here - preview.sh checks and initializes if needed
 
-# Remove existing data and create directory with proper ownership
-RUN rm -rf /var/lib/postgresql/13/main && \
-    mkdir -p /var/lib/postgresql/13/main && \
-    chown -R postgres:postgres /var/lib/postgresql
-
-# Initialize PostgreSQL
-RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
-
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+# Configure Supervisor to manage PostgREST and ToolJet
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
