@@ -146,7 +146,7 @@ export class DataQueriesController implements IDataQueriesController {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
   }
 
-  @InitFeature(FEATURE_KEY.RUN_VIEWER)
+  @InitFeature(FEATURE_KEY.LIST_TABLES)
   @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
   @Post(':dataSourceId/list-tables')
   async listTables(

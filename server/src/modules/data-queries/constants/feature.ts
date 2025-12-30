@@ -21,5 +21,6 @@ export const FEATURES: FeaturesConfig = {
       auditLogsKey: 'DATA_QUERY_RUN',
       shouldNotSkipPublicApp: true,
     },
+     [FEATURE_KEY.LIST_TABLES]: {},
   },
 };
