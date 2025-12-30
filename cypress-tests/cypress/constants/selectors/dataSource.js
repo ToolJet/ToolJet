@@ -110,7 +110,7 @@ export const dataSourceSelector = {
     return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
   },
   labelFieldName: (fieldName) => {
-    return `[data-cy="${cyParamName(fieldName)}-field-label"]`;
+    return `[data-cy="label-${cyParamName(fieldName)}"]`;
   },
   dataSourceNameButton: (dataSourceName) => {
     return `[data-cy="${cyParamName(dataSourceName)}-button"]`;
