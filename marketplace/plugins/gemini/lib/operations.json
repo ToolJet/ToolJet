@@ -477,9 +477,9 @@
           "mandatory": false,
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
-        "prompt": {
-          "label": "Prompt",
-          "key": "prompt",
+        "history": {
+          "label": "History",
+          "key": "history",
           "type": "codehinter",
           "description": "Enter your prompt",
           "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -514,9 +514,9 @@
           "mandatory": false,
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
-        "prompt": {
-          "label": "Prompt",
-          "key": "prompt",
+        "history": {
+          "label": "History",
+          "key": "history",
           "type": "codehinter",
           "description": "Enter your prompt",
           "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -551,9 +551,9 @@
           "mandatory": false,
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
-        "prompt": {
-          "label": "Prompt",
-          "key": "prompt",
+        "history": {
+          "label": "History",
+          "key": "history",
           "type": "codehinter",
           "description": "Enter your prompt",
           "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -588,9 +588,9 @@
           "mandatory": false,
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
-        "prompt": {
-          "label": "Prompt",
-          "key": "prompt",
+        "history": {
+          "label": "History",
+          "key": "history",
           "type": "codehinter",
           "description": "Enter your prompt",
           "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -625,9 +625,9 @@
         "mandatory": false,
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
-      "prompt": {
-        "label": "Prompt",
-        "key": "prompt",
+      "history": {
+        "label": "History",
+        "key": "history",
         "type": "codehinter",
         "description": "Enter your prompt",
         "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -662,9 +662,9 @@
         "mandatory": false,
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
-      "prompt": {
-        "label": "Prompt",
-        "key": "prompt",
+      "history": {
+        "label": "History",
+        "key": "history",
         "type": "codehinter",
         "description": "Enter your prompt",
         "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -699,9 +699,9 @@
         "mandatory": false,
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
-      "prompt": {
-        "label": "Prompt",
-        "key": "prompt",
+      "history": {
+        "label": "History",
+        "key": "history",
         "type": "codehinter",
         "description": "Enter your prompt",
         "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -736,9 +736,9 @@
       "mandatory": false,
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
-    "prompt": {
-      "label": "Prompt",
-      "key": "prompt",
+    "history": {
+      "label": "History",
+      "key": "history",
       "type": "codehinter",
       "description": "Enter your prompt",
       "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -773,9 +773,9 @@
       "mandatory": false,
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
-    "prompt": {
-      "label": "Prompt",
-      "key": "prompt",
+    "history": {
+      "label": "History",
+      "key": "history",
       "type": "codehinter",
       "description": "Enter your prompt",
       "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -810,9 +810,9 @@
       "mandatory": false,
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
-    "prompt": {
-      "label": "Prompt",
-      "key": "prompt",
+    "history": {
+      "label": "History",
+      "key": "history",
       "type": "codehinter",
       "description": "Enter your prompt",
       "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
@@ -847,9 +847,9 @@
         "mandatory": false,
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
-      "prompt": {
-        "label": "Prompt",
-        "key": "prompt",
+      "history": {
+        "label": "History",
+        "key": "history",
         "type": "codehinter",
         "description": "Enter your prompt",
         "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
