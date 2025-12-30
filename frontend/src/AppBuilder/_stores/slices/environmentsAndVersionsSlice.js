@@ -31,7 +31,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   init: async (editingVersionId, envFromQueryParams) => {
     try {
-      const response = await appEnvironmentService.init(editingVersionId);
+      const response = await appEnvironmentService.init(editingVersionId, envFromQueryParams);
 
       const previewInitialEnvironmentId = !envFromQueryParams
         ? null
