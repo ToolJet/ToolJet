@@ -11,13 +11,13 @@ export const handleAppAccess = async (componentType, slug, version_id, environme
   const isOldLocalPreview = version_id && environment_id ? true : false;
   const queryParams = getQueryParams();
   const hasQueryParams = queryParams['env'] || queryParams['version'];
-  const isLocalPreview = componentType === 'editor' || hasQueryParams || isOldLocalPreview;
+  const isLocalPreview = hasQueryParams || isOldLocalPreview;
 
-  const previewQueryParams = isLocalPreview ? getPreviewQueryParams(slug) : {};
+  const previewQueryParams = isLocalPreview || componentType === 'editor' ? getPreviewQueryParams(slug) : {};
   const apiQueryParams = {
     ...previewQueryParams,
     ...(isOldLocalPreview && { version_id, environment_id }),
-    access_type: isLocalPreview ? 'view' : 'edit',
+    access_type: componentType === 'editor' ? 'edit' : 'view',
   };
   const query = queryString.stringify(previewQueryParams);
   const redirectPath = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
