@@ -7,14 +7,15 @@
 # =============================================================================
 FROM node:22.15.1 AS source-fetcher
 
-# Use same heap as working file (4GB)
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 WORKDIR /source
 
-# Set GitHub token and branch as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
+# CRITICAL: This forces cache invalidation when Render checks out a new commit
+# Render passes the commit SHA, so this changes on every new commit
+ARG RENDER_GIT_COMMIT
 
 # Configure Git
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
@@ -24,6 +25,10 @@ RUN git config --global http.postBuffer 524288000
 # Clone and checkout repository
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
+
+# This layer will be invalidated when RENDER_GIT_COMMIT changes
+RUN echo "Building commit: ${RENDER_GIT_COMMIT}"
+
 RUN git submodule update --init --recursive
 
 # Checkout same branch in submodules if exists, otherwise fallback to lts-3.16
