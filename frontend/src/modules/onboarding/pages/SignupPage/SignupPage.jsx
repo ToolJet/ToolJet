@@ -72,16 +72,7 @@ const SignupPage = ({ configs, organizationId }) => {
           const { organizationInviteUrl } = response;
           if (organizationInviteUrl) onInvitedUserSignUpSuccess(response, navigate);
           setSigningUserInfo({ email, name });
-
-          // Show email verification flow only for cloud edition.
-          if (edition === 'cloud') {
-            setSignupSuccess(true);
-          } else {
-            // For non-cloud editions, skip email verification screen and redirect to login.
-            const loginRedirect = redirectTo ? `?redirectTo=${redirectTo}` : '';
-            navigate(`/login${loginRedirect}`, { replace: true });
-          }
-
+          setSignupSuccess(true);
           onSuccess();
         })
         .catch((e) => {
