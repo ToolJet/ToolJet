@@ -89,6 +89,7 @@ export const TagsInput = ({
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
   // Dynamic height support - only enabled in view mode (same as TextArea)
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
@@ -213,6 +214,7 @@ export const TagsInput = ({
     if (e.key === 'Escape') {
       setIsMenuOpen(false);
       setInputValue('');
+      setFocusedOptionIndex(-1);
       return;
     }
 
@@ -223,14 +225,35 @@ export const TagsInput = ({
 
     // Arrow keys for navigation - only open menu if search is enabled
     if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
-      if (enableSearch && !isMenuOpen) {
-        setIsMenuOpen(true);
-      }
       if (!enableSearch) {
         e.preventDefault(); // Prevent menu from opening when search is disabled
         return;
       }
-      return; // react-select handles navigation
+
+      // If menu is not open, open it first without navigating
+      if (!isMenuOpen) {
+        setIsMenuOpen(true);
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault(); // Prevent react-select from handling navigation
+
+      // Track focused option index
+      if (e.key === 'ArrowDown') {
+        setFocusedOptionIndex((prev) => {
+          const maxIndex = filteredOptions.length - 1;
+          if (maxIndex < 0) return -1; // No options
+          if (prev < maxIndex) return prev + 1;
+          return prev; // Stay at last option
+        });
+      } else if (e.key === 'ArrowUp') {
+        setFocusedOptionIndex((prev) => {
+          if (prev <= 0) return -1; // Go back to "no selection" state
+          return prev - 1;
+        });
+      }
+      return;
     }
 
     // Enter key - select highlighted option OR create new tag
@@ -251,16 +274,44 @@ export const TagsInput = ({
           // Create new tag if allowed
           handleCreate(inputValue);
         }
+        setFocusedOptionIndex(-1);
         return;
       }
 
-      // When search is enabled, create new tag if no match and allowNewTags
-      if (allowNewTags && inputValue.trim() && !matchingOption) {
+      // If user has navigated to an option (focusedOptionIndex >= 0), select it directly
+      if (isMenuOpen && focusedOptionIndex >= 0 && focusedOptionIndex < filteredOptions.length) {
         e.preventDefault();
-        handleCreate(inputValue);
+        const optionToSelect = filteredOptions[focusedOptionIndex];
+        if (optionToSelect && !optionToSelect.isDisabled) {
+          const newSelected = [...selected, optionToSelect];
+          setInputValues(newSelected);
+          setInputValue('');
+          fireEvent('onTagAdded');
+        }
+        setFocusedOptionIndex(-1);
         return;
       }
-      // Otherwise let react-select handle the selection
+
+      // No option focused - create new tag if allowed and there's input
+      if (allowNewTags && inputValue.trim()) {
+        e.preventDefault();
+        handleCreate(inputValue);
+        setFocusedOptionIndex(-1);
+        return;
+      }
+
+      // If there's an exact match, select it
+      if (matchingOption) {
+        e.preventDefault();
+        const newSelected = [...selected, matchingOption];
+        setInputValues(newSelected);
+        setInputValue('');
+        fireEvent('onTagAdded');
+        setFocusedOptionIndex(-1);
+        return;
+      }
+
+      setFocusedOptionIndex(-1);
       return;
     }
 
@@ -439,6 +490,7 @@ export const TagsInput = ({
       !menu.contains(event.target)
     ) {
       setIsMenuOpen(false);
+      setFocusedOptionIndex(-1);
       fireEvent('onBlur');
       setInputValue('');
     }
@@ -555,23 +607,31 @@ export const TagsInput = ({
       ...provided,
       color: 'var(--text-placeholder)',
     }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused
-        ? 'var(--interactive-overlays-fill-hover)'
-        : 'var(--surfaces-surface-01)',
-      color: 'var(--text-primary)',
-      opacity: state.isDisabled ? 0.3 : 1,
-      cursor: 'pointer',
-      padding: '8px 12px',
-      borderRadius:'8px',
-      '&:active': {
-        backgroundColor: 'var(--interactive-overlays-fill-pressed)',
-      },
-      '&:hover': {
-        backgroundColor: 'var(--interactive-overlays-fill-hover)',
-      },
-    }),
+    option: (provided, state) => {
+      // Use our controlled focus state instead of react-select's auto-focus
+      const { selectProps, data } = state;
+      const options = selectProps?.options || [];
+      const optionIndex = options.findIndex((opt) => opt.value === data?.value);
+      const isControlledFocused = selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
+
+      return {
+        ...provided,
+        backgroundColor: isControlledFocused
+          ? 'var(--interactive-overlays-fill-hover)'
+          : 'var(--surfaces-surface-01)',
+        color: 'var(--text-primary)',
+        opacity: state.isDisabled ? 0.3 : 1,
+        cursor: 'pointer',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        '&:active': {
+          backgroundColor: 'var(--interactive-overlays-fill-pressed)',
+        },
+        '&:hover': {
+          backgroundColor: 'var(--interactive-overlays-fill-hover)',
+        },
+      };
+    },
     menuList: (provided) => ({
       ...provided,
       display: 'flex',
@@ -592,10 +652,12 @@ export const TagsInput = ({
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
-  // Filter options to exclude already selected
+  // Filter options to exclude already selected and match input text
   const filteredOptions = useMemo(() => {
-    return allOptions.filter((opt) => !selected.some((s) => s.value === opt.value));
-  }, [allOptions, selected]);
+    return allOptions
+      .filter((opt) => !selected.some((s) => s.value === opt.value))
+      .filter((opt) => !inputValue || opt.label?.includes(inputValue));
+  }, [allOptions, selected, inputValue]);
 
   return (
     <>
@@ -671,6 +733,8 @@ export const TagsInput = ({
               onInputChange={(value, action) => {
                 if (action.action === 'input-change') {
                   setInputValue(value);
+                  // Reset focused option when user types - they're now searching, not navigating
+                  setFocusedOptionIndex(-1);
                 }
               }}
               menuIsOpen={enableSearch && isMenuOpen}
@@ -717,6 +781,7 @@ export const TagsInput = ({
               allowNewTags={allowNewTags}
               tagBackgroundColor={tagBackgroundColor}
               selectedTextColor={selectedTextColor}
+              focusedOptionIndex={focusedOptionIndex}
             />
           </div>
         </div>
