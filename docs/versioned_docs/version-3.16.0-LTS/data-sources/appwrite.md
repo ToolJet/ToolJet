@@ -26,7 +26,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-cnctn.png" alt="Appwrite intro"/>
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-connection.png" alt="Appwrite intro"/>
 
 </div>
 
@@ -43,7 +43,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-querying.png" alt="Appwrite intro"/>
 
 </div>
 
