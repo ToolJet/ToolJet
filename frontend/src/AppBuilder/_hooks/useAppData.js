@@ -527,12 +527,10 @@ const useAppData = (
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
+          // Use versionId from URL if available (preview mode), otherwise use editing version
+          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+          useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed

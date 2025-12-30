@@ -187,7 +187,9 @@ export function EnvironmentSelect(props) {
       onChange={(selected) => {
         const isCurrentSelectAll = props.value.find((env) => env?.isAllField)?.isAllField;
         const isSelectAllPresentInSelection = selected.find((env) => env?.isAllField)?.isAllField;
-        const isEndUser = props.groupName?.toLowerCase() === 'end-user';
+        // Check if this is an end-user group (matches the same logic used for disabling options)
+        const isEndUserGroup =
+          props.groupName?.toLowerCase() === 'end-user' || props.isBuilderLevel === false || props.hasEndUsers === true;
 
         if (
           props.allowSelectAll &&
@@ -199,7 +201,8 @@ export function EnvironmentSelect(props) {
           if (props.value.find((env) => env?.isAllField)?.isAllField)
             props.onChange(selected.filter((env) => !env?.isAllField));
 
-          if (isEndUser) {
+          // For end-user groups, only select released environment when "All environments" is clicked
+          if (isEndUserGroup) {
             const releasedEnvironmentOnly = props.options.filter((env) => env.value === 'canAccessReleased');
             return props.onChange([...releasedEnvironmentOnly, props.allOption]);
           }
