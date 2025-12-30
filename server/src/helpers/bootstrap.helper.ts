@@ -84,30 +84,41 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 }
 
 /**
- * Handles OTEL initialization for Enterprise Edition
+ * Applies OTEL middleware to Express app
+ * Note: The OTEL SDK is started at import time in src/otel/tracing.ts
+ * This function only applies the middleware after the app is created
  */
 export async function initializeOtel(app: NestExpressApplication, logger: any) {
   // Check if OTEL is enabled
   if (process.env.ENABLE_OTEL !== 'true') {
-    logger.log('OTEL disabled (ENABLE_OTEL not set to true)');
+    logger.log('⏭️  OTEL disabled (ENABLE_OTEL not set to true)');
     return;
   }
 
   try {
-    logger.log('Initializing OpenTelemetry...');
-
     const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
-    const importPath = await getImportPath(false, tooljetEdition);
 
-    // Dynamically import the edition-specific listener
-    const { otelListener } = await import(`${importPath}/otel/listener`);
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
+      logger.log('⏭️  OTEL skipped - not Enterprise Edition');
+      return;
+    }
 
-    // Initialize the listener (CE will no-op, EE will set up OTEL)
-    await otelListener.initialize(app);
+    logger.log('🔭 Applying OpenTelemetry middleware...');
 
-    logger.log('✅ OpenTelemetry initialization completed');
+    // Import otelMiddleware from tracing.ts (use relative path for runtime compatibility)
+    const { otelMiddleware } = await import('../otel/tracing');
+
+    // Apply OTEL middleware to Express app
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use(otelMiddleware);
+
+    logger.log('✅ OpenTelemetry middleware applied successfully');
+    logger.log('   - SDK: Already started at import time');
+    logger.log('   - Tracing: Enabled');
+    logger.log('   - Metrics: Enabled');
+    logger.log('   - Auto-instrumentation: Active');
   } catch (error) {
-    logger.error('❌ Failed to initialize OpenTelemetry:', error);
+    logger.error('❌ Failed to apply OpenTelemetry middleware:', error);
     // Don't throw - observability should never break the app
   }
 }

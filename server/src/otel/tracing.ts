@@ -581,3 +581,74 @@ export const decrementActiveSessions = (attributes: {
     activeSessionsCounter.add(-1, metricAttributes);
   }
 };
+
+// ============================================================================
+// AUTO-START: Initialize OTEL SDK immediately when this module is imported
+// This MUST run before any other modules (http, pg, express, etc.) are loaded
+// ============================================================================
+
+// Load .env file before checking ENABLE_OTEL
+// ConfigModule hasn't loaded yet, so we need to manually load .env
+// Use the same pattern as the rest of the codebase (from database-config-utils.ts)
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
+
+function loadEnvVars() {
+  const envFilePath = process.env.NODE_ENV === 'test'
+    ? path.resolve(process.cwd(), '../.env.test')
+    : path.resolve(process.cwd(), '../.env');
+
+  if (fs.existsSync(envFilePath)) {
+    const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
+    // Merge with existing process.env (existing env vars take precedence)
+    Object.assign(process.env, envConfig, process.env);
+  }
+}
+
+// Load environment variables
+loadEnvVars();
+
+console.log('[OTEL] Auto-start code reached');
+console.log('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
+
+let isInitialized = false;
+
+if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
+  console.log('[OTEL] Condition met, checking edition...');
+
+  try {
+    // Check edition - only EE supports OTEL
+    // Use relative paths instead of TypeScript aliases for runtime compatibility
+    const { getTooljetEdition } = require('../helpers/utils.helper');
+    const { TOOLJET_EDITIONS } = require('../modules/app/constants');
+
+    const tooljetEdition = getTooljetEdition();
+    console.log('[OTEL] Edition:', tooljetEdition);
+
+    if (tooljetEdition === TOOLJET_EDITIONS.EE) {
+      console.log('[OTEL] Starting SDK at import time (before any modules load)...');
+
+      // Start OTEL SDK - this registers instrumentations immediately
+      // The patches are applied synchronously when instrumentations are registered
+      startOpenTelemetry()
+        .then(() => {
+          isInitialized = true;
+          console.log('[OTEL] ✅ SDK started successfully');
+        })
+        .catch((err) => {
+          console.error('[OTEL] ❌ Failed to start SDK:', err);
+          // Log the error but don't throw - observability should never break the app
+        });
+
+      // Mark as initializing to prevent double initialization
+      isInitialized = true;
+    } else {
+      console.log('[OTEL] ⏭️  Skipping OTEL - not Enterprise Edition');
+    }
+  } catch (error) {
+    console.error('[OTEL] Error during auto-start:', error);
+  }
+} else {
+  console.log('[OTEL] Condition NOT met. ENABLE_OTEL:', process.env.ENABLE_OTEL, 'isInitialized:', isInitialized);
+}
