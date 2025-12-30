@@ -317,9 +317,9 @@ export const TagsInput = ({
     if (isInitialRender.current) return;
     setExposedVariable(
       'tags',
-      Array.isArray(allOptions) && allOptions?.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selectOptions) ? selectOptions.map(({ label, value }) => ({ label, value })) : []
     );
-  }, [allOptions]);
+  }, [selectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
