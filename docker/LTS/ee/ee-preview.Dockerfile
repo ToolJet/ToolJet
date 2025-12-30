@@ -2,8 +2,7 @@
 
 # =============================================================================
 # STAGE 1: SOURCE FETCHER
-# Purpose: Clone repository and checkout branch
-# Cache: Invalidated on every new commit (expected)
+# Purpose: Clone repository and detect what changed
 # =============================================================================
 FROM node:22.15.1 AS source-fetcher
 
@@ -13,25 +12,18 @@ WORKDIR /source
 
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
-# CRITICAL: This forces cache invalidation when Render checks out a new commit
-# Render passes the commit SHA, so this changes on every new commit
-ARG RENDER_GIT_COMMIT
 
 # Configure Git
-RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-RUN git config --global http.version HTTP/1.1
-RUN git config --global http.postBuffer 524288000
+RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/" && \
+    git config --global http.version HTTP/1.1 && \
+    git config --global http.postBuffer 524288000
 
 # Clone and checkout repository
-RUN git clone https://github.com/ToolJet/ToolJet.git .
-RUN git checkout ${BRANCH_NAME}
+RUN git clone https://github.com/ToolJet/ToolJet.git . && \
+    git checkout ${BRANCH_NAME} && \
+    git submodule update --init --recursive
 
-# This layer will be invalidated when RENDER_GIT_COMMIT changes
-RUN echo "Building commit: ${RENDER_GIT_COMMIT}"
-
-RUN git submodule update --init --recursive
-
-# Checkout same branch in submodules if exists, otherwise fallback to lts-3.16
+# Checkout same branch in submodules
 RUN git submodule foreach " \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
@@ -41,10 +33,16 @@ RUN git submodule foreach " \
     git checkout lts-3.16; \
   fi"
 
+# Create hash markers for cache invalidation
+RUN mkdir -p /cache-markers && \
+    git rev-parse HEAD:plugins > /cache-markers/plugins.hash && \
+    git rev-parse HEAD:frontend > /cache-markers/frontend.hash && \
+    git rev-parse HEAD:server > /cache-markers/server.hash
+
 # =============================================================================
 # STAGE 2: PLUGINS BUILDER
 # Purpose: Build plugins independently
-# Cache: Only invalidates when plugins/ directory changes
+# Cache: Only invalidates when plugins/ hash changes
 # =============================================================================
 FROM node:22.15.1 AS plugins-builder
 
@@ -54,20 +52,22 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy only plugins directory and necessary package files
+# Copy hash marker first - this invalidates cache when plugins change
+COPY --from=source-fetcher /cache-markers/plugins.hash /tmp/plugins.hash
+
+# Now copy actual files
 COPY --from=source-fetcher /source/plugins ./plugins
 COPY --from=source-fetcher /source/package.json ./package.json
 
 # Build plugins
-RUN npm --prefix plugins install
-RUN npm --prefix plugins run build
-RUN npm --prefix plugins prune --production
+RUN npm --prefix plugins install && \
+    npm --prefix plugins run build && \
+    npm --prefix plugins prune --production
 
 # =============================================================================
 # STAGE 3: FRONTEND BUILDER
 # Purpose: Build frontend independently
-# Cache: Only invalidates when frontend/ directory changes
-# DEPENDENCY: Requires plugins artifacts (frontend imports @tooljet/plugins/client)
+# Cache: Only invalidates when frontend/ hash changes
 # =============================================================================
 FROM node:22.15.1 AS frontend-builder
 
@@ -76,25 +76,22 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy package.json first
+# Copy hash marker first - this invalidates cache when frontend changes
+COPY --from=source-fetcher /cache-markers/frontend.hash /tmp/frontend.hash
+
 COPY --from=source-fetcher /source/package.json ./package.json
-
-# CRITICAL: Copy plugins artifacts - frontend depends on @tooljet/plugins/client
 COPY --from=plugins-builder /build/plugins ./plugins
-
-# Copy frontend directory
 COPY --from=source-fetcher /source/frontend ./frontend
 
 # Build frontend
-RUN npm --prefix frontend install
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
+RUN npm --prefix frontend install && \
+    npm --prefix frontend run build --production && \
+    npm --prefix frontend prune --production
 
 # =============================================================================
 # STAGE 4: SERVER BUILDER
 # Purpose: Build server independently
-# Cache: Only invalidates when server/ directory changes
-# DEPENDENCY: Requires plugins artifacts (server imports @tooljet/plugins)
+# Cache: Only invalidates when server/ hash changes
 # =============================================================================
 FROM node:22.15.1 AS server-builder
 
@@ -104,75 +101,63 @@ ENV TOOLJET_EDITION=ee
 
 WORKDIR /build
 
-# Copy package.json first
+# Copy hash marker first - this invalidates cache when server changes
+COPY --from=source-fetcher /cache-markers/server.hash /tmp/server.hash
+
 COPY --from=source-fetcher /source/package.json ./package.json
-
-# CRITICAL: Copy plugins artifacts - server depends on @tooljet/plugins
 COPY --from=plugins-builder /build/plugins ./plugins
-
-# Copy server directory
 COPY --from=source-fetcher /source/server ./server
 
-# Install global dependencies needed for server build
-RUN npm install -g @nestjs/cli
-RUN npm install -g copyfiles
-
 # Build server
-RUN npm --prefix server install
-RUN npm --prefix server run build
+RUN npm install -g @nestjs/cli copyfiles && \
+    npm --prefix server install && \
+    npm --prefix server run build
 
 # =============================================================================
 # STAGE 5: FINAL RUNTIME IMAGE
-# Purpose: Assemble final image with all built artifacts
 # =============================================================================
 FROM node:22.15.1-bullseye
 
-# Install system dependencies
-RUN apt-get update -yq \
-    && apt-get install curl gnupg zip -yq \
-    && apt-get install -yq build-essential \
-    && apt-get clean -y
+# Install ALL system dependencies in ONE layer
+RUN apt-get update -yq && \
+    apt-get install -y curl gnupg zip build-essential freetds-dev libaio1 wget supervisor redis-server && \
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt-get install -y postgresql-13 postgresql-client-13 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Copy postgrest executable
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
-# Set environment variables
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Install additional system dependencies including Redis
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
-
-# Install Instantclient Basic Light Oracle and Dependencies
+# Install Oracle Instant Client
 WORKDIR /opt/oracle
-RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip && \
-    wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
-    unzip instantclient-basiclite-linuxx64.zip && rm -f instantclient-basiclite-linuxx64.zip && \
-    unzip instantclient-basiclite-linux.x64-11.2.0.4.0.zip && rm -f instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
-    cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
-    cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
-    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+RUN wget -q https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linuxx64.zip \
+         https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
+    unzip -q instantclient-basiclite-linuxx64.zip && \
+    unzip -q instantclient-basiclite-linux.x64-11.2.0.4.0.zip && \
+    rm -f *.zip && \
+    cd instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    cd ../instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
+    echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && \
+    ldconfig
 
-# Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
 WORKDIR /
 
-# Copy npm scripts
+# Copy all artifacts
 COPY --from=source-fetcher /source/package.json ./app/package.json
-
-# Copy plugins artifacts from builder stage
 COPY --from=plugins-builder /build/plugins/dist ./app/plugins/dist
 COPY --from=plugins-builder /build/plugins/client.js ./app/plugins/client.js
 COPY --from=plugins-builder /build/plugins/node_modules ./app/plugins/node_modules
 COPY --from=plugins-builder /build/plugins/packages/common ./app/plugins/packages/common
 COPY --from=plugins-builder /build/plugins/package.json ./app/plugins/package.json
-
-# Copy frontend artifacts from builder stage
 COPY --from=frontend-builder /build/frontend/build ./app/frontend/build
-
-# Copy server artifacts from builder stage
 COPY --from=server-builder /build/server/package.json ./app/server/package.json
 COPY --from=source-fetcher /source/server/.version ./app/server/.version
 COPY --from=source-fetcher /source/server/ee/keys ./app/server/ee/keys
@@ -183,42 +168,15 @@ COPY --from=server-builder /build/server/dist ./app/server/dist
 
 WORKDIR /app
 
-# Install PostgreSQL
+# Combined setup
 USER root
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
-RUN apt update && apt -y install postgresql-13 postgresql-client-13 --fix-missing
-
-# Create required directories with proper ownership
 RUN mkdir -p /var/lib/postgresql/13/main /var/run/postgresql /var/log/supervisor /var/lib/redis /var/log/redis && \
     chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql /var/log/supervisor && \
     chown -R redis:redis /var/lib/redis /var/log/redis && \
-    chmod 0700 /var/lib/postgresql/13/main
+    chmod 0700 /var/lib/postgresql/13/main && \
+    echo "[supervisord]\nnodaemon=true\nuser=root\n\n[program:postgrest]\ncommand=/bin/postgrest\nautostart=true\nautorestart=true\n\n[program:tooljet]\nuser=root\ncommand=/bin/bash -c '/app/server/scripts/boot.sh'\nautostart=true\nautorestart=true\nstderr_logfile=/dev/stdout\nstderr_logfile_maxbytes=0\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf && \
+    chmod +x ./server/scripts/preview.sh
 
-# NOTE: PostgreSQL initialization (initdb) is handled by preview.sh
-# Do NOT run initdb here - preview.sh checks and initializes if needed
-
-# Configure Supervisor to manage PostgREST and ToolJet
-RUN echo "[supervisord] \n" \
-    "nodaemon=true \n" \
-    "user=root \n" \
-    "\n" \
-    "[program:postgrest] \n" \
-    "command=/bin/postgrest \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "\n" \
-    "[program:tooljet] \n" \
-    "user=root \n" \
-    "command=/bin/bash -c '/app/server/scripts/boot.sh' \n" \
-    "autostart=true \n" \
-    "autorestart=true \n" \
-    "stderr_logfile=/dev/stdout \n" \
-    "stderr_logfile_maxbytes=0 \n" \
-    "stdout_logfile=/dev/stdout \n" \
-    "stdout_logfile_maxbytes=0 \n" | sed 's/ //' > /etc/supervisor/conf.d/supervisord.conf
-
-# ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
     NODE_ENV=production \
@@ -242,7 +200,4 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-RUN chmod +x ./server/scripts/preview.sh
-
-# Set the entrypoint
 ENTRYPOINT ["./server/scripts/preview.sh"]
