@@ -371,6 +371,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       let selectedVersion = get().selectedVersion; // Initialize with current version
       let selectedEnvironment = get().selectedEnvironment; // Initialize with current environment
       let selectedVersionDef;
+      let appVersionEnvironment = environment;
       if (get().selectedEnvironment.id !== environmentId) {
         selectedEnvironment = environment;
         let optionsToUpdate = {
@@ -386,40 +387,35 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // Compare against the environment where the selected version currently lives
         const versionIsAvailableInEnvironment = environment?.priority <= get().appVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
+          // Current version doesn't exist in target environment - fetch a version that does
           const { appId } = useStore.getState().appStore.modules.canvas.app;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
-            // Preserve the currently selected version when switching environments (e.g., version=v5)
             editorVersionId: get().selectedVersion?.id,
           });
           selectedVersion = response.editorVersion;
-          const appVersionEnvironment = get().environments.find(
-            (environment) => environment.id === selectedVersion.currentEnvironmentId
-          );
+          appVersionEnvironment = get().environments.find((env) => env.id === selectedVersion.currentEnvironmentId);
 
-          //TODO: need to check if this is needed
-          // selectedVersionDef = await appVersionService.getAppVersionData(appId, selectedVersion.id);
-
+          // Set version from response and environment to the one passed in function (clicked environment)
           optionsToUpdate['selectedVersion'] = selectedVersion;
           optionsToUpdate['currentVersionId'] = selectedVersion.id;
           optionsToUpdate['appVersionEnvironment'] = appVersionEnvironment;
           optionsToUpdate['versionsPromotedToEnvironment'] = [selectedVersion];
-
-          // Update selectedEnvironment to match the actual environment of the loaded version
-          // This handles cases where the requested environment doesn't have the selected version
-          // and a different version from a different environment is loaded
-          selectedEnvironment = appVersionEnvironment;
-          optionsToUpdate['selectedEnvironment'] = appVersionEnvironment;
+          optionsToUpdate['selectedEnvironment'] = environment; // Use clicked environment, not the version's environment
 
           const { shouldRenderPromoteButton, shouldRenderReleaseButton } = calculatePromoteAndReleaseButtonVisibility(
             selectedVersion.id,
-            appVersionEnvironment,
+            environment, // Use clicked environment for button visibility
             useStore.getState().releasedVersionId,
             useStore.getState()?.license?.featureAccess
           );
           optionsToUpdate['shouldRenderPromoteButton'] = shouldRenderPromoteButton;
           optionsToUpdate['shouldRenderReleaseButton'] = shouldRenderReleaseButton;
+        } else {
+          // Version is available in target environment - just switch environment, keep same version
+          optionsToUpdate['selectedEnvironment'] = environment;
+          optionsToUpdate['appVersionEnvironment'] = environment;
         }
         set((state) => ({ ...state, ...optionsToUpdate }));
       }
