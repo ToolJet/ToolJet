@@ -65,7 +65,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _markedAsDefault = getResolvedValue(
-    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value
+    component?.component?.definition?.properties[isMultiSelect || isTagsInput ? 'values' : 'value']?.value
   );
 
   const [options, setOptions] = useState([]);
@@ -187,7 +187,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleMarkedAsDefaultChange = (value, index) => {
     const isMarkedAsDefault = getResolvedValue(value);
-    if (isMultiSelect) {
+    if (isMultiSelect || isTagsInput) {
       const _value = options[index]?.value;
       let _markedAsDefault = [];
       if (isMarkedAsDefault && !markedAsDefault.includes(_value)) {
@@ -321,7 +321,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
+              initialValue={isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
