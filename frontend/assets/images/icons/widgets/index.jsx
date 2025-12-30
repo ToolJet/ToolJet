@@ -63,6 +63,7 @@ import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
 import CurrencyInput from './currencyinput.jsx';
 import PopoverMenu from './popovermenu.jsx';
+import TagsInput from './tagsinput.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -188,8 +189,9 @@ const WidgetIcon = (props) => {
     case 'tabs':
       return <Tabs {...props} />;
     case 'tags':
-    case 'tagsinput':
       return <Tags {...props} />;
+    case 'tagsinput':
+      return <TagsInput {...props} />;
     case 'text':
       return <Text {...props} />;
     case 'textarea':
