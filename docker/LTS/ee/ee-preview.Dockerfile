@@ -24,7 +24,6 @@ RUN git config --global http.postBuffer 524288000
 # Clone and checkout repository
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 RUN git checkout ${BRANCH_NAME}
-RUN git pull origin ${BRANCH_NAME}
 RUN git submodule update --init --recursive
 
 # Checkout same branch in submodules if exists, otherwise fallback to lts-3.16
