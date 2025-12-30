@@ -310,23 +310,6 @@ export const tagsInputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
       accordian: 'field',
     },
-    icon: {
-      type: 'icon',
-      displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
-      accordian: 'field',
-      visibility: false,
-    },
-    iconColor: {
-      type: 'colorSwatches',
-      displayName: 'Icon color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-icon)',
-      },
-      accordian: 'field',
-      showLabel: false,
-    },
     fieldBorderRadius: {
       type: 'input',
       displayName: 'Border radius',
@@ -430,9 +413,6 @@ export const tagsInputConfig = {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       widthType: { value: 'ofComponent' },
-      icon: { value: 'IconHome2' },
-      iconVisibility: { value: false },
-      iconColor: { value: 'var(--cc-default-icon)' },
     },
   },
 };
