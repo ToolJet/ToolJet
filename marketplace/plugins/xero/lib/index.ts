@@ -355,6 +355,15 @@ export default class Xero implements QueryService {
         data: result,
       };
     } catch (error: any) {
+      // Handle OAuth unauthorized errors - triggers token refresh flow
+      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
+        throw new OAuthUnauthorizedClientError(
+          'OAuth token expired or invalid',
+          error.message,
+          error
+        );
+      }
+
       let parsed;
       try {
         parsed = error?.response?.body ? JSON.parse(error.response.body) : error;
