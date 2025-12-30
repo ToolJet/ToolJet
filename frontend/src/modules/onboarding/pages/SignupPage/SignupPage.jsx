@@ -1,4 +1,3 @@
-/root/ToolJet/frontend/src/modules/onboarding/pages/SignupPage/SignupPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
