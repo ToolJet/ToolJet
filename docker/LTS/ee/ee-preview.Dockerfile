@@ -83,7 +83,7 @@ COPY --from=source-fetcher /source/frontend ./frontend
 
 # Build frontend
 RUN npm --prefix frontend install
-RUN npm --prefix frontend run build 
+RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 # =============================================================================
