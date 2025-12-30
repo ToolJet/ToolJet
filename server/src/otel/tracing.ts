@@ -618,7 +618,7 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
   console.log('[OTEL] Condition met, checking edition...');
 
   try {
-    // Check edition - only EE supports OTEL
+    // Check edition - EE and Cloud support OTEL
     // Use relative paths instead of TypeScript aliases for runtime compatibility
     const { getTooljetEdition } = require('../helpers/utils.helper');
     const { TOOLJET_EDITIONS } = require('../modules/app/constants');
@@ -626,7 +626,7 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
     const tooljetEdition = getTooljetEdition();
     console.log('[OTEL] Edition:', tooljetEdition);
 
-    if (tooljetEdition === TOOLJET_EDITIONS.EE) {
+    if (tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud) {
       console.log('[OTEL] Starting SDK at import time (before any modules load)...');
 
       // Start OTEL SDK - this registers instrumentations immediately
@@ -644,7 +644,7 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
       // Mark as initializing to prevent double initialization
       isInitialized = true;
     } else {
-      console.log('[OTEL] ⏭️  Skipping OTEL - not Enterprise Edition');
+      console.log('[OTEL] ⏭️  Skipping OTEL - not Enterprise or Cloud edition');
     }
   } catch (error) {
     console.error('[OTEL] Error during auto-start:', error);

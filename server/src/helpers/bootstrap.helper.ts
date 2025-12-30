@@ -98,8 +98,8 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
   try {
     const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
 
-    if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
-      logger.log('⏭️  OTEL skipped - not Enterprise Edition');
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE && tooljetEdition !== TOOLJET_EDITIONS.Cloud) {
+      logger.log('⏭️  OTEL skipped - not Enterprise or Cloud edition');
       return;
     }
 
