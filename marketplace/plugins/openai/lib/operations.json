@@ -31,6 +31,7 @@
 					{ "value": "gpt-4o", "name": "GPT-4.0" },
 					{ "value": "gpt-4o-mini", "name": "GPT-4.0 mini" },
 					{ "value": "gpt-4-turbo", "name": "GPT-4 Turbo" },
+					{ "value": "gpt-5-nano", "name": "GPT-5 Nano" },
 					{ "value": "gpt-3.5-turbo-0125", "name": "GPT-3.5 Turbo" }
 				]
 			},
