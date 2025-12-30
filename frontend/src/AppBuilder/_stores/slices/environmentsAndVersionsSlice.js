@@ -68,9 +68,23 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           ? response.environments.find((env) => env.id === previewInitialEnvironmentId)?.name
           : selectedEnvironment?.name;
 
+        // Check if user is the owner of the app
+        const currentUserId = currentSession?.current_user?.id;
+        const appOwnerId = response.editorVersion?.app?.user_id || response.editorVersion?.app?.userId;
+        const isOwner = currentUserId && appOwnerId && currentUserId === appOwnerId;
+
+        // If user is the owner (created the app), force development environment
+        // Owners always get development access even if permissions haven't refreshed yet
+        if (isOwner && !previewInitialEnvironmentId) {
+          requestedEnvName = 'development';
+          const developmentEnvironment = response.environments.find((env) => env.name === 'development');
+          if (developmentEnvironment) {
+            selectedEnvironment = developmentEnvironment;
+          }
+        }
         // Builders should start in development when they have access to it (entry point for all apps)
         // If they don't have development access, fallback to their first available environment
-        if (hasEditPermission && !previewInitialEnvironmentId) {
+        else if (hasEditPermission && !previewInitialEnvironmentId) {
           const hasDevelopmentAccess = hasEnvironmentAccess(environmentAccess, 'development');
           if (hasDevelopmentAccess && requestedEnvName !== 'development') {
             requestedEnvName = 'development';
@@ -84,7 +98,10 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         }
 
         // Check if user has access to the requested environment
-        if (requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
+        // Skip this check if user is owner requesting development
+        const skipAccessCheck = isOwner && requestedEnvName === 'development';
+
+        if (!skipAccessCheck && requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
           // User doesn't have access, find the closest available environment
           const safeEnvName = getSafeEnvironment(environmentAccess, requestedEnvName, hasEditPermission);
           const safeEnvironment = response.environments.find((env) => env.name === safeEnvName);
@@ -351,8 +368,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   environmentChangedAction: async (environment, _onSuccess, _onFailure) => {
     try {
       const environmentId = environment.id;
-      let selectedVersion;
-      let selectedEnvironment;
+      let selectedVersion = get().selectedVersion; // Initialize with current version
+      let selectedEnvironment = get().selectedEnvironment; // Initialize with current environment
       let selectedVersionDef;
       if (get().selectedEnvironment.id !== environmentId) {
         selectedEnvironment = environment;
@@ -388,9 +405,16 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           optionsToUpdate['currentVersionId'] = selectedVersion.id;
           optionsToUpdate['appVersionEnvironment'] = appVersionEnvironment;
           optionsToUpdate['versionsPromotedToEnvironment'] = [selectedVersion];
+
+          // Update selectedEnvironment to match the actual environment of the loaded version
+          // This handles cases where the requested environment doesn't have the selected version
+          // and a different version from a different environment is loaded
+          selectedEnvironment = appVersionEnvironment;
+          optionsToUpdate['selectedEnvironment'] = appVersionEnvironment;
+
           const { shouldRenderPromoteButton, shouldRenderReleaseButton } = calculatePromoteAndReleaseButtonVisibility(
             selectedVersion.id,
-            environment,
+            appVersionEnvironment,
             useStore.getState().releasedVersionId,
             useStore.getState()?.license?.featureAccess
           );

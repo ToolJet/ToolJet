@@ -36,6 +36,8 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/c
 import { User } from '@entities/user.entity';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RequestContext } from '@modules/request-context/service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -46,7 +48,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly rolesRepository: RolesRepository,
     protected readonly userRepository: UserRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
-    protected readonly licenseUserService: LicenseUserService
+    protected readonly licenseUserService: LicenseUserService,
+    protected readonly licenseTermsService: LicenseTermsService
   ) {}
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
@@ -152,7 +155,20 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
   }
 
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
+    console.log('[createDefaultGroups] START - organizationId:', organizationId);
     const defaultGroups: GroupPermissions[] = [];
+
+    // Check if multi-environment feature is available
+    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+
+    console.log('[createDefaultGroups] hasMultiEnvironment:', hasMultiEnvironment);
+    console.log('[createDefaultGroups] typeof hasMultiEnvironment:', typeof hasMultiEnvironment);
+    console.log('[createDefaultGroups] hasMultiEnvironment === true:', hasMultiEnvironment === true);
+    console.log('[createDefaultGroups] hasMultiEnvironment !== true:', hasMultiEnvironment !== true);
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
       for (const defaultGroup of Object.keys(USER_ROLE)) {
@@ -172,7 +188,18 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         > = DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
           if (getTooljetEdition() === TOOLJET_EDITIONS.CE && resource == ResourceType.WORKFLOWS) continue;
-          const createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
+          let createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
+
+          // For builder role APP permissions: set production access based on license
+          // If multi-environment is NOT available (basic plan/invalid license), enable production
+          // If multi-environment IS available (valid license), disable production (security)
+          if (group.name === USER_ROLE.BUILDER && resource === ResourceType.APP) {
+            const shouldEnableProduction = hasMultiEnvironment !== true;
+            createResourcePermissionObj = {
+              ...createResourcePermissionObj,
+              canAccessProduction: shouldEnableProduction,
+            };
+          }
 
           const dtoObject = {
             name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],

@@ -134,6 +134,25 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         },
         manager
       );
+
+      // Validate environment permissions for end-users (only for APP type, not WORKFLOWS)
+      if (granularPermissions.type === ResourceType.APP) {
+        const appPermissions = createAppPermissionsObj as CreateResourcePermissionObject<ResourceType.APP>;
+        await this.validateEnvironmentPermissions(
+          {
+            groupId: granularPermissions.groupId,
+            organizationId,
+            isBuilderPermissions: canEdit,
+          },
+          {
+            canAccessDevelopment: appPermissions.canAccessDevelopment,
+            canAccessStaging: appPermissions.canAccessStaging,
+            canAccessProduction: appPermissions.canAccessProduction,
+          },
+          manager
+        );
+      }
+
       createAppPermissionsObj.appType = this.getAppTypeFromResourceType(granularPermissions.type);
 
       const appGroupPermissions = await manager.save(
@@ -185,9 +204,54 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         message: {
           error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
           data: endUsers.map((user) => user.email),
-          title: 'Cannot create permissions',
+          title: 'Cannot add this permission to the group',
+          type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
         },
       });
+  }
+
+  async validateEnvironmentPermissions(
+    params: ResourceCreateValidation,
+    environmentPermissions: {
+      canAccessDevelopment?: boolean;
+      canAccessStaging?: boolean;
+      canAccessProduction?: boolean;
+    },
+    manager: EntityManager
+  ) {
+    const { groupId, organizationId } = params;
+    const hasBuilderEnvironments =
+      environmentPermissions.canAccessDevelopment ||
+      environmentPermissions.canAccessStaging ||
+      environmentPermissions.canAccessProduction;
+
+    if (!hasBuilderEnvironments) {
+      return;
+    }
+
+    const usersInGroup = await this.groupPermissionsRepository.getUsersInGroup(groupId, organizationId, null, manager);
+
+    if (!usersInGroup?.length) {
+      return;
+    }
+
+    const endUsers = await this.roleRepository.getRoleUsersList(
+      USER_ROLE.END_USER,
+      organizationId,
+      usersInGroup.map((groupUser) => groupUser.userId),
+      manager
+    );
+
+    if (endUsers.length) {
+      throw new BadRequestException({
+        message: {
+          error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
+          data: endUsers.map((user) => user.email),
+          title: 'Cannot add this permission to the group',
+          type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
+        },
+      });
+    }
   }
 
   getBasicPlanGranularPermissions(role: USER_ROLE): GranularPermissions[] {
