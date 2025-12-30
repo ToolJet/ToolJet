@@ -178,6 +178,7 @@ class BaseManageGranularAccess extends React.Component {
       toast.error('Please select the resources to continue');
       return;
     }
+
     const resourcesToAdd = selectedResource
       .filter((res) => !res?.isAllField)
       .map((option) => {
@@ -578,11 +579,15 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   openAddPermissionModal = (resourceType) => {
-    const defaultEnvironments = [
-      { label: 'Development', value: 'canAccessDevelopment', key: 'canAccessDevelopment' },
-      { label: 'Staging', value: 'canAccessStaging', key: 'canAccessStaging' },
-      { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
-    ];
+    // Don't pre-select builder-only environments if group has end-users
+    const hasEndUsers = this.props.hasEndUsers;
+    const defaultEnvironments = hasEndUsers
+      ? [{ label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' }]
+      : [
+          { label: 'Development', value: 'canAccessDevelopment', key: 'canAccessDevelopment' },
+          { label: 'Staging', value: 'canAccessStaging', key: 'canAccessStaging' },
+          { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
+        ];
 
     this.setState((prevState) => ({
       modalTitle: `Add ${RESOURCE_NAME_MAPPING[resourceType].toLowerCase()} permissions`,

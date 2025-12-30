@@ -169,9 +169,16 @@ class BaseManageGroupPermissionResources extends React.Component {
     const { groupPermission, usersInGroup, endUserIds } = this.state;
 
     // Only check for custom groups
-    if (groupPermission?.type !== 'custom' || usersInGroup.length === 0) {
+    if (groupPermission?.type !== 'custom') {
       return;
     }
+
+    // If group has no users, there are no end-users
+    if (usersInGroup.length === 0) {
+      this.setState({ hasEndUserMembers: false });
+      return;
+    }
+
     // Get end-user IDs (use cache if available)
     let endUsers = endUserIds;
     if (!endUsers) {

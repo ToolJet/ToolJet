@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import { validateName, decodeEntities } from '@/_helpers/utils';
+import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
@@ -133,8 +133,8 @@ export default function AppCard({
     !environmentAccess.production &&
     environmentAccess.released;
 
-  // Check if user is a builder (has any editable apps)
-  const isBuilder = appPerms?.editable_apps_id?.length > 0 || appPerms?.is_all_editable;
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
 
   // Check if user can access released apps
   // End-users (non-builders) always have released app access
@@ -354,7 +354,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && isBuilder && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>
