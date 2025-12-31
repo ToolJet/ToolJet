@@ -155,9 +155,9 @@ export class AppsService implements IAppsService {
         app.organizationId
       );
 
-      // For view-only users, validate environment access based on their permissions
-      // Users with edit permission can access any environment for preview
-      if (!hasEditPermission && hasViewPermission && environment) {
+      // Validate environment access for all users (both builders and viewers)
+      // Skip validation only for released environment (everyone with view access can see released)
+      if (environment) {
         const envName = environment.name.toLowerCase();
 
         // Always allow access to released environment for all users who can view the app
@@ -190,6 +190,7 @@ export class AppsService implements IAppsService {
           }
 
           // If user doesn't have access to this environment, reject with restricted-preview
+          // Apply to all users (builders and viewers)
           if (!hasEnvironmentAccess) {
             throw new ForbiddenException('restricted-preview');
           }

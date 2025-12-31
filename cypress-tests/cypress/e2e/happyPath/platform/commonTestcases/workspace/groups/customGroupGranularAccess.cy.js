@@ -105,7 +105,7 @@ const configureEnterpriseGranularPermissions = ({
 
         //Create datasource 
         datasourceNames.forEach((datasource) => {
-            cy.apiCreateGDS(
+            cy.apiCreateDataSource(
                 `${Cypress.env("server_host")}/api/data-sources`,
                 datasource,
                 "restapi",

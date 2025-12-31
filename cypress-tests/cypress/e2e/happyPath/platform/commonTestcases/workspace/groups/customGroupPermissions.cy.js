@@ -188,7 +188,7 @@ describe("Custom Group Permissions", () => {
 
     cy.ifEnv("Enterprise", () => {
       cy.apiCreateWorkflow(workflowName1);
-      cy.apiCreateGDS(
+      cy.apiCreateDataSource(
         `${Cypress.env("server_host")}/api/data-sources`,
         datasourceName1,
         "restapi",

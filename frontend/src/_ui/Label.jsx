@@ -4,6 +4,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { cn } from '@/lib/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
+
 function Label({
   label,
   width,

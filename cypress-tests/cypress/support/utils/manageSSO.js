@@ -341,8 +341,9 @@ export const oidcSSOPageElements = (pageName) => {
     cy.get(ssoSelector.statusLabel)
       .eq(0)
       .verifyVisibleElement("have.text", ssoText.enabledLabel);
-  }
 
+    cy.get('[data-cy="name-label"]').verifyVisibleElement("have.text", "Name");
+  }
   cy.clearAndType(ssoSelector.nameInput, ssoText.testName);
   cy.clearAndType(ssoSelector.clientIdInput, ssoText.testclientId);
   cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testclientSecret);
@@ -1041,12 +1042,12 @@ export const gitHubSignInWithAssertion = (
  * @param {string} email - The email of the user to delete
  */
 export const cleanupTestUser = (email) => {
-  cy.runSqlQuery(
+  cy.runSqlQueryOnDB(
     `SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`
   ).then((result) => {
     cy.log("User existence :", JSON.stringify(result?.rows?.[0]?.exists));
     if (result?.rows?.[0]?.exists) {
-      cy.runSqlQuery(`CALL delete_users(ARRAY['${email}']::text[]);`);
+      cy.runSqlQueryOnDB(`CALL delete_users(ARRAY['${email}']::text[]);`);
     }
   });
 };

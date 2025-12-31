@@ -58,7 +58,7 @@ describe("Workflows with Datasource", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dataSourceName,
       "postgresql",
@@ -116,13 +116,13 @@ describe("Workflows with Datasource", () => {
 
     cy.apiDeleteWorkflow(data.workflowName);
 
-    cy.apiDeleteGDS(dataSourceName);
+    cy.apiDeleteDataSource(dataSourceName);
   });
 
   it("REST API workflow - execute and validate", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-restapi`;
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dataSourceName,
       "restapi",
@@ -181,7 +181,7 @@ describe("Workflows with Datasource", () => {
 
     cy.apiDeleteWorkflow(data.workflowName);
 
-    cy.apiDeleteGDS(dataSourceName);
+    cy.apiDeleteDataSource(dataSourceName);
   });
 
   it("HarperDB workflow - execute and validate", () => {

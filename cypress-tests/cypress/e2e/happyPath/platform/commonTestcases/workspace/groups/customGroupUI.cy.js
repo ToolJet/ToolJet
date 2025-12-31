@@ -60,7 +60,7 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.apiCreateApp(resourceName);
     cy.ifEnv("Enterprise", () => {
       cy.apiCreateWorkflow(resourceName);
-      cy.apiCreateGDS(
+      cy.apiCreateDataSource(
         `${Cypress.env("server_host")}/api/data-sources`,
         resourceName,
         "restapi",

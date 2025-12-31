@@ -15,7 +15,7 @@ export const TextArea = (props) => {
   const resizeTextArea = useCallback(() => {
     if (!inputRef.current) return;
     if (!isDynamicHeightEnabled) {
-      inputRef.current.style.height = `${height}px`;
+      inputRef.current.style.height = '100%';
       return;
     }
     inputRef.current.style.height = 'auto';
@@ -39,5 +39,13 @@ export const TextArea = (props) => {
     subContainerIndex,
   });
 
-  return <BaseInput {...props} {...inputLogic} isDynamicHeightEnabled={isDynamicHeightEnabled} inputType="textarea" />;
+  return (
+    <BaseInput
+      {...props}
+      {...inputLogic}
+      isDynamicHeightEnabled={isDynamicHeightEnabled}
+      inputType="textarea"
+      classes={{ leftIcon: 'tw-mt-0.5', loaderContainer: 'tw-mt-0.5' }}
+    />
+  );
 };
