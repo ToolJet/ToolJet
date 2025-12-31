@@ -24,19 +24,21 @@ const TagsInputOption = (props) => {
           className: `${props.innerProps?.className || ''} tags-input-create-option-wrapper`,
         }}
       >
-        <div className="tags-input-new-tag-preview">
-          <span className="add-text">add</span>
-          <span
-            className="tags-input-new-tag-preview-text"
-            style={{
-              backgroundColor: tagBackgroundColor || undefined,
-              color: selectedTextColor || undefined,
-            }}
-          >
-            {data.value}
-          </span>
+        <div className="tags-input-create-option-inner">
+          <div className="tags-input-new-tag-preview">
+            <span className="add-text">add</span>
+            <span
+              className="tags-input-new-tag-preview-text"
+              style={{
+                backgroundColor: tagBackgroundColor || undefined,
+                color: selectedTextColor || undefined,
+              }}
+            >
+              {data.value}
+            </span>
+          </div>
+          <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
         </div>
-        <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
       </Option>
     );
   }

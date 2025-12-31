@@ -94,23 +94,25 @@ const TagsInputMenuList = ({
                 }
               }}
             >
-              <div className="tags-input-new-tag-preview">
-                <span
-                 className='add-text'
-                >
-                  add
-                </span>
-                <span
-                  className="tags-input-new-tag-preview-text"
-                  style={{
-                    backgroundColor: tagBackgroundColor || undefined,
-                    color: selectedTextColor || undefined,
-                  }}
-                >
-                  {inputValue}
-                </span>
+              <div className="tags-input-new-tag-preview-wrapper">
+                <div className='tags-input-new-tag-preview'>
+                  <span
+                  className='add-text'
+                  >
+                    Manish
+                  </span>
+                  <span
+                    className="tags-input-new-tag-preview-text"
+                    style={{
+                      backgroundColor: tagBackgroundColor || undefined,
+                      color: selectedTextColor || undefined,
+                    }}
+                  >
+                    {inputValue}
+                  </span>
+                </div>
+                <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
               </div>
-              <CornerDownLeft size={14} color="var(--text-placeholder)" style={{ flexShrink: 0 }} />
             </div>
           )}
         </>

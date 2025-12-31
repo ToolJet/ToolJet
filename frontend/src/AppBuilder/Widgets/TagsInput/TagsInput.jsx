@@ -623,7 +623,7 @@ export const TagsInput = ({
         opacity: state.isDisabled ? 0.3 : 1,
         cursor: 'pointer',
         padding: '8px 12px',
-        borderRadius: '8px',
+        borderRadius: '6px',
         '&:active': {
           backgroundColor: 'var(--interactive-overlays-fill-pressed)',
         },
@@ -644,7 +644,7 @@ export const TagsInput = ({
       ...provided,
       padding: '0',
       marginTop: '5px',
-      borderRadius: '9px',
+      borderRadius: '8px',
       boxShadow: 'var(--elevation-300-box-shadow)',
       border: '1px solid var(--border-weak)',
     }),

@@ -91,23 +91,32 @@
     background-color: var(--surfaces-surface-01);
     gap: 8px;
     user-select: none;
-
+    padding: 4px;
+  }
+  .tags-input-new-tag-preview-wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px 12px;
+    gap: 8px;
+    border-radius: 6px;
     &:hover {
       background-color: var(--interactive-overlays-fill-hover);
     }
     &:active {
       background-color: var(--interactive-overlays-fill-pressed);
     }
-
     // Ensure child elements don't block click events
     > * {
       pointer-events: none;
     }
+  
   }
   .tags-input-new-tag-preview{
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
     flex: 1;
     .add-text{
@@ -115,6 +124,7 @@
       color: var(--text-placeholder);
       flex-shrink: 0;
     }
+
   }
 
   .tags-input-new-tag-preview-text {
@@ -124,7 +134,7 @@
     line-height: 20px;
     word-break: break-all;
     min-width: 0;
-    background-color: var(--surfaces-surface-03);
+    // background-color: var(--surfaces-surface-03);
     color: var(--text-primary);
   }
 }
@@ -145,13 +155,39 @@
 }
 
 .tags-input-create-option-wrapper {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
+  display: block !important;
   border-top: 1px solid var(--border-weak) !important;
   margin: 0 !important;
-  padding: 8px 12px !important;
+  margin-left: -4px !important;
+  margin-right: -4px !important;
+  padding: 4px !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  width: calc(100% + 8px) !important;
+
+  &:has(.tags-input-create-option-inner) {
+    margin-top: 4px !important;
+    padding-bottom: 0px !important;
+  }
+}
+
+.tags-input-create-option-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover);
+  }
+
+  &:active {
+    background-color: var(--interactive-overlays-fill-pressed);
+  }
 }
 
 .tags-input-create-option {
