@@ -486,6 +486,18 @@
           "mandatory": false,
           "tooltip": "Record of the conversation between the user and the model"
         },
+        "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
+        },
         "max_tokens": {
           "label": "Max tokens",
           "key": "max_tokens",
@@ -523,6 +535,18 @@
           "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
           "mandatory": false,
           "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -562,6 +586,18 @@
           "mandatory": false,
           "tooltip": "Record of the conversation between the user and the model"
         },
+        "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
+        },
         "max_tokens": {
           "label": "Max tokens",
           "key": "max_tokens",
@@ -599,6 +635,18 @@
           "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
           "mandatory": false,
           "tooltip": "Record of the conversation between the user and the model"
+        },
+        "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -638,6 +686,18 @@
         "mandatory": false,
         "tooltip": "Record of the conversation between the user and the model"
       },
+      "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
+      },
       "max_tokens": {
         "label": "Max tokens",
         "key": "max_tokens",
@@ -675,6 +735,18 @@
         "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
         "mandatory": false,
         "tooltip": "Record of the conversation between the user and the model"
+      },
+      "user_prompt": {
+          "label": "User prompt",
+          "description": "Enter your prompt",
+          "key": "user_prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "mandatory": true
+          "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
         "label": "Max tokens",
@@ -714,6 +786,18 @@
         "mandatory": false,
         "tooltip": "Record of the conversation between the user and the model"
       },
+      "user_prompt": {
+        "label": "User prompt",
+        "description": "Enter your prompt",
+        "key": "user_prompt",
+        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+        "type": "codehinter",
+        "description": "User response/reply to previous chat",
+        "placeholder": "Explain how AI works.",
+        "mandatory": true,
+        "mandatory": true
+        "tooltip":"User response/reply to previous chat"
+      },
       "max_tokens": {
         "label": "Max tokens",
         "key": "max_tokens",
@@ -751,6 +835,18 @@
       "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
       "mandatory": false,
       "tooltip": "Record of the conversation between the user and the model"
+    },
+    "user_prompt": {
+      "label": "User prompt",
+      "description": "Enter your prompt",
+      "key": "user_prompt",
+      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+      "type": "codehinter",
+      "description": "User response/reply to previous chat",
+      "placeholder": "Explain how AI works.",
+      "mandatory": true,
+      "mandatory": true
+      "tooltip":"User response/reply to previous chat"
     },
     "max_tokens": {
       "label": "Max tokens",
@@ -790,6 +886,18 @@
       "mandatory": false,
       "tooltip": "Record of the conversation between the user and the model"
     },
+    "user_prompt": {
+      "label": "User prompt",
+      "description": "Enter your prompt",
+      "key": "user_prompt",
+      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+      "type": "codehinter",
+      "description": "User response/reply to previous chat",
+      "placeholder": "Explain how AI works.",
+      "mandatory": true,
+      "mandatory": true
+      "tooltip":"User response/reply to previous chat"
+    },
     "max_tokens": {
       "label": "Max tokens",
       "key": "max_tokens",
@@ -828,6 +936,18 @@
       "mandatory": false,
       "tooltip": "Record of the conversation between the user and the model"
     },
+    "user_prompt": {
+      "label": "User prompt",
+      "description": "Enter your prompt",
+      "key": "user_prompt",
+      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+      "type": "codehinter",
+      "description": "User response/reply to previous chat",
+      "placeholder": "Explain how AI works.",
+      "mandatory": true,
+      "mandatory": true
+      "tooltip":"User response/reply to previous chat"
+    },
     "max_tokens": {
       "label": "Max tokens",
       "key": "max_tokens",
@@ -865,6 +985,18 @@
         "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
         "mandatory": false,
         "tooltip": "Record of the conversation between the user and the model"
+      },
+      "user_prompt": {
+        "label": "User prompt",
+        "description": "Enter your prompt",
+        "key": "user_prompt",
+        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+        "type": "codehinter",
+        "description": "User response/reply to previous chat",
+        "placeholder": "Explain how AI works.",
+        "mandatory": true,
+        "mandatory": true
+        "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
         "label": "Max tokens",
