@@ -54,7 +54,7 @@ export async function getCompletion(
     model: model || 'gpt-3.5-turbo-instruct',
     prompt: prompt,
     temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-    max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
+    max_completion_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
     stop: stop_sequence || null,
     suffix: suffix || null,
   });
@@ -71,7 +71,7 @@ export async function getChatCompletion(
   const response = await openai.chat.completions.create({
     model: model || 'gpt-4-turbo',
     temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-    max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
+    max_completion_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
     stop: stop_sequence || null,
     messages: [
       {
