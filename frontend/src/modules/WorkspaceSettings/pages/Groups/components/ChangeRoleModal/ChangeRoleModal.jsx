@@ -60,16 +60,16 @@ function ChangeRoleModal({
     return (
       <div className="role-change-modal-content">
         <div className="d-flex align-items-start justify-content-between">
-          <div className="modal-icon-container">
+          <div className="modal-icon-container" data-cy="modal-icon">
             <SolidIcon fill="var(--tomato9)" name="lock" width="40" />
           </div>
-          <div onClick={handleAutoRoleChangeModalClose} className="icon-btn">
+          <div onClick={handleAutoRoleChangeModalClose} className="icon-btn" data-cy="modal-close-button">
             <SolidIcon fill="var(--slate9)" name="remove" width="16" />
           </div>
         </div>
         <div style={{ width: '100%' }}>
-          <h3 className="modal-title">Cannot add this permission to the group</h3>
-          <div className="modal-description">
+          <h3 className="modal-title" data-cy="modal-title">Cannot add this permission to the group</h3>
+          <div className="modal-description" data-cy="modal-description">
             <p>
               End-users can only be granted permissions in the scope of their role.{' '}
               <a
@@ -89,6 +89,7 @@ function ChangeRoleModal({
               maxHeight: '140px',
               overflowY: 'auto',
             }}
+            data-cy="item-list"
           >
             {autoRoleChangeModalList.map((item, index) => (
               <li key={index}>{item}</li>
