@@ -561,7 +561,7 @@ export const TagsInput = ({
     }),
     valueContainer: (provided) => ({
       ...provided,
-      padding: '4px 10px',
+      padding: '5px 4px',
       display: 'flex',
       flexWrap: isDynamicHeightEnabled ? 'wrap' : 'nowrap',
       gap: '4px',
