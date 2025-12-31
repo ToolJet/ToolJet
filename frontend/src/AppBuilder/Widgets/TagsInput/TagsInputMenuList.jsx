@@ -99,7 +99,7 @@ const TagsInputMenuList = ({
                   <span
                   className='add-text'
                   >
-                    Manish
+                    add
                   </span>
                   <span
                     className="tags-input-new-tag-preview-text"
