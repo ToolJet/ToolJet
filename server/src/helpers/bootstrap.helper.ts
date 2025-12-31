@@ -126,7 +126,7 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
       logger.log('   - Auto-instrumentation: Active');
     }
   } catch (error) {
-    logger.error('❌ Failed to apply OpenTelemetry middleware:', error);
+    logger.error('❌ Failed to initialize OpenTelemetry:', error);
     // Don't throw - observability should never break the app
   }
 }
