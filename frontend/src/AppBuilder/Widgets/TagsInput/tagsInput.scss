@@ -58,19 +58,24 @@
     padding: 0px !important;
 
     scrollbar-width: thin;
+    scrollbar-color: var(--interactive-hover, rgba(136, 144, 153, 0.12)) transparent;
 
     &::-webkit-scrollbar {
-      width: 8px;
-      border-radius: 4px;
+      width: 10px;
     }
 
     &::-webkit-scrollbar-track {
       background: transparent;
-      border-radius: 4px;
     }
 
     &::-webkit-scrollbar-thumb {
-      border-radius: 4px;
+      background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+      border-radius: 1000px;
+      // Simulate padding: 8px top, 1.5px left/right, 4px bottom
+      border: 1.5px solid transparent;
+      border-top-width: 8px;
+      border-bottom-width: 4px;
+      background-clip: padding-box;
     }
   }
 
@@ -217,13 +222,13 @@
     box-shadow: none;
   }
 
-  // Scrollbar styling for control (matching scrollbar-container)
+  // Scrollbar styling for control/field
   [class*='-control'] {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+    scrollbar-color: var(--interactive-hover, rgba(136, 144, 153, 0.12)) transparent;
 
     &::-webkit-scrollbar {
-      width: 8px;
+      width: 10px;
     }
 
     &::-webkit-scrollbar-track {
@@ -231,8 +236,13 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.15);
-      border-radius: 4px;
+      background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+      border-radius: 1000px;
+      // Simulate padding: 2px top, 1.5px left/right, 8px bottom
+      border: 1.5px solid transparent;
+      border-top-width: 2px;
+      border-bottom-width: 8px;
+      background-clip: padding-box;
     }
   }
 }
