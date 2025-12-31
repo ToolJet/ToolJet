@@ -257,19 +257,10 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource, response: Response, app?: App) {
-    return this.listTablesAndGetResult(user, dataSource, response, app);
-  }
-
-  protected async listTablesAndGetResult(
-    user: User,
-    dataSource: DataSource,
-    response: Response,
-    app?: App
-  ): Promise<object> {
+  async listTablesForApp(user: User, dataSource: DataSource,environmentId: string) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, response, app);
+      result = await this.dataQueryUtilService.listTables(user, dataSource,environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

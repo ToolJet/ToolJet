@@ -148,14 +148,15 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.LIST_TABLES)
   @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
-  @Get(':dataSourceId/list-tables')
+  @Get(':dataSourceId/list-tables/:environmentId')
   async listTables(
     @User() user: UserEntity,
     @AppDecorator() app: App,
     @DataSource() dataSource: DataSourceEntity,
+    @Param('environmentId') environmentId,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.dataQueriesService.listTablesForApp(user, dataSource, response, app);
+    return this.dataQueriesService.listTablesForApp(user, dataSource,environmentId);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)

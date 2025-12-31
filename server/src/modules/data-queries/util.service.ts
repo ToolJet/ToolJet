@@ -360,13 +360,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, response: Response, app?: App): Promise<object> {
+  async listTables(user: User, dataSource: DataSource,environmentId: string): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
 
-    const organizationId = app?.organizationId || user?.organizationId;
-    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId);
+    const organizationId = user?.organizationId;
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId,environmentId);
 
     dataSource.options = dataSourceOptions.options;
 
