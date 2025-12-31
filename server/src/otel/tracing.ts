@@ -416,8 +416,7 @@ process.on('SIGTERM', () => {
   if (sdk) {
     sdk
       .shutdown()
-      .then(() => console.log('OpenTelemetry instrumentation shutdown successfully'))
-      .catch((err) => console.log('Error shutting down OpenTelemetry instrumentation', err))
+      .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
       .finally(() => process.exit(0));
   } else {
     process.exit(0);
@@ -439,12 +438,6 @@ export const startOpenTelemetry = async (): Promise<void> => {
     initializeAuditLogMetrics();
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
-
-    console.log('OpenTelemetry instrumentation initialized');
-    console.log(
-      'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
-    );
-    console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
@@ -609,14 +602,9 @@ function loadEnvVars() {
 // Load environment variables
 loadEnvVars();
 
-console.log('[OTEL] Auto-start code reached');
-console.log('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
-
 let isInitialized = false;
 
 if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
-  console.log('[OTEL] Condition met, checking edition...');
-
   try {
     // Check edition - EE and Cloud support OTEL
     // Use relative paths instead of TypeScript aliases for runtime compatibility
@@ -624,7 +612,6 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
     const { TOOLJET_EDITIONS } = require('../modules/app/constants');
 
     const tooljetEdition = getTooljetEdition();
-    console.log('[OTEL] Edition:', tooljetEdition);
 
     if (tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud) {
       console.log('[OTEL] Starting SDK at import time (before any modules load)...');
@@ -649,6 +636,4 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
   } catch (error) {
     console.error('[OTEL] Error during auto-start:', error);
   }
-} else {
-  console.log('[OTEL] Condition NOT met. ENABLE_OTEL:', process.env.ENABLE_OTEL, 'isInitialized:', isInitialized);
 }
