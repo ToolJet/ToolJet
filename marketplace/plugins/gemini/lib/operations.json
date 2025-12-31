@@ -481,9 +481,10 @@
           "label": "History",
           "key": "history",
           "type": "codehinter",
-          "description": "Enter your prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-          "mandatory": true
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -518,9 +519,10 @@
           "label": "History",
           "key": "history",
           "type": "codehinter",
-          "description": "Enter your prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-          "mandatory": true
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -555,9 +557,10 @@
           "label": "History",
           "key": "history",
           "type": "codehinter",
-          "description": "Enter your prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-          "mandatory": true
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -592,9 +595,10 @@
           "label": "History",
           "key": "history",
           "type": "codehinter",
-          "description": "Enter your prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-          "mandatory": true
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
         },
         "max_tokens": {
           "label": "Max tokens",
@@ -629,9 +633,10 @@
         "label": "History",
         "key": "history",
         "type": "codehinter",
-        "description": "Enter your prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-        "mandatory": true
+        "description": "Record of the conversation between the user and the model",
+        "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+        "mandatory": false,
+        "tooltip": "Record of the conversation between the user and the model"
       },
       "max_tokens": {
         "label": "Max tokens",
@@ -666,9 +671,10 @@
         "label": "History",
         "key": "history",
         "type": "codehinter",
-        "description": "Enter your prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-        "mandatory": true
+        "description": "Record of the conversation between the user and the model",
+        "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+        "mandatory": false,
+        "tooltip": "Record of the conversation between the user and the model"
       },
       "max_tokens": {
         "label": "Max tokens",
@@ -703,9 +709,10 @@
         "label": "History",
         "key": "history",
         "type": "codehinter",
-        "description": "Enter your prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-        "mandatory": true
+        "description": "Record of the conversation between the user and the model",
+        "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+        "mandatory": false,
+        "tooltip": "Record of the conversation between the user and the model"
       },
       "max_tokens": {
         "label": "Max tokens",
@@ -740,9 +747,10 @@
       "label": "History",
       "key": "history",
       "type": "codehinter",
-      "description": "Enter your prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-      "mandatory": true
+      "description": "Record of the conversation between the user and the model",
+      "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+      "mandatory": false,
+      "tooltip": "Record of the conversation between the user and the model"
     },
     "max_tokens": {
       "label": "Max tokens",
@@ -777,9 +785,10 @@
       "label": "History",
       "key": "history",
       "type": "codehinter",
-      "description": "Enter your prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-      "mandatory": true
+      "description": "Record of the conversation between the user and the model",
+      "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+      "mandatory": false,
+      "tooltip": "Record of the conversation between the user and the model"
     },
     "max_tokens": {
       "label": "Max tokens",
@@ -814,9 +823,10 @@
       "label": "History",
       "key": "history",
       "type": "codehinter",
-      "description": "Enter your prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-      "mandatory": true
+      "description": "Record of the conversation between the user and the model",
+      "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+      "mandatory": false,
+      "tooltip": "Record of the conversation between the user and the model"
     },
     "max_tokens": {
       "label": "Max tokens",
@@ -851,9 +861,10 @@
         "label": "History",
         "key": "history",
         "type": "codehinter",
-        "description": "Enter your prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-        "mandatory": true
+        "description": "Record of the conversation between the user and the model",
+        "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+        "mandatory": false,
+        "tooltip": "Record of the conversation between the user and the model"
       },
       "max_tokens": {
         "label": "Max tokens",
