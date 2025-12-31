@@ -64,16 +64,20 @@ export const verifyWorkspaceTabs = () => {
 };
 
 export const verifyWorkspaceRowTags = (workspaceName) => {
+    searchWorkspace(defaultWorkspaceName);
     cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
         .contains(defaultWorkspaceName)
         .parent()
         .within(() => {
             cy.contains("Default workspace").should("be.visible");
         });
-    cy.contains("Current workspace").should("be.visible");
+    searchWorkspace(workspaceName);
     cy.get(instanceWorkspaceSelectors.workspaceRowContainer)
         .contains(workspaceName)
-        .should("be.visible");
+        .parent()
+        .within(() => {
+            cy.contains("Current workspace").should("be.visible");
+        });
 };
 
 export const openArchiveWorkspaceModal = (workspaceName) => {

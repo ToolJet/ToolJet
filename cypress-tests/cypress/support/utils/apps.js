@@ -167,15 +167,11 @@ export const onboardUserFromAppLink = (
 };
 
 export const resolveHost = () => {
-  const baseUrl = Cypress.config("baseUrl");
+  // When running behind a proxy (nginx), use the actual server host
+  // Otherwise, use the baseUrl directly
+  if (Cypress.env('proxy') === true) {
+    return Cypress.config("server_host") || Cypress.config("baseUrl");
+  }
 
-  const urlMapping = {
-    "http://localhost:8082": "http://localhost:8082",
-    "http://localhost:3000": "http://localhost:3000",
-    "http://localhost:3000/apps": "http://localhost:3000/apps",
-    "http://localhost:4001": "http://localhost:3000",
-    "http://localhost:4001/apps": "http://localhost:3000/apps",
-  };
-
-  return urlMapping[baseUrl];
+  return Cypress.config("baseUrl");
 };
