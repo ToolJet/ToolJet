@@ -672,7 +672,7 @@ export const TagsInput = ({
             [alignment === 'top' &&
             ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
               ? 'flex-column'
-              : 'align-items-center']: true,
+              : 'align-items-start']: true,
             'flex-row-reverse': direction === 'right' && alignment === 'side',
             'text-right': direction === 'right' && alignment === 'top',
             invisible: !visibility,
@@ -699,6 +699,7 @@ export const TagsInput = ({
             auto={auto}
             isMandatory={isMandatory}
             _width={_width}
+            top={alignment === 'side' ? '8px' : undefined}
             widthType={widthType}
             id={`${id}-label`}
           />
