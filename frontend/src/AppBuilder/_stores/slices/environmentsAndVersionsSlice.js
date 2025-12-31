@@ -82,19 +82,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             selectedEnvironment = developmentEnvironment;
           }
         }
-        // Builders should start in development when they have access to it (entry point for all apps)
-        // If they don't have development access, fallback to their first available environment
+        // Trust the backend's environment selection for builders
+        // Backend now checks if user has access to version's current environment
+        // and only falls back to development if they don't have access
         else if (hasEditPermission && !previewInitialEnvironmentId) {
-          const hasDevelopmentAccess = hasEnvironmentAccess(environmentAccess, 'development');
-          if (hasDevelopmentAccess && requestedEnvName !== 'development') {
-            requestedEnvName = 'development';
-            const developmentEnvironment = response.environments.find((env) => env.name === 'development');
-            if (developmentEnvironment) {
-              selectedEnvironment = developmentEnvironment;
-            }
-          } else if (!hasDevelopmentAccess) {
-            // Let it fallback to getSafeEnvironment logic below
-          }
+          // Use the environment returned by backend (response.editorEnvironment)
+          // which is already set in selectedEnvironment above
+          requestedEnvName = selectedEnvironment?.name;
         }
 
         // Check if user has access to the requested environment
