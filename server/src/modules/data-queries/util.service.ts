@@ -360,49 +360,30 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(
-    user: User,
-    dataSource: DataSource,
-    response: Response,
-    app?: App
-  ): Promise<object> {
-    let result;
-    try {
-
-      if (!(dataSource)) {
-        throw new UnauthorizedException();
-      }
-
-      const organizationId = app?.organizationId || user?.organizationId;
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
-        dataSource.id,
-        organizationId
-      );
-
-      dataSource.options = dataSourceOptions.options;
-
-      const { sourceOptions, service } = await this.fetchServiceAndParsedParams(
-        dataSource,
-        { options: {} }, 
-        {},
-        organizationId,
-        dataSourceOptions.environmentId,
-        user
-      );
-
-
-
-      result = await service.listTables(
-        sourceOptions,
-        `${dataSource.id}-${dataSourceOptions.environmentId}`,
-        dataSourceOptions.updatedAt
-      );
-
-    } catch (error) {
-      throw error;
+  async listTables(user: User, dataSource: DataSource, response: Response, app?: App): Promise<object> {
+    if (!dataSource) {
+      throw new UnauthorizedException();
     }
 
-    return result;
+    const organizationId = app?.organizationId || user?.organizationId;
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId);
+
+    dataSource.options = dataSourceOptions.options;
+
+    const { sourceOptions, service } = await this.fetchServiceAndParsedParams(
+      dataSource,
+      {},
+      {},
+      organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    return await service.listTables(
+      sourceOptions,
+      `${dataSource.id}-${dataSourceOptions.environmentId}`,
+      dataSourceOptions.updatedAt
+    );
   }
 
   async fetchServiceAndParsedParams(
@@ -421,14 +402,10 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user
     );
 
-    const parsedQueryOptions = await this.parseQueryOptions(
-      dataQuery.options,
-      queryOptions,
-      organization_id,
-      environmentId,
-      user,
-      opts
-    );
+    const parsedQueryOptions =
+      !dataQuery || Object.keys(dataQuery).length === 0
+        ? {}
+        : await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id, environmentId, user, opts);
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
