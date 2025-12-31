@@ -29,8 +29,7 @@
           { "value": "claude-opus-4-5-20251101", "name": "claude-opus-4-5-20251101" },
           { "value": "claude-opus-4-1-20250805", "name": "claude-opus-4-1-20250805" },
           { "value": "claude-opus-4-20250514", "name": "claude-opus-4-20250514" }
-          { "value": "claude-haiku-4-5", "name": "claude-haiku-4-5" }
-          
+          { "value": "claude-haiku-4-5", "name": "claude-haiku-4-5" },
           { "value": "claude-3-5-haiku-20241022", "name": "claude-3-5-haiku-20241022" },
           { "value": "claude-3-5-sonnet-20241022", "name": "claude-3-5-sonnet-20241022 (Discontinued)"},
           { "value": "claude-3-opus-20240229", "name": "claude-3-opus-20240229 (Discontinued)" },
