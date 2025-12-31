@@ -413,7 +413,8 @@ process.on('SIGTERM', () => {
   if (sdk) {
     sdk
       .shutdown()
-      .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
+      .then(() => console.log('OpenTelemetry instrumentation shutdown successfully'))
+      .catch((err) => console.log('Error shutting down OpenTelemetry instrumentation', err))
       .finally(() => process.exit(0));
   } else {
     process.exit(0);
@@ -435,6 +436,12 @@ export const startOpenTelemetry = async (): Promise<void> => {
     initializeAuditLogMetrics();
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
+
+    console.log('OpenTelemetry instrumentation initialized');
+    console.log(
+      'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
+    );
+    console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
