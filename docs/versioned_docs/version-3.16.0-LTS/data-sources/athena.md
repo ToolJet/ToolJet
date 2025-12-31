@@ -25,7 +25,7 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/athena-connection-v2.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-connection-v3.png" alt="Athena connection" />
 
 </div>
 
@@ -46,7 +46,7 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/querying-amazon-athena.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-datasource.png" alt="Athena Query" />
 
 </div>
 
@@ -58,16 +58,16 @@ You can also configure for **[additional optional parameters](https://github.com
 
 ### Creating Table 
 
-This query is used to create an external table within the database. The data for this table is stored in an S3 bucket at the provided URL (`s3://athena-express-akiatfa53s-2022/` in this example).
+This query is used to create an external table within the database. The data for this table is stored in an S3 bucket at the provided URL (`s3://athena-express-akiatfa53s-2026/` in this example).
 
 ```sql
 CREATE EXTERNAL TABLE student (
     name STRING,
     age INT
-)  LOCATION 's3://athena-express-akiatfa53s-2022/';
+)  LOCATION 's3://athena-express-akiatfa53s-2026/';
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/createTable.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
 
 ### Inserting to Table
 
@@ -78,7 +78,7 @@ INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/insertTable.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
 
 ### Select Operation
 
@@ -88,7 +88,7 @@ This query retrieves all records from the *student* table where the age of the s
 SELECT * from student WHERE AGE=1
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/selectOperation.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
 
 ### List Tables
 
@@ -98,6 +98,6 @@ This query is used to display a list of all tables in the current database.
 SHOW TABLES
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/athena/listTables.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-list.png" alt="Athena connection" />
 
 </div>
