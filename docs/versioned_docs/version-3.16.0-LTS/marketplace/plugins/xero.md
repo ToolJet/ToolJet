@@ -108,7 +108,7 @@ Create, read, update, and manage business contact records like customers and sup
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| GET   | `/ Contacts/{ContactNumber}` | Retrieves a specific contacts by contact number in a Xero organization. |
+| GET    | `/ Contacts/{ContactNumber}` | Retrieves a specific contacts by contact number in a Xero organization. |
 
 #### CONTACTID
 
@@ -302,7 +302,7 @@ Handle authentication and identity management using Xero’s OAuth 2.0 identity 
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| GET   | `/Connections` | Retrieves the connections for this user. |
+| GET    | `/Connections` | Retrieves the connections for this user. |
 
 #### ID
 
@@ -315,7 +315,7 @@ Provide transaction feeds and bank connection data for supported financial insti
 
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
-| GET   | `/FeedConnections` | Searches for feed connections. |
+| GET    | `/FeedConnections` | Searches for feed connections. |
 | POST  | `/FeedConnections` | Creates one or more new feed connection. |
 | GET   | `/Statements` | Retrieves all statements. |
 | POST  | `/Statements` | Creates one or more new statements. |
