@@ -377,7 +377,6 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
   logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
   if (otelEnabled) {
-    logger.log(`  - Edition: ${edition}`);
     logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
     logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
     logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
