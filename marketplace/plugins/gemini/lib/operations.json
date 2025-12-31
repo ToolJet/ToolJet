@@ -488,14 +488,11 @@
         },
         "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
@@ -538,14 +535,11 @@
         },
         "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
@@ -588,14 +582,11 @@
         },
         "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
@@ -638,14 +629,11 @@
         },
         "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
@@ -688,14 +676,11 @@
       },
       "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
@@ -738,14 +723,11 @@
       },
       "user_prompt": {
           "label": "User prompt",
-          "description": "Enter your prompt",
           "key": "user_prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
           "placeholder": "Explain how AI works.",
           "mandatory": true,
-          "mandatory": true
           "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
@@ -788,14 +770,11 @@
       },
       "user_prompt": {
         "label": "User prompt",
-        "description": "Enter your prompt",
         "key": "user_prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
         "type": "codehinter",
         "description": "User response/reply to previous chat",
         "placeholder": "Explain how AI works.",
         "mandatory": true,
-        "mandatory": true
         "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
@@ -838,14 +817,11 @@
     },
     "user_prompt": {
       "label": "User prompt",
-      "description": "Enter your prompt",
       "key": "user_prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
       "placeholder": "Explain how AI works.",
       "mandatory": true,
-      "mandatory": true
       "tooltip":"User response/reply to previous chat"
     },
     "max_tokens": {
@@ -888,14 +864,11 @@
     },
     "user_prompt": {
       "label": "User prompt",
-      "description": "Enter your prompt",
       "key": "user_prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
       "placeholder": "Explain how AI works.",
       "mandatory": true,
-      "mandatory": true
       "tooltip":"User response/reply to previous chat"
     },
     "max_tokens": {
@@ -938,14 +911,11 @@
     },
     "user_prompt": {
       "label": "User prompt",
-      "description": "Enter your prompt",
       "key": "user_prompt",
-      "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
       "placeholder": "Explain how AI works.",
       "mandatory": true,
-      "mandatory": true
       "tooltip":"User response/reply to previous chat"
     },
     "max_tokens": {
@@ -988,14 +958,11 @@
       },
       "user_prompt": {
         "label": "User prompt",
-        "description": "Enter your prompt",
         "key": "user_prompt",
-        "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
         "type": "codehinter",
         "description": "User response/reply to previous chat",
         "placeholder": "Explain how AI works.",
         "mandatory": true,
-        "mandatory": true
         "tooltip":"User response/reply to previous chat"
       },
       "max_tokens": {
