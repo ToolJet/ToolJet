@@ -148,7 +148,7 @@ export class DataQueriesController implements IDataQueriesController {
 
   @InitFeature(FEATURE_KEY.LIST_TABLES)
   @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
-  @Post(':dataSourceId/list-tables')
+  @Get(':dataSourceId/list-tables')
   async listTables(
     @User() user: UserEntity,
     @AppDecorator() app: App,
