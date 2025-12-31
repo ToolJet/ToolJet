@@ -117,6 +117,7 @@ export const groupsText = {
   cantCreatePermissionModalTitle: "Cannot add this permission to the group",
   cantCreatePermissionModalDescription: "End-users can only be granted permissions in the scope of their role.",
   cantCreatePermissionModalDescription2: "If you wish to add this permission, kindly change the following users role from end-user to builder -",
+  cantCreatePermissionModalDescription3: "End-users can only be granted permission to view apps. If you wish to add this permission, kindly change the following users role from end-user to builder",
   deletePermissionToast: "Deleted permission successfully",
   createPermissionToast: "Permission created successfully!",
   userEmptyPageTitle: "No users added yet",

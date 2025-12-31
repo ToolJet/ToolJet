@@ -140,11 +140,11 @@ describe("Custom Group Permissions", () => {
     cy.get(".modal-content").should("be.visible");
     cy.get(groupsSelector.modalHeader).should(
       "have.text",
-      groupsText.cantCreatePermissionModalHeader
+      groupsText.cantCreatePermissionModalTitle
     );
     cy.get(groupsSelector.modalMessage).should(
       "have.text",
-      groupsText.cantCreatePermissionModalMessage
+      groupsText.cantCreatePermissionModalDescription3
     );
 
     cy.get(".item-list").contains(data.email);
