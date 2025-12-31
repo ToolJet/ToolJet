@@ -614,10 +614,13 @@ export const TagsInput = ({
       const optionIndex = options.findIndex((opt) => opt.value === data?.value);
       const isControlledFocused = selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
 
+      // Use color-mix to get 50% of hover color (effectively 4% alpha from 8%)
+      const hoverBgColor = 'color-mix(in srgb, var(--interactive-overlays-fill-hover) 50%, transparent)';
+
       return {
         ...provided,
         backgroundColor: isControlledFocused
-          ? 'var(--interactive-overlays-fill-hover)'
+          ? hoverBgColor
           : 'var(--surfaces-surface-01)',
         color: 'var(--text-primary)',
         opacity: state.isDisabled ? 0.3 : 1,
@@ -628,7 +631,7 @@ export const TagsInput = ({
           backgroundColor: 'var(--interactive-overlays-fill-pressed)',
         },
         '&:hover': {
-          backgroundColor: 'var(--interactive-overlays-fill-hover)',
+          backgroundColor: hoverBgColor,
         },
       };
     },
