@@ -375,13 +375,13 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
 
   const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
-    logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
-    if (otelEnabled) {
-      logger.log(`  - Edition: ${edition}`);
-      logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
-      logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
-      logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
-    }
+  logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
+  if (otelEnabled) {
+    logger.log(`  - Edition: ${edition}`);
+    logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+  }
 
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
