@@ -5,6 +5,7 @@ import {
   App,
   validateAndSetRequestOptionsBasedOnAuthType,
   OAuthUnauthorizedClientError,
+  getCurrentToken,
 } from '@tooljet-marketplace/common';
 import { SourceOptions, ConvertedFormat, QueryResult, } from './types';
 import got, { OptionsOfTextResponseBody } from 'got';
@@ -113,19 +114,39 @@ export default class Xero implements QueryService {
     };
   }
 
-  async refreshToken(sourceOptions: any) {
-    const refresh_token = sourceOptions['refresh_token'];
-    if (!refresh_token) {
-      const errorMessage = 'Missing OAuth refresh_token in source options';
-      const errorDetails = {
-        message: errorMessage,
-        name: 'UnauthorizedError',
-        code: 'MISSING_REFRESH_TOKEN',
-        missing: {
-          refresh_token: true,
-        },
-      };
-      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+  async refreshToken(sourceOptions: any, dataSourceId?: string, userId?: string, isAppPublic?: boolean) {
+    let refresh_token: string;
+
+    // Handle multi-auth: get user-specific refresh token from tokenData
+    if (sourceOptions['multiple_auth_enabled']) {
+      const currentToken = getCurrentToken(
+        sourceOptions['multiple_auth_enabled'],
+        sourceOptions['tokenData'],
+        userId,
+        isAppPublic
+      );
+
+      if (!currentToken?.refresh_token) {
+        throw new QueryError('Query could not be completed', 'Refresh token not found for current user', {
+          code: 'MISSING_REFRESH_TOKEN',
+        });
+      }
+      refresh_token = currentToken.refresh_token;
+    } else {
+      // Single-auth: get refresh token directly
+      refresh_token = sourceOptions['refresh_token'];
+      if (!refresh_token) {
+        const errorMessage = 'Missing OAuth refresh_token in source options';
+        const errorDetails = {
+          message: errorMessage,
+          name: 'UnauthorizedError',
+          code: 'MISSING_REFRESH_TOKEN',
+          missing: {
+            refresh_token: true,
+          },
+        };
+        throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+      }
     }
 
     const data = new URLSearchParams({
