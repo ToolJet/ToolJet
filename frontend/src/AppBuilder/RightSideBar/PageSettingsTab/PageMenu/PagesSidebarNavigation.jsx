@@ -323,7 +323,7 @@ export const PagesSidebarNavigation = ({
     // Keep sidebar pin state updated based on style of page menu and whether it is collapsable or not
     if (style === 'icon') setIsSidebarPinned(false);
     if (style === 'text' || (style === 'texticon' && !collapsable)) setIsSidebarPinned(true);
-  }, [style, collapsable]);
+  }, [style, collapsable, setIsSidebarPinned]);
 
   if (isMobileDevice) {
     return null;
