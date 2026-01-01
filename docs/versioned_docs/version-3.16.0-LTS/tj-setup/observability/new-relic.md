@@ -28,7 +28,7 @@ To obtain a New Relic Licence Key:
 - Click **Create a Key**.
 - Create a new key with the Key type set to: **Ingest - Licence**. 
 Save the key for future use.
-    <img className="screenshot-full" src="/img/tooljet-setup/observabillity/new-relic/new-relic-licence-key.png" alt="New Relic Licence Key"/>
+    <img className="screenshot-full" src="/img/tooljet-setup/observability/new-relic/new-relic-licence-key.png" alt="New Relic Licence Key"/>
 
 ### Step 1: Set Up an OpenTelemetry Collector
 Use the following configuration file to run an OpenTelemetry Collector that forwards telemetry data to New Relic:

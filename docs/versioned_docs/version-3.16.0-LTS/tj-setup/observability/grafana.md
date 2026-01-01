@@ -3,8 +3,9 @@ id: grafana
 title: Grafana
 ---
 
-## Setting Up Observability Using Grafana
+Grafana is an open-source observability and visualization platform for exploring metrics, traces, and logs. ToolJet integrates with Grafana using OpenTelemetry by exporting telemetry data to an OpenTelemetry Collector, which then forwards the data to Grafana-supported storage backends.
 
+## Setting Up Observability Using Grafana
 ### Overview
 
 ToolJet does not send telemetry data directly to Grafana. Instead, it uses OpenTelemetry to export traces and metrics to an OpenTelemetry Collector running in your environment. The collector then forwards this data to Grafana-supported storage backends.
