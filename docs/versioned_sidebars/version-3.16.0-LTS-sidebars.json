@@ -647,7 +647,8 @@
           "items": [
             "tj-setup/observability-otel",
             "tj-setup/observability/datadog",
-            "tj-setup/observability/new-relic"
+            "tj-setup/observability/new-relic",
+            "tj-setup/observability/grafana"
           ]
         }
       ]
