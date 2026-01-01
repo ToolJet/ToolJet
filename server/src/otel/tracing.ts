@@ -80,7 +80,10 @@ function createSDK(): NodeSDK {
     instrumentations: [
       new RuntimeNodeInstrumentation({ monitoringPrecision: 5000 }),
       new HttpInstrumentation({
-        ignoreIncomingRequestHook: (request: any) => request.url === '/api/health',
+        ignoreIncomingRequestHook: (request: any) => {
+          const url = request.url || '';
+          return url.includes('/api/health') || url === '/api/health';
+        },
       }),
       new ExpressInstrumentation({
         requestHook: (span: Span, { request }) => {
@@ -383,8 +386,12 @@ process.on('SIGTERM', () => {
   if (sdk) {
     sdk
       .shutdown()
-      .then(() => console.log('OpenTelemetry instrumentation shutdown successfully'))
-      .catch((err) => console.log('Error shutting down OpenTelemetry instrumentation', err))
+      .then(() => {
+        if (process.env.OTEL_LOG_LEVEL === 'debug') {
+          console.log('OpenTelemetry instrumentation shutdown successfully');
+        }
+      })
+      .catch((err) => console.error('Error shutting down OpenTelemetry instrumentation', err))
       .finally(() => process.exit(0));
   } else {
     process.exit(0);
@@ -407,11 +414,13 @@ export const startOpenTelemetry = async (): Promise<void> => {
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
-    console.log('OpenTelemetry instrumentation initialized');
-    console.log(
-      'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
-    );
-    console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log('OpenTelemetry instrumentation initialized');
+      console.log(
+        'Custom metrics initialized: api.hits, api.duration, users.concurrent, sessions.active, users.concurrent.active, sessions.concurrent.active'
+      );
+      console.log(`Active user tracking window: ${ACTIVITY_WINDOW_MINUTES} minutes`);
+    }
   } catch (error) {
     console.error('Error initializing OpenTelemetry instrumentation', error);
     throw error;
@@ -540,3 +549,89 @@ export const decrementActiveSessions = (attributes: {
     activeSessionsCounter.add(-1, metricAttributes);
   }
 };
+
+// ============================================================================
+// AUTO-START: Initialize OTEL SDK immediately when this module is imported
+// This MUST run before any other modules (http, pg, express, etc.) are loaded
+// ============================================================================
+
+// Load .env file before checking ENABLE_OTEL
+// ConfigModule hasn't loaded yet, so we need to manually load .env
+// Use the same pattern as the rest of the codebase (from database-config-utils.ts)
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
+
+function loadEnvVars() {
+  const envFilePath = process.env.NODE_ENV === 'test'
+    ? path.resolve(process.cwd(), '../.env.test')
+    : path.resolve(process.cwd(), '../.env');
+
+  if (fs.existsSync(envFilePath)) {
+    const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
+    // Merge with existing process.env (existing env vars take precedence)
+    Object.assign(process.env, envConfig, process.env);
+  }
+}
+
+// Load environment variables
+loadEnvVars();
+
+if (process.env.OTEL_LOG_LEVEL === 'debug') {
+  console.log('[OTEL] Auto-start code reached');
+  console.log('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
+}
+
+let isInitialized = false;
+
+if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
+  if (process.env.OTEL_LOG_LEVEL === 'debug') {
+    console.log('[OTEL] Condition met, checking edition...');
+  }
+
+  try {
+    // Check edition - EE and Cloud support OTEL
+    // Use relative paths instead of TypeScript aliases for runtime compatibility
+    const { getTooljetEdition } = require('../helpers/utils.helper');
+    const { TOOLJET_EDITIONS } = require('../modules/app/constants');
+
+    const tooljetEdition = getTooljetEdition();
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log('[OTEL] Edition:', tooljetEdition);
+    }
+
+    if (tooljetEdition === TOOLJET_EDITIONS.EE || tooljetEdition === TOOLJET_EDITIONS.Cloud) {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        console.log('[OTEL] Starting SDK at import time (before any modules load)...');
+      }
+
+      // Start OTEL SDK - this registers instrumentations immediately
+      // The patches are applied synchronously when instrumentations are registered
+      startOpenTelemetry()
+        .then(() => {
+          isInitialized = true;
+          if (process.env.OTEL_LOG_LEVEL === 'debug') {
+            console.log('[OTEL] ✅ SDK started successfully');
+          }
+        })
+        .catch((err) => {
+          console.error('[OTEL] ❌ Failed to start SDK:', err);
+          // Log the error but don't throw - observability should never break the app
+        });
+
+      // Mark as initializing to prevent double initialization
+      isInitialized = true;
+    } else {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        console.log('[OTEL] ⏭️  Skipping OTEL - not Enterprise or Cloud edition');
+      }
+    }
+  } catch (error) {
+    console.error('[OTEL] Error during auto-start:', error);
+  }
+} else {
+  if (process.env.OTEL_LOG_LEVEL === 'debug') {
+    console.log('[OTEL] Condition NOT met. ENABLE_OTEL:', process.env.ENABLE_OTEL, 'isInitialized:', isInitialized);
+  }
+}

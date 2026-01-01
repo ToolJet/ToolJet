@@ -138,7 +138,7 @@ export const setupPostgreSQLDataSource = (
   secretConstantName,
   dbNameConstant
 ) => {
-  cy.apiCreateGDS(
+  cy.apiCreateDataSource(
     `${Cypress.env("server_host")}/api/data-sources`,
     dsName,
     "postgresql",
