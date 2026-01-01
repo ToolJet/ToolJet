@@ -319,6 +319,12 @@ export const PagesSidebarNavigation = ({
     };
   }, [position]);
 
+  useEffect(() => {
+    // Keep sidebar pin state updated based on style of page menu and whether it is collapsable or not
+    if (style === 'icon') setIsSidebarPinned(false);
+    if (style === 'text' || (style === 'texticon' && !collapsable)) setIsSidebarPinned(true);
+  }, [style, collapsable]);
+
   if (isMobileDevice) {
     return null;
   }
@@ -671,14 +677,14 @@ export const PagesSidebarNavigation = ({
         {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned
           <SidebarProvider
-            open={style === 'icon' ? false : isSidebarPinned}
+            open={isSidebarPinned}
             onOpenChange={setIsSidebarPinned}
             sidebarWidth="256px"
             sidebarWidthIcon="54px"
             className="!tw-min-h-0 tw-h-full"
           >
             <SidebarWrapper
-              collapsible={style === 'text' ? 'none' : 'icon'}
+              collapsible={style === 'text' || (style === 'texticon' && !collapsable) ? 'none' : 'icon'}
               className="group-data-[side=left]:!tw-border-r-0"
             >
               <Sidebar />
