@@ -18,6 +18,8 @@ import {
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
+import { getTooljetEdition } from '../helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '../modules/app/constants';
 
 const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
 const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
@@ -591,10 +593,6 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
 
   try {
     // Check edition - EE and Cloud support OTEL
-    // Use relative paths instead of TypeScript aliases for runtime compatibility
-    const { getTooljetEdition } = require('../helpers/utils.helper');
-    const { TOOLJET_EDITIONS } = require('../modules/app/constants');
-
     const tooljetEdition = getTooljetEdition();
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
