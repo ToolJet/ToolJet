@@ -59,17 +59,18 @@ You can configure data sources and constants for each environment, and ToolJet w
 
 <img className="screenshot-full img-l" src="/img/development-lifecycle/environments/Built-in-env.png" alt="self-hosted-env-concept" />
 
+## Environment Permissions
     
-### Impacted behavior with environment permission 
+### Environment Permission Impact
 
 Each environment has a different impact on your application. Please refer the following table for details.
 
 | Action             | Development | Staging | Production |
 |--------------------|------------|---------|------------|
-| Edit versions     | ✅         | ❌      | ❌         |
-| Rename versions   | ✅         | ❌      | ❌         |
-| Delete versions   | ✅         | ❌      | ❌         |
-| Create new versions | ✅      | ❌      | ❌         |
+| Edit versions     | ✅ (only draft versions)          | ❌      | ❌         |
+| Rename versions   | ✅ (only draft versions)        | ❌      | ❌         |
+| Delete versions   | ✅         | ✅      | ✅         |
+| Create new versions | ✅      | ✅      | ✅         |
 | Promote           | ✅         | ✅      | -          |
 
 
@@ -81,4 +82,5 @@ Admin can configure the Promote Application permission from the [Permissions](/d
 
 <img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable Release"/>
 
-    
+### Environment Access Permission
+Admin can configure environment access based on user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page. This allows you to define which user groups can access specific environments. For example, users in the *Developer* group can be restricted to the *Development* environment and users in the *Testing* group can be restricted to the *Staging* environment. These permissions can be applied to specific apps or all apps.

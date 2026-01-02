@@ -60,25 +60,28 @@ You can configure data sources and constants for each environment, and ToolJet w
 <img className="screenshot-full img-l" src="/img/development-lifecycle/environments/cloud-env.png" alt="self-hosted-env-concept" />
 
     
-### Impacted behavior with environment permission 
+## Environment Permissions
+    
+### Environment Permission Impact
 
 Each environment has a different impact on your application. Please refer the following table for details.
 
 | Action             | Development | Staging | Production |
 |--------------------|------------|---------|------------|
-| Edit versions     | ✅         | ❌      | ❌         |
-| Rename versions   | ✅         | ❌      | ❌         |
-| Delete versions   | ✅         | ❌      | ❌         |
-| Create new versions | ✅      | ❌      | ❌         |
+| Edit versions     | ✅ (only draft versions)          | ❌      | ❌         |
+| Rename versions   | ✅ (only draft versions)        | ❌      | ❌         |
+| Delete versions   | ✅         | ✅      | ✅         |
+| Create new versions | ✅      | ✅      | ✅         |
 | Promote           | ✅         | ✅      | -          |
 
 
-Checkout the [Environment-Example](/docs/development-lifecycle/environment/cloud/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
+Checkout the [Environment-Example](/docs/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
 
 ### Promote Application Permission
 
 Admin can configure the Promote Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another.
 
-<img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable release"/>
+<img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable Release"/>
 
-    
+### Environment Access Permission
+Admin can configure environment access based on user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page. This allows you to define which user groups can access specific environments. For example, users in the *Developer* group can be restricted to the *Development* environment and users in the *Testing* group can be restricted to the *Staging* environment. These permissions can be applied to specific apps or all apps.
