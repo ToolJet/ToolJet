@@ -38,7 +38,8 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
 ## Generating Client ID and Client Secret on Microsoft Azure Portal
 
 
-1. Go to **ToolJet > Workspace Settings > Workspace login > Enable OpenID Connect > Add provider**.
+1. Go to **ToolJet > Workspace Settings > Workspace login > Enable OpenID Connect > Add provider**.   
+    (Example URL - https://app.corp.com/demo-workspace/workspace-settings/workspace-login)
     <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/enable-oidc.png" alt="Microsoft Entra ID" />
 
 2. Without entering any details, click **Save changes** to generate and copy the **Redirect URL**.
@@ -51,7 +52,7 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
 5. Fill the details as per your requirements. In the Redirect URI, enter the Redirect URL you got from ToolJet and click on **Register**.
     <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/register-application.png" alt="Register application" />
 
-6. You can find the **Client ID** on the **Application's Overview tab**. To get the Client Secret, go to the application's **Overview tab > Client credentials > Add a certificate or secret > New client secret**. Copy the value field.
+6. You can find the **Client ID** on the **Application's Overview tab**. To get the Client Secret, go to the application's **Overview tab > Manage > Client credentials > Add a certificate or secret > New client secret**. Copy the value field.
     <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/client-secret.png" alt="Client secret" />
 
 7. Enter the Client ID and Client Secret in the OIDC configuration modal in ToolJet.
@@ -79,6 +80,7 @@ The users shall now be able to Sign In using Microsoft Entra ID.
     <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/group-sync/group-id.png" alt="Groups Object ID" />
 
 5. Go to **ToolJet > Workspace Settings > Workspace login > OpenID Connect > Your Microsoft Entra ID OIDC Configuration > Enable Group Sync**.
+    (Example URL - https://app.corp.com/demo-workspace/workspace-settings/workspace-login)
 
 6. Enter the **Claim Name** as `groups`. If the name you got in Step 3 was different, enter that.
 
