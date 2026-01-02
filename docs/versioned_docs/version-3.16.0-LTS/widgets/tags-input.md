@@ -18,12 +18,11 @@ The **Tags Input** component allows users to create, select, and delete tags fro
 
 | Property | Description | Expected Value |
 |:---------|:------------|:---------------|
-| Dynamic tags | Toggle to switch between static and dynamic options mode. When enabled, options are defined via a schema. | Boolean (`{{true}}` or `{{false}}`) |
+| Dynamic tags | Toggle to switch between static and dynamic options mode. When enabled, options are defined via a schema. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Default value | Pre-selected tag values when component loads. Only visible when Dynamic tags is OFF. | Comma-separated values or array |
 | Schema | JSON array defining tag options. Only visible when Dynamic tags is ON. | Array of objects with `label`, `value`, `visible`, `default`, and `disable` properties |
 | Sort tags | Sort order for tags in the dropdown. | `none`, `asc` (A-Z), or `desc` (Z-A) |
-| Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Boolean (`{{true}}` or `{{false}}`) |
-| Tags loading state | Shows a loading spinner in the dropdown menu. Useful when fetching options dynamically. | Boolean (`{{true}}` or `{{false}}`) |
+| Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 #### Behavior Notes
 
@@ -68,12 +67,12 @@ The following actions of the component can be controlled using the component-spe
 
 | Action | Description | How To Access |
 |:-------|:------------|:-----------|
-| Select Tags | Programmatically selects specified tags. Matches by **value** or **label**. |  |
-| Deselect Tags | Programmatically removes specified tags from selection. Matches by **value** or **label**. |  |
-| Clear | Clears all selected tags. |  |
-| Set visibility | Shows or hides the component. |  |
-| Set loading | Sets the loading state of the component. |  |
-| Set disable | Enables or disables the component. |  |
+| Select Tags | Programmatically selects specified tags. Matches by **value** or **label**. | `components.tagsinput1.selectTags` |
+| Deselect Tags | Programmatically removes specified tags from selection. Matches by **value** or **label**. | `components.tagsinput1.deselectTags` |
+| Clear | Clears all selected tags. | `components.tagsinput1.clear` |
+| Set visibility | Shows or hides the component. | `components.tagsinput1.setVisibility` |
+| Set loading | Sets the loading state of the component. | `components.tagsinput1.setLoading` |
+| Set disable | Enables or disables the component. | `components.tagsinput1.setDisable` |
 
 ### Select Tags / Deselect Tags Input Formats
 
@@ -125,10 +124,10 @@ Access these variables to get the current state of the component:
 
 | Variable | Description | How To Access |
 |:---------|:-----|:------------|
-| values |  |  |
-| tags |  |  |
-| newTagsAdded |  |  |
-| selectedTags |  |  |
+| values | Returns the array of value of selected tags. | `components.tagsinput1.values` |
+| tags | Returns the array of all the available tags. | `components.tagsinput1.tags` |
+| newTagsAdded | Returns the array of all the newly added tags. | `components.tagsinput1.newTagsAdded` |
+| selectedTags | Returns the array of label and values of all the selected tags. | `components.tagsinput1.selectedTags` |
 
 ### Example Usage
 
@@ -159,6 +158,20 @@ Access these variables to get the current state of the component:
 Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
+## Validation
+
+| Property | Description |
+|:---------|:------------|
+| Make this field mandatory | When enabled, the form cannot be submitted without at least one tag selected. |
+| Custom validation | Custom validation rule using JavaScript expression. |
+
+#### Custom Validation Example
+
+```js
+{{components.tagsInput1.values.length >= 2 && 'valid'}}
+```
+This validates that at least 2 tags are selected.
+
 ## Additional Actions
 
 | Property | Description | Configuration Options |
@@ -169,20 +182,6 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Visibility | Controls whether the component is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | When enabled, the component becomes non-interactive. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Text displayed when hovering over the component. | String |
-
-## Validation
-
-| Property | Description |
-|:---------|:------------|
-| Make this field mandatory | When enabled, the form cannot be submitted without at least one tag selected. |
-| Custom validation | Custom validation rule using JavaScript expression. |
-
-### Custom Validation Example
-
-```js
-{{components.tagsInput1.values.length >= 2 && 'valid'}}
-```
-This validates that at least 2 tags are selected.
 
 ## Devices
 
