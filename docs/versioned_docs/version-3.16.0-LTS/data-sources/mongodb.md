@@ -3,7 +3,7 @@ id: mongodb
 title: MongoDB
 ---
 
-ToolJet can connect to MongoDB to read and write data directly from your ToolJet app. You can configure connections using either host/port credentials or a connection string, and then build, run, and transform queries (like finding, inserting, updating, and deleting documents) through the ToolJet query manager.
+The MongoDB data source in ToolJet allows you to connect your applications directly to MongoDB databases and perform operations on collections using queries. It supports database actions such as reading, inserting, updating, and deleting documents, enabling you to work with structured and semi-structured data efficiently. This data source is ideal for building applications that require flexible schemas and fast iteration over evolving data models.
 
 <div style={{paddingTop:'24px'}}>
 
