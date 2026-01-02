@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const Modal = function Modal({
   id,
@@ -20,6 +21,7 @@ export const Modal = function Modal({
   dataCy,
   height,
 }) {
+  const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -48,7 +50,7 @@ export const Modal = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
-  const mode = useStore((state) => state.currentMode, shallow);
+  const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
@@ -67,6 +69,52 @@ export const Modal = function Modal({
     setModalOpenOnCanvas(id, showModal);
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
+
+  // Side effects for modal, which include dom manipulation to hide overflow when opening
+  // And cleaning up dom when modal is closed
+
+  const onShowSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+    const modalContainer = allModalContainers[allModalContainers.length - 1];
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      const currentScroll = canvasElement.scrollTop;
+      canvasElement.style.overflowY = 'hidden';
+
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.top = `${currentScroll}px`;
+    }
+  };
+
+  const onHideSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const allModalContainers = realCanvasEl?.querySelectorAll('.modal');
+    const modalContainer = allModalContainers?.[allModalContainers.length - 1];
+    const hasManyModalsOpen = allModalContainers?.length > 1;
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      modalContainer.style.height = ``;
+      modalContainer.style.top = ``;
+    }
+    if (canvasElement && !hasManyModalsOpen) {
+      canvasElement.style.overflow = 'auto';
+    }
+  };
+
+  // useEventListener('resize', onShowSideEffects, window);
+
+  const onShowModal = () => {
+    openModal();
+    onShowSideEffects();
+  };
+
+  const onHideModal = () => {
+    onHideSideEffects();
+    hideModal();
+  };
 
   useEffect(() => {
     const exposedVariables = {
@@ -93,65 +141,66 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
+  // Add debounced version of handleModalOpen
+  const debouncedModalOpen = debounce(() => {
+    onShowSideEffects();
+  }, 10);
+
   useEffect(() => {
-    const handleModalOpen = () => {
-      openModal();
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
-        realCanvasEl.style.height = '100vh';
-        realCanvasEl.style.position = 'absolute';
-        realCanvasEl.style.overflow = 'hidden';
+    // Select the DOM element
+    const canvasElement = document.querySelector('.page-container.canvas-container');
 
-        modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalCanvasEl.style.height = modalHeight;
-      }
+    if (!canvasElement) return; // Ensure the element exists
+
+    // Create a ResizeObserver
+    const resizeObserver = new ResizeObserver(() => {
+      debouncedModalOpen();
+    });
+
+    // Observe the canvas element
+    resizeObserver.observe(canvasElement);
+
+    return () => {
+      // Cleanup observer on component unmount
+      resizeObserver.disconnect();
     };
+  }, []);
 
-    // Add debounced version of handleModalOpen
-    const debouncedModalOpen = debounce(() => {
-      handleModalOpen();
-    }, 10);
-
-    const handleModalClose = () => {
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
-
-      if (canvasElement && realCanvasEl && canvasHeight) {
-        realCanvasEl.style.height = canvasHeight;
-        realCanvasEl.style.position = '';
-
-        realCanvasEl.style.overflow = 'auto';
-      }
-    };
+  useEffect(() => {
     if (showModal) {
       debouncedModalOpen();
     } else {
-      // if (document.getElementsByClassName('modal-content')[0] == undefined) {
-      handleModalClose();
-      // }
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        onHideModal();
+      }
     }
 
     // Cleanup the effect
     return () => {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, modalHeight]);
+  }, [modalHeight, size]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
       return;
     }
-
+    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
+    // Scroll to top of canvas content when modal is opened and disbale page overflow
+    if (showModal) {
+      if (canvasContent) {
+        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
+        canvasContent.style.setProperty('overflow', 'hidden', 'important');
+      }
+    } else {
+      if (canvasContent) {
+        canvasContent.style.setProperty('overflow', 'auto', 'important');
+      }
+    }
     fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
@@ -180,6 +229,7 @@ export const Modal = function Modal({
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
+      borderColor: 'var(--cc-primary-brand)',
     },
   };
 
@@ -238,13 +288,15 @@ export const Modal = function Modal({
 
       <Modal.Component
         show={showModal}
-        contentClassName="modal-component"
+        contentClassName="modal-component tj-modal--container"
         container={document.getElementsByClassName('real-canvas')[0]}
         size={size}
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        onShow={() => onShowModal()}
+        onHide={() => onHideModal()}
+        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -257,8 +309,9 @@ export const Modal = function Modal({
           titleAlignment,
           hideTitleBar,
           hideCloseButton,
-          hideModal,
+          hideModal: onHideModal,
           component,
+          darkMode,
           showConfigHandler: mode === 'edit',
         }}
       >
@@ -295,6 +348,7 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     hideModal,
     showConfigHandler,
+    darkMode,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -338,6 +392,7 @@ const Component = ({ children, ...restProps }) => {
               className="cursor-pointer"
               data-cy={`modal-close-button`}
               size="sm"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

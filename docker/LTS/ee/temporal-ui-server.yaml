@@ -1,0 +1,8 @@
+temporalGrpcAddress: 127.0.0.1:7233  # Use the correct Temporal server address
+host: 0.0.0.0
+port: 8080
+enableUi: true
+cors:
+  allowOrigins:
+    - http://localhost:8080
+defaultNamespace: default

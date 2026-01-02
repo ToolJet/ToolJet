@@ -5,7 +5,7 @@
 
 [template.environment]
   NODE_ENV = "production"
-  TOOOLJET_EDITION = "cloud"
+  TOOLJET_EDITION = "cloud"
   NODE_VERSION = "22.15.1"
   NPM_VERSION = "10.9.2"
 

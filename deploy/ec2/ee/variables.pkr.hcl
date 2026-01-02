@@ -4,7 +4,7 @@ variable "ami_name" {
 
 variable "instance_type" {
   type    = string
-  default = "t2.medium"
+  default = "t2.large"
 }
 
 variable "ami_region" {

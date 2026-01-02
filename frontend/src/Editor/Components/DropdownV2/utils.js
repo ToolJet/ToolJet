@@ -4,7 +4,7 @@ export const getInputFocusedColor = ({ accentColor }) => {
   if (accentColor !== '#4368E3') {
     return accentColor;
   }
-  return 'var(--primary-accent-strong)';
+  return 'var(--cc-primary-brand)';
 };
 
 export const getInputBorderColor = ({
@@ -17,7 +17,7 @@ export const getInputBorderColor = ({
   userInteracted,
 }) => {
   if (userInteracted && !isValid) {
-    return 'var(--status-error-strong)';
+    return 'var(--cc-error-systemStatus)';
   }
 
   if (isFocused) {
@@ -28,31 +28,34 @@ export const getInputBorderColor = ({
     return fieldBorderColor;
   }
 
-  if (isLoading || isDisabled) {
-    return '1px solid var(--borders-disabled-on-white)';
-  }
-
-  return 'var(--borders-default)';
+  return 'var(--cc-default-border)';
 };
 
-export const getInputBackgroundColor = ({ fieldBackgroundColor, darkMode, isLoading, isDisabled }) => {
-  if (!['#ffffff', '#ffffffff', '#fff'].includes(fieldBackgroundColor)) {
+export const getInputBackgroundColor = ({ fieldBackgroundColor }) => {
+  if (!['#ffffff', '#ffffffff', '#fff', 'var(--cc-surface1-surface)'].includes(fieldBackgroundColor)) {
     return fieldBackgroundColor;
   }
 
-  if (isLoading || isDisabled) {
-    if (darkMode) {
-      return 'var(--surfaces-app-bg-default)';
-    } else {
-      return 'var(--surfaces-surface-03)';
-    }
-  }
+  // if (isLoading || isDisabled) {
+  //   if (darkMode) {
+  //     return 'var(--cc-appBackground-surface)';
+  //   } else {
+  //     return 'var(--cc-surface3-surface)';
+  //   }
+  // }
 
-  return 'var(--surfaces-surface-01)';
+  return 'var(--cc-surface1-surface)';
 };
 
 export const highlightText = (text = '', highlight) => {
-  const parts = text?.split(new RegExp(`(${highlight})`, 'gi'));
+  // Escape special regex characters in the highlight string
+  const escapeRegExp = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const safeHighlight = highlight ? escapeRegExp(highlight) : '';
+  const parts = text?.split(new RegExp(`(${safeHighlight})`, 'gi'));
+
   return (
     <span>
       {parts.map((part, index) =>
@@ -66,4 +69,21 @@ export const highlightText = (text = '', highlight) => {
       )}
     </span>
   );
+};
+
+export const sortArray = (arr, sort) => {
+  if (sort === 'asc') {
+    return arr.sort((a, b) => {
+      const labelA = typeof a.label === 'string' ? a.label : '';
+      const labelB = typeof b.label === 'string' ? b.label : '';
+      return labelA.localeCompare(labelB);
+    });
+  } else if (sort === 'desc') {
+    return arr.sort((a, b) => {
+      const labelA = typeof a.label === 'string' ? a.label : '';
+      const labelB = typeof b.label === 'string' ? b.label : '';
+      return labelB.localeCompare(labelA);
+    });
+  }
+  return arr;
 };

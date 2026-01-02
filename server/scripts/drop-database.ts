@@ -40,7 +40,7 @@ function checkCommandAvailable(command: string) {
   try {
     const options = { env: Object.assign({}, process.env) } as ExecFileSyncOptions;
     execFileSync('which', [command], options);
-  } catch (error) {
+  } catch {
     throw `Error: ${command} not found. Make sure it's installed and available in the system's PATH.`;
   }
 }

@@ -66,7 +66,6 @@ const StringColumn = ({
       className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
         darkMode ? ' textarea-dark-theme' : ''
       } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
-      tabIndex={-1}
       style={{
         color: cellTextColor ? cellTextColor : 'inherit',
         outline: 'none',

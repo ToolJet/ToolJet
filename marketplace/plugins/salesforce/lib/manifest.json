@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Salesforce datasource",
@@ -40,22 +39,75 @@
         "type": "string"
       }
     },
-    "customTesting": true,
-    "hideSave": true
+    "customTesting": true
   },
   "defaults": {
-    "redirect_url":{
+    "redirect_url": {
       "value": ""
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "full"
     }
   },
   "properties": {
-    "salesforce":{
+    "api_version": {
+      "label": "API version",
+      "key": "api_version",
+      "type": "dropdown",
+      "description": "Single select dropdown for api version",
+      "list": [
+        {
+          "name": "v1",
+          "value": "v1"
+        },
+        {
+          "name": "v2",
+          "value": "v2"
+        }
+      ]
+    },
+    "oauth": {
       "label": "",
-      "key": "salesforce",
-      "type": "react-component-salesforce",
-      "description": "A component for salesforce"
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for salesforce",
+      "oauth_configs": {
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app",
+              "tooljet_app"
+            ]
+          }
+        }
+      }
     }
-
   },
   "required": []
 }

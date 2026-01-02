@@ -6,11 +6,11 @@ title: Kubernetes (GKE)
 # Deploying ToolJet on Kubernetes (GKE)
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.com`.
 :::
 
 :::info
-You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
+You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
 ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::

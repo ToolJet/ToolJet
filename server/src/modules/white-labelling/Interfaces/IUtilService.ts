@@ -1,3 +1,3 @@
 export interface IWhiteLabellingUtilService {
-  getProcessedSettings(organizationId: string, key?: string): Promise<any>;
+  getProcessedSettings(organizationId: string): Promise<any>;
 }

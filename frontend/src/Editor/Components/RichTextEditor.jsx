@@ -2,8 +2,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 export const RichTextEditor = function RichTextEditor({
+  id,
   width,
   height,
   properties,
@@ -11,15 +13,32 @@ export const RichTextEditor = function RichTextEditor({
   setExposedVariable,
   setExposedVariables,
   dataCy,
+  adjustComponentPositions,
+  currentLayout,
 }) {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
+  const dynamicHeight = properties.dynamicHeight ?? false;
+  const [currentValue, setCurrentValue] = useState(defaultValue);
+
 
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const [isVisible, setIsVisible] = useState(visibility);
   const [isLoading, setIsLoading] = useState(properties?.loadingState);
+
+  useDynamicHeight({
+    dynamicHeight,
+    id: id,
+    height,
+    value: currentValue,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility: isVisible,
+  });
+
 
   useEffect(() => {
     if (isDisabled !== disabledState) setIsDisabled(disabledState);
@@ -44,18 +63,20 @@ export const RichTextEditor = function RichTextEditor({
 
   function handleChange(html) {
     setExposedVariable('value', html);
+    setCurrentValue(html);
   }
 
   return (
     <div
       data-disabled={isDisabled}
-      style={{ height: `${height}px`, display: isVisible ? '' : 'none', boxShadow }}
+      style={{ height: dynamicHeight ? 'auto' : `${height}px`, display: isVisible ? '' : 'none', boxShadow }}
       data-cy={dataCy}
+      className="scrollbar-container"
     >
       <DraftEditor
         isInitialRender={isInitialRender}
         handleChange={handleChange}
-        height={height}
+        height={dynamicHeight ? 'auto' : height}
         width={width}
         placeholder={placeholder}
         defaultValue={defaultValue}
@@ -67,6 +88,7 @@ export const RichTextEditor = function RichTextEditor({
         setIsDisabled={setIsDisabled}
         setIsVisible={setIsVisible}
         setIsLoading={setIsLoading}
+        dynamicHeight={dynamicHeight}
       ></DraftEditor>
     </div>
   );

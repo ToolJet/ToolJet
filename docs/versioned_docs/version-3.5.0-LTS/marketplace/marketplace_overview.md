@@ -55,10 +55,12 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
+
 - **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
+- **[Click Up](/docs/marketplace/plugins/marketplace-plugin-clickup)**
 - **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**

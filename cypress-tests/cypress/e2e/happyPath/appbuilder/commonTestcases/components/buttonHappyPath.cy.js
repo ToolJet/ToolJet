@@ -32,7 +32,7 @@ import {
   addSupportCSAData,
 } from "Support/utils/events";
 
-describe("Editor- Test Button widget", () => {
+describe("Editor- Test Button widget ", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-button-App`);

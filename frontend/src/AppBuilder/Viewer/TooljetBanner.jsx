@@ -1,9 +1,7 @@
 import React from 'react';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import TooljetLogoIcon from '@/_ui/Icon/solidIcons/TooljetLogoIcon';
 import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
 import { shallow } from 'zustand/shallow';
-
 const TooljetBanner = ({ isDarkMode }) => {
   const instanceId = useAppDataStore(
     (state) => ({
@@ -14,16 +12,14 @@ const TooljetBanner = ({ isDarkMode }) => {
 
   return (
     <div
-      className="powered-with-tj"
+      className={`powered-with-tj ${isDarkMode ? 'dark-theme' : ''}`}
       onClick={() => {
-        const url = `https://tooljet.com/?utm_source=powered_by_banner&utm_medium=${instanceId}&utm_campaign=self_hosted`;
+        const url = `https://tooljet.com`;
         window.open(url, '_blank');
       }}
     >
       Built with
-      <span className={'powered-with-tj-icon'}>
-        <TooljetLogoIcon />
-      </span>
+      <img src="assets/images/tj-logo.svg" />
       <TooljetLogoText fill={isDarkMode ? '#ECEDEE' : '#11181C'} />
     </div>
   );

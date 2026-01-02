@@ -5,7 +5,7 @@ import { navigateToManageGroups } from "Support/utils/common";
 import { cyParamName } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { onboardingSelectors } from "Selectors/onboarding";
-import { fetchAndVisitInviteLink } from "Support/utils/onboarding";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
 import { navigateToManageUsers, logout } from "Support/utils/common";
@@ -335,7 +335,7 @@ export const manageGroupsElements = () => {
   );
 
   cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
-  cy.get(groupsSelector.confimButton).should("be.enabled");
+  cy.get(groupsSelector.confimButton).should("be.disabled");
   cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
   cy.get(groupsSelector.cancelButton).click();
 
@@ -542,7 +542,7 @@ export const manageGroupsElements = () => {
   );
 
   cy.verifyElement(groupsSelector.confimButton, groupsText.updateButtonText);
-  cy.get(groupsSelector.confimButton).should("be.enabled");
+  cy.get(groupsSelector.confimButton).should("be.disabled");
   cy.verifyElement(groupsSelector.cancelButton, groupsText.cancelButton);
   cy.get(groupsSelector.cancelButton).click();
   //Add Modal
@@ -646,7 +646,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
     cy.request({
       method: "POST",
-      url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+      url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
       headers: headers,
       body: {
         name: groupName,
@@ -658,14 +658,14 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions`,
+        url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions/app`,
         headers: headers,
         body: {
           name: "Apps",
           type: "app",
           groupId: groupId,
           isAll: false,
-          createAppsPermissionsObject: {
+          createResourcePermissionObject: {
             canEdit: true,
             canView: false,
             hideFromDashboard: false,
@@ -680,15 +680,17 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         expect(response.status).to.equal(201);
       });
 
-      cy.task("updateId", {
+      cy.wait(2000);
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         const userId = resp.rows[0].id;
+        cy.log(userId);
 
         cy.request({
           method: "POST",
-          url: `${Cypress.env("server_host")}/api/v2/group_permissions/group-user`,
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/users`,
           headers: headers,
           body: {
             userIds: [userId],
@@ -720,11 +722,11 @@ export const OpenGroupCardOption = (groupName) => {
 export const duplicateMultipleGroups = (groupNames) => {
   groupNames.forEach((groupName) => {
     OpenGroupCardOption(groupName);
-    cy.wait(3000);
+    cy.wait(2000);
     cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
     cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
   });
-}
+};
 
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -850,6 +852,9 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
     commonSelectors.toastMessage,
     groupsText.groupCreatedToast
   );
+  addUserInGroup(groupName, email);
+};
+export const addUserInGroup = (groupName, email) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
   cy.wait(2000);
@@ -864,7 +869,7 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
 
-  cy.get(".css-1dyz3mf").type(`${role}{enter}`);
+  cy.get(".css-1mlj61j").type(`${role}{enter}`);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.wait(500);
 
@@ -885,7 +890,13 @@ export const verifyBasicPermissions = (canCreate = true) => {
   );
 };
 
-export const setupWorkspaceAndInviteUser = (workspaceName, workspaceSlug, firstName, email, role = "end-user") => {
+export const setupWorkspaceAndInviteUser = (
+  workspaceName,
+  workspaceSlug,
+  firstName,
+  email,
+  role = "end-user"
+) => {
   cy.apiCreateWorkspace(workspaceName, workspaceSlug);
   cy.visit(workspaceSlug);
   cy.wait(1000);
@@ -901,7 +912,10 @@ export const verifySettingsAccess = (shouldExist = true) => {
   );
 };
 
-export const verifyUserPrivileges = (expectedButtonState, shouldHaveWorkspaceSettings) => {
+export const verifyUserPrivileges = (
+  expectedButtonState,
+  shouldHaveWorkspaceSettings
+) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
 

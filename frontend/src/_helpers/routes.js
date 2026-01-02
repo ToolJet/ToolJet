@@ -21,6 +21,7 @@ export const getPrivateRoute = (page, params = {}) => {
     workflows: '/workflows',
     workspace_constants: '/workspace-constants',
     profile_settings: '/profile-settings',
+    modules: '/modules',
   };
 
   let url = routes[page];
@@ -103,7 +104,7 @@ export const appendWorkspaceId = (slug, path, replaceId = false) => {
   path = getPathname(path);
 
   let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('instance-settings')) {
+  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('settings')) {
     newPath = `/${slug}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');
@@ -135,6 +136,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'confirm-invite',
     'oauth2',
     'applications',
+    'embed-apps',
     'integrations',
     'settings',
     'licence',
@@ -181,6 +183,7 @@ export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
     const paths = [
       '/applications/',
+      '/embed-apps/',
       '/integrations',
       '/instance-settings',
       '/organization-invitations/',
@@ -192,8 +195,21 @@ export const returnWorkspaceIdIfNeed = (path) => {
 };
 export const getRedirectURL = (path) => {
   let redirectLoc = '/';
+  const instanceLevelRoutes = [
+    '/all-users',
+    '/all-workspaces',
+    '/manage-instance-settings',
+    '/white-labelling',
+    '/instance-login',
+    '/smtp',
+    '/license',
+  ];
   if (path) {
-    redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
+    if (instanceLevelRoutes.includes(path)) {
+      redirectLoc = `/settings${path}`;
+    } else {
+      redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
+    }
   } else {
     const redirectTo = getRedirectTo();
     const { from } = redirectTo ? { from: { pathname: redirectTo } } : { from: { pathname: '/' } };

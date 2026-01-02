@@ -958,7 +958,9 @@ const Table = ({ collapseSidebar }) => {
   }
 
   function isMatchingForeignKeyColumnDetails(columnHeader) {
-    const matchingColumn = foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader);
+    const matchingColumn = Array.isArray(foreignKeys)
+      ? foreignKeys.find((foreignKey) => foreignKey.column_names[0] === columnHeader)
+      : undefined;
     return matchingColumn;
   }
 

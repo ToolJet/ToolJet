@@ -108,7 +108,7 @@ function EditAppName({ appId, appName = '', onNameChanged, appCreationMode, page
 
   return (
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <ToolTip message={name} placement="bottom" isVisible={!isEditing && appCreationMode !== 'GIT'}>
+      <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
         <input
           ref={inputRef}
           type="text"
@@ -132,7 +132,6 @@ function EditAppName({ appId, appName = '', onNameChanged, appCreationMode, page
           value={name}
           maxLength={50}
           data-cy="app-name-input"
-          disabled={appCreationMode === 'GIT'}
         />
       </ToolTip>
       <InfoOrErrorBox

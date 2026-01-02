@@ -7,6 +7,8 @@ import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
 
 export const BlankPage = function BlankPage({
   readAndImport,
@@ -21,6 +23,7 @@ export const BlankPage = function BlankPage({
   viewTemplateLibraryModal,
   appType,
   canCreateApp,
+  workflowsLimit,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -43,6 +46,8 @@ export const BlankPage = function BlankPage({
   }
 
   const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
+  const workflowsCreationDisabled =
+    !canCreateApp() || (!workflowsLimit?.canAddUnlimited && workflowsLimit?.percentage >= 100);
 
   const templateOptionsView = (
     <>
@@ -56,6 +61,14 @@ export const BlankPage = function BlankPage({
               key={id}
               className="col-4 app-template-card-wrapper"
               onClick={() => {
+                /* Posthog Event */
+                posthogHelper.captureEvent('create_application_from_template', {
+                  workspace_id:
+                    authenticationService?.currentUserValue?.organization_id ||
+                    authenticationService?.currentSessionValue?.current_organization_id,
+                  template_name: name,
+                  button_name: 'create_application_from_template_card',
+                });
                 openCreateAppFromTemplateModal({ id, name });
               }}
             >
@@ -89,7 +102,15 @@ export const BlankPage = function BlankPage({
           className={cx('see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0', {
             disabled: appCreationDisabled,
           })}
-          onClick={viewTemplateLibraryModal}
+          onClick={() => {
+            posthogHelper.captureEvent('click_import_from_template', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
+              button_name: 'click_see_all_templates_button',
+            });
+            viewTemplateLibraryModal();
+          }}
           data-cy="see-all-apps-template-buton"
         >
           See all templates
@@ -133,45 +154,58 @@ export const BlankPage = function BlankPage({
                     <div className="row mt-4">
                       <div className="col-6">
                         <ButtonSolid
-                          disabled={appCreationDisabled}
                           leftIcon="plus"
                           onClick={openCreateAppModal}
                           isLoading={creatingApp}
                           data-cy="button-new-app-from-scratch"
                           className="col"
+                          disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
                           fill={'#FDFDFE'}
                         >
                           Create new {appType !== 'workflow' ? 'application' : 'workflow'}
                         </ButtonSolid>
                       </div>
-                      {appType !== 'workflow' && (
-                        <div className="col-6">
-                          <ButtonSolid
-                            disabled={appCreationDisabled}
-                            leftIcon="folderdownload"
-                            onChange={readAndImport}
-                            isLoading={isImportingApp}
-                            data-cy="button-import-an-app"
-                            className="col"
-                            variant="tertiary"
+                      <div className="col-6">
+                        <ButtonSolid
+                          disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
+                          leftIcon="folderdownload"
+                          onChange={readAndImport}
+                          isLoading={isImportingApp}
+                          data-cy={appType !== 'workflow' ? 'button-import-an-app' : 'button-import-a-workflow'}
+                          className="col"
+                          variant="tertiary"
+                        >
+                          <label
+                            className={cx('', {
+                              'cursor-pointer':
+                                appType !== 'workflow' ? !appCreationDisabled : !workflowsCreationDisabled,
+                            })}
+                            style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
+                            data-cy={appType !== 'workflow' ? 'import-an-application' : 'import-a-workflow'}
                           >
-                            <label
-                              className={cx('', { 'cursor-pointer': !appCreationDisabled })}
-                              style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
-                              data-cy="import-an-application"
-                            >
-                              &nbsp;{t('blankPage.importApplication', 'Import an app')}
-                              <input
-                                disabled={appCreationDisabled}
-                                type="file"
-                                ref={fileInput}
-                                style={{ display: 'none' }}
-                                data-cy="import-option-input"
-                              />
-                            </label>
-                          </ButtonSolid>
-                        </div>
-                      )}
+                            &nbsp;
+                            {appType !== 'workflow'
+                              ? t('blankPage.importApplication', 'Import an app')
+                              : t('blankPage.importWorkflow', 'Import a workflow')}
+                            <input
+                              disabled={appType !== 'workflow' ? appCreationDisabled : workflowsCreationDisabled}
+                              type="file"
+                              ref={fileInput}
+                              style={{ display: 'none' }}
+                              data-cy="import-option-input"
+                              onClick={() => {
+                                /* Posthog Event */
+                                posthogHelper.captureEvent('click_import_button', {
+                                  workspace_id:
+                                    authenticationService?.currentUserValue?.organization_id ||
+                                    authenticationService?.currentSessionValue?.current_organization_id,
+                                  button_name: 'click_import_an_application_button',
+                                });
+                              }}
+                            />
+                          </label>
+                        </ButtonSolid>
+                      </div>
                     </div>
                   </div>
                   <div className="col-5 empty-home-page-image" data-cy="empty-home-page-image">

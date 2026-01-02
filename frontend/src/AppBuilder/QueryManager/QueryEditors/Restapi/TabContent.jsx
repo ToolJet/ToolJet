@@ -30,7 +30,7 @@ export default ({
           return (
             <>
               <div className="row-container query-manager-border-color" key={index}>
-                <div className="fields-container mb-1">
+                <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
                       type="basic"
@@ -52,7 +52,7 @@ export default ({
                     />
                   </div>
                   <button
-                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
+                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
                       darkMode ? 'delete-field-option-dark' : ''
                     }`}
                     role="button"
@@ -68,7 +68,7 @@ export default ({
           );
         })}
       {bodyToggle && (
-        <div>
+        <div className="rest-api-body-codehinter">
           <CodeHinter
             type="extendedSingleLine"
             initialValue={(rawBody || jsonBody) ?? ''} // If raw_body is not set, set initial value to legacy json_body if present

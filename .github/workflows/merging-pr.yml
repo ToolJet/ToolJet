@@ -1,0 +1,125 @@
+name: Merge Submodule PRs
+
+on:
+  pull_request:
+    types: [closed, labeled]
+
+jobs:
+  merge-submodules:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract Branch Name
+        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      - name: Merge PR in ee-server (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-server PR: #$PR"
+            gh pr merge -R ToolJet/ee-server "$PR" --merge --admin
+          else
+            echo "No open ee-server PR for branch $BRANCH_NAME"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+
+      - name: Merge PR in ee-frontend (if exists)
+        run: |
+          PR=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --state open --json number -q '.[0].number')
+          if [ -n "$PR" ]; then
+            echo "Found ee-frontend PR: #$PR"
+            gh pr merge -R ToolJet/ee-frontend "$PR" --merge --admin
+          else
+            echo "No open ee-frontend PR for branch $BRANCH_NAME"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+
+
+  update-submodule-sha:
+    needs: merge-submodules
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.base.ref == 'lts-3.16'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          ref: main
+          submodules: recursive
+
+      - name: Update submodules to latest main
+        run: |
+          git config user.name "adishM98 Bot"
+          git config user.email "adish.madhu@gmail.com"
+
+          git submodule update --remote frontend/ee
+          git submodule update --remote server/ee
+
+          git add frontend/ee server/ee
+
+          if git diff --cached --quiet; then
+            echo "No submodule updates found." && exit 0
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+
+      - name: Create PR for submodule update
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          commit-message: "🚀 chore: update submodules to latest main after auto-merge"
+          title: "🚀 chore: update submodules"
+          body: "Auto-generated PR to update submodules after base PR merge"
+          branch: auto/update-submodules-${{ github.run_id }}
+          base: main
+
+      - name: Auto-merge PR
+        if: steps.cpr.outputs.pull-request-number != ''
+        run: |
+          echo "Merging submodule update PR #${PR_NUMBER}"
+          gh pr merge --squash --admin "$PR_NUMBER" --repo ToolJet/ToolJet
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+
+  check-submodule-prs:
+    if: github.event.action == 'labeled' && github.event.label.name == 'ready-to-merge'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract Branch Name
+        run: echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      - name: Check and Comment Linked Submodule PRs
+        run: |
+          echo "🔍 Checking linked submodule PRs for \`$BRANCH_NAME\`:" > comment.md
+          echo "" >> comment.md
+
+          SERVER_URL=$(gh pr list -R ToolJet/ee-server --head "$BRANCH_NAME" --state open --json url -q '.[0].url')
+          FRONTEND_URL=$(gh pr list -R ToolJet/ee-frontend --head "$BRANCH_NAME" --state open --json url -q '.[0].url')
+
+          if [ -n "$SERVER_URL" ]; then
+            echo "✅ ee-server PR - $SERVER_URL" >> comment.md
+          else
+            echo "❌ No open PR in ee-server" >> comment.md
+          fi
+
+          if [ -n "$FRONTEND_URL" ]; then
+            echo "✅ ee-frontend PR - $FRONTEND_URL" >> comment.md
+          else
+            echo "❌ No open PR in ee-frontend" >> comment.md
+          fi
+
+          echo "" >> comment.md
+          echo "📝 **Note**: The submodule PRs will be auto-merged once you merge this base PR-$PR_NUMBER into \`main\`." >> comment.md
+
+          gh pr comment "$PR_NUMBER" --repo ToolJet/ToolJet --body-file comment.md
+
+        env:
+          GH_TOKEN: ${{ secrets.TOKEN_PR }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { LicenseTermsService } from '../interfaces/IService';
 import { LICENSE_FIELD, LICENSE_LIMIT } from '../constants';
 import { AppsRepository } from '@modules/apps/repository';
+import { APP_TYPES } from '@modules/apps/constants';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class WebhookGuard implements CanActivate {
@@ -16,16 +18,22 @@ export class WebhookGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS);
+    const organizationId =
+      typeof request.headers['tj-workspace-id'] === 'object'
+        ? request.headers['tj-workspace-id'][0]
+        : request.headers['tj-workspace-id'];
+    const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, organizationId);
 
+    const isUuid = isUUID(request?.params?.idOrName);
     const workflowApp = await this.appsRepository.findOne({
       where: {
-        id: request?.params?.id,
-        type: 'workflow',
+        [isUuid ? 'id' : 'name']: request?.params?.idOrName,
+        type: APP_TYPES.WORKFLOW,
       },
     });
 
     if (!workflowApp) throw new HttpException(`Workflow doesn't exists`, 404);
+    request.tj_app = workflowApp;
 
     // Webhook API token validation
     if (request.headers.authorization.split(' ')[1] !== workflowApp.workflowApiToken) throw new UnauthorizedException();
@@ -34,71 +42,80 @@ export class WebhookGuard implements CanActivate {
     if (!workflowApp.workflowEnabled) throw new HttpException(`Webhook endpoint disabled or doesn't exists`, 404);
 
     // Workspace Level -
-    // Daily Limit
-    if (
-      workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(
-          `SELECT COUNT(*)
+    if (workflowsLimit.workspace) {
+      // Daily Limit
+      const workspaceDailyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE a.organization_id = $1
-        AND DATE(we.created_at) = current_date`,
-          [workflowApp.organizationId]
-        )
-      )[0].count >= workflowsLimit.workspace.daily_executions
-    ) {
-      throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
-    }
+        AND DATE(we.created_at) = current_date
+      `;
 
-    // Monthly Limit
-    if (
-      workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(
-          `SELECT COUNT(*)
+      if (
+        workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(workspaceDailyExecutionsQuery, [workflowApp.organizationId]))[0].count >=
+          workflowsLimit.workspace.daily_executions
+      ) {
+        throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
+      }
+
+      // Monthly Limit
+      const workspaceMonthlyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE a.organization_id = $1
         AND extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`,
-          [workflowApp.organizationId]
-        )
-      )[0].count >= workflowsLimit.workspace.monthly_executions
-    ) {
-      throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
+        AND extract (month from we.created_at) = extract (month from current_date)
+      `;
+
+      if (
+        workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(workspaceMonthlyExecutionsQuery, [workflowApp.organizationId]))[0].count >=
+          workflowsLimit.workspace.monthly_executions
+      ) {
+        throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
+      }
     }
 
     // Instance Level -
-    // Daily Limit
-    if (
-      workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(`SELECT COUNT(*)
+    if (workflowsLimit.instance) {
+      // Daily Limit
+      const instanceDailyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE DATE(we.created_at) = current_date`)
-      )[0].count >= workflowsLimit.instance.daily_executions
-    ) {
-      throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
-    }
+        WHERE DATE(we.created_at) = current_date
+      `;
 
-    // Monthly Limit
-    if (
-      workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(`SELECT COUNT(*)
+      if (
+        workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(instanceDailyExecutionsQuery))[0].count >= workflowsLimit.instance.daily_executions
+      ) {
+        throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
+      }
+
+      // Monthly Limit
+      const instanceMonthlyExecutionsQuery = `
+        SELECT COUNT(*)
         FROM apps a
         INNER JOIN app_versions av on av.app_id = a.id
         INNER JOIN workflow_executions we on we.app_version_id = av.id
         WHERE extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`)
-      )[0].count >= workflowsLimit.instance.monthly_executions
-    ) {
-      throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
+        AND extract (month from we.created_at) = extract (month from current_date)
+      `;
+
+      if (
+        workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
+        (await this.manager.query(instanceMonthlyExecutionsQuery))[0].count >=
+          workflowsLimit.instance.monthly_executions
+      ) {
+        throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
+      }
     }
 
     return true;

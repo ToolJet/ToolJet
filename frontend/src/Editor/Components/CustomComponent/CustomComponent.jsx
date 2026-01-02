@@ -12,6 +12,7 @@ export const CustomComponent = (props) => {
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
+  const messageEventListenerRef = useRef(null);
 
   const customPropRef = useRef(data);
 
@@ -35,7 +36,7 @@ export const CustomComponent = (props) => {
   }, [code]);
 
   useEffect(() => {
-    window.addEventListener('message', (e) => {
+    messageEventListenerRef.current = (e) => {
       try {
         if (e.data.from === 'customComponent' && e.data.componentId === id) {
           if (e.data.message === 'UPDATE_DATA') {
@@ -53,9 +54,33 @@ export const CustomComponent = (props) => {
       } catch (err) {
         console.log(err);
       }
-    });
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    window.addEventListener('message', messageEventListenerRef.current);
+
+    // Cleanup function to remove event listener and cleanup iframe
+    return () => {
+      if (messageEventListenerRef.current) {
+        window.removeEventListener('message', messageEventListenerRef.current);
+        messageEventListenerRef.current = null;
+      }
+
+      // Send cleanup message to iframe
+      if (iFrameRef.current?.contentWindow) {
+        try {
+          iFrameRef.current.contentWindow.postMessage(
+            {
+              message: 'CLEANUP',
+              componentId: id,
+            },
+            '*'
+          );
+        } catch (err) {
+          console.log('Error during iframe cleanup:', err);
+        }
+      }
+    };
+  }, [id, onEvent]);
 
   const sendMessageToIframe = ({ message }) => {
     if (!iFrameRef.current) return;

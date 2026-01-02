@@ -4,4 +4,5 @@ export const LEGACY_ITEMS = [
   'MultiselectLegacy',
   'RadioButtonLegacy',
   'ModalLegacy',
+  'TextareaLegacy',
 ];

@@ -7,13 +7,14 @@ This guide gives you an overview of how you can pass values in a REST API Query 
 
 <div style={{paddingTop:'24px'}}>
 
-## Raw JSON 
+## Raw JSON
 
 In the following JSON code, the `${}` syntax is used for JavaScript string interpolation within template literals (also called template strings). This allows dynamic values from JavaScript variables or expressions to be injected directly into the string.
 
 ```javascript
-{{
-  `{
+{
+  {
+    `{
      "contents": [{
        "parts": [{
          "text": "Generate the following content for this image in markdown format:
@@ -27,8 +28,9 @@ In the following JSON code, the `${}` syntax is used for JavaScript string inter
             }
           },],
       },],
-    }`
-  }}
+    }`;
+  }
+}
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -49,7 +51,7 @@ In this example, simple key-value pairs are entered in the provided input fields
 
 </div>
 
-To see REST API queries in action, check out the following tutorials: 
+To see REST API queries in action, check out the following tutorials:
 
-1. **[Gemini AI Content Generator](https://blog.tooljet.ai/build-an-ai-content-generator-using-gemini-api-and-tooljet-in-10-minutes/)** 
-2. **[Open AI Audio Transcriber](https://blog.tooljet.ai/building-an-audio-transcriber-and-analyzer-using-tooljet-and-openai/)**
+1. **[Gemini AI Content Generator](https://blog.tooljet.com/build-an-ai-content-generator-using-gemini-api-and-tooljet-in-10-minutes/)**
+2. **[Open AI Audio Transcriber](https://blog.tooljet.com/building-an-audio-transcriber-and-analyzer-using-tooljet-and-openai/)**

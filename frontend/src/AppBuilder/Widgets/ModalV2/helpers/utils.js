@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 const MODAL_HEADER = {
   HEIGHT: 80,
 };
@@ -42,3 +44,20 @@ export const getModalFooterHeight = (showFooter, footerHeight = MODAL_FOOTER.HEI
 
   return `${parsedHeight}px`;
 };
+
+export function isFalsyOrMultipleZeros(value) {
+  // Check if it's already falsy
+  if (!value) return true;
+
+  // Check if it's a string with only zeros
+  if (_.isString(value)) {
+    return /^0+$/.test(value);
+  }
+
+  // Check if it's a number that's zero
+  if (_.isNumber(value)) {
+    return value === 0;
+  }
+
+  return false;
+}

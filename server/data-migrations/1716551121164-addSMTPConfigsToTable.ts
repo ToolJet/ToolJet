@@ -1,15 +1,21 @@
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { EncryptionService } from '@modules/encryption/service';
 import {
   INSTANCE_SETTINGS_ENCRYPTION_KEY,
   INSTANCE_SETTINGS_TYPE,
   INSTANCE_SYSTEM_SETTINGS,
 } from '@modules/instance-settings/constants';
+import { NestFactory } from '@nestjs/core';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { AppModule } from '@modules/app/module';
 
 export class addSMTPConfigsToTable1716551121164 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const encryptionService = new EncryptionService();
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
+    const encryptionService = nestApp.get(EncryptionService);
     const entityManager = queryRunner.manager;
 
     const smtpConfigSettings = [

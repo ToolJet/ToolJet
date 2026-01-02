@@ -21,7 +21,10 @@ export function addWait(milliseconds) {
 
 export class MigrationProgress {
   private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
+  constructor(
+    private fileName: string,
+    private totalCount: number
+  ) {}
 
   show() {
     this.progress++;

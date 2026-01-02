@@ -56,19 +56,29 @@ export function insertItems(client: CosmosClient, database: string, containerId:
   });
 }
 
-export function deleteItem(client: CosmosClient, database: string, containerId: string, itemId) {
+export function deleteItem(client: CosmosClient, database: string, containerId: string, itemId, partitionKey?: string) {
   return new Promise((resolve, reject) => {
     lookUpContainer(client, database, containerId)
       .then((container: Container) => {
-        container
-          .item(itemId)
-          .delete()
-          .then(() => {
-            resolve({ message: 'Item deleted' });
-          })
-          .catch((err) => {
-            reject(err);
-          });
+        partitionKey
+          ? container
+              .item(itemId, partitionKey)
+              .delete()
+              .then(() => {
+                resolve({ message: 'Item deleted' });
+              })
+              .catch((err) => {
+                reject(err);
+              })
+          : container
+              .item(itemId)
+              .delete()
+              .then(() => {
+                resolve({ message: 'Item deleted' });
+              })
+              .catch((err) => {
+                reject(err);
+              });
       })
       .catch((err) => {
         reject(err);

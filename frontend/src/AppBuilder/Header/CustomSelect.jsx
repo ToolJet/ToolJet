@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
@@ -8,18 +8,27 @@ import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
 import { CreateVersionModal } from '@/modules/Appbuilder/components';
+import useStore from '@/AppBuilder/_stores/store';
 
 // TODO: edit version modal and add version modal
 const Menu = (props) => {
   const isEditable = props.selectProps.isEditable;
+  const creationMode = props?.selectProps?.appCreationMode;
+  const allowAppEdit = useStore((state) => state.allowEditing);
+  const [isVersionCreationEnabled, setIsVersionCreationEnabled] = useState(
+    creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit)
+  );
+  useEffect(() => {
+    setIsVersionCreationEnabled(creationMode !== 'GIT' || (creationMode === 'GIT' && allowAppEdit));
+  }, [allowAppEdit, creationMode]);
 
   return (
     <components.Menu {...props}>
       <div>
         {isEditable && !props?.selectProps?.value?.isReleasedVersion && (
           <ToolTip
-            message="Versions created from git cannot be edited"
-            show={props?.selectProps?.appCreationMode === 'GIT'}
+            message="New versions cannot be created for non-editable apps"
+            show={!isVersionCreationEnabled}
             placement="right"
           >
             <div
@@ -27,7 +36,7 @@ const Menu = (props) => {
               style={{ padding: '8px 12px' }}
               onClick={() =>
                 !props?.selectProps?.value?.isReleasedVersion &&
-                props?.selectProps?.appCreationMode !== 'GIT' &&
+                isVersionCreationEnabled &&
                 props.selectProps.setShowEditAppVersion(true)
               }
             >
@@ -36,9 +45,7 @@ const Menu = (props) => {
                   {props?.selectProps?.value?.appVersionName &&
                     decodeEntities(props?.selectProps?.value?.appVersionName)}
                 </div>
-                <div
-                  className={cx('col-1', { 'disabled-action-tooltip': props?.selectProps?.appCreationMode === 'GIT' })}
-                >
+                <div className={cx('col-1', { 'disabled-action-tooltip': !isVersionCreationEnabled })}>
                   <EditWhite />
                 </div>
               </div>
@@ -49,18 +56,18 @@ const Menu = (props) => {
         <div>{props.children}</div>
         {isEditable && (
           <ToolTip
-            message={'New versions cannot be created for git imported apps'}
-            show={props?.selectProps?.appCreationMode === 'GIT'}
+            message={'New versions cannot be created for non-editable apps'}
+            show={!isVersionCreationEnabled}
             placement="right"
           >
             <div
               className="cursor-pointer tj-text-xsm"
               style={{
                 padding: '8px 12px',
-                color: `${props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`,
-                cursor: `${props?.selectProps?.appCreationMode !== 'GIT' ? 'pointer' : 'none'}`,
+                color: `${isVersionCreationEnabled ? '#3E63DD' : '#C1C8CD'}`,
+                cursor: `${isVersionCreationEnabled ? 'pointer' : 'none'}`,
               }}
-              onClick={() => props?.selectProps?.appCreationMode !== 'GIT' && props?.setShowCreateAppVersion(true)}
+              onClick={() => isVersionCreationEnabled && props?.setShowCreateAppVersion(true)}
               data-cy="create-new-version-button"
             >
               <svg
@@ -76,7 +83,7 @@ const Menu = (props) => {
                   fillRule="evenodd"
                   clipRule="evenodd"
                   d="M17 11C17.4142 11 17.75 11.3358 17.75 11.75V16.25H22.25C22.6642 16.25 23 16.5858 23 17C23 17.4142 22.6642 17.75 22.25 17.75H17.75V22.25C17.75 22.6642 17.4142 23 17 23C16.5858 23 16.25 22.6642 16.25 22.25V17.75H11.75C11.3358 17.75 11 17.4142 11 17C11 16.5858 11.3358 16.25 11.75 16.25H16.25V11.75C16.25 11.3358 16.5858 11 17 11Z"
-                  fill={`${props?.selectProps?.appCreationMode !== 'GIT' ? '#3E63DD' : '#C1C8CD'}`}
+                  fill={`${isVersionCreationEnabled ? '#3E63DD' : '#C1C8CD'}`}
                 />
               </svg>
               Create new version
@@ -150,11 +157,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`${
-          defaultAppEnvironments.length > 1
-            ? 'Deleting a version will permanently remove it from all environments.'
-            : ''
-        }Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
+        message={`Are you sure you want to delete this version - ${decodeEntities(deleteVersion.versionName)}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />

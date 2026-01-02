@@ -17,10 +17,14 @@ import { Visibility } from '../CodeBuilder/Elements/Visibility';
 import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
 import { Datepicker } from '../CodeBuilder/Elements/Datepicker';
 import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
+import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
+import { Query } from '../CodeBuilder/Elements/Query';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 
 const AllElements = {
   Color,
+  ColorSwatches,
   Json,
   Toggle,
   Select,
@@ -38,6 +42,8 @@ const AllElements = {
   TableRowHeightInput,
   Datepicker,
   TimePicker,
+  DropdownMenu,
+  Query,
 };
 
 export const DynamicFxTypeRenderer = ({ paramType, ...restProps }) => {

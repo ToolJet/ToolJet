@@ -12,6 +12,8 @@ export type SourceOptions = {
   client_key: string;
   root_cert: string;
   connection_options: string[][];
+  allow_dynamic_connection_parameters: boolean;
+  connection_type: string;
 };
 export type QueryOptions = {
   operation: string;

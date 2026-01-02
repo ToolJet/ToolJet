@@ -2,41 +2,47 @@ export const pageConfig = {
   properties: {
     collapsable: true,
     style: 'texticon',
+    hideHeader: false,
+    position: 'top',
+    name: '',
+    hideLogo: false,
     disableMenu: {
       value: `{{false}}`,
       fxActive: false,
     },
+    showOnDesktop: true,
+    showOnMobile: true,
   },
   styles: {
     textColor: {
       accordion: 'itemList',
       displayName: 'Default text',
-      type: 'color',
+      type: 'colorSwatches',
     },
     iconColor: {
       accordion: 'itemList',
       displayName: 'Default icon',
-      type: 'color',
+      type: 'colorSwatches',
     },
     selectedTextColor: {
       accordion: 'itemList',
       displayName: 'Selected text',
-      type: 'color',
+      type: 'colorSwatches',
     },
     selectedIconColor: {
       accordion: 'itemList',
       displayName: 'Selected icon',
-      type: 'color',
+      type: 'colorSwatches',
     },
     pillHoverBackgroundColor: {
       accordion: 'itemList',
       displayName: 'Pill hover background',
-      type: 'color',
+      type: 'colorSwatches',
     },
     pillSelectedBackgroundColor: {
       accordion: 'itemList',
       displayName: 'Pill selected background',
-      type: 'color',
+      type: 'colorSwatches',
     },
     pillRadius: {
       accordion: 'itemList',
@@ -46,58 +52,64 @@ export const pageConfig = {
     backgroundColor: {
       accordion: 'container',
       displayName: 'Background',
-      type: 'color',
+      type: 'colorSwatches',
     },
     borderColor: {
       accordion: 'container',
       displayName: 'Border',
-      type: 'color',
+      type: 'colorSwatches',
     },
   },
   definition: {
     properties: {
       collapsable: true,
       style: 'texticon',
+      hideHeader: false,
+      position: 'top',
+      name: '',
+      hideLogo: false,
       disableMenu: {
         value: '{{false}}',
         fxActive: false,
       },
+      showOnDesktop: true,
+      showOnMobile: true,
     },
     styles: {
       textColor: {
-        value: '#6A727C',
-        isDefault: true,
+        value: 'var(--cc-placeholder-text)',
+        isDefault: false,
       },
       iconColor: {
-        value: '#6A727C',
-        isDefault: true,
+        value: 'var(--cc-default-icon)',
+        isDefault: false,
       },
       selectedTextColor: {
-        value: '#4368E3',
-        isDefault: true,
+        value: 'var(--cc-primary-text)',
+        isDefault: false,
       },
       selectedIconColor: {
-        value: '#4368E3',
-        isDefault: true,
+        value: 'var(--cc-primary-brand)',
+        isDefault: false,
       },
       pillHoverBackgroundColor: {
-        value: '#ECEEF0',
-        isDefault: true,
+        value: 'var(--cc-surface2-surface)',
+        isDefault: false,
       },
       pillSelectedBackgroundColor: {
-        value: '#F0F4FF',
-        isDefault: true,
+        value: 'var(--cc-surface3-surface)',
+        isDefault: false,
       },
       pillRadius: {
         value: '6',
       },
       backgroundColor: {
-        value: '#FFFFFF',
-        isDefault: true,
+        value: 'var(--cc-surface1-surface)',
+        isDefault: false,
       },
       borderColor: {
-        value: '#DFE3E6',
-        isDefault: true,
+        value: 'var(--cc-default-border)',
+        isDefault: false,
       },
     },
   },

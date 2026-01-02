@@ -10,23 +10,18 @@ import { resolveReferences } from '@/_helpers/utils';
 import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getCssVarValue } from '@/Editor/Components/utils';
 
 const CanvasSettings = ({ darkMode }) => {
-  const {
-    globalSettings,
-    globalSettingsChanged,
-    isMaintenanceOn,
-    toggleAppMaintenance,
-    resolveOthers,
-    getCanvasBackgroundColor,
-  } = useStore(
+  const { moduleId } = useModuleContext();
+  const { globalSettings, globalSettingsChanged, resolveOthers, getCanvasBackgroundColor } = useStore(
     (state) => ({
       globalSettings: state.globalSettings,
-      updateGlobalSettings: state.updateGlobalSettings,
-      isMaintenanceOn: state.app.isMaintenanceOn,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
       globalSettingsChanged: state.globalSettingsChanged,
-      toggleAppMaintenance: state.toggleAppMaintenance,
       resolveOthers: state.resolveOthers,
       getCanvasBackgroundColor: state.getCanvasBackgroundColor,
     }),
@@ -73,43 +68,10 @@ const CanvasSettings = ({ darkMode }) => {
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, backgroundFxQuery } = globalSettings ?? {};
+  const { canvasMaxWidth, canvasMaxWidthType, backgroundFxQuery } = globalSettings ?? {};
 
   return (
     <>
-      <Confirm
-        show={showConfirmation}
-        message={
-          isMaintenanceOn
-            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
-            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
-        }
-        onConfirm={() => toggleAppMaintenance()}
-        onCancel={() => setConfirmationShow(false)}
-        darkMode={darkMode}
-      />
-      <div className="tw-flex tw-mb-3">
-        <SwitchComponent
-          align="right"
-          label="Hide header for launched apps"
-          size="default"
-          checked={hideHeader}
-          onCheckedChange={(e) => globalSettingsChanged({ hideHeader: e })}
-          data-cy={`toggle-hide-header-for-launched-apps`}
-          className="tw-w-full"
-        />
-      </div>
-      <div className="tw-flex tw-mb-3">
-        <SwitchComponent
-          align="right"
-          label="Maintenance mode"
-          size="default"
-          checked={isMaintenanceOn}
-          onCheckedChange={() => setConfirmationShow(true)}
-          data-cy={`toggle-maintenance-mode`}
-          className="tw-w-full"
-        />
-      </div>
       <div className="d-flex mb-3">
         <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
           {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
@@ -157,77 +119,64 @@ const CanvasSettings = ({ darkMode }) => {
         </div>
       </div>
 
-      <div className="d-flex justify-content-between mb-3">
+      <div className="d-flex mb-3" style={{ height: '42px', gap: '20px' }}>
         <span className="pt-2" data-cy={`label-bg-canvas`}>
           {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
         </span>
         <div className="canvas-codehinter-container">
-          {showPicker && (
-            <div>
-              <div style={coverStyles} onClick={() => setShowPicker(false)} />
-              <SketchPicker
-                data-cy={`color-picker-canvas`}
-                className="canvas-background-picker"
-                onFocus={() => setShowPicker(true)}
-                color={canvasBackgroundColor}
-                onChangeComplete={(color) => {
+          <div className={`fx-canvas `}>
+            <FxButton
+              dataCy={`canvas-bg-color`}
+              active={!forceCodeBox ? true : false}
+              onPress={async () => {
+                if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                  const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
                   const options = {
-                    canvasBackgroundColor: [color.hex, color.rgb],
-                    backgroundFxQuery: '',
+                    canvasBackgroundColor: value,
+                    backgroundFxQuery: value,
                   };
-                  globalSettingsChanged(options);
-                  resolveOthers('canvas', true, { canvasBackgroundColor: [color.hex, color.rgb] });
-                }}
-              />
-            </div>
-          )}
+                  await Promise.resolve(globalSettingsChanged(options));
+                  await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                }
+                setForceCodeBox(!forceCodeBox);
+              }}
+            />
+          </div>
           {forceCodeBox && (
-            <div className="row mx-0 color-picker-input d-flex" onClick={() => setShowPicker(true)} style={outerStyles}>
-              <div
-                data-cy={`canvas-bg-color-picker`}
-                className="col-auto"
-                style={{
-                  float: 'right',
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: canvasBackgroundColor,
-                  borderRadius: ' 6px',
-                  border: `1px solid var(--slate7, #D7DBDF)`,
-                  boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
-                }}
-              ></div>
-              <div style={{ height: '20px' }} className="col">
-                {canvasBackgroundColor}
-              </div>
-            </div>
+            <ColorSwatches
+              data-cy={`color-picker-canvas`}
+              outerWidth="155px"
+              value={canvasBackgroundColor}
+              onChange={(color) => {
+                const options = {
+                  canvasBackgroundColor: resolveReferences(color),
+                  backgroundFxQuery: color,
+                };
+                globalSettingsChanged(options);
+                resolveOthers('canvas', true, { canvasBackgroundColor: color });
+              }}
+            />
           )}
           <div className={`${!forceCodeBox && 'hinter-canvas-input'} `}>
             {!forceCodeBox && (
-              <CodeHinter
-                cyLabel={`canvas-bg-colour`}
-                initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                lang="javascript"
-                className="canvas-hinter-wrap"
-                lineNumbers={false}
-                onChange={(color) => {
-                  const options = {
-                    canvasBackgroundColor: resolveReferences(color),
-                    backgroundFxQuery: color,
-                  };
-                  globalSettingsChanged(options);
-                  resolveOthers('canvas', true, { canvasBackgroundColor: color });
-                }}
-              />
+              <div className="canvas-hinter-wrap-container">
+                <CodeHinter
+                  cyLabel={`canvas-bg-colour`}
+                  initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                  lang="javascript"
+                  className="canvas-hinter-wrap"
+                  lineNumbers={false}
+                  onChange={(color) => {
+                    const options = {
+                      canvasBackgroundColor: resolveReferences(color),
+                      backgroundFxQuery: color,
+                    };
+                    globalSettingsChanged(options);
+                    resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                  }}
+                />
+              </div>
             )}
-            <div className={`fx-canvas `}>
-              <FxButton
-                dataCy={`canvas-bg-color`}
-                active={!forceCodeBox ? true : false}
-                onPress={() => {
-                  setForceCodeBox(!forceCodeBox);
-                }}
-              />
-            </div>
           </div>
         </div>
       </div>

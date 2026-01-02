@@ -5,20 +5,26 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { Request } from 'express';
-import { UserRepository } from '@modules/users/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
+import { UserSessionRepository } from '@modules/session/repository';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     protected readonly configService: ConfigService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly userRepository: UserRepository
+    protected readonly userRepository: UserRepository,
+    protected readonly sessionRepository: UserSessionRepository
   ) {
     super({
-      jwtFromRequest: (request) => {
-        return request?.cookies['tj_auth_token'];
+      jwtFromRequest: (request: Request) => {
+        // Ensure PAT is processed correctly without bypassing JWT validation
+        if (request.headers['tj_auth_token']) {
+          return request.headers['tj_auth_token'];
+        }
+        return request.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
@@ -29,6 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: JWTPayload) {
     const isUserMandatory = !req['isUserNotMandatory'];
     const isGetUserSession = !!req['isGetUserSession'];
+    const isGettingOrganizations = !!req['isGettingOrganizations'];
     const bypassOrganizationValidation = !req['isFetchingOrganization'] && !req['isSwitchingOrganization'];
     /* User is going through invite flow */
     const isInviteSession = !!req['isInviteSession'];
@@ -41,16 +48,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const user: User = await this.userRepository.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
       user.sessionId = payload.sessionId;
+      user.tjApiSource = payload.tj_api_source;
+
       return user;
     }
 
-    const organizationId =
+    let organizationId =
       typeof req.headers['tj-workspace-id'] === 'object'
         ? req.headers['tj-workspace-id'][0]
         : req.headers['tj-workspace-id'];
 
+    if (!organizationId && payload?.isPATLogin && payload?.appId) {
+      organizationId = payload.organizationIds[0];
+    }
+
     if (isUserMandatory) {
-      // header deos not exist
+      // header does not exist
       if (!organizationId) return false;
 
       // No authenticated workspaces
@@ -67,7 +80,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     let user: User;
     if (payload?.sub && organizationId && !isInviteSession) {
       /* Usual JWT case: user with valid organization id */
-      user = await this.userRepository.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
+      const archivedWorkspaceUser = isGettingOrganizations || req['isSwitchingOrganization'];
+      user = await this.userRepository.findByEmail(
+        payload.sub,
+        archivedWorkspaceUser ? null : organizationId,
+        WORKSPACE_USER_STATUS.ACTIVE
+      );
       if (bypassOrganizationValidation) {
         await this.sessionUtilService.findOrganization(organizationId);
       }
@@ -87,6 +105,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
       user.sessionId = payload.sessionId;
+      user.tjApiSource = payload.tj_api_source;
       if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
     }
 

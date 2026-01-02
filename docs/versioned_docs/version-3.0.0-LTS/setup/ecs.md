@@ -152,7 +152,7 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 
   </div>
   
-  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars#postgrest).
+  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/3.0.0-LTS/setup/env-vars#postgrest-server-required).
 
   <div style={{textAlign: 'center'}}>
 
@@ -184,7 +184,7 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 
   </div>
 
-Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars#tooljet-database) and apply the changes.
+Update ToolJet deployment with the appropriate env variables [here](/docs/3.0.0-LTS/setup/env-vars#enable-tooljet-database-required) and apply the changes.
 
 </div>
 

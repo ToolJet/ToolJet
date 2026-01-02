@@ -31,9 +31,11 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 
 - Once authenticated, click **Save data source** to store the data source.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/setup.png" alt="Salesforece Install" />
-</div>
+You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
+
+Note: After completing the OAuth flow, the query must be triggered again to load the data.
+
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/salesforce/setup-v2.png" alt="Salesforece Install" />
 
 ## Querying Salesforce
 

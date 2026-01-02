@@ -1,10 +1,16 @@
-export const staticDataSources = [
+import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
+
+const allStaticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code', shortName: 'JavaScript' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code', shortName: 'Python' },
   { kind: 'tooljetdb', id: 'null', name: 'ToolJet Database', shortName: 'ToolJet DB' },
   { kind: 'workflows', id: 'null', name: 'Run Workflow', shortName: 'Workflows' },
 ];
+
+export const staticDataSources = allStaticDataSources.filter(
+  (source) => source.kind !== 'workflows' || isWorkflowsFeatureEnabled()
+);
 
 export const tabs = ['JSON', 'Raw'];
 
@@ -99,10 +105,23 @@ export const schemaUnavailableOptions = {
   workflows: {},
 };
 
-export const defaultSources = {
+const allDefaultSources = {
   restapi: { kind: 'restapi', id: 'null', name: 'REST API' },
   runjs: { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
   workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
+};
+
+export const defaultSources = isWorkflowsFeatureEnabled()
+  ? allDefaultSources
+  : Object.fromEntries(
+      Object.entries(allDefaultSources).filter(([key]) => key !== 'workflows')
+    );
+
+export const workflowDefaultSources = {
+  ...defaultSources,
+  'If condition': { kind: 'if', id: 'if', name: 'If condition' },
+  Response: { kind: 'response', id: 'response', name: 'Response' },
+  Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
 };

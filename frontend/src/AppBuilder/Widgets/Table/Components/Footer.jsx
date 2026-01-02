@@ -62,7 +62,10 @@ export const Footer = React.memo(
   }) => {
     function hideColumnsPopover() {
       return (
-        <Popover className={`${darkMode && 'dark-theme'}`} style={{ maxHeight: `${height - 79}px`, overflowY: 'auto' }}>
+        <Popover
+          className={`${darkMode && 'dark-theme'}`}
+          style={{ maxHeight: `${height - 79}px`, overflowY: 'auto', backgroundColor: 'var(--cc-surface1-surface)' }}
+        >
           <div
             data-cy={`dropdown-hide-column`}
             className={`dropdown-table-column-hide-common ${

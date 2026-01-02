@@ -55,6 +55,8 @@ export const createUndoRedoSlice = (set, get) => {
       let updateParent = false;
       let componenetPropertiesToUpdate = {};
 
+      const hasMoreThanOnePatchWithPropertyUpdate = patches.filter((patch) => patch.op === 'propertyUpdate').length > 1;
+
       patches?.map((patch) => {
         const { op, componentId, value } = patch;
         if (op === 'delete') {
@@ -76,13 +78,27 @@ export const createUndoRedoSlice = (set, get) => {
         }
 
         if (op === 'propertyUpdate') {
-          componenetPropertiesToUpdate = {
-            componentId,
-            property: value.property,
-            value: value.value,
-            paramType: value.paramType,
-            attr: value.attr,
-          };
+          if (hasMoreThanOnePatchWithPropertyUpdate)
+            get().setComponentProperty(
+              componentId,
+              value.property,
+              value.value,
+              value.paramType,
+              value.attr,
+              undefined,
+              undefined,
+              {
+                skipUndoRedo: true,
+              }
+            );
+          else
+            componenetPropertiesToUpdate = {
+              componentId,
+              property: value.property,
+              value: value.value,
+              paramType: value.paramType,
+              attr: value.attr,
+            };
         }
       });
 

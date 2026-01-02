@@ -1,5 +1,4 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { getImportPath } from '@modules/app/constants';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '@entities/app.entity';
 import { ThemesModule } from '@modules/organization-themes/module';
@@ -19,19 +18,45 @@ import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
+import { AppPermissionsModule } from '@modules/app-permissions/module';
+import { RolesRepository } from '@modules/roles/repository';
+import { UsersModule } from '@modules/users/module';
+import { UserSessionRepository } from '@modules/session/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
+import { AppGitRepository } from '@modules/app-git/repository';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { SubModule } from '@modules/app/sub-module';
 @Module({})
-export class AppsModule {
+export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const importPath = await getImportPath(configs.IS_GET_CONTEXT);
-    const { AppsController } = await import(`${importPath}/apps/controller`);
-    const { AppsService } = await import(`${importPath}/apps/service`);
-    const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
-    const { AppEnvironmentUtilService } = await import(`${importPath}/app-environments/util.service`);
-    const { PageService } = await import(`${importPath}/apps/services/page.service`);
-    const { EventsService } = await import(`${importPath}/apps/services/event.service`);
-    const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
-    const { AppImportExportService } = await import(`${importPath}/apps/services/app-import-export.service`);
-    const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
+    const {
+      AppsController,
+      WorkflowController,
+      AppsService,
+      AppsUtilService,
+      PageService,
+      EventsService,
+      ComponentsService,
+      WorkflowService,
+      AppImportExportService,
+      PageHelperService,
+    } = await this.getProviders(configs, 'apps', [
+      'controller',
+      'controllers/workflow.controller',
+      'service',
+      'util.service',
+      'services/page.service',
+      'services/event.service',
+      'services/component.service',
+      'services/workflow.service',
+      'services/app-import-export.service',
+      'services/page.util.service',
+    ]);
+
+    const { AppsActionsListener, TemporalService } = await this.getProviders(configs, 'workflows', [
+      'listeners/app-actions.listener',
+      'services/temporal.service',
+    ]);
 
     return {
       module: AppsModule,
@@ -44,13 +69,19 @@ export class AppsModule {
         await AppEnvironmentsModule.register(configs),
         await DataSourcesModule.register(configs),
         await AiModule.register(configs),
+        await AppPermissionsModule.register(configs),
+        await UsersModule.register(configs),
+        await AppEnvironmentsModule.register(configs),
       ],
-      controllers: [AppsController],
+      controllers: [AppsController, WorkflowController],
       providers: [
         AppsService,
+        WorkflowService,
         VersionRepository,
         AppsRepository,
-        AppEnvironmentUtilService,
+        AppGitRepository,
+        AppsActionsListener,
+        TemporalService,
         PageService,
         EventsService,
         AppsUtilService,
@@ -61,8 +92,12 @@ export class AppsModule {
         AppsSubscriber,
         DataSourcesRepository,
         AppImportExportService,
+        RolesRepository,
+        UserSessionRepository,
+        UserRepository,
+        GroupPermissionsRepository,
       ],
-      exports: [AppsUtilService],
+      exports: [AppsUtilService, AppImportExportService],
     };
   }
 }

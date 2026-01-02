@@ -6,4 +6,5 @@ export enum FEATURE_KEY {
   UPDATE_INSTANCE_SSO = 'update_instance_sso',
   UPDATE_INSTANCE_GENERAL_CONFIGS = 'update_instance_general_configs',
   GET_INSTANCE_SSO = 'get_instance_sso',
+  INSTANCE_SSO_INHERIT = 'instance_sso_inherit',
 }

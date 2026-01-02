@@ -3,6 +3,14 @@ id: results
 title: Configuring Results
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 Users have the flexibility to customize the results returned by workflows. The **Result** node enables configuration of your output through JavaScript code.
 
 ## Return Data from a Single Node

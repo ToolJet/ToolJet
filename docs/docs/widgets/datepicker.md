@@ -6,6 +6,10 @@ title: Date Picker
 
 The **Date Picker** component allows users to select a single value for date and time from a pre-determined set.
 
+:::info
+This is a legacy component. Check out the new version of the date picker component [here](/docs/beta/widgets/date-picker-v2).
+:::
+
 <div style={{paddingTop:'24px'}}>
 
 ## Properties

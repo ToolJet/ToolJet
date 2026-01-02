@@ -44,7 +44,7 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
     // Throw a custom exception if the app is not public
     try {
       return await super.canActivate(context);
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException(
         JSON.stringify({
           message: 'Authentication is required to access this app.',

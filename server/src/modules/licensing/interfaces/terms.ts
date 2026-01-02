@@ -27,10 +27,14 @@ export interface Terms {
     gitSync?: boolean;
     comments?: boolean;
     customThemes?: boolean;
+    serverSideGlobalResolve?: boolean;
     ai?: boolean;
+    externalApi?: boolean;
+    appWhiteLabelling?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
+    name?: string;
     isFlexible: boolean;
   };
   auditLogs?: {
@@ -44,15 +48,15 @@ export interface Terms {
   };
   workflows?: {
     execution_timeout?: number;
-    workspace: {
-      total?: number;
-      daily_executions?: number;
-      monthly_executions?: number;
+    workspace?: {
+      total?: number | string;
+      daily_executions?: number | string;
+      monthly_executions?: number | string;
     };
-    instance: {
-      total?: number;
-      daily_executions?: number;
-      monthly_executions?: number;
+    instance?: {
+      total?: number | string;
+      daily_executions?: number | string;
+      monthly_executions?: number | string;
     };
   };
   ai?: {

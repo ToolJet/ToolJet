@@ -4,11 +4,15 @@
 $border-radius: 4px;
 
 .query-manager {
+  user-select: none;
+
+  .row.header {
+    border-top: 3px solid var(--slate5);
+  }
+
   .react-select__value-container {
     margin-bottom: 0px !important;
   }
-
-  user-select: none;
 
   .btn {
     height: 31px;
@@ -85,10 +89,24 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
-  z-index: 11;
+  z-index: 2;
 }
 
 .query-pane {
+
+  height: 400px;
+  position: fixed;
+  left: 48px;
+  right: 48px;
+  bottom: 0;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  font-size: 12px;
+  line-height: 20px;
+  border-top: 1px solid var(--slate5);
+  border-width: 1px 0px 0px 0px;
+  background-color: var(--base);
+
   &.expanded {
     z-index: 12 !important;
   }
@@ -106,19 +124,6 @@ $border-radius: 4px;
       border-width: 2px 0px 0px 0px;
     }
   }
-
-  height: 400px;
-  position: fixed;
-  left: 48px;
-  right: 300px;
-  bottom: 0;
-  overflow-x: hidden;
-  flex: 1 1 auto;
-  font-size: 12px;
-  line-height: 20px;
-  border-top: 1px solid var(--slate5);
-  border-width: 1px 0px 0px 0px;
-  background-color: var(--base);
 
   &#query-manager {
     border-width: 3px 0px 0px 0px;
@@ -165,7 +170,7 @@ $border-radius: 4px;
   }
 
   .query-row:hover .query-rename-delete-btn {
-    display: flex;
+    display: flex !important;
   }
 
   .query-row {
@@ -177,7 +182,7 @@ $border-radius: 4px;
     align-items: center;
     padding: 0px;
     font-weight: 500;
-    width: 272px;
+    width: 100%;
     height: 32px;
     color: var(--slate12);
     border-radius: 6px;
@@ -188,12 +193,10 @@ $border-radius: 4px;
     }
 
     .query-rename-delete-btn {
-      display: none;
       align-items: center;
       justify-content: flex-end;
-      gap: 8px;
       margin-left: 2px;
-      width: 66px;
+      width: 22px;
       height: 20px;
     }
 
@@ -317,6 +320,7 @@ $border-radius: 4px;
       max-height: 44px;
       height: 44px;
       font-weight: 500 !important;
+      border-top: 3px solid var(--slate5);
 
       .query-manager-header-query-name {
         color: var(--slate12);
@@ -380,7 +384,7 @@ $border-radius: 4px;
 
       .queries-header {
         border: solid var(--slate5);
-        border-width: 0px 0px 1px 0px;
+        border-width: 3px 0px 1px 0px;
         height: 44px;
         --tblr-gutter-x: 0rem;
         display: flex;
@@ -508,7 +512,7 @@ $border-radius: 4px;
       .query-list {
         display: flex;
         flex-direction: column;
-        padding: 8px;
+        padding: 8px 8px 8px 8px; // Reduced right padding to minimize gap when scrollbar is visible
         gap: 2px;
         width: 100%;
 
@@ -1131,6 +1135,8 @@ $border-radius: 4px;
       justify-content: space-between;
 
       .left {
+        cursor: pointer;
+
         span {
           color: var(--slate12);
           font-family: 'source-code-pro', Menlo, 'Courier New', Consolas, monospace;
@@ -1145,7 +1151,6 @@ $border-radius: 4px;
           fill: var(--slate12) !important;
         }
 
-        cursor: pointer;
       }
     }
 
@@ -1250,6 +1255,7 @@ $border-radius: 4px;
         color: var(--slate12) !important;
       }
     }
+
     &.data-source-exists {
       .cm-editor {
         border-radius: 0 4px 4px 0 !important;
@@ -1834,6 +1840,7 @@ $border-radius: 4px;
 
   .cm-scroller {
     border-bottom-left-radius: 4px;
+    overscroll-behavior: auto !important;
   }
 }
 
@@ -1853,20 +1860,23 @@ $border-radius: 4px;
   margin-left: 32px !important;
 }
 
-.tjdb-codhinter-wrapper{
-  .codehinter-input{
-    .cm-editor{
-      height: 30px !important;
+.tjdb-codhinter-wrapper {
+  .codehinter-input {
+    .cm-editor {
+      // height: 30px !important;
       min-height: 30px !important;
+      max-height: 100px !important;
       border-radius: 0 !important;
-      border-right: 0 ;
-  }
+      border-right: 0;
+    }
   }
 }
-.tjdb-limit-offset-codehinter{
-  .cm-editor{
-    height: 30px !important;
+
+.tjdb-limit-offset-codehinter {
+  .cm-editor {
+    // height: 30px !important;
     min-height: 30px !important;
+    max-height: 100px !important;
   }
 }
 
@@ -1894,7 +1904,7 @@ $border-radius: 4px;
   margin-right: auto;
 
   p {
-    display: flex; 
+    display: flex;
     align-items: center;
 
     span {
@@ -1903,5 +1913,25 @@ $border-radius: 4px;
       font-size: 12px;
       line-height: 18px;
     }
+  }
+}
+
+
+.qm-delete-btn {
+  min-height: 30px;
+  height: 100% !important;
+  align-items: flex-start !important;
+  padding-top: 6px;
+}
+
+.restapi-key-value {
+
+  .code-hinter-wrapper,
+  .code-editor-basic-wrapper,
+  .codehinter-container,
+  .cm-codehinter,
+  .code-editor-query-panel {
+    height: 100%;
+    max-height: 100px;
   }
 }

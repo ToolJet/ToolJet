@@ -1,6 +1,6 @@
 export const radiobuttonConfig = {
-  name: 'RadioButton',
-  displayName: 'Radio Button',
+  name: 'RadioButtonLegacy',
+  displayName: 'Radio Button (Legacy)',
   description: 'Select one from multiple choices',
   component: 'RadioButton',
   defaultSize: {
@@ -53,19 +53,19 @@ export const radiobuttonConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-text)',
       },
     },
     activeColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Active color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--cc-primary-brand)',
       },
     },
     visibility: {
@@ -97,9 +97,7 @@ export const radiobuttonConfig = {
       ],
     },
   ],
-  exposedVariables: {
-    value: true,
-  },
+  exposedVariables: {},
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -114,8 +112,8 @@ export const radiobuttonConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '' },
-      activeColor: { value: '' },
+      textColor: { value: 'var(--cc-primary-text)' },
+      activeColor: { value: 'var(--cc-primary-brand)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },

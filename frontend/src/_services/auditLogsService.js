@@ -1,7 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
 
-export const auditLogsService = { index, getLicenseTerms, getMaxDurationForAuditLogs };
+export const auditLogsService = { index, getLicenseTerms, getMaxDurationForAuditLogs, getResources };
 
 function index(params) {
   const requestOptions = {
@@ -21,4 +21,9 @@ function getLicenseTerms() {
 function getMaxDurationForAuditLogs() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/license/audit-logs/max-duration`, requestOptions).then(handleResponse);
+}
+
+function getResources() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/audit-logs/resources`, requestOptions).then(handleResponse);
 }

@@ -39,7 +39,7 @@ Make sure to run it within the WSL2 terminal.
 git clone https://github.com/<your-username>/ToolJet.git
 ```
 
-3. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
+3. Create a `.env` file by copying `.env.internal.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
 
 ```bash
 cp ./deploy/docker/.env.internal.example .env

@@ -33,10 +33,10 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
 
-## Redis
+## PostgreSQL
 
-Redis required for **multiplayer editing and background jobs**. ToolJet includes a **built-in Redis setup**, but for **multi pod/services** deployment, an **external Redis instance** is recommended. Use **Redis version 6.x** for optimal performance.
+- It is recommended to use PostgreSQL version 16.x.
 
-## PostgreSQL 
-
-ToolJet requires PostgreSQL for data storage. It is recommended to use **PostgreSQL version 13.x** for optimal compatibility and performance.
+:::info
+If you are currently on PostgreSQL 13.x, you may continue using it; however, upgrading to version 16.x is advised for improved performance and features. Additionally, PostgreSQL 13.x officially reached end-of-life in November 2023.
+:::

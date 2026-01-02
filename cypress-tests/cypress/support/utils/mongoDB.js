@@ -10,7 +10,7 @@ export const connectMongo = () => {
   selectAndAddDataSource(mongoDbText.mongoDb);
 
   cy.clearAndType(
-    '[data-cy="data-source-name-input-filed"]',
+    '[data-cy="data-source-name-input-field"]',
     mongoDbText.cypressMongoDb
   );
 

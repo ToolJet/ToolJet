@@ -12,13 +12,22 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 
 export const reservedKeyword = ['app', 'window'];
+
+// Function to format file size
+export function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024; // Use 1024 for binary KB/MB etc
+  const dm = 2;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 export const Constants = {
   Global: 'Global',
@@ -70,17 +79,6 @@ export function findProp(obj, prop, defval) {
     }
   }
   return obj;
-}
-
-export function checkWhiteLabelsDefaultState() {
-  const text = window.public_config?.WHITE_LABEL_TEXT;
-  const logo = window.public_config?.WHITE_LABEL_LOGO;
-  const favicon = window.public_config?.WHITE_LABEL_FAVICON;
-  return (
-    (!text || text === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
-    (!logo || logo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
-    (!favicon || favicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
-  );
 }
 
 export function stripTrailingSlash(str) {
@@ -242,18 +240,20 @@ export function resolveReferences(
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
-          for (const dynamicVariable of dynamicVariables) {
-            const value = resolveString(
-              dynamicVariable,
-              state,
-              customObjects,
-              reservedKeyword,
-              withError,
-              forPreviewBox
-            );
+          if (dynamicVariables) {
+            for (const dynamicVariable of dynamicVariables) {
+              const value = resolveString(
+                dynamicVariable,
+                state,
+                customObjects,
+                reservedKeyword,
+                withError,
+                forPreviewBox
+              );
 
-            if (typeof value !== 'function') {
-              object = object.replace(dynamicVariable, value);
+              if (typeof value !== 'function') {
+                object = object.replace(dynamicVariable, value);
+              }
             }
           }
         }
@@ -1397,7 +1397,7 @@ export const computeColor = (styleDefinition, value, meta) => {
       return value;
     }
     if (meta?.displayName == 'Text color') {
-      value = value == '#FFFFFF' ? '#1B1F24' : value;
+      value = value == '#FFFFFF' ? 'var(--cc-primary-text)' : value;
       return value;
     }
     if (meta?.displayName == 'Icon color') {
@@ -1541,4 +1541,44 @@ export const hasBuilderRole = (roleObj) => {
 export function checkIfToolJetCloud(version) {
   const parsed = version.split('-');
   return parsed[1] === 'cloud';
+}
+
+export function checkIfToolJetEE(version) {
+  const parsed = version.split('-');
+  return parsed[1] === 'ee';
+}
+
+export const calculateDueDate = (currentPeriodEnd) => {
+  const currentPeriodEndDate = new Date(currentPeriodEnd * 1000);
+  const currentDate = new Date();
+  let dueMessage;
+
+  if (currentPeriodEndDate > currentDate) {
+    const timeDiff = currentPeriodEndDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+
+    if (daysDiff < 7) {
+      dueMessage = `Due in ${daysDiff} days`;
+    } else {
+      const options = { day: 'numeric', month: 'short', year: 'numeric' };
+      dueMessage = currentPeriodEndDate.toLocaleDateString('en-GB', options).replace(',', '');
+      dueMessage = `Next due on ${dueMessage}`;
+    }
+  } else if (currentPeriodEndDate.toDateString() === currentDate.toDateString()) {
+    dueMessage = `Due today`;
+  } else {
+    const timeDiff = currentDate.getTime() - currentPeriodEndDate.getTime();
+    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+    dueMessage = `Due ${daysDiff} days ago`;
+  }
+
+  return dueMessage;
+};
+
+export const centsToUSD = (amountInCents) => {
+  return (amountInCents / 100).toFixed(2);
+};
+
+export function formatPrice(price) {
+  return price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

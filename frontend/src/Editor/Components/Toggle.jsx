@@ -7,7 +7,7 @@ class Switch extends React.Component {
       <label className="form-switch form-check-inline">
         <input
           style={{
-            backgroundColor: on ? `${color}` : 'white',
+            backgroundColor: on ? `${color}` : 'var(--cc-surface1-surface)',
             marginTop: '0px',
           }}
           disabled={disabledState}

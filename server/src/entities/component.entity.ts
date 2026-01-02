@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Page } from './page.entity';
 import { Layout } from './layout.entity';
+import { ComponentPermission } from './component_permissions.entity';
 
 @Entity({ name: 'components' })
 @Index('idx_component_page_id', ['pageId'])
@@ -60,4 +61,7 @@ export class Component {
 
   @OneToMany(() => Layout, (layout) => layout.component)
   layouts: Layout[];
+
+  @OneToMany(() => ComponentPermission, (permission) => permission.component)
+  permissions: ComponentPermission[];
 }

@@ -89,7 +89,7 @@ export const radiobuttonV2Config = {
   },
   styles: {
     labelColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
@@ -139,7 +139,7 @@ export const radiobuttonV2Config = {
       isFxNotRequired: true,
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
@@ -147,7 +147,7 @@ export const radiobuttonV2Config = {
       accordian: 'switch',
     },
     switchOnBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Checked background',
       validation: {
         schema: { type: 'string' },
@@ -158,7 +158,7 @@ export const radiobuttonV2Config = {
       tooltipPlacement: 'bottom',
     },
     switchOffBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Unchecked background',
       validation: {
         schema: { type: 'string' },
@@ -169,7 +169,7 @@ export const radiobuttonV2Config = {
       tooltipPlacement: 'bottom',
     },
     handleColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle color',
       validation: {
         schema: { type: 'string' },
@@ -177,7 +177,7 @@ export const radiobuttonV2Config = {
       accordian: 'switch',
     },
     optionsTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text',
       validation: {
         schema: { type: 'string' },
@@ -279,16 +279,16 @@ export const radiobuttonV2Config = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#11181C' },
+      labelColor: { value: 'var(--cc-primary-text)' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
-      auto: { value: '{{false}}' },
-      labelWidth: { value: '20' },
-      borderColor: { value: '#FFFFFF' },
-      switchOffBackgroundColor: { value: '#FFFFFF' },
-      switchOnBackgroundColor: { value: '#4368E3' },
-      handleColor: { value: '#FFFFFF' },
-      optionsTextColor: { value: '#11181C' },
+      auto: { value: '{{true}}' },
+      labelWidth: { value: '33' },
+      borderColor: { value: 'var(--cc-default-border)' },
+      switchOffBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      switchOnBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      handleColor: { value: 'var(--cc-surface1-surface)' },
+      optionsTextColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
     },
   },

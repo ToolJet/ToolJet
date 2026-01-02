@@ -83,7 +83,9 @@ const WorkspaceNameForm = () => {
       setFormData({ workspaceName: defaultWorkspaceName });
       setIsFormValid(true);
     };
-    handleDefaultWorkspaceName();
+    if (!formData.workspaceName || formData.workspaceName === '') {
+      handleDefaultWorkspaceName();
+    }
   }, [adminDetails.email, inviteeEmail]);
 
   const isWorkspaceNameUnique = async (value) => {

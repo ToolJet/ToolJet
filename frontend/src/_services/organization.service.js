@@ -13,11 +13,14 @@ export const organizationService = {
   getWorkspacesLimit,
   checkWorkspaceUniqueness,
   updateOrganization,
+  setDefaultWorkspace,
+  updateOrganizationStatus,
+  updateInheritSSO,
 };
 
 function getUsersByValue(searchInput) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organizations/users/suggest?input=${searchInput}`, requestOptions).then(
+  return fetch(`${config.apiUrl}/organization-users/users/suggest?input=${searchInput}`, requestOptions).then(
     handleResponse
   );
 }
@@ -32,17 +35,27 @@ function createOrganization(data) {
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
 
-// Used for making API calls to update workspace name/slug and workspace status
-function updateOrganization(params, organizationId = '') {
+// Used for making API calls to update workspace name/slug
+function updateOrganization(params) {
   const requestOptions = {
     method: 'PATCH',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(params),
   };
-  return fetch(`${config.apiUrl}/organizations${organizationId ? `/${organizationId}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
+}
+
+//used to update workspace status
+function updateOrganizationStatus(params, organizationId = '') {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(params),
+  };
+  const status = params.status === 'active' ? 'unarchive' : 'archive';
+  return fetch(`${config.apiUrl}/organizations/${status}/${organizationId}`, requestOptions).then(handleResponse);
 }
 
 //  Used for making API calls to update details related to organization's SSO configurations
@@ -57,6 +70,16 @@ function editOrganization(params, organizationId = '') {
     `${config.apiUrl}/login-configs/organization-general${organizationId ? `/${organizationId}` : ''}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function updateInheritSSO(params) {
+  const requestOptions = {
+    method: 'PATCH',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(params),
+  };
+  return fetch(`${config.apiUrl}/login-configs/organization-general/inherit-sso`, requestOptions).then(handleResponse);
 }
 
 function getOrganizations(status = 'active', currentPage = undefined, perPageCount = undefined, name = undefined) {
@@ -99,4 +122,9 @@ function checkWorkspaceUniqueness(name, slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify({ name, slug });
   return fetch(`${config.apiUrl}/organizations/is-unique?${query}`, requestOptions).then(handleResponse);
+}
+
+function setDefaultWorkspace(workspaceId) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organizations/${workspaceId}/default`, requestOptions).then(handleResponse);
 }

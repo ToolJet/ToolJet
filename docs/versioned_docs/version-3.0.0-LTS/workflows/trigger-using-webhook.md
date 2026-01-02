@@ -3,6 +3,14 @@ id: trigger-using-webhook
 title: Trigger Workflows Using Webhooks
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 This guide demonstrates how to trigger workflows using webhooks.
 
 <div style={{paddingTop:'24px'}}>

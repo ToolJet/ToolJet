@@ -539,11 +539,14 @@ class ViewerComponent extends React.Component {
         this.setStateForApp(data, true);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview,
-        });
+        fetchAndSetWindowTitle(
+          {
+            page: pageTitles.VIEWER,
+            appName: data.name,
+            preview,
+          },
+          data.organizationId
+        );
       })
       .catch((error) => {
         this.setState({
@@ -566,19 +569,25 @@ class ViewerComponent extends React.Component {
     await appService
       .fetchAppByVersion(appId, versionId)
       .then((data) => {
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview: true,
-        });
+        fetchAndSetWindowTitle(
+          {
+            page: pageTitles.VIEWER,
+            appName: data.name,
+            preview: true,
+          },
+          data.organizationId
+        );
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);
         const preview = !!queryString.parse(this.props?.location?.search)?.version;
-        fetchAndSetWindowTitle({
-          page: pageTitles.VIEWER,
-          appName: data.name,
-          preview,
-        });
+        fetchAndSetWindowTitle(
+          {
+            page: pageTitles.VIEWER,
+            appName: data.name,
+            preview,
+          },
+          data.organizationId
+        );
       })
       .catch(() => {
         this.setState({
