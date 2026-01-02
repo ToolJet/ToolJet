@@ -62,6 +62,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    - Port: 443
    - Source: 0.0.0.0/0 (public access)
    ```
+   <br/>
 
    :::tip
    For production deployments, it's recommended to restrict SSH access (port 22) to your specific IP address or corporate network range instead of allowing public access.
@@ -77,6 +78,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 
    ```bash
    # Application Configuration
+   TOOLJET_HOST=                # <Endpoint url>
    LOCKBOX_MASTER_KEY=          # Generate: openssl rand -hex 32
    SECRET_KEY_BASE=             # Generate: openssl rand -hex 64
 
@@ -168,12 +170,6 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
 11. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
 
-:::info
-**Note on ToolJet Database**: ToolJet AMI comes with PostgREST pre-installed. The ToolJet Database feature is mandatory from ToolJet 3.0 onwards. All required environment variables (`TOOLJET_DB`, `TOOLJET_DB_HOST`, `TOOLJET_DB_USER`, `TOOLJET_DB_PASS`, and PostgREST configuration) should already be configured in your `.env` file from step 7.
-
-Learn more about ToolJet Database [here](/docs/tooljet-db/tooljet-database). For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
-:::
-
 ## Workflows
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
@@ -242,41 +238,45 @@ Before starting the upgrade process, perform a **comprehensive backup of your Po
 Ensure both databases are included in your backup before proceeding with the upgrade.
 :::
 
-**Version Requirements:**
-
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
-### Upgrade Steps
+## Upgrade Steps
 
-1. **Copy the .env File from the Old Instance**
-   - Before stopping the old instance, copy the `.env` file and store it safely.
-
-2. **Stop the Old EC2 Instance**
-   - To prevent conflicts, stop the old EC2 instance before proceeding with the new deployment.
-   - Ensure that the old instance remains stopped while setting up the new one.
-
-3. **Launch a New EC2 Instance with the Latest AMI**
-   - Go to the AWS AMI dashboard and find the latest ToolJet AMI.
-   - Launch a new EC2 instance using this AMI.
-   - Configure security group rules as needed.
-
-4. **Transfer the .env File to the New Instance**
-   - Upload the saved `.env` file to the appropriate directory on the new instance.
-
-5. **Start the Application**
-   - SSH into the new instance, navigate to the app directory, and run the setup script:
-   ```bash
-   cd ~/app
-   ./setup_app
-   ```
-
-6. **Verify the Upgrade**
-   - Confirm that ToolJet is running correctly on the new instance.
-   - Test that both databases (PG_DB and TOOLJET_DB) are accessible.
-
-7. **Terminate the Old EC2 Instance**
-   - After verification, terminate the old EC2 instance to avoid unnecessary costs.
+#### 1. Copy the `.env` file from the old instance
+- Before stopping the old EC2 instance, copy the `.env` file.
+- Store it securely, as it contains environment-specific configuration.
 
 ---
 
-_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._
+#### 2. Stop the old EC2 instance
+- Stop the old EC2 instance to avoid conflicts.
+- Ensure the instance remains **stopped** throughout the new deployment process.
+
+---
+
+#### 3. Launch a new EC2 instance using the latest AMI
+- Open the AWS **AMI dashboard**.
+- Locate the **latest ToolJet AMI**.
+- Launch a new EC2 instance using this AMI.
+- Configure the required **security group rules**.
+
+---
+
+#### 4. Transfer the `.env` file to the new instance
+- Upload the previously saved `.env` file.
+- Place it in the appropriate directory on the new EC2 instance.
+
+---
+
+#### 5. Start the application
+- SSH into the new EC2 instance.
+- Navigate to the application directory and run the setup script:
+
+```bash
+cd ~/app
+./setup_app
+```
+<br/>
+
+If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com.

@@ -89,7 +89,7 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.x or higher, v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
 
 **Required Variables:**
 

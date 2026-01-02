@@ -11,7 +11,18 @@ ToolJet will be releasing new LTS versions every 3-5 months with an end-of-life 
 
 ### Prerequisites
 
-- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+:::warning
+**Critical: Backup Your PostgreSQL Instance**
+
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
+
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
+
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 

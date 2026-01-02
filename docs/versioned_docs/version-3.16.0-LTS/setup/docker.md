@@ -301,8 +301,6 @@ Before starting the upgrade process, perform a **comprehensive backup of your Po
 Ensure both databases are included in your backup before proceeding with the upgrade.
 :::
 
-**Version Requirements:**
-
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 
 ---
