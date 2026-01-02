@@ -366,6 +366,7 @@
                 },
                 "widgets/tabs",
                 "widgets/tags",
+                "widgets/tags-input",
                 "widgets/text-input",
                 "widgets/text",
                 "widgets/text-area",
