@@ -96,6 +96,7 @@ module.exports = {
             { label: 'App builder', to: 'https://www.tooljet.com/visual-app-builder' },
             { label: 'AI Agent builder', to: 'https://www.tooljet.com/ai-agent-builder' },
             { label: 'ToolJet Database', to: 'https://www.tooljet.com/database' },
+            { label: 'Trust Center', to: 'https://trust.tooljet.com/' },
           ],
         },
         {
