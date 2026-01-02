@@ -155,7 +155,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
   }
 
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
-    console.log('[createDefaultGroups] START - organizationId:', organizationId);
     const defaultGroups: GroupPermissions[] = [];
 
     // Check if multi-environment feature is available
@@ -163,11 +162,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-
-    console.log('[createDefaultGroups] hasMultiEnvironment:', hasMultiEnvironment);
-    console.log('[createDefaultGroups] typeof hasMultiEnvironment:', typeof hasMultiEnvironment);
-    console.log('[createDefaultGroups] hasMultiEnvironment === true:', hasMultiEnvironment === true);
-    console.log('[createDefaultGroups] hasMultiEnvironment !== true:', hasMultiEnvironment !== true);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
@@ -250,13 +244,10 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { group, isBuilderLevel } = await this.getGroupWithBuilderLevel(groupId, organizationId, manager);
-      const isCustomGroupsEnabled = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.CUSTOM_GROUPS,
-        organizationId
-      );
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
 
-      if (!isCustomGroupsEnabled && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
-        // Basic/Starter plan - not allowed to update custom groups
+      if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
+        // Basic plan - not allowed to update custom groups
         throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
       }
 
@@ -485,7 +476,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getGroupWithName(name: string, organizationId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log(name, 'siu');
       const group = await this.groupPermissionsRepository.getGroup(
         {
           name,
@@ -544,8 +534,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           .where('group_id = :groupId', { groupId })
           .andWhere('user_id IN (:...userIds)', { userIds })
           .execute();
-        console.log(groupId);
-        console.log(userIds, ' sus');
       } else {
         // 🧹 Delete all users from the group
         await groupUsersRepo

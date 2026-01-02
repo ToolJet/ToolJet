@@ -14,8 +14,6 @@ import { USER_ROLE } from '../constants';
 import { User } from '@entities/user.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
-import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -23,8 +21,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     protected readonly groupPermissionRepository: GroupPermissionsRepository,
     protected readonly granularPermissionUtilService: GranularPermissionsUtilService,
     protected readonly licenseUserService: LicenseUserService,
-    protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
-    protected readonly licenseTermsService: LicenseTermsService
+    protected readonly licenseUtilService: GroupPermissionLicenseUtilService
   ) {}
 
   async create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto) {
@@ -83,16 +80,13 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isCustomGroupsEnabled = await this.licenseTermsService.getLicenseTerms(
-        LICENSE_FIELD.CUSTOM_GROUPS,
-        organizationId
-      );
+      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
       const groupPermission = await this.groupPermissionRepository.getGroup({
         id: groupId,
         organizationId,
       });
 
-      if (!isCustomGroupsEnabled) {
+      if (!isLicenseValid) {
         return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
       }
       return await this.groupPermissionRepository.getAllGranularPermissions(

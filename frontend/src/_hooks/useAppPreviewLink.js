@@ -38,7 +38,7 @@ export function useAppPreviewLink() {
     const isBasicPlan =
       featureAccess?.licenseStatus?.isExpired === true ||
       featureAccess?.licenseStatus?.isLicenseValid === false ||
-      featureAccess?.licenseStatus?.licenseType === 'starter';
+      featureAccess?.plan === 'starter';
 
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
