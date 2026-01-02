@@ -72,8 +72,6 @@ docker-compose up -d
 
 4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
-Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
-
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
 `TOOLJET_HOST=https://tooljet.yourdomain.com`
@@ -88,6 +86,8 @@ ii. Setup docker to run without root privileges by following the instructions wr
 iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
 `sudo docker-compose up -d`
 :::
+
+Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
 ### Docker Backup (Only For In-Built PostgreSQL)
 
@@ -142,8 +142,6 @@ docker-compose up -d
 
 4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
-Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
-
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
 `TOOLJET_HOST=https://tooljet.yourdomain.com`
@@ -160,6 +158,8 @@ iii. If you're running a linux server, `docker` might need sudo permissions. In 
 
 iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
 :::
+
+Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
 </TabItem>
 </Tabs>

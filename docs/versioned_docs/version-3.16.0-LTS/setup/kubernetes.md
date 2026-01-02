@@ -195,7 +195,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')
 
-**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
+**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret). **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 

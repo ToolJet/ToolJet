@@ -194,6 +194,8 @@ This example deployment creates:
 - A Secret for optional password authentication
 
 :::info
+Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
+
 This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
 :::
 
@@ -211,9 +213,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')
 
-**Note:** Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
-
-**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret).
+**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret). **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 

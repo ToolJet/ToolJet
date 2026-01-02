@@ -123,10 +123,6 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 
    </details>
 
-   :::info
-   For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
-   :::
-
    ### SSL Configuration for AWS RDS PostgreSQL
 
    :::warning
@@ -211,7 +207,6 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
   :::
 
 **Note**: After updating the `.env` file, restart the server using `./setup_app`.
-
 
 **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 

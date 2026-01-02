@@ -108,10 +108,6 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. PostgREST will refuse authentication requests if this parameter is not set.
    :::
 
-   :::info
-   For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
-   :::
-
    :::tip
    **Cloud SQL Public IP Connection**: If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST` and `TOOLJET_DB_HOST`) needs to be set using unix socket format: `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`
    :::
@@ -166,6 +162,10 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - `REDIS_DB=0` - Optional: Redis database number (default: 0)
 - `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
   :::
+
+
+**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
+
 
 ## Upgrading to the Latest LTS Version
 
