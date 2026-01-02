@@ -109,12 +109,16 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    <details>
    <summary>Why does ToolJet require two databases?</summary>
 
-   ToolJet requires two separate databases for optimal functionality:
+   ToolJet requires **two separate database names** for optimal functionality:
 
    - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
    - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
 
    This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
+
+   **Deployment Flexibility:**
+   - **Same PostgreSQL instance** (recommended for most use cases): Create both databases within a single PostgreSQL server
+   - **Separate PostgreSQL instances** (optional, for scale): Host each database on different PostgreSQL servers based on your performance and isolation requirements
 
    </details>
 
@@ -175,7 +179,6 @@ Learn more about ToolJet Database [here](/docs/tooljet-db/tooljet-database). For
 
 - [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
 - [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
-- [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
 
 ## Workflows
 
@@ -221,36 +224,62 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 
 ## Upgrading to the Latest LTS Version
 
-:::note
-Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+:::info
+If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
+
+**AMI Upgrade Process:** Since ToolJet is deployed using an AMI (Amazon Machine Image), upgrading to a new LTS version requires launching a new EC2 instance with the updated AMI instead of upgrading in place.
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-Since ToolJet is deployed using an AMI (Amazon Machine Image), upgrading to a new LTS version requires launching a new EC2 instance with the updated AMI instead of upgrading in place.
+### Prerequisites for Upgrading
 
-### Steps to Upgrade
+:::warning
+**Critical: Backup Your PostgreSQL Instance**
 
-1. **Backup Your Data** <br/>
-   Perform a comprehensive backup of your PostgreSQL database to prevent data loss.
-2. **Copy the .env File from the old Instance** <br/>
-   Before stopping the old instance, copy the `.env` file and store it safely.
-3. **Stop the old EC2 Instance**
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
+
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
+
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+**Version Requirements:**
+
+- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+
+### Upgrade Steps
+
+1. **Copy the .env File from the Old Instance**
+   - Before stopping the old instance, copy the `.env` file and store it safely.
+
+2. **Stop the Old EC2 Instance**
    - To prevent conflicts, stop the old EC2 instance before proceeding with the new deployment.
    - Ensure that the old instance remains stopped while setting up the new one.
-4. **Launch a New EC2 Instance with the Latest AMI**
+
+3. **Launch a New EC2 Instance with the Latest AMI**
    - Go to the AWS AMI dashboard and find the latest ToolJet AMI.
    - Launch a new EC2 instance using this AMI.
    - Configure security group rules as needed.
-5. **Transfer the .env File to the New Instance** <br/>
-   Upload the saved `.env` file to the appropriate directory on the new instance.
-6. **Start the Application** <br/>
-   SSH into the new instance, navigate to the app directory, and run the setup script:
+
+4. **Transfer the .env File to the New Instance**
+   - Upload the saved `.env` file to the appropriate directory on the new instance.
+
+5. **Start the Application**
+   - SSH into the new instance, navigate to the app directory, and run the setup script:
    ```bash
    cd ~/app
    ./setup_app
    ```
-7. **Terminate the Old EC2 Instance** <br/>
-   After verifying that ToolJet is running correctly on the new instance, terminate the old EC2 instance to avoid unnecessary costs.
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+6. **Verify the Upgrade**
+   - Confirm that ToolJet is running correctly on the new instance.
+   - Test that both databases (PG_DB and TOOLJET_DB) are accessible.
+
+7. **Terminate the Old EC2 Instance**
+   - After verification, terminate the old EC2 instance to avoid unnecessary costs.
+
+---
+
+_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._

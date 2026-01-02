@@ -43,15 +43,6 @@ There are two options to deploy ToolJet using Docker Compose:
 
 Confused about which setup to select? Feel free to ask the community via [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 
-:::info
-
-**Critical**: The two databases must have **different names**. Using the same database for both will cause deployment failure.
-
-**Database Requirements**: ToolJet requires **two separate PostgreSQL databases**:
-- **PG_DB** (Application Database): Stores ToolJet's core application data including users, apps, and configurations
-- **TOOLJET_DB** (Internal Database): Stores ToolJet Database feature data including internal metadata and tables created by users
-:::
-
 <Tabs>
   <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
 
@@ -291,14 +282,29 @@ REDIS_PASSWORD=
 
 ## Upgrading to the Latest LTS Version
 
+:::info
+If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
+:::
+
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+### Prerequisites for Upgrading
 
-#### Prerequisites for Upgrading to the Latest LTS Version:
+:::warning
+**Critical: Backup Your PostgreSQL Instance**
 
-- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
-- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
+
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+**Version Requirements:**
+
+- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+
+---
 
 _If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
