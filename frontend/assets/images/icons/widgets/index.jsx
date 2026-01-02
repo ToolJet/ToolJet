@@ -63,6 +63,8 @@ import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
 import CurrencyInput from './currencyinput.jsx';
 import PopoverMenu from './popovermenu.jsx';
+import AudioRecorder from './audiorecorder.jsx';
+import Camera from './camera.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -216,6 +218,10 @@ const WidgetIcon = (props) => {
     case 'currencyinput':
     case 'currencyinputlegacy':
       return <CurrencyInput {...props} />;
+    case 'audiorecorder':
+      return <AudioRecorder {...props} />;
+    case 'camera':
+      return <Camera {...props} />;
     default:
       return <BoundedBox {...props} />;
   }
