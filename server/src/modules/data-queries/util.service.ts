@@ -402,11 +402,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user
     );
 
-    const parsedQueryOptions =
-      !dataQuery || Object.keys(dataQuery).length === 0
-        ? {}
-        : await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id, environmentId, user, opts);
-
+    const parsedQueryOptions = await this.parseQueryOptions(
+      dataQuery.options,
+      queryOptions,
+      organization_id,
+      environmentId,
+      user,
+      opts
+    );
+    
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
