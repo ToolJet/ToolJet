@@ -1,3 +1,4 @@
+import './otel/tracing'; // CRITICAL: This MUST be the first import to ensure OTEL patches modules before they load
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -17,7 +18,6 @@ import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { startOpenTelemetry, otelMiddleware } from './otel/tracing';
 
 // Import helper functions
 import {
@@ -31,6 +31,7 @@ import {
   logStartupInfo,
   logShutdownInfo,
   initSentry,
+  initializeOtel,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
@@ -76,6 +77,9 @@ async function bootstrap() {
     appLogger.log('Initializing licensing...');
     await handleLicensingInit(app, appLogger);
     appLogger.log('✅ Licensing initialization completed');
+
+    // Initialize OTEL
+    await initializeOtel(app, appLogger);
 
     // Configure OIDC timeout
     appLogger.log('Configuring OIDC connection timeout...');
@@ -166,11 +170,6 @@ async function setupApplicationMiddleware(app: NestExpressApplication, appLogger
   app.useGlobalFilters(new AllExceptionsFilter(appLogger));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
-
-  if (process.env.ENABLE_OTEL === 'true') {
-    await startOpenTelemetry();
-    app.use(otelMiddleware);
-  }
 }
 
 function configureUrlPrefix() {

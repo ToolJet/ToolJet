@@ -32,7 +32,7 @@
 }
 
 
-.cm-base-hint-info {
+.cm-base-hint-info, .cm-completionInfo {
     color: var(--text-default, #1B1F24) !important;
     background-color: var(--surfaces-surface-02);
     border: 1px solid var(--borders-disabled-on-white, #E4E7EB) !important;
@@ -41,7 +41,7 @@
     font-weight: 400;
 }
 
-.cm-base-autocomplete {
+.cm-base-autocomplete, .cm-tooltip-autocomplete {
     // height: 300px !important;
     color: var(--text-default, #1B1F24);
     background: var(--slate1) !important;
