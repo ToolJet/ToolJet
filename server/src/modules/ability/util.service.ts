@@ -267,12 +267,11 @@ export class AbilityUtilService {
     appId: string,
     environment: keyof EnvironmentPermissionSet
   ): boolean {
-    // Check if app has specific override from custom groups
-    if (permissions.appSpecificEnvironmentAccess?.[appId]) {
-      return permissions.appSpecificEnvironmentAccess[appId][environment];
-    }
+    // Merge app-specific and default permissions using UNION (OR) logic
+    // User gets combined permissions from both custom groups (app-specific) AND default groups
+    const appSpecificAccess = permissions.appSpecificEnvironmentAccess?.[appId]?.[environment] ?? false;
+    const defaultAccess = permissions.environmentAccess?.[environment] ?? false;
 
-    // Fall back to default permissions from default groups
-    return permissions.environmentAccess?.[environment] ?? false;
+    return appSpecificAccess || defaultAccess;
   }
 }
