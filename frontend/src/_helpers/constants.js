@@ -59,6 +59,7 @@ export const ERROR_MESSAGES = {
     title: 'Restricted access',
     message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
+    cta: 'Back to home page',
     queryParams: [],
   },
   'no-accessible-pages': {
