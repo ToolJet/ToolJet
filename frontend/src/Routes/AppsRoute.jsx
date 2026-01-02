@@ -86,9 +86,11 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
         // Only exclude env if license is explicitly expired or invalid
         // If license status is undefined (not loaded yet), default to including env
         const isBasicPlan =
-          featureAccess?.licenseStatus?.isExpired === true || featureAccess?.licenseStatus?.isLicenseValid === false;
+          featureAccess?.licenseStatus?.isExpired === true ||
+          featureAccess?.licenseStatus?.isLicenseValid === false ||
+          featureAccess?.licenseStatus?.licenseType === 'starter';
 
-        // Don't add env param for free/basic plan, expired or invalid license
+        // Don't add env param for free/basic/starter plan, expired or invalid license
         // Also don't add env if it wasn't in the original URL (user didn't request specific env)
         const shouldIncludeEnv = !isBasicPlan && (envFromUrl || environmentName);
 

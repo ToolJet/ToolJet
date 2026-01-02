@@ -250,10 +250,13 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { group, isBuilderLevel } = await this.getGroupWithBuilderLevel(groupId, organizationId, manager);
-      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      const isCustomGroupsEnabled = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.CUSTOM_GROUPS,
+        organizationId
+      );
 
-      if (!isLicenseValid && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
-        // Basic plan - not allowed to update custom groups
+      if (!isCustomGroupsEnabled && group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP) {
+        // Basic/Starter plan - not allowed to update custom groups
         throw new ForbiddenException(ERROR_HANDLER.INVALID_LICENSE);
       }
 

@@ -36,11 +36,13 @@ export function useAppPreviewLink() {
     // Only exclude env if license is explicitly expired or invalid
     // If license status is undefined (not loaded yet), default to including env
     const isBasicPlan =
-      featureAccess?.licenseStatus?.isExpired === true || featureAccess?.licenseStatus?.isLicenseValid === false;
+      featureAccess?.licenseStatus?.isExpired === true ||
+      featureAccess?.licenseStatus?.isLicenseValid === false ||
+      featureAccess?.licenseStatus?.licenseType === 'starter';
 
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
-      // Include env param unless license is invalid/expired
+      // Include env param unless license is invalid/expired or starter plan
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
     });
 
