@@ -292,17 +292,32 @@ export const tagsInputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
       accordian: 'field',
     },
-    selectedTextColor: {
-      type: 'colorSwatches',
-      displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+    autoPickChipColor: {
+      type: 'checkbox',
+      displayName: 'Auto pick chip color',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'field',
+      isFxNotRequired: true,
     },
     tagBackgroundColor: {
       type: 'colorSwatches',
       displayName: 'Chip bg',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface3-surface)' },
       accordian: 'field',
+      conditionallyRender: {
+        key: 'autoPickChipColor',
+        value: false,
+      },
+    },
+    selectedTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'field',
+      conditionallyRender: {
+        key: 'autoPickChipColor',
+        value: false,
+      },
     },
     errTextColor: {
       type: 'colorSwatches',
@@ -406,6 +421,7 @@ export const tagsInputConfig = {
       fieldBorderColor: { value: 'var(--cc-default-border)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      autoPickChipColor: { value: '{{true}}' },
       tagBackgroundColor: { value: 'var(--cc-surface3-surface)' },
       direction: { value: 'left' },
       alignment: { value: 'side' },

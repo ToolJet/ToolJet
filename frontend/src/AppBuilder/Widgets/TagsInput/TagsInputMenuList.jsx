@@ -17,6 +17,7 @@ const TagsInputMenuList = ({
   tagBackgroundColor,
   selectedTextColor,
   onCreateTag,
+  autoPickChipColor = true,
   ...props
 }) => {
   const menuId = selectProps?.menuId;
@@ -104,8 +105,8 @@ const TagsInputMenuList = ({
                   <span
                     className="tags-input-new-tag-preview-text"
                     style={{
-                      backgroundColor: tagBackgroundColor || undefined,
-                      color: selectedTextColor || undefined,
+                      backgroundColor: autoPickChipColor ? undefined : tagBackgroundColor,
+                      color: autoPickChipColor ? undefined : selectedTextColor,
                     }}
                   >
                     {inputValue}

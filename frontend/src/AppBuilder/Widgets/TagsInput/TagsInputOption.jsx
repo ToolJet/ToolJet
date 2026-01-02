@@ -6,11 +6,17 @@ const { Option } = components;
 
 const TagsInputOption = (props) => {
   const { data, selectProps } = props;
-  const { tagBackgroundColor, selectedTextColor } = selectProps || {};
+  const { getChipColor, selectedTextColor, tagBackgroundColor, autoPickChipColor } = selectProps || {};
   // Check if this is a "create new" option from react-select/creatable
   const isCreateOption = data?.__isNew__;
 
+  // Get the chip colors using the getChipColor function (returns { bg, text })
+  const chipColors = getChipColor ? getChipColor(data.value) : { bg: tagBackgroundColor, text: selectedTextColor };
+
   if (isCreateOption) {
+    // For new tags being created, use the default colors (not auto-picked)
+    const newTagBgColor = autoPickChipColor ? undefined : tagBackgroundColor;
+    const newTagTextColor = autoPickChipColor ? undefined : selectedTextColor;
     return (
       <Option
         {...props}
@@ -30,8 +36,8 @@ const TagsInputOption = (props) => {
             <span
               className="tags-input-new-tag-preview-text"
               style={{
-                backgroundColor: tagBackgroundColor || undefined,
-                color: selectedTextColor || undefined,
+                backgroundColor: newTagBgColor,
+                color: newTagTextColor,
               }}
             >
               {data.value}
@@ -58,8 +64,8 @@ const TagsInputOption = (props) => {
       <div
         className="tags-input-option-chip d-inline-flex"
         style={{
-          backgroundColor: tagBackgroundColor || undefined,
-          color: selectedTextColor || undefined,
+          backgroundColor: chipColors.bg,
+          color: chipColors.text,
         }}
       >
         {data.label}

@@ -68,6 +68,7 @@ export const TagsInput = ({
     accentColor,
     widthType,
     tagBackgroundColor,
+    autoPickChipColor = true,
   } = styles;
 
   const isInitialRender = useRef(true);
@@ -133,6 +134,45 @@ export const TagsInput = ({
   const allOptions = useMemo(() => {
     return [...selectOptions, ...newTagsAdded];
   }, [selectOptions, newTagsAdded]);
+
+  // Color palette for auto pick chip color (matching Tags component)
+  const chipColorPalette = useMemo(() => [
+    { bg: '#40474D1A', text: '#40474D' }, // gray
+    { bg: '#CE27611A', text: '#CE2761' }, // pink
+    { bg: '#6745E21A', text: '#6745E2' }, // purple
+    { bg: '#2576CE1A', text: '#2576CE' }, // blue
+    { bg: '#1A9C6D1A', text: '#1A9C6D' }, // teal
+    { bg: '#69AF201A', text: '#69AF20' }, // green
+    { bg: '#F357171A', text: '#F35717' }, // orange
+    { bg: '#EB2E391A', text: '#EB2E39' }, // red
+    { bg: '#A438C01A', text: '#A438C0' }, // magenta
+    { bg: '#405DE61A', text: '#405DE6' }, // indigo
+    { bg: '#1E8FA31A', text: '#1E8FA3' }, // cyan
+    { bg: '#34A9471A', text: '#34A947' }, // lime
+    { bg: '#F191191A', text: '#F19119' }, // amber
+  ], []);
+
+  // Create a stable color map for all options
+  const optionColorMap = useMemo(() => {
+    const colorMap = new Map();
+    allOptions.forEach((option, index) => {
+      const colorIndex = index % chipColorPalette.length;
+      colorMap.set(option.value, chipColorPalette[colorIndex]);
+    });
+    return colorMap;
+  }, [allOptions, chipColorPalette]);
+
+  // Get colors for a specific option (returns { bg, text })
+  const getChipColor = (optionValue) => {
+    if (!autoPickChipColor) {
+      return {
+        bg: tagBackgroundColor || 'var(--surfaces-surface-03)',
+        text: selectedTextColor || 'var(--text-primary)',
+      };
+    }
+    const colors = optionColorMap.get(optionValue) || chipColorPalette[0];
+    return colors;
+  };
 
   // Check for duplicate labels (case-sensitive)
   const isDuplicate = (label) => {
@@ -765,6 +805,7 @@ export const TagsInput = ({
                     selectedTextColor={selectedTextColor}
                     allOptions={allOptions}
                     onCreateTag={handleCreate}
+                    autoPickChipColor={autoPickChipColor}
                   />
                 ),
                 Option: TagsInputOption,
@@ -786,6 +827,8 @@ export const TagsInput = ({
               tagBackgroundColor={tagBackgroundColor}
               selectedTextColor={selectedTextColor}
               focusedOptionIndex={focusedOptionIndex}
+              autoPickChipColor={autoPickChipColor}
+              getChipColor={getChipColor}
             />
           </div>
         </div>
