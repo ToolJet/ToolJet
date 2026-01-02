@@ -19,7 +19,7 @@ To setup OIDC using Auth0, you can follow these steps:
    <img className="screenshot-full" src="/img/user-management/sso/oidc/auth0/auth0-OIDC-configuration.png" alt="Auth0: ToolJet Configuration"/>
 
 4. Go to your **ToolJet Workspace settings > Workspace login** and enable **OpenID Connect**.
-   (Example URL - https://app.corp.com/workspace-settings/workspace-login)
+   (Example URL - https://app.corp.com/demo-workspace/workspace-settings/workspace-login)
 
    <img className="screenshot-full" src="/img/user-management/sso/oidc/auth0/enableOIDC.png" alt="Auth0: ToolJet Configuration"/>
 
