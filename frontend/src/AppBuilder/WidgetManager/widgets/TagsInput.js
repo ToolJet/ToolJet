@@ -302,7 +302,7 @@ export const tagsInputConfig = {
     },
     tagBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Chip bg',
+      displayName: 'Chip Color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface3-surface)' },
       accordian: 'field',
       conditionallyRender: {
@@ -312,7 +312,7 @@ export const tagsInputConfig = {
     },
     selectedTextColor: {
       type: 'colorSwatches',
-      displayName: 'Text',
+      displayName: 'Text Color',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
       conditionallyRender: {
