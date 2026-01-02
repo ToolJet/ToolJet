@@ -295,6 +295,7 @@ export const tagsInputConfig = {
     autoPickChipColor: {
       type: 'checkbox',
       displayName: 'Auto pick chip color',
+      checkboxLabel: 'Auto color',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       accordian: 'field',
       isFxNotRequired: true,
