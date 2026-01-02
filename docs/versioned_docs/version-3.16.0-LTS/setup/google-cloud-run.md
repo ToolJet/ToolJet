@@ -5,22 +5,20 @@ title: Google Cloud Run
 
 # Deploying ToolJet on Google Cloud Run
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
 You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
 
 ## Deploying ToolJet application
 
-:::info
-**Architecture Overview**: This deployment uses the following Google Cloud services:
+:::info **Architecture Overview**: This deployment uses the following Google Cloud services:
 - **Cloud Run**: Hosts the ToolJet application container (**tooljet-app**)
 - **Cloud SQL**: Provides two separate PostgreSQL databases
   - **PG_DB** - Application database for users, apps, and configurations
@@ -120,8 +118,6 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 
 :::info
 **Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 :::
 
 5. **Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.**
@@ -195,6 +191,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 **Version Requirements:**
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
 ---
 

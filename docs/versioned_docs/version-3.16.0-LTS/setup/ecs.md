@@ -5,14 +5,13 @@ title: AWS ECS
 
 # Deploying ToolJet on Amazon ECS
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 
@@ -26,13 +25,13 @@ ToolJet provides Infrastructure as Code (IaC) templates for automated ECS deploy
 
 ToolJet provides Terraform modules that provision all required AWS resources including VPC, ECS cluster, task definitions, load balancers, and security groups.
 
-**Repository:** [ToolJet Terraform for ECS](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
+[*ToolJet Terraform for ECS*](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
 
 ### Deploy using CloudFormation
 
 **Use CloudFormation if:** You prefer AWS-native infrastructure automation or need one-click deployments.
 
-ToolJet provides [CloudFormation templates](https://aws.amazon.com/cloudformation/) to automate resource provisioning and configuration.
+ToolJet provides [*CloudFormation templates*](https://aws.amazon.com/cloudformation/) to automate resource provisioning and configuration.
 
 #### Complete Infrastructure Setup (Recommended for new deployments)
 
@@ -49,14 +48,13 @@ Use this template if you have an existing VPC, RDS database, or ElastiCache clus
 ```bash
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-deploy.yml
 ```
-
-:::tip
-Deploy the downloaded template using the AWS CloudFormation console or AWS CLI. The stack outputs will include your ToolJet application URL.
-:::
-
 ---
 
 ## Deploying ToolJet
+
+:::info
+The setup below is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
+:::
 
 Follow the steps below to deploy ToolJet on an ECS cluster.
 
@@ -64,7 +62,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
 
    ToolJet requires **two separate PostgreSQL databases** - one for core application data and one for ToolJet Database feature data.
 
-2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
+2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [*reference*](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 
 3. Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
 
@@ -77,7 +75,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
       Update port mappings at container port `3000` for tcp protocol.
       <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
-      Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
+      Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
       <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
 
       **Configure all required environment variables:**
@@ -201,20 +199,8 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
    <br />
 
 :::info
-The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
+**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [*here*](/docs/tooljet-db/tooljet-database).
 :::
-
-:::info
-**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
-:::
-
-## References
-
-- [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
-- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
-- [Node.js TLS Configuration](https://nodejs.org/api/tls.html)
 
 ## Workflows
 
@@ -294,7 +280,7 @@ REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [*ToolJet Docker Hub*](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 ### Prerequisites for Upgrading
 
@@ -312,6 +298,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 **Version Requirements:**
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
 
 ---
 

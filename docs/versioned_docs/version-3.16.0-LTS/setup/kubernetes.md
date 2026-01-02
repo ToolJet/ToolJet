@@ -5,14 +5,13 @@ title: Kubernetes
 
 # Deploying ToolJet on Kubernetes
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
 You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 Follow the steps below to deploy ToolJet on a Kubernetes cluster.
@@ -92,18 +91,16 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. PostgREST will refuse authentication requests if this parameter is not set.
    :::
 
-   :::info
-   For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
-   :::
-
 3. Create a Kubernetes deployment
    ```bash
    kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
    ```
    :::info
-   1. The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
-   2. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
-      :::
+   The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
+   
+   If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
+   :::
+
 4. Verify if ToolJet is running
    ```bash
    kubectl get pods
@@ -112,12 +109,6 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    **Examples:**
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
-
-:::info
-**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
-:::
 
 ## Workflows
 
@@ -185,6 +176,8 @@ This example deployment creates:
 - A Secret for optional password authentication
 
 :::info
+Update the **redis-secret** in the Redis deployment YAML with a secure password before deploying to production.
+
 This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
 :::
 
@@ -202,9 +195,7 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')
 
-**Note:** Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
-
-**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret).
+**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
@@ -230,6 +221,7 @@ Ensure both databases are included in your backup before proceeding with the upg
 **Version Requirements:**
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
 ---
 

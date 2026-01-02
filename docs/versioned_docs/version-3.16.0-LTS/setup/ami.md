@@ -7,14 +7,13 @@ title: AWS AMI
 
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 ## Deploy using CloudFormation
@@ -175,11 +174,6 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 Learn more about ToolJet Database [here](/docs/tooljet-db/tooljet-database). For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 :::
 
-### References
-
-- [AWS RDS SSL/TLS Documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
-- [ToolJet Environment Variables Documentation](https://docs.tooljet.com/docs/setup/env-vars/)
-
 ## Workflows
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
@@ -221,6 +215,9 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
   :::
 
 **Note**: After updating the `.env` file, restart the server using `./setup_app`.
+
+
+**For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
