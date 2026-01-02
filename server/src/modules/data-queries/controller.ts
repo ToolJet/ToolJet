@@ -156,7 +156,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Param('environmentId') environmentId,
     @Res({ passthrough: true }) response: Response
   ) {
-    return this.dataQueriesService.listTablesForApp(user, dataSource,environmentId);
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId);
   }
 
   @InitFeature(FEATURE_KEY.PREVIEW)

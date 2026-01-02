@@ -26,7 +26,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) { }
+  ) {}
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -257,10 +257,10 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource,environmentId: string) {
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource,environmentId);
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

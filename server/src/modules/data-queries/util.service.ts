@@ -360,13 +360,17 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource,environmentId: string): Promise<object> {
+  async listTables(user: User, dataSource: DataSource, environmentId: string): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
 
     const organizationId = user?.organizationId;
-    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId,environmentId);
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+      dataSource.id,
+      organizationId,
+      environmentId
+    );
 
     dataSource.options = dataSourceOptions.options;
 
@@ -410,7 +414,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user,
       opts
     );
-    
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
