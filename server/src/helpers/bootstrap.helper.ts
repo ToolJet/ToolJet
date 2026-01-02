@@ -84,28 +84,47 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 }
 
 /**
- * Handles OTEL initialization for Enterprise Edition
+ * Applies OTEL middleware to Express app
+ * Note: The OTEL SDK is started at import time in src/otel/tracing.ts
+ * This function only applies the middleware after the app is created
  */
 export async function initializeOtel(app: NestExpressApplication, logger: any) {
   // Check if OTEL is enabled
   if (process.env.ENABLE_OTEL !== 'true') {
-    logger.log('OTEL disabled (ENABLE_OTEL not set to true)');
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('⏭️ OTEL disabled (ENABLE_OTEL not set to true)');
+    }
     return;
   }
 
   try {
-    logger.log('Initializing OpenTelemetry...');
-
     const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
-    const importPath = await getImportPath(false, tooljetEdition);
 
-    // Dynamically import the edition-specific listener
-    const { otelListener } = await import(`${importPath}/otel/listener`);
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE && tooljetEdition !== TOOLJET_EDITIONS.Cloud) {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        logger.log('⏭️ OTEL skipped - not Enterprise or Cloud edition');
+      }
+      return;
+    }
 
-    // Initialize the listener (CE will no-op, EE will set up OTEL)
-    await otelListener.initialize(app);
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('🔭 Applying OpenTelemetry middleware...');
+    }
 
-    logger.log('✅ OpenTelemetry initialization completed');
+    // Import otelMiddleware from tracing.ts (use relative path for runtime compatibility)
+    const { otelMiddleware } = await import('../otel/tracing');
+
+    // Apply OTEL middleware to Express app
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use(otelMiddleware);
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('✅ OpenTelemetry middleware applied successfully');
+      logger.log('   - SDK: Already started at import time');
+      logger.log('   - Tracing: Enabled');
+      logger.log('   - Metrics: Enabled');
+      logger.log('   - Auto-instrumentation: Active');
+    }
   } catch (error) {
     logger.error('❌ Failed to initialize OpenTelemetry:', error);
     // Don't throw - observability should never break the app
@@ -358,7 +377,6 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
   logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
   if (otelEnabled) {
-    logger.log(`  - Edition: ${edition}`);
     logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
     logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
     logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);

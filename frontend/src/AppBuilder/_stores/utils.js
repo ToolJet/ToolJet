@@ -480,6 +480,7 @@ export function createReferencesLookup(
   }
   const actions = [
     'runQuery',
+    'resetQuery',
     'setVariable',
     'unsetAllVariables',
     'unSetVariable',
@@ -519,6 +520,7 @@ export function createReferencesLookup(
       } else {
         if (path === 'queries') {
           map.set(`${path}.${key}.run()`, { type: 'Function' });
+          map.set(`${path}.${key}.reset()`, { type: 'Function' });
         }
         newPath = `${path}.${key}`;
       }
