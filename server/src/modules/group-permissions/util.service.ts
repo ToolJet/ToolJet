@@ -155,7 +155,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
   }
 
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
-    console.log('[createDefaultGroups] START - organizationId:', organizationId);
     const defaultGroups: GroupPermissions[] = [];
 
     // Check if multi-environment feature is available
@@ -163,11 +162,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-
-    console.log('[createDefaultGroups] hasMultiEnvironment:', hasMultiEnvironment);
-    console.log('[createDefaultGroups] typeof hasMultiEnvironment:', typeof hasMultiEnvironment);
-    console.log('[createDefaultGroups] hasMultiEnvironment === true:', hasMultiEnvironment === true);
-    console.log('[createDefaultGroups] hasMultiEnvironment !== true:', hasMultiEnvironment !== true);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
@@ -482,7 +476,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getGroupWithName(name: string, organizationId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log(name, 'siu');
       const group = await this.groupPermissionsRepository.getGroup(
         {
           name,
@@ -541,8 +534,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           .where('group_id = :groupId', { groupId })
           .andWhere('user_id IN (:...userIds)', { userIds })
           .execute();
-        console.log(groupId);
-        console.log(userIds, ' sus');
       } else {
         // 🧹 Delete all users from the group
         await groupUsersRepo

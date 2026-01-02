@@ -163,7 +163,8 @@ export class RolesUtilService implements IRolesUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editPermissionsPresent =
         Object.values(group).some((value) => typeof value === 'boolean' && value === true) ||
-        (await this.checkIfBuilderLevelResourcesPermissions(group.id, organizationId, manager));
+        (await this.checkIfBuilderLevelResourcesPermissions(group.id, organizationId, manager)) ||
+        (await this.checkIfBuilderLevelEnvironmentPermissions(group.id, organizationId, manager));
       return editPermissionsPresent;
     }, manager);
   }

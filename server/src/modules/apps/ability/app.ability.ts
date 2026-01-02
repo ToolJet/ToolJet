@@ -30,15 +30,11 @@ export function defineAppAbility(
       return false;
     }
 
-    // Check app-specific override first
-    if (userAppPermissions.appSpecificEnvironmentAccess?.[appId]) {
-      const hasAccess = userAppPermissions.appSpecificEnvironmentAccess[appId].released;
-      return hasAccess;
-    }
+    // Merge app-specific and default permissions (UNION logic)
+    const appSpecificReleased = userAppPermissions.appSpecificEnvironmentAccess?.[appId]?.released ?? false;
+    const defaultReleased = userAppPermissions.environmentAccess?.released ?? false;
 
-    // Fall back to default environment access
-    const hasAccess = userAppPermissions.environmentAccess?.released ?? false;
-    return hasAccess;
+    return appSpecificReleased || defaultReleased;
   };
 
   // App listing is available to all
@@ -108,15 +104,17 @@ export function defineAppAbility(
     // Builders with view permission need VALIDATE_PRIVATE_APP_ACCESS to preview non-released environments
     // End-users should NOT get this permission as they can only access released apps
     if (isBuilder && appId) {
-      // Check if builder has access to any non-released environment
+      // Check if builder has access to any non-released environment (merge app-specific and default)
+      const appSpecific = userAppPermissions.appSpecificEnvironmentAccess?.[appId];
+      const defaultAccess = userAppPermissions.environmentAccess;
+
       const hasNonReleasedAccess =
-        userAppPermissions.appSpecificEnvironmentAccess?.[appId]?.development ||
-        userAppPermissions.appSpecificEnvironmentAccess?.[appId]?.staging ||
-        userAppPermissions.appSpecificEnvironmentAccess?.[appId]?.production ||
-        (!userAppPermissions.appSpecificEnvironmentAccess?.[appId] &&
-          (userAppPermissions.environmentAccess?.development ||
-            userAppPermissions.environmentAccess?.staging ||
-            userAppPermissions.environmentAccess?.production));
+        appSpecific?.development ||
+        defaultAccess?.development ||
+        appSpecific?.staging ||
+        defaultAccess?.staging ||
+        appSpecific?.production ||
+        defaultAccess?.production;
 
       if (hasNonReleasedAccess) {
         permissions.push(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS);
