@@ -151,11 +151,6 @@ const CreateVersionModal = ({
 
     try {
       // Only call git-related APIs if git sync is enabled
-      if (isGitSyncEnabled) {
-        const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
-        const appGit = gitData?.app_git;
-        await handleCommitOnVersionCreation(appGit);
-      }
 
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
@@ -164,10 +159,15 @@ const CreateVersionModal = ({
         status: 'PUBLISHED',
       });
 
-      if (isGitSyncEnabled && isBranchingEnabled) {
-        gitSyncService
-          .createGitTag(appId, selectedVersionForCreation.id, versionDescription)
-          .catch(() => toast.error('Failed to create git tag'));
+      if (isGitSyncEnabled) {
+        const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
+        const appGit = gitData?.app_git;
+        await handleCommitOnVersionCreation(appGit);
+        if (isBranchingEnabled) {
+          gitSyncService
+            .createGitTag(appId, selectedVersionForCreation.id, versionDescription)
+            .catch(() => toast.error('Failed to create git tag'));
+        }
       }
 
       toast.success('Version Created successfully');
