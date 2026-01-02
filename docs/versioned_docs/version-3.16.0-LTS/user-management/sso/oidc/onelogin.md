@@ -24,10 +24,11 @@ OneLogin can be configured as an identity provider (IdP) using OpenID Connect (O
 
 At this point, the OneLogin application is ready. Next, you’ll collect the OIDC credentials required to configure ToolJet.
 
-7. Now go to your application > **SSO** and get the Client ID. To get the Client secret, click on **Show client secret**. To get the Well-known configuration URL, click **Well-known Configuration** and copy the URL.
+7. Now go to your Application > **SSO** and get the Client ID. To get the Client secret, click on **Show client secret**. To get the Well-known configuration URL, click **Well-known Configuration** and copy the URL.
     <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/onelogin_configuration.png" alt="OneLogin: Configuration"/>
 
 8. Go to ToolJet > Workspace settings > Workspace login > OpenID Connect > Add provider.
+    (Example URL - https://app.corp.com/demo-workspace/workspace-settings/workspace-login)
 
 9. Enter the details from step 7 and click Save changes. Then, copy the Redirect URL shown by ToolJet.
 
@@ -68,8 +69,3 @@ To configure group sync with OneLogin, you need to follow these steps:
     <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/tooljet_configuration.png" alt="OneLogin: ToolJet Configuration"/>
 
 Users will now be assigned to ToolJet groups based on their OneLogin roles.
-
-
-
-
-
