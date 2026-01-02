@@ -158,7 +158,7 @@ export const tagsInputConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
-      section: 'additionalActions',
+      accordian: 'Tags',
     },
     loadingState: {
       type: 'toggle',

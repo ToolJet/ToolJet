@@ -580,6 +580,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'enableSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
       </>
     ),
   });
