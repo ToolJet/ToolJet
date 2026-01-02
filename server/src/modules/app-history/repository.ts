@@ -32,27 +32,64 @@ export class AppHistoryRepository {
       isAiGenerated?: boolean;
     }
   ): Promise<AppHistory> {
-    // Lock all existing rows for this appVersionId and get the max sequence
-    // We select the actual rows with lock, then compute max from them
-    const existingEntries = await queryRunner.manager
-      .createQueryBuilder(AppHistory, 'history')
-      .select('history.sequenceNumber')
-      .where('history.appVersionId = :appVersionId', { appVersionId: data.appVersionId })
-      .setLock('pessimistic_write')
-      .orderBy('history.sequenceNumber', 'DESC')
-      .limit(1)
-      .getOne();
+    // Use advisory lock (lightweight, per-appVersionId) instead of row-level locks
+    // hashtext converts the UUID string to a bigint for pg_advisory_xact_lock
+    await queryRunner.manager.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [data.appVersionId]);
 
-    const nextSequence =
-      (existingEntries?.sequenceNumber ? parseInt(existingEntries.sequenceNumber.toString(), 10) : 0) + 1;
+    // Single INSERT with inline sequence calculation - much faster than separate queries
+    const results = await queryRunner.manager.query(
+      `INSERT INTO app_history (
+        id, app_version_id, user_id, sequence_number, history_type,
+        action_type, operation_scope, description, change_payload,
+        parent_id, is_ai_generated, created_at, updated_at
+      )
+      SELECT
+        gen_random_uuid(),
+        $1,
+        $2,
+        COALESCE(MAX(sequence_number), 0) + 1,
+        $3,
+        $4,
+        $5::jsonb,
+        $6,
+        $7::jsonb,
+        $8,
+        $9,
+        NOW(),
+        NOW()
+      FROM app_history
+      WHERE app_version_id = $1
+      RETURNING *`,
+      [
+        data.appVersionId,
+        data.userId,
+        data.historyType,
+        data.actionType,
+        data.operationScope ? JSON.stringify(data.operationScope) : null,
+        data.description,
+        JSON.stringify(data.changePayload),
+        data.parentId || null,
+        data.isAiGenerated || false,
+      ]
+    );
 
-    // Create history entry
-    const historyEntry = queryRunner.manager.create(AppHistory, {
-      ...data,
-      sequenceNumber: nextSequence,
-    });
-
-    return queryRunner.manager.save(AppHistory, historyEntry);
+    // Map snake_case columns to camelCase properties
+    const row = results[0];
+    return {
+      id: row.id,
+      appVersionId: row.app_version_id,
+      userId: row.user_id,
+      sequenceNumber: row.sequence_number,
+      parentId: row.parent_id,
+      historyType: row.history_type,
+      actionType: row.action_type,
+      operationScope: row.operation_scope,
+      description: row.description,
+      changePayload: row.change_payload,
+      isAiGenerated: row.is_ai_generated,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    } as AppHistory;
   }
 
   async getHistoryForHistoryId(historyId: string): Promise<AppHistory | null> {
@@ -63,6 +100,46 @@ export class AppHistoryRepository {
         .where('history.id = :historyId', { historyId })
         .orderBy('history.sequenceNumber', 'DESC')
         .getOne();
+    });
+  }
+
+  /**
+   * Lightweight version for SSE updates - excludes changePayload to avoid fetching large snapshots
+   */
+  async getHistoryMetadataForSSE(historyId: string): Promise<AppHistory | null> {
+    return await dbTransactionWrap(async (manager) => {
+      const results = await manager.query(
+        `SELECT
+          h.id, h.sequence_number, h.description, h.is_ai_generated,
+          h.created_at, h.updated_at, h.history_type, h.action_type,
+          u.id as user_id, u.first_name, u.last_name, u.email
+         FROM app_history h
+         LEFT JOIN users u ON h.user_id = u.id
+         WHERE h.id = $1`,
+        [historyId]
+      );
+
+      if (results.length === 0) return null;
+
+      const row = results[0];
+      return {
+        id: row.id,
+        sequenceNumber: row.sequence_number,
+        description: row.description,
+        isAiGenerated: row.is_ai_generated,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        historyType: row.history_type,
+        actionType: row.action_type,
+        user: row.user_id
+          ? {
+              id: row.user_id,
+              firstName: row.first_name,
+              lastName: row.last_name,
+              email: row.email,
+            }
+          : null,
+      } as AppHistory;
     });
   }
 
