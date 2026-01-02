@@ -6,6 +6,7 @@ const initialState = {
   allowEditing: false,
   appLoading: false,
   orgGit: null,
+  appGit: null,
 };
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
@@ -25,9 +26,11 @@ export const createGitSyncSlice = (set, get) => ({
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
       const allowEditing = data?.app_git?.allow_editing ?? false;
       const orgGit = data?.app_git?.org_git;
+      const appGit = data?.app_git;
       const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
 
       set((state) => ({ orgGit }), false, 'setOrgGit');
+      set((state) => ({ appGit }), false, 'setAppGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
 
       // Update branchingEnabled in branchSlice
