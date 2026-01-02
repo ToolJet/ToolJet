@@ -20,6 +20,7 @@ export class AppHistoryModule extends SubModule {
     const { AppStateRepository } = await import(`${importPath}/app-history/repositories/app-state.repository`);
     const { AppHistoryUtilService } = await import(`${importPath}/app-history/util.service`);
     const { AppHistoryStreamService } = await import(`${importPath}/app-history/app-history-stream.service`);
+    const { EntityChangeService } = await import(`${importPath}/app-history/services/entity-change.service`);
 
     const providers: any[] = [
       AppHistoryService,
@@ -28,6 +29,7 @@ export class AppHistoryModule extends SubModule {
       NameResolverRepository,
       AppStateAggregatorService,
       AppHistoryStreamService,
+      EntityChangeService,
       FeatureAbilityFactory,
       VersionRepository,
       AppsRepository,
@@ -64,7 +66,7 @@ export class AppHistoryModule extends SubModule {
       imports,
       controllers: [AppHistoryController],
       providers,
-      exports: [AppHistoryUtilService],
+      exports: [AppHistoryUtilService, EntityChangeService],
     };
   }
 }
