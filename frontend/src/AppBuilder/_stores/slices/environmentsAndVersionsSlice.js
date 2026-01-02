@@ -73,22 +73,26 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const appOwnerId = response.editorVersion?.app?.user_id || response.editorVersion?.app?.userId;
         const isOwner = currentUserId && appOwnerId && currentUserId === appOwnerId;
 
-        // If user is the owner (created the app), force development environment
-        // Owners always get development access even if permissions haven't refreshed yet
-        if (isOwner && !previewInitialEnvironmentId) {
-          requestedEnvName = 'development';
-          const developmentEnvironment = response.environments.find((env) => env.name === 'development');
-          if (developmentEnvironment) {
-            selectedEnvironment = developmentEnvironment;
-          }
-        }
-        // Trust the backend's environment selection for builders
         // Backend now checks if user has access to version's current environment
         // and only falls back to development if they don't have access
-        else if (hasEditPermission && !previewInitialEnvironmentId) {
+        if (hasEditPermission && !previewInitialEnvironmentId) {
           // Use the environment returned by backend (response.editorEnvironment)
           // which is already set in selectedEnvironment above
           requestedEnvName = selectedEnvironment?.name;
+
+          // Special case: If user is owner and doesn't have explicit access to the requested environment,
+          // then fallback to development (this handles new apps where permissions haven't synced yet)
+          if (
+            isOwner &&
+            requestedEnvName !== 'development' &&
+            !hasEnvironmentAccess(environmentAccess, requestedEnvName)
+          ) {
+            requestedEnvName = 'development';
+            const developmentEnvironment = response.environments.find((env) => env.name === 'development');
+            if (developmentEnvironment) {
+              selectedEnvironment = developmentEnvironment;
+            }
+          }
         }
 
         // Check if user has access to the requested environment
@@ -141,7 +145,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionsPromotedToEnvironment: [response.editorVersion],
       }));
     } catch (error) {
-      console.error('Error while initializing the environment dropdown', error);
+      console.error('❌ DEBUG - Error while initializing the environment dropdown', error);
     }
   },
   setCurrentVersionId: (currentVersionId) => set(() => ({ currentVersionId }), false, 'setCurrentVersionId'),
