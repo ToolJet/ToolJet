@@ -34,8 +34,6 @@ const LifecycleCTAButton = () => {
   // Determine button state based on branch type
   const getButtonConfig = () => {
     const isGitSyncEnabled = featureAccess?.gitSync;
-    console.log('isEditorFreezed:', isEditorFreezed);
-    console.log('is on default branch', isOnDefaultBranch);
     if (isOnDefaultBranch) {
       // Default branch - show "Pull commit" button
       return {
@@ -56,11 +54,8 @@ const LifecycleCTAButton = () => {
   };
 
   const config = getButtonConfig();
-  console.log('config testing', config);
-
   const handleClick = () => {
     // Open the git sync modal (which has pull/push tabs)
-    console.log('here');
     toggleGitSyncModal(creationMode);
   };
 
