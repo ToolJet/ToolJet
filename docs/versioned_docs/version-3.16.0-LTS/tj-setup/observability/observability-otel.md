@@ -29,18 +29,18 @@ Enable OpenTelemetry by setting the following environment variables in your Tool
 ```js
 # Enable OpenTelemetry metrics collection
 ENABLE_OTEL=true
-```
 
-#### Optional Variables
-
-```js
 # OTLP Endpoint Configuration
 OTEL_EXPORTER_OTLP_TRACES=http://localhost:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=http://localhost:4318/v1/metrics
 
 # Service Identification
 OTEL_SERVICE_NAME=tooljet
+```
 
+#### Optional Variables
+
+```js
 # Authentication (if required by your OTEL collector)
 OTEL_EXPORTER_OTLP_HEADERS=api-key=your-api-key
 
@@ -52,15 +52,17 @@ OTEL_MAX_TRACKED_USERS=10000                  # Maximum tracked users/sessions (
 # WARNING: High Cardinality - Only enable for debugging
 OTEL_INCLUDE_QUERY_TEXT=false                 # Include actual query text in metrics (default: false)
                                               # Creates HIGH CARDINALITY - use OTEL Collector to drop in production
+
 ```
 
 For a complete list of OpenTelemetry environment variables, refer to the [OpenTelemetry documentation](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/).
 
-## Setup Examples
+## Setup
 
 ### Local OTEL Collector
 
-Deploy an OpenTelemetry Collector alongside ToolJet to receive and forward metrics:
+Some observability platforms require an OpenTelemetry Collector as an intermediary. In such cases, you can deploy the Collector alongside ToolJet. ToolJet sends telemetry data to the Collector, which then forwards it to your observability platform based on its configuration.  
+This Docker Compose configuration can be used to deploy an OpenTelemetry Collector alongside ToolJet.
 
 ```yaml
 # docker-compose.yml excerpt
@@ -74,7 +76,7 @@ otel-collector:
     - "8889:8889"     # Prometheus exporter
 ```
 
-### Grafana Cloud
+<!-- ### Grafana Cloud
 
 Configure ToolJet to send metrics directly to Grafana Cloud:
 
@@ -108,9 +110,9 @@ OTEL_EXPORTER_OTLP_TRACES=https://otlp.nr-data.net:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://otlp.nr-data.net:4318/v1/metrics
 OTEL_EXPORTER_OTLP_HEADERS=api-key=<your-newrelic-license-key>
 OTEL_SERVICE_NAME=tooljet
-```
+``` -->
 
-## Grafana Dashboards
+<!-- ## Grafana Dashboards
 
 ToolJet provides two pre-built Grafana dashboards for visualizing metrics:
 
@@ -164,7 +166,7 @@ To import the Grafana dashboards:
 4. Select your Prometheus data source
 5. Click **Import**
 
-The dashboards will be immediately available with real-time data from your ToolJet instance.
+The dashboards will be immediately available with real-time data from your ToolJet instance. -->
 
 ## Production Considerations
 

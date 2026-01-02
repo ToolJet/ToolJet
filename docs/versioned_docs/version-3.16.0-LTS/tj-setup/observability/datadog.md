@@ -15,7 +15,7 @@ It is a 3 step process:
 - The Datadog Agent receives OTLP data locally
 - The agent forwards data securely to Datadog
 
-<img src="https://datadog-docs.imgix.net/images/opentelemetry/setup/dd-agent-otlp-ingest.5c618e65990e9be5954c60e908ab5f09.png?auto=format" alt="Datadog observability setup" />
+<img src="/img/tooljet-setup/observability/datadog/datadog-setup.png" alt="Datadog observability setup" />
 
 ### Step 1: Run a Datadog Agent
 :::info

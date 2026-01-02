@@ -19,16 +19,15 @@ The observability flow consists of three components:
 2. **OpenTelemetry Collector**: Receives this telemetry locally and processes it.
 3. **New Relic**: Ingests the processed telemetry and makes it available in APM and metrics views.
 
-<img src="https://docs.newrelic.com/images/more-integrations_diagram_otel-ref-arch.webp" alt="New Relic Observability Setup" />
+    <img className="screenshot-full" src="/img/tooljet-setup/observability/new-relic/new-relic-setup.png" alt="New Relic Setup"/>
 
 ### Getting New Relic Licence Key
 To obtain a New Relic Licence Key:
 - Log in to New Relic.
 - Navigate to Your Profile > API Keys
 - Click **Create a Key**.
-- Create a new key with the Key type set to: **Ingest - Licence**. 
-Save the key for future use.
-    <img className="screenshot-full" src="/img/tooljet-setup/observability/new-relic/new-relic-licence-key.png" alt="New Relic Licence Key"/>
+- Create a new key with the Key type set to: **Ingest - Licence**. Save the key for future use.<br /><br />
+  <img className="screenshot-full" src="/img/tooljet-setup/observability/new-relic/new-relic-licence-key.png" alt="New Relic Licence Key"/>
 
 ### Step 1: Set Up an OpenTelemetry Collector
 Use the following configuration file to run an OpenTelemetry Collector that forwards telemetry data to New Relic:

@@ -642,10 +642,10 @@
           "label": "Observability",
           "link": {
             "type": "doc",
-            "id": "tj-setup/observability-otel"
+            "id": "tj-setup/observability/observability-otel"
           },
           "items": [
-            "tj-setup/observability-otel",
+            "tj-setup/observability/observability-otel",
             "tj-setup/observability/datadog",
             "tj-setup/observability/new-relic",
             "tj-setup/observability/grafana"
