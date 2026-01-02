@@ -170,10 +170,9 @@ export default class MongodbService implements QueryService {
     try {
       const collections = await db.listCollections().toArray();
 
-      // Transform to match the expected format (similar to PostgreSQL's table_name)
-      const result = collections.map(col => ({
+      const result = collections.map((col) => ({
         collection_name: col.name,
-        type: col.type || 'collection'
+        type: col.type || 'collection',
       }));
 
       return {
