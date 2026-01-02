@@ -3,7 +3,7 @@ id: mongodb
 title: MongoDB
 ---
 
-A built-in integration in ToolJet that lets you connect to your MongoDB databases and perform CRUD operations directly from your internal tools or apps without writing backend code. You can configure connections using either host/port credentials or a connection string, and then build, run, and transform queries (like finding, inserting, updating, and deleting documents) through the ToolJet query manager UI.
+ToolJet can connect to MongoDB to read and write data directly from your ToolJet app. You can configure connections using either host/port credentials or a connection string, and then build, run, and transform queries (like finding, inserting, updating, and deleting documents) through the ToolJet query manager.
 
 <div style={{paddingTop:'24px'}}>
 
