@@ -648,7 +648,8 @@
             "tj-setup/observability/observability-otel",
             "tj-setup/observability/datadog",
             "tj-setup/observability/new-relic",
-            "tj-setup/observability/grafana"
+            "tj-setup/observability/grafana",
+            "tj-setup/observability/last9"
           ]
         }
       ]
