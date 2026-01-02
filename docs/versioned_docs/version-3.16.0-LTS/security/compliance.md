@@ -8,7 +8,7 @@ title: Compliance
 With SOC 2  Type II compliance, ToolJet ensures the highest level of data security. The adherence to SOC 2  Type II standards mirrors the rigorous data protection measures in place, covering everything from encryption to robust access controls. It also guarantees a consistent level of service availability and process integrity, instilling confidence in our customers and stakeholders about the safe handling of their sensitive information.
 
 :::tip TRUST CENTER
-For the latest security documentation and compliance materials, visit [trust.tooljet.com](https://trust.tooljet.com/).
+For the latest security documentation and compliance certifications, visit [trust.tooljet.com](https://trust.tooljet.com/).
 :::
 
 ## Data Protection
