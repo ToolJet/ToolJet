@@ -19,10 +19,10 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 
 ## Deploy using CloudFormation
 
-To deploy all the services at once, simply employ the following template:
+To deploy all the services at once, use the following CloudFormation template:
 
-```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/EC2-cloudfomration.yml
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/EC2-cloudformation.yml
 ```
 
 ## Deploy using Terraform
@@ -31,41 +31,96 @@ Use this terraform script to quickly spin up a vm.
 
 - Deploy on [AWS EC2 Using AMI](https://github.com/ToolJet/ToolJet/tree/develop/terraform/AMI_EC2)
 
-Follow the steps below to deploy ToolJet on AWS AMI instances.
+---
+
+## Deploying ToolJet
+
+Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
 4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
-5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
-   Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
+5. Select ToolJet's AMI and bootup an EC2 instance.
 
-   | protocol | port | allowed_cidr |
-   | -------- | ---- | ------------ |
-   | tcp      | 22   | your IP      |
-   | tcp      | 80   | 0.0.0.0/0    |
-   | tcp      | 443  | 0.0.0.0/0    |
+   **Security Group Configuration:**
+
+   Creating a new security group is recommended. Configure the following inbound rules to allow traffic:
+
+   ```
+   SSH Access (for server management):
+   - Protocol: TCP
+   - Port: 22
+   - Source: Your IP address (for security)
+
+   HTTP Access (for ToolJet web interface):
+   - Protocol: TCP
+   - Port: 80
+   - Source: 0.0.0.0/0 (public access)
+
+   HTTPS Access (for secure ToolJet web interface):
+   - Protocol: TCP
+   - Port: 443
+   - Source: 0.0.0.0/0 (public access)
+   ```
+
+   :::tip
+   For production deployments, it's recommended to restrict SSH access (port 22) to your specific IP address or corporate network range instead of allowing public access.
+   :::
 
 6. Once the instance boots up, SSH into the instance by running `ssh -i <path_to_pem_file> ubuntu@<public_ip_of_the_instance>`.
 
 7. Switch to the app directory by running `cd ~/app`. <br/> Modify the contents of the `.env` file. ( Eg: `vim .env` )
 
-   The default `.env` file looks like this:
+   **Configure all required environment variables:**
+
+   The default `.env` file template:
 
    ```bash
-   LOCKBOX_MASTER_KEY=
-   SECRET_KEY_BASE=
-   PG_DB=
+   # Application Configuration
+   LOCKBOX_MASTER_KEY=          # Generate: openssl rand -hex 32
+   SECRET_KEY_BASE=             # Generate: openssl rand -hex 64
+
+   # Database 1: Application Database (PG_DB)
+   # Stores ToolJet's core application data including users, apps, and configurations
+   PG_DB=tooljet_production
    PG_USER=
    PG_HOST=
    PG_PASS=
-   TOOLJET_DB=
+
+   # Database 2: Internal Database (TOOLJET_DB)
+   # Stores ToolJet's internal metadata and tables created within ToolJet Database feature
+   TOOLJET_DB=tooljet_db        # Must be different from PG_DB
    TOOLJET_DB_HOST=
    TOOLJET_DB_USER=
    TOOLJET_DB_PASS=
+
+   # PostgREST Configuration (Required)
+   PGRST_HOST=localhost:3001
+   PGRST_LOG_LEVEL=info
+   PGRST_JWT_SECRET=            # Generate: openssl rand -hex 32
+   PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
    ```
 
-   Read [environment variables](/docs/setup/env-vars) reference.
+   :::warning
+   **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
+   :::
+
+   <details>
+   <summary>Why does ToolJet require two databases?</summary>
+
+   ToolJet requires two separate databases for optimal functionality:
+
+   - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
+   - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
+
+   This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
+
+   </details>
+
+   :::info
+   For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
+   :::
 
    ### SSL Configuration for AWS RDS PostgreSQL
 
@@ -91,8 +146,6 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
    NODE_EXTRA_CA_CERTS=/home/ubuntu/certs/global-bundle.pem
    ```
 
-   After updating the `.env` file, restart the application with `./setup_app`.
-
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use.
 
    Examples:
@@ -112,11 +165,11 @@ Follow the steps below to deploy ToolJet on AWS AMI instances.
 10. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the EC2 instance.
 11. You're all done, ToolJet client would now be served at the value you've set in `TOOLJET_HOST`.
 
-### Deploying ToolJet Database
+:::info
+**Note on ToolJet Database**: ToolJet AMI comes with PostgREST pre-installed. The ToolJet Database feature is mandatory from ToolJet 3.0 onwards. All required environment variables (`TOOLJET_DB`, `TOOLJET_DB_HOST`, `TOOLJET_DB_USER`, `TOOLJET_DB_PASS`, and PostgREST configuration) should already be configured in your `.env` file from step 7.
 
-ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you'd only have to setup the environment variables in `~/app/.env` file and run `./setup_app` script.
-
-You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+Learn more about ToolJet Database [here](/docs/tooljet-db/tooljet-database). For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+:::
 
 ### References
 

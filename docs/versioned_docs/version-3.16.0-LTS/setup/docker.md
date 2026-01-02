@@ -24,7 +24,6 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 If you don’t already have a server, you can use Terraform scripts to quickly spin up a VM on AWS, Azure or GCP and then deploy ToolJet with Docker.
 
 - Deploy on [AWS EC2](https://github.com/ToolJet/ToolJet/tree/develop/terraform/EC2)
-- Deploy on [AWS EC2 Using AMI](https://github.com/ToolJet/ToolJet/tree/develop/terraform/AMI_EC2)
 - Deploy on [Azure VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/Azure_VM)
 - Deploy on [GCP VM](https://github.com/ToolJet/ToolJet/tree/develop/terraform/GCP)
 
@@ -43,6 +42,15 @@ There are two options to deploy ToolJet using Docker Compose:
 2. **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
 Confused about which setup to select? Feel free to ask the community via [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
+
+:::info
+
+**Critical**: The two databases must have **different names**. Using the same database for both will cause deployment failure.
+
+**Database Requirements**: ToolJet requires **two separate PostgreSQL databases**:
+- **PG_DB** (Application Database): Stores ToolJet's core application data including users, apps, and configurations
+- **TOOLJET_DB** (Internal Database): Stores ToolJet Database feature data including internal metadata and tables created by users
+:::
 
 <Tabs>
   <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
@@ -71,7 +79,7 @@ mv .env.internal.example .env && ./internal.sh
 docker-compose up -d
 ```
 
-4. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
 Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
@@ -113,15 +121,13 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
   </TabItem>
   <TabItem value="with-external-postgres" label="With external PostgreSQL">
 
-1. Setup a PostgreSQL database and make sure that the database is accessible.
-
-2. Download our production docker-compose file into the server.
+1. Download our production docker-compose file into the server.
 
 ```bash
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
 ```
 
-3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
+2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
 Kindly set the postgresql database credentials according to your external database. Please enter the database details with the help of the bash as shown below.
 
@@ -137,13 +143,13 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.
 mv .env.external.example .env && ./external.sh
 ```
 
-4. To start the docker container, use the following command:
+3. To start the docker container, use the following command:
 
 ```bash
 docker-compose up -d
 ```
 
-5. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
 Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 

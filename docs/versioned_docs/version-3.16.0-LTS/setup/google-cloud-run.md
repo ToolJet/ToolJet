@@ -19,13 +19,13 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 
 ## Deploying ToolJet application
 
-### Services and Components
-
-| Service       | Component     | Description                                 |
-| ------------- | ------------- | ------------------------------------------- |
-| **Cloud Run** | `tooljet-app` | Runs the main ToolJet application.          |
-| **Cloud SQL** | `TOOLJET_DB`  | Stores ToolJet-created tables and app data. |
-| **Cloud SQL** | `PG_DB`       | Database used to store application data     |
+:::info
+**Architecture Overview**: This deployment uses the following Google Cloud services:
+- **Cloud Run**: Hosts the ToolJet application container (**tooljet-app**)
+- **Cloud SQL**: Provides two separate PostgreSQL databases
+  - **PG_DB** - Application database for users, apps, and configurations
+  - **TOOLJET_DB** - Internal database for ToolJet Database feature data
+:::
 
 1. **Create a new Google Cloud Run Service:**
    <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
@@ -37,77 +37,87 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
      <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
    - If you encounter any migration issues, please execute the following command. Be aware that executing this command may cause the revision to break. However, modifying the command back to `npm, run, start:prod` will successfully reboot the instance:
      <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
-4. **Under environmental variables, please add the below ToolJet application variables:** <br/>
-   You can use these variables for: tooljet-app:
+4. **Configure all required environment variables:**
 
-   ```env
+   #### Application Configuration
+
+   ```bash
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+   ```
 
+   :::tip
+   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud Run after the initial deploy.
+   :::
+
+   #### Database 1: Application Database (PG_DB)
+
+   This database stores ToolJet's core application data including users, apps, and configurations.
+
+   ```bash
    PG_USER=<username>
    PG_HOST=<postgresql-instance-ip>
    PG_PASS=<password>
    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
    ```
 
-   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
+   #### Database 2: Internal Database (TOOLJET_DB)
 
-## ToolJet Database
+   This database stores ToolJet's internal metadata and tables created within ToolJet Database feature.
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+   ```bash
+   TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+   TOOLJET_DB_HOST=<postgresql-database-host>
+   TOOLJET_DB_USER=<username>
+   TOOLJET_DB_PASS=<password>
+   ```
 
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+   :::warning
+   **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
+   :::
 
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+   <details>
+   <summary>Why does ToolJet require two databases?</summary>
 
-#### Setting Up ToolJet Database
+   ToolJet requires two separate databases for optimal functionality:
 
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+   - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
+   - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
 
-```env
-TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
-TOOLJET_DB_HOST=<postgresql-database-host>
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_PASS=<password>
-```
+   This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
 
-:::note
-Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
-:::
+   </details>
 
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+   #### PostgREST Configuration (Required)
 
-:::tip
-If you have openssl installed, you can run the
-command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+   PostgREST provides the REST API layer for ToolJet Database. These variables are **mandatory**:
 
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
+   ```bash
+   PGRST_HOST=localhost:3001
+   PGRST_LOG_LEVEL=info
+   PGRST_DB_PRE_CONFIG=postgrest.pre_config
+   PGRST_SERVER_PORT=3001
+   PGRST_JWT_SECRET=<generate using openssl rand -hex 32>
+   PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+   ```
 
-```env
-PGRST_HOST=localhost:3001
-PGRST_LOG_LEVEL=info
-PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
-PGRST_DB_URI=
-PGRST_JWT_SECRET=
-```
+   :::tip
+   Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. PostgREST will refuse authentication requests if this parameter is not set.
+   :::
 
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+   :::info
+   For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
+   :::
 
-#### Format:
+   :::tip
+   **Cloud SQL Public IP Connection**: If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST` and `TOOLJET_DB_HOST`) needs to be set using unix socket format: `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`
+   :::
 
-```env
-PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
+:::info
+**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
-
-**Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
-
-:::tip
-If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
+Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 :::
 
 5. **Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.**

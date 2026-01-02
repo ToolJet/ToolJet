@@ -15,34 +15,57 @@ You should setup a PostgreSQL database manually to be used by ToolJet. We recomm
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 :::
 
-### ⚙️ Deploy using CloudFormation
 
-You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
+## Automated Deployment Options
 
-To deploy all the services at once, simply employ the following template:
+ToolJet provides Infrastructure as Code (IaC) templates for automated ECS deployment.
 
+### Deploy using Terraform
+
+**Use Terraform if:** You manage infrastructure with version-controlled Terraform configurations.
+
+ToolJet provides Terraform modules that provision all required AWS resources including VPC, ECS cluster, task definitions, load balancers, and security groups.
+
+**Repository:** [ToolJet Terraform for ECS](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
+
+### Deploy using CloudFormation
+
+**Use CloudFormation if:** You prefer AWS-native infrastructure automation or need one-click deployments.
+
+ToolJet provides [CloudFormation templates](https://aws.amazon.com/cloudformation/) to automate resource provisioning and configuration.
+
+#### Complete Infrastructure Setup (Recommended for new deployments)
+
+Use this template to deploy ToolJet with all infrastructure components (VPC, subnets, security groups, load balancers, ECS cluster, RDS, ElastiCache):
+
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-template-one-click.yml
 ```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudfomation-template-one-click.yml
-```
 
-If you already have existing services and wish to integrate ToolJet seamlessly into your current Virtual Private Cloud (VPC) or other setups, you can opt for the following template:
+#### Deploy into Existing Infrastructure
 
-```
+Use this template if you have an existing VPC, RDS database, or ElastiCache cluster:
+
+```bash
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-deploy.yml
 ```
 
-### ⚙️ Deploy using Terraform
+:::tip
+Deploy the downloaded template using the AWS CloudFormation console or AWS CLI. The stack outputs will include your ToolJet application URL.
+:::
 
-If you prefer **(IaC)** with Terraform, ToolJet also provides **ECS deployment scripts**.
+---
 
-📂 Repository: [ToolJet Terraform for ECS](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
+## Deploying ToolJet
 
-## ToolJet
+Follow the steps below to deploy ToolJet on an ECS cluster.
 
-Follow the steps below to deploy ToolJet on a ECS cluster.
+1. **Setup PostgreSQL databases**
 
-1. Setup a PostgreSQL database, ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
+   ToolJet requires **two separate PostgreSQL databases** - one for core application data and one for ToolJet Database feature data.
+
 2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
+
 3. Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
 
    1. Select Fargate as launch type compatibility
@@ -56,20 +79,75 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
       <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
       Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
       <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
-      For the setup, ToolJet requires:
 
-      ```
+      **Configure all required environment variables:**
+
+      #### Application Configuration
+
+      ```bash
       TOOLJET_HOST=<Endpoint url>
       LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
       SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+      ```
 
+      #### Database 1: Application Database (PG_DB)
+
+      This database stores ToolJet's core application data including users, apps, and configurations.
+
+      ```bash
       PG_USER=<username>
       PG_HOST=<postgresql-instance-ip>
       PG_PASS=<password>
       PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
       ```
 
-      Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+      #### Database 2: Internal Database (TOOLJET_DB)
+
+      This database stores ToolJet's internal metadata and tables created within ToolJet Database feature.
+
+      ```bash
+      TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+      TOOLJET_DB_HOST=<postgresql-database-host>
+      TOOLJET_DB_USER=<username>
+      TOOLJET_DB_PASS=<password>
+      ```
+
+      :::warning
+      **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
+      :::
+
+      <details>
+      <summary>Why does ToolJet require two databases?</summary>
+
+      ToolJet requires two separate databases for optimal functionality:
+
+      - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
+      - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
+
+      This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
+
+      </details>
+
+      #### PostgREST Configuration (Required)
+
+      PostgREST provides the REST API layer for ToolJet Database. These variables are **mandatory**:
+
+      ```bash
+      PGRST_HOST=localhost:3001
+      PGRST_LOG_LEVEL=info
+      PGRST_DB_PRE_CONFIG=postgrest.pre_config
+      PGRST_SERVER_PORT=3001
+      PGRST_JWT_SECRET=<generate using openssl rand -hex 32>
+      PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+      ```
+
+      :::tip
+      Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. PostgREST will refuse authentication requests if this parameter is not set.
+      :::
+
+      :::info
+      For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).
+      :::
 
       #### SSL Configuration for AWS RDS PostgreSQL
 
@@ -116,56 +194,11 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
 :::
 
-## ToolJet Database
+:::info
+**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-
-#### Setting Up ToolJet Database
-
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
-
-```env
-TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
-TOOLJET_DB_HOST=<postgresql-database-host>
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_PASS=<password>
-```
-
-:::note
-Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
+Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 :::
-
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
-
-:::tip
-If you have openssl installed, you can run the
-command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
-```env
-PGRST_HOST=localhost:3001
-PGRST_LOG_LEVEL=info
-PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
-PGRST_DB_URI=
-PGRST_JWT_SECRET=
-```
-
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-#### Format:
-
-```env
-PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
-
-**Ensure these configurations are correctly set up before proceeding with deployment. Please make sure these environment variables are set in the same ToolJet task definition's environment variables.**
 
 ## References
 
