@@ -1,5 +1,5 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
@@ -76,22 +76,22 @@ describe("Custom Group Permissions", () => {
 
     // App creation permission
     cy.get(groupsSelector.appsCreateCheck).check();
-    cy.get(groupsSelector.changeRoleModalIcon).should("be.visible");
+    cy.get(commonSelectors.modalIcon).should("be.visible");
     cy.get(groupsSelector.addEditPermissionModalTitle).should(
       "have.text",
       groupsText.cantCreatePermissionModalTitle
     );
-    cy.get(groupsSelector.changeRoleModalDescription).contains(
+    cy.get(commonSelectors.modalDescription).contains(
       groupsText.cantCreatePermissionModalDescription
     );
-    cy.get(`${groupsSelector.changeRoleModalDescription} a`)
+    cy.get(`${commonSelectors.modalDescription} a`)
       .should("have.text", "Learn more")
       .and("have.attr", "href");
     cy.get(groupsSelector.changeRoleModalDescription2).contains(
       groupsText.cantCreatePermissionModalDescription2
     );
     cy.get("[data-cy='item-list']").contains(data.email);
-    cy.get(groupsSelector.modalCloseButton).click();
+    cy.get(commonWidgetSelector.modalCloseButton).click();
 
     // Other permissions
     const permissions =
@@ -117,7 +117,7 @@ describe("Custom Group Permissions", () => {
       cy.get(permission).check();
       cy.wait(1000);
       cy.get(".modal-content").should("be.visible");
-      cy.get(groupsSelector.modalCloseButton).click();
+      cy.get(commonWidgetSelector.modalCloseButton).click();
       //Note:Please add assertions instead hardcode wait
     });
 
