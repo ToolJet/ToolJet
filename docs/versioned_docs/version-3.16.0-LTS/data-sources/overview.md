@@ -14,7 +14,7 @@ ToolJet offers a wide range of data sources. If needed, you can develop and inte
 ## Connecting Data Sources
 
 1. **Create a new app** from the dashboard, and Click on the **+** button from the query panel.
-   <img className="screenshot-full" src="/img/datasource-reference/overview/query-panel.png" alt="Data Sources: Overview" />
+   <img className="screenshot-full img-full" src="/img/datasource-reference/overview/query-panel.png" alt="Data Sources: Overview" />
    Or you can directly go to the **Data Sources** page from the left sidebar of the dashboard.
 
 2. Within the **Data Sources** page, you'll find various categories of data sources on the left side, including Databases, APIs, Cloud Storages, and plugins. Click on each category to view the list of accessible data sources. As you hover over the desired data source, an **+ Add** button will appear. Upon clicking this button, the selected data source will be integrated into the workspace.
