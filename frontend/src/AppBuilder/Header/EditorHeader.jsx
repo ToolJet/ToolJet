@@ -102,7 +102,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>
-                        <RightTopHeaderButtons currentMode={currentMode} isModuleEditor={isModuleEditor} />
+                        <RightTopHeaderButtons currentMode={currentMode} darkMode={darkMode} />
                       </>
                     )}
                   </div>

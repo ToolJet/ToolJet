@@ -3,21 +3,20 @@ import { appService, appsService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import _, { debounce } from 'lodash';
+import _, { debounce, isEmpty } from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import cx from 'classnames';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import InfoIcon from '@assets/images/icons/info.svg';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
-import { Share2 } from 'lucide-react';
+import InputComponent from '@/components/ui/Input/Index';
+import { MousePointerClick, Share2 } from 'lucide-react';
+import queryString from 'query-string';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -188,6 +187,13 @@ class ManageAppUsersComponent extends React.Component {
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
     const { isHovered } = this.state.isHovered;
+    const previewQuery = queryString.stringify({
+      version: this.props.selectedVersion?.name,
+      ...(this.props.multiEnvironmentEnabled ? { env: this.props.currentEnvironment?.name } : {}),
+    });
+    const appPreviewLink = this.props.editingVersion
+      ? `${shareableLink}/${this.props.pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      : '';
 
     return (
       <div className="manage-app-users" data-cy="share-button-link">
@@ -216,81 +222,30 @@ class ManageAppUsersComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
-            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
+            <Modal.Title className="tw-font-medium" data-cy="modal-header">
+              {this.props.t('editor.share', 'Share')} {this.props.appName}
+            </Modal.Title>
             <span onClick={this.hideModal} data-cy="modal-close-button">
-              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
+              <SolidIcon name="remove" fill="var(--icon-strong)" className="cursor-pointer" aria-label="Close" />
             </span>
           </Modal.Header>
           <Modal.Body>
             {
               <div class="shareable-link-container">
-                <div className="make-public mb-3">
-                  <div className="form-check form-switch d-flex align-items-center">
-                    {this.props.isVersionReleased ? (
-                      <div>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          onClick={this.toggleAppVisibility}
-                          checked={this?.props?.isPublic}
-                          disabled={this.state.ischangingVisibility}
-                          data-cy="make-public-app-toggle"
-                        />
-                        <span className="form-check-label field-name" data-cy="make-public-app-label">
-                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
-                        <ToolTip
-                          message={TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE}
-                          placement={'top'}
-                          show={isHovered}
-                        >
-                          <div
-                            onMouseEnter={this.handleMouseEnter}
-                            onMouseLeave={this.handleMouseLeave}
-                            style={{
-                              width: '32px',
-                              height: '18px',
-                              marginLeft: '-40px',
-                            }}
-                          >
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              disabled
-                              style={{
-                                opacity: 0.3,
-                                cursor: 'default',
-                                margin: 0,
-                                padding: 0,
-                              }}
-                            />
-                          </div>
-                        </ToolTip>
-
-                        <span
-                          className="form-check-label field-name"
-                          data-cy="make-public-app-label"
-                          style={{ opacity: 0.6 }}
-                        >
-                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
                 {this.props.isVersionReleased ? (
-                  <div className="shareable-link tj-app-input mb-2">
+                  <div className="shareable-link tj-app-input tw-mb-[16px]">
                     <label data-cy="shareable-app-link-label" className="field-name">
-                      {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
+                      {this.props.t('editor.shareModal.shareableLink', 'App link')}
                     </label>
                     <div className="input-group">
-                      <span className="input-group-text applink-text flex-grow-1 slug-ellipsis" data-cy="app-link">
-                        {appLink}
-                      </span>
+                      <InputComponent
+                        aria-label="App link base url"
+                        data-cy="app-link"
+                        disabled
+                        onChange={() => {}}
+                        readOnly={appLink}
+                        value=""
+                      />
                       <div className="input-with-icon">
                         <input
                           type="text"
@@ -301,7 +256,6 @@ class ManageAppUsersComponent extends React.Component {
                             e.persist();
                             this.delayedSlugChange(e);
                           }}
-                          style={{ maxWidth: '150px' }}
                           defaultValue={this.props.slug}
                           data-cy="app-name-slug-input"
                           disabled={!this.props.isVersionReleased}
@@ -313,7 +267,6 @@ class ManageAppUsersComponent extends React.Component {
                             </div>
                           </div>
                         )}
-
                         <div className="icon-container">
                           {newSlug?.error ? (
                             <svg
@@ -351,28 +304,6 @@ class ManageAppUsersComponent extends React.Component {
                           )}
                         </div>
                       </div>
-                      <span className="input-group-text">
-                        <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                          <svg
-                            className="cursor-pointer"
-                            width="17"
-                            height="18"
-                            viewBox="0 0 17 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            data-cy="copy-app-link-button"
-                          >
-                            <path
-                              d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
-                              fill="#889096"
-                            />
-                            <path
-                              d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
-                              fill="#889096"
-                            />
-                          </svg>
-                        </CopyToClipboard>
-                      </span>
                     </div>
                     {newSlug?.error ? (
                       <label className="label tj-input-error" data-cy="app-slug-error-label">
@@ -389,15 +320,86 @@ class ManageAppUsersComponent extends React.Component {
                         data-cy="app-slug-info-label"
                       >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
+                    <div className="tw-flex tw-justify-between">
+                      <div className="make-public d-flex align-items-center">
+                        <div className="form-check form-switch d-flex align-items-center tw-mb-0">
+                          {this.props.isVersionReleased ? (
+                            <div>
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onClick={this.toggleAppVisibility}
+                                checked={this?.props?.isPublic}
+                                disabled={this.state.ischangingVisibility}
+                                data-cy="make-public-app-toggle"
+                              />
+                              <span className="form-check-label field-name !tw-ml-0" data-cy="make-public-app-label">
+                                {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                              </span>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
+                              <ToolTip
+                                message={TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE}
+                                placement={'top'}
+                                show={isHovered}
+                              >
+                                <div
+                                  onMouseEnter={this.handleMouseEnter}
+                                  onMouseLeave={this.handleMouseLeave}
+                                  style={{
+                                    width: '32px',
+                                    height: '18px',
+                                    marginLeft: '-40px',
+                                  }}
+                                >
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    disabled
+                                    style={{
+                                      opacity: 0.3,
+                                      cursor: 'default',
+                                      margin: 0,
+                                      padding: 0,
+                                    }}
+                                  />
+                                </div>
+                              </ToolTip>
+
+                              <span
+                                className="form-check-label field-name"
+                                data-cy="make-public-app-label"
+                                style={{ opacity: 0.6 }}
+                              >
+                                {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                        <Button isLucid leadingIcon="copy">
+                          Copy link
+                        </Button>
+                      </CopyToClipboard>
+                    </div>
                   </div>
                 ) : (
                   <div className="shareable-link tj-app-input mb-2">
                     <label data-cy="shareable-app-link-label" className="field-name">
-                      {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
+                      {this.props.t('editor.shareModal.shareableLink', 'App link')}
                     </label>
                     <div className="empty-version">
-                      <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
-                      <span>This version has not been released yet</span>
+                      <div className="tw-h-[32px] tw-w-[32px] tw-rounded-[8px] tw-p-[6px] tw-bg-[var(--background-surface-layer-02)]">
+                        <MousePointerClick size={20} color="var(--icon-default)" />
+                      </div>
+                      <p className="tw-m-0 tw-text-[var(--text-default)] tw-text-[12px]/[18px] tw-font-medium">
+                        Version not released
+                      </p>
+                      <span className="tw-text-[var(--text-placeholder)] tw-text-[12px]/[18px] tw-font-normal">
+                        Release to get a shareable link
+                      </span>
                     </div>
                   </div>
                 )}
@@ -406,33 +408,16 @@ class ManageAppUsersComponent extends React.Component {
                   (this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
-                        Embedded app link
+                        Embed app
                       </label>
-                      <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
+                      <span className={`iframe-link-container tj-text-input justify-content-between`}>
                         <span data-cy="iframe-link">{embeddableLink}</span>
                         <span className="copy-container">
                           <CopyToClipboard
                             text={embeddableLink}
                             onCopy={() => toast.success('Link copied to clipboard')}
                           >
-                            <svg
-                              className="cursor-pointer"
-                              width="17"
-                              height="18"
-                              viewBox="0 0 17 18"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              data-cy="iframe-link-copy-button"
-                            >
-                              <path
-                                d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
-                                fill="#889096"
-                              />
-                              <path
-                                d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
-                                fill="#889096"
-                              />
-                            </svg>
+                            <Button iconOnly isLucid leadingIcon="copy" size="medium" variant="outline" />
                           </CopyToClipboard>
                         </span>
                       </span>
@@ -443,14 +428,16 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Body>
 
           <Modal.Footer className="manage-app-users-footer">
+            <CopyToClipboard text={appPreviewLink} onCopy={() => toast.success('Link copied to clipboard')}>
+              <Button isLucid leadingIcon="eye" variant="outline">
+                Copy preview link
+              </Button>
+            </CopyToClipboard>
             {this.isUserAdmin && (
-              <Link
-                to={getPrivateRoute('workspace_settings')}
-                target="_blank"
-                className={`btn border-0 default-secondary-button float-right1`}
-                data-cy="manage-users-button"
-              >
-                Manage users
+              <Link to={getPrivateRoute('workspace_settings')} target="_blank">
+                <Button variant="secondary" isLucid leadingIcon="users" data-cy="manage-users-button">
+                  Manage users
+                </Button>
               </Link>
             )}
           </Modal.Footer>

@@ -12293,22 +12293,38 @@ tbody {
 
 .shareable-link {
   .input-group {
-    .input-group-text {
-      border-color: var(--slate7);
-      color: var(--slate12);
-      background-color: var(--slate3);
+    height: 32px;
+    display: flex;
+    background-color: var(--background-surface-layer-01);
+    border-radius: 6px;
+
+    > div:nth-of-type(1) input {
+      width: 339px;
+      border-right: none !important;
+      border-radius: 6px 0 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .app-name-slug-input {
+    > div:nth-of-type(2) {
+      margin: 0px;
+      flex-grow: 1 !important;
+
       input {
-        border-color: var(--grass9);
+        border-left: none !important;
+        border-color: var(--border-default) !important;
+        border-radius: 0 6px 6px 0 !important;
+
+        &:focus-visible {
+          border-color: var(--indigo9) !important;
+          border-left: 1px solid !important;
+        }
       }
     }
   }
 
   .input-group {
-    display: flex;
-
     .tj-app-input textarea {
       width: 600px;
       border-radius: 0px !important;
@@ -12316,6 +12332,38 @@ tbody {
       background-color: #efefef4d;
       color: #545454;
     }
+  }
+
+  .empty-version {
+    height: auto;
+    margin: 0;
+    border-color: var(--border-weak);
+    padding: 16px;
+    flex-direction: column;
+    gap: 8px;
+
+    p, span {
+      font-family: IBM Plex Sans;
+    }
+  }
+}
+
+.iframe-link-container {
+  margin-bottom: 0px !important;
+  background-color: var(--background-surface-layer-02) !important;
+  border-radius: 6px !important;
+  border: none !important;
+  padding: 8px !important;
+
+  span {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+  }
+
+  .copy-container {
+    width: auto !important;
+    margin-right: 0px !important;
   }
 }
 
@@ -13247,8 +13295,14 @@ tbody {
 }
 
 .manage-app-users-footer {
-  padding-bottom: 20px;
-  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+
+  a {
+    text-decoration: none !important;
+  }
 
   .default-secondary-button {
     width: auto !important;

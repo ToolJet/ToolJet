@@ -130,7 +130,7 @@
         "share": "Share",
         "shareModal": {
             "makeApplicationPublic": "Make application public",
-            "shareableLink": "Shareable app link",
+            "shareableLink": "App link",
             "copy": "copy",
             "embeddableLink": "Embedded app link",
             "manageUsers": "Users"
