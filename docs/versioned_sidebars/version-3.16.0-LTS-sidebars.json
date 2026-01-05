@@ -651,7 +651,8 @@
             "tj-setup/observability/grafana",
             "tj-setup/observability/last9"
           ]
-        }
+        },
+        "tj-setup/lockbox-master-key-rotation"
       ]
     },
     {
