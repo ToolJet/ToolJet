@@ -160,13 +160,18 @@ COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 
-
 # Create directory /home/appuser and set ownership to appuser
 RUN mkdir -p /home/appuser \
     && chown -R appuser:0 /home/appuser \
     && chmod g+s /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
+
+# Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
+  RUN mkdir -p /app/tooljet/gitsync \
+      && chown -R appuser:0 /app/tooljet \
+      && chmod -R g+w /app/tooljet \
+      && chmod g+s /app/tooljet /app/tooljet/gitsync
 
 # Create rsyslog directory for audit logs with proper permissions
 RUN mkdir -p /home/appuser/rsyslog \
