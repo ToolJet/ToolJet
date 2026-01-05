@@ -33,6 +33,7 @@ import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
 import { BundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
+import { PythonBundleGenerationService } from '../ee/workflows/services/python-bundle-generation.service';
 
 
 export const createUser = async (
@@ -720,6 +721,21 @@ export const createWorkflowBundle = async (
     const bundle = await bundleGenerationService.getBundleForExecution(appVersionId);
     if (!bundle) {
         throw new Error('Bundle was not created successfully');
+    }
+};
+
+export const createPythonBundle = async (
+    nestApp: INestApplication,
+    appVersionId: string,
+    dependencies: string  // requirements.txt format (e.g., 'pydash==8.0.3\nrequests==2.31.0')
+): Promise<void> => {
+    const pythonBundleService = nestApp.get<PythonBundleGenerationService>(PythonBundleGenerationService);
+
+    await pythonBundleService.generateBundle(appVersionId, dependencies);
+
+    const bundle = await pythonBundleService.getBundleForExecution(appVersionId);
+    if (!bundle) {
+        throw new Error('Python bundle was not created successfully');
     }
 };
 

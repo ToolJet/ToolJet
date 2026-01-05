@@ -16,6 +16,7 @@ import {
   createNestAppInstance,
   createCompleteWorkflow,
   createWorkflowBundle,
+  createPythonBundle,
   authenticateUser,
   WorkflowNode,
   WorkflowEdge,
@@ -830,6 +831,521 @@ describe('workflow executions controller', () => {
         );
         expect(headerVal).toBe('Hello World'); // {{ startCase("hello world") }} => Hello World
       });
+    });
+
+    describe('Python (runpy) execution', () => {
+      it('should execute workflow with RunPy query node', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runpy-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runpy-1',
+              kind: 'runpy',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runpy1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runpy-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runpy-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runpy-1',
+            dataSourceKind: 'runpy',
+            name: 'runpy1',
+            options: {
+              code: `result = sum([1, 2, 3, 4, 5])`,
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'RunPy Workflow',
+          nodes,
+          edges,
+          queries
+        });
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runpy-1');
+
+        // Verify RunPy node executed and has result
+        const runpyNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runpy-1');
+        expect(runpyNode).toBeDefined();
+        expect(runpyNode.executed).toBe(true);
+
+        // Parse and validate Python result (sum of 1+2+3+4+5 = 15)
+        const parsedResult = parse(runpyNode.result);
+        expect(parsedResult.status).toBe('ok');
+        expect(parsedResult.data).toBe(15);
+      }, 60000);
+
+      it('should execute workflow with Python bundle using pydash', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runpy-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runpy-pydash',
+              kind: 'runpy',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runpy1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runpy-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runpy-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runpy-pydash',
+            dataSourceKind: 'runpy',
+            name: 'runpy1',
+            options: {
+              code: `
+import pydash
+result = pydash.map_([1, 2, 3], lambda x: x * 2)
+              `.trim(),
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'RunPy Pydash Workflow',
+          nodes,
+          edges,
+          queries
+        });
+
+        // Create Python bundle with pydash
+        await createPythonBundle(app, appVersion.id, 'pydash==8.0.3');
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runpy-1');
+
+        // Verify RunPy node executed and has pydash result
+        const runpyNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runpy-1');
+        expect(runpyNode).toBeDefined();
+        expect(runpyNode.executed).toBe(true);
+
+        // Parse and validate pydash result (map [1,2,3] * 2 = [2,4,6])
+        const parsedResult = parse(runpyNode.result);
+        expect(parsedResult.status).toBe('ok');
+        expect(parsedResult.data).toEqual([2, 4, 6]);
+      }, 120000);
+
+      it('should access state variables in runpy node', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runjs-init',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runjs-init',
+              kind: 'runjs',
+              options: {}
+            },
+            position: { x: 250, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'runpy-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runpy-state',
+              kind: 'runpy',
+              options: {}
+            },
+            position: { x: 450, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runpy1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 650, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runjs-init',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runjs-init',
+            target: 'runpy-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-3',
+            source: 'runpy-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runjs-init',
+            dataSourceKind: 'runjs',
+            name: 'runjs1',
+            options: {
+              code: `return { numbers: [1, 2, 3], multiplier: 2 };`,
+              parameters: []
+            }
+          },
+          {
+            idOnDefinition: 'query-runpy-state',
+            dataSourceKind: 'runpy',
+            name: 'runpy1',
+            options: {
+              code: `
+numbers = runjs1['data']['numbers']
+multiplier = runjs1['data']['multiplier']
+result = [x * multiplier for x in numbers]
+              `.trim(),
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'RunPy State Workflow',
+          nodes,
+          edges,
+          queries
+        });
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('runjs-init');
+        expect(executedNodeIds).toContain('runpy-1');
+
+        // Verify RunPy node accessed state and produced correct result
+        const runpyNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runpy-1');
+        expect(runpyNode).toBeDefined();
+        expect(runpyNode.executed).toBe(true);
+
+        // Parse and validate result ([1,2,3] * 2 = [2,4,6])
+        const parsedResult = parse(runpyNode.result);
+        expect(parsedResult.status).toBe('ok');
+        expect(parsedResult.data).toEqual([2, 4, 6]);
+      }, 60000);
+    });
+
+    describe('Mixed JavaScript and Python execution', () => {
+      it('should execute workflow with both RunJS and RunPy nodes using their respective bundles', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        const setupScript = {
+          javascript: `
+const _ = require('lodash');
+const processNumbers = (numbers) => _.sortBy(numbers);
+          `.trim()
+        };
+
+        const jsDependencies = {
+          'lodash': '4.17.21'
+        };
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runjs-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runjs-mixed',
+              kind: 'runjs',
+              options: {}
+            },
+            position: { x: 300, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'runpy-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runpy-mixed',
+              kind: 'runpy',
+              options: {}
+            },
+            position: { x: 500, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { jsResult: runjs1.data, pyResult: runpy1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 700, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runjs-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runjs-1',
+            target: 'runpy-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-3',
+            source: 'runpy-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runjs-mixed',
+            dataSourceKind: 'runjs',
+            name: 'runjs1',
+            options: {
+              code: `
+const numbers = [3, 1, 4, 1, 5, 9, 2, 6];
+return processNumbers(numbers);
+              `.trim(),
+              parameters: []
+            }
+          },
+          {
+            idOnDefinition: 'query-runpy-mixed',
+            dataSourceKind: 'runpy',
+            name: 'runpy1',
+            options: {
+              code: `
+import pydash
+# Get sorted numbers from JS node and calculate sum
+sorted_numbers = runjs1['data']
+result = pydash.sum_(sorted_numbers)
+              `.trim(),
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'Mixed JS and Python Workflow',
+          setupScript,
+          dependencies: jsDependencies,
+          nodes,
+          edges,
+          queries
+        });
+
+        // Create both JavaScript and Python bundles
+        await createWorkflowBundle(app, appVersion.id, jsDependencies);
+        await createPythonBundle(app, appVersion.id, 'pydash==8.0.3');
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify all nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runjs-1');
+        expect(executedNodeIds).toContain('runpy-1');
+
+        // Verify RunJS node used lodash to sort numbers
+        const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
+        expect(runjsNode).toBeDefined();
+        expect(runjsNode.executed).toBe(true);
+
+        const runjsResult = parse(runjsNode.result);
+        expect(runjsResult.status).toBe('ok');
+        expect(runjsResult.data).toEqual([1, 1, 2, 3, 4, 5, 6, 9]); // sorted
+
+        // Verify RunPy node used pydash to sum the sorted numbers
+        const runpyNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runpy-1');
+        expect(runpyNode).toBeDefined();
+        expect(runpyNode.executed).toBe(true);
+
+        const runpyResult = parse(runpyNode.result);
+        expect(runpyResult.status).toBe('ok');
+        expect(runpyResult.data).toBe(31); // sum of [1,1,2,3,4,5,6,9] = 31
+
+        // Verify response node contains both results
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+      }, 180000);
     });
   });
 
