@@ -119,10 +119,13 @@ export function defineAppAbility(
       if (hasNonReleasedAccess) {
         permissions.push(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS);
       }
-    }
 
-    // Grant released access for end-users OR builders with released permission
-    if (!isBuilder || (appId && canAccessReleasedEnv(appId))) {
+      // For builders: Only grant released access if they have released environment permission
+      if (appId && canAccessReleasedEnv(appId)) {
+        permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
+      }
+    } else {
+      // For end-users: Grant released access if they have viewable app permission (already checked above)
       permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
     }
 
