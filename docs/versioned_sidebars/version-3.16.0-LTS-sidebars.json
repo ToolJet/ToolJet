@@ -262,6 +262,14 @@
             "app-builder/modules/data-flow"
           ]
         },
+        {
+          "type": "category",
+          "label": "Embed Application",
+          "items": [
+            "app-builder/embed-app/overview",
+            "app-builder/embed-app/public-app"
+          ]
+        },
         "app-builder/embed-application",
         "app-builder/pat-integration",
         {
