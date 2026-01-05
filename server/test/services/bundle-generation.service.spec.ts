@@ -147,7 +147,7 @@ describe('BundleGenerationService', () => {
         // Check final upsert call
         const finalCall = (repository.upsert as jest.Mock).mock.calls[1];
         expect(finalCall[0]).toMatchObject({
-          dependencies: mockDependencies,
+          dependencies: JSON.stringify(mockDependencies), // Stored as JSON string
           status: 'ready',
           bundleBinary: expect.any(Buffer),
           bundleSize: expect.any(Number),
@@ -179,7 +179,7 @@ describe('BundleGenerationService', () => {
 
         expect(repository.upsert).toHaveBeenCalledTimes(2);
         const finalCall = (repository.upsert as jest.Mock).mock.calls[1];
-        expect(finalCall[0].dependencies).toEqual({});
+        expect(finalCall[0].dependencies).toEqual('{}'); // Empty object stored as JSON string
       });
 
       it('should block Node.js built-ins in esbuild config', async () => {
