@@ -140,14 +140,15 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
           `Custom group "${group.group_name}" (${group.group_id}): End-user group, only Released enabled (${customEndUserResult[1]} rows)`
         );
       } else if (group.user_role === 'builder') {
-        // Custom group with builders: Enable dev, staging, and released (NOT production)
+        // Custom group with builders: Enable dev, staging, and released
+        // Production access based on edit permission (true if can_edit, false otherwise)
         const customBuilderResult = await queryRunner.query(
           `
           UPDATE apps_group_permissions agp
           SET 
             can_access_development = true,
             can_access_staging = true,
-            can_access_production = false,
+            can_access_production = agp.can_edit,
             can_access_released = true
           FROM granular_permissions gp
           WHERE agp.granular_permission_id = gp.id
@@ -157,7 +158,7 @@ export class BackfillEnvironmentPermissionsForBuilders1733275000001 implements M
           [group.group_id]
         );
         console.log(
-          `Custom group "${group.group_name}" (${group.group_id}): Builder group, dev/staging/released enabled (${customBuilderResult[1]} rows)`
+          `Custom group "${group.group_name}" (${group.group_id}): Builder group, dev/staging/released enabled, production based on edit permission (${customBuilderResult[1]} rows)`
         );
       }
     }
