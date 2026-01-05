@@ -42,7 +42,7 @@ OTEL_SERVICE_NAME=tooljet
 
 ```js
 # Authentication (if required by your OTEL collector)
-OTEL_EXPORTER_OTLP_HEADERS=api-key=your-api-key
+OTEL_EXPORTER_OTLP_HEADERS=<your-api-key>
 
 # Advanced Configuration
 OTEL_LOG_LEVEL=debug                          # Enable debug logging for OTEL
