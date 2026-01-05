@@ -61,6 +61,7 @@ const createWorkspaceOnboardUser = ({
 const configureAppGranularPermissions = (groupName, apps) => {
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(groupName)).click();
+    cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.granularLink).click();
 
     //Create app granular access

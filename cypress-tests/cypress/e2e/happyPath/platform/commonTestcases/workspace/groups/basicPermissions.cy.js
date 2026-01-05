@@ -28,6 +28,9 @@ import {
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { groupsText } from "Texts/manageGroups";
+import { appPromote } from "Support/utils/platform/multiEnv";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+import { versionSwitcherSelectors } from "selectors/version";
 
 describe("Basic Permissions", () => {
     let data = {};
@@ -95,9 +98,30 @@ describe("Basic Permissions", () => {
         cy.get(commonSelectors.dashboardIcon).click();
         cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.apiPublishDraftVersion('v1')
+        cy.apiPublishDraftVersion('v1');
+        appPromote("development", "staging");
+        cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+        cy.get(multiEnvSelector.environmentsTag("staging")).last().click();
+        cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+        cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
+        cy.get(multiEnvSelector.environmentsTag("production")).should('be.disabled');
+        cy.apiLogout();
 
-        releaseApp();
+        cy.apiLogin();
+        cy.visit(data.workspaceSlug);
+        cy.openApp();
+        cy.get(versionSwitcherSelectors.versionSwitcherButton).click();
+        cy.get(multiEnvSelector.environmentsTag("production")).last().click();
+        cy.get(commonSelectors.releaseButton).click();
+        cy.get(commonSelectors.yesButton).click();
+        cy.wait(500);
+        cy.apiLogout();
+
+        cy.apiLogin(data.email, data.password);
+        cy.visit(data.workspaceSlug);
+        cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should(
+            "have.lengthOf", 1).and("be.enabled");
+
 
         //verify clone access
         cy.visit(data.workspaceSlug);
