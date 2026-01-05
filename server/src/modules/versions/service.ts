@@ -23,6 +23,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
@@ -39,6 +40,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
+    protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
@@ -116,19 +118,12 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      // Check version status first
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+      }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
-      } else if (appVersion?.status === AppVersionStatus.DRAFT) {
-        // Draft versions should never be frozen by git config
-        // Only respect environment-based freeze (shouldFreezeEditor from environment priority)
-        // Keep existing value, don't modify based on git
-      } else {
-        // For other statuses, check git config
-        const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-        if (appGit) {
-          shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-        }
       }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {
@@ -145,6 +140,7 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
+    // need to add freeze version logic here
     // need to add freeze version logic here
     return response;
   }
@@ -166,6 +162,9 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    // Queue history capture if homepage or settings are being updated
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -180,6 +179,9 @@ export class VersionService implements IVersionService {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+
+    // Queue history capture for settings changes AFTER successful update
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,

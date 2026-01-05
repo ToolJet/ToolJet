@@ -480,6 +480,7 @@ export function createReferencesLookup(
   }
   const actions = [
     'runQuery',
+    'resetQuery',
     'setVariable',
     'unsetAllVariables',
     'unSetVariable',
@@ -519,6 +520,7 @@ export function createReferencesLookup(
       } else {
         if (path === 'queries') {
           map.set(`${path}.${key}.run()`, { type: 'Function' });
+          map.set(`${path}.${key}.reset()`, { type: 'Function' });
         }
         newPath = `${path}.${key}`;
       }
@@ -783,7 +785,7 @@ export const baseTheme = {
         },
         weak: {
           light: '#E4E7EB',
-          dark: '#EEF0F1',
+          dark: '#2B3036',
         }
       },
     },

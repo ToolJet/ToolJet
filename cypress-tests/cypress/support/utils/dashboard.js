@@ -29,7 +29,7 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
   cy.get(".modal-body")
-    .parent()
+    .parent().parent()
     .within(() => {
       cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
     });

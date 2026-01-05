@@ -18,7 +18,7 @@
 	background-color: #ffffff;
 	color: var(--text-default);
 	cursor: pointer;
-    box-shadow: var(--elevation-100-box-shadow);
+	box-shadow: var(--elevation-100-box-shadow);
 	transition: box-shadow 0.12s ease, transform 0.08s ease;
 	border-radius: 4px !important;
 	outline: none;
@@ -163,8 +163,8 @@
 	&.selected {
 		box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
 		border-radius: 6px;
-		border: 1px solid #3E63DD;
-		background: unset !important;
+		// border: 1px solid #3E63DD;
+		background: var(--button-outline-hover) !important;
 	}
 
 	.env-header {
@@ -293,7 +293,7 @@
 	border-radius: 8px !important;
 	padding: 0 !important;
 	max-width: 300px !important;
-    box-shadow: var(--elevation-400-box-shadow) !important;
+	box-shadow: var(--elevation-400-box-shadow) !important;
 	text-align: left !important;
 }
 
@@ -304,17 +304,22 @@
 }
 
 .tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::before,
-.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after {
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::after {
 	border-left-color: #ffffff !important;
 }
+
 .tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::before,
 .tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::after {
 	border-right-color: #ffffff !important;
 }
+
 .tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::before,
 .tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::after {
 	border-top-color: #ffffff !important;
 }
+
 .tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::before,
 .tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::after {
 	border-bottom-color: #ffffff !important;

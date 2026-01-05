@@ -1,12 +1,13 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { gitSyncService } from '@/_services';
-import { useAppDataStore } from '@/_stores/appDataStore';
+
 const initialState = {
   showGitSyncModal: false,
   allowEditing: false,
   appLoading: false,
   orgGit: null,
   appGit: null,
+  isGitSyncConfigured: false,
 };
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
@@ -21,21 +22,20 @@ export const createGitSyncSlice = (set, get) => ({
   },
   fetchAppGit: async (currentOrganizationId, currentAppVersionId) => {
     set((state) => ({ appLoading: true }), false, 'setAppLoading');
-
     try {
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
       const allowEditing = data?.app_git?.allow_editing ?? false;
       const orgGit = data?.app_git?.org_git;
-      const appGit = data?.app_git;
       const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
-
+      const appGit = data?.app_git;
+      set((state) => ({ appGit }), false, 'setAppGit');
+      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured;
+      // Update branchingEnabled in branchSlice
+      get().updateBranchingEnabled?.(isBranchingEnabled);
+      set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured');
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
-
-      // Update branchingEnabled in branchSlice
-      get().updateBranchingEnabled?.(isBranchingEnabled);
-
       return allowEditing;
     } catch (error) {
       console.error('Failed to fetch app git configs:', error);
@@ -47,5 +47,8 @@ export const createGitSyncSlice = (set, get) => ({
     } finally {
       set((state) => ({ appLoading: false }), false, 'setAppLoading');
     }
+  },
+  setAppGit(appGit) {
+    set((state) => ({ appGit: appGit }), false, 'setAppGit');
   },
 });

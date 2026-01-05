@@ -48,6 +48,7 @@ export default class LicenseBase {
   private _app: object;
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
+  private _isScimEnabled: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -132,6 +133,7 @@ export default class LicenseBase {
     this._isGitSync = this.getFeatureValue('gitSync');
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
+    this._isScimEnabled = this.getFeatureValue('scim');
   }
 
   private getFeatureValue(key: string) {
@@ -420,6 +422,13 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.externalApi;
     }
     return this._isExternalApis;
+  }
+
+  public get scim(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.scim;
+    }
+    return this._isScimEnabled;
   }
 
   public get multiPlayerEdit(): boolean {

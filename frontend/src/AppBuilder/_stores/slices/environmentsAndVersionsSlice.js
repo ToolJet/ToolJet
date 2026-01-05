@@ -17,6 +17,8 @@ const initialState = {
   developmentVersions: [],
   draftVersions: [],
   publishedVersions: [],
+  draftVersions: [],
+  publishedVersions: [],
   environmentLoadingState: 'completed',
   isPublicAccess: false,
 };
@@ -209,7 +211,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const versionIndex = state.versionsPromotedToEnvironment.findIndex((v) => v.id === versionId);
         if (versionIndex !== -1) {
           state.versionsPromotedToEnvironment[versionIndex].name = versionName;
+          state.versionsPromotedToEnvironment[versionIndex].description = versionDescription;
         }
+
+        const devVersionIndex = state.developmentVersions.findIndex((v) => v.id === versionId);
+        if (devVersionIndex !== -1) {
+          state.developmentVersions[devVersionIndex].name = versionName;
+          state.developmentVersions[devVersionIndex].description = versionDescription;
+        }
+
         state.appVersionsLazyLoaded = false;
       });
 
@@ -272,9 +282,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
       );
+      let updatedVersionsArray = [...get().versionsPromotedToEnvironment];
+      const versionIndex = get().versionsPromotedToEnvironment.findIndex((v) => v.id === data?.editing_version?.id);
+      if (versionIndex !== -1 && data?.editing_version) {
+        updatedVersionsArray[versionIndex] = data?.editing_version;
+      }
       let optionsToUpdate = {
         selectedVersion,
         appVersionEnvironment,
+        versionsPromotedToEnvironment: [...updatedVersionsArray],
         ...calculatePromoteAndReleaseButtonVisibility(
           selectedVersion.id,
           get().selectedEnvironment,
@@ -351,10 +367,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         selectedEnvironment,
         selectedVersionDef,
       };
-      _onSuccess(callBackResponse);
+      if (_onSuccess && typeof _onSuccess === 'function') {
+        _onSuccess(callBackResponse);
+      }
     } catch (error) {
       toast.error('Failed to switch environment: ' + error?.message);
-      if (_onFailure) {
+      if (_onFailure && typeof _onFailure === 'function') {
         _onFailure(error);
       }
     }

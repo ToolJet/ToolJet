@@ -33,6 +33,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);
   const isModuleEditor = appType === 'module';
+
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
   const appBuilderMode = useStore((state) => state.appStore.modules[moduleId]?.app?.appBuilderMode ?? 'visual');
   const navigate = useNavigate();

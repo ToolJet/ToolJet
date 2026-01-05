@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
+import cx from 'classnames';
 import VersionSwitcherButton from './VersionSwitcherButton';
 import VersionSearchField from './VersionSearchField';
 import VersionDropdownItem from './VersionDropdownItem';
@@ -32,7 +33,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
-    orgGit,
+    orgGit
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -49,6 +50,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
       orgGit: state.orgGit,
+
     }),
     shallow
   );
@@ -73,6 +75,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
   const [versionToPromote, setVersionToPromote] = useState(null);
   const [versionToEdit, setVersionToEdit] = useState(null);
+  const [openMenuVersionId, setOpenMenuVersionId] = useState(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
@@ -95,27 +98,37 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   useEffect(() => {
     if (currentEnvironment && isDropdownOpen) {
       if (appId && currentEnvironment.id) {
-        fetchVersionsForEnvironment(appId, currentEnvironment.id);
+        // Use a small delay to ensure state is ready
+        const timer = setTimeout(() => {
+          fetchVersionsForEnvironment(appId, currentEnvironment.id);
+        }, 0);
+        return () => clearTimeout(timer);
       }
     }
   }, [isDropdownOpen, currentEnvironment, appId, fetchVersionsForEnvironment]);
 
   // Current version data - use selectedVersion from global store as source of truth
-  const currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+  // Also check developmentVersions to ensure we have the status field for draft versions
+  let currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+
+  // If currentVersion doesn't have status field, try to get it from developmentVersions
+  if (currentVersion && !currentVersion.status && developmentVersions.length > 0) {
+    const versionWithStatus = developmentVersions.find((v) => v.id === currentVersion.id);
+    if (versionWithStatus) {
+      currentVersion = { ...currentVersion, status: versionWithStatus.status };
+    }
+  }
+
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
   const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
-  // Check if there's a draft version of type 'version' (not branch)
-  const hasVersionTypeDraft = developmentVersions.some(
-    (v) => v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
-  );
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
-  // Only disable create draft button when:
-  // 1. Git is configured AND there's already a version-type draft
-  // When git is not configured, allow multiple drafts (old behavior)
+  // Check if there's only one draft and no other saved versions
+  const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
+  const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-  const shouldDisableCreateDraft = orgGit && isGitSyncEnabled && hasVersionTypeDraft;
+  const shouldDisableCreateDraft = draftVersions.length > 0 && isGitSyncEnabled && savedVersions.length === 0;
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -138,6 +151,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleEnvironmentChange = (env) => {
+    // Close any open menus when switching environments
+    setOpenMenuVersionId(null);
     // Update local filter and lazy load versions for the selected environment
     setSelectedEnvironmentFilter(env);
     if (appId && env.id) {
@@ -154,22 +169,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleVersionSelect = (version) => {
-    console.log('handleVersionSelect called', {
-      version,
-      currentVersionId,
-      selectedEnvironmentFilter,
-      currentEnvironment,
-    });
-
-    // Check if the selected environment filter is different from current global environment
     const isDifferentEnvironment = selectedEnvironmentFilter?.id !== currentEnvironment?.id;
 
-    // Only early return if same version AND same environment
     const isSameVersionSelected = currentVersionId === version.id;
     const isSameEnvironment = !isDifferentEnvironment;
 
     if (isSameVersionSelected && isSameEnvironment) {
-      console.log('Same version and environment, closing dropdown');
       closeDropdown();
       return;
     }
@@ -257,7 +262,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const renderPopover = (overlayProps) => (
     <Popover
       id="version-manager-popover"
-      className="version-manager-popover"
+      className={cx('version-manager-popover', { 'dark-theme theme-dark': darkMode })}
       ref={popoverRef}
       {...overlayProps}
       style={{
@@ -265,7 +270,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         minWidth: '350px',
         borderRadius: '8px',
         border: '1px solid var(--border-weak)',
-        boxShadow: '0px 0px 1px rgba(48, 50, 51, 0.05), 0px 1px 1px rgba(48, 50, 51, 0.1)',
+        boxShadow: '0px 0px 1px var(--interactive-default), 0px 1px 1px var(--interactive-hover)',
         padding: 0,
       }}
     >
@@ -318,9 +323,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             </div>
           ) : (
             filteredVersions.map((version) => {
-              // Only show as selected if:
-              // 1. The version ID matches the current version ID
-              // 2. AND we're viewing the current global environment (not browsing another environment)
               const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
               const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
 
@@ -329,6 +331,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   key={version.id}
                   version={version}
                   isSelected={isVersionSelected}
+                  isViewingCurrentEnvironment={isViewingCurrentEnvironment}
                   currentEnvironment={selectedEnvironmentFilter || currentEnvironment}
                   environments={environments}
                   onSelect={() => handleVersionSelect(version)}
@@ -341,6 +344,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   }}
                   onDelete={(v) => openDeleteModal(v)}
                   appId={appId}
+                  darkMode={darkMode}
+                  openMenuVersionId={openMenuVersionId}
+                  setOpenMenuVersionId={setOpenMenuVersionId}
                 />
               );
             })
@@ -350,8 +356,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        {/* Create Draft Button - disabled if branching is enabled AND version-type draft already exists */}
-        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} />
+        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} darkMode={darkMode} />
       </Popover.Body>
     </Popover>
   );

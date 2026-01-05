@@ -29,7 +29,7 @@ module.exports = defineConfig({
     },
     redirectionLimit: 3,
 
-    numTestsKeptInMemory: 0,
+    numTestsKeptInMemory: 1,
     experimentalMemoryManagement: true,
 
     experimentalRunAllSpecs: true,
@@ -45,8 +45,6 @@ module.exports = defineConfig({
     coverage: false,
     codeCoverageTasksRegistered: false,
 
-    // experimentalStudio: true,
-    // experimentalPromptCommand: true,
-    // projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
+    projectId: "ca6324a0-4210-4f7e-846a-71ca2766ca4",
   },
 });

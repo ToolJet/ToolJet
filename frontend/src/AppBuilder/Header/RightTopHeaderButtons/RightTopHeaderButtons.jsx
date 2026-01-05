@@ -22,8 +22,9 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
   return (
     <div className="d-flex justify-content-end navbar-right-section">
       <div className=" release-buttons">
-        {<GitSyncManager />}
-        {/* <div className="tw-hidden navbar-seperator" /> */}
+        <GitSyncManager />
+        <div className="tw-hidden navbar-seperator" />
+        <PreviewAndShareIcons />
         {isNotPromotedOrReleased && <LifecycleCTAButton />}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>

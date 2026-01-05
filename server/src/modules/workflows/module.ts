@@ -40,6 +40,7 @@ import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
 const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
@@ -156,6 +157,7 @@ export class WorkflowsModule extends SubModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await UsersModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       providers: [
         AppsAbilityFactory,

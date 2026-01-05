@@ -76,7 +76,12 @@ export const setUpSlug = (slug) => {
   cy.get(commonWidgetSelector.modalCloseButton).click();
 };
 
-export const setupAppWithSlug = (appName, slug, appType = 'private') => {
+export const setupAppWithSlug = (
+  appName,
+  slug,
+  appType = "private",
+  makePublic = false
+) => {
   const defaultLayout = {
     desktop: { top: 90, left: 9, width: 6, height: 40 },
     mobile: { top: 90, left: 9, width: 6, height: 40 },
@@ -91,11 +96,17 @@ export const setupAppWithSlug = (appName, slug, appType = 'private') => {
       Cypress.env("appId"),
       commonWidgetSelector.draggableWidget(appType)
     );
+    cy.apiPublishDraftVersion("v1");
     appPromote("development", "production");
   });
-
+  cy.wait(2000);
   cy.apiReleaseApp(appName);
   cy.apiAddAppSlug(appName, slug);
+  if (makePublic === true) {
+    cy.apiMakeAppPublic();
+  }
+  cy.log(`App ${appName} with slug ${slug} is set up successfully.`);
+  cy.log(`App ID: ${Cypress.env("appId")}`);
 };
 
 export const verifyRestrictedAccess = () => {
@@ -156,15 +167,11 @@ export const onboardUserFromAppLink = (
 };
 
 export const resolveHost = () => {
-  const baseUrl = Cypress.config("baseUrl");
+  // When running behind a proxy (nginx), use the actual server host
+  // Otherwise, use the baseUrl directly
+  if (Cypress.env('proxy') === true) {
+    return Cypress.config("server_host") || Cypress.config("baseUrl");
+  }
 
-  const urlMapping = {
-    "http://localhost:8082": "http://localhost:8082",
-    "http://localhost:3000": "http://localhost:3000",
-    "http://localhost:3000/apps": "http://localhost:3000/apps",
-    "http://localhost:4001": "http://localhost:3000",
-    "http://localhost:4001/apps": "http://localhost:3000/apps",
-  };
-
-  return urlMapping[baseUrl];
+  return Cypress.config("baseUrl");
 };

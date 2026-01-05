@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const CreateDraftVersionModal = ({
   showCreateAppVersion,
@@ -18,16 +18,13 @@ const CreateDraftVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
-
-  // Get refreshVersions from versionManagerStore
   const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
-
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -55,6 +52,7 @@ const CreateDraftVersionModal = ({
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
+
     const gitSyncEnabled =
       orgGit?.org_git?.git_ssh?.is_enabled ||
       orgGit?.org_git?.git_https?.is_enabled ||
@@ -71,11 +69,9 @@ const CreateDraftVersionModal = ({
   }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
-    // Only set initial value if no version is selected yet
     if (selectedVersionForCreation) {
       return;
     }
-
     // If savedVersions is empty but we have a selectedVersion that is not DRAFT, use it
     if (!savedVersions?.length) {
       if (selectedVersion && selectedVersion.status !== 'DRAFT') {
@@ -109,13 +105,12 @@ const CreateDraftVersionModal = ({
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
-  // Use version.id as value for proper react-select comparison
   const options =
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-      : [];
+        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+        : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -147,7 +142,6 @@ const CreateDraftVersionModal = ({
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
-        // Refresh versionManagerStore so CreateBranchModal gets the latest versions
         refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
@@ -214,7 +208,7 @@ const CreateDraftVersionModal = ({
                   maxLength="25"
                   style={{ height: '32px' }}
                 />
-                <small className="version-name-helper-text">
+                <small className="version-name-helper-text" data-cy="version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>
@@ -299,6 +293,7 @@ const CreateDraftVersionModal = ({
                 }}
                 variant="tertiary"
                 className="mx-2"
+                data-cy="create-draft-version-cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
@@ -308,6 +303,7 @@ const CreateDraftVersionModal = ({
                 className=""
                 type="submit"
                 disabled={!selectedVersionForCreation}
+                data-cy="create-draft-version-create-button"
               >
                 {t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>

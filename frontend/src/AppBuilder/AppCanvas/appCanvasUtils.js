@@ -356,7 +356,7 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
   }
   useStore.getState().setLastCanvasClickPosition(null);
   if (isCloning) {
-    const parentId = allComponents[selectedComponents[0]?.id]?.parent ?? undefined;
+    const parentId = allComponents[selectedComponents[0]?.id]?.component?.parent ?? undefined;
     debouncedPasteComponents(parentId, newComponentObj);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
@@ -488,6 +488,9 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 
   // Create a virtual component representing the entire group
   const virtualGroupComponent = {
+    component: {
+      parent: targetParentId,
+    },
     layouts: {
       [layout]: {
         top: bounds.minTop,
@@ -612,7 +615,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     // Adjust width if parent changed
     let width = component.layouts[currentLayout].width;
 
-    if (targetParentId !== component.component?.parent) {
+    if (!isCloning && targetParentId !== component.component?.parent) {
       const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
       const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
       width = Math.round((width * oldContainerWidth) / containerWidth);

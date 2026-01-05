@@ -57,7 +57,7 @@ export const Container = ({
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
-  const { borderRadius, borderColor, boxShadow } = styles;
+  const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;
   const headerMaxHeight = isDynamicHeightEnabled ? 10000 : parseInt(height, 10) - 100 - 10;
   const contentBgColor = useMemo(() => {
     return {
@@ -85,6 +85,7 @@ export const Container = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
+    '--cc-container-header-divider-color': headerDividerColor,
   };
 
   const containerHeaderStyles = {
