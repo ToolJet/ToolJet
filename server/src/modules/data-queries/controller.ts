@@ -151,10 +151,8 @@ export class DataQueriesController implements IDataQueriesController {
   @Get(':dataSourceId/list-tables/:environmentId')
   async listTables(
     @User() user: UserEntity,
-    @AppDecorator() app: App,
     @DataSource() dataSource: DataSourceEntity,
-    @Param('environmentId') environmentId,
-    @Res({ passthrough: true }) response: Response
+    @Param('environmentId') environmentId
   ) {
     return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId);
   }
