@@ -394,11 +394,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
+    const canPromoteLicense = get().license?.featureAccess?.promote;
+    const canReleaseLicense = get().license?.featureAccess?.release;
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
       isPromoteVersionEnabled: hasPromotePermission,
       isReleaseVersionEnabled: hasReleasePermission,
+      canPromoteLicense,
+      canReleaseLicense,
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {

@@ -14,7 +14,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
-  const { isPromoteVersionEnabled } = getCanPromoteAndRelease();
+  const { isPromoteVersionEnabled, canPromoteLicense } = getCanPromoteAndRelease();
   const { isSaving, editingVersion, appVersionEnvironment, environments, selectedEnvironment, currentEnvIndex } =
     useStore(
       (state) => ({
@@ -46,7 +46,12 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
       target: environments[currentEnvIndex + 1],
     });
   };
+  const LICENSE_BLOCKED_TOOLTIP =
+    'You don’t have access to dev lifecycle permissions. Upgrade your plan to access this feature.';
   const renderTooltipMessage = () => {
+    if (!canPromoteLicense) {
+     return LICENSE_BLOCKED_TOOLTIP;
+    }
     if (!isPromoteVersionEnabled) {
       return "You don't have access to promote application. Contact admin to know more.";
     }
@@ -61,15 +66,17 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   if (variant === 'inline') {
     return (
       <>
-        <ToolTip message={renderTooltipMessage()} placement="top" show={true}>
+        <ToolTip message={renderTooltipMessage()} placement="left" show={true}>
+          <span>
           <button
             className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={shouldDisablePromote || !isPromoteVersionEnabled}
+            disabled={shouldDisablePromote || !isPromoteVersionEnabled || !canPromoteLicense}
             onClick={handlePromote}
             data-cy="promote-version-button"
           >
             Promote
           </button>
+          </span>
         </ToolTip>
         <PromoteConfirmationModal
           data={promoteModalData}
