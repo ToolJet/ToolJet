@@ -10,8 +10,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
   showCreateAppVersion,
@@ -23,9 +21,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => { },
   versionId,
   onVersionCreated,
-  isBranchingEnabled,
-  selectedVersionForCreation,
-  setSelectedVersionForCreation,
+  isBranchingEnabled
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
