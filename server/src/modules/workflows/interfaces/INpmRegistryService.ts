@@ -1,6 +1,7 @@
 export interface INpmRegistryService {
   searchPackages(query: string, limit?: number): Promise<PackageSearchResult[]>;
   getPackageInfo(packageName: string): Promise<PackageInfo>;
+  getPackageVersions(packageName: string): Promise<string[]>;
 }
 
 export interface PackageSearchResult {

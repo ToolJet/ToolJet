@@ -19,7 +19,7 @@ export enum FEATURE_KEY {
   UPDATE_WORKFLOW_WEBHOOK_DETAILS = 'update_workflow_webhook_details',
 
   CREATE_WORKFLOW = 'create_workflow',
-  NPM_PACKAGES = 'npm_packages',
+  WORKFLOW_PACKAGES = 'workflow_packages',
   TERMINATE_WORKFLOW_EXECUTION = 'terminate_workflow_execution',
   WORKFLOW_EXECUTION_STATE = 'workflow_execution_state',
 }
