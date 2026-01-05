@@ -756,7 +756,7 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
           dir: "./cypress-tests"
 
-      - name: Debug - Chrome Browser Detection
+      - name: Debug - Chrome Browser Detections
         run: |
           echo "========================================="
           echo "DEBUGGING CHROME BROWSER DETECTION"
@@ -1164,6 +1164,26 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-proxy
@@ -1553,6 +1573,26 @@ jobs:
           name: "cypress.env.json"
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
+
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
