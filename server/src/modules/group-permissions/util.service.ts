@@ -101,8 +101,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     organizationId: string,
     manager?: EntityManager
   ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
-    const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
-    const noLicenseFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
+    // Check if plan is restricted (basic/starter have read-only permissions)
+    const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
+    const restrictedPlanFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
 
@@ -110,7 +111,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         {
           id,
           organizationId,
-          ...(!isLicenseValid ? noLicenseFilter : {}),
+          ...(isRestrictedPlan ? restrictedPlanFilter : {}),
         },
         manager
       );
@@ -119,7 +120,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
       }
 
-      if (!isLicenseValid) {
+      // For restricted plans (basic/starter), override with hardcoded permissions
+      if (isRestrictedPlan) {
         if (group.name !== USER_ROLE.END_USER) {
           for (const key in group) {
             if (typeof group[key] === 'boolean') {
