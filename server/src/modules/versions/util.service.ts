@@ -118,88 +118,32 @@ export class VersionUtilService implements IVersionUtilService {
     organizationId: string,
     manager?: EntityManager
   ): Promise<void> {
-  // async createVersion(
-  //   app: App,
-  //   user: User,
-  //   versionCreateDto: VersionCreateDto,
-  //   manager?: EntityManager
-  // ): Promise<AppVersion> {
-  //   const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
-  //   if (!versionName || versionName.trim().length === 0) {
-  //     // need to add logic to get the version name -> from the version created at from
-  //     throw new BadRequestException('Version name cannot be empty.');
-  //   }
-  //   const { organizationId } = user;
-  //   const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
-  //     organizationId,
-  //     manager
-  //   );
+    const organizationGit = await this.organizationGitSyncRepository.findOrgGitByOrganizationId(
+      organizationId,
+      manager
+    );
 
-  //   if (organizationGit && organizationGit.isBranchingEnabled) {
-  //     // Only allow one draft version of type 'version' (not branch)
-  //     // Branch versions can have multiple drafts
-  //     // If versionType is not provided or is not BRANCH, check for existing draft
-  //     const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
+    if (organizationGit && organizationGit.isBranchingEnabled) {
+      // Only allow one draft version of type 'version' (not branch)
+      // Branch versions can have multiple drafts
+      // If versionType is not provided or is not BRANCH, check for existing draft
+      const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
 
-  //     if (!isCreatingBranchVersion) {
-  //       const existingDraftVersion = await this.versionRepository.findOne({
-  //         where: {
-  //           appId: app.id,
-  //           status: AppVersionStatus.DRAFT,
-  //           versionType: Not(AppVersionType.BRANCH),
-  //         },
-  //       });
+      if (!isCreatingBranchVersion) {
+        const existingDraftVersion = await this.versionRepository.findOne({
+          where: {
+            appId: app.id,
+            status: AppVersionStatus.DRAFT,
+            versionType: Not(AppVersionType.BRANCH),
+          },
+        });
 
-  //       if (existingDraftVersion) {
-  //         throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
-  //       }
-  //     }
-  //   }
-  //   return await dbTransactionWrap(async (manager: EntityManager) => {
-  //     const versionFrom = await manager.findOneOrFail(AppVersion, {
-  //       where: { id: versionFromId, appId: app.id },
-  //       relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
-  //     });
-
-  //     const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
-
-  //     const appVersion = await manager.save(
-  //       AppVersion,
-  //       manager.create(AppVersion, {
-  //         name: versionName,
-  //         appId: app.id,
-  //         definition: versionFrom?.definition,
-  //         currentEnvironmentId: firstPriorityEnv?.id,
-  //         createdAt: new Date(),
-  //         updatedAt: new Date(),
-  //         status: AppVersionStatus.DRAFT,
-  //         parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
-  //         description: versionDescription ? versionDescription : null,
-  //         versionType: versionType ? versionType : AppVersionType.VERSION,
-  //         createdBy: user.id,
-  //       })
-  //     );
-
-  //     await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
-
-  //     //APP_VERSION_CREATE audit
-  //     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-  //       userId: user.id,
-  //       organizationId: user.organizationId,
-  //       resourceId: app.id,
-  //       resourceName: app.name,
-  //       metadata: {
-  //         data: {
-  //           updatedAppVersionName: versionCreateDto.versionName,
-  //           updatedAppVersionFrom: versionCreateDto.versionFromId,
-  //           updatedAppVersionEnvironment: versionCreateDto.environmentId,
-  //         },
-  //       },
-  //     });
-
-  //     return decamelizeKeys(appVersion);
-  //   }, manager);
-  // }
+        if (existingDraftVersion) {
+          throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+        }
+      }
+    }
+  }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
@@ -326,63 +270,6 @@ export class VersionUtilService implements IVersionUtilService {
 
       // TODO: Add audit logs
       return;
-    }, manager);
-  }
-
-  async createVersion(
-    app: App,
-    user: User,
-    versionCreateDto: VersionCreateDto,
-    manager?: EntityManager
-  ): Promise<AppVersion> {
-    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
-    if (!versionName || versionName.trim().length === 0) {
-      throw new BadRequestException('Version name cannot be empty.');
-    }
-    const { organizationId } = user;
-    await this.validateDraftVersionConstraints(app, versionType, organizationId, manager);
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.findOneOrFail(AppVersion, {
-        where: { id: versionFromId, appId: app.id },
-        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
-      });
-      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
-      const appVersion = await manager.save(
-        AppVersion,
-        manager.create(AppVersion, {
-          name: versionName,
-          appId: app.id,
-          definition: versionFrom?.definition,
-          currentEnvironmentId: firstPriorityEnv?.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          status: AppVersionStatus.DRAFT,
-          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
-          description: versionDescription ? versionDescription : null,
-          versionType: versionType ? versionType : AppVersionType.VERSION,
-          createdBy: user.id,
-          co_relation_id: versionFrom?.co_relation_id,
-        })
-      );
-
-      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
-
-      //APP_VERSION_CREATE audit
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-        metadata: {
-          data: {
-            updatedAppVersionName: versionCreateDto.versionName,
-            updatedAppVersionFrom: versionCreateDto.versionFromId,
-            updatedAppVersionEnvironment: versionCreateDto.environmentId,
-          },
-        },
-      });
-
-      return decamelizeKeys(appVersion);
     }, manager);
   }
 }
