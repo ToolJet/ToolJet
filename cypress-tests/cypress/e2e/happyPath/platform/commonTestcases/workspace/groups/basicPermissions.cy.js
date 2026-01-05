@@ -30,7 +30,7 @@ import { dashboardText } from "Texts/dashboard";
 import { groupsText } from "Texts/manageGroups";
 import { appPromote } from "Support/utils/platform/multiEnv";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
-import { versionSwitcherSelectors } from "selectors/version";
+import { versionSwitcherSelectors } from "Selectors/version";
 
 describe("Basic Permissions", () => {
     let data = {};
