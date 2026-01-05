@@ -23,6 +23,8 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
+import { ACTION_TYPE } from '@modules/app-history/constants';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
@@ -39,6 +41,7 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
+    protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
@@ -52,6 +55,76 @@ export class VersionService implements IVersionService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto) {
     return await this.versionsUtilService.createVersion(app, user, versionCreateDto);
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      // need to add logic to get the version name -> from the version created at from
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    const { organizationId } = user;
+
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      const versionFrom = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionFromId, appId: app.id },
+        relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
+      });
+
+      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
+
+      const appVersion = await manager.save(
+        AppVersion,
+        manager.create(AppVersion, {
+          name: versionName,
+          appId: app.id,
+          definition: versionFrom?.definition,
+          currentEnvironmentId: firstPriorityEnv?.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: AppVersionStatus.DRAFT,
+          parentVersionId: versionCreateDto.versionFromId ? versionFromId : null,
+          description: versionDescription ? versionDescription : null,
+        })
+      );
+
+      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
+
+      //APP_VERSION_CREATE audit
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceName: app.name,
+        metadata: {
+          data: {
+            updatedAppVersionName: versionCreateDto.versionName,
+            updatedAppVersionFrom: versionCreateDto.versionFromId,
+            updatedAppVersionEnvironment: versionCreateDto.environmentId,
+          },
+        },
+      });
+
+      return decamelizeKeys(appVersion);
+    });
+
+    // Queue initial history capture for the created version
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(
+        result.id,
+        ACTION_TYPE.INITIAL_SNAPSHOT,
+        {
+          operation: 'version_create',
+          versionName: versionCreateDto.versionName,
+          versionFromId: versionCreateDto.versionFromId,
+          appId: app.id,
+          appName: app.name,
+        },
+        false,
+        user.id
+      );
+    } catch (error) {
+      console.error('Failed to queue initial history capture for version creation:', error);
+    }
+
+    return result;
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
@@ -89,6 +162,10 @@ export class VersionService implements IVersionService {
           LICENSE_FIELD.MULTI_ENVIRONMENT,
           app.organizationId
         );
+        const hasMultiEnvLicense = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          app.organizationId
+        );
         if (hasMultiEnvLicense) {
           const currentEnvironment = await this.appEnvironmentUtilService.get(
             user.organizationId,
@@ -116,19 +193,12 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      // Check version status first
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
+      }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
-      } else if (appVersion?.status === AppVersionStatus.DRAFT) {
-        // Draft versions should never be frozen by git config
-        // Only respect environment-based freeze (shouldFreezeEditor from environment priority)
-        // Keep existing value, don't modify based on git
-      } else {
-        // For other statuses, check git config
-        const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-        if (appGit) {
-          shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-        }
       }
       editingVersion['globalSettings']['theme'] = appTheme;
       return {
@@ -145,6 +215,7 @@ export class VersionService implements IVersionService {
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
 
+    // need to add freeze version logic here
     // need to add freeze version logic here
     return response;
   }
@@ -166,6 +237,9 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
+    // Queue history capture if homepage or settings are being updated
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -180,6 +254,9 @@ export class VersionService implements IVersionService {
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
+
+    // Queue history capture for settings changes AFTER successful update
+    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
@@ -274,6 +351,24 @@ export class VersionService implements IVersionService {
       versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
       versionDescription: '',
       versionType: versionType,
+    };
+    const draftVersion = await this.createVersion(app, user, createVersionDto);
+    return draftVersion;
+  }
+  async createDraftVersion(
+    app: App,
+    user: User,
+    draftVersionDto: DraftVersionDto,
+    manager?: EntityManager
+  ): Promise<void> {
+    const { versionFromId } = draftVersionDto;
+    const parentVersion = await this.versionRepository.findVersion(versionFromId);
+    const childVersionApps = await this.versionRepository.findParentVersionApps(versionFromId);
+    const childVersionAppsCount = childVersionApps.length;
+    const createVersionDto: VersionCreateDto = {
+      ...draftVersionDto,
+      versionName: `${parentVersion?.name}_${childVersionAppsCount + 1}`,
+      versionDescription: '',
     };
     const draftVersion = await this.createVersion(app, user, createVersionDto);
     return draftVersion;

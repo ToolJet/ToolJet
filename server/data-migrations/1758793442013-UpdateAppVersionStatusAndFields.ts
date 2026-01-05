@@ -11,21 +11,37 @@ export class UpdateAppVersionStatusAndFields1758793442013 implements MigrationIn
             INNER JOIN app_environments ae ON av.current_environment_id = ae.id
             WHERE ae.name = 'development'
         `);
-    const developmentVersionIds = allDevelopmentVersionIds.map((row) => row.id);
-    const nonDevelopmentVersionIDs = allVersions
-      .filter((version) => !developmentVersionIds.includes(version.id))
-      .map((row) => row.id);
-    if (nonDevelopmentVersionIDs && nonDevelopmentVersionIDs.length) {
-      await queryRunner.query(
-        `UPDATE app_versions SET status = '${AppVersionStatus.PUBLISHED}' WHERE id = ANY($1::uuid[])`,
-        [nonDevelopmentVersionIDs]
-      );
+
+    const allReleasedVersionIds = await queryRunner.query(`
+    SELECT current_version_id FROM apps WHERE current_version_id IS NOT NULL
+  `);
+
+    const releasedVersionIds = new Set((allReleasedVersionIds || []).map((row) => row.current_version_id));
+
+    // Development versions that are NOT released (drafts)
+    const draftVersionStatusArray = (allDevelopmentVersionIds || [])
+      .map((row) => row.id)
+      .filter((id) => !releasedVersionIds.has(id));
+
+    const draftVersionIds = new Set(draftVersionStatusArray);
+
+    // All versions that are not drafts (published)
+    const publishedVersionStatusArray = (allVersions || [])
+      .map((row) => row.id)
+      .filter((id) => !draftVersionIds.has(id));
+
+    if (publishedVersionStatusArray.length) {
+      await queryRunner.query(`UPDATE app_versions SET status = $1 WHERE id = ANY($2::uuid[])`, [
+        AppVersionStatus.PUBLISHED,
+        publishedVersionStatusArray,
+      ]);
     }
-    if (developmentVersionIds && developmentVersionIds.length) {
-      await queryRunner.query(
-        `UPDATE app_versions SET status = '${AppVersionStatus.DRAFT}' WHERE id = ANY($1::uuid[])`,
-        [developmentVersionIds]
-      );
+
+    if (draftVersionStatusArray.length) {
+      await queryRunner.query(`UPDATE app_versions SET status = $1 WHERE id = ANY($2::uuid[])`, [
+        AppVersionStatus.DRAFT,
+        draftVersionStatusArray,
+      ]);
     }
   }
 

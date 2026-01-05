@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
@@ -18,16 +17,12 @@ const CreateDraftVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation = () => { },
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
-
-  // Get refreshVersions from versionManagerStore
-  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
-
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -35,7 +30,6 @@ const CreateDraftVersionModal = ({
     developmentVersions,
     appId,
     selectedVersion,
-    selectedEnvironment,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -56,9 +50,9 @@ const CreateDraftVersionModal = ({
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
     const gitSyncEnabled =
-      orgGit?.org_git?.git_ssh?.is_enabled ||
-      orgGit?.org_git?.git_https?.is_enabled ||
-      orgGit?.org_git?.git_lab?.is_enabled;
+      orgGit?.git_ssh?.is_enabled ||
+      orgGit?.git_https?.is_enabled ||
+      orgGit?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
   }, [orgGit]);
 
@@ -71,21 +65,12 @@ const CreateDraftVersionModal = ({
   }, [appId, fetchDevelopmentVersions]);
 
   useEffect(() => {
-    console.log('CreateDraftVersionModal - useEffect [savedVersions] triggered', {
-      savedVersionsLength: savedVersions?.length,
-      selectedVersionForCreationId: selectedVersionForCreation?.id,
-    });
-
-    // Only set initial value if no version is selected yet
     if (selectedVersionForCreation) {
-      console.log('CreateDraftVersionModal - Version already selected, skipping initialization');
       return;
     }
-
     // If savedVersions is empty but we have a selectedVersion that is not DRAFT, use it
     if (!savedVersions?.length) {
       if (selectedVersion && selectedVersion.status !== 'DRAFT') {
-        console.log('CreateDraftVersionModal - Setting from selectedVersion (no savedVersions)', selectedVersion);
         setSelectedVersionForCreation(selectedVersion);
       }
       return;
@@ -95,7 +80,6 @@ const CreateDraftVersionModal = ({
     if (selectedVersion?.id) {
       const selected = savedVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
-        console.log('CreateDraftVersionModal - Setting from savedVersions (found match)', selected);
         setSelectedVersionForCreation(selected);
         return;
       }
@@ -103,7 +87,6 @@ const CreateDraftVersionModal = ({
 
     // Otherwise, default to the first saved version
     if (savedVersions.length > 0) {
-      console.log('CreateDraftVersionModal - Setting first savedVersion', savedVersions[0]);
       setSelectedVersionForCreation(savedVersions[0]);
     }
   }, [savedVersions, selectedVersion, selectedVersionForCreation]);
@@ -118,24 +101,12 @@ const CreateDraftVersionModal = ({
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
-  // Use version.id as value for proper react-select comparison
   const options =
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-      : [];
-
-  console.log('CreateDraftVersionModal - Render:', {
-    savedVersionsCount: savedVersions.length,
-    savedVersions: savedVersions.map((v) => ({ id: v.id, name: v.name })),
-    options,
-    selectedVersionForCreation: selectedVersionForCreation
-      ? { id: selectedVersionForCreation.id, name: selectedVersionForCreation.name }
-      : null,
-    selectedVersionForCreationId: selectedVersionForCreation?.id,
-    selectedVersion: selectedVersion ? { id: selectedVersion.id, name: selectedVersion.name } : null,
-  });
+        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+        : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -167,8 +138,6 @@ const CreateDraftVersionModal = ({
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
-        // Refresh versionManagerStore so CreateBranchModal gets the latest versions
-        refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
         changeEditorVersionAction(
@@ -234,7 +203,7 @@ const CreateDraftVersionModal = ({
                   maxLength="25"
                   style={{ height: '32px' }}
                 />
-                <small className="version-name-helper-text">
+                <small className="version-name-helper-text" data-cy="version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>
@@ -250,20 +219,8 @@ const CreateDraftVersionModal = ({
                     options={options}
                     value={selectedVersionForCreation?.id}
                     onChange={(versionId) => {
-                      console.log('CreateDraftVersionModal - Select onChange called', {
-                        versionId,
-                        savedVersionsCount: savedVersions.length,
-                      });
                       const version = savedVersions.find((v) => v.id === versionId);
-                      console.log(
-                        'CreateDraftVersionModal - Found version:',
-                        version ? { id: version.id, name: version.name } : null
-                      );
                       setSelectedVersionForCreation(version);
-                      console.log(
-                        'CreateDraftVersionModal - setSelectedVersionForCreation called with:',
-                        version ? { id: version.id, name: version.name } : null
-                      );
                     }}
                     useMenuPortal={false}
                     width="100%"
@@ -331,6 +288,7 @@ const CreateDraftVersionModal = ({
                 }}
                 variant="tertiary"
                 className="mx-2"
+                data-cy="create-draft-version-cancel-button"
               >
                 {t('globals.cancel', 'Cancel')}
               </ButtonSolid>
@@ -340,6 +298,7 @@ const CreateDraftVersionModal = ({
                 className=""
                 type="submit"
                 disabled={!selectedVersionForCreation}
+                data-cy="create-draft-version-create-button"
               >
                 {t('editor.appVersionManager.createVersion', 'Create Version')}
               </ButtonSolid>

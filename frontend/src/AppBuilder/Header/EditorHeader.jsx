@@ -16,7 +16,6 @@ import './styles/style.scss';
 
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
-import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();

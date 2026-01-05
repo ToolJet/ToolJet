@@ -38,7 +38,7 @@ export class VersionController implements IVersionController {
   deleteVersion(@User() user: UserEntity, @App() app: AppEntity) {
     return this.versionService.deleteVersion(app, user);
   }
-  @InitFeature(FEATURE_KEY.DRAFT_VERSION_CREATE)
+  @InitFeature(FEATURE_KEY.APP_DRAFT_VERSION_CREATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Post(':id/draft-versions')
   createDraftVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() draftVersionDto: DraftVersionDto) {

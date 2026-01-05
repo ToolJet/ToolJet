@@ -13,6 +13,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -51,6 +52,7 @@ export class VersionModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]

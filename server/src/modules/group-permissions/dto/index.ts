@@ -72,7 +72,7 @@ export class AddGroupUserDto {
 
   @IsBoolean()
   @IsOptional()
-  allowRoleChange: boolean;
+  allowRoleChange?: boolean;
 
   @IsOptional()
   @IsArray()

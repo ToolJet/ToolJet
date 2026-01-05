@@ -9,10 +9,12 @@ import {
 import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { ToolTip } from '@/_components/ToolTip';
+import { Button } from '@/components/ui/Button/Button';
 
 const VersionDropdownItem = ({
   version,
   isSelected,
+  isViewingCurrentEnvironment = true, // Default to true for backward compatibility
   onSelect,
   onRelease,
   onEdit,
@@ -21,6 +23,9 @@ const VersionDropdownItem = ({
   currentEnvironment,
   environments = [],
   showActions = true,
+  darkMode = false,
+  openMenuVersionId,
+  setOpenMenuVersionId,
 }) => {
   const releasedVersionId = useStore((state) => state.releasedVersionId);
   const versions = useVersionManagerStore((state) => state.versions);
@@ -36,12 +41,30 @@ const VersionDropdownItem = ({
   // This ensures we can find the parent even if it's in a different environment
   const parentVersion = version.parentVersionId
     ? versions.find((v) => v.id === version.parentVersionId) ||
-      developmentVersions.find((v) => v.id === version.parentVersionId)
+    developmentVersions.find((v) => v.id === version.parentVersionId)
     : null;
   const createdFromVersionName = parentVersion?.name || version.createdFromVersion;
 
   const metadataRef = useRef(null);
   const [showMetadataTooltip, setShowMetadataTooltip] = useState(false);
+  const [isHoveringActionButtons, setIsHoveringActionButtons] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
+  // Close menu when scrolling
+  useEffect(() => {
+    if (openMenuVersionId === version.id) {
+      const handleScroll = () => {
+        setOpenMenuVersionId?.(null);
+      };
+
+      // Find the scrollable versions list container
+      const scrollContainer = document.querySelector('.versions-list');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }
+  }, [openMenuVersionId, version.id, setOpenMenuVersionId]);
 
   // Check if metadata text is overflowing
   useEffect(() => {
@@ -62,36 +85,32 @@ const VersionDropdownItem = ({
   const currentPriority = currentEnvData?.priority || 1;
   const isInProduction = currentPriority === 3; // Production has priority 3
 
-  // Only show promote button if version is in the current environment
   const isVersionInCurrentEnv = version.currentEnvironmentId === currentEnvironment?.id;
+  const shouldShowActionButtons = isViewingCurrentEnvironment && isSelected && isVersionInCurrentEnv;
 
   // In CE edition: show Release button for PUBLISHED versions that are not yet released
   // In EE edition: show Promote button for non-released versions in non-production environments
   const canPromote =
-    featureAccess?.multiEnvironment && isVersionInCurrentEnv && !isDraft && !isReleased && !isInProduction;
-  const canRelease = !isDraft && !isReleased && (featureAccess?.multiEnvironment ? isInProduction : isPublished);
-  const canCreateVersion = isDraft; // Show create version button for drafts
+    shouldShowActionButtons && featureAccess?.multiEnvironment && !isDraft && !isReleased && !isInProduction;
+  const canRelease =
+    shouldShowActionButtons &&
+    !isDraft &&
+    !isReleased &&
+    (featureAccess?.multiEnvironment ? isInProduction : isPublished);
+  const canCreateVersion = isDraft && shouldShowActionButtons; // Show create version button for drafts
 
   const renderMenu = (
-    <Popover id={`popover-positioned-bottom-end`} style={{ minWidth: '160px' }}>
-      <Popover.Body className="d-flex flex-column p-2">
-        {canRelease && (
-          <div
-            className="dropdown-item cursor-pointer tj-text-xsm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRelease?.(version);
-              document.body.click(); // Close popover
-            }}
-          >
-            Release
-          </div>
-        )}
-
+    <Popover
+      id={cx(`popover-positioned-bottom-end`, { 'dark-theme theme-dark': darkMode })}
+      className={cx({ 'dark-theme theme-dark': darkMode })}
+      style={{ minWidth: '160px' }}
+    >
+      <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
         <div
           className={cx('dropdown-item tj-text-xsm', {
             'cursor-pointer': isDraft,
             disabled: !isDraft,
+            'dark-theme theme-dark': darkMode,
           })}
           onClick={(e) => {
             e.stopPropagation();
@@ -100,17 +119,21 @@ const VersionDropdownItem = ({
             document.body.click(); // Close popover
           }}
           aria-disabled={!isDraft}
+          data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-edit-version-button`}
         >
           Edit details
         </div>
         {!isReleased && (
           <div
-            className="dropdown-item cursor-pointer tj-text-xsm text-danger"
+            className={cx('dropdown-item cursor-pointer tj-text-xsm text-danger', {
+              'dark-theme theme-dark': darkMode,
+            })}
             onClick={(e) => {
               e.stopPropagation();
               onDelete?.(version);
               document.body.click(); // Close popover
             }}
+            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-delete-version-button`}
           >
             Delete version
           </div>
@@ -176,11 +199,11 @@ const VersionDropdownItem = ({
       style={{ padding: '6px 4px' }}
     >
       <div className="d-flex align-items-start" style={{ gap: '8px' }}>
-        <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
+        <div style={{ width: '16px', height: '16px', flexShrink: 0 }} data-cy="selected-version-icon">
           {isSelected && <SolidIcon name="tickv3" alt="selected" width="16" height="16" />}
         </div>
 
-        <div className="flex-grow-1" style={{ minWidth: '0px' }}>
+        <div className="flex-grow-1" style={{ minWidth: '0px' }} data-cy="version-name">
           <div className="d-flex align-items-center justify-content-between" style={{ gap: '8px' }}>
             <div className="d-flex align-items-center" style={{ gap: '8px', minWidth: 0 }}>
               <div
@@ -192,6 +215,7 @@ const VersionDropdownItem = ({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}
+                data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-name`}
               >
                 {version.name}
               </div>
@@ -201,14 +225,15 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: '#FAEFE7',
-                    color: '#BF4F03',
+                    backgroundColor: 'var(--background-warning-weak)',
+                    color: 'var(--text-warning)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 500,
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
+                  data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-draft-tag`}
                 >
                   Draft
                 </span>
@@ -219,14 +244,15 @@ const VersionDropdownItem = ({
                 <span
                   className="tj-text-xsm"
                   style={{
-                    backgroundColor: '#E8F3EB',
-                    color: '#1E823B',
+                    backgroundColor: 'var(--background-success-weak)',
+                    color: 'var(--text-success)',
                     padding: '0 8px',
                     borderRadius: '4px',
                     fontWeight: 500,
                     lineHeight: '18px',
                     flexShrink: 0,
                   }}
+                  data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-released-tag`}
                 >
                   Released
                 </span>
@@ -235,39 +261,56 @@ const VersionDropdownItem = ({
 
             {/* Action buttons */}
             {showActions && (
-              <div className="d-flex align-items-center" style={{ gap: '4px', flexShrink: 0 }}>
+              <div
+                className="d-flex align-items-center"
+                style={{ gap: '4px', flexShrink: 0 }}
+                onMouseEnter={() => setIsHoveringActionButtons(true)}
+                onMouseLeave={() => setIsHoveringActionButtons(false)}
+              >
                 {/* Promote button - shown for versions that can be promoted */}
-                {canPromote && <PromoteVersionButton version={version} variant="inline" />}
+                {canPromote && <PromoteVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
                 {/* Release button - shown in production environment */}
-                {canRelease && <ReleaseVersionButton version={version} variant="inline" />}
+                {canRelease && <ReleaseVersionButton version={version} variant="inline" darkMode={darkMode} />}
 
                 {/* Create version button - shown for drafts */}
                 {canCreateVersion && (
-                  <button
-                    className="btn btn-sm version-action-btn"
+                  <Button
+                    variant="outline"
+                    size="small"
+                    className={cx('version-action-btn', { 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => {
                       e.stopPropagation();
+                      setOpenMenuVersionId?.(null);
                       onCreateVersion?.(version);
                     }}
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-save-version-button`}
                   >
                     Save version
-                  </button>
+                  </Button>
                 )}
 
                 {/* More menu */}
-                <OverlayTrigger trigger="click" placement="bottom-end" overlay={renderMenu} rootClose>
-                  <button
-                    className="btn btn-sm p-1"
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      borderRadius: '4px',
-                    }}
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom-end"
+                  overlay={renderMenu}
+                  rootClose
+                  show={openMenuVersionId === version.id}
+                  onToggle={(show) => {
+                    setIsMoreMenuOpen(show);
+                    setOpenMenuVersionId?.(show ? version.id : null);
+                  }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="small"
+                    iconOnly
+                    leadingIcon="morevertical01"
+                    className={cx({ 'dark-theme theme-dark': darkMode })}
                     onClick={(e) => e.stopPropagation()}
-                  >
-                    <SolidIcon name="morevertical01" />
-                  </button>
+                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
+                  />
                 </OverlayTrigger>
               </div>
             )}
@@ -289,6 +332,7 @@ const VersionDropdownItem = ({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
+              data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-creation-details`}
             >
               {createdFromVersionName && `created from ${createdFromVersionName}`}
               {createdFromVersionName && version.description && ' | '}
@@ -300,10 +344,16 @@ const VersionDropdownItem = ({
     </div>
   );
 
-  // Wrap with tooltip if there's overflow metadata
-  if (showMetadataTooltip && tooltipContent) {
+  // Wrap with tooltip if there's overflow metadata and not hovering action buttons or menu open
+  if (showMetadataTooltip && tooltipContent && !isHoveringActionButtons && !isMoreMenuOpen) {
     return (
-      <ToolTip message={tooltipContent} placement="left" show={true} tooltipClassName="version-tooltip" width="300px">
+      <ToolTip
+        message={tooltipContent}
+        placement="left-start"
+        show={true}
+        tooltipClassName="version-tooltip"
+        width="300px"
+      >
         {versionItem}
       </ToolTip>
     );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import '@/_styles/versions.scss';
@@ -9,7 +10,7 @@ import { ArrowBigUpDash } from 'lucide-react';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useTranslation } from 'react-i18next';
 
-const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
+const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = false }) => {
   const [promoteModalData, setPromoteModalData] = useState(null);
   const { moduleId } = useModuleContext();
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
@@ -62,9 +63,10 @@ const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
       <>
         <ToolTip message={renderTooltipMessage()} placement="top" show={true}>
           <button
-            className="btn btn-sm version-action-btn"
+            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
             disabled={shouldDisablePromote || !isPromoteVersionEnabled}
             onClick={handlePromote}
+            data-cy="promote-version-button"
           >
             Promote
           </button>
@@ -73,7 +75,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
           data={promoteModalData}
           editingVersion={editingVersion}
           onClose={() => setPromoteModalData(null)}
-          fetchEnvironments={() => {}}
+          fetchEnvironments={() => { }}
         />
       </>
     );
@@ -102,7 +104,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default' }) => {
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => {}}
+        fetchEnvironments={() => { }}
       />
     </>
   );

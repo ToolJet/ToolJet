@@ -25,7 +25,7 @@ const WidgetWrapper = memo(
     parentId,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
-    const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
+    const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
@@ -38,6 +38,10 @@ const WidgetWrapper = memo(
       }
       return state.temporaryLayouts?.[transformedId];
     }, shallow);
+    const getExposedPropertyForAdditionalActions = useStore(
+      (state) => state.getExposedPropertyForAdditionalActions,
+      shallow
+    );
 
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
     const isDragging = useStore((state) => state.draggingComponentId === id);
@@ -60,13 +64,18 @@ const WidgetWrapper = memo(
 
     const visibility = useStore((state) => {
       const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-      const componentExposedVisibility = state.getExposedValueOfComponent(id, moduleId)?.isVisible;
+      const componentExposedVisibility = getExposedPropertyForAdditionalActions(
+        id,
+        subContainerIndex,
+        'isVisible',
+        moduleId
+      );
       if (componentExposedVisibility !== undefined) return componentExposedVisibility;
       return component?.properties?.visibility || component?.styles?.visibility;
     });
 
     useEffect(() => {
-      toggleCanvasUpdater();
+      incrementCanvasUpdater();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visibility]);
 
@@ -96,8 +105,9 @@ const WidgetWrapper = memo(
           : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
-      border: visibility === false && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
+      border: !visibility && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
       boxSizing: 'content-box',
+      display: !visibility && mode === 'view' ? 'none' : 'block',
     };
 
     const isModuleContainer = componentType === 'ModuleContainer';
@@ -137,6 +147,7 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
+              readOnly={readOnly}
               widgetTop={temporaryLayouts?.top ?? layoutData.top}
               widgetHeight={temporaryLayouts?.height ?? layoutData.height}
               showHandle={isWidgetActive}

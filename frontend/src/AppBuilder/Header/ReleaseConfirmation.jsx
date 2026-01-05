@@ -10,15 +10,18 @@ export default function ReleaseConfirmation(props) {
   const { onClose, onConfirm, show } = props;
   const { t } = useTranslation();
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
-  const { name, releasedVersionId, versionsPromotedToEnvironment } = useStore(
+  const { name, releasedVersionId, versionsPromotedToEnvironment, developmentVersions } = useStore(
     (state) => ({
       name: state?.selectedVersion?.name,
       releasedVersionId: state.releasedVersionId,
       versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+      developmentVersions: state.developmentVersions,
     }),
     shallow
   );
-  const releasedVersionName = versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name;
+  const releasedVersionName =
+    versionsPromotedToEnvironment.find((v) => v.id === releasedVersionId)?.name ||
+    developmentVersions.find((v) => v.id === releasedVersionId)?.name;
   return (
     <Modal
       show={show}

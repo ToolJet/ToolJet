@@ -16,6 +16,12 @@ export enum AppVersionStatus {
   PUBLISHED = 'PUBLISHED',
   RELEASED = 'RELEASED',
 }
+
+export enum AppVersionStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  RELEASED = 'RELEASED',
+}
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
