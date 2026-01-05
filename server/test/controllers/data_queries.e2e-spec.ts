@@ -14,6 +14,7 @@ import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
+import { MODULES } from 'src/modules/app/constants/modules';
 
 describe('data queries controller', () => {
   let app: INestApplication;
@@ -585,7 +586,7 @@ describe('data queries controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: userData.user.id,
-          resourceType: 'DATA_QUERY',
+          resourceType: MODULES.DATA_QUERY,
         },
       });
 
@@ -594,7 +595,7 @@ describe('data queries controller', () => {
 
       expect(auditLog.organizationId).toEqual(organizationId);
       expect(auditLog.resourceId).toEqual(dataQuery.id);
-      expect(auditLog.resourceType).toEqual('DATA_QUERY');
+      expect(auditLog.resourceType).toEqual(MODULES.DATA_QUERY);
       expect(auditLog.resourceName).toEqual(dataQuery.name);
       expect(auditLog.actionType).toEqual('DATA_QUERY_RUN');
       expect(auditLog.metadata).toEqual({

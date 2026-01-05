@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
 import { getManager, getConnection, EntityManager } from 'typeorm';
-import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
-import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
+import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { clearDB, createUser } from '../test.helper';
 import { setupTestTables } from '../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
@@ -17,7 +17,7 @@ import { AppVersion } from '@entities/app_version.entity';
 import { GroupPermission } from '@entities/group_permission.entity';
 import { UserGroupPermission } from '@entities/user_group_permission.entity';
 import { App } from '@entities/app.entity';
-import { LicenseService } from '@services/license.service';
+import { LicenseService } from '@modules/licensing/service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
 import { v4 as uuidv4 } from 'uuid';
@@ -28,7 +28,7 @@ describe('TooljetDbImportExportService', () => {
   let appManager: EntityManager;
   let tjDbManager: EntityManager;
   let service: TooljetDbImportExportService;
-  let tooljetDbService: TooljetDbService;
+  let tooljetDbTableOperationsService: TooljetDbTableOperationsService;
   let organizationId: string;
   let usersTableId: string;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -64,7 +64,7 @@ describe('TooljetDbImportExportService', () => {
           InternalTable,
         ]),
       ],
-      providers: [TooljetDbImportExportService, TooljetDbService, LicenseService, EventEmitter2],
+      providers: [TooljetDbImportExportService, TooljetDbTableOperationsService, LicenseService, EventEmitter2],
     })
       .overrideProvider(LicenseService)
       .useValue(mockLicenseService)
@@ -79,7 +79,7 @@ describe('TooljetDbImportExportService', () => {
     tjDbManager = getConnection('tooljetDb').manager;
 
     service = moduleFixture.get<TooljetDbImportExportService>(TooljetDbImportExportService);
-    tooljetDbService = moduleFixture.get<TooljetDbService>(TooljetDbService);
+    tooljetDbTableOperationsService = moduleFixture.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
   });
 
   beforeEach(async () => {
@@ -91,10 +91,10 @@ describe('TooljetDbImportExportService', () => {
     });
     organizationId = adminUserData.organization.id;
 
-    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
-    const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
+    await setupTestTables(appManager, tjDbManager, tooljetDbTableOperationsService, organizationId);
+    const usersTable = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'users' } });
     usersTableId = usersTable.id;
-    const ordersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'orders' });
+    const ordersTable = await appManager.findOneOrFail(InternalTable, { where: { organizationId, tableName: 'orders' } });
     ordersTableId = ordersTable.id;
   });
 
@@ -217,7 +217,7 @@ describe('TooljetDbImportExportService', () => {
 
       expect(importResult).toEqual(expect.objectContaining(expectedStructure));
 
-      const importedTable = await appManager.findOne(InternalTable, { id: importResult.id });
+      const importedTable = await appManager.findOne(InternalTable, { where: { id: importResult.id } });
       expect(importedTable).toBeDefined();
       expect(importedTable.tableName).toBe('imported_users');
     });
@@ -247,7 +247,7 @@ describe('TooljetDbImportExportService', () => {
     });
 
     it('should not import new table cloning when table with same id and columns subset exist', async () => {
-      const existingTable = await appManager.findOne(InternalTable, { organizationId, tableName: 'users' });
+      const existingTable = await appManager.findOne(InternalTable, { where: { organizationId, tableName: 'users' } });
       const importData = {
         id: existingTable.id,
         table_name: 'users',
@@ -330,7 +330,7 @@ describe('TooljetDbImportExportService', () => {
 
       // Mock the createTable method to throw ConflictException
       jest
-        .spyOn(tooljetDbService, 'perform')
+        .spyOn(tooljetDbTableOperationsService, 'perform')
         .mockRejectedValueOnce(new ConflictException('Table with with name "users" already exists'));
 
       await expect(service.import(organizationId, importData)).rejects.toThrow(ConflictException);
@@ -417,8 +417,8 @@ describe('TooljetDbImportExportService', () => {
       expect(bulkImportResult.tooljet_database).toHaveLength(2);
       expect(bulkImportResult.tableNameMapping).toBeDefined();
 
-      const productsTable = await appManager.findOne(InternalTable, { tableName: 'products' });
-      const ordersTable = await appManager.findOne(InternalTable, { tableName: 'orders' });
+      const productsTable = await appManager.findOne(InternalTable, { where: { tableName: 'products' } });
+      const ordersTable = await appManager.findOne(InternalTable, { where: { tableName: 'orders' } });
 
       expect(productsTable).toBeDefined();
       expect(ordersTable).toBeDefined();
@@ -557,8 +557,8 @@ describe('TooljetDbImportExportService', () => {
       await expect(service.bulkImport(importData, '2.50.5.5.8', false)).rejects.toThrow();
 
       // Verify that the valid table was not created due to rollback
-      const validTable = await appManager.findOne(InternalTable, { tableName: 'valid_table' });
-      expect(validTable).toBeUndefined();
+      const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
+      expect(validTable).toBeNull();
     });
   });
 });
