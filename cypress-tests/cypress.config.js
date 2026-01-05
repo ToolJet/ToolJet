@@ -20,7 +20,7 @@ module.exports = defineConfig({
     },
 
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/marketplace/commonTestcases/datasources/postgresHappyPath.cy.js",
+    specPattern: "cypress/e2e/happyPath/**/*.cy.js",
 
     testIsolation: true,
     retries: {
