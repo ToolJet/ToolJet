@@ -2,41 +2,39 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { getConnection, getManager, Repository } from 'typeorm';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { User } from 'src/entities/user.entity';
-import { App } from 'src/entities/app.entity';
-import { File } from 'src/entities/file.entity';
-import { Plugin } from 'src/entities/plugin.entity';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { Organization } from '@entities/organization.entity';
+import { User } from '@entities/user.entity';
+import { App } from '@entities/app.entity';
+import { File } from '@entities/file.entity';
+import { Plugin } from '@entities/plugin.entity';
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
-import { AppVersion } from 'src/entities/app_version.entity';
-import { DataQuery } from 'src/entities/data_query.entity';
-import { DataSource } from 'src/entities/data_source.entity';
-import { PluginsService } from 'src/services/plugins.service';
-import { DataSourcesService } from 'src/services/data_sources.service';
-import { PluginsModule } from 'src/modules/plugins/plugins.module';
-import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
-import { ThreadRepository } from 'src/repositories/thread.repository';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { AllExceptionsFilter } from 'src/filters/all-exceptions-filter';
+import { AppModule } from '@modules/app/module';
+import { AppVersion } from '@entities/app_version.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { PluginsService } from '@modules/plugins/service';
+import { DataSourcesService } from '@modules/data-sources/service';
+import { PluginsModule } from '@modules/plugins/module';
+import { DataSourcesModule } from '@modules/data-sources/module';
+import { GroupPermission } from '@entities/group_permission.entity';
+import { UserGroupPermission } from '@entities/user_group_permission.entity';
+import { AppGroupPermission } from '@entities/app_group_permission.entity';
+import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { AppsModule } from 'src/modules/apps/apps.module';
-import { LibraryAppCreationService } from '@services/library_app_creation.service';
+import { AppsModule } from '@modules/apps/module';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateFileDto } from '@dto/create-file.dto';
-import { CreatePluginDto } from '@dto/create-plugin.dto';
+import { CreateFileDto } from '@modules/files/dto';
+import { CreatePluginDto } from '@modules/plugins/dto';
 import * as request from 'supertest';
-import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { defaultAppEnvironments } from 'src/helpers/utils.helper';
-import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { AppEnvironment } from '@entities/app_environments.entity';
+import { defaultAppEnvironments } from '@helpers/utils.helper';
+import { DataSourceOptions } from '@entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
-import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { DataSourceGroupPermission } from '@entities/data_source_group_permission.entity';
 import { LicenseService } from '@modules/licensing/service';
 import { InternalTable } from '@entities/internal_table.entity';
 import * as fs from 'fs';
@@ -167,10 +165,12 @@ export async function createApplication(
   return newApp;
 }
 
-export async function importAppFromTemplates(nestApp, user, identifier) {
-  const service = nestApp.select(AppsModule).get(LibraryAppCreationService);
-
-  return service.perform(user, identifier);
+/**
+ * @deprecated This function is not implemented - LibraryAppCreationService does not exist in current codebase.
+ * If you need to import apps from templates, implement the service first.
+ */
+export async function importAppFromTemplates(_nestApp, _user, _identifier) {
+  throw new Error('importAppFromTemplates is not implemented - LibraryAppCreationService does not exist in current codebase');
 }
 
 export async function createApplicationVersion(
@@ -615,22 +615,12 @@ export async function installPlugin(nestApp: any, { name, description, id, versi
   return await pluginRepository.save(pluginsService.install(createPluginDto));
 }
 
-export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
-  const threadRepository = new ThreadRepository();
-
-  return await threadRepository.createThread(
-    {
-      appId,
-      x,
-      y,
-      isResolved: false,
-      organizationId,
-      appVersionsId,
-      pageId: 'placeholder',
-    },
-    userId,
-    organizationId
-  );
+/**
+ * @deprecated This function is not implemented - ThreadRepository does not exist in current codebase.
+ * If you need to create threads, implement the repository first.
+ */
+export async function createThread(_nestApp, _params: { appId: string; x: number; y: number; userId: string; organizationId: string; appVersionsId: string }) {
+  throw new Error('createThread is not implemented - ThreadRepository does not exist in current codebase');
 }
 
 export async function setupOrganization(nestApp) {

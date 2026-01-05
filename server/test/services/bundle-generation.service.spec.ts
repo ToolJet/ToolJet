@@ -149,25 +149,27 @@ describe('BundleGenerationService', () => {
         expect(finalCall[0]).toMatchObject({
           dependencies: mockDependencies,
           status: 'ready',
-          bundleContent: expect.any(String),
+          bundleBinary: expect.any(Buffer),
           bundleSize: expect.any(Number),
           bundleSha: expect.any(String),
+          language: 'javascript',
           generationTimeMs: expect.any(Number),
           error: null,
         });
-        expect(finalCall[1]).toEqual(['appVersionId']);
+        expect(finalCall[1]).toEqual(['appVersionId', 'language']);
       });
 
       it('should calculate SHA-256 hash correctly', async () => {
-        const mockBundleContent = 'test-bundle-content';
+        const mockBundleText = 'test-bundle-content';
         mockEsbuild.build.mockResolvedValue({
-          outputFiles: [{ text: mockBundleContent }],
+          outputFiles: [{ text: mockBundleText }],
           metafile: {},
         } as any);
 
         await eeService.generateBundle(mockWorkflowId, mockDependencies);
 
-        const expectedSha = crypto.createHash('sha256').update(mockBundleContent).digest('hex');
+        // SHA is now calculated from the Buffer
+        const expectedSha = crypto.createHash('sha256').update(Buffer.from(mockBundleText, 'utf-8')).digest('hex');
         const finalCall = (repository.upsert as jest.Mock).mock.calls[1];
         expect(finalCall[0].bundleSha).toBe(expectedSha);
       });
@@ -279,17 +281,17 @@ describe('BundleGenerationService', () => {
 
     describe('getBundleForExecution', () => {
       it('should return bundle content for ready bundles', async () => {
-        const mockBundleContent = 'test-bundle-content';
+        const mockBundleText = 'test-bundle-content';
         repository.findOne.mockResolvedValue({
-          bundleContent: mockBundleContent,
-        } as WorkflowBundle);
+          bundleBinary: Buffer.from(mockBundleText, 'utf-8'),
+        } as unknown as WorkflowBundle);
 
         const result = await eeService.getBundleForExecution(mockWorkflowId);
 
-        expect(result).toBe(mockBundleContent);
+        expect(result).toBe(mockBundleText);
         expect(repository.findOne).toHaveBeenCalledWith({
-          where: { appVersionId: mockWorkflowId, status: 'ready' },
-          select: ['bundleContent'],
+          where: { appVersionId: mockWorkflowId, status: 'ready', language: 'javascript' },
+          select: ['bundleBinary'],
         });
       });
 
@@ -317,7 +319,7 @@ describe('BundleGenerationService', () => {
           id: 'test-id',
           appVersionId: mockWorkflowId,
           dependencies: mockDependencies,
-          bundleContent: null,
+          bundleBinary: null,
           bundleSize: null,
           bundleSha: null,
           generationTimeMs: null,
@@ -326,7 +328,7 @@ describe('BundleGenerationService', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
           appVersion: null,
-        } as WorkflowBundle);
+        } as unknown as WorkflowBundle);
 
         const result = await eeService.getCurrentDependencies(mockWorkflowId);
 
@@ -360,11 +362,11 @@ describe('BundleGenerationService', () => {
           id: 'test-id',
           appVersionId: mockWorkflowId,
           ...mockBundle,
-          bundleContent: null,
+          bundleBinary: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           appVersion: null,
-        } as WorkflowBundle);
+        } as unknown as WorkflowBundle);
 
         const result = await eeService.getBundleStatus(mockWorkflowId);
 
@@ -393,7 +395,7 @@ describe('BundleGenerationService', () => {
           id: 'test-id',
           appVersionId: mockWorkflowId,
           dependencies: mockDependencies,
-          bundleContent: null,
+          bundleBinary: null,
           bundleSize: null,
           bundleSha: null,
           generationTimeMs: null,
@@ -402,7 +404,7 @@ describe('BundleGenerationService', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
           appVersion: null,
-        } as WorkflowBundle);
+        } as unknown as WorkflowBundle);
 
         // Mock the generateBundle method
         const generateBundleSpy = jest.spyOn(eeService, 'generateBundle').mockResolvedValue();

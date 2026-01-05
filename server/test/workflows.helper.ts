@@ -110,7 +110,7 @@ export const setupOrganizationAndUser = async (
     return { user, organization };
 };
 
-const createUserWorkflowPermissions = async (
+export const createUserWorkflowPermissions = async (
     nestApp: INestApplication,
     user: User,
     organizationId: string,
