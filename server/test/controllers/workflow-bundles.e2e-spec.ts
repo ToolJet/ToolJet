@@ -527,12 +527,13 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         .send();
 
       expect(response.statusCode).toBe(200);
+      // Python dependencies are stored as string (requirements.txt format)
+      // Empty workflow returns empty string
       expect(response.body).toEqual(
         expect.objectContaining({
-          dependencies: expect.any(Object)
+          dependencies: ''
         })
       );
-      expect(Object.keys(response.body.dependencies)).toHaveLength(0);
     });
 
     it('should get existing dependencies for workflow with packages', async () => {
@@ -770,10 +771,8 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
-      const dependencies = {
-        'requests': '2.31.0',
-        'charset-normalizer': '3.3.0',
-      };
+      // Python dependencies are sent as requirements.txt string format
+      const dependencies = 'requests==2.31.0\ncharset-normalizer==3.3.0';
 
       const response = await request(app.getHttpServer())
         .put(`/api/workflows/${appVersion.id}/packages/python`)
@@ -802,7 +801,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         expect.objectContaining({
           id: expect.any(String),
           appVersionId: appVersion.id,
-          dependencies: dependencies,
+          dependencies: dependencies, // Stored as string (requirements.txt format)
           language: 'python',
           bundleBinary: expect.any(Buffer),
           bundleSize: expect.any(Number),
@@ -1192,8 +1191,8 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
 
-      // First create a Python bundle
-      const dependencies = { 'requests': '2.31.0' };
+      // First create a Python bundle (requirements.txt string format)
+      const dependencies = 'requests==2.31.0';
       await request(app.getHttpServer())
         .put(`/api/workflows/${appVersion.id}/packages/python`)
         .set('tj-workspace-id', user.defaultOrganizationId)

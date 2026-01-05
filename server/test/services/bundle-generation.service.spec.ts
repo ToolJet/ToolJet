@@ -246,7 +246,7 @@ describe('BundleGenerationService', () => {
         expect(firstCall[0]).toMatchObject({
           appVersionId: mockWorkflowId,
           status: 'building',
-          dependencies: mockDependencies,
+          dependencies: JSON.stringify(mockDependencies),
         });
       });
 
@@ -318,7 +318,7 @@ describe('BundleGenerationService', () => {
         repository.findOne.mockResolvedValue({
           id: 'test-id',
           appVersionId: mockWorkflowId,
-          dependencies: mockDependencies,
+          dependencies: JSON.stringify(mockDependencies), // Stored as JSON string
           bundleBinary: null,
           bundleSize: null,
           bundleSha: null,
@@ -332,9 +332,9 @@ describe('BundleGenerationService', () => {
 
         const result = await eeService.getCurrentDependencies(mockWorkflowId);
 
-        expect(result).toEqual(mockDependencies);
+        expect(result).toEqual(mockDependencies); // Service parses JSON and returns object
         expect(repository.findOne).toHaveBeenCalledWith({
-          where: { appVersionId: mockWorkflowId },
+          where: { appVersionId: mockWorkflowId, language: 'javascript' },
           select: ['dependencies'],
         });
       });
@@ -355,7 +355,7 @@ describe('BundleGenerationService', () => {
           bundleSize: 12345,
           generationTimeMs: 500,
           error: null,
-          dependencies: mockDependencies,
+          dependencies: JSON.stringify(mockDependencies), // Stored as JSON string
           bundleSha: 'abcd1234',
         };
         repository.findOne.mockResolvedValue({
@@ -375,7 +375,7 @@ describe('BundleGenerationService', () => {
           sizeBytes: 12345,
           generationTimeMs: 500,
           error: null,
-          dependencies: mockDependencies,
+          dependencies: mockDependencies, // Service parses and returns object
           bundleSha: 'abcd1234',
         });
       });
@@ -394,7 +394,7 @@ describe('BundleGenerationService', () => {
         repository.findOne.mockResolvedValue({
           id: 'test-id',
           appVersionId: mockWorkflowId,
-          dependencies: mockDependencies,
+          dependencies: JSON.stringify(mockDependencies), // Stored as JSON string
           bundleBinary: null,
           bundleSize: null,
           bundleSha: null,
