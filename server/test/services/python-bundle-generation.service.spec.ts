@@ -64,7 +64,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should accept javascript as language value', () => {
       const bundle = repository.create({
         appVersionId: 'test-app-version-js',
-        dependencies: { lodash: '4.17.21' },
+        dependencies: '{"lodash": "4.17.21"}', // JSON string for JavaScript
         language: 'javascript',
         status: 'none',
       });
@@ -75,7 +75,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should accept python as language value', () => {
       const bundle = repository.create({
         appVersionId: 'test-app-version-python',
-        dependencies: { pandas: '2.2.0' },
+        dependencies: 'pandas==2.2.0', // requirements.txt format for Python
         language: 'python',
         status: 'none',
       });
@@ -88,7 +88,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should accept semver format for Python version', () => {
       const bundle = repository.create({
         appVersionId: 'test-app-version-py-version',
-        dependencies: { numpy: '1.26.0' },
+        dependencies: 'numpy==1.26.0', // requirements.txt format
         language: 'python',
         runtimeVersion: '3.11.0',
         status: 'none',
@@ -100,7 +100,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should accept semver format for Node version', () => {
       const bundle = repository.create({
         appVersionId: 'test-app-version-node-version',
-        dependencies: { lodash: '4.17.21' },
+        dependencies: '{"lodash": "4.17.21"}', // JSON string
         language: 'javascript',
         runtimeVersion: '20.10.0',
         status: 'none',
@@ -112,7 +112,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should allow undefined runtimeVersion for backward compatibility', () => {
       const bundle = repository.create({
         appVersionId: 'test-app-version-no-version',
-        dependencies: { lodash: '4.17.21' },
+        dependencies: '{"lodash": "4.17.21"}', // JSON string
         status: 'none',
       });
 
@@ -126,7 +126,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
 
       const bundle = repository.create({
         appVersionId: 'test-app-version-binary',
-        dependencies: { pandas: '2.2.0' },
+        dependencies: 'pandas==2.2.0', // requirements.txt format
         language: 'python',
         runtimeVersion: '3.11.0',
         bundleBinary: tarGzContent,
@@ -140,7 +140,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should accept Buffer for JavaScript bundles (consolidated schema)', () => {
       const jsBundle = repository.create({
         appVersionId: 'test-app-version-js-binary',
-        dependencies: { lodash: '4.17.21' },
+        dependencies: '{"lodash": "4.17.21"}', // JSON string
         language: 'javascript',
         bundleBinary: Buffer.from('var WorkflowPackages = {};', 'utf-8'),
         status: 'ready',
@@ -155,7 +155,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should support JavaScript bundle with bundleBinary (BYTEA - stores text as Buffer)', () => {
       const jsBundle = repository.create({
         appVersionId: 'test-unified-js',
-        dependencies: { lodash: '4.17.21' },
+        dependencies: '{"lodash": "4.17.21"}', // JSON string
         language: 'javascript',
         runtimeVersion: '20.10.0',
         bundleBinary: Buffer.from('var WorkflowPackages = { lodash: {} };', 'utf-8'),
@@ -170,7 +170,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
     it('should support Python bundle with bundleBinary (BYTEA - stores tar.gz)', () => {
       const pyBundle = repository.create({
         appVersionId: 'test-unified-py',
-        dependencies: { pandas: '2.2.0' },
+        dependencies: 'pandas==2.2.0', // requirements.txt format
         language: 'python',
         runtimeVersion: '3.11.0',
         bundleBinary: Buffer.from('tar-gz-content'),
@@ -223,7 +223,8 @@ describe('WorkflowBundle Entity - Type Definitions', () => {
  */
 describe('PythonBundleGenerationService', () => {
   const mockAppVersionId = 'test-workflow-id-123';
-  const mockDependencies = { pandas: '2.2.0', numpy: '1.26.0' };
+  // Python dependencies are stored as raw requirements.txt content (string format)
+  const mockDependencies = 'pandas==2.2.0\nnumpy==1.26.0';
 
   let service: PythonBundleGenerationService;
   let repository: jest.Mocked<Repository<WorkflowBundle>>;
@@ -407,11 +408,11 @@ describe('PythonBundleGenerationService', () => {
     });
 
     it('should handle empty dependencies', async () => {
-      await service.generateBundle(mockAppVersionId, {});
+      await service.generateBundle(mockAppVersionId, ''); // Empty requirements.txt
 
       expect(repository.upsert).toHaveBeenCalledTimes(2);
       const finalCall = (repository.upsert as jest.Mock).mock.calls[1];
-      expect(finalCall[0].dependencies).toEqual({});
+      expect(finalCall[0].dependencies).toEqual('');
     });
 
     it('should measure generation time accurately', async () => {
@@ -470,12 +471,12 @@ describe('PythonBundleGenerationService', () => {
       });
     });
 
-    it('should return empty object for non-existent bundle', async () => {
+    it('should return empty string for non-existent bundle', async () => {
       repository.findOne.mockResolvedValue(null);
 
       const result = await service.getCurrentDependencies(mockAppVersionId);
 
-      expect(result).toEqual({});
+      expect(result).toEqual(''); // Empty requirements.txt content
     });
   });
 
