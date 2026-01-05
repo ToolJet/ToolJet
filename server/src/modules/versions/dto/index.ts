@@ -20,6 +20,9 @@ export class VersionCreateDto {
 
   @IsOptional()
   versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
 }
 
 export class PromoteVersionDto {
@@ -37,4 +40,7 @@ export class DraftVersionDto {
 
   @IsOptional()
   versionDescription: string;
+
+  @IsOptional()
+  versionType?: AppVersionType;
 }

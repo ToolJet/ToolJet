@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
 const CreateDraftVersionModal = ({
   showCreateAppVersion,
@@ -23,6 +24,7 @@ const CreateDraftVersionModal = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
+  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -30,6 +32,7 @@ const CreateDraftVersionModal = ({
     developmentVersions,
     appId,
     selectedVersion,
+    selectedEnvironment,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -49,10 +52,11 @@ const CreateDraftVersionModal = ({
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
+
     const gitSyncEnabled =
-      orgGit?.git_ssh?.is_enabled ||
-      orgGit?.git_https?.is_enabled ||
-      orgGit?.git_lab?.is_enabled;
+      orgGit?.org_git?.git_ssh?.is_enabled ||
+      orgGit?.org_git?.git_https?.is_enabled ||
+      orgGit?.org_git?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
   }, [orgGit]);
 
@@ -138,6 +142,7 @@ const CreateDraftVersionModal = ({
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
+        refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
         changeEditorVersionAction(

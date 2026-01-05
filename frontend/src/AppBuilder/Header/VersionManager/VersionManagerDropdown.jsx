@@ -33,6 +33,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    orgGit
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -48,6 +49,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      orgGit: state.orgGit,
+
     }),
     shallow
   );
@@ -124,7 +127,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Check if there's only one draft and no other saved versions
   const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
-  const shouldDisableCreateDraft = draftVersions.length > 0 && savedVersions.length === 0;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const shouldDisableCreateDraft = draftVersions.length > 0 && isGitSyncEnabled && savedVersions.length === 0;
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
