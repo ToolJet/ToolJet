@@ -20,6 +20,20 @@ export class WorkflowBundle {
   @Column('jsonb', { name: 'dependencies' })
   dependencies: Record<string, string>;
 
+  @Column({ name: 'language', length: 20, default: 'javascript' })
+  language: 'javascript' | 'python';
+
+  @Column({ name: 'runtime_version', length: 20, nullable: true })
+  runtimeVersion: string;
+
+  @Column('bytea', { name: 'bundle_binary', nullable: true })
+  bundleBinary: Buffer;
+
+  /**
+   * @deprecated Legacy column - use bundleBinary instead.
+   * Kept for backward compatibility during migration period.
+   * Will be removed in a future release after data migration is complete.
+   */
   @Column('text', { name: 'bundle_content', nullable: true })
   bundleContent: string;
 
