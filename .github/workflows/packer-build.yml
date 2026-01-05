@@ -100,10 +100,7 @@ jobs:
       - name: Send Slack Notification
         if: success()
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
-          else
-            message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy\`"
-          fi
+          ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`lts-3.16\`\nAMI Name: \`${ami_name}\`"
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

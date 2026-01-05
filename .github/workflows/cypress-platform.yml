@@ -1,9 +1,16 @@
-name: Cypress Platform
+name:
+  Cypress Platform
+  # Cache invalidation - 2025-12-09
 
 on:
   pull_request_target:
     types: [labeled]
   # workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 env:
   PR_NUMBER: ${{ github.event.number }}
@@ -13,6 +20,7 @@ env:
 jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
+
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
@@ -43,7 +51,780 @@ jobs:
           df -h
 
           # Remove unnecessary packages
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel || true
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
+        if: matrix.edition == 'ce'
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      # EE dockerfile build below
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
+        run: |
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
+
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
+
+      - name: docker logs
+        run: docker-compose logs tooljet
+
+      - name: Wait for the server to be ready
+        run: |
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
+      - name: Create Cypress environment file
+        id: create-json-tj
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
+          dir: "./cypress-tests"
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests
+        continue-on-error: true
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-${{ matrix.edition }}
+          path: cypress-tests/cypress/screenshots
+
+  Cypress-Platform-Subpath:
+    runs-on: ubuntu-22.04
+
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        edition:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments') && 'ee' || '' }}
+        exclude:
+          - edition: ""
+
+    steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build CE Docker image
+        if: matrix.edition == 'ce'
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      - name: Build EE Docker image
+        if: matrix.edition == 'ee'
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "SUB_PATH=/apps/" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
+        run: |
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
+
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
+
+      - name: docker logs
+        run: docker-compose logs tooljet
+
+      - name: Wait for the server to be ready
+        run: |
+          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
+              echo "✅ Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "❌ Timeout reached without finding success logs"
+            echo "📄 Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+          echo "✅ Server is ready!"
+
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
+      - name: Create Cypress environment file
+        id: create-json-tj-subpath
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
+          dir: "./cypress-tests"
+
+      - name: Debug - Chrome Browser Detections
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        id: cypress-tests-subpath
+        continue-on-error: true
+        with:
+          browser: chrome
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:3000/apps"
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-${{ matrix.edition }}-subpath-${{ env.TIMESTAMP }}
+          path: cypress-tests/cypress/screenshots
+
+  Cypress-Platform-Proxy:
+    runs-on: ubuntu-22.04
+
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        edition:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') && 'ce' || '' }}
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments') && 'ee' || '' }}
+        exclude:
+          - edition: ""
+
+    steps:
+      - name: Debug labels and matrix edition
+        run: |
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
           sudo apt-get autoremove -y
           sudo apt-get clean
 
@@ -126,519 +907,6 @@ jobs:
           echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
-          echo "PG_DB=tooljet_development" >> .env
-          echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=postgres" >> .env
-          echo "PG_PASS=postgres" >> .env
-          echo "PG_PORT=5432" >> .env
-          echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=postgres" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
-          echo "TOOLJET_DB_RECONFIG=true" >> .env
-          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=localhost:3001" >> .env
-          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
-          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
-          echo "PGRST_SERVER_PORT=3001" >> .env
-          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
-          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
-          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-
-      - name: clean up old docker containers
-        run: |
-          docker system prune -af --volumes
-          echo "Disk space after Docker cleanup:"
-          df -h
-
-      - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
-
-      - name: Update docker-compose file
-        run: |
-          # Update docker-compose.yaml with the appropriate image based on edition
-          if [ "${{ matrix.edition }}" = "ce" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
-          elif [ "${{ matrix.edition }}" = "ee" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
-          fi
-
-      - name: view docker-compose file
-        run: cat docker-compose.yaml
-
-      - name: Install Docker Compose
-        run: |
-          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-
-      - name: Run docker-compose file
-        run: docker-compose up -d
-
-      - name: Checking containers
-        run: docker ps -a
-
-      - name: sleep
-        run: sleep 80
-
-      - name: docker logs
-        run: docker-compose logs tooljet
-
-      - name: Wait for the server to be ready
-        run: |
-          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
-          SUCCESS_FOUND=false
-          TIMEOUT=700
-          ELAPSED=0
-
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
-            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82 🚀|Ready to use at http://localhost:80"; then
-              echo "✅ Found success message in logs!"
-              SUCCESS_FOUND=true
-              break
-            fi
-
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
-            sleep 10
-            ELAPSED=$((ELAPSED + 10))
-          done
-
-          if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
-            echo "📄 Showing current logs for troubleshooting..."
-            docker-compose logs --tail=100 tooljet
-            exit 1
-          fi
-
-          echo "✅ Server is ready!"
-
-      - name: Test database connection
-        run: |
-          # Wait for database to be ready
-          echo "Testing database connection..."
-          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
-
-      - name: Create delete_user procedure
-        run: |
-          echo "Creating delete_user stored procedure..."
-          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
-          CREATE OR REPLACE PROCEDURE delete_user(p_email TEXT)
-          LANGUAGE plpgsql
-          AS \$\$
-          DECLARE
-              v_user_id UUID;
-              v_organization_ids UUID[];
-              v_organizations_to_delete UUID[];
-              v_log_message TEXT;
-          BEGIN
-              -- Log start of procedure
-              RAISE NOTICE 'Starting delete_user procedure for email: %', p_email;
-
-              -- Get user_id from email
-              SELECT id INTO v_user_id
-              FROM users
-              WHERE email = p_email;
-
-              IF v_user_id IS NULL THEN
-                  RAISE EXCEPTION 'User with email % not found', p_email;
-              END IF;
-
-              RAISE NOTICE 'User found with id: %', v_user_id;
-
-              -- Get organization_ids for the user
-              SELECT ARRAY_AGG(organization_id) INTO v_organization_ids
-              FROM organization_users
-              WHERE user_id = v_user_id;
-
-              RAISE NOTICE 'Found % organizations for user', COALESCE(ARRAY_LENGTH(v_organization_ids, 1), 0);
-
-              -- Get organizations with exactly one user (to be deleted)
-              SELECT ARRAY_AGG(organization_id) INTO v_organizations_to_delete
-              FROM (
-                  SELECT organization_id
-                  FROM organization_users
-                  WHERE organization_id = ANY(v_organization_ids)
-                  GROUP BY organization_id
-                  HAVING COUNT(*) = 1
-              ) subquery;
-
-              -- Add organizations where the user is the owner
-              v_organizations_to_delete := v_organizations_to_delete;
-
-              RAISE NOTICE 'Found % organizations to delete', COALESCE(ARRAY_LENGTH(v_organizations_to_delete, 1), 0);
-
-              -- Delete apps in organizations to be deleted
-              WITH deleted_apps AS (
-                  DELETE FROM apps
-                  WHERE organization_id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' apps' INTO v_log_message FROM deleted_apps;
-
-              RAISE NOTICE '%', v_log_message;
-
-              -- Delete data_sources in organizations to be deleted
-              WITH deleted_data_sources AS (
-                  DELETE FROM data_sources
-                  WHERE organization_id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' data sources' INTO v_log_message FROM deleted_data_sources;
-
-              RAISE NOTICE '%', v_log_message;
-
-              -- Delete audit_logs for organizations to be deleted and for the user
-              WITH deleted_audit_logs AS (
-                  DELETE FROM audit_logs
-                  WHERE organization_id = ANY(v_organization_ids)
-                  OR user_id = v_user_id
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' audit logs' INTO v_log_message FROM deleted_audit_logs;
-
-              RAISE NOTICE '%', v_log_message;
-
-              -- Delete organizations
-              WITH deleted_organizations AS (
-                  DELETE FROM organizations
-                  WHERE id = ANY(v_organizations_to_delete)
-                  RETURNING id
-              )
-              SELECT 'Deleted ' || COUNT(*) || ' organizations' INTO v_log_message FROM deleted_organizations;
-
-              RAISE NOTICE '%', v_log_message;
-
-              -- Finally, delete the user
-              DELETE FROM users
-              WHERE id = v_user_id;
-
-              RAISE NOTICE 'Deleted user with id: %', v_user_id;
-              RAISE NOTICE 'User deletion procedure completed successfully for email: %', p_email;
-          END;
-          \$\$;"
-          echo "✅ delete_user procedure created successfully"
-
-      - name: Create Cypress environment file
-        id: create-json-tj
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SECRETS) || fromJSON(secrets.CYPRESS_EE_SECRETS)) }}
-          dir: "./cypress-tests"
-
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000"
-          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-
-      - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots-${{ matrix.edition }}
-          path: cypress-tests/cypress/screenshots
-
-  Cypress-Platform-Subpath:
-    runs-on: ubuntu-22.04
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
-
-    strategy:
-      fail-fast: false
-      matrix:
-        edition:
-          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') && 'ce' || contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments') && 'ee' || '' }}
-        exclude:
-          - edition: ""
-
-    steps:
-      - name: Debug labels and matrix edition
-        run: |
-          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
-          echo "Matrix edition: ${{ matrix.edition }}"
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Set DOCKER_CLI_EXPERIMENTAL
-        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: Docker Login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
-
-      - name: Build CE Docker image
-        if: matrix.edition == 'ce'
-        run: |
-          echo "Building CE Docker image..."
-          docker buildx build \
-            --platform=linux/amd64 \
-            -f docker/ce-production.Dockerfile \
-            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
-            --no-cache \
-            --load \
-            .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-
-          echo "Cleaning up build cache..."
-          docker builder prune -af
-
-          echo "Disk space after build:"
-          df -h
-
-      - name: Build EE Docker image
-        if: matrix.edition == 'ee'
-        run: |
-          echo "Building EE Docker image..."
-          docker buildx build \
-            --platform=linux/amd64 \
-            -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
-            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
-            --no-cache \
-            --load \
-            .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-
-          echo "Cleaning up build cache..."
-          docker builder prune -af
-
-          echo "Disk space after build:"
-          df -h
-
-      - name: Set up environment variables
-        run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
-          echo "TOOLJET_HOST=http://localhost:3000" >> .env
-          echo "SUB_PATH=/apps/" >> .env
-          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
-          echo "PG_DB=tooljet_development" >> .env
-          echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=postgres" >> .env
-          echo "PG_PASS=postgres" >> .env
-          echo "PG_PORT=5432" >> .env
-          echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=postgres" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
-          echo "TOOLJET_DB_RECONFIG=true" >> .env
-          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=localhost:3001" >> .env
-          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
-          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
-          echo "PGRST_SERVER_PORT=3001" >> .env
-          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
-          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
-          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
-          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
-          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "SSO_OPENID_WELL_KNOWN_URL=http://34.66.166.236:8080/.well-known/openid-configuration" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-
-      - name: clean up old docker containers
-        run: |
-          docker system prune -af --volumes
-          echo "Disk space after Docker cleanup:"
-          df -h
-
-      - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
-
-      - name: Update docker-compose file
-        run: |
-          # Update docker-compose.yaml with the appropriate image based on edition
-          if [ "${{ matrix.edition }}" = "ce" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
-          elif [ "${{ matrix.edition }}" = "ee" ]; then
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
-          fi
-
-      - name: view docker-compose file
-        run: cat docker-compose.yaml
-
-      - name: Install Docker Compose
-        run: |
-          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-
-      - name: Run docker-compose file
-        run: docker-compose up -d
-
-      - name: Checking containers
-        run: docker ps -a
-
-      - name: sleep
-        run: sleep 80
-
-      - name: docker logs
-        run: docker-compose logs tooljet
-
-      - name: Wait for the server to be ready
-        run: |
-          echo "⏳ Waiting for ToolJet to start (timeout: 700 seconds)..."
-          SUCCESS_FOUND=false
-          TIMEOUT=700
-          ELAPSED=0
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Check for success message in logs
-            if docker-compose logs tooljet 2>/dev/null | grep -qE "🚀 TOOLJET APPLICATION STARTED SUCCESSFULLY"; then
-              echo "✅ Found success message in logs!"
-              SUCCESS_FOUND=true
-              break
-            fi
-            echo "⏳ Still waiting... (${ELAPSED}s elapsed)"
-            sleep 10
-            ELAPSED=$((ELAPSED + 10))
-          done
-          if [ "$SUCCESS_FOUND" = false ]; then
-            echo "❌ Timeout reached without finding success logs"
-            echo "📄 Showing current logs for troubleshooting..."
-            docker-compose logs --tail=100 tooljet
-            exit 1
-          fi
-          echo "✅ Server is ready!"
-
-      - name: Create Cypress environment file
-        id: create-json-tj-subpath
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_SECRETS)) }}
-          dir: "./cypress-tests"
-
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000/apps"
-          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
-
-      - name: Capture Screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: screenshots-${{ matrix.edition }}-subpath-${{ env.TIMESTAMP }}
-          path: cypress-tests/cypress/screenshots
-
-  Cypress-Platform-Proxy:
-    runs-on: ubuntu-22.04
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
-
-    strategy:
-      fail-fast: false
-      matrix:
-        edition:
-          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') && 'ce' || '' }}
-          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments') && 'ee' || '' }}
-        exclude:
-          - edition: ""
-
-    steps:
-      - name: Debug labels and matrix edition
-        run: |
-          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
-          echo "Matrix edition: ${{ matrix.edition }}"
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Set DOCKER_CLI_EXPERIMENTAL
-        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: Docker Login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
-
-      - name: Build CE Docker image
-        if: matrix.edition == 'ce'
-        run: |
-          echo "Building CE Docker image..."
-          docker buildx build \
-            --platform=linux/amd64 \
-            -f docker/ce-production.Dockerfile \
-            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
-            --no-cache \
-            --load \
-            .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-
-          echo "Cleaning up build cache..."
-          docker builder prune -af
-
-          echo "Disk space after build:"
-          df -h
-
-      - name: Build EE Docker image
-        if: matrix.edition == 'ee'
-        run: |
-          echo "Building EE Docker image..."
-          docker buildx build \
-            --platform=linux/amd64 \
-            -f cypress-tests/cypress-lts.Dockerfile \
-            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
-            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
-            --no-cache \
-            --load \
-            .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-
-          echo "Cleaning up build cache..."
-          docker builder prune -af
-
-          echo "Disk space after build:"
-          df -h
-
-      - name: Set up environment variables
-        run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
-          echo "TOOLJET_HOST=http://localhost:3000" >> .env
-          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
@@ -652,8 +920,6 @@ jobs:
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
-          echo "NODE_ENV=production" >> .env
-          echo "SERVE_CLIENT=true" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
@@ -669,7 +935,15 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -747,6 +1021,141 @@ jobs:
           fi
           echo "✅ Server is ready!"
 
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
       - name: Create Cypress environment file
         id: create-json-tj-proxy
         uses: jsdaniell/create-json@1.1.2
@@ -755,12 +1164,39 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001"
+          config: "baseUrl=http://localhost:4001,server_host=http://localhost:3000"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -771,6 +1207,7 @@ jobs:
 
   Cypress-Platform-Proxy-Subpath:
     runs-on: ubuntu-22.04
+
     if: |
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce-deployments') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee-deployments')
@@ -789,6 +1226,29 @@ jobs:
         run: |
           echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
           echo "Matrix edition: ${{ matrix.edition }}"
+
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -885,7 +1345,15 @@ jobs:
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
           echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
           echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
-          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -963,6 +1431,141 @@ jobs:
           fi
           echo "✅ Server is ready!"
 
+      - name: Test database connection
+        run: |
+          # Wait for database to be ready
+          echo "Testing database connection..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS \$\$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                -- Collect organization memberships
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                -- Find organizations with that single user
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                -- Cascade delete records for orgs slated for removal
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                -- Delete audit logs for orgs (if any) and user
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          \$\$;"
+          echo "✅ delete_users procedure created successfully"
+
       - name: Create Cypress environment file
         id: create-json-tj-proxy-subpath
         uses: jsdaniell/create-json@1.1.2
@@ -971,12 +1574,39 @@ jobs:
           json: ${{ toJSON(matrix.edition == 'ce' && fromJSON(secrets.CYPRESS_SUBPATH_PROXY_SECRETS) || fromJSON(secrets.CYPRESS_EE_SUBPATH_PROXY_SECRETS)) }}
           dir: "./cypress-tests"
 
+      - name: Debug - Chrome Browser Detection
+        run: |
+          echo "========================================="
+          echo "DEBUGGING CHROME BROWSER DETECTION"
+          echo "========================================="
+          echo ""
+          echo "=== Chrome Version ==="
+          google-chrome --version || google-chrome-stable --version || echo "Chrome not found"
+          echo ""
+          echo "=== Chrome Binary Location ==="
+          which google-chrome || which google-chrome-stable || echo "Chrome not in PATH"
+          echo ""
+          echo "=== Cypress Info ==="
+          cd cypress-tests && npx cypress info || echo "Failed to get Cypress info"
+          echo ""
+          echo "=== Cypress Verify ==="
+          cd cypress-tests && npx cypress verify || echo "Cypress verification failed"
+          echo ""
+          echo "========================================="
+
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
+        id: cypress-tests-proxy-subpath
+        continue-on-error: true
         with:
+          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:4001/apps"
+          config: "baseUrl=http://localhost:4001/apps,server_host=http://localhost:3000/apps"
           config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+        env:
+          CYPRESS_proxy: true
+          GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
+          CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4

@@ -1,6 +1,8 @@
-import { commonSelectors } from "Selectors/common";
+import { fake } from "Fixtures/fake";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   commonEeSelectors,
+  multiEnvSelector,
   instanceSettingsSelector,
   whiteLabellingSelectors,
 } from "Selectors/eeCommon";
@@ -17,18 +19,29 @@ import {
   verifyLicenseTab,
   verifyResourceLimit,
   verifySubTabsAndStoreCurrentLimits,
-  verifyTotalLimitsWithPlan
+  verifyTotalLimitsWithPlan,
 } from "Support/utils/license";
 import { settingsText, workspaceSettingsText } from "Texts/common";
 import { licenseText } from "Texts/license";
 import { dashboardSelector } from "Selectors/dashboard";
+import { workflowSelector } from "Selectors/workflows";
 
 describe("License Page", () => {
-  const data = {};
+  const data = {
+    appName1: `${fake.companyName}-License-App-1`,
+    workflowName: `${fake.companyName}-Workflow`,
+  };
 
   beforeEach(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.apiDeleteAllApps();
+    cy.apiCreateApp(data.appName1);
+    cy.apiCreateWorkflow(data.workflowName);
+    cy.visit("/my-workspace");
+  });
+
+  afterEach(() => {
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 
   it("Should verify license page elements with the paid plan", () => {
@@ -83,13 +96,13 @@ describe("License Page", () => {
 
     cy.get(licenseSelectors.workspaceCount).should("be.visible");
     cy.get(commonSelectors.addWorkspaceButton).should("be.visible");
-    verifyResourceLimit("workspaces", planName);
+    verifyResourceLimit("workspace", planName);
 
     cy.get(dashboardSelector.homePageContent).click();
-    verifyResourceLimit("apps", planName);
+    verifyResourceLimit("app", planName);
 
-    // cy.get(workflowSelector.globalWorkFlowsIcon).click();
-    // verifyResourceLimit("workflow", planName);
+    cy.get(workflowSelector.globalWorkFlowsIcon).click();
+    verifyResourceLimit("workflow", planName);
 
     common.navigateToManageUsers();
     cy.get(usersSelector.buttonAddUsers).click();
@@ -116,7 +129,7 @@ describe("License Page", () => {
     cy.get(
       licenseSelectors.listOfItems(workspaceSettingsText.themesListItem)
     ).click();
-    cy.get('[data-cy="create-new-theme-button"]').should("be.enabled");
+    cy.get(commonEeSelectors.createNewThemeButton).should("be.enabled");
 
     common.navigateToSettingPage();
     cy.get(licenseSelectors.listOfItems(settingsText.allUsersListItem)).click({
@@ -162,26 +175,15 @@ describe("License Page", () => {
     cy.get(commonEeSelectors.auditLogIcon).should("be.visible").click();
     cy.get(commonSelectors.pageSectionHeader).should("have.text", "Audit logs");
 
-    // cy.apiCreateApp(`${fake.companyName}-license-App`);
-    // cy.openApp();
+    cy.openApp(data.appName1);
 
-    // cy.get('[data-cy="list-current-env-name"]').click();
-    // cy.get('[data-cy="env-name-list"]')
-    //   .eq(1)
-    //   .within(() => {
-    //     verifyTooltip(
-    //       '[data-cy="env-name-dropdown"]',
-    //       "Multi-environments are available only in paid plans"
-    //     );
-    //   });
+    cy.get(multiEnvSelector.environmentsTag("development")).click();
+    cy.get(multiEnvSelector.environmentsTag("staging")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("not.exist");
+    });
+    cy.get(multiEnvSelector.environmentsTag("production")).within(() => {
+      cy.get(commonWidgetSelector.enterpriseGradientSmIcon).should("not.exist");
+    });
 
-    // cy.get('[data-cy="env-name-list"]')
-    //   .eq(2)
-    //   .within(() => {
-    //     verifyTooltip(
-    //       '[data-cy="env-name-dropdown"]',
-    //       "Multi-environments are available only in paid plans"
-    //     );
-    //   });
   });
 });

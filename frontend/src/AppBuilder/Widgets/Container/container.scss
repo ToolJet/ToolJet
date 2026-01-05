@@ -7,7 +7,7 @@
       left: 0px;
       right: 0px;
       height: 1px;
-      background-color: var(--cc-default-border);
+      background-color: var(--cc-container-header-divider-color, var(--cc-default-border));
     }
   }
 

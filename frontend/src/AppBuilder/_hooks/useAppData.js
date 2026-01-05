@@ -144,6 +144,10 @@ const useAppData = (
     (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
   );
 
+  // Used to trigger app refresh flow after restoring app history
+  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
+  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
+
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
@@ -296,9 +300,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
+                  slug,
+                  viewerEnvironment?.environment?.id
+                )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -350,8 +354,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -600,8 +604,9 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
+    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
 
-    if (isEnvChanged || isVersionChanged) {
+    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -627,8 +632,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -644,6 +649,9 @@ const useAppData = (
         );
 
         setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
+        );
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
@@ -708,7 +716,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
 
   useEffect(() => {
     if (moduleMode) return;

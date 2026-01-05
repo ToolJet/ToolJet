@@ -1,6 +1,5 @@
 import React from 'react';
 import cx from 'classnames';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Loader from '../../Loader';
 import useTableStore from '../../../_stores/tableStore';
 import { flexRender } from '@tanstack/react-table';
@@ -10,7 +9,8 @@ import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
@@ -37,9 +37,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     zIndex: isDragging ? 1 : 0,
     backgroundColor: columnBackgroundColor,
     color: columnTitleColor,
-    '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 'hover'),
-    '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 'active'),
-    '--cc-table-header-active-border': getModifiedColor(columnBackgroundColor, 21),
+    '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),
+    '--cc-table-header-active': getModifiedColor(columnBackgroundColor, 10),
   };
 
   return (
@@ -50,6 +49,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         'resizing-column': header.column.getIsResizing(),
         'has-actions': header.column.columnDef.header === 'Actions',
         'selector-header': header.column.columnDef.type === 'selector',
+        'dark-theme': darkMode,
       })}
       style={{
         width: header.getSize(),
@@ -61,7 +61,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
-        className={cx('d-flex justify-content-between custom-gap-12', {
+        className={cx('d-flex justify-content-between custom-gap-4', {
           'd-flex justify-content-center w-100': header.column.columnDef.type === 'selector',
         })}
         onClick={header.column.getCanSort() ? () => header.column.toggleSorting() : undefined}
@@ -74,38 +74,29 @@ const DraggableHeader = ({ header, darkMode, id }) => {
               : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
           } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
-          <div>
+          <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
-              <SolidIcon
-                name="editable"
-                width="16px"
-                height="16px"
-                fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                vievBox="0 0 16 16"
-              />
+              <IconPencil size="16px" color="var(--cc-secondary-icon, var(--icon-default))" />
             )}
           </div>
           <div
-            className={cx('header-text', {
+            className={cx('header-text tw-w-full', {
               'selector-column': column.id === 'selection' && column.columnType === 'selector',
               'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
               'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
             })}
             style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
           >
-            {header.isPlaceholder
-              ? null
-              : flexRender(header.column.columnDef.header, header.getContext())}
+            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
           </div>
         </div>
         {header.column.getIsSorted() && (
-          <div>
-            <SolidIcon
-              name={header.column.getIsSorted() === 'desc' ? 'arrowdown' : 'arrowup'}
-              width="16"
-              height="16"
-              fill={darkMode ? '#ECEDEE' : '#11181C'}
-            />
+          <div className="tw-flex-shrink-0">
+            {header.column.getIsSorted() === 'desc' ? (
+              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+            ) : (
+              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+            )}
           </div>
         )}
       </div>
