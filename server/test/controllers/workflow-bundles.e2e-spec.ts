@@ -728,7 +728,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         expect.objectContaining({
           id: expect.any(String),
           appVersionId: appVersion.id,
-          dependencies: dependencies,
+          dependencies: JSON.stringify(dependencies), // Stored as JSON string in TEXT column
           bundleBinary: expect.any(Buffer),
           bundleSize: expect.any(Number),
           bundleSha: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -1403,7 +1403,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const bundleEntity = await waitForBundleReady(bundleRepo, appVersion.id, 'javascript');
 
       expect(bundleEntity).toBeDefined();
-      expect(bundleEntity!.dependencies).toEqual(dependencies);
+      expect(bundleEntity!.dependencies).toEqual(JSON.stringify(dependencies)); // Stored as JSON string in TEXT column
       expect(bundleEntity!.status).toBe('ready');
       expect(bundleEntity!.bundleSize).toBeGreaterThan(0);
       expect(bundleEntity!.bundleSha).toMatch(/^[a-f0-9]{64}$/);
@@ -1431,7 +1431,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(rebuiltEntity).toBeDefined();
       expect(rebuiltEntity!.bundleSha).toBe(initialSha); // Same dependencies = same SHA
       expect(rebuiltEntity!.status).toBe('ready');
-      expect(rebuiltEntity!.dependencies).toEqual(dependencies);
+      expect(rebuiltEntity!.dependencies).toEqual(JSON.stringify(dependencies)); // Stored as JSON string in TEXT column
     });
   });
 
