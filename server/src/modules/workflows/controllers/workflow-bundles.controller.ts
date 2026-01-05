@@ -2,10 +2,12 @@ import { Controller, Get, Post, Put, Param, Query, Body, UseGuards, HttpExceptio
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { WorkflowAccessGuard } from '../guards/workflow-access.guard';
 import {
-  UpdatePackagesDto,
+  UpdateJavascriptPackagesDto,
+  UpdatePythonPackagesDto,
   PackageSearchQueryDto,
-  PackageSearchResult,
-  GetPackagesResult,
+  JavascriptPackageSearchResult,
+  GetJavascriptPackagesResult,
+  GetPythonPackagesResult,
   UpdatePackagesResult,
   RebuildBundleDto,
   RebuildBundleResult,
@@ -27,7 +29,7 @@ export class WorkflowBundlesController {
   async searchPackagesByLanguage(
     @Param('language') language: BundleLanguage,
     @Query() query: PackageSearchQueryDto
-  ): Promise<PackageSearchResult[] | PythonPackageSearchResult[]> {
+  ): Promise<JavascriptPackageSearchResult[] | PythonPackageSearchResult[]> {
     throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -54,7 +56,7 @@ export class WorkflowBundlesController {
   async getPackagesByLanguage(
     @Param('appVersionId') appVersionId: string,
     @Param('language') language: BundleLanguage
-  ): Promise<GetPackagesResult> {
+  ): Promise<GetJavascriptPackagesResult | GetPythonPackagesResult> {
     throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -63,7 +65,7 @@ export class WorkflowBundlesController {
   async updatePackagesByLanguage(
     @Param('appVersionId') appVersionId: string,
     @Param('language') language: BundleLanguage,
-    @Body() dto: UpdatePackagesDto
+    @Body() dto: UpdateJavascriptPackagesDto | UpdatePythonPackagesDto
   ): Promise<UpdatePackagesResult> {
     throw new HttpException('Enterprise feature: Package management requires ToolJet Enterprise Edition', HttpStatus.INTERNAL_SERVER_ERROR);
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IBundleGenerationService, BundleStatus } from '../interfaces/IBundleGenerationService';
+import { IBundleGenerationService, IBundleStatus } from '../interfaces/IBundleGenerationService';
 
 @Injectable()
 export class BundleGenerationService implements IBundleGenerationService {
@@ -19,7 +19,7 @@ export class BundleGenerationService implements IBundleGenerationService {
     return {};
   }
 
-  async getBundleStatus(workflowId: string): Promise<BundleStatus> {
+  async getBundleStatus(workflowId: string): Promise<IBundleStatus> {
     return { status: 'none' };
   }
 

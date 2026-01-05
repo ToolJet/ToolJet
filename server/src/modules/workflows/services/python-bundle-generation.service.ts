@@ -3,14 +3,15 @@ import { Injectable } from '@nestjs/common';
 /**
  * CE stub for PythonBundleGenerationService.
  * Python bundle generation is only available in Enterprise Edition.
+ * Dependencies are stored as raw requirements.txt content (string format).
  */
 @Injectable()
 export class PythonBundleGenerationService {
-  async updatePackages(appVersionId: string, dependencies: Record<string, string>): Promise<void> {
+  async updatePackages(appVersionId: string, dependencies: string): Promise<void> {
     throw new Error('Python bundle generation is not available in Community Edition');
   }
 
-  async generateBundle(appVersionId: string, dependencies: Record<string, string>): Promise<void> {
+  async generateBundle(appVersionId: string, dependencies: string): Promise<void> {
     throw new Error('Python bundle generation is not available in Community Edition');
   }
 
@@ -18,8 +19,8 @@ export class PythonBundleGenerationService {
     return null; // CE workflows have no Python bundles
   }
 
-  async getCurrentDependencies(appVersionId: string): Promise<Record<string, string>> {
-    return {};
+  async getCurrentDependencies(appVersionId: string): Promise<string> {
+    return ''; // Empty requirements.txt content
   }
 
   async getBundleStatus(appVersionId: string): Promise<{
@@ -27,7 +28,7 @@ export class PythonBundleGenerationService {
     sizeBytes?: number;
     generationTimeMs?: number;
     error?: string;
-    dependencies?: Record<string, string>;
+    dependencies?: string; // Raw requirements.txt content
     bundleSha?: string;
     language?: string;
     runtimeVersion?: string;

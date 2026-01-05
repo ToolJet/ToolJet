@@ -17,9 +17,20 @@ export class LanguageParamDto {
   language: BundleLanguage;
 }
 
-export class UpdatePackagesDto {
+/**
+ * DTO for JavaScript package updates (JSON object)
+ */
+export class UpdateJavascriptPackagesDto {
   @IsObject()
   dependencies: Record<string, string>;
+}
+
+/**
+ * DTO for Python package updates (raw requirements.txt content)
+ */
+export class UpdatePythonPackagesDto {
+  @IsString()
+  dependencies: string; // Raw requirements.txt content, e.g., "requests==2.31.0\nnumpy>=1.24.0"
 }
 
 export class RebuildBundleDto {}
@@ -33,7 +44,7 @@ export class PackageSearchQueryDto {
   limit?: number;
 }
 
-export class PackageSearchResult {
+export class JavascriptPackageSearchResult {
   name: string;
   version: string;
   description: string;
@@ -42,11 +53,11 @@ export class PackageSearchResult {
   modified?: string;
 }
 
-export class GetPackagesResult {
+export class GetJavascriptPackagesResult {
   dependencies: Record<string, string>;
 }
 
-export class BundleStatus {
+export class JavascriptBundleStatus {
   status: 'none' | 'building' | 'ready' | 'failed';
   sizeBytes?: number;
   generationTimeMs?: number;
@@ -104,10 +115,17 @@ export class PythonBundleStatus {
   sizeBytes?: number;
   generationTimeMs?: number;
   error?: string;
-  dependencies?: Record<string, string>;
+  dependencies?: string; // Raw requirements.txt content
   bundleSha?: string;
   language: 'python';
   runtimeVersion?: string;
+}
+
+/**
+ * Result for getting Python packages (raw requirements.txt)
+ */
+export class GetPythonPackagesResult {
+  dependencies: string; // Raw requirements.txt content
 }
 
 // Unified DTOs for language-agnostic endpoints
@@ -140,13 +158,16 @@ export class UnifiedPackageVersionsResult {
 
 /**
  * Unified bundle status that includes language field
+ * Note: dependencies format varies by language:
+ * - JavaScript: JSON object { "lodash": "4.17.21" }
+ * - Python: string (requirements.txt content) "requests==2.31.0\nnumpy>=1.24.0"
  */
 export class UnifiedBundleStatus {
   status: 'none' | 'building' | 'ready' | 'failed';
   sizeBytes?: number;
   generationTimeMs?: number;
   error?: string;
-  dependencies?: Record<string, string>;
+  dependencies?: Record<string, string> | string;
   bundleSha?: string;
   language: BundleLanguage;
   runtimeVersion?: string;

@@ -17,8 +17,13 @@ export class WorkflowBundle {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
-  @Column('jsonb', { name: 'dependencies' })
-  dependencies: Record<string, string>;
+  /**
+   * Dependencies stored as string:
+   * - JavaScript: JSON string, e.g. '{"lodash": "4.17.21"}'
+   * - Python: requirements.txt content, e.g. 'requests==2.31.0\nnumpy==1.24.0'
+   */
+  @Column('text', { name: 'dependencies', nullable: true })
+  dependencies: string;
 
   @Column({ name: 'language', length: 20, default: 'javascript' })
   language: 'javascript' | 'python';
