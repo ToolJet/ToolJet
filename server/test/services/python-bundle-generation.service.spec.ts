@@ -25,10 +25,6 @@ const mockExec = exec as jest.MockedFunction<typeof exec>;
  * @group python
  */
 
-// ============================================================================
-// WorkflowBundle Entity Tests
-// ============================================================================
-
 /**
  * WorkflowBundle Entity - Python Support
  *
@@ -206,10 +202,6 @@ describe('WorkflowBundle Entity - Type Definitions', () => {
     expect(pyBundle.language).toBe('python');
   });
 });
-
-// ============================================================================
-// PythonBundleGenerationService Tests
-// ============================================================================
 
 /**
  * PythonBundleGenerationService Tests
