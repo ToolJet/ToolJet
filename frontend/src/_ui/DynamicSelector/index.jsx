@@ -409,7 +409,7 @@ const DynamicSelector = ({
                         onClick={() => handleFetch(false)}
                         disabled={isLoading || disabled || isFxMode}
                         className="btn rounded-lg tw-ml-2"
-                        style={{ visibility: isFxMode ? 'hidden' : 'visible' }}
+                        style={{ visibility: isFxMode ? 'hidden' : 'visible', fontSize: '12px' }}
                     >
                         {isLoading ? (
                             <>
@@ -438,9 +438,9 @@ const DynamicSelector = ({
             )}
 
             {description && (
-                <small className="text-muted d-block mt-2">
+                <div>
                     {description}
-                </small>
+                </div>
             )}
 
         </div>
