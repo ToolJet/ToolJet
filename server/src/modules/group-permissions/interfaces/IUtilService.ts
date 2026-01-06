@@ -56,4 +56,5 @@ export interface IGranularPermissionsUtilService {
 
 export interface IGroupPermissionsLicenseUtilService {
   isValidLicense(organiztionId: string): Promise<boolean>;
+  isRestrictedPlan(organizationId: string): Promise<boolean>;
 }

@@ -749,6 +749,19 @@ Cypress.Commands.add(
     });
   }
 );
+Cypress.Commands.add(
+  "apiUpdateAutoSSO",
+  (state, scope = "instance", returnCached = false) => {
+    cy.getAuthHeaders(returnCached).then((headers) => {
+      cy.request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/login-configs/${scope}-general`,
+        headers: headers,
+        body: { automaticSsoLogin: state },
+      });
+    });
+  }
+);
 
 Cypress.Commands.add(
   "apiFullUserOnboarding",
@@ -782,7 +795,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding (email, password, orgToken) {
+    function performOnboarding(email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
