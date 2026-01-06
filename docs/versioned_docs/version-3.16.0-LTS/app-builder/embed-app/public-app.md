@@ -3,9 +3,9 @@ id: public-app
 title: Public Application
 ---
 
-# Embedding a Public Application
+# Embedding a Public ToolJet Application
 
-Public applications allow you to embed a ToolJet app that is accessible to anyone without requiring authentication. This is ideal when the embedded application does not expose sensitive data and is intended for broad access.
+ToolJet applications can be embedded publicly that is accessible to anyone without requiring authentication. This is ideal when the embedded application does not expose sensitive data and is intended for broad access.
 
 Public embeds are commonly used for feedback forms, marketing dashboards, surveys, or customer-facing widgets where ease of access is more important than access control.
 
