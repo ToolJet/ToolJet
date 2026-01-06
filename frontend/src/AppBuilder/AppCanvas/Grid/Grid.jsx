@@ -1202,8 +1202,17 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const targets = events.map((e) => e.target);
           updateMousePosition(ev.clientX, ev.clientY, targets);
         }}
-        onDragGroupStart={(e) => {
+        onDragGroupStart={(ev) => {
           // Do nothing, Kept for future use/reference
+          // showGridLines();
+          // handleActivateNonDraggingComponents();
+          // // Don't start autoscroll if dragging via config handle
+          // if (isGroupHandleHoverd) return;
+          // // Start autoscroll for group drag with all target elements
+          // const targets = ev.targets || [];
+          // if (targets.length > 0) {
+          //   startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
+          // }
         }}
         onDragGroupEnd={(e) => {
           // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler
@@ -1211,6 +1220,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           incrementCanvasUpdater();
         }}
         onClickGroup={(e) => {
+          // hideGridLines();
           // This runs after Selecto's multiselect logic. This is required to handle shift + click inside group area which selecto can't handle
           const targetId = e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
 
