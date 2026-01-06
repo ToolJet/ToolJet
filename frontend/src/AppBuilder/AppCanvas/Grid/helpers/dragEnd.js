@@ -50,11 +50,9 @@
  * - Enables **modular and flexible** widget movement across different UI sections.
  */
 import { getMouseDistanceFromParentDiv } from '../gridUtils';
-import {
-  RESTRICTED_WIDGETS_CONFIG,
-  RESTRICTED_WIDGET_SLOTS_CONFIG,
-} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+
 import { DROPPABLE_PARENTS } from '../../appCanvasConstants';
+import { isDroppingRestrictedWidget } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
 const REAL_CANVAS_ID = 'real-canvas';
@@ -169,18 +167,15 @@ export class DragContext {
 
   get isDroppable() {
     const { dragged, target, isModuleEditor } = this;
-
     // If the target is the canvas and we are in module editor,
     // then we don't want to drop the widget outside the module
     if (isModuleEditor && target.id === 'canvas') {
       return false;
     }
 
-    const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-    const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+    const isRestrictedWidget = isDroppingRestrictedWidget(target, dragged);
 
-    const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
-    return !restrictedWidgets.includes(dragged.widgetType);
+    return !isRestrictedWidget;
   }
 }
 
@@ -286,4 +281,80 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
     left: dragged.left * gridWidth,
     top: dragged.top,
   };
+};
+
+/**
+ * Checks if the target is a ModuleContainer (in app editor, not module editor).
+ *
+ * @param {string} targetSlotId - The target slot ID.
+ * @param {boolean} isModuleEditor - Whether we are in module editor mode.
+ * @returns {boolean} - True if the target is a ModuleContainer.
+ */
+export const isTargetModuleContainer = (targetSlotId, isModuleEditor) => {
+  if (isModuleEditor) return false;
+  return document.getElementById(`canvas-${targetSlotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+};
+
+/**
+ * Computes the position for a widget being dropped using getBoundingClientRect.
+ * This is used for both single and multi-drag scenarios.
+ *
+ * @param {HTMLElement} widgetElement - The dragged widget's DOM element.
+ * @param {string} targetSlotId - The target slot ID.
+ * @param {number} gridWidth - The grid width for snapping.
+ * @param {number} gridHeight - The grid height for snapping (default 10).
+ * @returns {Object} - { left, top } - The computed position.
+ */
+export const computeWidgetDropPosition = (widgetElement, targetSlotId, gridWidth, gridHeight = 10) => {
+  const parentDiv = document.getElementById('canvas-' + targetSlotId) || document.getElementById('real-canvas');
+  const parentDivRect = parentDiv?.getBoundingClientRect();
+  const targetDivRect = widgetElement.getBoundingClientRect();
+
+  // Calculate position relative to target container
+  const adjustedLeft = targetDivRect.left - parentDivRect.left;
+  const adjustedTop = targetDivRect.top - parentDivRect.top;
+
+  // Apply grid snapping
+  return {
+    left: Math.round(adjustedLeft / gridWidth) * gridWidth,
+    top: Math.round(adjustedTop / gridHeight) * gridHeight,
+  };
+};
+
+/**
+ * Gets the revert position for a widget (its original position before drag).
+ *
+ * @param {Object} widget - The widget object from boxList.
+ * @param {number} gridWidth - The grid width for the widget's container.
+ * @returns {Object} - { left, top } - The original position.
+ */
+export const getRevertPosition = (widget, gridWidth) => {
+  return {
+    left: widget.left * gridWidth,
+    top: widget.top,
+  };
+};
+
+/**
+ * Converts a slotId to a parent ID format suitable for handleDragEnd.
+ * - 'real-canvas' → null (main canvas)
+ * - other slotIds → slotId
+ *
+ * @param {string} slotId - The slot ID.
+ * @returns {string|null} - The parent ID or null for main canvas.
+ */
+export const getParentFromSlotId = (slotId) => {
+  return slotId === 'real-canvas' ? null : slotId;
+};
+
+/**
+ * Converts a slotId to a container ID format for reordering.
+ * - 'real-canvas' or undefined → 'canvas'
+ * - other slotIds → slotId
+ *
+ * @param {string} slotId - The slot ID.
+ * @returns {string} - The container ID for reordering.
+ */
+export const getContainerIdFromSlotId = (slotId) => {
+  return slotId === 'real-canvas' || !slotId ? 'canvas' : slotId;
 };
