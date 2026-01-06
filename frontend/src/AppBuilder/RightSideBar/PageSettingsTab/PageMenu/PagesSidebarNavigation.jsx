@@ -8,7 +8,6 @@ import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { buildTree } from './Tree/utilities';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
@@ -27,7 +26,6 @@ import { PencilRuler } from 'lucide-react';
 export const PagesSidebarNavigation = ({
   isMobileDevice,
   currentPageId,
-  switchPage,
   darkMode,
   isSidebarPinned,
   setIsSidebarPinned,
@@ -37,11 +35,8 @@ export const PagesSidebarNavigation = ({
 }) => {
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
-  const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
-  const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -57,6 +52,8 @@ export const PagesSidebarNavigation = ({
     shallow
   );
   const { appMode } = useStore((state) => state.globalSettings, shallow);
+  const switchToHomePage = useStore((state) => state.switchToHomePage);
+  const switchPageWrapper = useStore((state) => state.switchPageWrapper);
 
   const navRef = useRef(null);
   const headerRef = useRef(null);
@@ -344,80 +341,6 @@ export const PagesSidebarNavigation = ({
     '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
   };
 
-  const getAbsoluteUrl = (url) => {
-    if (!url) return '';
-
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return `https://${url}`;
-  };
-
-  const switchPageWrapper = (page) => {
-    if (page?.type === 'url') {
-      if (page?.url) {
-        const finalUrl = getAbsoluteUrl(page.url);
-        if (finalUrl) {
-          if (page.openIn === 'new_tab') {
-            window.open(finalUrl, '_blank');
-          } else {
-            window.location.href = finalUrl;
-          }
-        }
-      } else {
-        toast.error('No URL provied');
-        return;
-      }
-      return;
-    }
-
-    if (page?.type === 'app') {
-      if (page?.appId) {
-        const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
-        if (page.openIn === 'new_tab') {
-          window.open(baseUrl, '_blank');
-        } else {
-          window.location.href = baseUrl;
-        }
-      } else {
-        toast.error('No app selected');
-        return;
-      }
-      return;
-    }
-
-    if (currentPageId === page?.id) {
-      return;
-    }
-    const queryParams = {
-      version: selectedVersionName,
-      env: selectedEnvironmentName,
-    };
-    switchPage(
-      page?.id,
-      pages.find((p) => page.id === p?.id)?.handle,
-      currentMode === 'view' ? Object.entries(queryParams) : []
-    );
-    currentMode !== 'view' && setCurrentPageHandle(page.handle);
-  };
-
-  const switchToHomePage = () => {
-    if (currentPageId === homePageId) return;
-
-    const page = pages.find((p) => p.id === homePageId);
-
-    const queryParams = {
-      version: selectedVersionName,
-      env: selectedEnvironmentName,
-    };
-
-    switchPage(
-      page?.id,
-      pages.find((p) => page.id === p?.id)?.handle,
-      currentMode === 'view' ? Object.entries(queryParams) : []
-    );
-  };
-
   const handleSidebarClick = (e) => {
     // Only handle sidebar clicks in edit mode, as there's no right sidebar in view mode
     if (currentMode !== 'edit') return;
@@ -460,7 +383,7 @@ export const PagesSidebarNavigation = ({
         className="app-name"
       >
         {!logoHidden && (
-          <div onClick={switchToHomePage} className="cursor-pointer">
+          <div onClick={() => switchToHomePage(currentPageId, moduleId)} className="cursor-pointer">
             <AppLogo height={32} isLoadingFromHeader={false} />
           </div>
         )}
