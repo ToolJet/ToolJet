@@ -124,7 +124,17 @@ SidebarProvider.displayName = 'SidebarProvider';
 
 const Sidebar = React.forwardRef(
   (
-    { side = 'left', variant = 'sidebar', collapsible = 'offcanvas', className, children, sidebarWidth, ...props },
+    {
+      side = 'left',
+      variant = 'sidebar',
+      collapsible = 'offcanvas',
+      className,
+      children,
+      sidebarWidth,
+      sheetProps,
+      wrapperClassName,
+      ...props
+    },
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
@@ -155,7 +165,7 @@ const Sidebar = React.forwardRef(
               '--sidebar-width': sidebarWidth || SIDEBAR_WIDTH_MOBILE,
             }}
             side={side}
-            {...(props.sheetProps && props.sheetProps)}
+            {...(sheetProps && sheetProps)}
           >
             <SheetHeader className="tw-sr-only">
               <SheetTitle>Sidebar</SheetTitle>
@@ -170,7 +180,7 @@ const Sidebar = React.forwardRef(
     return (
       <div
         ref={ref}
-        className="tw-group tw-peer tw-hidden tw-text-sidebar-foreground md:tw-block"
+        className={cn('tw-group tw-peer tw-hidden tw-text-sidebar-foreground md:tw-block', wrapperClassName)}
         data-state={state}
         data-collapsible={state === 'collapsed' ? collapsible : ''}
         data-variant={variant}

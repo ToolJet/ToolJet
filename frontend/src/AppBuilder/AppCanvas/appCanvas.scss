@@ -2,12 +2,6 @@
     &:focus-visible {
         outline: none;
     }
-
-    &.page-container {
-        &.position-top {
-            flex-direction: column;
-        }
-    }
 }
 
 .modal-backdrop {
