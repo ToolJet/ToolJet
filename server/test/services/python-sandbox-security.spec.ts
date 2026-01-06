@@ -13,8 +13,6 @@ import * as fs from 'fs';
  * PYTHON SANDBOX SECURITY TEST SUITE
  * =============================================================================
  *
- * WHY THIS MATTERS FOR WEB DEVELOPERS:
- * ------------------------------------
  * We allow users to run arbitrary Python code in workflows. Without proper
  * sandboxing, a malicious user could:
  *
