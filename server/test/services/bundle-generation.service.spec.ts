@@ -5,8 +5,8 @@ import * as fs from 'fs/promises';
 import { exec } from 'child_process';
 import * as esbuild from 'esbuild';
 import * as crypto from 'crypto';
-import { BundleGenerationService } from '../../ee/workflows/services/bundle-generation.service';
-import { BundleGenerationService as BaseBundleGenerationService } from '../../src/modules/workflows/services/bundle-generation.service';
+import { JavaScriptBundleGenerationService } from '../../ee/workflows/services/bundle-generation.service';
+import { JavaScriptBundleGenerationService as BaseJavaScriptBundleGenerationService } from '../../src/modules/workflows/services/bundle-generation.service';
 import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
 
 // Mock external dependencies
@@ -21,19 +21,19 @@ const mockEsbuild = esbuild as jest.Mocked<typeof esbuild>;
 /**
  * @group workflows
  */
-describe('BundleGenerationService', () => {
+describe('JavaScriptBundleGenerationService', () => {
   const mockWorkflowId = 'test-workflow-id-123';
   const mockDependencies = { lodash: '4.17.21', moment: '2.29.4' };
 
   describe('Community Edition', () => {
-    let ceService: BaseBundleGenerationService;
+    let ceService: BaseJavaScriptBundleGenerationService;
 
     beforeEach(async () => {
       const module: TestingModule = await Test.createTestingModule({
-        providers: [BaseBundleGenerationService],
+        providers: [BaseJavaScriptBundleGenerationService],
       }).compile();
 
-      ceService = module.get<BaseBundleGenerationService>(BaseBundleGenerationService);
+      ceService = module.get<BaseJavaScriptBundleGenerationService>(BaseJavaScriptBundleGenerationService);
     });
 
     it('should throw error for updatePackages in CE', async () => {
@@ -80,7 +80,7 @@ describe('BundleGenerationService', () => {
   });
 
   describe('Enterprise Edition', () => {
-    let eeService: BundleGenerationService;
+    let eeService: JavaScriptBundleGenerationService;
     let repository: jest.Mocked<Repository<WorkflowBundle>>;
 
     beforeEach(async () => {
@@ -93,7 +93,7 @@ describe('BundleGenerationService', () => {
 
       const module: TestingModule = await Test.createTestingModule({
         providers: [
-          BundleGenerationService,
+          JavaScriptBundleGenerationService,
           {
             provide: getRepositoryToken(WorkflowBundle),
             useValue: mockRepository,
@@ -101,7 +101,7 @@ describe('BundleGenerationService', () => {
         ],
       }).compile();
 
-      eeService = module.get<BundleGenerationService>(BundleGenerationService);
+      eeService = module.get<JavaScriptBundleGenerationService>(JavaScriptBundleGenerationService);
       repository = module.get(getRepositoryToken(WorkflowBundle));
 
       // Reset all mocks

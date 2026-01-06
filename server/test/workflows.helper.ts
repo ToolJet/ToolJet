@@ -32,7 +32,7 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
-import { BundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
+import { JavaScriptBundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
 import { PythonBundleGenerationService } from '../ee/workflows/services/python-bundle-generation.service';
 
 
@@ -723,7 +723,7 @@ export const createBundle = async (
     language: 'javascript' | 'python'
 ): Promise<void> => {
     if (language === 'javascript') {
-        const service = nestApp.get<BundleGenerationService>(BundleGenerationService);
+        const service = nestApp.get<JavaScriptBundleGenerationService>(JavaScriptBundleGenerationService);
         await service.generateBundle(appVersionId, dependencies as Record<string, string>);
         const bundle = await service.getBundleForExecution(appVersionId);
         if (!bundle) {
