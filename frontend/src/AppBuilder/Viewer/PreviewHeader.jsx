@@ -1,5 +1,5 @@
 import React from 'react';
-import _, { isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import PreviewSettings from './PreviewSettings';
