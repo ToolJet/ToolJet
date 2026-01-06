@@ -14,37 +14,33 @@ Public embeds are commonly used for feedback forms, marketing dashboards, survey
 - The data displayed or collected is **non-sensitive**
 - The app is intended for **external** or **anonymous** users
 
-#### When an application is embedded publicly:
+#### When an Application is Embedded Publicly
 
 - The app is rendered inside an iframe
 - No authentication or login is required
 - Anyone with the embed URL can view and interact with the app
 
-------------
+## Example
 
+For example, if you run an inventory management portal and want to share stock levels publicly — for vendors, partner stores, or customers — you can embed the ToolJet inventory dashboard publicly on your portal. It lets viewers see item names, quantities, and availability, and filter by “Available” or “Out of Stock,” providing a transparent, interactive view of your inventory without requiring any login.
 
-Once the application is released, it can be shared with the end users in multiple ways, including via a direct URL, through the ToolJet dashboard, or by embedding it into another application.
+<iframe width="100%" height="650" src="https://app.tooljet.com/applications/docs-inventory-example" title="ToolJet app - docs-inventory-example" frameborder="0" allowfullscreen></iframe>
 
-## Share Application via URL
+<br/><br/>
 
-Once the application is released, it can be accessed via a URL, and the URL slug can be customized. ToolJet also provides an option to make the application public or private.
+By embedding the application in the portal, you can achieve:
+- Reduce context switching by letting users check inventory without leaving the portal
+- Faster decision-making with immediate access to stock levels
+- Transparent collaboration with partners or vendors in real time
+- Interactive insights through filtering, highlighting available and out-of-stock items
+- Consistent public access without requiring logins or additional tools
 
-- **Public Application**: Allows anyone on the internet to access the application without signing up for ToolJet. 
-- **Private Application**: Private applications are restricted to workspace users with the necessary **[access permissions](/docs/user-management/role-based-access/access-control)**.
+## Steps to Embed a Public Application
 
-The latest released version of the application is always accessible through the same URL, ensuring a consistent access point across updates.
-
-<img className="screenshot-full" src="/img/development-lifecycle/release/share/url.png" alt="Share Application Modal"/>
-
-## Access Application via Dashboard
-
-Users can launch the released version of the application from the dashboard. The application can also be hidden from the dashboard for end users. Refer to the **[Access Control](/docs/user-management/role-based-access/access-control)** guide for more details.
-
-<img className="screenshot-full" src="/img/development-lifecycle/release/share/dashboard.png" alt="Access Application via Dashboard"/>
-
-## Embed Application
-
-ToolJet applications can be embedded into other web applications using iframes. To embed an application, make the app public, after which ToolJet will automatically generate an iframe code snippet for integration.
-
-<img className="screenshot-full" src="/img/development-lifecycle/release/share/embed.png" alt="Embed application using Iframe"/>
-
+1. [Create](/docs/getting-started/quickstart-guide) and [release](/docs/development-lifecycle/release/release-rollback/) your ToolJet application.
+2. Click the Share button on the top-right corner of the application builder.
+    <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/app-builder/embed-apps/share.png" alt="Click on the share button on the top right." />
+3. Enable **Make application public** by toggling it on.
+    <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/app-builder/embed-apps/public-app.png" alt="Make Application Public" />
+4. Copy the iframe code from the **Embedded app link** and paste it on your portal or web page wherever you want to embed the application.
+    <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/app-builder/embed-apps/iframe.png" alt="Make Application Public" />
