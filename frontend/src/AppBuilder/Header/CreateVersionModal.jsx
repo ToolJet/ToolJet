@@ -164,7 +164,7 @@ const CreateVersionModal = ({
       if (isGitSyncEnabled) {
         const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
         const appGit = gitData?.app_git;
-        await handleCommitOnVersionCreation(appGit);
+        await handleCommitOnVersionCreation(selectedVersionForCreation, selectedVersion);
         if (isBranchingEnabled) {
           gitSyncService
             .createGitTag(appId, selectedVersionForCreation.id, versionDescription)

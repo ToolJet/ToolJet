@@ -18,7 +18,7 @@ const CreateDraftVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
@@ -52,7 +52,6 @@ const CreateDraftVersionModal = ({
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
-
     const gitSyncEnabled =
       orgGit?.org_git?.git_ssh?.is_enabled ||
       orgGit?.org_git?.git_https?.is_enabled ||
@@ -109,8 +108,8 @@ const CreateDraftVersionModal = ({
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-        : [];
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+      : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
