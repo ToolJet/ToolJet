@@ -3,11 +3,15 @@ id: row-level-security
 title: Setup Row Level Security
 ---
 
-Row-level security in ToolJet lets you control which records a user can see or interact with, even when multiple users access the same table. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/user-management/role-based-access/custom-groups/) or [default user roles](/docs/user-management/role-based-access/user-roles#default-user-roles). Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
+Row-level security in ToolJet lets you control which records a user can see or interact with based on their identity, even when multiple users access the same application. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/user-management/role-based-access/custom-groups/), [default user roles](/docs/user-management/role-based-access/user-roles#default-user-roles) or any other user identity attributes. Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
 
 ## How Row-Level Security Works in ToolJet
 
-The below syntax fetches the groups for the current user from the server side. Groups include both custom groups and default user roles like `admin` and `end-user`.
+Row-level security rules in ToolJet are evaluated entirely on the server at runtime. This ensures that access control logic cannot be inspected or manipulated from the browser.
+
+During evaluation, ToolJet exposes the authenticated user’s context through `globals.server.currentUser`. This object contains server-resolved user attributes such as group memberships, roles, and profile information. For added security, ToolJet allows view-only access to these attributes. Any attempt to transform or derive values from user attributes is intentionally blocked and evaluates to an empty value.
+
+For example, the below syntax fetches the groups for the current user from the server side. Groups include both custom groups and default user roles like `admin` and `end-user`.
 
 ```bash
 {{globals.server.currentUser.groups}}
