@@ -18,10 +18,10 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
-  isBranchingEnabled
+  isBranchingEnabled,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -241,8 +241,7 @@ const CreateVersionModal = ({
         toast.error('Version name already exists.');
       } else if (error?.error) {
         toast.error(error?.error);
-      }
-      else {
+      } else {
         toast.error('Error while creating version. Please try again.');
       }
     } finally {

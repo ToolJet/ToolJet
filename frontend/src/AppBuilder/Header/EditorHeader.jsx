@@ -13,7 +13,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
 import LockedBranchBanner from './LockedBranchBanner';
 import './styles/style.scss';
-
+import { ToolTip } from '@/_components/ToolTip';
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
 
@@ -141,14 +141,14 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
             </div>
           </div>
         </header>
-        <Tooltip
+        {/* <ToolTip
           id="editor-header-tooltip"
           className="tw-text-text-default tw-bg-background-inverse tw-p-3 tw-rounded-md tw-text-xs tw-font-medium"
           style={{ zIndex: 9999 }}
           place="bottom"
           delayShow={300}
           delayHide={100}
-        />
+        /> */}
       </div>
       <LockedBranchBanner
         isVisible={isCurrentBranchLocked}
