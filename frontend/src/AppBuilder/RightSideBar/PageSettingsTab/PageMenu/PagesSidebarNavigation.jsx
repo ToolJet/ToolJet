@@ -4,7 +4,6 @@ import cx from 'classnames';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
-import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
@@ -44,8 +43,6 @@ export const PagesSidebarNavigation = ({
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isSidebarOpen = useStore((state) => state.isSidebarOpen);
-  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
@@ -449,9 +446,6 @@ export const PagesSidebarNavigation = ({
     return null;
   }
 
-  const rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_WIDTH : 0;
-  const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
-
   const Header = () => {
     if (headerHidden && logoHidden) {
       return null;
@@ -635,10 +629,6 @@ export const PagesSidebarNavigation = ({
           justifyContent: 'center',
           width: '100%',
         }),
-        ...(currentMode !== 'view' &&
-          (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >
@@ -687,7 +677,8 @@ export const PagesSidebarNavigation = ({
           >
             <SidebarWrapper
               collapsible={style === 'text' || (style === 'texticon' && !collapsable) ? 'none' : 'icon'}
-              className="group-data-[side=left]:!tw-border-r-0"
+              className="group-data-[side=left]:!tw-border-r-0 tw-flex"
+              wrapperClassName="tw-block"
             >
               <Sidebar />
             </SidebarWrapper>
