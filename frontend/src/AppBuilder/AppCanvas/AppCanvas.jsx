@@ -85,7 +85,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
-  const minCanvasWidth = useCanvasMinWidth({ currentMode, position, isModuleMode, isViewerSidebarPinned });
+  const minCanvasWidth = useCanvasMinWidth({
+    currentMode,
+    isModuleMode,
+  });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
 
   useEffect(() => {
