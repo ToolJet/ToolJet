@@ -17,6 +17,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
+import MobileNavigationMenu from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationMenu';
 import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
@@ -52,6 +53,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const pageKey = useStore((state) => state.pageKey);
+  const selectedVersion = useStore((state) => state.selectedVersion, shallow);
+  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -174,10 +177,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           <div
             ref={canvasContainerRef}
             className={cx(
-              'canvas-container d-flex page-container',
+              'canvas-container page-container',
               { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
               { 'overflow-x-auto': currentMode === 'edit' },
-              { 'position-top': position === 'top' || isPagesSidebarHidden },
               { 'overflow-x-hidden': moduleId !== 'canvas' } // Disbling horizontal scroll for modules in view mode
             )}
             style={canvasContainerStyles}
@@ -190,71 +192,96 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 }}
               />
             )}
-            {appType !== 'module' && (
-              <PagesSidebarNavigation
-                showHeader={showHeader}
-                isMobileDevice={currentLayout === 'mobile'}
-                currentPageId={currentPageId ?? homePageId}
-                switchPage={switchPage}
-                height={currentMode === 'edit' ? canvasContainerHeight : '100%'}
-                switchDarkMode={switchDarkMode}
-                isSidebarPinned={isViewerSidebarPinned}
-                setIsSidebarPinned={setIsSidebarPinned}
-                darkMode={darkMode}
-                canvasMaxWidth={canvasMaxWidth}
-                canvasContentRef={canvasContentRef}
+            {currentMode === 'edit' && (
+              <AutoComputeMobileLayoutAlert
+                currentLayout={currentLayout}
+                darkMode={isAppDarkMode}
+                isCurrentVersionLocked={isCurrentVersionLocked}
               />
             )}
-            <div
-              ref={canvasContentRef}
-              style={{
-                minWidth: minCanvasWidth,
-                overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
-                width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
-                ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
-              }}
-              className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`, {
-                'scrollbar-hidden': !isScrolling,
-              })}
-            >
-              {currentMode === 'edit' && (
-                <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
-              )}
-              <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-              <HotkeyProvider
-                mode={currentMode}
-                canvasMaxWidth={canvasMaxWidth}
-                currentLayout={currentLayout}
-                isModuleMode={isModuleMode}
+            <div className="tw-h-full" style={{ minWidth: minCanvasWidth }}>
+              <div
+                className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
+                  'tw-flex-col': position === 'top' || isPagesSidebarHidden || currentLayout === 'mobile',
+                  '!tw-w-[450px] tw-mx-auto':
+                    currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
+                  'tw-relative tw-overflow-x-hidden': currentLayout === 'mobile',
+                })}
               >
-                {environmentLoadingState !== 'loading' && (
-                  <div key={pageKey} className={cx({ 'h-100': isModuleMode })}>
-                    <Container
-                      id={moduleId}
-                      gridWidth={gridWidth}
-                      canvasWidth={canvasWidth}
-                      canvasHeight={canvasHeight}
-                      darkMode={isAppDarkMode}
+                {appType !== 'module' && (
+                  <>
+                    <PagesSidebarNavigation
+                      showHeader={showHeader}
+                      isMobileDevice={currentLayout === 'mobile'}
+                      currentPageId={currentPageId ?? homePageId}
+                      switchPage={switchPage}
+                      switchDarkMode={switchDarkMode}
+                      isSidebarPinned={isViewerSidebarPinned}
+                      setIsSidebarPinned={setIsSidebarPinned}
+                      darkMode={darkMode}
                       canvasMaxWidth={canvasMaxWidth}
-                      isViewerSidebarPinned={isViewerSidebarPinned}
-                      pageSidebarStyle={pageSidebarStyle}
-                      pagePositionType={position}
-                      appType={appType}
+                      canvasContentRef={canvasContentRef}
                     />
-                    {currentMode === 'edit' && (
-                      <>
-                        <DragResizeGhostWidget />
-                      </>
+                    <MobileNavigationMenu
+                      isMobileDevice={currentLayout === 'mobile'}
+                      currentPageId={currentPageId ?? homePageId}
+                      switchPage={switchPage}
+                      switchDarkMode={switchDarkMode}
+                      isSidebarPinned={isViewerSidebarPinned}
+                      setIsSidebarPinned={setIsSidebarPinned}
+                      darkMode={darkMode}
+                      canvasMaxWidth={canvasMaxWidth}
+                    />
+                  </>
+                )}
+                <div
+                  ref={canvasContentRef}
+                  style={{
+                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                    width: '100%',
+                    ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
+                  }}
+                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`, {
+                    'scrollbar-hidden': !isScrolling,
+                  })}
+                >
+                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                  <HotkeyProvider
+                    mode={currentMode}
+                    canvasMaxWidth={canvasMaxWidth}
+                    currentLayout={currentLayout}
+                    isModuleMode={isModuleMode}
+                  >
+                    {environmentLoadingState !== 'loading' && (
+                      <div className={cx({ 'h-100': isModuleMode })}>
+                        <Container
+                          id={moduleId}
+                          gridWidth={gridWidth}
+                          canvasWidth={canvasWidth}
+                          canvasHeight={canvasHeight}
+                          darkMode={isAppDarkMode}
+                          canvasMaxWidth={canvasMaxWidth}
+                          isViewerSidebarPinned={isViewerSidebarPinned}
+                          pageSidebarStyle={pageSidebarStyle}
+                          pagePositionType={position}
+                          appType={appType}
+                        />
+                        {currentMode === 'edit' && (
+                          <>
+                            <DragResizeGhostWidget />
+                          </>
+                        )}
+                        <div id="component-portal" />
+                        {appType !== 'module' && <div id="component-portal" />}
+                      </div>
                     )}
-                    <div id="component-portal" />
-                    {appType !== 'module' && <div id="component-portal" />}
-                  </div>
-                )}
 
-                {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                  <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                )}
-              </HotkeyProvider>
+                    {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                    )}
+                  </HotkeyProvider>
+                </div>
+              </div>
             </div>
           </div>
         </div>
