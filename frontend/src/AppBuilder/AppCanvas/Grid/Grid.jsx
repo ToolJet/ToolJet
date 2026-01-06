@@ -1211,7 +1211,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           incrementCanvasUpdater();
         }}
         onClickGroup={(e) => {
+          // This runs after Selecto's multiselect logic. This is required to handle shift + click inside group area which selecto can't handle
           const targetId = e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
+
           if (e.inputEvent.shiftKey && targetId) {
             const currentSelectedComponents = selectedComponents;
             if (currentSelectedComponents.includes(targetId)) {

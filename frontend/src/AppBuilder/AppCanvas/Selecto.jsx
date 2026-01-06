@@ -117,7 +117,7 @@ export const EditorSelecto = () => {
         return true;
       }
 
-      // If clicked on a component, select it and return false to prevent drag
+      // If clicked on a components, select them and return false to prevent drag
       const closest = target.closest('.moveable-box');
       if (closest && !target.classList.contains('delete-icon')) {
         const id = closest.getAttribute('widgetid');
@@ -125,6 +125,7 @@ export const EditorSelecto = () => {
         if (!isMultiSelect) {
           setSelectedComponents([id]);
         } else {
+          // Handles shift + click
           const selectedComponents = getSelectedComponents();
           if (!selectedComponents.includes(id)) {
             const mergedArray = [...selectedComponents, id];
