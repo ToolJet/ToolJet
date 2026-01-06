@@ -132,14 +132,20 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
   useEffect(() => {
     if (moduleId === 'canvas') {
+      const pageSidebarWidth =
+        position === 'side'
+          ? isViewerSidebarPinned
+            ? PAGES_SIDEBAR_WIDTH_EXPANDED
+            : PAGES_SIDEBAR_WIDTH_COLLAPSED
+          : 0;
       const _canvasWidth =
         document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
-        (isViewerSidebarPinned ? PAGES_SIDEBAR_WIDTH_EXPANDED : PAGES_SIDEBAR_WIDTH_COLLAPSED) -
+        pageSidebarWidth -
         16; // padding of 'div.canvas-container.page-container' container
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isViewerSidebarPinned]);
+  }, [isViewerSidebarPinned, position]);
 
   useEffect(() => {
     if (currentMode === 'edit' || isPreviewInEditor) {
