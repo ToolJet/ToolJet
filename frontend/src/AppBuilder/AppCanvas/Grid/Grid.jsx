@@ -1112,6 +1112,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const parentElm = events[0]?.target?.closest('.real-canvas');
           if (!isGroupDraggingRef.current) {
             useStore.getState().setIsGroupDragging(true);
+            showGridLines();
+            handleActivateNonDraggingComponents();
+            // Don't start autoscroll if dragging via config handle
+            if (isGroupHandleHoverd) return;
+            // Start autoscroll for group drag with all target elements
+            const targets = ev.targets || [];
+            if (targets.length > 0) {
+              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
+            }
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection
             lastGroupDragEventRef?.current?.forEach((ev) => {
@@ -1194,15 +1203,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           updateMousePosition(ev.clientX, ev.clientY, targets);
         }}
         onDragGroupStart={(e) => {
-          showGridLines();
-          handleActivateNonDraggingComponents();
-          // Don't start autoscroll if dragging via config handle
-          if (isGroupHandleHoverd) return;
-          // Start autoscroll for group drag with all target elements
-          const targets = e.targets || [];
-          if (targets.length > 0) {
-            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
-          }
+          // Do nothing, Kept for future use/reference
         }}
         onDragGroupEnd={(e) => {
           // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler
@@ -1210,8 +1211,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           incrementCanvasUpdater();
         }}
         onClickGroup={(e) => {
-          const targetId =
-            e.inputEvent.target.id || e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
+          const targetId = e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
           if (e.inputEvent.shiftKey && targetId) {
             const currentSelectedComponents = selectedComponents;
             if (currentSelectedComponents.includes(targetId)) {
