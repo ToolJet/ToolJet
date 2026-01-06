@@ -61,7 +61,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { pageSettings } = useStore((state) => state.pageSettings, shallow);
+  const { pageSettings } = useStore(
+    (state) => ({
+      pageSettings: state.pageSettings,
+    }),
+    shallow
+  );
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
