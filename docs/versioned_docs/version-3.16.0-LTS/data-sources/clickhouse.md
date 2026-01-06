@@ -22,7 +22,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Database Name**
 - **Protocol**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-datasource.png" alt="ClickHouse connection" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/clickhouse/connection-v3.png" alt="ClickHouse connection" />
 
 <div style={{paddingTop:'24px'}}>
 
@@ -125,8 +125,9 @@ INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-insertq.png" alt="ClickHouse SQL Statement operation" />
 
-:::info
+
 **Giving Primary Key**
+
 ```sql
 CREATE TABLE db.table_name
 (
@@ -135,16 +136,15 @@ CREATE TABLE db.table_name
 )
 ENGINE = engine;
 
-OR 
-	
+OR
+ 	
 CREATE TABLE db.table_name
 (
-	name1 type1, name2 type2, ...
+	name1 type1, name2 type2, ...,
 )
 ENGINE = engine
 PRIMARY KEY(expr1[, expr2,...]);
 ```
-:::
 
 ### Insert Array of Objects
 
