@@ -391,11 +391,11 @@ const useAppData = (
             global_settings.theme = baseTheme;
           }
           setGlobalSettings(global_settings);
+          setPageSettings(
+            computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+          );
         }
         setPages(pages, moduleId);
-        setPageSettings(
-          computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
-        );
 
         // set starting page as homepage initially
         let startingPage = appData.pages.find((page) => page.id === homePageId);
