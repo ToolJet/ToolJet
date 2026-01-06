@@ -11,7 +11,7 @@ module.exports = defineConfig({
   chromeWebSecurity: false,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
       require("@cypress/code-coverage/task")(on, config);
