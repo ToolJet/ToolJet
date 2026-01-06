@@ -15,23 +15,7 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 const mockExec = exec as jest.MockedFunction<typeof exec>;
 
 /**
- * Python Bundle Generation Test Suite
- *
- * This file contains all tests for:
- * - WorkflowBundle Entity (Python support columns)
- * - PythonBundleGenerationService (pip install → tar.gz → DB storage)
- *
  * @group workflows
- * @group python
- */
-
-/**
- * WorkflowBundle Entity - Python Support
- *
- * These tests verify the new columns added to WorkflowBundle entity:
- * - language: 'javascript' | 'python' (default: 'javascript')
- * - runtimeVersion: semver string (e.g., '3.11.0', '20.10.0')
- * - bundleBinary: Buffer for storing tar.gz (Python bundles)
  */
 describe('WorkflowBundle Entity - Python Support', () => {
   let repository: jest.Mocked<Repository<WorkflowBundle>>;
@@ -203,16 +187,6 @@ describe('WorkflowBundle Entity - Type Definitions', () => {
   });
 });
 
-/**
- * PythonBundleGenerationService Tests
- *
- * These tests verify:
- * - requirements.txt generation from dependencies
- * - pip install execution
- * - tar.gz creation
- * - Database storage with correct columns
- * - Error handling and cleanup
- */
 describe('PythonBundleGenerationService', () => {
   const mockAppVersionId = 'test-workflow-id-123';
   // Python dependencies are stored as raw requirements.txt content (string format)

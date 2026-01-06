@@ -8,16 +8,7 @@ import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
 import { Logger } from 'nestjs-pino';
 
 /**
- * PythonExecutorService Test Suite
- *
- * This file contains all tests for PythonExecutorService:
- * - Community Edition (CE stub)
- * - Enterprise Edition (real Python execution with nsjail sandbox)
- *
- * Note: Bundle integration E2E tests are in workflow-bundles.e2e-spec.ts
- *
  * @group workflows
- * @group python
  */
 describe('PythonExecutorService', () => {
   describe('Community Edition', () => {
