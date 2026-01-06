@@ -16,30 +16,13 @@ The **Tags Input** component allows users to create, select, and delete tags fro
 
 ### Tags
 
-| Property | Description | Expected Value |
+| <div style={{ width:"130px"}}> Property </div> | Description | Expected Value |
 |:---------|:------------|:---------------|
 | Dynamic tags | Toggle to switch between static and dynamic options mode. When enabled, options are defined via a schema. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Default value | Pre-selected tag values when component loads. Only visible when Dynamic tags is OFF. | Comma-separated values or array |
 | Schema | JSON array defining tag options. Only visible when Dynamic tags is ON. | Array of objects with `label`, `value`, `visible`, `default`, and `disable` properties |
 | Sort tags | Sort order for tags in the dropdown. | `none`, `asc` (A-Z), or `desc` (Z-A) |
 | Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-#### Behavior Notes
-
-**Tag Creation**
-- When **Allow new tags** is enabled, users can type a value and press Enter, Comma, or Tab to create a new tag.
-- If the typed value matches an existing option's label exactly (case-sensitive), the existing option is selected instead of creating a duplicate.
-- Newly created tags appear in the `newTagsAdded` exposed variable.
-
-**Search Behavior**
-- When **Turn on search** is enabled, typing in the input field filters the dropdown options.
-- Search matching is case-sensitive and matches against the tag label.
-- When **Turn on search** is disabled, the dropdown does not appear. Users can still type to create new tags (if allowed) or select by matching existing labels.
-
-**Sorting**
-- **None**: Options appear in their original order.
-- **A-Z**: Options are sorted alphabetically (ascending).
-- **Z-A**: Options are sorted in reverse alphabetical order (descending).
 
 ### Dynamic Tags
 
@@ -65,7 +48,7 @@ When Dynamic tags is enabled, use this schema format:
 
 The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
-| Action | Description | How To Access |
+| <div style={{ width:"100px"}}> Actions </div> | Description | How To Access |
 |:-------|:------------|:-----------|
 | Select Tags | Programmatically selects specified tags. Matches by **value** or **label**. | `components.tagsinput1.selectTags` |
 | Deselect Tags | Programmatically removes specified tags from selection. Matches by **value** or **label**. | `components.tagsinput1.deselectTags` |
@@ -78,7 +61,7 @@ The following actions of the component can be controlled using the component-spe
 
 Both `selectTags` and `deselectTags` support multiple input formats:
 
-| Format | Example | Description |
+| <div style={{ width:"200px"}}> Format </div> | Example | Description |
 |:-------|:--------|:------------|
 | Array of values | `['newport', 'new_york']` | Matches tags by their `value` property |
 | Array of labels | `['Newport', 'New York']` | Matches tags by their `label` property |
@@ -160,7 +143,7 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 ## Validation
 
-| Property | Description |
+| <div style={{ width:"190px"}}> Property </div> | Description |
 |:---------|:------------|
 | Make this field mandatory | When enabled, the form cannot be submitted without at least one tag selected. |
 | Custom validation | Custom validation rule using JavaScript expression. |
@@ -174,7 +157,7 @@ This validates that at least 2 tags are selected.
 
 ## Additional Actions
 
-| Property | Description | Configuration Options |
+| <div style={{ width:"120px"}}> Property </div> | Description | Configuration Options |
 |:---------|:------------|:---------------|
 | Dynamic height | When enabled, the component height adjusts based on the number of selected tags. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Turn on search | When enabled, users can search/filter tags in the dropdown. When disabled, the dropdown menu does not appear and the component acts as a simple input field. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -185,7 +168,7 @@ This validates that at least 2 tags are selected.
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
+| <div style={{ width:"130px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div> |
 | :--------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
