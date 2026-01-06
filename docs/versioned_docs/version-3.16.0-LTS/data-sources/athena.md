@@ -41,12 +41,12 @@ You can also configure for **[additional optional parameters](https://github.com
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-**Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
+Refer amazon athena docs here for more info: [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 :::
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-datasource.png" alt="Athena Query" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-query-v3.png" alt="Athena Query" />
 
 </div>
 
@@ -67,7 +67,7 @@ CREATE EXTERNAL TABLE student (
 )  LOCATION 's3://athena-express-akiatfa53s-2026/';
 ```
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
 
 ### Inserting to Table
 
@@ -78,7 +78,7 @@ INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
 
 ### Select Operation
 
@@ -88,7 +88,7 @@ This query retrieves all records from the *student* table where the age of the s
 SELECT * from student WHERE AGE=1
 ```
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
 
 ### List Tables
 
