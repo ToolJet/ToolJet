@@ -20,6 +20,11 @@ export class UpdateAppHistoryPayloadConstraint1735800000000 implements Migration
       END $$;
     `);
 
+    // Delete rows where change_payload is not an object (e.g., old delta arrays)
+    await queryRunner.query(`
+      DELETE FROM app_history WHERE jsonb_typeof(change_payload) != 'object'
+    `);
+
     // Add new simplified constraint - both snapshot and delta are objects
     await queryRunner.query(`
       ALTER TABLE app_history ADD CONSTRAINT check_history_payload_type
