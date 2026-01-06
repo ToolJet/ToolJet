@@ -22,7 +22,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import MobileNavigationMenu from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationMenu';
+import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
 import { DragResizeGhostWidget } from './GhostWidgets';
 import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
@@ -73,15 +73,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : localStorage.getItem('isPagesSidebarPinned') !== 'false'
   );
 
-  const { globalSettings, pageSettings, switchPage } = useStore(
-    (state) => ({
-      globalSettings: state.globalSettings,
-      pageSettings: state.pageSettings,
-      switchPage: state.switchPage,
-    }),
-    shallow
-  );
-  const showHeader = !globalSettings?.hideHeader;
+  const { pageSettings } = useStore((state) => state.pageSettings, shallow);
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
@@ -239,10 +231,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 {appType !== 'module' && (
                   <>
                     <PagesSidebarNavigation
-                      showHeader={showHeader}
                       isMobileDevice={currentLayout === 'mobile'}
                       currentPageId={currentPageId ?? homePageId}
-                      switchPage={switchPage}
                       switchDarkMode={switchDarkMode}
                       isSidebarPinned={isViewerSidebarPinned}
                       setIsSidebarPinned={setIsSidebarPinned}
@@ -250,13 +240,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       canvasMaxWidth={canvasMaxWidth}
                       canvasContentRef={canvasContentRef}
                     />
-                    <MobileNavigationMenu
+                    <MobileNavigationHeader
                       isMobileDevice={currentLayout === 'mobile'}
                       currentPageId={currentPageId ?? homePageId}
-                      switchPage={switchPage}
                       switchDarkMode={switchDarkMode}
-                      isSidebarPinned={isViewerSidebarPinned}
-                      setIsSidebarPinned={setIsSidebarPinned}
                       darkMode={darkMode}
                       canvasMaxWidth={canvasMaxWidth}
                     />
