@@ -177,8 +177,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       justifyContent: 'unset',
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: (currentMode === 'edit' || isPreviewInEditor) && '8px',
-      paddingTop: (currentMode === 'edit' || isPreviewInEditor) && (isCurrentVersionLocked ? '38px' : '8px'),
-      paddingBottom: (currentMode === 'edit' || isPreviewInEditor) && '2px',
+      paddingTop:
+        currentMode === 'edit' ? (isCurrentVersionLocked ? '38px' : '8px') : isPreviewInEditor ? '8px' : '0px',
     };
   }, [
     currentMode,
