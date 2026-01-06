@@ -37,6 +37,12 @@ export class AiModule extends SubModule {
     const { EventsService } = await import(
       `${importPath}/apps/services/event.service`
     );
+    const { PageService } = await import(
+      `${importPath}/apps/services/page.service`
+    );
+    const { PageHelperService } = await import(
+      `${importPath}/apps/services/page.util.service`
+    );
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
     const { DataQueriesUtilService } = await import(
@@ -74,6 +80,8 @@ export class AiModule extends SubModule {
         ArtifactRepository,
         DataQueryRepository,
         EventsService,
+        PageService,
+        PageHelperService,
         AppsUtilService,
         AiCacheService,
         ...(isMainImport ? [AiService, AiCacheService] : []),

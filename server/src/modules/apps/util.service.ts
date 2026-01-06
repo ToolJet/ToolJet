@@ -119,7 +119,6 @@ export class AppsUtilService implements IAppsUtilService {
               },
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
-            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
             ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
