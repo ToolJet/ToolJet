@@ -3,11 +3,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 /**
  * Data migration to copy JavaScript bundle content from the legacy
  * bundle_content (TEXT) column to bundle_binary (BYTEA).
- *
- * This migration preserves the original bundle_content column for
- * backward compatibility. The column will be dropped in a future release.
- *
- * Run with: npm run db:migrate:data
  */
 export class MigrateJsBundleContentToBinary1735689600000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

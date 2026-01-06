@@ -20,10 +20,6 @@ import {
 
 @Controller('workflows')
 export class WorkflowBundlesController {
-  // ==========================================
-  // Unified Language-Agnostic Endpoints (Stubs)
-  // ==========================================
-
   @Get('packages/:language/search')
   @UseGuards(JwtAuthGuard)
   async searchPackagesByLanguage(

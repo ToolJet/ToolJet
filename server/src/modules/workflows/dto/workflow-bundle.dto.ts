@@ -1,39 +1,27 @@
 import { IsObject, IsString, IsOptional, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
-/**
- * Supported bundle languages for workflow package management
- */
 export enum BundleLanguage {
   JAVASCRIPT = 'javascript',
   PYTHON = 'python',
 }
 
-/**
- * DTO for validating language path parameter in unified endpoints
- */
 export class LanguageParamDto {
   @IsEnum(BundleLanguage)
   language: BundleLanguage;
 }
 
-/**
- * DTO for JavaScript package updates (JSON object)
- */
 export class UpdateJavascriptPackagesDto {
   @IsObject()
   dependencies: Record<string, string>;
 }
 
-/**
- * DTO for Python package updates (raw requirements.txt content)
- */
 export class UpdatePythonPackagesDto {
   @IsString()
   dependencies: string; // Raw requirements.txt content, e.g., "requests==2.31.0\nnumpy>=1.24.0"
 }
 
-export class RebuildBundleDto {}
+export class RebuildBundleDto { }
 
 export class PackageSearchQueryDto {
   @IsString()
@@ -121,18 +109,10 @@ export class PythonBundleStatus {
   runtimeVersion?: string;
 }
 
-/**
- * Result for getting Python packages (raw requirements.txt)
- */
 export class GetPythonPackagesResult {
   dependencies: string; // Raw requirements.txt content
 }
 
-// Unified DTOs for language-agnostic endpoints
-
-/**
- * Unified package info response for both JS (NPM) and Python (PyPI)
- */
 export class UnifiedPackageInfo {
   name: string;
   version: string;
@@ -148,9 +128,6 @@ export class UnifiedPackageInfo {
   downloads?: number;
 }
 
-/**
- * Unified package versions response
- */
 export class UnifiedPackageVersionsResult {
   versions: string[];
   language: BundleLanguage;

@@ -709,33 +709,35 @@ export const createCompleteWorkflow = async (
 };
 
 
-export const createWorkflowBundle = async (
+/**
+ * Creates a bundle for workflow execution.
+ * @param nestApp - NestJS application instance
+ * @param appVersionId - The app version ID
+ * @param dependencies - JavaScript: Record<string, string>, Python: string (requirements.txt format)
+ * @param language - 'javascript' or 'python'
+ */
+export const createBundle = async (
     nestApp: INestApplication,
     appVersionId: string,
-    dependencies: Record<string, string>
+    dependencies: Record<string, string> | string,
+    language: 'javascript' | 'python'
 ): Promise<void> => {
-    const bundleGenerationService = nestApp.get<BundleGenerationService>(BundleGenerationService);
-
-    await bundleGenerationService.generateBundle(appVersionId, dependencies);
-
-    const bundle = await bundleGenerationService.getBundleForExecution(appVersionId);
-    if (!bundle) {
-        throw new Error('Bundle was not created successfully');
-    }
-};
-
-export const createPythonBundle = async (
-    nestApp: INestApplication,
-    appVersionId: string,
-    dependencies: string  // requirements.txt format (e.g., 'pydash==8.0.3\nrequests==2.31.0')
-): Promise<void> => {
-    const pythonBundleService = nestApp.get<PythonBundleGenerationService>(PythonBundleGenerationService);
-
-    await pythonBundleService.generateBundle(appVersionId, dependencies);
-
-    const bundle = await pythonBundleService.getBundleForExecution(appVersionId);
-    if (!bundle) {
-        throw new Error('Python bundle was not created successfully');
+    if (language === 'javascript') {
+        const service = nestApp.get<BundleGenerationService>(BundleGenerationService);
+        await service.generateBundle(appVersionId, dependencies as Record<string, string>);
+        const bundle = await service.getBundleForExecution(appVersionId);
+        if (!bundle) {
+            throw new Error('JavaScript bundle was not created successfully');
+        }
+    } else if (language === 'python') {
+        const service = nestApp.get<PythonBundleGenerationService>(PythonBundleGenerationService);
+        await service.generateBundle(appVersionId, dependencies as string);
+        const bundle = await service.getBundleForExecution(appVersionId);
+        if (!bundle) {
+            throw new Error('Python bundle was not created successfully');
+        }
+    } else {
+        throw new Error(`Unsupported language: ${language}`);
     }
 };
 

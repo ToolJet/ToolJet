@@ -15,8 +15,7 @@ import {
   setupOrganizationAndUser,
   createNestAppInstance,
   createCompleteWorkflow,
-  createWorkflowBundle,
-  createPythonBundle,
+  createBundle,
   authenticateUser,
   WorkflowNode,
   WorkflowEdge,
@@ -588,7 +587,7 @@ describe('workflow executions controller', () => {
           queries
         });
 
-        await createWorkflowBundle(app, appVersion.id, dependencies);
+        await createBundle(app, appVersion.id, dependencies, 'javascript');
 
         const execution = await executeWorkflow(app, workflow, user, {
           environmentId: appVersion.currentEnvironmentId
@@ -742,7 +741,7 @@ describe('workflow executions controller', () => {
           queries
         });
 
-        await createWorkflowBundle(app, appVersion.id, dependencies);
+        await createBundle(app, appVersion.id, dependencies, 'javascript');
 
         // Observe the actual outbound request to verify template resolution
         const observedRequests: Array<{ url: string; headers: Record<string, any> | undefined }> = [];
@@ -1015,7 +1014,7 @@ result = pydash.map_([1, 2, 3], lambda x: x * 2)
         });
 
         // Create Python bundle with pydash
-        await createPythonBundle(app, appVersion.id, 'pydash==8.0.3');
+        await createBundle(app, appVersion.id, 'pydash==8.0.3', 'python');
 
         const execution = await executeWorkflow(app, workflow, user, {
           environmentId: appVersion.currentEnvironmentId
@@ -1303,8 +1302,8 @@ result = pydash.sum_(sorted_numbers)
         });
 
         // Create both JavaScript and Python bundles
-        await createWorkflowBundle(app, appVersion.id, jsDependencies);
-        await createPythonBundle(app, appVersion.id, 'pydash==8.0.3');
+        await createBundle(app, appVersion.id, jsDependencies, 'javascript');
+        await createBundle(app, appVersion.id, 'pydash==8.0.3', 'python');
 
         const execution = await executeWorkflow(app, workflow, user, {
           environmentId: appVersion.currentEnvironmentId
