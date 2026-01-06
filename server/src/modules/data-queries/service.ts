@@ -270,6 +270,31 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
+    let result = {};
+    try {
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        result = {
+          status: 'failed',
+          message: error.message,
+          description: error.description,
+          data: error.data,
+        };
+      } else {
+        console.log(error);
+        result = {
+          status: 'failed',
+          message: 'Internal server error',
+          description: error.message,
+          data: {},
+        };
+      }
+    }
+    return result;
+  }
+
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = await this.dataSourceRepository.findOneOrFail({
