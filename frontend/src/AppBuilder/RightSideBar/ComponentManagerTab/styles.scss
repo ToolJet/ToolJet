@@ -39,7 +39,6 @@
     gap: 4px;
 
     .nav-item {
-      background-color: var(--base) !important;
       flex-grow: 0;
 
       button {
@@ -82,4 +81,11 @@
   }
 
   
+}
+.custom-component-inspector-multiline {
+  .codehinter-container {
+    .cm-editor {
+      max-height: 400px !important;
+    }
+   }
 }

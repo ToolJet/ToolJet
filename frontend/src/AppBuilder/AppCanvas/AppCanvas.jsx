@@ -26,7 +26,6 @@ import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
-  const scrollTimeoutRef = useRef(null);
   const canvasContentRef = useRef(null);
   const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
@@ -52,7 +51,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -113,7 +111,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     };
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
-
   useEffect(() => {
     if (moduleId === 'canvas') {
       const _canvasWidth =
@@ -130,8 +127,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-          ? '#EBEBEF'
-          : '#2F3C4C';
+        ? '#EBEBEF'
+        : '#2F3C4C';
 
     if (isModuleMode) {
       return {
