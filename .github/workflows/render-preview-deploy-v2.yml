@@ -1,6 +1,8 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.5
+# Version: 2.6
+# Changes from v2.5:
+#   - Added "runtime": "image" to serviceDetails (required by Render API)
 # Changes from v2.4:
 #   - Fixed Render API payload for image-backed services
 #   - Changed from envSpecificDetails to image object at root level
@@ -128,6 +130,7 @@ jobs:
                 "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
               },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
@@ -588,6 +591,7 @@ jobs:
                 "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
               },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
