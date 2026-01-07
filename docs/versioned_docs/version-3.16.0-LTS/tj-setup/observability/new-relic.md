@@ -3,13 +3,7 @@ id: new-relic
 title: New Relic
 ---
 
-ToolJet supports OpenTelemetry (OTel) based observability. When using New Relic, ToolJet exports telemetry using OpenTelemetry to an OpenTelemetry Collector. The collector is responsible for forwarding this data to New Relic using New Relic’s OTLP-compatible ingestion APIs.
-
-This guide walks through setting up observability using New Relic.
-
-## Setting Up Observability Using New Relic
-
-### Overview
+ToolJet supports OpenTelemetry (OTel) based observability. When using New Relic, ToolJet exports telemetry using OpenTelemetry to an OpenTelemetry Collector. The collector is responsible for forwarding this data to New Relic using New Relic’s OTLP-compatible ingestion APIs. This guide walks through setting up observability using New Relic.
 
 ToolJet does not send telemetry data directly to New Relic. Instead, it uses OpenTelemetry to export traces and metrics to an OpenTelemetry Collector running in your environment. The collector then forwards this data to New Relic using New Relic’s OTLP ingestion endpoints.
 
@@ -19,7 +13,9 @@ The observability flow consists of three components:
 2. **OpenTelemetry Collector**: Receives this telemetry locally and processes it.
 3. **New Relic**: Ingests the processed telemetry and makes it available in APM and metrics views.
 
-    <img className="screenshot-full" src="/img/tooljet-setup/observability/new-relic/new-relic-setup.png" alt="New Relic Setup"/>
+    <img className="img-full" src="/img/tooljet-setup/observability/new-relic/new-relic-setup.png" alt="New Relic Setup"/>
+
+## Setting Up Observability Using New Relic
 
 ### Getting New Relic Licence Key
 To obtain a New Relic Licence Key:
@@ -81,7 +77,7 @@ EU region: `https://otlp.eu01.nr-data.net  `
 For example: `https://otlp.nr-data.net:4318`
 
 :::info Note
-Refer to the [official New Relic documentation](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol) for region-specific endpoint details:
+Refer to the [official New Relic documentation](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/#configure-endpoint-port-protocol) for region-specific endpoint details.
 :::
 
 ### Step 2: Run the OpenTelemetry Collector

@@ -3,7 +3,7 @@ id: observability-otel
 title: Observability Overview
 ---
 
-ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze system health through metrics. OpenTelemetry provides a standardized, vendor-agnostic way to collect observability data. This allows ToolJet to integrate with any OTEL-compatible third-party monitoring tool like Datadog, New Relic, Grafana etc.
+ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze the health of ToolJet services and infrastructure through metrics. OpenTelemetry provides a standardized, vendor-agnostic way to collect observability data, allowing ToolJet to integrate with any OTEL-compatible third-party monitoring tool such as [Datadog](/docs/tj-setup/observability/datadog), [New Relic](/docs/tj-setup/observability/new-relic), and [Grafana](/docs/tj-setup/observability/grafana).
 
 **Categories of Metrics**
 
@@ -57,9 +57,7 @@ OTEL_INCLUDE_QUERY_TEXT=false                 # Include actual query text in met
 
 For a complete list of OpenTelemetry environment variables, refer to the [OpenTelemetry documentation](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/).
 
-## Setup
-
-### Local OTEL Collector
+## Setup Local OTEL Collector
 
 Some observability platforms require an OpenTelemetry Collector as an intermediary. In such cases, you can deploy the Collector alongside ToolJet. ToolJet sends telemetry data to the Collector, which then forwards it to your observability platform based on its configuration.  
 This Docker Compose configuration can be used to deploy an OpenTelemetry Collector alongside ToolJet.

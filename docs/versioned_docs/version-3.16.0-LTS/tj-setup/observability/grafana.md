@@ -3,10 +3,7 @@ id: grafana
 title: Grafana
 ---
 
-Grafana is an open-source observability and visualization platform for exploring metrics, traces, and logs. ToolJet integrates with Grafana using OpenTelemetry by exporting telemetry data to an OpenTelemetry Collector, which then forwards the data to Grafana-supported storage backends.
-
-## Setting Up Observability Using Grafana
-### Overview
+Grafana is an open-source observability and visualization platform for exploring metrics, traces, and logs. ToolJet integrates with Grafana using OpenTelemetry by exporting telemetry data to an OpenTelemetry Collector, which then forwards the data to Grafana-supported storage backends. This guide walks through setting up observability using Grafana.
 
 ToolJet does not send telemetry data directly to Grafana. Instead, it uses OpenTelemetry to export traces and metrics to an OpenTelemetry Collector running in your environment. The collector then forwards this data to Grafana-supported storage backends.
 
@@ -16,6 +13,8 @@ The observability flow consists of the following components:
 - Tempo: Stores distributed traces.
 - Prometheus: Stores metrics.
 - Grafana: Visualizes traces and metrics via dashboards and Explore views.
+
+## Setting Up Observability Using Grafana
 
 ### Step 1: Set Up an OpenTelemetry Collector
 Use the following configuration file to run an OpenTelemetry Collector that forwards telemetry data to Tempo and Prometheus.
@@ -161,7 +160,7 @@ scrape_configs:
       - targets: ["otel-collector:8889"]
 ```
 
-#### Step 4: Configure Environment Variables in ToolJet
+### Step 4: Configure Environment Variables in ToolJet
 Set the following environment variables in the .env file used by ToolJet:
 ```js
 ENABLE_OTEL=true
@@ -173,7 +172,7 @@ OTEL_EXPORTER_OTLP_METRICS=http://otel-collector:4318/v1/metrics
 OTEL_LOG_LEVEL=debug
 ```
 
-#### Step 5: Configure Data Sources in Grafana
+### Step 5: Configure Data Sources in Grafana
 Once Grafana is running, open http://localhost:3001 and log in using the admin credentials.
 
 Navigate to Connections → Data Sources, then click Add data source. You’ll create two data sources: one for metrics (Prometheus) and one for traces (Tempo).

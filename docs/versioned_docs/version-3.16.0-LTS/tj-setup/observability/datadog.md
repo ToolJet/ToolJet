@@ -3,26 +3,24 @@ id: datadog
 title: Datadog
 ---
 
-ToolJet supports OpenTelemetry (OTel) based observability. When using Datadog, ToolJet does not ship a Datadog Agent by default. You must run a Datadog Agent alongside ToolJet and configure ToolJet to export telemetry to it.
+ToolJet supports OpenTelemetry (OTel) based observability. When using Datadog, ToolJet does not ship a Datadog Agent by default. You must run a Datadog Agent alongside ToolJet and configure ToolJet to export telemetry to it. This guide walks through setting up observability using Datadog.
 
-This guide walks through setting up observability using Datadog.
-
-## Setting Up Obervability Using Datadog
-### Overview
 ToolJet doesn't automatically send telemetry to Datadog, instead we need a Datadog agent as a middleman to forward the data to datadog.
 It is a 3 step process:
 - ToolJet emits traces and metrics using OpenTelemetry
 - The Datadog Agent receives OTLP data locally
 - The agent forwards data securely to Datadog
 
-<img src="/img/tooljet-setup/observability/datadog/datadog-setup.png" alt="Datadog observability setup" />
+<img src="/img/tooljet-setup/observability/datadog/datadog-setup.png" className="img-full" alt="Datadog observability setup" />
+
+## Setting Up Obervability Using Datadog
 
 ### Step 1: Run a Datadog Agent
 :::info
 For an in-depth guide on running the Datadog Agent, refer to the [official Datadog documentation](https://docs.datadoghq.com/containers/docker).
 :::
 ToolJet exports observability data using OpenTelemetry and requires a Datadog Agent to be running and accessible.
-- If you are not using Docker Compose to run ToolJet, run the Datadog Agent using any supported method (Docker, systemd, Kubernetes) as described in the Datadog documentation.
+- If you are not using Docker Compose to run ToolJet, run the Datadog Agent using any supported method (Docker, systemd, Kubernetes) as described in the [Datadog documentation](https://docs.datadoghq.com/agent).
 - If you are running ToolJet using Docker Compose, you can add the Datadog Agent as a service in your **docker-compose.yml**.
 ```js
 dd-agent:

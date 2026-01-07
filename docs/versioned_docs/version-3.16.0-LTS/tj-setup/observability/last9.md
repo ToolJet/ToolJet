@@ -3,11 +3,12 @@ id: last9
 title: Last9
 ---
 
-Last9 is an observability platform that provides analysis of metrics, traces, and logs. ToolJet integrates with Last9 using OpenTelemetry by exporting telemetry data directly to Last9’s OTLP endpoints.
+Last9 is an observability platform that provides analysis of metrics, traces, and logs. ToolJet integrates with Last9 using OpenTelemetry by exporting telemetry data directly to Last9’s OTLP endpoints. This guide walks through setting up observability using Last9.
+
+To use OpenTelemetry with Last9, the required OTLP endpoint must be enabled at the organization level by the Last9 team. Navigate to Integrations > OpenTelemetry, click *Connect*, and submit a request via *Request OpenTelemetry Endpoint Setup*.
+
 
 ## Setting Up Observability Using Last9
-### Setup
-To use OpenTelemetry with Last9, the required OTLP endpoint must be enabled at the organization level by the Last9 team. Navigate to Integrations > OpenTelemetry, click *Connect*, and submit a request via *Request OpenTelemetry Endpoint Setup*.
 
 ### Step 1: Get the Credentials From Last9
 Navigate to Integrations > OpenTelemetry, click *Connect* and Copy the the following values:
