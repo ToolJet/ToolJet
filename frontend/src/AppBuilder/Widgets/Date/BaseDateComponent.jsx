@@ -1,5 +1,5 @@
-import React from 'react';
-import * as Icons from '@tabler/icons-react';
+import React, { useState, useEffect } from 'react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { useTranslation } from 'react-i18next';
 import { DatepickerInput } from './DatepickerInput';
 import TimepickerInput from './TimepickerInput';
@@ -123,8 +123,20 @@ export const BaseDateComponent = ({
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const iconName = styles.icon; // Replace with the name of the icon you want
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
 
   return (
     <div

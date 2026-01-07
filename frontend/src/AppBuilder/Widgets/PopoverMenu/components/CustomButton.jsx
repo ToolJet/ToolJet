@@ -1,7 +1,7 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
@@ -35,8 +35,20 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
 
   // ===== COMPUTED STYLES =====
   const iconName = icon;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] === undefined ? Icons['IconAlignBoxBottomLeft'] : Icons[iconName];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
 
   const computedIconColor =
     '#FFFFFF' === iconColor ? (buttonType === 'primary' ? iconColor : 'var(--icons-strong)') : iconColor;

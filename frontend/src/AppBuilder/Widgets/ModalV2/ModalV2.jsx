@@ -16,7 +16,7 @@ import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFa
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 
 export const ModalV2 = function Modal({
   id,
@@ -72,8 +72,20 @@ export const ModalV2 = function Modal({
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);

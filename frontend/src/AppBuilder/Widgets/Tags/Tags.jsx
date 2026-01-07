@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
@@ -168,23 +168,39 @@ export const Tags = function Tags({
 
     if (!iconName || !iconVisible) return null;
 
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
+    const TagIcon = () => {
+      const [IconElement, setIconElement] = useState(null);
 
-    return (
-      <IconElement
-        style={{
-          width: size === 'small' ? '12px' : '16px',
-          height: size === 'small' ? '12px' : '16px',
-          marginRight: '4px',
-        }}
-        stroke={1.5}
-        data-cy={`${tagDataCy}-icon`}
-        role="img"
-        aria-hidden="true"
-        focusable="false"
-      />
-    );
+      useEffect(() => {
+        if (!iconName) {
+          setIconElement(null);
+          return;
+        }
+
+        loadIcon(iconName)
+          .then((component) => setIconElement(() => component))
+          .catch(() => setIconElement(null));
+      }, []);
+
+      if (!IconElement) return null;
+
+      return (
+        <IconElement
+          style={{
+            width: size === 'small' ? '12px' : '16px',
+            height: size === 'small' ? '12px' : '16px',
+            marginRight: '4px',
+          }}
+          stroke={1.5}
+          data-cy={`${tagDataCy}-icon`}
+          role="img"
+          aria-hidden="true"
+          focusable="false"
+        />
+      );
+    };
+
+    return <TagIcon />;
   }
 
   function renderTag(item, index) {

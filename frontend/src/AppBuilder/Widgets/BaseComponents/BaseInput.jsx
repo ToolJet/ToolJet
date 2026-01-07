@@ -1,7 +1,7 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
@@ -94,8 +94,19 @@ export const BaseInput = ({
     };
   }
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!icon) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(icon)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [icon]);
 
   return (
     <>

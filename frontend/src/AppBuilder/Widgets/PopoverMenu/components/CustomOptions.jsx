@@ -1,10 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
+
+// Component to render option icons dynamically
+const OptionIcon = ({ iconName, optionsIconColor }) => {
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
+
+  if (!IconElement) return null;
+
+  return (
+    <IconElement
+      style={{
+        marginRight: '4px',
+        width: '16px',
+        height: '16px',
+        color: optionsIconColor,
+        flexShrink: 0,
+      }}
+    />
+  );
+};
 
 export const CustomOptions = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -148,8 +178,6 @@ export const CustomOptions = (props) => {
       {transformedOptions.map((option, index) => {
         if (option.visible?.value === false) return null;
         const iconName = option.icon;
-        // eslint-disable-next-line import/namespace
-        const IconElement = Icons[iconName] == undefined ? null : Icons[iconName];
         const format = option.format ?? 'plain';
         const iconVisibility = option.iconVisibility ?? true;
         const disable = option.disable ?? false;
@@ -157,7 +185,7 @@ export const CustomOptions = (props) => {
         if (!visible) return null;
 
         const optionId = `popover-option-${id}-${index}`;
-        const isIconVisible = iconVisibility && IconElement;
+        const isIconVisible = iconVisibility && iconName;
         return (
           <div
             className={cx('popover-option', {
@@ -193,7 +221,7 @@ export const CustomOptions = (props) => {
               <div data-cy="popover-menu-option-header" className="popover-option-header">
                 {isIconVisible && (
                   <div data-cy="popover-menu-option-icon" className="popover-option-icon" aria-hidden="true">
-                    <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
+                    <OptionIcon iconName={iconName} optionsIconColor={optionsIconColor || '#000000'} />
                   </div>
                 )}
                 <div

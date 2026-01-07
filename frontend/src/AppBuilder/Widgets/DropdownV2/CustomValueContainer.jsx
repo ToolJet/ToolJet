@@ -1,18 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { components } from 'react-select';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import './dropdownV2.scss';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    const iconName = selectProps?.icon;
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [selectProps?.icon]);
+
   return (
     <ValueContainer {...props}>
       <div className="d-inline-flex">
-        {selectProps?.doShowIcon && (
+        {selectProps?.doShowIcon && IconElement && (
           <div>
             <IconElement
               style={{

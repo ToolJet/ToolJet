@@ -1,6 +1,6 @@
-import React, { memo, useRef, useState, useCallback } from 'react';
+import React, { memo, useRef, useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
@@ -67,8 +67,20 @@ export const PageMenuItem = withRouter(
     const isEditingPage = editingPage?.id === page?.id;
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-      // eslint-disable-next-line import/namespace
-      const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
+      const [Icon, setIcon] = useState(null);
+
+      useEffect(() => {
+        if (!iconName) {
+          setIcon(null);
+          return;
+        }
+
+        loadIcon(iconName)
+          .then((component) => setIcon(() => component))
+          .catch(() => setIcon(null));
+      }, [iconName]);
+
+      if (!Icon) return null;
 
       return (
         <Icon {...props} style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }} />

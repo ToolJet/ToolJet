@@ -1,6 +1,5 @@
 import React, { memo, useState, useMemo, useCallback, useRef } from 'react';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';

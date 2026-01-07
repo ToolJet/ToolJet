@@ -5,7 +5,6 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
-import * as Icons from '@tabler/icons-react';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';

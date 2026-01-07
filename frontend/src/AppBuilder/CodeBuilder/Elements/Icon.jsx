@@ -1,11 +1,34 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
-// eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { Visibility } from './Visibility';
+
+// Component to render individual icon in the picker
+const IconItem = ({ iconName, onSelect, darkMode }) => {
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
+
+  if (!IconElement) return <div className="icon-element p-2" />;
+
+  return (
+    <div className="icon-element p-2" onClick={() => onSelect(iconName)}>
+      <IconElement
+        color={`${darkMode ? '#fff' : '#000'}`}
+        stroke={1.5}
+        strokeLinejoin="miter"
+        style={{ width: '24px', height: '24px' }}
+      />
+    </div>
+  );
+};
 
 export const Icon = ({
   value,
@@ -18,7 +41,16 @@ export const Icon = ({
 }) => {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
-  const iconList = useRef(Object.keys(Icons));
+  // Hardcoded list of common Tabler icons
+  const iconList = useRef([
+    'IconHome2', 'IconChevronDown', 'IconChevronUp', 'IconChevronLeft', 'IconChevronRight',
+    'IconX', 'IconCheck', 'IconPlus', 'IconMinus', 'IconEdit', 'IconTrash', 'IconSettings',
+    'IconSearch', 'IconFilter', 'IconDownload', 'IconUpload', 'IconCopy', 'IconExternalLink',
+    'IconRefresh', 'IconAlertCircle', 'IconMenu2', 'IconDots', 'IconStar', 'IconHeart',
+    'IconBell', 'IconUser', 'IconMail', 'IconLock', 'IconKey', 'IconEye', 'IconEyeOff',
+    'IconArrowLeft', 'IconArrowRight', 'IconArrowUp', 'IconArrowDown', 'IconCalendar',
+    'IconClock', 'IconFile', 'IconFolder', 'IconImage', 'IconVideo', 'IconMusic',
+  ]);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const searchIcon = (text) => {
@@ -57,23 +89,16 @@ export const Icon = ({
                 itemContent={(index) => {
                   if (filteredIcons[index] === undefined || filteredIcons[index] === 'createReactComponent')
                     return null;
-                  // eslint-disable-next-line import/namespace
-                  const IconElement = Icons[filteredIcons[index]];
                   return (
-                    <div
-                      className="icon-element p-2"
-                      onClick={() => {
-                        onIconSelect(filteredIcons[index]);
+                    <IconItem
+                      key={filteredIcons[index]}
+                      iconName={filteredIcons[index]}
+                      onSelect={(iconName) => {
+                        onIconSelect(iconName);
                         setPopOverVisibility(false);
                       }}
-                    >
-                      <IconElement
-                        color={`${darkMode ? '#fff' : '#000'}`}
-                        stroke={1.5}
-                        strokeLinejoin="miter"
-                        style={{ width: '24px', height: '24px' }}
-                      />
-                    </div>
+                      darkMode={darkMode}
+                    />
                   );
                 }}
               />

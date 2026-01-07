@@ -1,7 +1,7 @@
 /* eslint-disable import/namespace */
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import _ from 'lodash';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -34,7 +34,20 @@ const RenderPage = ({
   if (isPageHidden || page.disabled || (page?.restricted && currentMode !== 'edit')) return null;
 
   const IconElement = (props) => {
-    const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
+    const [Icon, setIcon] = useState(null);
+
+    useEffect(() => {
+      if (!iconName) {
+        setIcon(null);
+        return;
+      }
+
+      loadIcon(iconName)
+        .then((component) => setIcon(() => component))
+        .catch(() => setIcon(null));
+    }, []);
+
+    if (!Icon) return null;
 
     if (!isSidebarPinned || labelStyle?.label?.hidden) {
       return (
