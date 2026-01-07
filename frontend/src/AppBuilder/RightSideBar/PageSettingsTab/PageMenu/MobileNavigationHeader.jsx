@@ -9,6 +9,8 @@ import Header from '@/AppBuilder/Viewer/Header';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+import PageMenuConfigHandle from './PageMenuConfigHandle';
 
 const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canvasMaxWidth, switchDarkMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -27,6 +29,13 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canva
 
   const headerHidden = hasAppPagesHeaderAndLogoEnabled ? hideHeader : false;
   const logoHidden = hasAppPagesHeaderAndLogoEnabled ? hideLogo : false;
+
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
+  const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
+  const shouldShowBlueBorder = currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES;
 
   const _renderAppNameAndLogo = () => (
     <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
@@ -71,6 +80,21 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canva
     return null;
   }
 
+  const handleMenuClick = (e) => {
+    // Only handle page menu header clicks in edit mode, as there's no right sidebar in view mode
+    if (currentMode !== 'edit') return;
+
+    // Check if click is on the navigation area but not hamburger button
+    const isNavigationItem = e.target.closest('.icon-btn');
+
+    if (!isNavigationItem) {
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
+      if (!isRightSidebarOpen) {
+        setRightSidebarOpen(true);
+      }
+    }
+  };
+
   return (
     <SidebarProvider
       open={isSidebarOpen}
@@ -83,10 +107,21 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canva
         ...bgStyles,
       }}
     >
-      <Header className={'mobile-nav-container'}>
-        {!isPagesSidebarHidden && <MenuBtn />}
-        {_renderAppNameAndLogo()}
-      </Header>
+      <div
+        className={`navigation-with-tooltip-wrapper ${shouldShowBlueBorder && 'active'}`}
+        style={{ position: 'relative', zIndex: 'auto' }}
+      >
+        <Header
+          className={classNames('mobile-nav-container', { 'navigation-hover-trigger': currentMode === 'edit' })}
+          onClick={handleMenuClick}
+        >
+          {!isPagesSidebarHidden && <MenuBtn />}
+          {_renderAppNameAndLogo()}
+        </Header>
+
+        {/* Show config handle on hover or when tab is active (only in edit mode, controlled by CSS) */}
+        {currentMode === 'edit' && <PageMenuConfigHandle position="top" isMobile />}
+      </div>
       {!isPagesSidebarHidden && (
         <MobileNavigationMenu
           currentPageId={currentPageId}

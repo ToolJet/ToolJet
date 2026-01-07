@@ -20,8 +20,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
-import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { PencilRuler } from 'lucide-react';
+import PageMenuConfigHandle from './PageMenuConfigHandle';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
@@ -610,93 +609,8 @@ export const PagesSidebarNavigation = ({
           <Sidebar />
         )}
 
-        {/* Show tooltip when tab is active */}
-        {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
-          <div
-            className="navigation-tooltip"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              zIndex: 1000,
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              display: 'flex',
-              gap: '2px',
-            }}
-          >
-            <ConfigHandleButton
-              className="no-hover"
-              customStyles={{
-                alignItems: 'center',
-                gap: '6px',
-                padding: '2px 6px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ cursor: 'default' }}>Page and nav</span>
-            </ConfigHandleButton>
-            <ConfigHandleButton
-              customStyles={{
-                background: 'var(--background-surface-layer-01)',
-                border: '1px solid var(--border-weak)',
-              }}
-            >
-              <PencilRuler
-                size={12}
-                color="var(--icon-strong)"
-                onClick={() => {
-                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                  setRightSidebarOpen(true);
-                }}
-              />
-            </ConfigHandleButton>
-          </div>
-        )}
-
-        {/* Show tooltip on hover (only in edit mode, controlled by CSS) */}
-        {currentMode === 'edit' && (
-          <div
-            className="navigation-tooltip-hover"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              gap: '2px',
-              alignItems: 'center',
-              zIndex: 1000,
-              flexDirection: 'row',
-              display: 'none',
-            }}
-          >
-            <ConfigHandleButton
-              className="no-hover"
-              customStyles={{
-                padding: '2px 6px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ cursor: 'default' }}>Page and nav</span>
-            </ConfigHandleButton>
-            <ConfigHandleButton
-              customStyles={{
-                background: 'var(--background-surface-layer-01)',
-                border: '1px solid var(--border-weak)',
-              }}
-            >
-              <PencilRuler
-                size={12}
-                color="var(--icon-strong)"
-                onClick={() => {
-                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                  setRightSidebarOpen(true);
-                }}
-              />
-            </ConfigHandleButton>
-          </div>
-        )}
+        {/* Show tooltip on hover or when tab is active (only in edit mode, controlled by CSS) */}
+        {currentMode === 'edit' && <PageMenuConfigHandle position={position} isSidebarPinned={isSidebarPinned} />}
       </div>
       {/* Close navigation-with-tooltip-wrapper */}
     </div>
