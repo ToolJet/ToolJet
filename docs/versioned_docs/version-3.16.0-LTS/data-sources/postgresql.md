@@ -29,7 +29,7 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **Connection Options**
 - **SSL Certificate**
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/postgresql/pg-connection-v3.png" alt="PG connection data source"/>
 
 ### Connection String
 
@@ -37,7 +37,7 @@ To connect to PostgreSQL using a connection string, select **Connection String**
 
 - **Connection String**
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
 
 <br/><br/>
 
@@ -57,7 +57,7 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 2. Select the SQL query mode from the dropdown and enter the query.
 3. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/postgresql/sql-v2.png" alt="PG connection"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-query-v3.png" alt="PG SQL querying"/>
 
 ### Parameterized Queries
 
@@ -68,7 +68,7 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-param-query.png" alt="Postgresql parameterized SQL queries"/>
 
 #### Example:
 
@@ -103,6 +103,12 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 | `inet_server_port()` | Returns the server port                                               | `5432`                                      |
 | `pg_backend_pid()`   | Returns the process ID of the current backend                         | `56789`                                     |
 
+### PostgreSQL Dynamic Connection Parameters
+
+ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at query runtime when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-query-host.png" alt="PG dynamic host"/>
+
 </div>
 
 <div style={{paddingTop:'24px'}}>
@@ -116,7 +122,7 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 5. Then, in the editor, input the **records** as an array of objects.
 6. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/gui-v2.png" alt="PG connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pg-gui-query.png" alt="PG GUI query"/>
 
 ```json
 [
