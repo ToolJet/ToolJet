@@ -128,7 +128,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
   useEffect(() => {
-    if (moduleId === 'canvas') {
+    if (moduleId === 'canvas' && currentLayout === 'desktop') {
       const pageSidebarWidth =
         position === 'side'
           ? isViewerSidebarPinned
@@ -142,7 +142,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isViewerSidebarPinned, position]);
+  }, [isViewerSidebarPinned, position, currentLayout]);
 
   useEffect(() => {
     if (currentMode === 'edit' || isPreviewInEditor) {
