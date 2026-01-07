@@ -1,6 +1,10 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.4
+# Version: 2.5
+# Changes from v2.4:
+#   - Fixed Render API payload for image-backed services
+#   - Changed from envSpecificDetails to image object at root level
+#   - Added ownerId to image configuration
 # Changes from v2.3:
 #   - Added disk cleanup step to all build jobs (CE and EE, initial and rebuild)
 #   - Frees up ~30GB by removing .NET, Haskell, Boost, and Docker cache
@@ -13,7 +17,7 @@ name: Render Preview Deploy V2 (DockerHub-based)
 #   - DockerHub cache updates same tag on each push
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled, unlabeled, closed, synchronize]
 
 env:
@@ -119,15 +123,15 @@ jobs:
                 {"key": "SMTP_PASSWORD", "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"},
                 {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"}
               ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
+              },
               "serviceDetails": {
                 "disk": {
                   "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
-                },
-                "env": "image",
-                "envSpecificDetails": {
-                  "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -579,15 +583,15 @@ jobs:
                 {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
                 {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
               ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
+              },
               "serviceDetails": {
                 "disk": {
                   "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
-                },
-                "env": "image",
-                "envSpecificDetails": {
-                  "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
