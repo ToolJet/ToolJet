@@ -45,12 +45,10 @@ export default class LicenseBase {
   private _isCustomGroups: boolean;
   private _modules: object;
   private _permissions: object;
-  private _app: object;
+  private _app: Terms['app'];
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
-  private _canPromote: boolean;  
-  private _canRelease: boolean;  
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -117,8 +115,6 @@ export default class LicenseBase {
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
     this._isCustomGroups = this.getPermissionValue('customGroups');
-    this._canPromote = licenseData?.app?.features?.promote ?? false;   
-    this._canRelease = licenseData?.app?.features?.release ?? false;
 
     // Features
     this._isAuditLogs = this.getFeatureValue('auditLogs');
@@ -565,14 +561,20 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
     }
-     return !!this._canPromote;
+    if (!this._app || !this._app.features || this._app.features.promote === undefined) {
+    return true;
+    }
+     return !!this._app?.features?.promote;
   }
 
   public get canRelease(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.release;
     }
-    return !!this._canRelease;
+    if (!this._app || !this._app.features || this._app.features.release === undefined) {
+    return true;
+   }
+    return !!this._app?.features?.release;
   }
 
 
