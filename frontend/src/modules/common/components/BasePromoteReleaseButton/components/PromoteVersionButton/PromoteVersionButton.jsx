@@ -61,21 +61,23 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   if (variant === 'inline') {
     return (
       <>
-        <ToolTip message={renderTooltipMessage()} placement="top" show={true}>
-          <button
-            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={shouldDisablePromote || !isPromoteVersionEnabled}
-            onClick={handlePromote}
-            data-cy="promote-version-button"
-          >
-            Promote
-          </button>
+        <ToolTip message={renderTooltipMessage()} placement="top">
+          <span>
+            <button
+              className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+              disabled={shouldDisablePromote || !isPromoteVersionEnabled}
+              onClick={handlePromote}
+              data-cy="promote-version-button"
+            >
+              Promote
+            </button>
+          </span>
         </ToolTip>
         <PromoteConfirmationModal
           data={promoteModalData}
           editingVersion={editingVersion}
           onClose={() => setPromoteModalData(null)}
-          fetchEnvironments={() => { }}
+          fetchEnvironments={() => {}}
         />
       </>
     );
@@ -87,24 +89,26 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
       <ToolTip
         message={renderTooltipMessage()}
         placement="bottom"
-        show={!shouldDisablePromote || !isPromoteVersionEnabled}
+        show={shouldDisablePromote || !isPromoteVersionEnabled}
       >
-        <Button
-          variant="secondary"
-          className="tw-text-text-default"
-          disabled={shouldDisablePromote || !isPromoteVersionEnabled}
-          data-cy="promote-button"
-          onClick={handlePromote}
-        >
-          <ArrowBigUpDash width="16" height="16" className="tw-text-icon-accent" />
-          {t('editor.promote', 'Promote')}
-        </Button>
+        <div>
+          <Button
+            variant="secondary"
+            className="tw-text-text-default"
+            disabled={shouldDisablePromote || !isPromoteVersionEnabled}
+            data-cy="promote-button"
+            onClick={handlePromote}
+          >
+            <ArrowBigUpDash width="16" height="16" className="tw-text-icon-accent" />
+            {t('editor.promote', 'Promote')}
+          </Button>
+        </div>
       </ToolTip>
       <PromoteConfirmationModal
         data={promoteModalData}
         editingVersion={editingVersion}
         onClose={() => setPromoteModalData(null)}
-        fetchEnvironments={() => { }}
+        fetchEnvironments={() => {}}
       />
     </>
   );

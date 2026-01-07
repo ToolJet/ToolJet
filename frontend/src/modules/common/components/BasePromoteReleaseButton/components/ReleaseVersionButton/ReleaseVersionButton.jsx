@@ -80,16 +80,17 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
               : 'Release this version'
           }
           placement="top"
-          show={true}
         >
-          <button
-            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
-            onClick={onReleaseButtonClick}
-            data-cy="release-version-button"
-          >
-            {isReleasing ? 'Releasing...' : 'Release'}
-          </button>
+          <span>
+            <button
+              className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+              disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
+              onClick={onReleaseButtonClick}
+              data-cy="release-version-button"
+            >
+              {isReleasing ? 'Releasing...' : 'Release'}
+            </button>
+          </span>
         </ToolTip>
       </>
     );
