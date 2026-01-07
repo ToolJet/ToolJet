@@ -77,7 +77,7 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode, 
           padding: 'var(--7, 16px)',
           background: 'var(--base)',
           margin: '10px',
-          zIndex: '1',
+          zIndex: '51', // So that it doesn't get overlapped by the page menu sidebar in mobile view (z-index 50)
         }}
         className="d-flex flex-row"
       >
