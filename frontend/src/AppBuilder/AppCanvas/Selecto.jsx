@@ -33,7 +33,7 @@ export const EditorSelecto = () => {
   const onAreaSelectStart = (e) => {
     canvasStartId.current =
       e.inputEvent.target.getAttribute('component-id') !== 'canvas'
-        ? e.inputEvent.target.getAttribute('component-id')
+        ? e.inputEvent.target.closest('.real-canvas').getAttribute('data-parentId')
         : null;
   };
 
@@ -56,7 +56,7 @@ export const EditorSelecto = () => {
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      const canvasSelectEndId = e.inputEvent.target.closest('.drag-container-parent')?.getAttribute('component-id');
+      const canvasSelectEndId = e.inputEvent.target.closest('.real-canvas').getAttribute('data-parentId');
       const isCanvasSelectStartEndSame = canvasStartId.current === canvasSelectEndId;
       let isMultiSelect = null;
       let selectedIds = e.added.map((el, index) => {
@@ -69,7 +69,6 @@ export const EditorSelecto = () => {
       const partiallySelectedIds = e.beforeSelected
         .filter((el) => !e.selected.includes(el))
         .map((el) => el.getAttribute('widgetid'));
-
       const allSelectedIds = [...selectedIds, ...partiallySelectedIds];
 
       if (allSelectedIds.length > 0) {
@@ -110,9 +109,10 @@ export const EditorSelecto = () => {
       }
       const target = e.inputEvent.target;
 
+      // Condition to allow group selection using drawing of square using cursor in canvas and main subcontainer
       if (
         target.getAttribute('component-id') === 'canvas' ||
-        (target.getAttribute('component-id') && e.inputEvent.shiftKey)
+        (e.inputEvent.shiftKey && (target.getAttribute('component-id') || target.getAttribute('data-parentId')))
       ) {
         return true;
       }
@@ -127,6 +127,7 @@ export const EditorSelecto = () => {
         } else {
           // Handles shift + click
           const selectedComponents = getSelectedComponents();
+
           if (!selectedComponents.includes(id)) {
             const mergedArray = [...selectedComponents, id];
             setSelectedComponents(mergedArray);

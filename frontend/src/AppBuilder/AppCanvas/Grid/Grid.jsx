@@ -491,12 +491,18 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           moveableControlBox.style.setProperty('visibility', 'visible', 'important');
         }
       });
-
       const { events } = e;
 
       // Build the drag context using the first event (all widgets go to the same target)
+      // Pass all selected widget IDs to exclude them from drop target detection
+      const selectedWidgetIds = events.map((ev) => ev.target.id);
       const firstEvent = { ...e, target: events[0].target, clientX: e.clientX, clientY: e.clientY };
-      const dragContext = dragContextBuilder({ event: firstEvent, widgets: boxList, isModuleEditor });
+      const dragContext = dragContextBuilder({
+        event: firstEvent,
+        widgets: boxList,
+        isModuleEditor,
+        excludeWidgetIds: selectedWidgetIds,
+      });
       const { target } = dragContext;
       const targetSlotId = target?.slotId;
       const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
@@ -528,7 +534,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Apply transform for smooth transition
             ev.target.style.transform = `translate(${left}px, ${top + scrollY}px)`;
-
             return {
               id: ev.target.id,
               x: left + (scrollDelta.x || 0),
@@ -1106,6 +1111,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
+        onDragGroupStart={(ev) => {
+          // Do nothing, Kept for future use/reference
+        }}
         onDragGroup={(ev) => {
           const { events } = ev;
           lastGroupDragEventRef.current = events;
@@ -1201,18 +1209,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and all targets for group drag
           const targets = events.map((e) => e.target);
           updateMousePosition(ev.clientX, ev.clientY, targets);
-        }}
-        onDragGroupStart={(ev) => {
-          // Do nothing, Kept for future use/reference
-          // showGridLines();
-          // handleActivateNonDraggingComponents();
-          // // Don't start autoscroll if dragging via config handle
-          // if (isGroupHandleHoverd) return;
-          // // Start autoscroll for group drag with all target elements
-          // const targets = ev.targets || [];
-          // if (targets.length > 0) {
-          //   startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
-          // }
         }}
         onDragGroupEnd={(e) => {
           // IMP --> This function is not called when group components are dragged using config Handle, hence we have separate handler

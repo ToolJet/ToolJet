@@ -181,8 +181,13 @@ export class DragContext {
 
 /**
  * Constructs the **dragging context** by gathering all relevant details from the event.
+ * @param {Object} params - Parameters for building the context.
+ * @param {Object} params.event - The drag event.
+ * @param {Array} params.widgets - The list of all widgets.
+ * @param {boolean} params.isModuleEditor - Whether we are in module editor mode.
+ * @param {Array} params.excludeWidgetIds - Optional array of widget IDs to exclude from drop target detection.
  */
-export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
+export function dragContextBuilder({ event, widgets, isModuleEditor = false, excludeWidgetIds = [] }) {
   const draggedWidgetId = event.target.id;
   const draggedWidget = getWidgetById(widgets, draggedWidgetId);
   const sourceSlotId = draggedWidget.parent;
@@ -196,8 +201,8 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
     isModuleEditor,
   });
 
-  // Determine the potential drop target
-  const targetSlotId = getDroppableSlotIdOnScreen(event, widgets);
+  // Determine the potential drop target (exclude all selected widgets in multi-select)
+  const targetSlotId = getDroppableSlotIdOnScreen(event, widgets, excludeWidgetIds);
   context.updateTarget(targetSlotId);
 
   return context;
@@ -206,19 +211,39 @@ export function dragContextBuilder({ event, widgets, isModuleEditor = false }) {
 /**
  * Given an event, finds the **nearest valid droppable slot**.
  */
-export const getDroppableSlotIdOnScreen = (event, widgets) => {
+/**
+ * Given an event, finds the **nearest valid droppable slot**.
+ * @param {Object} event - The drag event with clientX, clientY coordinates.
+ * @param {Array} widgets - The list of all widgets.
+ * @param {Array} excludeWidgetIds - Optional array of widget IDs to exclude from being considered as drop targets.
+ */
+export const getDroppableSlotIdOnScreen = (event, widgets, excludeWidgetIds = []) => {
   const widgetType = getWidgetById(widgets, event.target.id)?.component?.component || CANVAS_ID;
+
+  // Build a Set of all IDs to exclude (includes event.target.id + any additional excluded IDs)
+  const excludeIds = new Set([event.target.id, ...excludeWidgetIds]);
+
   // TO:DO - Have to remove this condition for ModuleViewer
   if (widgetType !== 'ModuleViewer') {
     const targetElems = document.elementsFromPoint(event.clientX, event.clientY);
-    const draggedOverElements = targetElems.filter(
-      (ele) => ele.id.replace('canvas-', '')?.slice(0, 36) !== event.target.id && ele.classList.contains('real-canvas')
-    );
+    const draggedOverElements = targetElems.filter((ele) => {
+      // Extract widget ID from element (handles both 'canvas-<id>' and direct '<id>' formats)
+      const elementWidgetId = ele.id.replace('canvas-', '')?.slice(0, 36);
+      // Exclude if this element belongs to any of the dragged widgets
+      return !excludeIds.has(elementWidgetId) && ele.classList.contains('real-canvas');
+    });
     const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
     const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+
+    // Also check if newParentId itself is one of the excluded widgets
+    if (newParentId && excludeIds.has(newParentId.slice(0, 36))) {
+      // Skip this and try to find the next valid parent
+      return undefined;
+    }
+
     return newParentId === 'canvas' ? undefined : newParentId;
   } else {
     const [slotId] = document
