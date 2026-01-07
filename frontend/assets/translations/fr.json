@@ -462,9 +462,12 @@
       "properties": "Propriétés",
       "events": "Événements",
       "layout": "Disposition",
+      "devices": "Appareils",
       "styles": "modes",
       "general": "Générale",
       "validation": "Validation",
+      "data": "Données",
+      "additionalActions": "Actions supplémentaires",
       "documentation": "{{componentMeta}} documentation",
       "widgetNameEmptyError": "Le nom du widget ne peut pas être vide",
       "componentNameExistsError": "Le nom du composant existe déjà",
@@ -534,6 +537,9 @@
       "enableTimeSelection": "Activer la sélection du temps ?",
       "enableDateSelection": "Activer la sélection de la date ?",
       "disabledDates": "Dates désactivées",
+      "minDate": "Date minimum",
+      "maxDate": "Date maximum",
+      "makeThisFieldMandatory": "Rendre ce champ obligatoire",
       "setChecked": "Définir vérifié",
       "status": "statut",
       "defaultStatus": "État par défaut",
@@ -585,6 +591,9 @@
       "parseContent": "Analyser le contenu",
       "fileType": "Type de fichier",
       "dateFormat": "Format de date",
+      "timeFormat": "Format de l'heure",
+      "displayIn": "Afficher dans",
+      "storeIn": "Stocker dans",
       "defaultDate": "Date de défaut",
       "events": "Événements",
       "resources": "Ressources",
@@ -914,6 +923,22 @@
     "Back": {
       "text": "Retour",
       "tip": "De retour à la maison"
+    }
+  },
+  "datepicker": {
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
     }
   }
 }

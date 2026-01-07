@@ -16,6 +16,8 @@ export function createModalStyles({
   triggerButtonTextColor,
   isVisible,
   boxShadow,
+  headerDividerColor,
+  footerDividerColor,
   direction,
 }) {
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
@@ -30,11 +32,13 @@ export function createModalStyles({
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
+      '--cc-modal-header-divider-color': headerDividerColor,
     },
     modalFooter: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
+      '--cc-modal-footer-divider-color': footerDividerColor,
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
