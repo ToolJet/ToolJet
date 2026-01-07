@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
@@ -31,8 +31,20 @@ export const Button = function Button(props) {
   const [loading, setLoading] = useState(loadingState);
   const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!iconName) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(iconName)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [iconName]);
 
   useEffect(() => {
     if (typeof properties.text === 'string') {
@@ -231,7 +243,7 @@ export const Button = function Button(props) {
                 </p>
               </span>
             </div>
-            {iconVisibility && (
+            {iconVisibility && IconElement && (
               <div className="d-flex">
                 {!props.isResizing && !loading && (
                   <IconElement

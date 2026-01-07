@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './AppButton.scss';
 import SolidIcon from '../Icon/solidIcons/index';
 import { Spinner } from 'react-bootstrap';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -36,8 +36,20 @@ export const ButtonBase = function ButtonBase(props) {
   const Element = as ? as : isAnchor ? 'a' : 'button';
 
   const TablerIcon = ({ name, ...props }) => {
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[name] === undefined ? Icons['IconHome2'] : Icons[name];
+    const [IconElement, setIconElement] = useState(null);
+
+    useEffect(() => {
+      if (!name) return;
+
+      loadIcon(name)
+        .then((component) => setIconElement(() => component))
+        .catch(() => {
+          // Fallback already handled in loadIcon
+          setIconElement(null);
+        });
+    }, [name]);
+
+    if (!IconElement) return null;
     return <IconElement {...props} />;
   };
 

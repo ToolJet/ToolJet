@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -7,8 +7,7 @@ import i18next from 'i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
-// eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { VirtuosoGrid } from 'react-virtuoso';
 
 export function Icon({ componentMeta, darkMode, ...restProps }) {
@@ -26,7 +25,16 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
-  const iconList = useRef(Object.keys(Icons));
+  // Hardcoded list of common Tabler icons - full list loaded from preloadIcons
+  const iconList = useRef([
+    'IconHome2', 'IconChevronDown', 'IconChevronUp', 'IconChevronLeft', 'IconChevronRight',
+    'IconX', 'IconCheck', 'IconPlus', 'IconMinus', 'IconEdit', 'IconTrash', 'IconSettings',
+    'IconSearch', 'IconFilter', 'IconDownload', 'IconUpload', 'IconCopy', 'IconExternalLink',
+    'IconRefresh', 'IconAlertCircle', 'IconMenu2', 'IconDots', 'IconStar', 'IconHeart',
+    'IconBell', 'IconUser', 'IconMail', 'IconLock', 'IconKey', 'IconEye', 'IconEyeOff',
+    'IconArrowLeft', 'IconArrowRight', 'IconArrowUp', 'IconArrowDown', 'IconCalendar',
+    'IconClock', 'IconFile', 'IconFolder', 'IconImage', 'IconVideo', 'IconMusic',
+  ]);
 
   let additionalActions = [];
   for (const [key] of Object.entries(componentMeta?.properties)) {
@@ -47,6 +55,33 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   const onIconSelect = (icon) => {
     paramUpdated({ name: 'icon' }, 'value', icon, 'properties');
+  };
+
+  // Component to render individual icon in the picker
+  const IconItem = ({ iconName, onSelect, darkMode }) => {
+    const [IconElement, setIconElement] = useState(null);
+
+    useEffect(() => {
+      loadIcon(iconName)
+        .then((component) => setIconElement(() => component))
+        .catch(() => setIconElement(null));
+    }, [iconName]);
+
+    if (!IconElement) return <div className="icon-element p-2" />;
+
+    return (
+      <div
+        className="icon-element p-2"
+        onClick={() => onSelect(iconName)}
+      >
+        <IconElement
+          color={`${darkMode ? '#fff' : '#000'}`}
+          stroke={1.5}
+          strokeLinejoin="miter"
+          style={{ width: '24px', height: '24px' }}
+        />
+      </div>
+    );
   };
 
   const eventPopover = () => {
@@ -70,23 +105,16 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                 itemContent={(index) => {
                   if (filteredIcons[index] === undefined || filteredIcons[index] === 'createReactComponent')
                     return null;
-                  // eslint-disable-next-line import/namespace
-                  const IconElement = Icons[filteredIcons[index]];
                   return (
-                    <div
-                      className="icon-element p-2"
-                      onClick={() => {
-                        onIconSelect(filteredIcons[index]);
+                    <IconItem
+                      key={filteredIcons[index]}
+                      iconName={filteredIcons[index]}
+                      onSelect={(iconName) => {
+                        onIconSelect(iconName);
                         setPopOverVisibility(false);
                       }}
-                    >
-                      <IconElement
-                        color={`${darkMode ? '#fff' : '#000'}`}
-                        stroke={1.5}
-                        strokeLinejoin="miter"
-                        style={{ width: '24px', height: '24px' }}
-                      />
-                    </div>
+                      darkMode={darkMode}
+                    />
                   );
                 }}
               />
@@ -99,8 +127,19 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   function renderIconPicker() {
     const icon = component.component.definition.properties.icon;
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[icon.value];
+    const [IconElement, setIconElement] = useState(null);
+
+    useEffect(() => {
+      if (!icon?.value) {
+        setIconElement(null);
+        return;
+      }
+
+      loadIcon(icon.value)
+        .then((component) => setIconElement(() => component))
+        .catch(() => setIconElement(null));
+    }, [icon?.value]);
+
     return (
       <>
         <div className="mb-2 field">
@@ -119,12 +158,14 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
               >
                 <div className="row p-2" role="button">
                   <div className="col-auto">
-                    <IconElement
-                      color={`${darkMode ? '#fff' : '#000'}`}
-                      stroke={1.5}
-                      strokeLinejoin="miter"
-                      style={{ width: '20px', height: '20px' }}
-                    />
+                    {IconElement && (
+                      <IconElement
+                        color={`${darkMode ? '#fff' : '#000'}`}
+                        stroke={1.5}
+                        strokeLinejoin="miter"
+                        style={{ width: '20px', height: '20px' }}
+                      />
+                    )}
                   </div>
                   <div className="col text-truncate">{icon.value}</div>
                 </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
@@ -18,8 +17,10 @@ export const Icon = ({
   const isInitialRender = useRef(true);
   const { icon, loadingState, disabledState } = properties;
   const { iconAlign, iconColor, boxShadow } = styles;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon];
+
+  // Dynamic icon loading state
+  const [IconElement, setIconElement] = useState(null);
+  const [isIconLoading, setIsIconLoading] = useState(true);
 
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
 
@@ -50,6 +51,37 @@ export const Icon = ({
     setExposedVariable('isDisabled', disabledState);
   }, [disabledState]);
 
+  // Load icon dynamically
+  useEffect(() => {
+    if (!icon) {
+      setIconElement(null);
+      setIsIconLoading(false);
+      return;
+    }
+
+    let mounted = true;
+    setIsIconLoading(true);
+
+    loadIcon(icon)
+      .then((component) => {
+        if (mounted) {
+          setIconElement(() => component);
+          setIsIconLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error('[Icon Widget] Failed to load icon:', icon, error);
+        if (mounted) {
+          setIconElement(null);
+          setIsIconLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [icon]);
+
   useEffect(() => {
     const exposedVariables = {
       isVisible: properties.visibility,
@@ -76,13 +108,23 @@ export const Icon = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return isLoading ? (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <center>
-        <Loader width="16" absolute={false} />
-      </center>
-    </div>
-  ) : (
+  // Show loader if widget is loading OR icon is loading
+  if (isLoading || isIconLoading) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <center>
+          <Loader width="16" absolute={false} />
+        </center>
+      </div>
+    );
+  }
+
+  // Don't render if icon failed to load
+  if (!IconElement) {
+    return null;
+  }
+
+  return (
     <div
       className={cx('icon-widget h-100', { 'd-none': !visibility }, { 'cursor-pointer': false })}
       data-cy={dataCy}

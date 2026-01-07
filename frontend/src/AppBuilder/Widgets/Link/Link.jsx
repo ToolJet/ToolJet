@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './link.scss';
@@ -28,8 +28,21 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     fontWeight: '500',
     '--link-hover-color': tinycolor(textColor).darken(8).toString(),
   };
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!icon) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(icon)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [icon]);
+
   const iconSize = textSize + 2;
   // Update the state when the linkTarget or linkText changes
   useEffect(() => {
@@ -141,7 +154,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
             paddingBottom: verticalAlignment === 'bottom' ? '1px' : '0px',
           }}
         >
-          {iconVisibility && (
+          {iconVisibility && IconElement && (
             <IconElement
               style={{
                 width: `${iconSize}px`,

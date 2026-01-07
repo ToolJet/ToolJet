@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -310,10 +310,22 @@ export const Tabs = function Tabs({
 
   function getTabIcon(tab) {
     const iconName = tab?.icon;
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+    const [IconElement, setIconElement] = useState(null);
 
-    return tab?.iconVisibility ? (
+    useEffect(() => {
+      if (!iconName) {
+        setIconElement(null);
+        return;
+      }
+
+      loadIcon(iconName)
+        .then((component) => setIconElement(() => component))
+        .catch(() => setIconElement(null));
+    }, [iconName]);
+
+    if (!tab?.iconVisibility || !IconElement) return null;
+
+    return (
       <IconElement
         color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         style={{
@@ -324,7 +336,7 @@ export const Tabs = function Tabs({
         }}
         stroke={1.5}
       />
-    ) : null;
+    );
   }
 
   const equalSplitWidth = 100 / tabItems?.length || 1;

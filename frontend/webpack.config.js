@@ -104,11 +104,105 @@ module.exports = {
       }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 25,
+      minSize: 20000,
       cacheGroups: {
-        vendors: {
+        // React core - load immediately (critical)
+        reactVendor: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|scheduler)[\\/]/,
+          name: 'vendor-react',
+          priority: 40,
+          enforce: true,
+        },
+
+        // Heavy visualization library - can be lazy loaded with Chart widget
+        plotly: {
+          test: /[\\/]node_modules[\\/](plotly\.js-dist-min|react-plotly\.js)[\\/]/,
+          name: 'vendor-plotly',
+          priority: 35,
+          enforce: true,
+        },
+
+        // PDF library - lazy loaded with PDF widget
+        pdf: {
+          test: /[\\/]node_modules[\\/](pdfjs-dist)[\\/]/,
+          name: 'vendor-pdf',
+          priority: 35,
+          enforce: true,
+        },
+
+        // Spreadsheet library - lazy loaded with Excel file processing
+        xlsx: {
+          test: /[\\/]node_modules[\\/](xlsx)[\\/]/,
+          name: 'vendor-xlsx',
+          priority: 35,
+          enforce: true,
+        },
+
+        // Animation library
+        reactSpring: {
+          test: /[\\/]node_modules[\\/](react-spring|@react-spring)[\\/]/,
+          name: 'vendor-react-spring',
+          priority: 35,
+          enforce: true,
+        },
+
+        // Code editor libraries
+        codemirror: {
+          test: /[\\/]node_modules[\\/](@codemirror|@uiw\/react-codemirror|codemirror)[\\/]/,
+          name: 'vendor-codemirror',
+          priority: 30,
+          enforce: true,
+        },
+
+        // Icon library (will be optimized further in Phase 2)
+        icons: {
+          test: /[\\/]node_modules[\\/](@tabler\/icons-react|lucide-react)[\\/]/,
+          name: 'vendor-icons',
+          priority: 30,
+          enforce: true,
+        },
+
+        // Radix UI components
+        radix: {
+          test: /[\\/]node_modules[\\/](@radix-ui)[\\/]/,
+          name: 'vendor-radix',
+          priority: 25,
+          enforce: true,
+        },
+
+        // Lodash utilities
+        lodash: {
+          test: /[\\/]node_modules[\\/](lodash)[\\/]/,
+          name: 'vendor-lodash',
+          priority: 25,
+          enforce: true,
+        },
+
+        // Date libraries
+        dateLibs: {
+          test: /[\\/]node_modules[\\/](moment|moment-timezone|date-fns|react-datepicker|react-dates)[\\/]/,
+          name: 'vendor-date',
+          priority: 25,
+          enforce: true,
+        },
+
+        // Yjs (real-time collaboration)
+        yjs: {
+          test: /[\\/]node_modules[\\/](yjs|y-websocket|y-protocols|lib0)[\\/]/,
+          name: 'vendor-yjs',
+          priority: 25,
+          enforce: true,
+        },
+
+        // Common vendor code (everything else from node_modules)
+        vendor: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
+          name: 'vendor-common',
+          priority: 10,
+          minChunks: 2,
+          reuseExistingChunk: true,
         },
       },
     },

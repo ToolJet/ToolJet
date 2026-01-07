@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import * as Icons from '@tabler/icons-react';
+import { loadIcon } from '@/_helpers/iconLoader';
 
 import { cn } from '@/lib/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -66,6 +66,20 @@ export const Statistics = function Statistics({
       [key]: value,
     }));
   };
+
+  // Load icon dynamically
+  const [IconElement, setIconElement] = useState(null);
+
+  useEffect(() => {
+    if (!icon) {
+      setIconElement(null);
+      return;
+    }
+
+    loadIcon(icon)
+      .then((component) => setIconElement(() => component))
+      .catch(() => setIconElement(null));
+  }, [icon]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -202,8 +216,6 @@ export const Statistics = function Statistics({
     marginBottom: 0,
   };
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
   const derivedPrimaryValue = `
     ${primaryPrefixText ?? ''}${String(exposedVariablesTemporaryState.primaryValue)}${primarySuffixText ?? ''}
   `;
@@ -222,7 +234,7 @@ export const Statistics = function Statistics({
         </div>
       ) : (
         <>
-          {Boolean(iconVisibility) && (
+          {Boolean(iconVisibility) && IconElement && (
             <IconElement className="tw-shrink-0" size={(primaryValueSize ?? 34) * 1.3} stroke={1.5} color={iconColor} />
           )}
 
