@@ -12,7 +12,7 @@ export class WorkflowGuard implements CanActivate {
     @InjectRepository(AppVersion)
     protected appsVersionRepository: Repository<AppVersion>,
     protected licenseTermsService: LicenseTermsService
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -40,78 +40,63 @@ export class WorkflowGuard implements CanActivate {
     const workflowsLimit = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS, organizationId);
     if (!workflowsLimit?.workspace && !workflowsLimit?.instance)
       throw new HttpException('Workflow is not enabled in the license, contact admin', 451);
-    // Workspace Level -
-    // Daily Limit
-    if (
-      workflowsLimit?.workspace &&
-      workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(
-          `SELECT COUNT(*)
-        FROM apps a
-        INNER JOIN app_versions av on av.app_id = a.id
-        INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE a.organization_id = $1
-        AND extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)
-        AND DATE(we.created_at) = current_date`,
-          [organizationId]
-        )
-      )[0].count >= workflowsLimit.workspace.daily_executions
-    ) {
-      throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
+
+    // Workspace Level 
+    if (workflowsLimit?.workspace) {
+      const needsDailyCheck = workflowsLimit.workspace.daily_executions !== LICENSE_LIMIT.UNLIMITED;
+      const needsMonthlyCheck = workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
+
+      if (needsDailyCheck || needsMonthlyCheck) {
+        const workspaceCounts = (
+          await this.manager.query(
+            `SELECT
+              COUNT(*) FILTER (WHERE we.created_at >= date_trunc('day', current_date)) as daily_count,
+              COUNT(*) as monthly_count
+            FROM apps a
+            INNER JOIN app_versions av ON av.app_id = a.id
+            INNER JOIN workflow_executions we ON we.app_version_id = av.id
+            WHERE a.organization_id = $1
+            AND we.created_at >= date_trunc('month', current_date)
+            AND we.created_at < date_trunc('month', current_date) + interval '1 month'`,
+            [organizationId]
+          )
+        )[0];
+
+        if (needsDailyCheck && parseInt(workspaceCounts.daily_count, 10) >= workflowsLimit.workspace.daily_executions) {
+          throw new HttpException('Maximum daily limit for workflow execution has reached for this workspace', 451);
+        }
+
+        if (needsMonthlyCheck && parseInt(workspaceCounts.monthly_count, 10) >= workflowsLimit.workspace.monthly_executions) {
+          throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
+        }
+      }
     }
 
-    // Monthly Limit
-    if (
-      workflowsLimit?.workspace &&
-      workflowsLimit.workspace.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(
-          `SELECT COUNT(*)
-        FROM apps a
-        INNER JOIN app_versions av on av.app_id = a.id
-        INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE a.organization_id = $1
-        AND extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`,
-          [organizationId]
-        )
-      )[0].count >= workflowsLimit.workspace.monthly_executions
-    ) {
-      throw new HttpException('Maximum monthly limit for workflow execution has reached for this workspace', 451);
-    }
+    // Instance Level 
+    if (workflowsLimit?.instance) {
+      const needsDailyCheck = workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED;
+      const needsMonthlyCheck = workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED;
 
-    // Instance Level -
-    // Daily Limit
-    if (
-      workflowsLimit.instance.daily_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(`SELECT COUNT(*)
-        FROM apps a
-        INNER JOIN app_versions av on av.app_id = a.id
-        INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)
-        AND DATE(we.created_at) = current_date`)
-      )[0].count >= workflowsLimit.instance.daily_executions
-    ) {
-      throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
-    }
+      if (needsDailyCheck || needsMonthlyCheck) {
+        const instanceCounts = (
+          await this.manager.query(
+            `SELECT
+              COUNT(*) FILTER (WHERE we.created_at >= date_trunc('day', current_date)) as daily_count,
+              COUNT(*) as monthly_count
+            FROM workflow_executions we
+            WHERE we.created_at >= date_trunc('month', current_date)
+            AND we.created_at < date_trunc('month', current_date) + interval '1 month'`
+          )
+        )[0];
 
-    // Monthly Limit
-    if (
-      workflowsLimit.instance.monthly_executions !== LICENSE_LIMIT.UNLIMITED &&
-      (
-        await this.manager.query(`SELECT COUNT(*)
-        FROM apps a
-        INNER JOIN app_versions av on av.app_id = a.id
-        INNER JOIN workflow_executions we on we.app_version_id = av.id
-        WHERE extract (year from we.created_at) = extract (year from current_date)
-        AND extract (month from we.created_at) = extract (month from current_date)`)
-      )[0].count >= workflowsLimit.instance.monthly_executions
-    ) {
-      throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
+        if (needsDailyCheck && parseInt(instanceCounts.daily_count, 10) >= workflowsLimit.instance.daily_executions) {
+          throw new HttpException('Maximum daily limit for workflow execution has been reached', 451);
+        }
+
+        if (needsMonthlyCheck && parseInt(instanceCounts.monthly_count, 10) >= workflowsLimit.instance.monthly_executions) {
+          throw new HttpException('Maximum monthly limit for workflow execution has been reached', 451);
+        }
+      }
     }
 
     return true;

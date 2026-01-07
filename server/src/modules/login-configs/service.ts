@@ -145,10 +145,12 @@ export class LoginConfigsService implements ILoginConfigsService {
 
   async updateGeneralOrganizationConfigs(user: User, params: OrganizationConfigsUpdateDto) {
     const organizationId = user.organizationId;
-    const { domain, enableSignUp, inheritSSO, automaticSsoLogin } = params;
+    const { domain, passwordAllowedDomains, passwordRestrictedDomains, enableSignUp, inheritSSO, automaticSsoLogin } = params;
 
     const updatableParams = {
       domain,
+      passwordAllowedDomains,
+      passwordRestrictedDomains,
       enableSignUp,
       inheritSSO,
       automaticSsoLogin,

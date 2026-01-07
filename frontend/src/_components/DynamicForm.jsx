@@ -753,7 +753,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'} data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}>
+          <div className={isHorizontalLayout ? '' : 'row'} >
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div
