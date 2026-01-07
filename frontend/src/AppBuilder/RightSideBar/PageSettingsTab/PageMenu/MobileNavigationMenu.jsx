@@ -31,7 +31,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
 
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
-  const { name } = properties ?? {};
+  const { name, style } = properties ?? {};
 
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
@@ -58,15 +58,18 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
     });
   }, [pagesTree, pagesVisibilityState]);
 
-  // In mobile view both icon and label will always be visible
-  const labelStyle = {
-    icon: {
-      hidden: false,
-    },
-    label: {
-      hidden: false,
-    },
-  };
+  // In mobile view, label will always be visible
+  const labelStyle = useMemo(
+    () => ({
+      icon: {
+        hidden: style === 'text',
+      },
+      label: {
+        hidden: false,
+      },
+    }),
+    [style]
+  );
 
   const computedStyles = {
     '--nav-item-label-color': !styles.textColor.isDefault ? styles.textColor.value : 'var(--text-placeholder, #6A727C)',

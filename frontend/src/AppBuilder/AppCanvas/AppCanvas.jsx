@@ -116,7 +116,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
   useEffect(() => {
-    if (moduleId === 'canvas') {
+    if (moduleId === 'canvas' && currentLayout === 'desktop') {
       const pageSidebarWidth =
         position === 'side'
           ? isViewerSidebarPinned
@@ -132,7 +132,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isViewerSidebarPinned, position]);
+  }, [isViewerSidebarPinned, position, currentLayout]);
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
