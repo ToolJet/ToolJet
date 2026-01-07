@@ -13,7 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const ReleaseVersionButton = function DeployVersionButton ({ version = null, variant = 'default', darkMode = false }) {
+const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -79,7 +79,8 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
               ? "You don't have access to release application. Contact admin to know more."
               : 'Release this version'
           }
-          placement="top"
+          placement="left"
+          width="280px"
         >
           <span>
             <button
@@ -109,6 +110,7 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
           message="You don't have access to release application. Contact admin to know more."
           placement="bottom"
           show={!isReleaseVersionEnabled}
+          width="280px"
         >
           <Button
             variant="secondary"

@@ -61,7 +61,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
   if (variant === 'inline') {
     return (
       <>
-        <ToolTip message={renderTooltipMessage()} placement="top">
+        <ToolTip message={renderTooltipMessage()} placement="left" width="280px">
           <span>
             <button
               className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
@@ -90,6 +90,7 @@ const PromoteVersionButton = ({ version = null, variant = 'default', darkMode = 
         message={renderTooltipMessage()}
         placement="bottom"
         show={shouldDisablePromote || !isPromoteVersionEnabled}
+        width="280px"
       >
         <div>
           <Button
