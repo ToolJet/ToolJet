@@ -13,7 +13,7 @@ name: Render Preview Deploy V2 (DockerHub-based)
 #   - DockerHub cache updates same tag on each push
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled, unlabeled, closed, synchronize]
 
 env:
@@ -933,4 +933,3 @@ jobs:
                 });
               } catch (e) { console.log(`Label ${label} not found`); }
             }
-            
