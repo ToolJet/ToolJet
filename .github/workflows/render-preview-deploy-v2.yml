@@ -1,6 +1,9 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.2
+# Version: 2.3
+# Changes from v2.2:
+#   - EE now uses LTS Dockerfile (./docker/LTS/ee/ee-preview.Dockerfile) instead of pre-release
+#   - LTS Dockerfile has proper submodule handling with lts-3.16 fallback
 # Changes from v2.1:
 #   - Single image tag per PR (ce-pr-{NUMBER} and ee-pr-{NUMBER})
 #   - Removed commit SHA from tags
@@ -474,7 +477,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
@@ -679,7 +682,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
@@ -873,3 +876,4 @@ jobs:
                 });
               } catch (e) { console.log(`Label ${label} not found`); }
             }
+            
