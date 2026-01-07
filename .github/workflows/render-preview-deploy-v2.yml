@@ -1,6 +1,9 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.3
+# Version: 2.4
+# Changes from v2.3:
+#   - Added disk cleanup step to all build jobs (CE and EE, initial and rebuild)
+#   - Frees up ~30GB by removing .NET, Haskell, Boost, and Docker cache
 # Changes from v2.2:
 #   - EE now uses LTS Dockerfile (./docker/LTS/ee/ee-preview.Dockerfile) instead of pre-release
 #   - LTS Dockerfile has proper submodule handling with lts-3.16 fallback
@@ -36,6 +39,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
@@ -227,6 +243,20 @@ jobs:
             const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app-v2');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - name: Checkout PR branch
         if: steps.check-active.outputs.is_active == 'true'
@@ -458,6 +488,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
@@ -658,6 +701,20 @@ jobs:
             const hasLabel = labels.data.some(l => l.name === 'active-ee-review-app-v2');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - name: Checkout PR branch
         if: steps.check-active.outputs.is_active == 'true'
