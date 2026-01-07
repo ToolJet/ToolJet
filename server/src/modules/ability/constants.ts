@@ -46,6 +46,13 @@ export const DEFAULT_USER_APPS_PERMISSIONS: UserAppsPermissions = {
   isAllViewable: false,
   hiddenAppsId: [],
   hideAll: false,
+  environmentAccess: {
+    development: false,
+    staging: false,
+    production: false,
+    released: false,
+  },
+  appSpecificEnvironmentAccess: {},
 };
 
 export const DEFAULT_USER_WORKFLOW_PERMISSIONS: UserWorkflowPermissions = {
