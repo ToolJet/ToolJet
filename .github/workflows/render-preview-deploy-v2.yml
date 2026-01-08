@@ -1,6 +1,8 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.7
+# Version: 2.8
+# Changes from v2.7:
+#   - Fixed JSON path for registry credential extraction (.[0].id instead of .[0].registryCredential.id)
 # Changes from v2.6:
 #   - Added step to dynamically fetch registry credential ID from Render API
 #   - Added registryCredentialId to image object for private DockerHub repos
@@ -95,8 +97,8 @@ jobs:
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
           
-          # Extract the first Docker Hub credential ID
-          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].registryCredential.id // empty')
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
           
           if [ -z "$REGISTRY_CRED_ID" ]; then
             echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
@@ -569,8 +571,8 @@ jobs:
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
           
-          # Extract the first Docker Hub credential ID
-          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].registryCredential.id // empty')
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
           
           if [ -z "$REGISTRY_CRED_ID" ]; then
             echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
