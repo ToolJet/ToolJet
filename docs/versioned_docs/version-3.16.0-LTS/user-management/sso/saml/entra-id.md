@@ -24,6 +24,8 @@ Microsoft Entra ID can be configured as the Identity Provider for SAML, which is
 
 Once these steps are completed, users should be able to sign in to ToolJet using Microsoft Entra ID via SAML without any additional configuration.
 
+   <img className="screenshot-full " src="/img/user-management/sso/saml/entra-id/sign_in_page.png" alt="Sign-In Page"/>
+
 ## Configure Group Sync using Microsoft Entra ID
 
 :::note
