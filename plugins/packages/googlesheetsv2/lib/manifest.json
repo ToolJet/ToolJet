@@ -62,7 +62,7 @@
   },
   "properties": {
     "credentials": {
-      "label": "Authentication Type",
+      "label": "Authentication type",
       "key": "authentication_type",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for choosing authentication type",
@@ -129,7 +129,7 @@
         "description": "A component for google sheets"
       },
       "service_account_key": {
-        "label": "Service Account Key",
+        "label": "Service account key",
         "key": "service_account_key",
         "type": "textarea",
         "description": "Enter JSON private key for service account",

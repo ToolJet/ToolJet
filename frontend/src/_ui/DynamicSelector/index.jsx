@@ -314,7 +314,7 @@ const DynamicSelector = ({
 
     return (
         <div className="dynamic-selector-container">
-            <div className="d-flex align-items-center gap-2 mb-3">
+            <div className="d-flex align-items-center gap-2 mb-1">
                 <div className="flex-grow-1">
                     {isFxMode ? (
                         <CodeHinter
@@ -356,6 +356,7 @@ const DynamicSelector = ({
                     onClick={() => handleFetch(false)}
                     disabled={isLoading || disabled}
                     className="btn rounded-lg tw-ml-2"
+                    style={{ fontSize: '12px' }}
                 >
                     {isLoading ? (
                         <>
@@ -375,8 +376,8 @@ const DynamicSelector = ({
             )}
 
             {description && (
-                <small className="text-muted d-block mb-3">
-                    {description}
+                <small className="text-muted d-block" style={{ fontSize: '12px' }}>
+                    {isFxMode ? description : `Select ${label ?? 'value'} from dropdown.`}
                 </small>
             )}
 
