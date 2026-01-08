@@ -29,6 +29,7 @@ export const AudioRecorder = ({
     borderRadius,
     boxShadow,
     accentColor,
+    iconVisibility,
   } = styles;
   const { label, loadingState, disabledState, visibility } = properties;
 
@@ -312,13 +313,15 @@ export const AudioRecorder = ({
             onClick={onClick}
             aria-label={ariaLabel}
           >
-            <RecorderActionIcon
-              permissionState={permissionState}
-              status={status}
-              isPlaying={isPlaying}
-              IconElement={IconElement}
-              recorderIconColor={recorderIconColor}
-            />
+            {iconVisibility && (
+              <RecorderActionIcon
+                permissionState={permissionState}
+                status={status}
+                isPlaying={isPlaying}
+                IconElement={IconElement}
+                recorderIconColor={recorderIconColor}
+              />
+            )}
           </ButtonSolid>
           <span className="audio-recorder-label" style={buttonTextStyle}>
             <RecorderStatusDisplay
