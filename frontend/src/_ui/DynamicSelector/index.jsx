@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button'; 
 import Select from '@/_ui/Select';
 import { dataqueryService } from '@/_services';
 import { get, debounce } from 'lodash';
@@ -350,23 +351,15 @@ const DynamicSelector = ({
                     </div>
                 )}
 
-                {!isFxMode && !dependsOn.length && <ButtonSolid
-                    variant="tertiary"
-                    size="sm"
+               {!isFxMode && !dependsOn.length && <ButtonComponent
+                    variant="outline"
+                    size="medium"
                     onClick={() => handleFetch(false)}
-                    disabled={isLoading || disabled}
-                    className="btn rounded-lg tw-ml-2"
-                    style={{ fontSize: '12px' }}
+                    disabled={disabled}
+                    isLoading={isLoading}
                 >
-                    {isLoading ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" />
-                            Loading...
-                        </>
-                    ) : (
-                        operationLabel || 'Fetch'
-                    )}
-                </ButtonSolid>}
+                    {operationLabel || 'Fetch'}
+                </ButtonComponent>}
             </div>
 
             {error && (
