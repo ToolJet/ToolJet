@@ -156,6 +156,7 @@ export const audioRecorderConfig = {
             borderColor: { value: 'var(--cc-default-border)' },
             borderRadius: { value: '{{6}}' },
             boxShadow: { value: '0px 0px 0px 0px #00000040' },
+            iconVisibility: { value: true },
         },
     },
 };

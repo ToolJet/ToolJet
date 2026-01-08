@@ -223,10 +223,7 @@ export const AudioRecorder = ({
     setExposedVariables({
       ...exposedVariablesTemporaryState,
       resetAudio: () => {
-        setExposedVariables({
-          blobURL: null,
-          dataURL: null,
-        });
+        onReset();
       },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', value);
