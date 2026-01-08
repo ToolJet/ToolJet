@@ -56,7 +56,8 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
 - **Hide from dashboard**: Hides the selected apps from the dashboard, making them accessible only via URL for users with view access. While the users with edit access can always see the app on the dashboard.
 
-- **Environment**: Using environment-level permissions, access to each environment can be restricted based on user groups or roles. For example, members of a custom group *Developer* may be granted access only to the *Development* environment. You can apply these permissions to specific apps or across all apps.
+- **Environment**: Using environment-level permissions, access to each environment can be restricted based on user groups or roles. For example, members of a custom group *Developer* may be granted access only to the *Development* environment. You can apply these permissions to specific apps or across all apps.  
+    Refer [this documentation](/docs/development-lifecycle/environment/cloud/multi-environment#environment-access-permission) to learn more about Environment Access Permissions.
 
 - **All apps**: Provides the selected access (Edit or View) to all the apps in the workspace, including any newly created apps.
 
