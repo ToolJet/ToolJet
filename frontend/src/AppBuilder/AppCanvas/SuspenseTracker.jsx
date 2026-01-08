@@ -1,4 +1,6 @@
-import React, { Suspense, useEffect, createContext, useContext, useCallback, useRef } from 'react';
+import React, { Suspense, useEffect, createContext, useContext, useCallback, useRef, useState } from 'react';
+import { TJLoader } from '@/_ui/TJLoader';
+import cx from 'classnames';
 
 const SuspenseCountContext = createContext();
 
@@ -7,10 +9,12 @@ export const SuspenseCountProvider = ({ onAllResolved, children }) => {
   const pendingCount = useRef(0);
   const hasInitialized = useRef(false);
   const hasResolved = useRef(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const checkAndResolve = useCallback(() => {
     if (pendingCount.current === 0 && hasInitialized.current && !hasResolved.current) {
       hasResolved.current = true;
+      setIsLoading(false);
       onAllResolved();
     }
   }, [onAllResolved]);
@@ -32,10 +36,16 @@ export const SuspenseCountProvider = ({ onAllResolved, children }) => {
   }, [checkAndResolve]);
 
   return (
-    <SuspenseCountContext.Provider value={{ increment, decrement }}>
+    <SuspenseCountContext.Provider value={{ increment, decrement, isLoading }}>
       {children}
     </SuspenseCountContext.Provider>
   );
+};
+
+// Hook to check if lazy components are still loading
+export const useSuspenseLoading = () => {
+  const context = useContext(SuspenseCountContext);
+  return context?.isLoading ?? false;
 };
 
 // Fallback component that tracks mount/unmount
@@ -63,5 +73,25 @@ export const TrackedSuspense = ({ fallback = null, children }) => {
     <Suspense fallback={<SuspenseFallbackTracker fallback={fallback} />}>
       {children}
     </Suspense>
+  );
+};
+
+
+// Loading overlay shown while lazy components are resolving
+export const SuspenseLoadingOverlay = ({ darkMode }) => {
+  const isLoading = useSuspenseLoading();
+
+  if (!isLoading) return null;
+
+  return (
+    <div
+      className={cx('suspense-loading-overlay tw-absolute tw-inset-0 tw-overflow-hidden', { 'theme-dark dark-theme': darkMode })}
+    >
+      <div className='tw-sticky tw-top-0 tw-h-screen tw-flex tw-items-center tw-justify-center'>
+        <div className="suspense-loader-wrapper">
+          <TJLoader />
+        </div>
+      </div>
+    </div>
   );
 };

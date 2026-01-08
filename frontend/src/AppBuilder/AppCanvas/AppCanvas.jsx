@@ -19,7 +19,8 @@ import { DragResizeGhostWidget } from './GhostWidgets';
 
 import { Container } from './Container';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
-import { SuspenseCountProvider } from './SuspenseTracker';
+import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
+
 
 // Lazy load editor-only component to reduce viewer bundle size
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
@@ -240,7 +241,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               >
                 {environmentLoadingState !== 'loading' && (
                   <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved}>
-                    <div className={cx({ 'h-100': isModuleMode })}>
+                    <div className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
+                      {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
                       <Container
                         id={moduleId}
                         gridWidth={gridWidth}
