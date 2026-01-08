@@ -33,3 +33,4 @@ To setup OIDC using Auth0, you can follow these steps:
 8. Go to your **Auth0 application > Settings > Application URIs** and paste the Redirect URI in **Allowed Callback URLs** and save the configuration.
 
 You shall now be able to login to your ToolJet workspace using Auth0.
+   <img className="screenshot-full " src="/img/user-management/sso/oidc/auth0/sign_in_page.png" alt="Sign-In Page"/>
