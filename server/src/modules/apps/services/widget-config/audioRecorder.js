@@ -110,7 +110,6 @@ export const audioRecorderConfig = {
         isVisible: true,
         isDisabled: false,
         isLoading: false,
-        blobURL: null,
         dataURL: null,
     },
     actions: [

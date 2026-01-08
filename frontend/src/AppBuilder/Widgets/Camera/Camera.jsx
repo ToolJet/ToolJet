@@ -158,7 +158,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
           savedImageUrlRef.current = blobUrl;
           const dataURL = await blobToDataURL(capturedImage.blob);
           setExposedVariables({
-            imageBlobURL: blobUrl,
+            // imageBlobURL: blobUrl,
             imageDataURL: dataURL,
           });
           fireEvent('onImageSave');
@@ -169,7 +169,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
             savedImageUrlRef.current = null;
           }
           setExposedVariables({
-            imageBlobURL: null,
+            // imageBlobURL: null,
             imageDataURL: null,
           });
           clearCapturedImage({ revokePrevious: true });
@@ -194,13 +194,13 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       if (saveCapture) {
         const dataURL = await blobToDataURL(recordingResult?.blob);
         setExposedVariables({
-          videoBlobURL: recordingResult?.url,
+          // videoBlobURL: recordingResult?.url,
           videoDataURL: dataURL,
         });
         fireEvent('onRecordingSave');
       } else {
         setExposedVariables({
-          videoBlobURL: null,
+          // videoBlobURL: null,
           videoDataURL: null,
         });
       }
@@ -252,13 +252,13 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
       ...exposedVariablesTemporaryState,
       resetVideo: () => {
         setExposedVariables({
-          videoBlobURL: null,
+          // videoBlobURL: null,
           videoDataURL: null,
         });
       },
       resetImage: () => {
         setExposedVariables({
-          imageBlobURL: null,
+          // imageBlobURL: null,
           imageDataURL: null,
         });
       },

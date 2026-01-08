@@ -95,8 +95,6 @@ export const cameraConfig = {
     exposedVariables: {
         isVisible: true,
         isDisabled: false,
-        imageBlobURL: null,
-        videoBlobURL: null,
         imageDataURL: null,
         videoDataURL: null,
     },

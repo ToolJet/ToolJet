@@ -57,7 +57,6 @@ export const AudioRecorder = ({
       onStop: async (blobURL, blob) => {
         const dataURL = await blobToDataURL(blob);
         setExposedVariables({
-          blobURL,
           dataURL,
         });
         fireEvent('onRecordingSave');
@@ -168,7 +167,6 @@ export const AudioRecorder = ({
   const onReset = () => {
     clearBlobUrl();
     setExposedVariables({
-      blobURL: null,
       dataURL: null,
     });
 
