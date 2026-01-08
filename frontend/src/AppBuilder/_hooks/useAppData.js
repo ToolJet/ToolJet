@@ -369,6 +369,24 @@ const useAppData = (
           moduleId
         );
 
+        if (
+          !moduleMode &&
+          state?.prompt &&
+          initialLoadRef.current &&
+          (conversation?.aiConversationMessages || []).length === 0
+        ) {
+          setSelectedSidebarItem('tooljetai');
+          toggleLeftSidebar(true);
+          setConversationZeroState(true);
+          sendMessage(state.prompt);
+        }
+
+        // TODO: We might remove this later on
+        if (initialLoadRef.current) {
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id); // TODO: Check if this API call is required at this point or can call it later on
+        }
+
+        // TODO: Might not need this for new dynamic flow
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
@@ -516,14 +534,6 @@ const useAppData = (
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
-        if (
-          !moduleMode &&
-          state?.prompt &&
-          initialLoadRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
-        ) {
-          sendMessage(state.prompt);
-        }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
