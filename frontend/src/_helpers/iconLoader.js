@@ -19,6 +19,8 @@
  * return <IconComponent {...props} />;
  */
 
+import React from 'react';
+
 // Cache loaded icons to avoid reloading
 const iconCache = new Map();
 

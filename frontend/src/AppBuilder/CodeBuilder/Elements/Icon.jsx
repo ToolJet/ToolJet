@@ -110,8 +110,32 @@ export const Icon = ({
   };
 
   function RenderIconPicker() {
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons?.[value] ?? Icons?.['IconHome2'];
+    const [IconElement, setIconElement] = useState(null);
+
+    useEffect(() => {
+      const iconName = value || 'IconHome2';
+      loadIcon(iconName)
+        .then((component) => setIconElement(() => component))
+        .catch(() => loadIcon('IconHome2').then((component) => setIconElement(() => component)));
+    }, [value]);
+
+    if (!IconElement) {
+      return (
+        <div className="color-picker-input icon-style-container" style={{ position: 'relative' }}>
+          <div className="p-0">
+            <div className="field">
+              <div className="d-flex align-items-center">
+                <div style={{ marginRight: '2px', marginLeft: '6px', height: '20px', width: '18px' }}>
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <>
