@@ -159,6 +159,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [currentMode, isPreviewInEditor, canvasBgColor]);
 
   useEffect(() => {
+    /**
+     * PREVIEW FLOW - When entering the animating phase, we wait for the canvas transition to finish then trigger `notifyTransitionDone()`
+     * NOTE: We rely on `previewPhase === 'animating'` to drive this, so ensure that updating of this flag happens before the animation starts.
+     */
     if (previewPhase !== 'animating') return;
 
     const canvas = canvasContainerRef.current;
@@ -175,6 +179,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [previewPhase]);
 
   useLayoutEffect(() => {
+    /**
+     * PREVIEW FLOW - Once all sidebars/panels are collapsed, we move from 'closing-panels' to 'switching-mode'.
+     * IMPORTANT: This assumes collapse is instantaneous — the only animation should be on the collapsed bars themselves, handled separately.
+     */
     if (!allCollapsed) return;
     if (previewPhase !== 'closing-panels') return;
 

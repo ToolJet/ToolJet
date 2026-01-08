@@ -7,9 +7,9 @@ const initialState = {
     },
   },
   isPreviewInEditor: false,
-  previewPhase: 'idle', // 'idle' | 'closing-panels' | 'switching-mode' | 'animating' | 'mounting-sidebars'
-  targetMode: 'edit', // 'edit | 'view'
-  transitionCounter: 4,
+  previewPhase: 'idle', // previewPhase tracks the current stage of the preview transition: 'idle' | 'closing-panels' | 'switching-mode' | 'animating' | 'mounting-sidebars'
+  targetMode: 'edit', // targetMode indicates which mode we are transitioning into: 'edit | 'view'
+  transitionCounter: 4, // tracks how many animated elements are left to complete. Currently counts 4: left, right, query, canvas. Update if needed.
 };
 
 export const createModeSlice = (set, get) => ({
@@ -60,6 +60,11 @@ export const createModeSlice = (set, get) => ({
       'setPreviewPhase'
     ),
   toggleCurrentMode: (moduleId = 'canvas') => {
+    /**
+     * Toggles editor mode (edit ↔ view).
+     * The actual mode switch is deferred and driven by `previewPhase`
+     * to ensure panels are mounted/unmounted with proper transitions.
+     */
     const { getCurrentMode, setTargetMode, setPreviewPhase } = get();
 
     const targetMode = getCurrentMode(moduleId) === 'edit' ? 'view' : 'edit';
@@ -72,6 +77,12 @@ export const createModeSlice = (set, get) => ({
   notifyTransitionDone: () =>
     set(
       (state) => {
+        /**
+         * Called by each animated element when its CSS transition finishes.
+         * Decrements (or increments) transitionCounter based on direction.
+         * Be cautious: if one element never fires transitionend,
+         * counter will never reach 0 and the transition will never settle.
+         */
         if (state.targetMode === 'view') {
           state.transitionCounter -= 1;
         } else {

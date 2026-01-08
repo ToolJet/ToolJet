@@ -27,6 +27,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
 
   useEffect(() => {
+    /**
+     * PREVIEW FLOW - Listen for CSS transition completion on collapsed right sidebar.
+     * We intentionally attach this to gate the next phase of preview transition.
+     */
     if (previewPhase !== 'animating') return;
 
     const bar = rightSideBarRef.current;
@@ -45,6 +49,7 @@ const RightSidebarToggle = ({ darkMode = false }) => {
     if (!isRightSidebarOpen) setRightSidebarOpen(true);
   };
 
+  // Handle mount/unmount based on PREVIEW animation
   if (!shouldMount) {
     return null;
   }

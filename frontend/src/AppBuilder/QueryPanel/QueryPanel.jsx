@@ -93,6 +93,10 @@ export const QueryPanel = ({ darkMode }) => {
   }, [windowSize.height, isQueryPaneExpanded, isWindowResizing]);
 
   useEffect(() => {
+    /**
+     * PREVIEW FLOW - Listen for CSS transition completion on query panel's collapsed bar.
+     * We intentionally attach this to gate the next phase of preview transition.
+     */
     if (previewPhase !== 'animating') return;
 
     const bar = queryBarRef.current;
@@ -170,6 +174,7 @@ export const QueryPanel = ({ darkMode }) => {
     setQueryPanelHeight(newIsExpanded ? height : 95);
   }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
 
+  // Handle mount/unmount based on PREVIEW animation
   if (!shouldMount) {
     return null;
   }

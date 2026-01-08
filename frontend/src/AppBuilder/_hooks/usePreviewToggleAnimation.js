@@ -4,9 +4,30 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 /**
- * Hook that provides animation state for preview toggle
- * Handles mount/unmount timing so animations complete before unmount
- * and components mount before animation starts
+ * Hook that orchestrates UI animations for the editor ↔ preview toggle.
+ *
+ * This hook does NOT decide when preview mode starts or ends.
+ * Instead, it reacts to `previewPhase` from the global store and:
+ * - Controls when sidebars/panels should remain mounted or be unmounted
+ * - Exposes animation-related CSS classes for collapsed bar transitions
+ * - Ensures animations are allowed to complete before DOM nodes are removed
+ *
+ * Preview flow (high level):
+ * 1. Open panels are synchronously closed via state updates
+ * 2. Once all panels are collapsed, `previewPhase` advances
+ * 3. Mode switches and isPreviewInEditor flag is updated.
+ * 3. Collapsed bars and Canvas animate in/out based on the current phase
+ * 4. Unmountes/Mounts happen only after animations complete
+ *
+ * This phase-driven approach avoids timing-based hacks (e.g. setTimeout),
+ * prevents layout thrashing, and keeps transitions deterministic
+ * across devices and performance conditions.
+ *
+ * Important invariants:
+ * - We assume exactly 4 transition steps happen per full transition.
+ *   If future UI adds/removes panels this number must be updated.
+ * - transitionCounter is used to track how many individual panel animations
+ *   have completed. Keep counters in sync with number of listeners.
  *
  * @param {Object} options - Configuration options
  * @param {string} options.animationType - 'width' | 'height' | 'both'
@@ -38,6 +59,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const [shouldMount, setShouldMount] = useState(true);
   const [shouldApplyHideClass, setShouldApplyHideClass] = useState(false);
 
+  // Central preview transition controller.
   useEffect(() => {
     if (previewPhase !== 'idle') setIsAnimating(true);
     else setIsAnimating(false);
@@ -65,6 +87,17 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
     }
   }, [previewPhase]);
 
+  /**
+   * When all transitions complete (counter hits 0),
+   * we unmount collapsed bars and reset to idle.
+   * Multiple transitions decrement this counter.
+   *
+   * Magic number 4 exists because we are tracking:
+   * left + right + query + canvas
+   *
+   * If any new animated element is added to preview transitions,
+   * update this number accordingly.
+   */
   useEffect(() => {
     if (transitionCounter === 0) {
       setShouldMount(false);

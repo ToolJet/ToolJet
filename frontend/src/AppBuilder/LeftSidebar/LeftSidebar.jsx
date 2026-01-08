@@ -106,7 +106,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-        100
+          100
       );
     } else {
       setPopoverContentHeight(100);
@@ -115,6 +115,10 @@ export const BaseLeftSidebar = ({
   }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
 
   useEffect(() => {
+    /**
+     * PREVIEW FLOW - Listen for CSS transition completion on collapsed left sidebar.
+     * We intentionally attach this to gate the next phase of preview transition.
+     */
     if (previewPhase !== 'animating') return;
 
     const bar = leftSidebarRef.current;
@@ -127,7 +131,6 @@ export const BaseLeftSidebar = ({
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
@@ -146,12 +149,7 @@ export const BaseLeftSidebar = ({
       case 'debugger':
         return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
       case 'settings':
-        return (
-          <GlobalSettings
-            darkMode={darkMode}
-            isModuleEditor={isModuleEditor}
-          />
-        );
+        return <GlobalSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />;
     }
   };
 
@@ -160,7 +158,7 @@ export const BaseLeftSidebar = ({
     return null;
   }
 
-  // Handle mount/unmount based on animation state
+  // Handle mount/unmount based on PREVIEW animation
   if (!shouldMount) {
     return null;
   }
