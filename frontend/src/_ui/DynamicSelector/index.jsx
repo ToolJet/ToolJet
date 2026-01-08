@@ -351,7 +351,7 @@ const DynamicSelector = ({
                 )}
 
                 {!isFxMode && !dependsOn.length && <ButtonSolid
-                    variant="secondary"
+                    variant="tertiary"
                     size="sm"
                     onClick={() => handleFetch(false)}
                     disabled={isLoading || disabled}
