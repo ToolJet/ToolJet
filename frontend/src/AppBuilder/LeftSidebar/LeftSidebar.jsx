@@ -68,7 +68,7 @@ export const BaseLeftSidebar = ({
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
       state.previewPhase,
-      isPreviewInEditor,
+      state.isPreviewInEditor,
       state.notifyTransitionDone,
     ],
     shallow
