@@ -33,7 +33,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-  const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
+  useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -225,9 +225,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 width: currentMode === 'view' ? `calc(100% - ${isViewerSidebarPinned ? '0px' : '0px'})` : '100%',
                 ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
               }}
-              className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`, {
-                'scrollbar-hidden': !isScrolling,
-              })}
+              className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
             >
               {currentMode === 'edit' && (
                 <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
