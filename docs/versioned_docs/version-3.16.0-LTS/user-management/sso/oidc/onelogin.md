@@ -35,6 +35,9 @@ At this point, the OneLogin application is ready. Next, you’ll collect the OID
 10. Go to your OneLogin Application > Configuration > Paste the Redirect URL into the Redirect URIs section and click **Save**.
     <img className="screenshot-full border-none" src="/img/user-management/sso/oidc/onelogin/redirect_url.png" alt="OneLogin: Redirect URL"/>
 
+You shall now be able to login to your ToolJet workspace using OneLogin.
+   <img className="screenshot-full " src="/img/user-management/sso/oidc/onelogin/sign_in_page.png" alt="Sign-In Page"/>
+
 ## Configuring Group Sync with OneLogin
 
 To configure group sync with OneLogin, you need to follow these steps:
