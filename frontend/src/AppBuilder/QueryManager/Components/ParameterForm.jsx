@@ -67,7 +67,7 @@ const ParameterForm = ({
           style={{ paddingRight: '25px !important' }}
         >
           <Form.Group as={Col} style={{ display: 'flex' }} className="mb-2 pr-1">
-            <Form.Label column htmlFor="paramName">
+            <Form.Label column htmlFor="paramName" data-cy="parameter-name-label">
               Name
             </Form.Label>
             <Col>
@@ -77,12 +77,13 @@ const ParameterForm = ({
                 aria-describedby="paramName"
                 onChange={(event) => setName(event.target.value)}
                 value={name}
+                data-cy="parameter-name-input"
               />
               {name && error && <div className="invalid-feedback d-block">{error}</div>}
             </Col>
           </Form.Group>
           <Form.Group as={Col} style={{ display: 'flex' }}>
-            <Form.Label column htmlFor="defaultValue" style={{ marginRight: '0px' }}>
+            <Form.Label column htmlFor="defaultValue" style={{ marginRight: '0px' }} data-cy="parameter-value-label">
               Value
               <span className="ms-1">
                 <OverlayTrigger
@@ -110,6 +111,7 @@ const ParameterForm = ({
                     style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
                     delayOnChange={false}
+                    cyLabel="parameter-value-input"
                   />
                 </div>
               </div>

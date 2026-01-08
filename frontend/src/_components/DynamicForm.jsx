@@ -684,6 +684,7 @@ const DynamicForm = ({
                     'dynamic-form-element'
                   )}
                   style={{ width: '100%' }}
+                  data-cy={`${generateCypressDataCy(label ?? key)}-input-wrapper`}
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}

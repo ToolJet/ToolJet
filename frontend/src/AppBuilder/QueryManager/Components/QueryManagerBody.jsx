@@ -246,8 +246,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         className={cx('d-flex', {
           'disabled ': isFreezed,
         })}
+        data-cy="query-events-section"
       >
-        <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
+        <div className={`form-label`} data-cy="label-events">{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
@@ -263,13 +264,14 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderTimeout = () => {
     return (
-      <div className="d-flex">
-        <div className="form-label mt-2">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
+      <div className="d-flex" data-cy="query-timeout-section">
+        <div className="form-label mt-2" data-cy="label-timeout">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
         <div className="query-manager-query-timeout">
           <CodeHinter
             theme={darkMode ? 'monokai' : 'base16-light'}
             initialValue={selectedQuery?.options?.query_timeout ?? ''}
             onChange={(value) => optionchanged('query_timeout', value)}
+            cyLabel="query-timeout-input"
           />
         </div>
       </div>
@@ -283,8 +285,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           className={cx(`d-flex pb-1`, {
             'disabled ': isFreezed,
           })}
+          data-cy="query-triggers-section"
         >
-          <div className="form-label mt-2">{t('editor.queryManager.settings', 'Triggers')}</div>
+          <div className="form-label mt-2" data-cy="label-triggers">{t('editor.queryManager.settings', 'Triggers')}</div>
           <div className="flex-grow-1">
             {Object.keys(customToggles).map((toggle, index) => (
               <CustomToggleFlag
@@ -354,10 +357,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         <div className={cx('d-flex', { 'disabled ': isFreezed })} style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
             className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+            data-cy="label-source"
           >
             Source
           </div>
-          <div className="d-flex flex-column align-items-start" style={{ width: '500px' }}>
+          <div className="d-flex flex-column align-items-start" style={{ width: '500px' }} data-cy="change-data-source">
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
@@ -365,7 +369,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 changeDataQuery(newDataSource);
               }}
             />
-            <div style={{ marginBottom: '2px' }}>
+            <div style={{ marginBottom: '2px' }} data-cy="source-doc-link">
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
               <a

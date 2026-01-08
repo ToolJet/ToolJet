@@ -808,6 +808,7 @@ const handleOptionChange = (key, value, flag = true) => {
                   'dynamic-form-element'
                 )}
                 style={{ width: '100%' }}
+                data-cy={`${generateCypressDataCy(label ?? key)}-input-wrapper`}
               >
                 <Element
                   {...getElementProps(uiProperties[key])}

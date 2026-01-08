@@ -150,6 +150,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
             calculatePreviewHeight(height, !previewPanelExpanded);
           }}
           className="left"
+          data-cy="preview-toggle-button"
         >
           <ArrowDownTriangle
             width={15}
@@ -159,7 +160,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
               marginRight: '4px',
             }}
           />
-          <span>Preview</span>
+          <span data-cy="preview-label">Preview</span>
         </div>
         {previewPanelExpanded && (
           <div className="right">

@@ -10,14 +10,14 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
   return (
     <div>
       {options.length === 0 && (
-        <div className="empty-key-value">
+        <div className="empty-key-value" data-cy="empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
-          <span>There are no key value pairs added</span>
+          <span data-cy="empty-key-value-message">There are no key value pairs added</span>
         </div>
       )}
       {options.map((option, index) => {
         return (
-          <div className="d-flex" key={index}>
+          <div className="d-flex" key={index} data-cy={`key-value-pair-${index}`}>
             <div className="d-flex mb-2 justify-content-between w-100">
               <div className="w-100">
                 <CodeHinter
@@ -27,6 +27,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                   placeholder="Key"
                   onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
+                  cyLabel={`key-${index}`}
                 />
               </div>
               <div className="w-100">
@@ -37,6 +38,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                   placeholder="Value"
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}
+                  cyLabel={`value-${index}`}
                 />
               </div>
             </div>
@@ -48,13 +50,14 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               onClick={() => {
                 removeKeyValuePair(index);
               }}
+              data-cy={`delete-key-value-pair-${index}`}
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />
             </button>
           </div>
         );
       })}
-      <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)}>
+      <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)} data-cy="add-more-button">
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; {buttonText}
       </ButtonSolid>
