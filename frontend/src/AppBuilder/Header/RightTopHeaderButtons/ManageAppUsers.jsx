@@ -231,7 +231,7 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Header>
           <Modal.Body>
             {
-              <div class="shareable-link-container">
+              <div className="shareable-link-container">
                 {this.props.isVersionReleased ? (
                   <div className="shareable-link tj-app-input tw-mb-[16px]">
                     <label data-cy="shareable-app-link-label" className="field-name">
