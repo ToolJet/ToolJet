@@ -76,6 +76,7 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
           onClick={() => toggleCurrentMode(moduleId)}
           className={'tw-transition-[width] tw-duration-300 tw-ease-linear'}
           isLoading={isAnimating}
+          disabled={isAnimating}
         >
           {currentMode === 'edit' ? 'Preview' : 'Edit'}
         </ButtonComponent>

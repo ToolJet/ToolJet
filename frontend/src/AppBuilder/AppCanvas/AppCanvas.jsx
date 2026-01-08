@@ -66,6 +66,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : !isAppDarkMode
       ? '#EBEBEF'
       : '#2F3C4C';
+  const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
+  const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -126,6 +128,15 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       handleResize.cancel();
     };
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
+
+  useEffect(() => {
+    const handleResize = debounce(handleResizeImmediate, 300);
+
+    if (moduleId === 'canvas') {
+      handleResize();
+      updateCanvasBottomHeight(currentPageComponents, moduleId);
+    }
+  }, [isPreviewInEditor, currentPageComponents, moduleId]);
 
   useEffect(() => {
     if (moduleId === 'canvas' && currentLayout === 'desktop') {

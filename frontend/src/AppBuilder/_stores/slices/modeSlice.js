@@ -30,15 +30,37 @@ export const createModeSlice = (set, get) => ({
       false,
       'setCurrentMode'
     ),
-  toggleCurrentMode: (moduleId = 'canvas') =>
+  setIsPreviewInEditor: (value) =>
     set(
       (state) => {
-        const currentMode = state.modeStore.modules[moduleId].currentMode;
-        state.modeStore.modules[moduleId].currentMode = currentMode === 'edit' ? 'view' : 'edit';
-        state.isPreviewInEditor = currentMode === 'edit' ? true : false;
+        state.isPreviewInEditor = value;
       },
       false,
-      'toggleCurrentMode'
+      'setIsPreviewInEditor'
     ),
+  toggleCurrentMode: (moduleId = 'canvas') => {
+    const {
+      modeStore,
+      setCurrentMode,
+      setIsPreviewInEditor,
+      toggleLeftSidebar,
+      isSidebarOpen,
+      queryPanel,
+      isRightSidebarOpen,
+      setRightSidebarOpen,
+    } = get();
+    const { isQueryPaneExpanded, setIsQueryPaneExpanded } = queryPanel;
+
+    const mode = modeStore.modules[moduleId].currentMode === 'edit' ? 'view' : 'edit';
+
+    if (isQueryPaneExpanded) setIsQueryPaneExpanded(false);
+    if (isSidebarOpen) toggleLeftSidebar(false);
+    if (isRightSidebarOpen) setRightSidebarOpen(false);
+
+    setTimeout(() => {
+      setIsPreviewInEditor(mode === 'view');
+      setCurrentMode(mode, moduleId);
+    }, 0);
+  },
   getCurrentMode: (moduleId) => get().modeStore.modules[moduleId].currentMode,
 });
