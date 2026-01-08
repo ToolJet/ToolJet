@@ -7,6 +7,9 @@ const initialState = {
     },
   },
   isPreviewInEditor: false,
+  previewPhase: 'idle', // 'idle' | 'closing-panels' | 'switching-mode' | 'animating' | 'mounting-sidebars'
+  targetMode: 'edit', // 'edit | 'view'
+  transitionCounter: 4,
 };
 
 export const createModeSlice = (set, get) => ({
@@ -30,6 +33,7 @@ export const createModeSlice = (set, get) => ({
       false,
       'setCurrentMode'
     ),
+  getCurrentMode: (moduleId) => get().modeStore.modules[moduleId].currentMode,
   setIsPreviewInEditor: (value) =>
     set(
       (state) => {
@@ -38,29 +42,43 @@ export const createModeSlice = (set, get) => ({
       false,
       'setIsPreviewInEditor'
     ),
+  setTargetMode: (mode) =>
+    set(
+      (state) => {
+        if (mode === 'edit' || mode === 'view') state.targetMode = mode;
+      },
+      false,
+      'setTargetMode'
+    ),
+  setPreviewPhase: (phase) =>
+    set(
+      (state) => {
+        const validPhases = ['idle', 'closing-panels', 'switching-mode', 'animating', 'mounting-sidebars'];
+        if (validPhases.includes(phase)) state.previewPhase = phase;
+      },
+      false,
+      'setPreviewPhase'
+    ),
   toggleCurrentMode: (moduleId = 'canvas') => {
-    const {
-      modeStore,
-      setCurrentMode,
-      setIsPreviewInEditor,
-      toggleLeftSidebar,
-      isSidebarOpen,
-      queryPanel,
-      isRightSidebarOpen,
-      setRightSidebarOpen,
-    } = get();
-    const { isQueryPaneExpanded, setIsQueryPaneExpanded } = queryPanel;
+    const { getCurrentMode, setTargetMode, setPreviewPhase } = get();
 
-    const mode = modeStore.modules[moduleId].currentMode === 'edit' ? 'view' : 'edit';
+    const targetMode = getCurrentMode(moduleId) === 'edit' ? 'view' : 'edit';
+    setTargetMode(targetMode);
 
-    if (isQueryPaneExpanded) setIsQueryPaneExpanded(false);
-    if (isSidebarOpen) toggleLeftSidebar(false);
-    if (isRightSidebarOpen) setRightSidebarOpen(false);
-
-    setTimeout(() => {
-      setIsPreviewInEditor(mode === 'view');
-      setCurrentMode(mode, moduleId);
-    }, 0);
+    if (targetMode === 'view') {
+      setPreviewPhase('closing-panels');
+    } else setPreviewPhase('mounting-sidebars');
   },
-  getCurrentMode: (moduleId) => get().modeStore.modules[moduleId].currentMode,
+  notifyTransitionDone: () =>
+    set(
+      (state) => {
+        if (state.targetMode === 'view') {
+          state.transitionCounter -= 1;
+        } else {
+          state.transitionCounter += 1;
+        }
+      },
+      false,
+      'notifyTransitionDone'
+    ),
 });

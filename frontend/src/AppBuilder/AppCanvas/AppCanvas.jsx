@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
@@ -66,8 +66,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       : !isAppDarkMode
       ? '#EBEBEF'
       : '#2F3C4C';
-  const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
-  const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
+  const allCollapsed = useStore(
+    (state) => !state.isRightSidebarOpen && !state.isSidebarOpen && !state.queryPanel.isQueryPaneExpanded,
+    shallow
+  );
+  const previewPhase = useStore((state) => state.previewPhase, shallow);
+  const setPreviewPhase = useStore((state) => state.setPreviewPhase);
+  const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -130,15 +135,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
 
   useEffect(() => {
-    const handleResize = debounce(handleResizeImmediate, 300);
-
-    if (moduleId === 'canvas') {
-      handleResize();
-      updateCanvasBottomHeight(currentPageComponents, moduleId);
-    }
-  }, [isPreviewInEditor, currentPageComponents, moduleId]);
-
-  useEffect(() => {
     if (moduleId === 'canvas' && currentLayout === 'desktop') {
       const pageSidebarWidth =
         position === 'side'
@@ -161,6 +157,29 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       if (main) main.style.backgroundColor = canvasBgColor;
     }
   }, [currentMode, isPreviewInEditor, canvasBgColor]);
+
+  useEffect(() => {
+    if (previewPhase !== 'animating') return;
+
+    const canvas = canvasContainerRef.current;
+    if (!canvas) return;
+
+    const handleResize = debounce(handleResizeImmediate, 300);
+    const onDone = () => {
+      handleResize();
+      notifyTransitionDone();
+    };
+
+    canvas.addEventListener('transitionend', onDone, { once: true });
+    return () => canvas.removeEventListener('transitionend', onDone);
+  }, [previewPhase]);
+
+  useLayoutEffect(() => {
+    if (!allCollapsed) return;
+    if (previewPhase !== 'closing-panels') return;
+
+    setPreviewPhase('switching-mode');
+  }, [allCollapsed, previewPhase]);
 
   const canvasContainerStyles = useMemo(() => {
     if (isModuleMode) {
@@ -216,7 +235,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
               { 'overflow-x-auto': currentMode === 'edit' },
               { 'overflow-x-hidden': moduleId !== 'canvas' }, // Disbling horizontal scroll for modules in view mode
-              { 'tw-transition-all tw-duration-300 tw-ease-linear': isPreviewInEditor }
+              { 'tw-transition-all tw-duration-300 tw-ease-linear': previewPhase === 'animating' }
             )}
             style={canvasContainerStyles}
           >

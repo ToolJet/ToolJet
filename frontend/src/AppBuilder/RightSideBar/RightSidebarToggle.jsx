@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import cx from 'classnames';
@@ -10,6 +10,7 @@ import { SidebarItem } from './SidebarItem';
 import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 const RightSidebarToggle = ({ darkMode = false }) => {
+  const rightSideBarRef = useRef(null);
   const [isRightSidebarOpen, setRightSidebarOpen] = useStore(
     (state) => [state.isRightSidebarOpen, state.setRightSidebarOpen],
     shallow
@@ -19,9 +20,21 @@ const RightSidebarToggle = ({ darkMode = false }) => {
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
   const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const isAnyComponentSelected = useStore((state) => state.selectedComponents.length > 0);
-  const { shouldMount, animationClasses, shouldHide } = usePreviewToggleAnimation({
+  const { shouldMount, animationClasses } = usePreviewToggleAnimation({
     animationType: 'width',
   });
+  const previewPhase = useStore((state) => state.previewPhase, shallow);
+  const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
+
+  useEffect(() => {
+    if (previewPhase !== 'animating') return;
+
+    const bar = rightSideBarRef.current;
+    if (!bar) return;
+
+    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
+    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+  }, [previewPhase]);
 
   const handleToggle = (item) => {
     setActiveRightSideBarTab(item);
@@ -43,10 +56,11 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         animationClasses,
         {
           'dark-theme': darkMode,
-          'tw-p-2': !shouldHide,
+          'tw-p-2': true,
         }
       )}
       data-cy="right-sidebar-inspector"
+      ref={rightSideBarRef}
     >
       <SidebarItem
         selectedSidebarItem={activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS}

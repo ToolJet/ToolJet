@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -15,92 +15,66 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const { moduleId } = useModuleContext();
 
-  const isPreviewInEditor = useStore(
-    (state) => state.isPreviewInEditor && state.modeStore.modules[moduleId]?.currentMode === 'view',
-    shallow
-  );
+  const previewPhase = useStore((state) => state.previewPhase, shallow);
+  const setPreviewPhase = useStore((state) => state.setPreviewPhase, shallow);
+  const setIsPreviewInEditor = useStore((state) => state.setIsPreviewInEditor, shallow);
+
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar, shallow);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
+
+  const targetMode = useStore((state) => state.targetMode, shallow);
+  const setCurrentMode = useStore((state) => state.setCurrentMode, shallow);
+
+  const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
+  const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
+
+  const transitionCounter = useStore((state) => state.transitionCounter, shallow);
 
   const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldMount, setShouldMount] = useState(!isPreviewInEditor);
-  const [shouldApplyHideClass, setShouldApplyHideClass] = useState(isPreviewInEditor);
+  const [shouldMount, setShouldMount] = useState(true);
+  const [shouldApplyHideClass, setShouldApplyHideClass] = useState(false);
 
-  // Use refs to track pending operations and prevent race conditions
-  const timerRef = useRef(null);
-  const animationRef = useRef(null);
-  const isMountedRef = useRef(true);
-
-  // Handle mount/unmount timing based on preview state
   useEffect(() => {
-    // Clean up any pending operations from previous state changes
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+    if (previewPhase !== 'idle') setIsAnimating(true);
+    else setIsAnimating(false);
+
+    if (previewPhase === 'closing-panels') {
+      if (isQueryPaneExpanded) setIsQueryPaneExpanded(false);
+      if (isSidebarOpen) toggleLeftSidebar(false);
+      if (isRightSidebarOpen) setRightSidebarOpen(false);
     }
 
-    if (isPreviewInEditor) {
-      // Editor → Preview: Apply hide class to trigger animation, then unmount after animation completes
-      setShouldApplyHideClass(true);
-      setIsAnimating(true);
+    if (previewPhase === 'switching-mode') {
+      setIsPreviewInEditor(targetMode === 'view');
+      setCurrentMode(targetMode);
+      updateCanvasBottomHeight(currentPageComponents, moduleId);
+      setPreviewPhase('animating');
+    }
 
-      timerRef.current = setTimeout(() => {
-        if (isMountedRef.current && timerRef.current) {
-          setShouldMount(false);
-          setIsAnimating(false);
-        }
-        timerRef.current = null;
-      }, 300); // Match tw-duration-300
-    } else {
-      // Preview → Editor: Mount first with hide class, then remove hide class to trigger animation
+    if (previewPhase === 'animating') {
+      setShouldApplyHideClass(targetMode === 'view');
+    }
+
+    if (previewPhase === 'mounting-sidebars') {
       setShouldMount(true);
-      setShouldApplyHideClass(true);
-      setIsAnimating(false);
+      setPreviewPhase('switching-mode');
+    }
+  }, [previewPhase]);
 
-      // Use RAF to ensure DOM is ready before triggering animation
-      animationRef.current = requestAnimationFrame(() => {
-        if (!isMountedRef.current) return;
-
-        // Remove hide class to trigger animation
-        setShouldApplyHideClass(false);
-        setIsAnimating(true);
-
-        timerRef.current = setTimeout(() => {
-          if (isMountedRef.current && timerRef.current) {
-            setIsAnimating(false);
-          }
-          timerRef.current = null;
-        }, 300);
-        animationRef.current = null;
-      });
+  useEffect(() => {
+    if (transitionCounter === 0) {
+      setShouldMount(false);
+      setPreviewPhase('idle');
     }
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-      }
-    };
-  }, [isPreviewInEditor]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
+    if (transitionCounter === 4) {
+      setPreviewPhase('idle');
+    }
+  }, [transitionCounter]);
 
   // Build transition classes based on animation type
   const transitionClasses = useMemo(() => {
@@ -135,9 +109,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
 
   return {
     shouldMount,
-    shouldHide: isPreviewInEditor,
     isAnimating,
     animationClasses,
-    isPreviewInEditor,
   };
 };

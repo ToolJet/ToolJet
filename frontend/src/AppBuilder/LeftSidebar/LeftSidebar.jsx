@@ -37,6 +37,7 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
   isUserInZeroToOneFlow,
 }) => {
+  const leftSidebarRef = useRef(null);
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
     pinned,
@@ -50,6 +51,9 @@ export const BaseLeftSidebar = ({
     toggleLeftSidebar,
     isSidebarOpen,
     isDraggingQueryPane,
+    previewPhase,
+    isPreviewInEditor,
+    notifyTransitionDone,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -63,11 +67,14 @@ export const BaseLeftSidebar = ({
       state.toggleLeftSidebar,
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
+      state.previewPhase,
+      isPreviewInEditor,
+      state.notifyTransitionDone,
     ],
     shallow
   );
 
-  const { shouldMount, animationClasses, isPreviewInEditor } = usePreviewToggleAnimation({
+  const { shouldMount, animationClasses } = usePreviewToggleAnimation({
     animationType: 'width',
   });
 
@@ -106,6 +113,16 @@ export const BaseLeftSidebar = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
+
+  useEffect(() => {
+    if (previewPhase !== 'animating') return;
+
+    const bar = leftSidebarRef.current;
+    if (!bar) return;
+
+    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
+    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+  }, [previewPhase]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
@@ -234,6 +251,7 @@ export const BaseLeftSidebar = ({
       })}
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999 }}
+      ref={leftSidebarRef}
     >
       {renderLeftSidebarItems()}
       <Popover

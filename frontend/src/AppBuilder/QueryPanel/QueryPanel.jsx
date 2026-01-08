@@ -28,6 +28,8 @@ export const QueryPanel = ({ darkMode }) => {
   const { shouldMount, animationClasses } = usePreviewToggleAnimation({
     animationType: 'height',
   });
+  const previewPhase = useStore((state) => state.previewPhase, shallow);
+  const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -36,6 +38,7 @@ export const QueryPanel = ({ darkMode }) => {
     }
   );
   const queryPaneRef = useRef(null);
+  const queryBarRef = useRef(null);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight >= 95
       ? 50
@@ -88,6 +91,16 @@ export const QueryPanel = ({ darkMode }) => {
     // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isQueryPaneExpanded, isWindowResizing]);
+
+  useEffect(() => {
+    if (previewPhase !== 'animating') return;
+
+    const bar = queryBarRef.current;
+    if (!bar) return;
+
+    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
+    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+  }, [previewPhase]);
 
   const onMouseDown = useCallback(
     (e) => {
@@ -175,6 +188,7 @@ export const QueryPanel = ({ darkMode }) => {
           alignItems: 'center',
           zIndex: 2,
         }}
+        ref={queryBarRef}
       >
         <div
           style={{ width: '288px', paddingLeft: '12px', height: '100%' }}
