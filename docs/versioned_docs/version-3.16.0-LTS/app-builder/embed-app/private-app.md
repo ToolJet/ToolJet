@@ -27,10 +27,17 @@ Embedded private apps continue to respect all permissions and workspace access c
 
 ## Authentication Flow
 
-## Example
+When a user logs into your host application, your backend makes an API request to the ToolJet API to generate a personal access token (PAT) and a redirect URL. The frontend then loads this redirect URL inside an iframe in your host application. The embedded session is scoped and isolated, ensuring that the user has access only to the intended app without affecting other ToolJet sessions.
 
+See the diagram below for a detailed view of the authentication and embedding flow.
 
-## Steps to Embed a Public Application
+<img className="screenshot-full img-full" src="/img/app-builder/embed-apps/auth-flow.png" alt="Auth Flow for Embedding Private ToolJet Application" />
+
+<!-- 
+## Example 
+-->
+
+## Steps to Embed a Private Application
 
 1. [Create](/docs/getting-started/quickstart-guide) and [release](/docs/development-lifecycle/release/release-rollback/) your ToolJet application.
 
