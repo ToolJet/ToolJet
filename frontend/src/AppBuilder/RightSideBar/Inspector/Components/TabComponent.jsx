@@ -34,6 +34,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     component?.component?.definition?.properties?.useDynamicOptions?.value,
     currentState
   );
+  const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const [tabItems, setTabItems] = useState([]);
@@ -95,7 +96,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
-        fieldBackgroundColor: { value: '#00000000' },
+        fieldBackgroundColor: { value: commonBackgroundColor },
       };
     };
 
