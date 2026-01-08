@@ -7,8 +7,12 @@ import RunpySchema from './Runpy.schema.json';
 import WorkflowsSchema from './Workflows.schema.json';
 
 // eslint-disable-next-line import/no-unresolved
-import { allManifests } from '@tooljet/plugins/client';
+import { allManifests, loadExtendedDatasources } from '@tooljet/plugins/client';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
+
+// State to track if extended datasources are loaded
+let currentManifests = { ...allManifests };
+let extendedLoaded = false;
 
 export const getSchemaDetailsForRender = (schema) => {
   if (schema['tj:version']) {
@@ -35,10 +39,33 @@ const getSchemaMetadata = (schema, key) => {
   return schema.source[key];
 };
 
-//Commonly Used DS
-export const CommonlyUsedDataSources = Object.keys(allManifests)
-  .reduce((accumulator, currentValue) => {
-    const sourceName = getSchemaMetadata(allManifests[currentValue], 'name');
+export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSchema.source, WorkflowsSchema.source];
+
+// Function to recompute datasource categories from current manifests
+function computeCategories(manifests) {
+  const databases = Object.keys(manifests).reduce((acc, key) => {
+    if (getSchemaMetadata(manifests[key], 'type') === 'database') {
+      acc.push(getSchemaDetailsForRender(manifests[key]));
+    }
+    return acc;
+  }, []);
+
+  const apis = Object.keys(manifests).reduce((acc, key) => {
+    if (getSchemaMetadata(manifests[key], 'type') === 'api') {
+      acc.push(getSchemaDetailsForRender(manifests[key]));
+    }
+    return acc;
+  }, []);
+
+  const cloudStorage = Object.keys(manifests).reduce((acc, key) => {
+    if (getSchemaMetadata(manifests[key], 'type') === 'cloud-storage') {
+      acc.push(getSchemaDetailsForRender(manifests[key]));
+    }
+    return acc;
+  }, []);
+
+  const commonlyUsed = Object.keys(manifests).reduce((acc, key) => {
+    const sourceName = getSchemaMetadata(manifests[key], 'name');
     if (
       sourceName === 'REST API' ||
       sourceName === 'MongoDB' ||
@@ -46,40 +73,72 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
       sourceName === 'Google Sheets' ||
       sourceName === 'PostgreSQL'
     ) {
-      accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
+      acc.push(getSchemaDetailsForRender(manifests[key]));
     }
-
-    return accumulator;
-  }, [])
-  .sort((a, b) => {
+    return acc;
+  }, []).sort((a, b) => {
     const order = ['REST API', 'PostgreSQL', 'Google Sheets', 'Airtable', 'MongoDB'];
     return order.indexOf(a.name) - order.indexOf(b.name);
   });
 
-export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'database') {
-    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
+  return { databases, apis, cloudStorage, commonlyUsed };
+}
+
+// Initial categories from core manifests
+let categories = computeCategories(allManifests);
+
+// Load extended datasources and update categories
+export async function loadAllDatasources() {
+  if (extendedLoaded) {
+    return currentManifests;
   }
 
-  return accumulator;
-}, []);
+  const extended = await loadExtendedDatasources();
 
-export const ApiSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'api') {
-    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
-  }
+  // Merge extended manifests into current
+  currentManifests = {
+    ...currentManifests,
+    ...extended.manifests,
+  };
 
-  return accumulator;
-}, []);
-export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (getSchemaMetadata(allManifests[currentValue], 'type') === 'cloud-storage') {
-    accumulator.push(getSchemaDetailsForRender(allManifests[currentValue]));
-  }
+  // Recompute categories with all manifests
+  categories = computeCategories(currentManifests);
 
-  return accumulator;
-}, []);
+  // Update exported variables
+  DataBaseSources.length = 0;
+  DataBaseSources.push(...categories.databases);
 
-export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSchema.source, WorkflowsSchema.source];
+  ApiSources.length = 0;
+  ApiSources.push(...categories.apis);
+
+  CloudStorageSources.length = 0;
+  CloudStorageSources.push(...categories.cloudStorage);
+
+  CommonlyUsedDataSources.length = 0;
+  CommonlyUsedDataSources.push(...categories.commonlyUsed);
+
+  // Update DataSourceTypes
+  DataSourceTypes.length = 0;
+  DataSourceTypes.push(...categories.databases, ...categories.apis, ...categories.cloudStorage, ...OtherSources, ...categories.commonlyUsed);
+
+  extendedLoaded = true;
+
+  return currentManifests;
+}
+
+// Export dynamic accessors that return current categories
+export const getDataBaseSources = () => categories.databases;
+export const getApiSources = () => categories.apis;
+export const getCloudStorageSources = () => categories.cloudStorage;
+export const getCommonlyUsedDataSources = () => categories.commonlyUsed;
+
+// Export static versions for backwards compatibility (will only have core datasources initially)
+// These will be mutated in place when extended datasources load
+export const DataBaseSources = [...categories.databases];
+export const ApiSources = [...categories.apis];
+export const CloudStorageSources = [...categories.cloudStorage];
+export const CommonlyUsedDataSources = [...categories.commonlyUsed];
+
 export const DataSourceTypes = [
   ...DataBaseSources,
   ...ApiSources,
@@ -88,9 +147,12 @@ export const DataSourceTypes = [
   ...CommonlyUsedDataSources,
 ];
 
+// Dynamic function to get all current manifests
+export const getAllManifests = () => currentManifests;
+
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
   accumulator[currentValue] = (props) => {
-    const schema = allManifests[currentValue];
+    const schema = currentManifests[currentValue] || allManifests[currentValue];
 
     if (schema['tj:version']) {
       return <DynamicFormV2 schema={schema} isGDS={true} {...props} />;

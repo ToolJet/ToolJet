@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import cx from 'classnames';
 import moment from 'moment';
 import {
@@ -15,17 +15,20 @@ import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
-import { BlankPage } from './BlankPage';
+
+// Lazy-load modal components for better initial page load performance
+const BlankPage = lazy(() => import('./BlankPage').then((module) => ({ default: module.BlankPage })));
+const TemplateLibraryModal = lazy(() => import('./TemplateLibraryModal/'));
+const ExportAppModal = lazy(() => import('./ExportAppModal'));
+
 import { toast } from 'react-hot-toast';
 import { Button, ButtonGroup, Dropdown } from 'react-bootstrap';
 import Layout from '@/_ui/Layout';
 import AppList from './AppList';
-import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
@@ -47,7 +50,13 @@ import {
   ConsultationBanner,
   AppTypeTab,
 } from '@/modules/dashboard/components';
-import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+
+// Lazy-load AI builder and permission modal
+const CreateAppWithPrompt = lazy(() => import('@/modules/AiBuilder/components/CreateAppWithPrompt'));
+const PermissionDeniedModal = lazy(() =>
+  import('./PermissionDeniedModal/PermissionDeniedModal').then((module) => ({ default: module.PermissionDeniedModal }))
+);
+
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -55,7 +64,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
-import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
@@ -1346,11 +1354,13 @@ class HomePageComponent extends React.Component {
         <div className="wrapper home-page">
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
-            <PermissionDeniedModal
-              show={showInsufficentPermissionModal}
-              onHide={this.onPermissionDeniedModalHide}
-              darkMode={this.props.darkMode}
-            />
+            <Suspense fallback={<div className="text-center p-4"><div className="spinner-border" /></div>}>
+              <PermissionDeniedModal
+                show={showInsufficentPermissionModal}
+                onHide={this.onPermissionDeniedModalHide}
+                darkMode={this.props.darkMode}
+              />
+            </Suspense>
           )}
           <AppActionModal
             modalStates={{
@@ -1695,16 +1705,18 @@ class HomePageComponent extends React.Component {
             </div>
           </Modal>
           {isExportingApp && app.hasOwnProperty('id') && (
-            <ExportAppModal
-              show={isExportingApp}
-              closeModal={() => {
-                this.setState({ isExportingApp: false, app: {} });
-              }}
-              customClassName="modal-version-lists"
-              title={'Select a version to export'}
-              app={app}
-              darkMode={this.props.darkMode}
-            />
+            <Suspense fallback={<div className="text-center p-4"><div className="spinner-border" /></div>}>
+              <ExportAppModal
+                show={isExportingApp}
+                closeModal={() => {
+                  this.setState({ isExportingApp: false, app: {} });
+                }}
+                customClassName="modal-version-lists"
+                title={'Select a version to export'}
+                app={app}
+                darkMode={this.props.darkMode}
+              />
+            </Suspense>
           )}
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
@@ -1848,7 +1860,9 @@ class HomePageComponent extends React.Component {
                 )}
 
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
-                  <CreateAppWithPrompt createApp={this.createApp} />
+                  <Suspense fallback={<div className="text-center p-2"><div className="spinner-border spinner-border-sm" /></div>}>
+                    <CreateAppWithPrompt createApp={this.createApp} />
+                  </Suspense>
                 )}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
@@ -1890,29 +1904,31 @@ class HomePageComponent extends React.Component {
                   !currentFolder.id &&
                   !appSearchKey &&
                   (['front-end', 'workflow'].includes(this.props.appType) ? (
-                    <BlankPage
-                      canCreateApp={this.canCreateApp}
-                      isLoading={true}
-                      createApp={this.createApp}
-                      readAndImport={this.readAndImport}
-                      isImportingApp={isImportingApp}
-                      fileInput={this.fileInput}
-                      openCreateAppModal={this.openCreateAppModal}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-                      creatingApp={creatingApp}
-                      darkMode={this.props.darkMode}
-                      showTemplateLibraryModal={this.state.showTemplateLibraryModal}
-                      viewTemplateLibraryModal={this.showTemplateLibraryModal}
-                      hideTemplateLibraryModal={this.hideTemplateLibraryModal}
-                      appType={this.props.appType}
-                      workflowsLimit={
-                        workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
-                          ? workflowInstanceLevelLimit
-                          : workflowWorkspaceLevelLimit
-                      }
-                    />
+                    <Suspense fallback={<div className="text-center p-5"><div className="spinner-border" /></div>}>
+                      <BlankPage
+                        canCreateApp={this.canCreateApp}
+                        isLoading={true}
+                        createApp={this.createApp}
+                        readAndImport={this.readAndImport}
+                        isImportingApp={isImportingApp}
+                        fileInput={this.fileInput}
+                        openCreateAppModal={this.openCreateAppModal}
+                        openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                        creatingApp={creatingApp}
+                        darkMode={this.props.darkMode}
+                        showTemplateLibraryModal={this.state.showTemplateLibraryModal}
+                        viewTemplateLibraryModal={this.showTemplateLibraryModal}
+                        hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                        appType={this.props.appType}
+                        workflowsLimit={
+                          workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                            ? workflowInstanceLevelLimit
+                            : workflowWorkspaceLevelLimit
+                        }
+                      />
+                    </Suspense>
                   ) : (
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
@@ -2003,14 +2019,16 @@ class HomePageComponent extends React.Component {
               </div>
             </div>
           </div>
-          <TemplateLibraryModal
-            show={this.state.showTemplateLibraryModal}
-            onHide={() => this.setState({ showTemplateLibraryModal: false })}
-            onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
-            darkMode={this.props.darkMode}
-            openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
-            appCreationDisabled={!this.canCreateApp()}
-          />
+          <Suspense fallback={<div className="text-center p-4"><div className="spinner-border" /></div>}>
+            <TemplateLibraryModal
+              show={this.state.showTemplateLibraryModal}
+              onHide={() => this.setState({ showTemplateLibraryModal: false })}
+              onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
+              darkMode={this.props.darkMode}
+              openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+              appCreationDisabled={!this.canCreateApp()}
+            />
+          </Suspense>
         </div>
       </Layout>
     );

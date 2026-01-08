@@ -216,6 +216,7 @@ module.exports = {
       '@cloud': path.resolve(__dirname, 'cloud/'),
       '@assets': path.resolve(__dirname, 'assets/'),
       '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
+      '@tooljet/plugins': path.resolve(__dirname, '../plugins'),
     },
     fallback: {
       process: require.resolve('process/browser.js'),

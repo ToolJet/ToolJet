@@ -20,7 +20,7 @@ const Card = ({
 }) => {
 
   const DisplayIcon = ({ src }) => {
-    if (typeof src !== 'string') return;
+    if (typeof src !== 'string') return null;
 
     if (usePluginIcon) {
       //Fetch darkMode svgs
@@ -32,6 +32,21 @@ const Card = ({
         }
       }
       const Icon = allSvgs[src];
+
+      // Return placeholder if icon not yet loaded (lazy loading)
+      if (!Icon) {
+        return (
+          <div
+            style={{ height, width, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="card-icon"
+          >
+            <div className="spinner-border spinner-border-sm" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        );
+      }
+
       return <Icon style={{ height, width }} className="card-icon" />;
     }
     return <img src={src} width={width} height={height} alt={title} className="card-icon" />;

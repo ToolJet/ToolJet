@@ -1,9 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, Suspense, lazy } from 'react';
 import { TooljetDatabaseContext } from '../index';
-import EditRowDrawer from '../Drawers/EditRowDrawer';
-import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
-import CreateRowDrawer from '../Drawers/CreateRowDrawer';
-import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
+
+// Lazy-load drawer components for better initial page load performance
+const EditRowDrawer = lazy(() => import('../Drawers/EditRowDrawer'));
+const CreateColumnDrawer = lazy(() => import('../Drawers/CreateColumnDrawer'));
+const CreateRowDrawer = lazy(() => import('../Drawers/CreateRowDrawer'));
+const BulkUploadDrawer = lazy(() => import('../Drawers/BulkUploadDrawer'));
+
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -15,6 +18,15 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import config from 'config';
+
+// Loading fallback component for drawer lazy loading
+const DrawerLoader = () => (
+  <div style={{ padding: '20px', textAlign: 'center' }}>
+    <div className="spinner-border spinner-border-sm" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
+  </div>
+);
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -199,15 +211,17 @@ const Header = ({
                   )}
 
                   {Object.keys(selectedRowIds).length === 1 ? (
-                    <EditRowDrawer
-                      isEditRowDrawerOpen={isEditRowDrawerOpen}
-                      setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
-                      selectedRowIds={selectedRowIds}
-                      rows={rows}
-                      isDirectRowExpand={isDirectRowExpand}
-                      referencedColumnDetails={referencedColumnDetails}
-                      setReferencedColumnDetails={setReferencedColumnDetails}
-                    />
+                    <Suspense fallback={<DrawerLoader />}>
+                      <EditRowDrawer
+                        isEditRowDrawerOpen={isEditRowDrawerOpen}
+                        setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
+                        selectedRowIds={selectedRowIds}
+                        rows={rows}
+                        isDirectRowExpand={isDirectRowExpand}
+                        referencedColumnDetails={referencedColumnDetails}
+                        setReferencedColumnDetails={setReferencedColumnDetails}
+                      />
+                    </Suspense>
                   ) : null}
                   {!isDirectRowExpand && Object.keys(selectedRowIds).length > 0 && (
                     <div>
@@ -262,28 +276,34 @@ const Header = ({
           </div>
         </div>
       </div>
-      <CreateColumnDrawer
-        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
-        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
-        rows={rows}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
-      />
-      <CreateRowDrawer
-        isCreateRowDrawerOpen={isCreateRowDrawerOpen}
-        setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
-        referencedColumnDetails={referencedColumnDetails}
-        setReferencedColumnDetails={setReferencedColumnDetails}
-      />
-      <BulkUploadDrawer
-        isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
-        setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
-        bulkUploadFile={bulkUploadFile}
-        handleBulkUploadFileChange={handleBulkUploadFileChange}
-        handleBulkUpload={handleBulkUpload}
-        isBulkUploading={isBulkUploading}
-        errors={errors}
-      />
+      <Suspense fallback={<DrawerLoader />}>
+        <CreateColumnDrawer
+          isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
+          setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+          rows={rows}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+        />
+      </Suspense>
+      <Suspense fallback={<DrawerLoader />}>
+        <CreateRowDrawer
+          isCreateRowDrawerOpen={isCreateRowDrawerOpen}
+          setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
+          referencedColumnDetails={referencedColumnDetails}
+          setReferencedColumnDetails={setReferencedColumnDetails}
+        />
+      </Suspense>
+      <Suspense fallback={<DrawerLoader />}>
+        <BulkUploadDrawer
+          isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+          setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
+          bulkUploadFile={bulkUploadFile}
+          handleBulkUploadFileChange={handleBulkUploadFileChange}
+          handleBulkUpload={handleBulkUpload}
+          isBulkUploading={isBulkUploading}
+          errors={errors}
+        />
+      </Suspense>
     </>
   );
 };

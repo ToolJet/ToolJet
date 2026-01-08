@@ -267,9 +267,13 @@
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
+    "build:check": "npm run build && node scripts/check-bundle-size.js",
+    "build:analyze": "npm run build && ./scripts/analyze-bundle.sh",
     "analyze": "ANALYZE=true webpack --mode=production",
     "analyze:dev": "ANALYZE=true webpack --mode=development",
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
+    "bundle:check": "node scripts/check-bundle-size.js",
+    "bundle:analyze": "./scripts/analyze-bundle.sh",
     "lint": "eslint . '**/*.{js,jsx}'",
     "format": "eslint . --fix '**/*.{js,jsx}'",
     "test": "jest",

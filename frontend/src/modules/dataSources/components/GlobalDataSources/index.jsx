@@ -11,6 +11,7 @@ import {
   ApiSources,
   CloudStorageSources,
   CommonlyUsedDataSources,
+  loadAllDatasources,
 } from '../../../common/components/DataSourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
@@ -36,6 +37,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
+  const [extendedDatasourcesLoaded, setExtendedDatasourcesLoaded] = useState(false);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
@@ -75,6 +77,16 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   );
 
   useEffect(() => {
+    // Load extended datasources in the background (Phase 3 optimization)
+    loadAllDatasources()
+      .then(() => {
+        // Trigger re-render after extended datasources (and their icons) are loaded
+        setExtendedDatasourcesLoaded(true);
+      })
+      .catch((error) => {
+        console.warn('Failed to load extended datasources:', error);
+      });
+
     pluginsService
       .findAll()
       .then(({ data = [] }) => setPlugins([...data]))
