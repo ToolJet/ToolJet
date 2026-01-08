@@ -1,6 +1,9 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.6
+# Version: 2.7
+# Changes from v2.6:
+#   - Added step to dynamically fetch registry credential ID from Render API
+#   - Added registryCredentialId to image object for private DockerHub repos
 # Changes from v2.5:
 #   - Added "runtime": "image" to serviceDetails (required by Render API)
 # Changes from v2.4:
@@ -84,6 +87,26 @@ jobs:
           cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
 
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].registryCredential.id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential: $REGISTRY_CRED_ID"
+
       - name: Create Render Service
         id: create-service
         run: |
@@ -127,7 +150,8 @@ jobs:
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
-                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
               },
               "serviceDetails": {
                 "runtime": "image",
@@ -537,6 +561,26 @@ jobs:
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].registryCredential.id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential: $REGISTRY_CRED_ID"
+
       - name: Create Render Service
         id: create-service
         run: |
@@ -588,7 +632,8 @@ jobs:
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
-                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
               },
               "serviceDetails": {
                 "runtime": "image",
@@ -941,4 +986,3 @@ jobs:
                 });
               } catch (e) { console.log(`Label ${label} not found`); }
             }
-            
