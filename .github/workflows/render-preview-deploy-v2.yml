@@ -107,7 +107,7 @@ jobs:
           fi
           
           echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
-          echo "✅ Found registry credential: $REGISTRY_CRED_ID"
+          echo "✅ Found registry credential
 
       - name: Create Render Service
         id: create-service
@@ -581,7 +581,7 @@ jobs:
           fi
           
           echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
-          echo "✅ Found registry credential: $REGISTRY_CRED_ID"
+          echo "✅ Found registry credential
 
       - name: Create Render Service
         id: create-service
