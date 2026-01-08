@@ -40,7 +40,7 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
 
 1. Go to **ToolJet > Workspace Settings > Workspace login > Enable OpenID Connect > Add provider**.   
     (Example URL - https://app.corp.com/demo-workspace/workspace-settings/workspace-login)
-    <img className="screenshot-full" src="/img/user-management/sso/oidc/microsoft-entra-id/enable-oidc.png" alt="Microsoft Entra ID" />
+    <img className="screenshot-full img-m" src="/img/user-management/sso/oidc/microsoft-entra-id/enable-oidc.png" alt="Microsoft Entra ID" />
 
 2. Without entering any details, click **Save changes** to generate and copy the **Redirect URL**.
 
@@ -63,8 +63,8 @@ Microsoft Entra ID can be configured as the Identity Provider for OIDC, which is
     ```
     You can find the Directory (tenant) ID on the Overview tab of your application in Azure.
 
-The users shall now be able to Sign In using Microsoft Entra ID.
-
+You shall now be able to login to your ToolJet workspace using Microsoft Entra ID.
+   <img className="screenshot-full " src="/img/user-management/sso/oidc/microsoft-entra-id/sign_in_page.png" alt="Sign-In Page"/>
 
 ## Configuring Group Sync using Microsoft Entra ID
 
