@@ -198,6 +198,7 @@ export class VersionUtilService implements IVersionUtilService {
           description: versionDescription ? versionDescription : null,
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
+          co_relation_id: versionFrom.co_relation_id,
         })
       );
 
