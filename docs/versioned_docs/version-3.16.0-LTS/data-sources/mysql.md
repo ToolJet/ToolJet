@@ -11,7 +11,7 @@ ToolJet can connect to MySQL databases to read and write data.
 
 To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/addmysql.gif" alt="MySQL data source"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/mysql-connection-v4.png" alt="MySQL data source"/>
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -40,8 +40,6 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect-v2.png" alt="mysql"/>
-
 </div>
 
 <div style={{paddingTop:'24px'}}>
@@ -61,7 +59,7 @@ SQL mode can be used to query MySQL database using SQL queries.
 SELECT * FROM users
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql" style={{marginBottom:'15px'}}/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/query-sql.png" alt="mysql querying"/>
 
 ### Parameterized Queries
 
@@ -72,22 +70,20 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/param-query-v2.png" alt="mysql parameter querying"/>
 
 ##### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
-
 SQL Parameters:
-
 - Key: username
 - Value: oliver // or `{{ components.username.value }}`
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/walkthrough/row-level-security) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](#) guide for more information.
 
 ### Query Timeout
 
@@ -107,6 +103,12 @@ MySQL offers dynamic functions and system variables that provide real-time infor
 | `@@port`            | Returns the MySQL server port number                              | `3306`               |
 | `CONNECTION_ID()`   | Returns the connection ID for the current session                 | `123456`             |
 
+### MySQL Dynamic Connection Parameters
+
+ToolJet allows MySQL connection parameters such as host and database name to be dynamically overridden at query runtime when dynamic connection parameters are enabled. This enables reuse of a single MySQL data source across multiple environments or tenants without creating separate configurations.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/dynamic-connection-v2.png" alt="mysql dynamic host"/>
+
 ## Querying in GUI Mode
 
 GUI mode can be used to query MySQL database without writing queries.
@@ -118,6 +120,8 @@ GUI mode can be used to query MySQL database without writing queries.
 5. In the editor enter the records in the form of an array of objects.
 6. Click on the **Run** button to run the query.
 
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/gui-query.png" alt="mysql GUI querying"/>
+
 **Example:**
 
 ```json
@@ -126,12 +130,10 @@ GUI mode can be used to query MySQL database without writing queries.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/guinew.png" alt="mysql"/>
-
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/beta/app-builder/custom-code/transform-data).
 :::
 
 </div>
