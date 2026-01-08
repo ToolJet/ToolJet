@@ -548,6 +548,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const Sidebar = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const isPreviewMode = searchParams.has('env') || searchParams.has('version');
     return (
       <div
         ref={(el) => {
@@ -561,7 +563,7 @@ export const PagesSidebarNavigation = ({
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
-          'no-preview-settings': isReleasedVersionId,
+          'no-preview-settings': !isPreviewMode,
           'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
           'collapsable-only':
             !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',
@@ -715,10 +717,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);
@@ -754,10 +761,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);

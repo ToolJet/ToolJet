@@ -33,6 +33,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
+  const isTagsInput = component?.component?.component === 'TagsInput';
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -64,7 +65,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _markedAsDefault = getResolvedValue(
-    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value
+    component?.component?.definition?.properties[isMultiSelect || isTagsInput ? 'values' : 'value']?.value
   );
 
   const [options, setOptions] = useState([]);
@@ -78,7 +79,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
+    } else if (
+      componentMeta?.properties[key]?.accordian === 'Options' ||
+      componentMeta?.properties[key]?.accordian === 'Tags'
+    ) {
       optionsProperties.push(key);
     } else {
       properties.push(key);
@@ -183,7 +187,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const handleMarkedAsDefaultChange = (value, index) => {
     const isMarkedAsDefault = getResolvedValue(value);
-    if (isMultiSelect) {
+    if (isMultiSelect || isTagsInput) {
       const _value = options[index]?.value;
       let _markedAsDefault = [];
       if (isMarkedAsDefault && !markedAsDefault.includes(_value)) {
@@ -282,7 +286,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'} inspector-select-options-popover`}
+        style={{ minWidth: '248px' }}
+      >
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
@@ -314,7 +321,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
+              initialValue={isMultiSelect || isTagsInput ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -492,7 +499,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: 'Options',
+    title: isTagsInput ? 'Tags' : 'Options',
     isOpen: true,
     children: (
       <>
@@ -558,6 +565,28 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'sort',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'allowNewTags',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'enableSearch',
             'properties',
             currentState,
             allComponents

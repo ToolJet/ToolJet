@@ -84,6 +84,54 @@ export async function handleLicensingInit(app: NestExpressApplication, logger: a
 }
 
 /**
+ * Applies OTEL middleware to Express app
+ * Note: The OTEL SDK is started at import time in src/otel/tracing.ts
+ * This function only applies the middleware after the app is created
+ */
+export async function initializeOtel(app: NestExpressApplication, logger: any) {
+  // Check if OTEL is enabled
+  if (process.env.ENABLE_OTEL !== 'true') {
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('⏭️ OTEL disabled (ENABLE_OTEL not set to true)');
+    }
+    return;
+  }
+
+  try {
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE && tooljetEdition !== TOOLJET_EDITIONS.Cloud) {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        logger.log('⏭️ OTEL skipped - not Enterprise or Cloud edition');
+      }
+      return;
+    }
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('🔭 Applying OpenTelemetry middleware...');
+    }
+
+    // Import otelMiddleware from tracing.ts (use relative path for runtime compatibility)
+    const { otelMiddleware } = await import('../otel/tracing');
+
+    // Apply OTEL middleware to Express app
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.use(otelMiddleware);
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      logger.log('✅ OpenTelemetry middleware applied successfully');
+      logger.log('   - SDK: Already started at import time');
+      logger.log('   - Tracing: Enabled');
+      logger.log('   - Metrics: Enabled');
+      logger.log('   - Auto-instrumentation: Active');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to initialize OpenTelemetry:', error);
+    // Don't throw - observability should never break the app
+  }
+}
+
+/**
  * Replaces subpath placeholders in static assets
  */
 export function replaceSubpathPlaceHoldersInStaticAssets(logger: any) {
@@ -325,7 +373,15 @@ export function logStartupInfo(configService: ConfigService, logger: any) {
   logger.log(`global HTTP proxy: ${configService.get<string>('TOOLJET_HTTP_PROXY') || 'Not configured'}`);
   logger.log(`Frame embedding: ${configService.get<string>('DISABLE_APP_EMBED') !== 'true' ? 'enabled' : 'disabled'}`);
   logger.log(`Metrics Enabled: ${configService.get('ENABLE_METRICS') === 'true'}`);
-  logger.log(`OTEL_ENABLED: ${configService.get('ENABLE_OTEL') === 'true'}`);
+
+  const otelEnabled = configService.get('ENABLE_OTEL') === 'true';
+  logger.log(`OpenTelemetry: ${otelEnabled ? 'Enabled' : 'Disabled'}`);
+  if (otelEnabled) {
+    logger.log(`  - Tracing: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+    logger.log(`  - App Metrics: ${otelEnabled ? 'Active' : 'Inactive'}`);
+  }
+
   logger.log(`Environment: ${configService.get<string>('NODE_ENV') || 'development'}`);
   logger.log(`Port: ${configService.get<string>('PORT') || 3000}`);
   logger.log(`Listen Address: ${configService.get<string>('LISTEN_ADDR') || '::'}`);

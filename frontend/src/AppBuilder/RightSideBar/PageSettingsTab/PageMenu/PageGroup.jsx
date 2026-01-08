@@ -153,8 +153,9 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
-                }`}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
+                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+              }`}
             />
           </div>
         )}
@@ -285,9 +286,7 @@ export const RenderPageAndPageGroup = ({
       // check if the page group has at least one visible child
       page.children.some((child) => {
         const isPageHidden = getIsPageHidden('canvas', child?.id);
-        return (
-          isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true)
-        );
+        return isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true);
       })
     );
   };

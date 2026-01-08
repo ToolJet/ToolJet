@@ -26,4 +26,10 @@ export interface IRolesUtilService {
     organizationId: string,
     manager?: EntityManager
   ): Promise<boolean>;
+
+  checkIfBuilderLevelEnvironmentPermissions(
+    groupId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<boolean>;
 }

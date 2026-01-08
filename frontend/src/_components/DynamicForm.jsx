@@ -662,7 +662,7 @@ const DynamicForm = ({
                     )}
                     {(type === 'password' || encrypted) && (
                       <div className="col-auto mb-2">
-                        <small className="text-green">
+                        <small className="text-green" data-cy="encrypted-text">
                           <img
                             className="mx-2 encrypted-icon"
                             src="assets/images/icons/padlock.svg"
@@ -711,7 +711,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'} data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}>
+          <div className={isHorizontalLayout ? '' : 'row'} >
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div

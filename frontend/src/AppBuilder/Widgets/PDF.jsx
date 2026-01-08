@@ -13,7 +13,7 @@ const PasswordResponses = {
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
@@ -184,7 +184,15 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
 
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
-      <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
+      <div
+        className="d-flex position-relative h-100 flex-column"
+        style={{
+          margin: '0 auto',
+          overflow: 'hidden',
+          borderRadius: `${borderRadius}px`,
+          border: `1px solid ${borderColor}`,
+        }}
+      >
         <div
           className="scrollable h-100 col position-relative"
           id="pdf-wrapper"
@@ -195,9 +203,8 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
-            className={`d-flex ${
-              pageControls ? 'justify-content-between' : 'justify-content-end'
-            } py-3 px-3 align-items-baseline border-top border-light`}
+            className={`d-flex ${pageControls ? 'justify-content-between' : 'justify-content-end'
+              } py-3 px-3 align-items-baseline border-top border-light`}
             style={{ backgroundColor: 'var(--cc-surface1-surface)', color: 'var(--cc-primary-text)' }}
           >
             {pageControls && (

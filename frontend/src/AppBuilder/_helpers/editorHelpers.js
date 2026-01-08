@@ -80,6 +80,7 @@ const PDF = lazy(() => import('@/AppBuilder/Widgets/PDF'));
 const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'));
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect'));
+const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -165,6 +166,7 @@ export const AllComponents = {
   ModalV2,
   ModuleContainer,
   ModuleViewer,
+  TagsInput,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;

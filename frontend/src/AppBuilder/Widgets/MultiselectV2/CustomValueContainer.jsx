@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { components } from 'react-select';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 const { ValueContainer, Placeholder } = components;
@@ -6,13 +6,38 @@ import './multiselectV2.scss';
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
+  const [valueContainerWidth, setValueContainerWidth] = useState(0);
+
   const values =
     Array.isArray(selectProps?.value) &&
     selectProps?.value
       ?.filter((option) => option.value !== 'multiselect-custom-menulist-select-all') //Remove the Select all option if selected
       ?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
-  const valueContainerWidth = selectProps?.containerRef?.current?.offsetWidth;
+  // Need this useEffect to update the width of the value container when the options change or opened in modal
+  useEffect(() => {
+    // Update width when ref is available or changes
+    const updateWidth = () => {
+      if (selectProps?.containerRef?.current?.offsetWidth) {
+        setValueContainerWidth(selectProps.containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+
+    // Use ResizeObserver to handle dynamic width changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateWidth();
+    });
+
+    if (selectProps?.containerRef?.current) {
+      resizeObserver.observe(selectProps.containerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [selectProps?.containerRef, props.hasValue]);
 
   return (
     <ValueContainer {...props}>
@@ -24,7 +49,7 @@ const CustomValueContainer = ({ children, ...props }) => {
         >
           {selectProps?.doShowIcon && (
             <TablerIcon
-              iconName={selectProps?.icon}
+              iconName={selectProps?.icon ?? 'IconHome2'}
               style={{
                 width: '16px',
                 height: '16px',
@@ -40,7 +65,9 @@ const CustomValueContainer = ({ children, ...props }) => {
             </Placeholder>
           ) : (
             <span className="text-truncate" {...props} id="options" style={{ maxWidth: valueContainerWidth }}>
-              {selectProps?.showAllSelectedLabel && isAllOptionsSelected ? 'All items are selected.' : values.join(', ')}
+              {selectProps?.showAllSelectedLabel && isAllOptionsSelected
+                ? 'All items are selected.'
+                : values.join(', ')}
             </span>
           )}
           {/* Rendering children except Placeholder component to preserve the default behavior of react-select like focus
