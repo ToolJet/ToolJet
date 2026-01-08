@@ -13,7 +13,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';;
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -95,7 +95,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
-        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+        fieldBackgroundColor: { value: '#00000000' },
       };
     };
 
