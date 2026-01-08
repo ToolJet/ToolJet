@@ -18,6 +18,7 @@ import {
   VersionReleaseDto,
 } from './dto';
 import { APP_TYPES, FEATURE_KEY } from './constants';
+import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -92,17 +93,23 @@ export class AppsService implements IAppsService {
     });
   }
 
-  async validatePrivateAppAccess(app: App, ability: AppAbility, validateAppAccessDto: ValidateAppAccessDto) {
+  async validatePrivateAppAccess(
+    app: App,
+    ability: AppAbility,
+    user: User,
+    validateAppAccessDto: ValidateAppAccessDto
+  ) {
     const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
       slug: app.slug,
       type: app.type,
     };
-    // Enforce access type for viewer users: only access_type=view is allowed
+    // Check permissions
     const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
-    console.log({ hasEditPermission, hasViewPermission });
+
+    // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
       // Viewer role: require access_type=view explicitly; reject edit or missing
       if (accessType?.toLowerCase() !== 'view') {
@@ -148,12 +155,46 @@ export class AppsService implements IAppsService {
         app.organizationId
       );
 
-      // For view-only users, restrict access to production environment
-      if (!hasEditPermission && hasViewPermission && environment && environment.name.toLowerCase() === 'production') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          message: 'restricted-preview',
-        });
+      // Validate environment access for all users (both builders and viewers)
+      // Skip validation only for released environment (everyone with view access can see released)
+      if (environment) {
+        const envName = environment.name.toLowerCase();
+
+        // Always allow access to released environment for all users who can view the app
+        if (envName !== 'released') {
+          const request = RequestContext?.currentContext?.req as any;
+          const userPermissions = request?.tj_user_permissions;
+          const appPermissions = userPermissions?.APP;
+
+          let hasEnvironmentAccess = false;
+          if (appPermissions) {
+            switch (envName) {
+              case 'development':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'development'
+                );
+                break;
+              case 'staging':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'staging');
+                break;
+              case 'production':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'production'
+                );
+                break;
+            }
+          }
+
+          // If user doesn't have access to this environment, reject with restricted-preview
+          // Apply to all users (builders and viewers)
+          if (!hasEnvironmentAccess) {
+            throw new ForbiddenException('restricted-preview');
+          }
+        }
       }
       if (version) response['versionName'] = version.name;
       if (envId) response['environmentName'] = environment.name;
@@ -174,11 +215,7 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const { id, slug } = app;
-    return {
-      slug: slug,
-      id: id,
-    };
+    return { id: app.id, slug: app.slug };
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {

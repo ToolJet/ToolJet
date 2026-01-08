@@ -22,6 +22,7 @@ import { dropdownConfig } from './dropdown';
 import { dropdownV2Config } from './dropdownV2';
 import { multiselectConfig } from './multiselect';
 import { multiselectV2Config } from './multiselectV2';
+import { tagsInputConfig } from './TagsInput';
 import { richtextareaConfig } from './richtextarea';
 import { mapConfig } from './map';
 import { qrscannerConfig } from './qrscanner';
@@ -100,6 +101,7 @@ const widgets = {
   dropdownV2Config,
   multiselectConfig,
   multiselectV2Config, //!Depreciated
+  tagsInputConfig,
   richtextareaConfig,
   mapConfig,
   qrscannerConfig,

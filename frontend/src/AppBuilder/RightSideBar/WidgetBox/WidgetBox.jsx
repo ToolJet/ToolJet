@@ -16,6 +16,7 @@ const NEW_WIDGETS = [
   'PopoverMenu',
   'AudioRecorder',
   'Camera',
+  'TagsInput',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

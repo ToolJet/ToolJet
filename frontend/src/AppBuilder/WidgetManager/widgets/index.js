@@ -68,6 +68,7 @@ import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
+import { tagsInputConfig } from './TagsInput';
 
 export {
   buttonConfig,
@@ -140,4 +141,5 @@ export {
   popoverMenuConfig,
   audioRecorderConfig,
   cameraConfig,
+  tagsInputConfig,
 };

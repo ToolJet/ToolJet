@@ -18,6 +18,7 @@ import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
 import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
 import { Multiselect } from '@/AppBuilder/Widgets/Multiselect';
 import { MultiselectV2 } from '@/AppBuilder/Widgets/MultiselectV2/MultiselectV2';
+import { TagsInput } from '@/AppBuilder/Widgets/TagsInput/TagsInput';
 import { Chart } from '@/AppBuilder/Widgets/Chart';
 import { Map as MapComponent } from '@/AppBuilder/Widgets/Map/Map';
 import { QrScanner } from '@/AppBuilder/Widgets/QrScanner/QrScanner';
@@ -110,6 +111,7 @@ export const AllComponents = {
   TimePicker,
   Multiselect,
   MultiselectV2,
+  TagsInput,
   Modal,
   ModalV2,
   Chart,
