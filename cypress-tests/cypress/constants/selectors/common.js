@@ -279,6 +279,7 @@ export const commonSelectors = {
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
   previewSettings: '[data-cy="preview-settings"]',
+  previewText: '[data-cy="preview-chip"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
