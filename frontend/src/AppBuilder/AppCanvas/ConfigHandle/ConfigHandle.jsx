@@ -10,6 +10,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
+import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 // Lazy load editor-only component to reduce viewer bundle size
