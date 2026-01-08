@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -2163,9 +2163,11 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
-          status: appVersion.status,
+          status: appVersion.status || AppVersionStatus.DRAFT,
           versionType: appVersion.versionType,
           parent_version_id: appVersion?.id || null,
+          createdById: user.id,
+          co_relation_id: appVersion.co_relation_id,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
