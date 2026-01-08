@@ -2,7 +2,7 @@
     display: flex;
     width: 100%;
     height: 36px;
-    gap: 16px;
+    gap: 8px;
     align-items: center;
 }
 
@@ -29,10 +29,12 @@
 .audio-recorder-button {
     height: 38px;
     width: 38px;
+    min-width: 38px;
     padding: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .save-discard-button-container {
@@ -41,6 +43,7 @@
     align-items: center;
     justify-content: center;
     margin-left: auto;
+    flex-shrink: 0;
 }
 
 .audio-recorder-loader-container {
@@ -62,4 +65,20 @@
     color: var(--primary-accent-strong);
     line-height: 20px;
     cursor: pointer;
+}
+
+.audio-recorder-label {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.audio-recorder-waveform-container {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
 }

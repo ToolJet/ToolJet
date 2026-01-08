@@ -4,7 +4,7 @@ export const audioRecorderConfig = {
     description: 'Records audio',
     component: 'AudioRecorder',
     defaultSize: {
-        width: 8,
+        width: 10,
         height: 70,
     },
     others: {

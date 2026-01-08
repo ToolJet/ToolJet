@@ -320,7 +320,7 @@ export const AudioRecorder = ({
               recorderIconColor={recorderIconColor}
             />
           </ButtonSolid>
-          <span style={buttonTextStyle}>
+          <span className="audio-recorder-label" style={buttonTextStyle}>
             <RecorderStatusDisplay
               permissionState={permissionState}
               status={status}
@@ -330,13 +330,15 @@ export const AudioRecorder = ({
             />
           </span>
           {status !== 'idle' && (
-            <Waveform
-              status={status}
-              mediaStream={mediaStream}
-              blobUrl={mediaBlobUrl}
-              isPlaying={isPlaying}
-              audioRef={audioRef}
-            />
+            <div className="audio-recorder-waveform-container">
+              <Waveform
+                status={status}
+                mediaStream={mediaStream}
+                blobUrl={mediaBlobUrl}
+                isPlaying={isPlaying}
+                audioRef={audioRef}
+              />
+            </div>
           )}
           <div className="save-discard-button-container">
             <RecorderActions
