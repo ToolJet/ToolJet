@@ -156,13 +156,9 @@ module.exports = {
           enforce: true,
         },
 
-        // Icon library (will be optimized further in Phase 2)
-        icons: {
-          test: /[\\/]node_modules[\\/](@tabler\/icons-react|lucide-react)[\\/]/,
-          name: 'vendor-icons',
-          priority: 30,
-          enforce: true,
-        },
+        // Icon library - removed vendor-icons chunk to enable dynamic loading
+        // Icons are now loaded on-demand via loadIcon() helper
+        // Static imports in a few files will bundle only those specific icons
 
         // Radix UI components
         radix: {
