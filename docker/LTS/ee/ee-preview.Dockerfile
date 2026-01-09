@@ -131,6 +131,58 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
+# ==============================================================================
+# nsjail Build for Python Sandboxing
+# ==============================================================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    g++ \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build-nsjail
+RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
+    cd nsjail && \
+    make && \
+    strip nsjail && \
+    cp nsjail /usr/local/bin/ && \
+    cd / && rm -rf /build-nsjail
+
+# ==============================================================================
+# Python Installation for Workflow runpy nodes
+# ==============================================================================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create isolated Python environment
+RUN python3 -m venv /opt/python-runtime
+
+# Upgrade pip and install common packages
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.6.4 \
+    typing-extensions==4.10.0
+
+# Create nsjail config directory and Python execution temp directory
+RUN mkdir -p /etc/nsjail /tmp/python-exec && chmod 777 /tmp/python-exec
+
 WORKDIR /
 
 # copy npm scripts
@@ -151,6 +203,8 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+# Copy nsjail configuration for Python sandboxing
+COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
 WORKDIR /app
 
