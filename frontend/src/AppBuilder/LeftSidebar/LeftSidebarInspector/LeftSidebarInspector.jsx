@@ -1,19 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { HeaderSection } from '@/_ui/LeftSidebar';
-import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import JSONTreeViewerV2 from './JSONTreeViewerV2';
-import _ from 'lodash';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
-import { Button as ButtonComponent } from '@/components/ui/Button/Button';
+import InspectorHeader from './InspectorHeader';
 import { formatInspectorDataMisc, formatInspectorQueryData, noDataFoundChildDataFormat } from './utils';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 
 import './styles.scss';
 
-const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }) => {
+const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
   const exposedComponentsVariables = useStore((state) => state.getAllExposedValues().components, shallow);
   const exposedQueries = useStore((state) => state.getAllExposedValues().queries || {}, shallow);
   const exposedVariables = useStore((state) => state.getAllExposedValues().variables || {}, shallow);
@@ -25,6 +21,10 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
   const formatInspectorComponentData = useStore((state) => state.formatInspectorComponentData, shallow);
   const queryNameIdMapping = useStore((state) => state.getQueryNameIdMapping(), shallow);
   const searchablePaths = useRef(new Set(['queries', 'components', 'globals', 'variables', 'page', 'constants']));
+
+  // Search state from store
+  const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
+  const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
 
   const iconsList = useIconList({
     exposedComponentsVariables,
@@ -149,21 +149,13 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
-      <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="State inspector">
-          <div className="d-flex justify-content-end">
-            <ButtonComponent
-              iconOnly
-              leadingIcon={pinned ? 'unpin' : 'pin'}
-              onClick={() => setPinned(!pinned)}
-              variant="ghost"
-              fill="var(--icon-strong,#6A727C)"
-              size="medium"
-              data-cy="left-sidebar-pin-button"
-            />
-          </div>
-        </HeaderSection.PanelHeader>
-      </HeaderSection>
+      <InspectorHeader
+        darkMode={darkMode}
+        onClose={onClose}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        onSearchClear={() => setSearchValue('')}
+      />
 
       <div className="card-body p-1 pb-5">
         <ErrorBoundary>

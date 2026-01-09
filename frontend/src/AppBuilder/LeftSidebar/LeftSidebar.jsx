@@ -111,8 +111,7 @@ export const BaseLeftSidebar = ({
         return (
           <LeftSidebarInspector
             darkMode={darkMode}
-            setPinned={setPinned}
-            pinned={pinned}
+            onClose={() => toggleLeftSidebar(false)}
             moduleId={moduleId}
             appType={appType}
           />
@@ -227,7 +226,7 @@ export const BaseLeftSidebar = ({
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (selectedSidebarItem === 'tooljetai') return;
+          if (['tooljetai','inspect'].includes(selectedSidebarItem)) return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
