@@ -57,6 +57,7 @@ const RenderWidget = ({
   darkMode,
   moduleId,
   currentMode,
+  currentLayout,
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
@@ -235,6 +236,7 @@ const RenderWidget = ({
             id={id}
             key={key}
             {...obj}
+            currentLayout={currentLayout}
             setExposedVariable={setExposedVariable}
             setExposedVariables={setExposedVariables}
             height={widgetHeight - 4}

@@ -171,6 +171,7 @@ const WidgetWrapper = memo(
             onOptionsChange={onOptionsChange}
             moduleId={moduleId}
             currentMode={mode}
+            currentLayout={currentLayout}
           />
         </div>
       </>
