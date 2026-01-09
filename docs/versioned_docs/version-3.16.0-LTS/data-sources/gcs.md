@@ -17,7 +17,7 @@ ToolJet requires the following to connect to a GCS datasource:
 
 You can follow the [google documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/gcs-connect-v2.png"  alt="gcs connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/gcs-connect-v2.png"  alt="gcs connection" />
 
 </div>
 
@@ -43,7 +43,7 @@ Query results can be transformed using transformations. Read our transformations
 - **[Signed url for download](#signed-url-for-download)**
 - **[Signed url for upload](#signed-url-for-upload)**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/gcs-query-v2.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/listops.png" alt="gcs list of operations" style={{marginBottom:'15px'}} />
 
 ### Read File
 
@@ -54,7 +54,7 @@ Reads the content of a file from GCS.
 - **Bucket**
 - **File Name**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/readFile.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/read-query.png" alt="gcs read query" style={{marginBottom:'15px'}} />
 
 ### Uplodad File
 
@@ -71,13 +71,21 @@ Uploads a file to GCS.
 - **Content Type**
 - **Encoding**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/uploadFile.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/upload-query.png" alt="gcs upload query" style={{marginBottom:'15px'}} />
+
+#### Example:
+
+```yaml
+{
+    'name' : 'Shruthi Jotsna'
+}
+```
 
 ### List Buckets
 
 Retrieves a list of available buckets.
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/listBuckets.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/list-bucket-query.png" alt="gcs list query" style={{marginBottom:'15px'}} />
 
 ### List Files in a Bucket
 
@@ -91,7 +99,7 @@ Lists files within a specific GCS bucket.
 
 - **Prefix**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/listFiles.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/list-files-query.png" alt="gcs list query" style={{marginBottom:'15px'}} />
 
 ### Signed URL for Download
 
@@ -106,7 +114,7 @@ Generates a signed URL for downloading a file.
 
 - **Expires in**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/urlDownload.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/signed-download-query.png" alt="gcs url download query" style={{marginBottom:'15px'}} />
 
 ### Signed URL for Upload
 
@@ -122,6 +130,6 @@ Generates a signed URL for uploading a file.
 - **Expires in**
 - **Content Type**
 
-<img className="screenshot-full" src="/img/datasource-reference/gcs/urlUpload.png" alt="gcs query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/gcs/signed-upload-query.png" alt="gcs url upload query" style={{marginBottom:'15px'}} />
 
 </div>
