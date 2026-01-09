@@ -1,0 +1,111 @@
+.debugger-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .debugger-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 0 16px;
+  }
+
+  .debugger-header-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-default);
+  }
+
+  .debugger-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+}
+
+// Custom tabs matching Figma design exactly
+.debugger-tabs-container {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  border-bottom: 1px solid var(--border-weak, #e4e7eb);
+  padding: 0 16px;
+}
+
+.debugger-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: border-color 0.15s ease;
+
+  // Hover state - background on inner content
+  &:hover:not(.active) {
+    .debugger-tab-content {
+      background-color: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+    }
+  }
+
+  // Focus state - focus ring on inner content
+  &:focus-visible {
+    outline: none;
+
+    .debugger-tab-content {
+      background-color: var(--bg-surface-layer-01, #ffffff);
+      box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368e3);
+    }
+
+    .debugger-tab-label {
+      color: var(--text-default, #1b1f24);
+    }
+  }
+
+  // Selected/Active state
+  &.active {
+    border-bottom-color: var(--border-accent-strong, #4368e3);
+
+    .debugger-tab-label {
+      color: var(--text-placeholder, #1b1f24);
+    }
+
+    // Active + hover
+    &:hover {
+      .debugger-tab-content {
+        background-color: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+      }
+    }
+
+    // Active + focus
+    &:focus-visible {
+      .debugger-tab-content {
+        background-color: var(--bg-surface-layer-01, #ffffff);
+        box-shadow: 0px 0px 0px 2px var(--interactive-focus-outline, #4368e3);
+      }
+    }
+  }
+
+  .debugger-tab-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .debugger-tab-label {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-placeholder, #6a727c);
+    white-space: nowrap;
+    transition: color 0.15s ease;
+  }
+}
