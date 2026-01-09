@@ -91,10 +91,16 @@ For users migrating from Temporal-based workflows, please refer to the [Workflow
 
 To enable workflow scheduling in your Helm deployment, you need to configure the following environment variables:
 
-| Variable                         | Description                                                                 | Default |
-| -------------------------------- | --------------------------------------------------------------------------- | ------- |
-| **WORKER**                       | Enable job processing for workflows. Set to `true` to process workflow jobs | `true`  |
-| **TOOLJET_WORKFLOW_CONCURRENCY** | Maximum number of concurrent workflows that can be executed                 | `10`    |
+```yaml
+env:
+  WORKER: "true"
+  TOOLJET_WORKFLOW_CONCURRENCY: "10"
+```
+
+**Environment Variable Details:**
+
+- **WORKER** (default: `true`): Enable job processing for workflows. Set to `true` to process workflow jobs
+- **TOOLJET_WORKFLOW_CONCURRENCY** (default: `10`): Maximum number of concurrent workflows that can be executed
 
 :::warning
 **External Redis for Multiple Workflow Workers**: When running multiple workers for workflows, an external stateful Redis instance is recommended for better performance and reliability. The built-in Redis is suitable for single-worker workflow setups.
