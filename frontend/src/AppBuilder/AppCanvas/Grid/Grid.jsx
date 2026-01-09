@@ -1059,7 +1059,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Apply bounds clamping to prevent widget from going out of canvas
             useGridStore.getState().actions.setGhostDragPosition({ left, top, e });
-            const draggingWidgetWidth = getDraggingWidgetWidth(currentDragCanvasId, e.target.clientWidth);
+            const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
             e.target.style.width = `${draggingWidgetWidth}px`;
 
             e.target.style.transform = `translate(${left}px, ${top}px)`;
@@ -1089,7 +1089,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Snap to grid + add scroll delta to keep widget under cursor
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth + scrollDelta.x || 0;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT + scrollDelta.y || 0;
-          const draggingWidgetWidth = getDraggingWidgetWidth(_dragParentId, e.target.clientWidth);
+          const draggingWidgetWidth = getDraggingWidgetWidth(e.target.clientWidth, _gridWidth);
           e.target.style.width = `${draggingWidgetWidth}px`;
 
           // This logic is to handle the case when the dragged element is over a new canvas

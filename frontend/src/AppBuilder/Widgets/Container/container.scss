@@ -11,12 +11,15 @@
     }
   }
 
-.dynamic-height-target {
-  .canvas-component {
-    .widget-type-container {
-      .sub-canvas {
-        overflow-y: hidden !important;
-      }
+
+.viewer {
+    .dynamic-height-target {
+        .canvas-component {
+            .widget-type-container {
+                .sub-canvas {
+                    overflow-y: hidden !important;
+                }
     }
   }
+}
 }

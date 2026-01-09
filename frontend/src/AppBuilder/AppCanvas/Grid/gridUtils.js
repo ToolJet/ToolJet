@@ -545,11 +545,9 @@ export const computeScrollDeltaOnDrag = (canvasId) => {
   return 0;
 };
 
-export const getDraggingWidgetWidth = (canvasParentId, widgetWidth) => {
-  const targetCanvasWidth = document.getElementById(`canvas-${canvasParentId}`)?.offsetWidth || 0;
-  const gridUnitWidth = targetCanvasWidth / NO_OF_GRIDS;
-  const gridUnits = Math.round(widgetWidth / gridUnitWidth);
-  const draggingWidgetWidth = gridUnits * gridUnitWidth;
+export const getDraggingWidgetWidth = (widgetWidth, gridWidth) => {
+  const gridUnits = Math.round(widgetWidth / gridWidth);
+  const draggingWidgetWidth = gridUnits * gridWidth;
   return draggingWidgetWidth;
 };
 

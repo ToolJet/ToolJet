@@ -5,8 +5,12 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
+import {
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+  getSubContainerHeightAfterPadding,
+} from './appCanvasUtils';
+import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
@@ -158,14 +162,14 @@ const Container = React.memo(
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
     return (
       <div
-        // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
         ref={(el) => {
           realCanvasRef.current = el;
           drop(el);
         }}
         style={{
-          height: id === 'canvas' ? `${canvasHeight}` : '100%',
+          height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
+          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

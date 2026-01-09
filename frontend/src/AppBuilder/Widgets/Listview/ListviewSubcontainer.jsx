@@ -47,8 +47,7 @@ export const ListviewSubcontainer = ({
         height: `${transformedRowHeight}px`,
         width: `${100 / positiveColumns}%`,
         padding: '0px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        overflow: 'hidden',
         ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
       }}
       key={index}
