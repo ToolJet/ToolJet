@@ -10,7 +10,7 @@ import { onboardingSelectors } from "Selectors/onboarding";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
 import { setupAppWithSlug, verifyRestrictedAccess } from "Support/utils/apps";
-import { InstanceSSO } from "Support/utils/platform/eeCommon";
+import { InstanceSSO, verifyPreviewIsDisabled } from "Support/utils/platform/eeCommon";
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 describe("Private and Public apps", () => {
@@ -138,7 +138,6 @@ describe("Private and Public apps", () => {
 
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
-
     cy.defaultWorkspaceLogin();
     cy.apiMakeAppPublic();
     cy.apiLogout();
@@ -153,6 +152,9 @@ describe("Private and Public apps", () => {
 
   it("should verify app private and public app visibility for the same instance user", () => {
     setupAppWithSlug(data.appName, data.slug);
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    verifyPreviewIsDisabled();
 
     cy.apiLogout();
     cy.ifEnv("Enterprise", () => {
@@ -173,6 +175,7 @@ describe("Private and Public apps", () => {
     cy.apiLogin(data.email, "password");
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     verifyWidget("private");
+    verifyPreviewIsDisabled();
   });
 
   it("should redirect to workspace login and handle signup flow of existing and non-existing user", () => {
@@ -190,13 +193,11 @@ describe("Private and Public apps", () => {
     // cy.apiMakeAppPublic(publicAppId);
     setupAppWithSlug(data.appPrivateName, data.appPrivateSlug);
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
-
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
     verifyWidget("public");
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) });
     verifyWidget("private");
-
     cy.apiLogout();
 
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });

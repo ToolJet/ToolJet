@@ -40,6 +40,7 @@ describe("Manage SSO for multi workspace", () => {
   });
 
   it("Should verify workspace settings page elements and their functionality", () => {
+    cy.apiUpdateAutoSSO(false, "organization");
     SSO.setSignupStatus(false);
     SSO.defaultSSO(true);
     common.navigateToManageSSO();

@@ -15,7 +15,8 @@ export interface IAppsController {
     versionId: string,
     envId: string,
     ability: AppAbility,
-    app: AppEntity
+    app: AppEntity,
+    user: UserEntity
   ): Promise<any>;
 
   validateReleasedAppAccess(ability: AppAbility, app: AppEntity): any;

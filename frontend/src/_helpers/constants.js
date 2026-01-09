@@ -57,8 +57,9 @@ export const ERROR_MESSAGES = {
   },
   'restricted-preview': {
     title: 'Restricted access',
-    message: 'Access to production environment preview is restricted for end users.',
+    message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
+    cta: 'Back to home page',
     queryParams: [],
   },
   'no-accessible-pages': {

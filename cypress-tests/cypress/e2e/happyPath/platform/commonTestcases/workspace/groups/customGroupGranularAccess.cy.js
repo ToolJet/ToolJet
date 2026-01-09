@@ -61,6 +61,7 @@ const createWorkspaceOnboardUser = ({
 const configureAppGranularPermissions = (groupName, apps) => {
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(groupName)).click();
+    cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.granularLink).click();
 
     //Create app granular access
@@ -75,7 +76,7 @@ const configureAppGranularPermissions = (groupName, apps) => {
 
         cy.clearAndType(groupsSelector.permissionNameInput, app);
         cy.get(groupsSelector.customRadio).check();
-        cy.get(".css-1gfides").click({ force: true }).type(`${app}{enter}`);
+        cy.get(groupsSelector.granularPermissionResourceContainer).click({ force: true }).type(`${app}{enter}`);
         cy.get(groupsSelector.confimButton).click({ force: true });
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
@@ -114,6 +115,7 @@ const configureEnterpriseGranularPermissions = ({
         });
 
         cy.get(groupsSelector.groupLink("Builder")).click();
+        cy.get(groupsSelector.granularLink).click();
         cy.get(groupsSelector.groupLink(groupName)).click();
         cy.get(groupsSelector.granularLink).click();
 
@@ -123,7 +125,7 @@ const configureEnterpriseGranularPermissions = ({
             cy.get(groupsSelector.addWorkflowButton).click();
             cy.clearAndType(groupsSelector.permissionNameInput, workflow);
             cy.get(groupsSelector.customRadio).check();
-            cy.get(".css-1gfides")
+            cy.get(groupsSelector.granularPermissionResourceContainer)
                 .click({ force: true })
                 .type(`${workflow}{enter}`);
             cy.get(groupsSelector.confimButton).click({ force: true });
@@ -143,7 +145,7 @@ const configureEnterpriseGranularPermissions = ({
             cy.get(groupsSelector.addDatasourceButton).click();
             cy.clearAndType(groupsSelector.permissionNameInput, datasource);
             cy.get(groupsSelector.customRadio).check();
-            cy.get(".css-1gfides")
+            cy.get(groupsSelector.granularPermissionResourceContainer)
                 .click({ force: true })
                 .type(`${datasource}{enter}`);
             cy.get(groupsSelector.confimButton).click({ force: true });
@@ -211,7 +213,6 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
-
     //Verify the released app
     cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
