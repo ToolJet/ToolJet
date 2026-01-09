@@ -718,6 +718,8 @@
                 "user-management/sso/oidc/azuread",
                 "user-management/sso/oidc/okta",
                 "user-management/sso/oidc/google",
+                "user-management/sso/oidc/onelogin",
+                "user-management/sso/oidc/auth0",
                 "user-management/sso/oidc/ssouserinfo"
               ]
             },
@@ -731,7 +733,8 @@
               },
               "items": [
                 "user-management/sso/saml/setup",
-                "user-management/sso/saml/okta"
+                "user-management/sso/saml/okta",
+                "user-management/sso/saml/entra-id"
               ]
             },
             {
