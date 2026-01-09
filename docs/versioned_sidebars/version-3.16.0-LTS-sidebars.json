@@ -262,7 +262,15 @@
             "app-builder/modules/data-flow"
           ]
         },
-        "app-builder/embed-application",
+        {
+          "type": "category",
+          "label": "Embed Application",
+          "items": [
+            "app-builder/embed-app/overview",
+            "app-builder/embed-app/public-app",
+            "app-builder/embed-app/private-app"
+          ]
+        },
         {
           "type": "category",
           "label": "References",
