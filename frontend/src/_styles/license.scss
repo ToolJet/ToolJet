@@ -831,6 +831,16 @@
         background: linear-gradient(96.1deg, #ff5f6d -15.44%, #ffc371 99.37%);
         color: var(--slate12);
         border: none;
+        .theme-dark &,
+        .dark-theme & {
+            color: #ffffff;
+
+            &:hover,
+            &:focus,
+            &:active {
+                color: #ffffff;
+            }
+        }
     }
 }
 
