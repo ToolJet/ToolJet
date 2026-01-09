@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -43,6 +43,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar, shallow);
+  const setSelectedSidebarItem = useStore((store) => store.setSelectedSidebarItem);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
@@ -58,6 +59,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldMount, setShouldMount] = useState(true);
   const [shouldApplyHideClass, setShouldApplyHideClass] = useState(false);
+  const openedPanelsRef = useRef([]);
 
   // Central preview transition controller.
   useEffect(() => {
@@ -65,9 +67,21 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
     else setIsAnimating(false);
 
     if (previewPhase === 'closing-panels') {
-      if (isQueryPaneExpanded) setIsQueryPaneExpanded(false);
-      if (isSidebarOpen) toggleLeftSidebar(false);
-      if (isRightSidebarOpen) setRightSidebarOpen(false);
+      const openedPanels = [];
+      if (isQueryPaneExpanded) {
+        setIsQueryPaneExpanded(false);
+        openedPanels.push('query');
+      }
+      if (isSidebarOpen) {
+        toggleLeftSidebar(false);
+        openedPanels.push('left');
+      }
+      if (isRightSidebarOpen) {
+        setRightSidebarOpen(false);
+        openedPanels.push('right');
+      }
+      // Keep track of panels that were open before preview mode
+      openedPanelsRef.current = openedPanels;
     }
 
     if (previewPhase === 'switching-mode') {
@@ -106,6 +120,16 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
 
     if (transitionCounter === 4) {
       setPreviewPhase('idle');
+
+      // Open the panels that were already open before preview mode
+      if (openedPanelsRef.current.includes('query')) setIsQueryPaneExpanded(true);
+      if (openedPanelsRef.current.includes('left')) {
+        const selectedItem = localStorage.getItem('selectedSidebarItem');
+        setSelectedSidebarItem(selectedItem);
+        toggleLeftSidebar(true);
+      }
+      if (openedPanelsRef.current.includes('right')) setRightSidebarOpen(true);
+      openedPanelsRef.current = [];
     }
   }, [transitionCounter]);
 

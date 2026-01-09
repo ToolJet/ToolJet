@@ -258,7 +258,8 @@ export const BaseLeftSidebar = ({
           if (selectedSidebarItem === 'tooljetai') return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
-          if (pinned || isWithinSidebar || isClickOnInspect) return;
+          const isPreviewToggled = e.target.closest('button[data-cy="preview-link-button"]');
+          if (pinned || isWithinSidebar || isClickOnInspect || isPreviewToggled) return;
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
