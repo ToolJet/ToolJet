@@ -6,7 +6,7 @@ title: Cloud Authentication
 In cloud deployment, you can setup the authentication on your workspaces and is managed by the Admins of the respective groups. Each workspace can have different Authentication method. We will learn about the available Authentication methods in this documentation.
 
 
-### Configuration
+## Configuration
 
 To configure the authentication:
 
@@ -17,25 +17,23 @@ To configure the authentication:
 <img className="screenshot-full img-l" src="/img/user-management/authentication/cloud/cloud-workspace.png" alt="cloud  workspace level login" />
     
 
-###   SSO (Single Sign-On)
+##   SSO (Single Sign-On)
     
     *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
     *   You can configure SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
 
-
-###   Default SSO (Single Sign-On)   
-    *   ToolJet supports preconfigured Google and GitHub as default SSO options, which can be easily enabled from the workspace login page.
-        
-
-### Allowed Domains
+### Allowed Domains (SSO Login)
     
     *   This feature helps restrict login access to specific email domains, ensuring that only authorized users from your organization can sign up or log in.
         
     *   You can add multiple domains for login by specifying allowed domain names, separated by commas.  **Example:** `corp.com`, `corp.io`, `corp.ai`
+
+##   Default SSO (Single Sign-On)   
+    *   ToolJet supports preconfigured Google and GitHub as default SSO options, which can be easily enabled from the workspace login page.
         
 
-### Sign-Up Without Invitations
+## Sign-Up Without Invitations
     
     *   This feature allows organizations to simplify onboarding by letting users sign up without needing an invitation.
         
@@ -43,13 +41,25 @@ To configure the authentication:
         
     *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace.
         
-### Password Login
+## Password Login
     
     *   Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
         
     *   Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
+
+### Allowed Domains (Password Login)
+- You can specify Allowed Domains for password login. If one or more allowed domains are added, only users signing in with those domains will be allowed to use password authentication. All other domains will not be able to use password login.
+If the allowed domains list is left empty, all domains are permitted unless explicitly restricted.
+
+- You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
+
+### Restricted Domains (Password Login)
+You can specify Restricted Domains to block specific domains from using password login. This is typically used to ensure that internal users (e.g., corp.com) cannot bypass SSO by signing in with a password.
+
+Restricted domains apply only to password login and never to SSO.
+
         
-### Automatic SSO Login
+## Automatic SSO Login
     
     *   This feature eliminates the need for users to interact with the login page by directly authenticating them via the configured SSO provider.
         

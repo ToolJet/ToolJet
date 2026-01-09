@@ -5,7 +5,7 @@ title: Instance Login
 
 In self-hosted deployments, it can be configured at two levels: **Instance Level**, which applies globally across all workspaces and is configurable only by the super admin, and **Workspace Level**, which overrides the instance-level settings for specific workspaces and can be configured by both super admins and workspace admins. This guide focuses on configuring instance-level authentication.
 
-### Configuration
+## Configuration
 
 To configure the instance-level authentication configuration
 
@@ -15,7 +15,7 @@ To configure the instance-level authentication configuration
 
 <img className="screenshot-full img-l" src="/img/user-management/authentication/selfhosted/instance-level.png" alt="only instance level login" />
 
-###   SSO (Single Sign-On)
+##   SSO (Single Sign-On)
     
 - SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
@@ -36,14 +36,14 @@ To configure the instance-level authentication configuration
     | SSO_GIT_OAUTH2_HOST | GitHub OAuth host name if GitHub is self-hosted |
         
 
-###   Allowed Domains
+###   Allowed Domains (SSO Login)
     
 - This feature helps restrict login access to specific email domains, ensuring that only authorized users from your organization can sign up or log in.
         
 - You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
         
 
-### Sign-Up Without Invitations
+## Sign-Up Without Invitations
     
 - This feature allows organizations to simplify onboarding by letting users sign up without needing an invitation.
         
@@ -51,7 +51,7 @@ To configure the instance-level authentication configuration
         
 - This feature is available only when the Personal Workspace option is enabled in the Manage Instance settings. When users sign up with this feature enabled, a new personal workspace is automatically created for them, and they are assigned as the admin of that workspace. Refer to [Sign-Up Documentation](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) to learn more.
         
-###   Password Login
+##   Password Login
     
 - Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
         
@@ -60,20 +60,40 @@ To configure the instance-level authentication configuration
     :::info
     You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
     :::
+
+### Allowed Domains (Password Login)
+- You can specify Allowed Domains for password login. If one or more allowed domains are added, only users signing in with those domains will be allowed to use password authentication. All other domains will not be able to use password login.
+If the allowed domains list is left empty, all domains are permitted unless explicitly restricted.
+
+- You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
+
+### Restricted Domains (Password Login)
+You can specify Restricted Domains to block specific domains from using password login. This is typically used to ensure that internal users (e.g., corp.com) cannot bypass SSO by signing in with a password.
+
+Restricted domains apply only to password login and never to SSO.
+
+#### Instance-level vs Workspace-level restrictions
+
+Restricted domain settings can be configured at both the Instance Level and Workspace Level:
+- If a domain is restricted at the instance level, it remains restricted even if the same domain is added to the allowed list at the workspace level.
+- If a domain is restricted at the workspace level, it remains restricted even if the same domain is allowed at the instance level.
+- In all cases, restriction always takes priority over allowed configurations.
+
+This ensures that no matter where the domain is restricted (instance or workspace), it will not be able to log in using password authentication.
         
-###   Enable Workspace Login Configuration
+##   Enable Workspace Login Configuration
     
 - This feature allows workspace admins to customize login settings for their specific workspaces. It is useful when different workspaces in the same instance require distinct login configurations.
         
 - Once enabled, workspace-specific settings will override the instance-level configuration for those workspaces.
         
-###  Automatic SSO Login
+##  Automatic SSO Login
     
 - This feature eliminates the need for users to interact with the login page by directly authenticating them via the configured SSO provider.
         
 - To Enable the Automatic SSO Login, ensure the password login is disabled and only one SSO provider is configured.
         
-###   Custom Logout URL
+##   Custom Logout URL
     
 - A Custom Logout URL allows organizations to redirect users to a specific page after they log out. This can be useful for redirecting users to a company portal or a feedback form.
         
