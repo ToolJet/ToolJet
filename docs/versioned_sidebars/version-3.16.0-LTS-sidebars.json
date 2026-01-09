@@ -271,8 +271,6 @@
             "app-builder/embed-app/private-app"
           ]
         },
-        "app-builder/embed-application",
-        "app-builder/pat-integration",
         {
           "type": "category",
           "label": "References",
