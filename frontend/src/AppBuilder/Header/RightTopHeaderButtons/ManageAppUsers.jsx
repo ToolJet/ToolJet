@@ -3,7 +3,7 @@ import { appService, appsService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import _, { debounce, isEmpty } from 'lodash';
+import _, { debounce } from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -16,8 +16,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
 import { MousePointerClick, Share2 } from 'lucide-react';
-import queryString from 'query-string';
-
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -187,13 +185,6 @@ class ManageAppUsersComponent extends React.Component {
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
     const { isHovered } = this.state.isHovered;
-    const previewQuery = queryString.stringify({
-      version: this.props.selectedVersion?.name,
-      ...(this.props.multiEnvironmentEnabled ? { env: this.props.currentEnvironment?.name } : {}),
-    });
-    const appPreviewLink = this.props.editingVersion
-      ? `${shareableLink}/${this.props.pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
-      : '';
 
     return (
       <div className="manage-app-users" data-cy="share-button-link">
@@ -428,7 +419,10 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Body>
 
           <Modal.Footer className="manage-app-users-footer">
-            <CopyToClipboard text={appPreviewLink} onCopy={() => toast.success('Link copied to clipboard')}>
+            <CopyToClipboard
+              text={getHostURL() + this.props.appPreviewLink}
+              onCopy={() => toast.success('Link copied to clipboard')}
+            >
               <Button isLucid leadingIcon="eye" variant="outline">
                 Copy preview link
               </Button>

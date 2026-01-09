@@ -4,6 +4,7 @@ import { shallow } from 'zustand/shallow';
 import GitSyncManager from '../GitSyncManager';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 
 const RightTopHeaderButtons = ({ currentMode, darkMode }) => {
   return (
@@ -23,6 +24,7 @@ const RightTopHeaderButtons = ({ currentMode, darkMode }) => {
 
 const PreviewAndShareIcons = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
+  const appPreviewLink = useAppPreviewLink();
   const {
     featureAccess,
     currentPageHandle,
@@ -33,8 +35,6 @@ const PreviewAndShareIcons = ({ darkMode }) => {
     slug,
     isPublic,
     appName,
-    selectedVersion,
-    editingVersion,
   } = useStore(
     (state) => ({
       featureAccess: state.license?.featureAccess,
@@ -46,8 +46,6 @@ const PreviewAndShareIcons = ({ darkMode }) => {
       slug: state.appStore.modules[moduleId].app.slug,
       isPublic: state.appStore.modules[moduleId].app.isPublic,
       appName: state.appStore.modules[moduleId].app.appName,
-      selectedVersion: state.selectedVersion,
-      editingVersion: state.editingVersion,
     }),
     shallow
   );
@@ -59,8 +57,6 @@ const PreviewAndShareIcons = ({ darkMode }) => {
           {appId && (
             <ManageAppUsers
               currentEnvironment={selectedEnvironment}
-              currentVersion={selectedVersion}
-              editingVersion={editingVersion}
               multiEnvironmentEnabled={featureAccess?.multiEnvironment}
               app={app}
               appId={appId}
@@ -70,6 +66,7 @@ const PreviewAndShareIcons = ({ darkMode }) => {
               darkMode={darkMode}
               isVersionReleased={isVersionReleased}
               isPublic={isPublic ?? false}
+              appPreviewLink={appPreviewLink}
             />
           )}
         </div>
