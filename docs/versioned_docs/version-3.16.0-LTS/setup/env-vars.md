@@ -52,6 +52,9 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_USER`: Database username
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
+
 
 #### Why ToolJet Requires Two Databases
 
