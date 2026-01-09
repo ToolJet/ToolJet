@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import useStore from '@/AppBuilder/_stores/store';
