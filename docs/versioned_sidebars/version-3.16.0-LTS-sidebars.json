@@ -724,7 +724,8 @@
               },
               "items": [
                 "user-management/sso/saml/setup",
-                "user-management/sso/saml/okta"
+                "user-management/sso/saml/okta",
+                "user-management/sso/saml/entra-id"
               ]
             },
             {
