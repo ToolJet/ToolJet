@@ -14,16 +14,13 @@ import * as _ from 'lodash';
 import * as uuid from 'uuid';
 import { AppVersion } from '@entities/app_version.entity';
 import { IPageService } from '../interfaces/services/IPageService';
-import { ACTION_TYPE } from '@modules/app-history/constants';
-import { AppHistoryUtilService } from '@modules/app-history/util.service';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService,
-    protected appHistoryUtilService: AppHistoryUtilService
+    protected eventHandlerService: EventsService
   ) {}
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
@@ -51,28 +48,11 @@ export class PageService implements IPageService {
       return await manager.save(Page, newPage);
     }, appVersionId);
 
-    // Queue history capture after successful page creation
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_ADD, {
-        operation: 'create',
-        pageId: result.id,
-        pageName: result.name,
-        pageData: {
-          name: result.name,
-          handle: result.handle,
-          type: result.type,
-        },
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for page creation:', error);
-    }
-
+    // History capture is handled by EE override
     return result;
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
-    let clonedPageData: { id: string; name: string; handle: string; type: string; url: string } | null = null;
-
     await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
@@ -112,15 +92,6 @@ export class PageService implements IPageService {
 
       const clonedpage = await manager.save(newPage);
 
-      // Store cloned page data for history capture after transaction
-      clonedPageData = {
-        id: clonedpage.id,
-        name: clonedpage.name,
-        handle: clonedpage.handle,
-        type: clonedpage.type,
-        url: clonedpage.url,
-      };
-
       await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
 
       const pages = await this.findPagesForVersion(appVersionId, manager);
@@ -129,27 +100,8 @@ export class PageService implements IPageService {
       return { pages, events };
     }, appVersionId);
 
-    // Queue history capture after successful page cloning
-    if (clonedPageData) {
-      try {
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_ADD, {
-          operation: 'clone',
-          pageId: clonedPageData.id,
-          sourcePageId: pageId,
-          pageName: clonedPageData.name,
-          pageData: {
-            name: clonedPageData.name,
-            handle: clonedPageData.handle,
-            type: clonedPageData.type,
-            url: clonedPageData.url,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for page cloning:', error);
-      }
-    }
-
     // Fetch pages and events separately after transaction completes
+    // History capture is handled by EE override
     const pages = await this.findPagesForVersion(appVersionId);
     const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
@@ -354,22 +306,7 @@ export class PageService implements IPageService {
   async reorderPages(diff, appVersionId: string, organizationId: string) {
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
-    // Queue history capture after successful page reordering
-    try {
-      // Extract page IDs and their new indexes from the diff
-      const reorderData = diff.diff || diff;
-      const pageIds = Object.keys(reorderData);
-
-      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_REORDER, {
-        operation: 'reorder',
-        pageIds,
-        reorderData,
-        affectedCount: pageIds.length,
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for page reordering:', error);
-    }
-
+    // History capture is handled by EE override
     return result;
   }
 
@@ -389,24 +326,7 @@ export class PageService implements IPageService {
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
-    // Queue history capture after successful page update
-    try {
-      // Check if this is a page settings update (non-layout properties)
-      const settingsProperties = ['disabled', 'hidden', 'url', 'openIn', 'type', 'icon', 'name', 'handle'];
-      const isSettingsUpdate = Object.keys(pageUpdates.diff).some((key) => settingsProperties.includes(key));
-
-      const actionType = isSettingsUpdate ? ACTION_TYPE.PAGE_SETTINGS_UPDATE : ACTION_TYPE.PAGE_UPDATE;
-
-      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
-        operation: isSettingsUpdate ? 'update_page_settings' : 'page_update',
-        pageId: pageUpdates.pageId,
-        pageData: pageUpdates.diff,
-        isSettingsUpdate,
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for page update:', error);
-    }
-
+    // History capture is handled by EE override
     return result;
   }
 
@@ -447,18 +367,7 @@ export class PageService implements IPageService {
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
 
-    // Queue history capture with minimal data - queue will resolve name from previous state
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.PAGE_DELETE, {
-        operation: 'delete',
-        pageId: pageId,
-        deleteAssociatedPages,
-        // No need to pre-fetch pageName - queue processor will resolve from history
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for page deletion:', error);
-    }
-
+    // History capture is handled by EE override
     return result;
   }
 

@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { EntityManager } from 'typeorm';
 import { ACTION_TYPE } from '@modules/app-history/constants';
-import { RequestContext } from '@modules/request-context/service';
 import { AppVersion } from '@entities/app_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
-import { dbTransactionWrap } from '@helpers/database.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { NameResolverRepository } from './repositories/name-resolver.repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
@@ -72,8 +68,8 @@ export class AppHistoryUtilService {
   }
 
   /**
-   * Queue history capture - INSTANT and non-blocking
-   * Only processes history for front-end apps
+   * Queue history capture - stub method for CE
+   * Actual history capture is handled by EE queuePrebuiltDelta
    */
   async queueHistoryCapture(
     appVersionId: string,
@@ -82,106 +78,15 @@ export class AppHistoryUtilService {
     isAiGenerated?: boolean,
     userId?: string
   ): Promise<void> {
-    const queueStartTime = Date.now();
-    const timestamp = Date.now();
-
-    // Get app type using a single query with relation
-    const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(AppVersion, {
-        where: { id: appVersionId },
-        relations: ['app'],
-        select: {
-          app: {
-            type: true,
-          },
-        },
-      });
-    });
-
-    const appVersionLookupTime = Date.now() - queueStartTime;
-
-    if (!appVersion || !appVersion.app) {
-      this.logger.warn(
-        `[AppHistory:1-QUEUE] ⚠️ AppVersion not found | appVersionId=${appVersionId} | lookupTime=${appVersionLookupTime}ms`
-      );
-      return;
-    }
-    // Only process history for front-end apps
-    if (appVersion.app.type !== APP_TYPES.FRONT_END) {
-      // Skip history capture for non-frontend apps (workflow, module, etc.)
-      this.logger.log(
-        `[AppHistory:1-QUEUE] ⏭️ Skipped (non-frontend app) | appVersionId=${appVersionId} | appType=${appVersion.app.type}`
-      );
-      return;
-    }
-    // Get userId from the current request context if not provided
-    let finalUserId = userId;
-    if (!finalUserId) {
-      const context = RequestContext.currentContext;
-      finalUserId = (context?.req as any)?.user?.id || 'system';
-    }
-    // Log before adding to queue with detailed info for debugging
-    this.logger.log(
-      `[AppHistory:1-QUEUE] 📤 Adding job to queue | appVersionId=${appVersionId} | action=${actionType} | userId=${finalUserId} | timestamp=${new Date(timestamp).toISOString()}`
-    );
-
-    const jobAddStartTime = Date.now();
-    const job = await this.historyQueue.add('capture-change', {
-      appVersionId,
-      actionType,
-      operationScope,
-      userId: finalUserId,
-      timestamp,
-      isAiGenerated: isAiGenerated || false,
-    });
-
-    const jobAddTime = Date.now() - jobAddStartTime;
-    const totalQueueTime = Date.now() - queueStartTime;
-
-    this.logger.log(
-      `[AppHistory:1-QUEUE] ✅ Job added | jobId=${job.id} | appVersionId=${appVersionId} | action=${actionType} | appVersionLookupTime=${appVersionLookupTime}ms | jobAddTime=${jobAddTime}ms | totalQueueTime=${totalQueueTime}ms | timestamp=${new Date(timestamp).toISOString()}`
-    );
+    // No-op in CE - history capture is handled by EE override
   }
 
   /**
    * Capture history for app version settings updates (homePageId, globalSettings, pageSettings)
+   * Handled by EE override
    */
   async captureSettingsUpdateHistory(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto): Promise<void> {
-    try {
-      // Check if homePageId, globalSettings, or pageSettings are being updated
-      const hasSettingsUpdate =
-        appVersionUpdateDto.homePageId || appVersionUpdateDto.globalSettings || appVersionUpdateDto.pageSettings;
-
-      if (hasSettingsUpdate) {
-        // Determine the action type based on what's being updated
-        let actionType: ACTION_TYPE;
-        let settingsType: string;
-
-        if (appVersionUpdateDto.pageSettings) {
-          actionType = ACTION_TYPE.PAGE_SETTINGS_UPDATE;
-          settingsType = 'page';
-        } else {
-          actionType = ACTION_TYPE.GLOBAL_SETTINGS_UPDATE;
-          settingsType = 'global';
-        }
-
-        const operationScope: any = {
-          operation: 'update_settings',
-          settings: appVersionUpdateDto.pageSettings || appVersionUpdateDto.globalSettings || appVersionUpdateDto,
-          settingsType,
-        };
-
-        // If homePageId is being updated, include it in the operation scope for better description
-        if (appVersionUpdateDto.homePageId && appVersion.homePageId !== appVersionUpdateDto.homePageId) {
-          operationScope.homePageId = appVersionUpdateDto.homePageId;
-          operationScope.previousHomePageId = appVersion.homePageId;
-        }
-
-        await this.queueHistoryCapture(appVersion.id, actionType, operationScope);
-      }
-    } catch (error) {
-      console.error('Failed to queue history capture for settings update:', error);
-    }
+    // No-op in CE - history capture is handled by EE override
   }
 
   async validateAppVersionAccess(appVersionId: string, userId: string): Promise<boolean> {

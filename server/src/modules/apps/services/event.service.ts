@@ -5,12 +5,9 @@ import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
 import { IEventsService } from '../interfaces/services/IEventService';
-import { ACTION_TYPE } from '@modules/app-history/constants';
-import { AppHistoryUtilService } from '@modules/app-history/util.service';
 
 @Injectable()
 export class EventsService implements IEventsService {
-  constructor(protected appHistoryUtilService: AppHistoryUtilService) {}
 
   async findEventById(eventId: string): Promise<EventHandler> {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -114,46 +111,7 @@ export class EventsService implements IEventsService {
       return event;
     }, versionId);
 
-    // Skip history capture if requested (e.g., when called from AI service)
-    if (skipHistoryCapture) {
-      return result;
-    }
-
-    // Queue history capture after successful event creation
-    setImmediate(async () => {
-      try {
-        // Resolve entity name based on event type (component, query, or page)
-        let entityName = 'Unknown Component';
-
-        if (eventHandler.attachedTo && eventHandler.eventType) {
-          try {
-            entityName = await this.appHistoryUtilService.resolveEntityName(
-              eventHandler.attachedTo,
-              eventHandler.eventType
-            );
-          } catch (error) {
-            console.error('Failed to resolve entity name for event creation:', error);
-          }
-        }
-
-        await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.EVENT_ADD, {
-          eventName: eventHandler.event?.eventId || 'Unknown Event',
-          componentName: entityName,
-          componentId: eventHandler.attachedTo,
-          operation: 'create',
-          eventData: {
-            id: result.id,
-            name: eventHandler.event?.eventId,
-            attachedTo: eventHandler.attachedTo,
-            eventType: eventHandler.eventType,
-            index: eventHandler.index,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for event creation:', error);
-      }
-    });
-
+    // History capture is handled by EE override
     return result;
   }
 
@@ -248,42 +206,7 @@ export class EventsService implements IEventsService {
       return this.createEventsInTransaction(eventHandlers, versionId, manager);
     }, versionId);
 
-    // Queue a single history capture for the bulk event creation
-    setImmediate(async () => {
-      try {
-        // Get entity name from the first event for context
-        let entityName = 'Unknown Component';
-        const firstEvent = eventHandlers[0];
-
-        if (firstEvent?.attachedTo && firstEvent?.eventType) {
-          try {
-            entityName = await this.appHistoryUtilService.resolveEntityName(
-              firstEvent.attachedTo,
-              firstEvent.eventType
-            );
-          } catch (error) {
-            console.error('Failed to resolve entity name for bulk event creation:', error);
-          }
-        }
-
-        await this.appHistoryUtilService.queueHistoryCapture(versionId, ACTION_TYPE.EVENT_ADD, {
-          eventCount: results.length,
-          componentName: entityName,
-          componentId: firstEvent?.attachedTo,
-          operation: 'bulk_create',
-          eventData: results.map((event) => ({
-            id: event.id,
-            name: event.name,
-            attachedTo: event.sourceId,
-            eventType: event.target,
-            index: event.index,
-          })),
-        });
-      } catch (error) {
-        console.error('Failed to queue history capture for bulk event creation:', error);
-      }
-    });
-
+    // History capture is handled by EE override
     return results;
   }
 
@@ -320,51 +243,7 @@ export class EventsService implements IEventsService {
       );
     }, appVersionId);
 
-    // Queue history capture after successful event update
-    setImmediate(async () => {
-      try {
-        const actionType = updateType === 'reorder' ? ACTION_TYPE.EVENT_REORDER : ACTION_TYPE.EVENT_UPDATE;
-
-        // For single event updates, try to resolve names
-        let entityName = 'Unknown Component';
-        let eventName = 'Unknown Event';
-
-        if (events.length === 1 && events[0]) {
-          try {
-            // Get the first event to resolve names
-            const firstEvent = events[0];
-            const eventDetails = await this.findEventById(firstEvent.event_id);
-
-            if (eventDetails) {
-              eventName = eventDetails.name || 'Unknown Event';
-
-              if (eventDetails.sourceId && eventDetails.target) {
-                entityName = await this.appHistoryUtilService.resolveEntityName(
-                  eventDetails.sourceId,
-                  eventDetails.target
-                );
-              }
-            }
-          } catch (error) {
-            console.error('Failed to resolve event/entity names:', error);
-          }
-        }
-
-        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, actionType, {
-          eventName: events.length === 1 ? eventName : undefined,
-          componentName: events.length === 1 ? entityName : undefined,
-          eventCount: events.length,
-          operation: updateType,
-          eventData: events.map((event) => ({
-            id: event.event_id,
-            diff: event.diff,
-          })),
-        });
-      } catch (error) {
-        console.error(`Failed to queue history capture for event ${updateType}:`, error);
-      }
-    });
-
+    // History capture is handled by EE override
     return result;
   }
 
@@ -404,16 +283,7 @@ export class EventsService implements IEventsService {
       return deleteResponse;
     }, appVersionId);
 
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.EVENT_DELETE, {
-        eventId,
-        operation: 'delete',
-        // No need to pre-fetch eventName or componentName - queue processor will resolve from history
-      });
-    } catch (error) {
-      console.error('Failed to queue history capture for event deletion:', error);
-    }
-
+    // History capture is handled by EE override
     return result;
   }
 
