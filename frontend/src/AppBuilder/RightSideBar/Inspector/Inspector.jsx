@@ -106,6 +106,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'TagsInput',
   'Button',
   'Icon',
   'Image',
@@ -126,6 +127,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CircularProgressBar',
   'CustomComponent',
   'Html',
+  'CodeEditor',
+  'Form',
 ];
 
 export const Inspector = ({
@@ -456,8 +459,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -554,8 +557,9 @@ export const Inspector = ({
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${shouldFreeze && 'disabled'
-            }`}
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
+            shouldFreeze && 'disabled'
+          }`}
         >
           <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
@@ -567,7 +571,10 @@ export const Inspector = ({
                   rootClose={false}
                   show={showHeaderActionsMenu}
                   overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                    <Popover
+                      id="list-menu"
+                      className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                    >
                       <Popover.Body bsPrefix="list-item-popover-body">
                         {INSPECTOR_HEADER_OPTIONS.map((option) => {
                           const optionBody = (
@@ -599,7 +606,9 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'You don\'t have access to component permissions. Upgrade your plan to access this feature.'}
+                              message={
+                                "You don't have access to component permissions. Upgrade your plan to access this feature."
+                              }
                               placement="left"
                               show={!hasAppPermissionComponent}
                             >
@@ -660,6 +669,8 @@ const getDocsLink = (componentMeta) => {
       return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
       return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
@@ -830,6 +841,7 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
+      case 'TagsInput':
         return <Select {...restProps} />;
 
       case 'Tags':

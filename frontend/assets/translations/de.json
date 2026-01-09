@@ -462,9 +462,12 @@
             "properties": "Eigenschaften",
             "events": "Ereignisse",
             "layout": "Layout",
+            "devices": "Geräte",
             "styles": "Stile",
             "general": "Allgemein",
             "validation": "Validierung",
+            "data": "Daten",
+            "additionalActions": "Zusätzliche Aktionen",
             "documentation": "{{componentMeta}} Dokumentation",
             "widgetNameEmptyError": "Widget-Name darf nicht leer sein",
             "componentNameExistsError": "Komponentenname existiert bereits",
@@ -534,6 +537,9 @@
             "enableTimeSelection": "Zeitauswahl aktivieren?",
             "enableDateSelection": "Datumsauswahl aktivieren?",
             "disabledDates": "Deaktivierte Dateien",
+            "minDate": "Mindestdatum",
+            "maxDate": "Maximaldatum",
+            "makeThisFieldMandatory": "Dieses Feld als Pflichtfeld festlegen",
             "setChecked": "Als geprüft einstellen",
             "status": "status",
             "defaultStatus": "Standard-Status",
@@ -585,6 +591,9 @@
             "parseContent": "Inhalt analysieren",
             "fileType": "Dateityp",
             "dateFormat": "Datumsformat",
+            "timeFormat": "Zeitformat",
+            "displayIn": "Anzeigen in",
+            "storeIn": "Speichern in",
             "defaultDate": "Standard-Datum",
             "events": "Events",
             "resources": "Ressourcen",
@@ -914,6 +923,22 @@
         "Back": {
             "text": "Zurück",
             "tip": "Zurück zur Startseite"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "Januar",
+            "february": "Februar",
+            "march": "März",
+            "april": "April",
+            "may": "Mai",
+            "june": "Juni",
+            "july": "Juli",
+            "august": "August",
+            "september": "September",
+            "october": "Oktober",
+            "november": "November",
+            "december": "Dezember"
         }
     }
 }

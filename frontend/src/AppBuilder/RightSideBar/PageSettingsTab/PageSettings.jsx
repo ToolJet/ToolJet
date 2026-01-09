@@ -186,19 +186,21 @@ export const PageSettings = () => {
             </Tab>
           </Tabs>
           <DeletePageConfirmationModal darkMode={darkMode} />
-          {appPagePermissionEnabled && <AppPermissionsModal
-            modalType="page"
-            resourceId={editingPageId}
-            resourceName={editingPageName}
-            showModal={showPagePermissionModal}
-            toggleModal={togglePagePermissionModal}
-            darkMode={darkMode}
-            fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-            createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-            updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-            deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
-          />}
+          {appPagePermissionEnabled && (
+            <AppPermissionsModal
+              modalType="page"
+              resourceId={editingPageId}
+              resourceName={editingPageName}
+              showModal={showPagePermissionModal}
+              toggleModal={togglePagePermissionModal}
+              darkMode={darkMode}
+              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -237,7 +239,9 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
 export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
   const { moduleId } = useModuleContext();
   const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
-  const hasAppPagesHeaderAndLogoEnabled = useStore((state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
 
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { hideHeader, name, hideLogo } = properties ?? {};
@@ -289,8 +293,14 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app header
-          <LicenseTooltip message={"You don\'t have access to hide app header. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
-            <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
+          <LicenseTooltip
+            message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
+            placement="bottom"
+            show={!hasAppPagesHeaderAndLogoEnabled}
+          >
+            <div className="d-flex align-items-center">
+              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+            </div>
           </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
@@ -308,8 +318,14 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
-          <LicenseTooltip message={"You don\'t have access to hide logo. Upgrade your plan to access this feature."} placement="bottom" show={!hasAppPagesHeaderAndLogoEnabled}>
-            <div className="d-flex align-items-center">{!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}</div>
+          <LicenseTooltip
+            message={"You don't have access to hide logo. Upgrade your plan to access this feature."}
+            placement="bottom"
+            show={!hasAppPagesHeaderAndLogoEnabled}
+          >
+            <div className="d-flex align-items-center">
+              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+            </div>
           </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
@@ -498,8 +514,9 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
         <div className={`field`}>
           <InspectorTooltip
             label={'Hide navigation menu'}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-              }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
           />
         </div>
         <div className={`flex-grow-1`}>

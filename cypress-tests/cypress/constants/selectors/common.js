@@ -28,7 +28,7 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
-  pageLogo: "[data-cy=page-logo]",
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   workEmailLabel: '[data-cy="work-email-label"]',
   workEmailInputField: "[data-cy=work-email-input]",
   emailInputError: '[data-cy="email-error-message"]',
@@ -260,6 +260,7 @@ export const commonSelectors = {
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
   modalCloseButton: '[data-cy="modal-close"]',
+  modalIcon: '[data-cy="modal-icon"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',
@@ -303,7 +304,7 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
-  pageLogo: '[data-cy="page-logo"]',
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy="page-logo"]',
   homePageIcon: '[data-cy="home-page-icon"]',
 };
 
@@ -423,7 +424,7 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
+  appSlugLabel: '[data-cy="label-unique-app-slug"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',

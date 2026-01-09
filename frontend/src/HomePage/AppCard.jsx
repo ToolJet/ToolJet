@@ -7,11 +7,13 @@ import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
+import queryString from 'query-string';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
-import { validateName, decodeEntities } from '@/_helpers/utils';
+import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
+import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
 const { defaultIcon } = configs;
@@ -24,11 +26,13 @@ export default function AppCard({
   exportApp,
   appActionModal,
   canUpdateApp,
+  canViewApp,
   currentFolder,
   appType,
   ...props
 }) {
   const canUpdate = canUpdateApp(app);
+  const canView = canViewApp ? canViewApp(app) : false;
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -119,6 +123,24 @@ export default function AppCard({
     console.error('App icon not found', app.icon);
   }
 
+  // Calculate released app access before LaunchButton definition
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+  const hasOnlyReleasedAccess =
+    !environmentAccess.development &&
+    !environmentAccess.staging &&
+    !environmentAccess.production &&
+    environmentAccess.released;
+
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
+
+  // Check if user can access released apps
+  // End-users (non-builders) always have released app access
+  // Builders need explicit canAccessReleased permission
+  const canAccessReleased = !isBuilder || environmentAccess.released;
+
   const LaunchButton =
     appType === 'workflow' ? (
       <div>
@@ -145,6 +167,8 @@ export default function AppCard({
           message={
             app?.current_version_id === null
               ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+              : !canAccessReleased
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
               : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
           }
         >
@@ -152,12 +176,14 @@ export default function AppCard({
             type="button"
             className={cx(
               ` launch-button tj-text-xsm ${
-                app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
+                  ? 'tj-disabled-btn '
+                  : 'tj-tertiary-btn'
               }`
             )}
-            disabled={app?.current_version_id === null || app?.is_maintenance_on}
+            disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
             onClick={() => {
-              if (app?.current_version_id) {
+              if (app?.current_version_id && canAccessReleased) {
                 window.open(
                   urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
                 );
@@ -171,7 +197,7 @@ export default function AppCard({
               name="rightarrrow"
               width="14"
               fill={
-                app?.current_version_id === null || app?.is_maintenance_on
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
                   ? '#4C5155'
                   : darkMode
                   ? '#FDFDFE'
@@ -186,6 +212,39 @@ export default function AppCard({
         </ToolTip>
       </div>
     );
+
+  const ViewButton = (
+    <div>
+      <button
+        type="button"
+        className="tj-primary-btn tj-text-xsm edit-button"
+        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+        onClick={() => {
+          const pageHandle = app.home_page_handle || 'home';
+          const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
+
+          const session = authenticationService.currentSessionValue;
+          const appPerms = session?.app_group_permissions;
+          const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+
+          // Check if user is a builder
+          const isBuilder = appPerms?.is_all_editable || appPerms?.editable_apps_id?.includes(app.id) || false;
+          // For preview, use first available environment from user's actual permissions
+          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+          // Don't add env param if license is invalid or multi-environment feature is not available
+          const queryParams = props.basicPlan ? {} : { env: defaultEnv };
+          const previewQuery = queryString.stringify(queryParams);
+
+          const previewUrl = `/applications/${slugOrId}/${pageHandle}${previewQuery ? `?${previewQuery}` : ''}`;
+
+          window.open(previewUrl, '_blank');
+        }}
+        data-cy="preview-button"
+      >
+        {t('globals.preview', 'Preview')}
+      </button>
+    </div>
+  );
 
   function AppNameDisplay({ tooltipRef }) {
     const AppName = (
@@ -295,6 +354,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
+            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && isBuilder && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>
