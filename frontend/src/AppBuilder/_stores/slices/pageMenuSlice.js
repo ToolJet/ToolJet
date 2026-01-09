@@ -538,7 +538,7 @@ export const createPageMenuSlice = (set, get) => {
             }
           }
         } else {
-          toast.error('No URL provied');
+          toast.error('No URL provided');
           return;
         }
         return;
