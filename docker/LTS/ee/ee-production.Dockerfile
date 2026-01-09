@@ -188,10 +188,9 @@ RUN chmod 755 /usr/local/bin/nsjail
 # Copy Python runtime with pre-installed packages
 COPY --from=builder /opt/python-runtime /opt/python-runtime
 
-# Copy nsjail configuration files
+# Copy nsjail configuration file
 RUN mkdir -p /etc/nsjail
-COPY ./docker/nsjail/python-execution-full.cfg /etc/nsjail/python-execution-full.cfg
-COPY ./docker/nsjail/python-execution-userns.cfg /etc/nsjail/python-execution-userns.cfg
+COPY ./docker/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
 # Create Python execution directories
 RUN mkdir -p \
