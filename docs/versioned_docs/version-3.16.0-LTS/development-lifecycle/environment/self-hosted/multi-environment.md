@@ -62,21 +62,36 @@ You can configure data sources and constants for each environment, and ToolJet w
 ## Environment Permissions
 
 ### Environment Access Permission
-Admin can configure environment access based on user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page. This allows you to define which user groups can access specific environments. For example, users in the *Developer* group can be restricted to the *Development* environment and users in the *Testing* group can be restricted to the *Staging* environment. These permissions can be applied to specific applications or all applications.
+Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page.  
+Environment access determines the environment the user can access the app, while the user’s application permission (Edit or View) determines what they can do inside that environment.
 
-| User Permission Setting        | Development                                                            | Staging                                                                              | Production                                   |
-| ------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------- |
-| **Edit permission granted**    | Can edit app (UI, queries, components, logic, constants, data sources) | Can open & inspect queries/constants/data sources, but cannot edit the UI or queries | Can open & inspect, but cannot edit anything |
-| **View permission granted**    | Can preview the app                                                    | Can preview staging version                                                          | Can preview production version    |
-| **No explicit environment permission** | If user is a Builder → Can edit<br/>If user is Viewer → No access      | No access                                                                            | Can view released Production app only        |
+Final access is decided by both, App Permission (Edit/View) and Environment Access.
+
+| Application Permission | Development Environment                                          | Staging Environment                                                                                   | Production Environment                                                                     | No Environment                       |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Edit**               | User can access app in development environment and **edit** the application in Development Environment       | User can access app in Staging Environment, **run queries** and inspect app. | User can access app in Production environment, **run queries** and inspect. | User can open the app in any environment |
+| **View**               | User can **preview** the app in Development environment but cannot edit the application. | User can **preview** the application in staging environment only.                                                 | User can **preview** the application in production environment only                                          | User can preview the app in any environment |
+
+#### Permission Priority
+
+A single group can have multiple permissions assigned for an application and its environments. When this happens, ToolJet combines these permissions, and **Edit always takes priority over View**.
+
+This means:
+
+- If a group grants both View and Edit permission for an app, the user gets Edit permission.
+- If a group grants View permission for multiple environments but Edit for one environment, the user gets Edit permission for the app and access to all specified environments.
+- If no environments are specified, the permission applies to all environments by default.
 
 #### Examples:
-The following examples illustrate how different environment permission configurations impact what a user can do in each environment:
+The following examples illustrate how different combinations of application permissions, environment access, and role defaults determine a user’s final permissions:
 
-| User Group    | Development Permission | Staging Permission | Production Permission | Result                                                                         |
-| ------------- | ----------- | ------- | ---------- | ------------------------------------------------------------------------------ |
-| **Developer** | Edit        | View    | View       | Developer can fully build and modify the app in Development. In Staging and Production, they can only preview the app and cannot make changes.             |
-| **QA**        | View        | Edit    | View       | QA team can open and inspect the app in Staging, test with staging data, and make limited edits if allowed. They cannot modify the Development app and can only preview other environments. |
+| Scenario                                                           | App Permission (Final) | Environment Access (Final)                                                              | Development              | Staging                                                | Production                                             |
+| ------------------------------------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
+| **1. Builder with multiple permissions in same group**             | **Edit** (Edit > View) | **Staging only** (because environment is explicitly specified)                          | ❌                        | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ❌                                                      |
+| **2. Builder + Custom Group with overlapping permissions**         | **Edit** (Edit > View) | **Union of environments specified** : Staging only (because only Staging was specified) | ❌                        | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ❌                                                      |
+| **3. Builder (default role) with NO environment specified at all** | **Edit**               | **All environments** (because none of the permissions specify any environment)          | ✅ Can edit UI + queries | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries |
+| **4. End User**                                                    | **View**               | Released app only                                                                         | ❌                        | ❌                                                      | ❌                             |
+
 
 
 ### Promote Application Permission
