@@ -13,7 +13,7 @@ To establish a connection with the **DynamoDB** data source, you can either clic
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/dynamogds-v2.png" alt="DynamoDB" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/connection-v3.png" alt="DynamoDB data source connection" />
 
 </div>
 
@@ -29,7 +29,7 @@ It is recommended to create a dedicated IAM user for the database in order to ha
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/iam-v2.png" alt="ToolJet - DynamoDB connection" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/iam-v2.png" alt="dynamo - IAM creds" />
 
 </div>
 
@@ -37,7 +37,7 @@ To connect to DynamoDB using an **AWS Instance Credentials**, select the option 
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/awsinstance-v2.png" alt="ToolJet - DynamoDB connection" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/awsinstance-v2.png" alt="dynamo - AWS instance creds" />
 
 </div>
 
@@ -48,7 +48,7 @@ If you prefer to use an **AWS ARN Role**, you will need to provide the following
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/arn-v2.png" alt="ToolJet - DynamoDB connection" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/arn-v2.png" alt="dynamo - AWS ARN role" />
 
 </div>
 
@@ -62,7 +62,7 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/queries-v2.png" alt="ToolJet - DynamoDB connection" />
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/list-ops-v3.png" alt="list query operations" />
 
 </div>
 
@@ -90,7 +90,7 @@ Returns an array of table names associated with the current account and endpoint
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/listtables-v2.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/list-v3.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
 
@@ -102,6 +102,8 @@ Retrieves a single item from a table. You must specify the primary key for the i
 
 - **Table**
 - **Key name**
+
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/get-v3.png" alt="ToolJet - DynamoDB operations" />
 
 #### Example
 
@@ -119,8 +121,6 @@ Retrieves a single item from a table. You must specify the primary key for the i
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/getitem-v2.png" alt="ToolJet - DynamoDB operations" />
-
 </div>
 
 ### Query Table
@@ -130,6 +130,8 @@ Retrieves all items that have a specific partition key. You must specify the par
 #### Required Parameter
 
 - **Query condition**
+
+<img style={{ border:'0'}} className="screenshot-full img-full"  src="/img/datasource-reference/dynamodb/query-v3.png" alt="ToolJet - DynamoDB operations" />
 
 #### Example
 
@@ -153,8 +155,6 @@ Retrieves all items that have a specific partition key. You must specify the par
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/querytable-v2.png" alt="ToolJet - DynamoDB operations" />
-
 </div>
 
 ### Scan Table
@@ -165,6 +165,8 @@ Retrieves all items in the specified table or index. You can retrieve entire ite
 
 - **Scan condition**
 
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/scan-v3.png" alt="ToolJet - DynamoDB operations" />
+
 #### Example
 
 ```yaml
@@ -172,8 +174,6 @@ Retrieves all items in the specified table or index. You can retrieve entire ite
 ```
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/scantable-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
 
@@ -185,6 +185,8 @@ Deletes a single item from a table. You must specify the primary key for the ite
 
 - **Table**
 - **Key name**
+
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/delete-v3.png" alt="ToolJet - DynamoDB operations" />
 
 #### Example
 
@@ -202,8 +204,6 @@ Deletes a single item from a table. You must specify the primary key for the ite
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/deleteitem-v2.png" alt="ToolJet - DynamoDB operations" />
-
 </div>
 
 ### Update Item
@@ -213,6 +213,9 @@ Update an item in DynamoDB by specifying the primary key and providing new attri
 #### Required Parameter
 
 - **Update Condition**
+
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/update-v3.png" alt="ToolJet - DynamoDB operations" />
+
 
 #### Example
 
@@ -227,8 +230,6 @@ Update an item in DynamoDB by specifying the primary key and providing new attri
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem-v2.png" alt="ToolJet - DynamoDB operations" />
-
 </div>
 
 ### Describe Table
@@ -241,7 +242,7 @@ This operation in DynamoDB retrieves metadata and configuration details about a 
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/describetable-v2.png" alt="ToolJet - DynamoDB operations" />
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/describe-v3.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
 
@@ -252,6 +253,8 @@ This operation in DynamoDB enables you to create a new table by specifying its n
 #### Required Parameter
 
 - **Table Parameters**
+
+<img style={{ border:'0'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/create-v3.png" alt="ToolJet - DynamoDB operations" />
 
 #### Example
 
@@ -283,8 +286,6 @@ This operation in DynamoDB enables you to create a new table by specifying its n
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/dynamodb/createtable-v2.png" alt="ToolJet - DynamoDB operations" />
-
 </div>
 
 ### Put Item
@@ -294,6 +295,8 @@ This operation allows you to create or replace an item in a table. It enables yo
 #### Required Parameter
 
 - **New Item Details**
+
+<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/put-v3.png" alt="ToolJet - DynamoDB operations" />
 
 #### Example
 
@@ -306,7 +309,5 @@ This operation allows you to create or replace an item in a table. It enables yo
 ```
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/putitem-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
