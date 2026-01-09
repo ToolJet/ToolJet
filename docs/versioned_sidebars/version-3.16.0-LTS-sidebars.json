@@ -710,7 +710,8 @@
                 "user-management/sso/oidc/azuread",
                 "user-management/sso/oidc/okta",
                 "user-management/sso/oidc/google",
-                "user-management/sso/oidc/ssouserinfo"
+                "user-management/sso/oidc/ssouserinfo",
+                "user-management/sso/oidc/auth0"
               ]
             },
             "user-management/sso/ldap",
