@@ -34,7 +34,7 @@ ToolJet allows you to embed applications as either public or private, depending 
 | Feature            | Public Embed                                              | Private Embed                                                     |
 |:------------------ |:--------------------------------------------------------- |:----------------------------------------------------------------- |
 | **Access**         | Anyone with the embed link or iframe can view             | Restricted to authorized users only                               |
-| **Authentication** | Not required                                              | Required (Embed Application will follow the SSO of host application) |
+| **Authentication** | Not required  | Required (Embed Application will follow the SSO of host application) |
 | **Granularity** | Not applicable | Tokens can be scoped to individual user and application |
 | **Use Cases**      | Marketing dashboards, open forms, customer-facing widgets | Internal dashboards, partner portals, sensitive data applications |
-| **How to Embed**   | [Public Application](#)                                   | [Private Application](#)                                          |
+| **How to Embed**   | [Public Application](/docs/app-builder/embed-app/public-app) | [Private Application](/docs/app-builder/embed-app/private-app) |
