@@ -97,6 +97,7 @@ export const commonSelectors = {
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
   manageSSOOption: '[data-cy="workspace-login-list-item"]',
+  themesOption: '[data-cy="themes-list-item"]',
   workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
