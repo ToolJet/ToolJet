@@ -123,7 +123,8 @@ export const switchBetweenAllAndCustom = (targetScope) => {
 };
 
 export const openGroupThreeDotMenu = (groupName) => {
-    cy.get(groupsSelector.groupLink(groupName)).realHover()
+    cy.get(groupsSelector.groupLink(groupName)).click();
+    cy.get(groupsSelector.groupLink(groupName)).realHover();
     cy.get(groupsSelector.groupLink(groupName)).then(() => {
         cy.get('[datacy="groups-list-option-button"]').click();
     });

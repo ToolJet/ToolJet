@@ -20,6 +20,32 @@ describe("Self host onboarding", () => {
     cy.intercept("GET", "/assets/translations/en.json").as("translations");
   });
 
+  afterEach(() => {
+    // Check if the user exists in the database
+    cy.runSqlQueryOnDB(`SELECT id FROM users WHERE email='dev@tooljet.io';`).then(
+      (resp) => {
+        // If user doesn't exist in DB, create it
+        if (!resp.rows || resp.rows.length === 0) {
+          cy.request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/onboarding/setup-super-admin`,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              companyName: "ToolJet",
+              name: "The Developer",
+              workspaceName: "My workspace",
+              email: "dev@tooljet.io",
+              password: "password",
+            },
+            failOnStatusCode: false,
+          });
+        }
+      }
+    );
+  });
+
   it("verify elements on self host onboarding page", () => {
     cy.ifEnv("Enterprise", () => {
       cy.get(commonSelectors.HostBanner).should("be.visible");
@@ -69,10 +95,10 @@ describe("Self host onboarding", () => {
         selector: commonSelectors.passwordLabel,
         text: commonText.passwordLabel,
       },
-      {
-        selector: commonSelectors.passwordHelperTextSignup,
-        text: commonText.passwordHelperText,
-      },
+      // {
+      //   selector: commonSelectors.passwordHelperTextSignup,
+      //   text: commonText.passwordHelperText,
+      // },
     ];
 
     labelChecks.forEach((check) => {

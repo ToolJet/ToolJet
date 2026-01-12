@@ -14,7 +14,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 @Injectable()
 export class AppHistoryUtilService {
   constructor(
-    @InjectQueue('app-history') protected readonly historyQueue: Queue,
+    // @InjectQueue('app-history') protected readonly historyQueue: Queue,
     protected readonly logger: TransactionLogger,
     protected readonly nameResolverRepository: NameResolverRepository
   ) {}

@@ -40,6 +40,8 @@
     "plugins:uninstall:prod": "node dist/scripts/plugins-uninstall.js",
     "plugins:reload": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/plugins-reload.ts",
     "plugins:reload:prod": "node dist/scripts/plugins-reload.js",
+    "rotate:keys": "ts-node -r tsconfig-paths/register --transpile-only ./scripts/rotate-lockbox-key.ts --",
+    "rotate:keys:prod": "node dist/scripts/rotate-lockbox-key.js --",
     "typeorm": "typeorm-ts-node-commonjs",
     "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas",
     "worker:dev": "WORKER=true NODE_ENV=development nest start --watch",
@@ -130,7 +132,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "nest-winston": "^1.9.4",
-    "nestjs-otel": "^7.0.1",
+    "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
@@ -167,7 +169,8 @@
   "overrides": {
     "@nestjs/platform-ws": {
       "ws": "$ws"
-    }
+    },
+    "systeminformation": "5.27.14"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
