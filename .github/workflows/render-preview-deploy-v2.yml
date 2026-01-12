@@ -1,21 +1,5 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.5
-# Changes from v2.4:
-#   - Fixed Render API payload for image-backed services
-#   - Changed from envSpecificDetails to image object at root level
-#   - Added ownerId to image configuration
-# Changes from v2.3:
-#   - Added disk cleanup step to all build jobs (CE and EE, initial and rebuild)
-#   - Frees up ~30GB by removing .NET, Haskell, Boost, and Docker cache
-# Changes from v2.2:
-#   - EE now uses LTS Dockerfile (./docker/LTS/ee/ee-preview.Dockerfile) instead of pre-release
-#   - LTS Dockerfile has proper submodule handling with lts-3.16 fallback
-# Changes from v2.1:
-#   - Single image tag per PR (ce-pr-{NUMBER} and ee-pr-{NUMBER})
-#   - Removed commit SHA from tags
-#   - DockerHub cache updates same tag on each push
-
 on:
   pull_request:
     types: [labeled, unlabeled, closed, synchronize]
@@ -82,6 +66,26 @@ jobs:
           cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
 
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
+
       - name: Create Render Service
         id: create-service
         run: |
@@ -125,9 +129,11 @@ jobs:
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
-                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
               },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
@@ -534,6 +540,26 @@ jobs:
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
 
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
+
       - name: Create Render Service
         id: create-service
         run: |
@@ -585,9 +611,11 @@ jobs:
               ],
               "image": {
                 "ownerId": "${{ env.RENDER_OWNER_ID }}",
-                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
               },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
