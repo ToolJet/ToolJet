@@ -1,28 +1,5 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.8
-# Changes from v2.7:
-#   - Fixed JSON path for registry credential extraction (.[0].id instead of .[0].registryCredential.id)
-# Changes from v2.6:
-#   - Added step to dynamically fetch registry credential ID from Render API
-#   - Added registryCredentialId to image object for private DockerHub repos
-# Changes from v2.5:
-#   - Added "runtime": "image" to serviceDetails (required by Render API)
-# Changes from v2.4:
-#   - Fixed Render API payload for image-backed services
-#   - Changed from envSpecificDetails to image object at root level
-#   - Added ownerId to image configuration
-# Changes from v2.3:
-#   - Added disk cleanup step to all build jobs (CE and EE, initial and rebuild)
-#   - Frees up ~30GB by removing .NET, Haskell, Boost, and Docker cache
-# Changes from v2.2:
-#   - EE now uses LTS Dockerfile (./docker/LTS/ee/ee-preview.Dockerfile) instead of pre-release
-#   - LTS Dockerfile has proper submodule handling with lts-3.16 fallback
-# Changes from v2.1:
-#   - Single image tag per PR (ce-pr-{NUMBER} and ee-pr-{NUMBER})
-#   - Removed commit SHA from tags
-#   - DockerHub cache updates same tag on each push
-
 on:
   pull_request:
     types: [labeled, unlabeled, closed, synchronize]
