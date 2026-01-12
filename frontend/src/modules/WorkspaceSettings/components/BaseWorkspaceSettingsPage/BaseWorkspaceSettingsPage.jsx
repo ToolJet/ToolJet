@@ -56,11 +56,30 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
           canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
         });
     });
-    const selectedTabFromRoute = location.pathname.split('/').pop();
+    
+    const selectedTabFromRoute = location.pathname.split('/').filter(Boolean).pop();
     if (selectedTabFromRoute === 'workspace-settings') {
       // No Sub routes added loading first one
-      setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspace-variables');
-      navigate(admin ? workspaceSettingsLinks[0].route : 'workspace-variables');
+      const isBuilder = !!authenticationService.currentSessionValue?.user_permissions?.is_builder;
+      const isEEorCloud = edition === 'ee' || edition === 'cloud';
+      
+      // Determine default route based on user role
+      let defaultRoute, defaultId;
+      if (admin) {
+        defaultRoute = workspaceSettingsLinks[0].route;
+        defaultId = workspaceSettingsLinks[0].id;
+      } else if (isBuilder && isEEorCloud) {
+        // Builder should go to themes
+        defaultRoute = 'themes';
+        defaultId = 'themes';
+      } else {
+        // Fallback (shouldn't reach here if permissions are correct)
+        defaultRoute = 'workspace-variables';
+        defaultId = 'workspace-variables';
+      }
+      
+      setSelectedTab(defaultId);
+      navigate(defaultRoute);
     } else {
       const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
       if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
