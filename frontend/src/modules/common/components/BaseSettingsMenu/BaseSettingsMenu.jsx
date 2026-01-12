@@ -1,4 +1,3 @@
-// src/modules/common/components/BaseSettingsMenu/BaseSettingsMenu.jsx
 import React, { useState } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
