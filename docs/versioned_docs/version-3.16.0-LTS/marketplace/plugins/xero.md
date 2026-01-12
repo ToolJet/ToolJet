@@ -16,7 +16,7 @@ The Xero Plugin uses OAuth 2.0 authentication and allows you to interact with mu
 - Copy the generated Client ID and Client Secret.
 - In your Xero app settings, add the Redirect URI provided by ToolJet.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-clientId-secret.png" alt="Fetching Creds from Xero Developer Portal" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
 
 
 ## Connection
