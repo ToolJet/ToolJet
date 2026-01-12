@@ -131,16 +131,9 @@ export class AppModuleLoader {
       staticModules.unshift(SentryModule.forRoot());
     }
 
-    // BullModule (Redis) - Only load if workflows/queues are needed
-    // In CE edition, Redis is not required unless explicitly enabled
+    // BullModule (Redis) - Only load for EE edition (not Cloud, not CE)
     const edition = getTooljetEdition();
-    const isRedisEnabled =
-      edition !== 'ce' || // EE and Cloud editions need Redis
-      process.env.ENABLE_WORKFLOWS_FEATURE === 'true' || // Explicit workflow enablement
-      process.env.REDIS_HOST || // Redis explicitly configured
-      process.env.REDIS_URL; // Redis URL explicitly provided
-
-    if (isRedisEnabled) {
+    if (edition !== 'cloud' && edition !== 'ce') {
       staticModules.push(
         BullModule.forRoot({
           connection: {
