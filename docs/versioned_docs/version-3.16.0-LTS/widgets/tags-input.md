@@ -23,6 +23,7 @@ The **Tags Input** component allows users to create, select, and delete tags fro
 | Schema | JSON array defining tag options. Only visible when Dynamic tags is ON. | Array of objects with `label`, `value`, `visible`, `default`, and `disable` properties |
 | Sort tags | Sort order for tags in the dropdown. | `none`, `asc` (A-Z), or `desc` (Z-A) |
 | Allow new tags | When enabled, users can create new tags by typing values not in the predefined list. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Turn on search | When enabled, users can search/filter tags in the dropdown. When disabled, the dropdown menu does not appear and the component acts as a simple input field. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ### Dynamic Tags
 
@@ -111,6 +112,7 @@ Access these variables to get the current state of the component:
 | tags | Returns the array of all the available tags. | `components.tagsinput1.tags` |
 | newTagsAdded | Returns the array of all the newly added tags. | `components.tagsinput1.newTagsAdded` |
 | selectedTags | Returns the array of label and values of all the selected tags. | `components.tagsinput1.selectedTags` |
+| Label | The label text displayed for the field. | `components.tagsinput1.label` |
 
 ### Example Usage
 
@@ -160,7 +162,6 @@ This validates that at least 2 tags are selected.
 | <div style={{ width:"120px"}}> Property </div> | Description | Configuration Options |
 |:---------|:------------|:---------------|
 | Dynamic height | When enabled, the component height adjusts based on the number of selected tags. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Turn on search | When enabled, users can search/filter tags in the dropdown. When disabled, the dropdown menu does not appear and the component acts as a simple input field. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Loading state | Shows a loading overlay on the entire component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls whether the component is visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | When enabled, the component becomes non-interactive. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
@@ -191,8 +192,9 @@ This validates that at least 2 tags are selected.
 | Background | Background color of the input field. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Border color of the input field. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Accent | Color used for focus state and highlights. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Text | Text color inside selected tags. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Chip bg | Background color of selected tag chips. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Auto pick chip color | When enabled, the component will automatically pick colors for the chips, otherwise, you can configure the color by disabling it. | You can check the box to enable it or uncheck it to disable. |
+| Chip color | Background color of selected tag chips. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Text color | Text color inside selected tags. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Color for validation error messages. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border radius | Corner radius of the input field. | Enter the value in pixels. |
 | Box Shadow | Shadow effect around the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
