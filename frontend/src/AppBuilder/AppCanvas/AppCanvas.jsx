@@ -148,6 +148,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         16; // padding of 'div.canvas-container.page-container' container
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
+
+    localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isViewerSidebarPinned, position, currentLayout]);
 
