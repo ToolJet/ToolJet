@@ -14,7 +14,6 @@
   flex: 1 1 auto;
   background-clip: border-box;
   padding-top: 8px;
-  background: var(--page-weak) !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -899,7 +898,7 @@
 .sidebar-h-100-popover {
   position: relative;
   height: 100vh;
-  overflow-y:scroll !important;
+  overflow-y:auto !important;
   margin-top: 0px;
   border-radius: 0px !important;
   box-shadow: none !important;
