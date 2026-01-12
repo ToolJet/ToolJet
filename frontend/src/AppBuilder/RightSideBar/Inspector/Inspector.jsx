@@ -128,6 +128,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CircularProgressBar',
   'CustomComponent',
   'Html',
+  'AudioRecorder',
+  'Camera',
   'CodeEditor',
   'Form',
 ];
