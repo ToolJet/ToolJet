@@ -1,0 +1,84 @@
+.audio-recorder-button-container {
+    display: flex;
+    width: 100%;
+    height: 36px;
+    gap: 8px;
+    align-items: center;
+}
+
+.audio-recorder-transparent-button {
+    background-color: var(--audio-recorder-button-color) !important;
+    &:hover {
+        background-color: var(--audio-recorder-button-hover-color) !important;
+    }
+    &:active {
+        background-color: var(--audio-recorder-button-active-color) !important;
+    }
+}
+
+.audio-recorder-save-button {
+    background-color: var(--audio-recorder-accent-color) !important;
+    &:hover {
+        background-color: var(--audio-recorder-accent-color-hover) !important;
+    }
+    &:active {
+        background-color: var(--audio-recorder-accent-color-active) !important;
+    }
+}
+
+.audio-recorder-button {
+    height: 38px;
+    width: 38px;
+    min-width: 38px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.save-discard-button-container {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.audio-recorder-loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.audio-recorder-timer-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.permission-denied-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-accent-strong);
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.audio-recorder-label {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.audio-recorder-waveform-container {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}

@@ -377,7 +377,7 @@ export const PagesSidebarNavigation = ({
         className="app-name"
       >
         {!logoHidden && (
-          <div onClick={() => switchToHomePage(currentPageId, moduleId)} className="cursor-pointer flex-shrink-0">
+          <div onClick={() => switchToHomePage(currentPageId, moduleId)} className="cursor-pointer">
             <AppLogo height={32} isLoadingFromHeader={false} />
           </div>
         )}
@@ -464,6 +464,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const Sidebar = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const isPreviewMode = searchParams.has('env') || searchParams.has('version');
     return (
       <div
         ref={(el) => {
@@ -477,7 +479,7 @@ export const PagesSidebarNavigation = ({
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
-          'no-preview-settings': isReleasedVersionId || isPreviewInEditor,
+          'no-preview-settings': !isPreviewMode,
           'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
           'collapsable-only':
             !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',

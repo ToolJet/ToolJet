@@ -301,9 +301,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                  slug,
-                  viewerEnvironment?.environment?.id
-                )
+                    slug,
+                    viewerEnvironment?.environment?.id
+                  )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -355,8 +355,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -493,7 +493,11 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals(
+          'environment',
+          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          moduleId
+        );
         setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
@@ -524,12 +528,10 @@ const useAppData = (
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
+          // Use versionId from URL if available (preview mode), otherwise use editing version
+          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+          useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
@@ -643,8 +645,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
@@ -709,6 +711,7 @@ const useAppData = (
         }
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
         setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
