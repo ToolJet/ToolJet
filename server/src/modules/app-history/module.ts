@@ -1,12 +1,13 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
-import { getImportPath } from '@modules/app/constants';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { BullModule } from '@nestjs/bull';
 import { FeatureAbilityFactory } from './ability';
 import { NameResolverRepository } from '@modules/app-history/repositories/name-resolver.repository';
 import { AppHistoryRepository } from '@modules/app-history/repository';
+import { getTooljetEdition } from '@helpers/utils.helper';
 @Module({})
 export class AppHistoryModule extends SubModule {
   static async register(_configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -34,25 +35,30 @@ export class AppHistoryModule extends SubModule {
       AppHistoryUtilService,
     ];
 
-    // Always register the queue for dependency injection
-    const imports: any[] = [
-      BullModule.registerQueue({
-        name: 'app-history',
-        defaultJobOptions: {
-          removeOnComplete: 10,
-          removeOnFail: 50,
-          attempts: 1,
-          backoff: {
-            type: 'exponential',
-            delay: 2000,
+    // Only register the queue for EE edition (not Cloud, not CE)
+    // Queue is currently unused (commented out in util.service.ts)
+    const imports: any[] = [];
+    const edition = getTooljetEdition();
+    if (edition !== TOOLJET_EDITIONS.CE && edition !== TOOLJET_EDITIONS.Cloud) {
+      imports.push(
+        BullModule.registerQueue({
+          name: 'app-history',
+          defaultJobOptions: {
+            removeOnComplete: 10,
+            removeOnFail: 50,
+            attempts: 1,
+            backoff: {
+              type: 'exponential',
+              delay: 2000,
+            },
           },
-        },
-      }),
-    ];
+        })
+      );
 
-    if (isMainImport && !_configs?.IS_GET_CONTEXT) {
-      const { HistoryQueueProcessor } = await import(`${importPath}/app-history/queue/history-queue.processor`);
-      providers.push(HistoryQueueProcessor);
+      if (isMainImport && !_configs?.IS_GET_CONTEXT) {
+        const { HistoryQueueProcessor } = await import(`${importPath}/app-history/queue/history-queue.processor`);
+        providers.push(HistoryQueueProcessor);
+      }
     }
 
     return {
