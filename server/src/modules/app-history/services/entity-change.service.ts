@@ -76,8 +76,4 @@ export class EntityChangeService {
   createChangeLog(_changes: any[], _actionType: string, _description: string, _affectedEntities?: string[]): any {
     return { changes: [], metadata: { actionType: '', description: '', affectedEntities: [] } };
   }
-
-  applyChangesToState(_state: any, _changes: any[]): void {
-    // No-op in CE
-  }
 }
