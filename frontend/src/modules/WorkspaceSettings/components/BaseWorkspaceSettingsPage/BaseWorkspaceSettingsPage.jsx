@@ -111,7 +111,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px', scrollbarGutter: 'stable'  }}>
             <div className="w-100">
               <Outlet />
             </div>
