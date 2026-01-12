@@ -542,6 +542,24 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         if (orgIdForValidation) {
           await this.licenseUserService.validateUser(manager, orgIdForValidation);
         }
+
+        // For non-cloud editions, return login payload to auto-login user
+        if (!isCloudEdition && response) {
+          console.log('Attempting auto-login session generation for default org');
+          const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
+          if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
+          
+          return await this.sessionUtilService.generateLoginResultPayload(
+            response,
+            user,
+            userOrg,
+            false,
+            true,
+            null,
+            manager
+          );
+        }
+
         
         // Only send verification email for cloud edition
         if (isCloudEdition) {
