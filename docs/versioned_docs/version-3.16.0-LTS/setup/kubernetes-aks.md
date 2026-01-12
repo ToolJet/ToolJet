@@ -59,7 +59,7 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
    **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
    :::
 
-   <details>
+   <details id="tj-dropdown">
    <summary>Why does ToolJet require two databases?</summary>
 
    ToolJet requires **two separate database names** for optimal functionality:
@@ -200,8 +200,7 @@ New LTS versions are released every 3-5 months with an end-of-life of atleast 18
 
 ### Prerequisites for Upgrading
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -214,6 +213,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
+<br/>
 ---
 
-_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

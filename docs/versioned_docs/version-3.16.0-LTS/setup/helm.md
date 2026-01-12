@@ -44,12 +44,10 @@ For more information about the ToolJet database, you can visit [here](/docs/tool
 
 For a multi-service or multi-pod setup, it is recommended to use an external Redis instance.
 
-**Default Behavior:**
-
+**Default Behavior:** <br/>
 - Redis is included in the Helm chart but **disabled by default**.
 
-**When to Enable Redis?**
-
+**When to Enable Redis?** <br/>
 - If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.
 
 Enabling or Disabling Redis in `values.yaml`
@@ -226,8 +224,7 @@ New LTS versions are released every 3-5 months with an end-of-life of atleast 18
 
 ### Prerequisites for Upgrading
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -240,4 +237,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

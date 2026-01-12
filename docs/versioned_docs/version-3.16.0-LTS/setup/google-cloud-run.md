@@ -26,15 +26,15 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 :::
 
 1. **Create a new Google Cloud Run Service:**
-   <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
+   <img className="screenshot-full img-m" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
 2. **Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.**
-   <img className="screenshot-full img-l" style={{ marginTop: '15px' }} src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
+   <img className="screenshot-full img-l"  src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
 3. **Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:**
-   <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
+   <img className="screenshot-full img-m" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
    - If the above command is not compatible, please use the following command structure instead: <br/>
-     <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
+     <img className="screenshot-full img-m"  src="/img/cloud-run/port-and-capacity-postgrest-alternative-command.png" alt="port-and-capacity-tooljet-alternative-command" />
    - If you encounter any migration issues, please execute the following command. Be aware that executing this command may cause the revision to break. However, modifying the command back to `npm, run, start:prod` will successfully reboot the instance:
-     <img className="screenshot-full img-m" style={{ marginTop: '15px' }} src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
+     <img className="screenshot-full img-m" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
 4. **Configure all required environment variables:**
 
    #### Application Configuration
@@ -75,7 +75,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
    :::
 
-   <details>
+   <details id="tj-dropdown">
    <summary>Why does ToolJet require two databases?</summary>
 
    ToolJet requires **two separate database names** for optimal functionality:
@@ -112,8 +112,8 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    **Cloud SQL Public IP Connection**: If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST` and `TOOLJET_DB_HOST`) needs to be set using unix socket format: `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`
    :::
 
-:::info
-**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+:::info Note on ToolJet Database
+ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 :::
 
 5. **Please go to the connection tab. Under the Cloud SQL instance please select the PostgreSQL database which you have set-up.**
@@ -177,8 +177,7 @@ New LTS versions are released every 3-5 months with an end-of-life of atleast 18
 
 ### Prerequisites for Upgrading
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -191,6 +190,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
+<br/>
 ---
 
-_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

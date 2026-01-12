@@ -34,7 +34,7 @@ Install docker and docker-compose on the server.
 - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
 - Docs for [Docker Compose Installation](https://docs.docker.com/compose/install/)
 
-### Deployment options
+### Deployment Options
 
 There are two options to deploy ToolJet using Docker Compose:
 
@@ -42,35 +42,59 @@ There are two options to deploy ToolJet using Docker Compose:
 2. **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
 Confused about which setup to select? Feel free to ask the community via [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
-
+<!-- 
 <Tabs>
-  <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
+  <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default> -->
 
-1. Download our production docker-compose file into the server.
+#### 1. Download our production docker-compose file into the server.
+  <Tabs>
 
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
-mv docker-compose-db.yaml docker-compose.yaml
-mkdir postgres_data
-```
+    <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
+      ```bash
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
+      mv docker-compose-db.yaml docker-compose.yaml
+      mkdir postgres_data
+      ```
+    </TabItem>
+    <TabItem value="with-external-postgres" label="With external PostgreSQL">
+      ```bash
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
+      ```
+    </TabItem>
+  </Tabs>
 
-2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
-mv .env.internal.example .env && ./internal.sh
-```
+#### 2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
+  <Tabs>
 
-`internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for postgreSQL database.
+    <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
+      ```bash
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
+      mv .env.internal.example .env && ./internal.sh
+      ```
 
-3. To start the docker container, use the following command:
+      `internal.sh` helps to generate the basic .env variables such as the LOCKBOX_MASTER_KEY, SECRET_KEY_BASE, and the password for postgreSQL database.
+
+    </TabItem>
+    <TabItem value="with-external-postgres" label="With external PostgreSQL">
+      Kindly set the postgresql database credentials according to your external database. Please enter the database details with the help of the bash as shown below.
+      <img className="screenshot-full img-full" src="/img/setup/docker/bash.gif"/>
+      ```bash
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.external.example
+      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.sh && chmod +x external.sh
+      mv .env.external.example .env && ./external.sh
+      ```
+    </TabItem>
+  </Tabs>
+
+#### 3. To start the docker container, use the following command:
 
 ```bash
 docker-compose up -d
 ```
 
-4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+#### 4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
@@ -78,14 +102,31 @@ Examples:
 
 If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
-:::info
-i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+<Tabs>
 
-ii. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+    <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
+      :::info
+      i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 
-iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
-`sudo docker-compose up -d`
-:::
+      ii. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+
+      iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
+      `sudo docker-compose up -d`
+      :::
+    </TabItem>
+    <TabItem value="with-external-postgres" label="With external PostgreSQL">
+      :::info
+      i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+
+      ii. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
+
+      iii. If you're running a linux server, `docker` might need sudo permissions. In that case you can either run:
+      `sudo docker-compose up -d`
+
+      iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+      :::
+    </TabItem>
+</Tabs>
 
 Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
@@ -94,75 +135,14 @@ Also, for setting up additional environment variables in the .env file, please c
 The below bash script will help with taking back-up and as well as restoring:
 
 1. Download the script:
-
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
-```
-
+    ```bash
+    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
+    ```
 2. Run the script with the following command:
-
-```bash
-./backup-restore.sh
-```
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
-</div>
-
-  </TabItem>
-  <TabItem value="with-external-postgres" label="With external PostgreSQL">
-
-1. Download our production docker-compose file into the server.
-
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
-```
-
-2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
-
-Kindly set the postgresql database credentials according to your external database. Please enter the database details with the help of the bash as shown below.
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/docker/bash.gif"/>
-
-  </div>
-
-```bash
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.external.example
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.sh && chmod +x external.sh
-mv .env.external.example .env && ./external.sh
-```
-
-3. To start the docker container, use the following command:
-
-```bash
-docker-compose up -d
-```
-
-4. `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
-
-Examples:
-`TOOLJET_HOST=http://12.34.56.78` or
-`TOOLJET_HOST=https://tooljet.yourdomain.com`
-
-If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
-
-:::info
-i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
-
-ii. If there are self signed HTTPS endpoints that ToolJet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
-
-iii. If you're running a linux server, `docker` might need sudo permissions. In that case you can either run:
-`sudo docker-compose up -d`
-
-iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-:::
-
-Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
-
-</TabItem>
-</Tabs>
+    ```bash
+    ./backup-restore.sh
+    ```
+    <img className="screenshot-full img-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
 
 ## Workflows
 
@@ -290,8 +270,7 @@ New LTS versions are released every 3-5 months with an end-of-life of atleast 18
 
 ### Prerequisites for Upgrading
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -303,6 +282,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 
+<br/>
 ---
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

@@ -14,7 +14,6 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
-
 ## Automated Deployment Options
 
 ToolJet provides Infrastructure as Code (IaC) templates for automated ECS deployment.
@@ -48,7 +47,6 @@ Use this template if you have an existing VPC, RDS database, or ElastiCache clus
 ```bash
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-deploy.yml
 ```
----
 
 ## Deploying ToolJet
 
@@ -69,14 +67,14 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
    1. Select Fargate as launch type compatibility
    2. Configure IAM roles and set operating system family as Linux.
    3. Select task size to have 3GB of memory and 1vCpu
-      <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
+      <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
    4. Add container details that is shown: <br/>
       Specify your container name ex: `ToolJet` <br/>
       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
       Update port mappings at container port `3000` for tcp protocol.
-      <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
+      <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
       Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
-      <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
+      <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
 
       **Configure all required environment variables:**
 
@@ -114,7 +112,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
       :::
 
-      <details>
+      <details  id="tj-dropdown">
       <summary>Why does ToolJet require two databases?</summary>
 
       ToolJet requires **two separate database names** for optimal functionality:
@@ -173,7 +171,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
          - **Read only**: Yes
 
    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
-      <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
+      <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
 4. Create a service to run your task definition within your cluster.
    - Select the cluster which you have created
@@ -181,25 +179,21 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
    <br />
    <img className="screenshot-full img-m" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
    <br />
-   <br />
    - Select the cluster and set the service name
    - You can set the number of tasks to start with as two
    - Rest of the values can be kept as default
    <br />
    <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
    <br />
-   <br />
    - Click on next step to configure networking options
    - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
    <br />
    <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
    <br />
-   <br />
    - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
-   <br />
 
-:::info
-**Note on ToolJet Database**: ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [*here*](/docs/tooljet-db/tooljet-database).
+:::info Note on ToolJet Database
+ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [*here*](/docs/tooljet-db/tooljet-database).
 :::
 
 ## Workflows
@@ -244,25 +238,20 @@ For production deployments, ensure your ElastiCache Redis cluster is in the same
 :::
 
 1. **Create an ElastiCache Redis cluster** with these settings:
-
    - Engine version: Redis 7.x
    - Node type: cache.t3.medium or higher
    - Number of replicas: At least 1 (for high availability)
    - Automatic failover: Enabled
-
 2. **Configure Redis settings**:
-
    - **maxmemory-policy**: Must be set to `noeviction` (critical for BullMQ)
    - **appendonly**: Set to `yes` for AOF persistence
    - **appendfsync**: Set to `everysec`
-
 3. **Add Redis environment variables** to your ECS task definition:
-
-```bash
-REDIS_HOST=<your-elasticache-endpoint>
-REDIS_PORT=6379
-REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
-```
+   ```bash
+   REDIS_HOST=<your-elasticache-endpoint>
+   REDIS_PORT=6379
+   REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
+   ```
 
 **Optional Redis Configuration:**
 
@@ -270,9 +259,7 @@ REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=true` - Enable TLS/SSL for secure connections
 
-
 **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -280,12 +267,11 @@ REDIS_PASSWORD=<your-redis-password>  # If auth is enabled
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [*ToolJet Docker Hub*](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of at least 18 months. To check the latest LTS version, visit the [*ToolJet Docker Hub*](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 ### Prerequisites for Upgrading
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -298,6 +284,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
 
+<br/>
 ---
 
-_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)
