@@ -4,10 +4,102 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent, BulkCreateEventHandlerDto } from '../dto/event';
 import { App } from '@entities/app.entity';
-import { IEventsService } from '../interfaces/services/IEventService';
+import {
+  IEventsService,
+  EventCreateContext,
+  EventBulkCreateContext,
+  EventUpdateContext,
+  EventDeleteContext,
+} from '../interfaces/services/IEventService';
 
 @Injectable()
 export class EventsService implements IEventsService {
+  /**
+   * Hook called before event creation - override in EE to capture state for history
+   */
+  protected async beforeEventCreate(
+    eventHandler: CreateEventHandlerDto,
+    versionId: string
+  ): Promise<EventCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after event creation - override in EE to queue history
+   */
+  protected async afterEventCreate(
+    context: EventCreateContext | null,
+    createdEvent: EventHandler,
+    versionId: string,
+    skipHistoryCapture: boolean
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before bulk event creation - override in EE to capture state for history
+   */
+  protected async beforeBulkEventCreate(
+    eventHandlers: CreateEventHandlerDto[],
+    versionId: string
+  ): Promise<EventBulkCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after bulk event creation - override in EE to queue history
+   */
+  protected async afterBulkEventCreate(
+    context: EventBulkCreateContext | null,
+    createdEvents: EventHandler[],
+    versionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before event update - override in EE to capture state for history
+   */
+  protected async beforeEventUpdate(
+    events: UpdateEvent[],
+    updateType: 'update' | 'reorder',
+    appVersionId: string
+  ): Promise<EventUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after event update - override in EE to queue history
+   */
+  protected async afterEventUpdate(
+    context: EventUpdateContext | null,
+    updatedEvents: EventHandler[],
+    updateType: 'update' | 'reorder',
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before event deletion - override in EE to capture state for history
+   */
+  protected async beforeEventDelete(
+    eventId: string,
+    appVersionId: string
+  ): Promise<EventDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after event deletion - override in EE to queue history
+   */
+  protected async afterEventDelete(
+    context: EventDeleteContext | null,
+    eventId: string,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
 
   async findEventById(eventId: string): Promise<EventHandler> {
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -45,7 +137,7 @@ export class EventsService implements IEventsService {
     });
   }
 
-  async createEvent(eventHandler: CreateEventHandlerDto, versionId, skipHistoryCapture: boolean = false) {
+  async createEvent(eventHandler: CreateEventHandlerDto, versionId: string, skipHistoryCapture: boolean = false) {
     if (!eventHandler.attachedTo) {
       throw new BadRequestException('No attachedTo found');
     }
@@ -57,6 +149,8 @@ export class EventsService implements IEventsService {
     if (!eventHandler.event) {
       throw new BadRequestException('No event found');
     }
+
+    const context = skipHistoryCapture ? null : await this.beforeEventCreate(eventHandler, versionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       if (
@@ -111,7 +205,8 @@ export class EventsService implements IEventsService {
       return event;
     }, versionId);
 
-    // History capture is handled by EE override
+    await this.afterEventCreate(context, result, versionId, skipHistoryCapture);
+
     return result;
   }
 
@@ -202,15 +297,20 @@ export class EventsService implements IEventsService {
       return [];
     }
 
+    const context = await this.beforeBulkEventCreate(eventHandlers, versionId);
+
     const results = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return this.createEventsInTransaction(eventHandlers, versionId, manager);
     }, versionId);
 
-    // History capture is handled by EE override
+    await this.afterBulkEventCreate(context, results, versionId);
+
     return results;
   }
 
   async updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string) {
+    const context = await this.beforeEventUpdate(events, updateType, appVersionId);
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
@@ -243,7 +343,8 @@ export class EventsService implements IEventsService {
       );
     }, appVersionId);
 
-    // History capture is handled by EE override
+    await this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId);
+
     return result;
   }
 
@@ -262,17 +363,19 @@ export class EventsService implements IEventsService {
   }
 
   async deleteEvent(eventId: string, appVersionId: string) {
+    const context = await this.beforeEventDelete(eventId, appVersionId);
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
         where: { id: eventId },
       });
 
-      const sourceId = event.sourceId;
-      const deletedIndex = event.index;
-
       if (!event) {
         return new BadRequestException('No event found');
       }
+
+      const sourceId = event.sourceId;
+      const deletedIndex = event.index;
 
       const deleteResponse = await manager.delete(EventHandler, event.id);
 
@@ -283,7 +386,8 @@ export class EventsService implements IEventsService {
       return deleteResponse;
     }, appVersionId);
 
-    // History capture is handled by EE override
+    await this.afterEventDelete(context, eventId, appVersionId);
+
     return result;
   }
 

@@ -13,7 +13,13 @@ import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
 import { AppVersion } from '@entities/app_version.entity';
-import { IPageService } from '../interfaces/services/IPageService';
+import {
+  IPageService,
+  PageCreateContext,
+  PageUpdateContext,
+  PageDeleteContext,
+  PageReorderContext,
+} from '../interfaces/services/IPageService';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -22,6 +28,115 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService
   ) {}
+
+  /**
+   * Hook called before page creation - override in EE to capture state for history
+   */
+  protected async beforePageCreate(
+    pageData: CreatePageDto,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page creation - override in EE to queue history
+   */
+  protected async afterPageCreate(
+    context: PageCreateContext | null,
+    createdPage: Page,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page update - override in EE to capture state for history
+   */
+  protected async beforePageUpdate(
+    pageId: string,
+    diff: any,
+    appVersionId: string
+  ): Promise<PageUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page update - override in EE to queue history
+   */
+  protected async afterPageUpdate(
+    context: PageUpdateContext | null,
+    diff: any,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page deletion - override in EE to capture state for history
+   */
+  protected async beforePageDelete(
+    pageId: string,
+    appVersionId: string
+  ): Promise<PageDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page deletion - override in EE to queue history
+   */
+  protected async afterPageDelete(
+    context: PageDeleteContext | null,
+    pageId: string,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page reorder - override in EE to capture state for history
+   */
+  protected async beforePageReorder(
+    diff: any,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageReorderContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page reorder - override in EE to queue history
+   */
+  protected async afterPageReorder(
+    context: PageReorderContext | null,
+    diff: any,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before page clone - override in EE to capture state for history
+   */
+  protected async beforePageClone(
+    pageId: string,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<PageCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after page clone - override in EE to queue history
+   */
+  protected async afterPageClone(
+    context: PageCreateContext | null,
+    clonedPages: Page[],
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
@@ -42,17 +157,23 @@ export class PageService implements IPageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
+    const context = await this.beforePageCreate(page, appVersionId, organizationId);
+
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const newPage = await this.pageHelperService.preparePageObject(page, appVersionId, organizationId);
-
       return await manager.save(Page, newPage);
     }, appVersionId);
 
-    // History capture is handled by EE override
+    await this.afterPageCreate(context, result, appVersionId);
+
     return result;
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
+    const context = await this.beforePageClone(pageId, appVersionId, organizationId);
+
+    let clonedPage: Page | null = null;
+
     await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       const pageToClone = await manager.findOne(Page, {
         where: { id: pageId, appVersionId },
@@ -90,9 +211,9 @@ export class PageService implements IPageService {
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
 
-      const clonedpage = await manager.save(newPage);
+      clonedPage = await manager.save(newPage);
 
-      await this.clonePageEventsAndComponents(pageId, clonedpage.id, manager);
+      await this.clonePageEventsAndComponents(pageId, clonedPage.id, manager);
 
       const pages = await this.findPagesForVersion(appVersionId, manager);
       const events = await this.eventHandlerService.findEventsForVersion(appVersionId, manager);
@@ -100,8 +221,11 @@ export class PageService implements IPageService {
       return { pages, events };
     }, appVersionId);
 
-    // Fetch pages and events separately after transaction completes
-    // History capture is handled by EE override
+    if (clonedPage) {
+      await this.afterPageClone(context, [clonedPage], appVersionId);
+    }
+
+    // Fetch pages and events after transaction completes
     const pages = await this.findPagesForVersion(appVersionId);
     const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
 
@@ -303,10 +427,13 @@ export class PageService implements IPageService {
     }, manager);
   }
 
-  async reorderPages(diff, appVersionId: string, organizationId: string) {
+  async reorderPages(diff: any, appVersionId: string, organizationId: string) {
+    const context = await this.beforePageReorder(diff, appVersionId, organizationId);
+
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
-    // History capture is handled by EE override
+    await this.afterPageReorder(context, diff, appVersionId);
+
     return result;
   }
 
@@ -314,6 +441,8 @@ export class PageService implements IPageService {
     if (Object.keys(pageUpdates.diff).length > 1) {
       throw new Error('Can not update multiple pages');
     }
+
+    const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const currentPage = await manager.findOne(Page, {
@@ -326,7 +455,8 @@ export class PageService implements IPageService {
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
-    // History capture is handled by EE override
+    await this.afterPageUpdate(context, pageUpdates.diff, appVersionId);
+
     return result;
   }
 
@@ -337,7 +467,9 @@ export class PageService implements IPageService {
     deleteAssociatedPages: boolean = false,
     organizationId: string
   ) {
-    const result = dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const context = await this.beforePageDelete(pageId, appVersionId);
+
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const pageExists = await manager.findOne(Page, {
         where: { id: pageId },
       });
@@ -367,7 +499,8 @@ export class PageService implements IPageService {
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
 
-    // History capture is handled by EE override
+    await this.afterPageDelete(context, pageId, appVersionId);
+
     return result;
   }
 

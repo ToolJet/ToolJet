@@ -4,6 +4,29 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { CreatePageDto, UpdatePageDto } from '@modules/apps/dto/page';
 import { EntityManager } from 'typeorm';
 
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface PageCreateContext {
+  pageData: CreatePageDto;
+}
+
+export interface PageUpdateContext {
+  pageId: string;
+  diff: any;
+  oldPageDto: any;
+  pageName: string;
+}
+
+export interface PageDeleteContext {
+  pageId: string;
+  pageName: string;
+}
+
+export interface PageReorderContext {
+  diff: any;
+}
+
 export interface IPageService {
   findPagesForVersion(
     appVersionId: string,

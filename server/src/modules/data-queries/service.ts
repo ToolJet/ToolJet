@@ -14,7 +14,12 @@ import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
-import { IDataQueriesService } from './interfaces/IService';
+import {
+  IDataQueriesService,
+  QueryCreateContext,
+  QueryUpdateContext,
+  QueryDeleteContext,
+} from './interfaces/IService';
 import { App } from '@entities/app.entity';
 
 @Injectable()
@@ -23,7 +28,72 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryRepository: DataQueryRepository,
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository
-  ) { }
+  ) {}
+
+  /**
+   * Hook called before query creation - override in EE to capture state for history
+   */
+  protected async beforeQueryCreate(
+    user: User,
+    dataSource: DataSource,
+    dataQueryDto: CreateDataQueryDto
+  ): Promise<QueryCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query creation - override in EE to queue history
+   */
+  protected async afterQueryCreate(
+    context: QueryCreateContext | null,
+    createdQuery: any,
+    user: User,
+    appVersionId: string
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query update - override in EE to capture state for history
+   */
+  protected async beforeQueryUpdate(
+    user: User,
+    versionId: string,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto
+  ): Promise<QueryUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query update - override in EE to queue history
+   */
+  protected async afterQueryUpdate(
+    context: QueryUpdateContext | null,
+    user: User,
+    versionId: string,
+    updateDataQueryDto: UpdateDataQueryDto
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query deletion - override in EE to capture state for history
+   */
+  protected async beforeQueryDelete(dataQueryId: string): Promise<QueryDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query deletion - override in EE to queue history
+   */
+  protected async afterQueryDelete(
+    context: QueryDeleteContext | null,
+    dataQueryId: string,
+    appVersionId: string | null
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -61,6 +131,8 @@ export class DataQueriesService implements IDataQueriesService {
       'You cannot create queries in the promoted version.'
     );
 
+    const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
+
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const dataQuery = await this.dataQueryRepository.createOne(
         {
@@ -79,7 +151,8 @@ export class DataQueriesService implements IDataQueriesService {
       return decamelizedQuery;
     });
 
-    // History capture is handled by EE override
+    await this.afterQueryCreate(context, result, user, appVersionId);
+
     return result;
   }
 
@@ -92,20 +165,34 @@ export class DataQueriesService implements IDataQueriesService {
       'You cannot update queries in the promoted version.'
     );
 
+    const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
-    // History capture is handled by EE override
+    await this.afterQueryUpdate(context, user, versionId, updateDataQueryDto);
   }
 
   async delete(dataQueryId: string) {
+    const context = await this.beforeQueryDelete(dataQueryId);
+
+    let appVersionId: string | null = null;
+    try {
+      const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { apps: true });
+      if (dataQuery) {
+        appVersionId = dataQuery.appVersionId;
+      }
+    } catch {
+      // Query may not exist, continue with deletion
+    }
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
 
-    // History capture is handled by EE override
+    await this.afterQueryDelete(context, dataQueryId, appVersionId);
   }
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {

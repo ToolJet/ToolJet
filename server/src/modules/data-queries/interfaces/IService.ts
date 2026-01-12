@@ -5,6 +5,29 @@ import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } fr
 import { DataQuery } from '@entities/data_query.entity';
 import { App } from '@entities/app.entity';
 
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface QueryCreateContext {
+  name: string;
+  options: object;
+  dataSourceId: string;
+  appVersionId: string;
+}
+
+export interface QueryUpdateContext {
+  dataQueryId: string;
+  updateDto: UpdateDataQueryDto;
+  oldQueryDto: any;
+  queryName: string;
+}
+
+export interface QueryDeleteContext {
+  dataQueryId: string;
+  queryName: string;
+  appVersionId: string | null;
+}
+
 export interface IDataQueriesService {
   getAll(user: User, app: App, versionId: string, mode?: string): Promise<{ data_queries: object[] }>;
 
