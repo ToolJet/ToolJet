@@ -13,12 +13,15 @@ ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling 
       - **Query Failures:** Monitor failed queries with error categorization
       - **Success Rates:** Application-level success rate percentages
       - **App Usage:** Track application access and interaction events <br/> <br/>
+    <img className="screenshot-full img-full" src="/img/tooljet-setup/observability/setup/app-based-metrics.png" alt="App Based Metrics"/>
+
 2. **Platform-Based Metrics** - Monitor the overall health and performance of your ToolJet instance:
       - **HTTP Server Metrics:** Request rates, response times, status codes
       - **API Performance:** Endpoint-specific latency and throughput
       - **Database Operations:** Query execution times and connection health
       - **Node.js Runtime:** Event loop delays, garbage collection, memory usage
-      - **V8 Memory:** Heap usage and external memory tracking
+      - **V8 Memory:** Heap usage and external memory tracking <br/> <br/>
+    <img className="screenshot-full img-full" src="/img/tooljet-setup/observability/setup/platform-metrics.png" alt="Platform Metrics"/>
 
 ## Configuration
 
