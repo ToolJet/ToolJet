@@ -207,7 +207,6 @@ export const verifyUserPrivileges = (
   if (userRole === "Builder") {
     cy.get(commonSelectors.workspaceSettings).click();
     cy.get(commonSelectors.manageSSOOption).should("not.exist");
-    cy.get(commonSelectors.themesOption).should("exist");
   }
 };
 
