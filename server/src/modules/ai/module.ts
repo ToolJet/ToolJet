@@ -27,6 +27,7 @@ export class AiModule extends SubModule {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { AiController } = await import(`${importPath}/ai/controller`);
     const { AiService } = await import(`${importPath}/ai/service`);
+    const { NewAiService } = await import(`${importPath}/ai/new.service`);
     const { AiUtilService } = await import(`${importPath}/ai/util.service`);
     const { AgentsService } = await import(
       `${importPath}/ai/services/agents.service`
@@ -84,7 +85,7 @@ export class AiModule extends SubModule {
         PageHelperService,
         AppsUtilService,
         AiCacheService,
-        ...(isMainImport ? [AiService, AiCacheService] : []),
+        ...(isMainImport ? [AiService, NewAiService, AiCacheService] : []),
       ],
       exports: [AiUtilService],
     };
