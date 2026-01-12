@@ -16,6 +16,7 @@ import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -44,16 +45,6 @@ export class AppModuleLoader {
         ignoreErrors: false,
       }),
       ScheduleModule.forRoot(),
-      BullModule.forRoot({
-        connection: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT) || 6379,
-          ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
-          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
-          ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
-          ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
-        },
-      }),
       await ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -138,6 +129,30 @@ export class AppModuleLoader {
 
     if (process.env.APM_VENDOR == 'sentry') {
       staticModules.unshift(SentryModule.forRoot());
+    }
+
+    // BullModule (Redis) - Only load if workflows/queues are needed
+    // In CE edition, Redis is not required unless explicitly enabled
+    const edition = getTooljetEdition();
+    const isRedisEnabled =
+      edition !== 'ce' || // EE and Cloud editions need Redis
+      process.env.ENABLE_WORKFLOWS_FEATURE === 'true' || // Explicit workflow enablement
+      process.env.REDIS_HOST || // Redis explicitly configured
+      process.env.REDIS_URL; // Redis URL explicitly provided
+
+    if (isRedisEnabled) {
+      staticModules.push(
+        BullModule.forRoot({
+          connection: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT) || 6379,
+            ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
+            ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+            ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
+            ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
+          },
+        })
+      );
     }
 
     /**

@@ -142,7 +142,16 @@ export class AppModule implements OnModuleInit {
 
     const conditionalImports = [];
 
-    if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
+    // Workflows and BullBoard only load when Redis is enabled
+    // In CE edition, Redis/workflows are not required unless explicitly enabled
+    const edition = getTooljetEdition();
+    const isRedisEnabled =
+      edition !== TOOLJET_EDITIONS.CE || // EE and Cloud editions need Redis
+      process.env.ENABLE_WORKFLOWS_FEATURE === 'true' || // Explicit workflow enablement
+      process.env.REDIS_HOST || // Redis explicitly configured
+      process.env.REDIS_URL; // Redis URL explicitly provided
+
+    if (edition !== TOOLJET_EDITIONS.Cloud && isRedisEnabled) {
       conditionalImports.push(await WorkflowsModule.register(configs, true));
       conditionalImports.push(
         BullBoardModule.forRoot({
