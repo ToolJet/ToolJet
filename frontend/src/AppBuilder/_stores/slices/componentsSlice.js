@@ -1008,7 +1008,8 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       getCurrentPageIndex,
     } = get();
-    const shouldFreeze = getShouldFreeze();
+    const isAppBeingEditedByAI = get().ai?.isLoading ?? false;
+    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI);
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
@@ -2338,22 +2339,32 @@ export const createComponentsSlice = (set, get) => ({
     return value;
   },
   performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
-    const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
+    const {
+      deleteComponents,
+      getCurrentPageId,
+      setComponentPropertyByComponentIds,
+      addComponentToCurrentPage,
+      setPages,
+      deletePage,
+    } = get();
 
     const currentPageId = getCurrentPageId(moduleId);
 
     Object.entries(pagesInfo).forEach(([action, data]) => {
       switch (action) {
-        case 'create':
-          // TODO: Add a new page & its components
+        case 'create': {
+          if (!(Array.isArray(data) && data.length)) return;
+
+          setPages([...get().modules[moduleId].pages, ...data]);
           break;
+        }
         case 'update': {
           if (data?.length) {
             data.forEach((item) => {
-              if (!isEmpty(item?.components) && item.pageId) {
+              if (!isEmpty(item?.components) && item.id) {
                 // TODO: Might remove above if condition later on, this is just because backend response seems a bit different than expected
-                if (item.pageId === currentPageId) {
-                  const componentIdsToDelete = item.components?.delete?.map((component) => component.id) ?? [];
+                if (item.id === currentPageId) {
+                  const componentIdsToDelete = Array.isArray(item.components?.delete) ? item.components.delete : [];
 
                   const componentsToUpdate =
                     item.components?.update?.reduce((acc, comp) => {
@@ -2384,15 +2395,18 @@ export const createComponentsSlice = (set, get) => ({
                       skipFormUpdate: true,
                     });
                 } else {
-                  const componentIdsToDelete = item.components?.delete?.map((component) => component.id) ?? [];
+                  const componentIdsToDelete = Array.isArray(item.components?.delete) ? item.components.delete : [];
                   const componentsToUpdate = item.components?.update ?? [];
                   const componentsToCreate = item.components?.create ?? [];
 
                   set(
                     (state) => {
-                      const componentsInState = state.modules[moduleId].pages.find(
-                        (p) => p.id === item.pageId
-                      )?.components;
+                      const pageToUpdate = state.modules[moduleId].pages.find((p) => p.id === item.id) ?? null;
+
+                      if (!pageToUpdate) return;
+
+                      if (!pageToUpdate.components) pageToUpdate.components = {};
+                      const componentsInState = pageToUpdate.components;
 
                       // Delete components
                       componentIdsToDelete.forEach((id) => {
@@ -2424,9 +2438,15 @@ export const createComponentsSlice = (set, get) => ({
 
           break;
         }
-        case 'delete':
-          // TODO: Delete page and its components
+        case 'delete': {
+          if (!data?.length) return;
+
+          data.forEach((pageIdToDelete) => {
+            deletePage(pageIdToDelete, { saveAfterAction: false });
+          });
+
           break;
+        }
         default:
           break;
       }
