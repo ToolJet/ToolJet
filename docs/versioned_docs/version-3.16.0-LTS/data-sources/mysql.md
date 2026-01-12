@@ -9,9 +9,17 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard. ToolJet supports both **Static** and **Dynamic** MySQL connections. Along with configuring fixed connection details at the datasource level, you can also define certain connection parameters dynamically from the query builder at runtime.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/mysql-connection-v4.png" alt="MySQL data source"/>
+### Static Connection
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/connection-v4.png" alt="MySQL data source"/>
+
+### Dynamic Connection 
+
+Dynamic connection allows specific MySQL connection parameters to be provided at runtime from the query builder, enabling flexible and dynamic database access.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/query-host.png" alt="mysql dynamic host"/>
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -79,11 +87,11 @@ Query: SELECT * FROM users WHERE username = :username
 ```
 SQL Parameters:
 - Key: username
-- Value: oliver // or `{{ components.username.value }}`
+- Value: oliver or `{{ components.username.value }}`
 
 ### Row Level Security
 
-In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](#) guide for more information.
+In ToolJet, you can set up server-side row-level security to restrict access to specific rows based on custom groups or default user roles. Refer to the [Setup Row Level Security](/docs/app-builder/walkthrough/row-level-security) guide for more information.
 
 ### Query Timeout
 
@@ -102,12 +110,6 @@ MySQL offers dynamic functions and system variables that provide real-time infor
 | `@@hostname`        | Returns the MySQL server hostname                                 | `db-server-01`       |
 | `@@port`            | Returns the MySQL server port number                              | `3306`               |
 | `CONNECTION_ID()`   | Returns the connection ID for the current session                 | `123456`             |
-
-### MySQL Dynamic Connection Parameters
-
-ToolJet allows MySQL connection parameters such as host and database name to be dynamically overridden at query runtime when dynamic connection parameters are enabled. This enables reuse of a single MySQL data source across multiple environments or tenants without creating separate configurations.
-
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/dynamic-connection-v2.png" alt="mysql dynamic host"/>
 
 ## Querying in GUI Mode
 
