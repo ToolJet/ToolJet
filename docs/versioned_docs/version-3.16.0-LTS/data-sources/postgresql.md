@@ -51,6 +51,12 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 <div style={{paddingTop:'24px'}}>
 
+### Dynamic Connection
+
+ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at query runtime when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgs-query-host.png" alt="PG dynamic host"/>
+
 ## Querying in SQL Mode
 
 1. Create a new query and select the PostgreSQL data source.
@@ -88,12 +94,6 @@ In ToolJet, you can set up server-side row-level security to restrict access to 
 ### Query Timeout
 
 You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
-
-### PostgreSQL Dynamic Connection Parameters
-
-ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at query runtime when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
-
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/pgs-query-host.png" alt="PG dynamic host"/>
 
 ### PostgreSQL Dynamic Functions and System Variables
 
