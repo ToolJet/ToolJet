@@ -44,54 +44,48 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   };
 
   useEffect(() => {
-        const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-        const isAdmin = !!newOrd?.admin;
-        const isBuilder = !!newOrd?.user_permissions?.is_builder;
-        const editionNow = fetchEdition();
-        const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';  
-        setConditionObj({
-          admin: isAdmin,
-          isBuilder,
-          wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
-          canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
-        });
-    });
-    
-    const selectedTabFromRoute = location.pathname.split('/').filter(Boolean).pop();
-    if (selectedTabFromRoute === 'workspace-settings') {
-      // No Sub routes added loading first one
-      const isBuilder = !!authenticationService.currentSessionValue?.user_permissions?.is_builder;
-      const isEEorCloud = edition === 'ee' || edition === 'cloud';
-      
-      // Determine default route based on user role
-      let defaultRoute, defaultId;
-      if (admin) {
-        defaultRoute = workspaceSettingsLinks[0].route;
-        defaultId = workspaceSettingsLinks[0].id;
-      } else if (isBuilder && isEEorCloud) {
-        // Builder should go to themes
-        defaultRoute = 'themes';
-        defaultId = 'themes';
-      } else {
-        // Fallback (shouldn't reach here if permissions are correct)
-        defaultRoute = 'workspace-variables';
-        defaultId = 'workspace-variables';
-      }
-      
-      setSelectedTab(defaultId);
-      navigate(defaultRoute);
-    } else {
-      const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
-      if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
-        redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
-      }
-      const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
-      updateSidebarNAV(selectedWorkspaceSetting?.name || '');
-      setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
-    }
+      const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+          const isAdmin = !!newOrd?.admin;
+          const isBuilder = !!newOrd?.user_permissions?.is_builder;
+          const editionNow = fetchEdition();
+          const isEEorCloudNow = editionNow === 'ee' || editionNow === 'cloud';
+          setConditionObj({
+              admin: isAdmin,
+              isBuilder,
+              wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+              canAccessThemes: isEEorCloudNow && (isAdmin || isBuilder),
+          });
+      });
 
-    return () => subscription.unsubscribe();
-  }, [admin, location.pathname]);
+      const pathParts = location.pathname.split('/').filter(Boolean);
+      const selectedTabFromRoute = pathParts.pop();
+
+      if (selectedTabFromRoute === 'workspace-settings') {
+          const availableLinks = filteredLinks();
+          
+          if (availableLinks.length > 0) {
+              let target = availableLinks[0];
+
+              if (!admin && conditionObj.isBuilder) {
+                  const themesLink = availableLinks.find(l => l.id === 'themes');
+                  if (themesLink) target = themesLink;
+              }
+
+              setSelectedTab(target.id);
+              navigate(target.route, { replace: true });
+          }
+      } else {
+          const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
+          if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
+              redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
+          }
+          const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
+          updateSidebarNAV(selectedWorkspaceSetting?.name || '');
+          setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
+      }
+
+      return () => subscription.unsubscribe();
+  }, [admin, location.pathname, conditionObj.isBuilder]);
 
   const handleClick = (data) => {
     setSelectedTab(data.id);
