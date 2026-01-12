@@ -16,7 +16,6 @@ import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
-import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -129,23 +128,6 @@ export class AppModuleLoader {
 
     if (process.env.APM_VENDOR == 'sentry') {
       staticModules.unshift(SentryModule.forRoot());
-    }
-
-    // BullModule (Redis) - Only load for EE edition (not Cloud, not CE)
-    const edition = getTooljetEdition();
-    if (edition !== 'cloud' && edition !== 'ce') {
-      staticModules.push(
-        BullModule.forRoot({
-          connection: {
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT) || 6379,
-            ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
-            ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
-            ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
-            ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
-          },
-        })
-      );
     }
 
     /**
