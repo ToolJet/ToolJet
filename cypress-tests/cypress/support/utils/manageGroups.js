@@ -199,17 +199,15 @@ export const verifyUserPrivileges = (
 ) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
-
-  if (shouldHaveWorkspaceSettings && userRole === "Admin") {
-    cy.get(commonSelectors.workspaceSettings).should("exist");
+  if (!shouldHaveWorkspaceSettings) {
+    cy.get(commonSelectors.workspaceSettings).should("not.exist");
+    return;
   }
-  else if (shouldHaveWorkspaceSettings && userRole === "Builder") {
-    cy.get(commonSelectors.workspaceSettings).should("exist").click();
+  cy.get(commonSelectors.workspaceSettings).should("exist");
+  if (userRole === "Builder") {
+    cy.get(commonSelectors.workspaceSettings).click();
     cy.get(commonSelectors.manageSSOOption).should("not.exist");
     cy.get(commonSelectors.themesOption).should("exist");
-  }
-  else {
-    cy.get(commonSelectors.workspaceSettings).should("not.exist");
   }
 };
 
