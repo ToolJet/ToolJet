@@ -2167,7 +2167,7 @@ export class AppImportExportService {
           versionType: appVersion.versionType,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
-          co_relation_id: appVersion.co_relation_id,
+          co_relation_id: appVersion.id,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
