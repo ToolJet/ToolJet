@@ -359,6 +359,7 @@ const TableForm = ({
         onCreate={handleCreate}
         shouldDisableCreateBtn={
           isEmpty(tableName) ||
+          tableName.trim().length === 0 ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
           isEmpty(columns) ||
           hasPrimaryKey !== true ||
