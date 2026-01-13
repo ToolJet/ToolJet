@@ -14,20 +14,17 @@ With the Loop node, you can:
 - Automate bulk operations efficiently without manual intervention
 
 Loop node has three important components:
-1. Loop Array
-2. Looped function
-3. Value
 
-- Loop array refers to the array we want to run the loop node over. The syntax to set the loop array is:
+1. **Loop Array**: Refers to the array over which the loop node will iterate. To set the loop array, use: 
+    ```js 
+      return <your-array>;
+    ```
 
-```js
-return <your-array>;
-```
+2. **Looped Function**: Defines the action or operation that should be executed for each element in the loop array.
 
-- Looped function lets us configure the action we want to perform on the array.
-
-- Value represents the item you’re currently processing in the loop. You can access it with the ```{{value}}``` keyword.
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/example.png" alt="Loop Node Example" />
+3. **Value**: Represents the current item being processed during each iteration of the loop.
+It can be accessed using the `{{value}}` keyword.
+    <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/example.png" alt="Loop Node Example" />
 
 ## Example 1 - Bulk Invoice Reminder Workflow
 Consider a workflow that automatically sends a mail to the vendors with pending payments.  
@@ -42,7 +39,7 @@ Here's a sample vendor from the list:
 {
     "id":1,
     "vendor_name":"Example Enterprise",
-    "vendor_email":"example.enterprise@gmail.com",
+    "vendor_email":"example.enterprise@example.com",
     "amount":1000,
     "status":"pending"
 }
@@ -55,8 +52,7 @@ In the Loop array input, set the value to:
 return fetchInvoices.data; // We created fetchInvoices in step 1.   
 ```
 This tells the Loop node to run once for every vendor in the list.  
-Inside the Looped function, you can choose what action should happen for each vendor.
-In this example, we add an SMTP node that sends a payment reminder email to the vendor.
+Inside the Looped function, choose the action what you wish to perform for each vendor. In this example we have configured SMTP to send notification via Email
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/invoiceReminder/mailLoop.png" alt="Mail Loop" />
 

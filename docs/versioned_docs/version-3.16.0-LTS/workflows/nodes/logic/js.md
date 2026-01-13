@@ -43,7 +43,7 @@ For this example, the data that the workflow receives is in the following format
 }
 ```
 
-**Categorising tasks using a JavaScript node.**  
+#### Categorising Tasks Using a JavaScript Node.
 Add the following code to the JavaScript node. This code checks for the message length and returns the original parameters along with a priority based on message length.
 
 ```js
@@ -68,6 +68,6 @@ return {
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/categoriseDataCode.png" alt="categoriseData Code" />
 
-**Output**  
+#### Output
 The output will be an object containing the input field and the priority.
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/output.png" alt="Output" />

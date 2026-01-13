@@ -73,7 +73,7 @@ From the red port, create a workflow node and name it `logFailure`.
 **Result**  
 Both success and failure paths create a log entry, ensuring that the parent workflow’s actions are traceable.
 
-### Example 2 - Centralised Notification Workflow
+### Example 2 - Build a Reusable Notification Workflow
 Often, different workflows need to alert the right person when an incident occurs. To avoid repeating the same notification steps in every workflow, we can create one shared workflow for sending notifications.
 
 For this example:
@@ -81,7 +81,7 @@ For this example:
 - The child workflow sends notifications.
 - The parent workflow checks if the notification succeeded.
 
-**Child workflow**  
+**Child Workflow**  
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/wf/notification-system/centralNotifcationSystem.png" alt="Central Notification System" />
 

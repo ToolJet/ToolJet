@@ -16,15 +16,15 @@ Common use cases include:
 
 When the condition evaluates to true, the outgoing node connected to the green arrow will be executed. If it is false, the outgoing node connected to the red arrow will be executed.
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/example.png" alt="IF Else Node Example" />
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/example.png" alt="If Else Node Example" />
 
 ## Example: Reimbursement Approval Workflow by Amount
 
-Consider a workflow for issuing reimbursements. If the amount is less than $500, it auto approves, else the CFO receives a mail for approval.  
-Here's an overview of the workflow:
+Consider a workflow for issuing reimbursements. If the amount is less than $500, it auto approves, else the Finance Department receives a mail for approval.  
+
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/reimbursementApproval/sneakPeek.png" alt="Reimburement Approval Sneak Peek" />
 
-**Input**  
+#### Input  
 For this example, the data that the workflow receives is in the following format:
 ```js
 {
@@ -34,16 +34,16 @@ For this example, the data that the workflow receives is in the following format
 }
 ```
 
-**Create an outgoing ```If condition``` node from the trigger node.**  
-Add the following condition to the node:
-```js 
-startTrigger.params.amount < 500 
-```
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/reimbursementApproval/amountCondition.png" alt="If condition" />
-
+#### Add the If Condition Node
+- Create an outgoing ```If condition``` node from the trigger node.**  
+- Add the following condition to the node: <br /> <br />
+  ```js 
+  startTrigger.params.amount < 500 
+  ```
 Click on *Preview* to see what the node will evaluate into.
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/if/reimbursementApproval/preview.png" alt="Preview" />
+
+  <img className="screenshot-full img-m" src="/img/workflows/nodes/logic/if/reimbursementApproval/amountCondition.png" alt="If condition" />
 
 
-Now you can create success or failure actions based on your requirements. In this example, when the condition evaluates to true, the reimbursement is auto-approved. When it evaluates to false, the workflow continues to notify the CFO.
+Now you can create success or failure actions based on your requirements. In this example, when the condition evaluates to true, the reimbursement is auto-approved. When it evaluates to false, the workflow continues to notify the Finance Department.
 
