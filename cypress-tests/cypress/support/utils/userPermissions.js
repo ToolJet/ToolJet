@@ -98,6 +98,8 @@ export const verifyBuilderPermissions = (
   });
 
   verifySettingsAccess(isAdmin);
+  cy.get(commonSelectors.workspaceSettings).click();
+  cy.get(commonSelectors.manageSSOOption).should("not.exist");
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {
