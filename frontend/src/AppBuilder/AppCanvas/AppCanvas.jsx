@@ -139,8 +139,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       currentMode === 'view'
         ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
         : !isAppDarkMode
-        ? '#EBEBEF'
-        : '#2F3C4C';
+          ? '#EBEBEF'
+          : '#2F3C4C';
 
     if (isModuleMode) {
       return {
@@ -265,7 +265,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 )}
 
                 {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                  <Suspense fallback="Loading...">
+                  <Suspense fallback={null}>
                     <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
                   </Suspense>
                 )}
@@ -274,7 +274,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           </div>
         </div>
         {currentMode === 'edit' && (
-          <Suspense fallback="Loading...">
+          <Suspense fallback={null}>
             <EditorSelecto />
           </Suspense>
         )}

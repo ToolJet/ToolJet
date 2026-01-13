@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo } from 'react';
+import React, { useState, useEffect, memo, useMemo, useRef } from 'react';
 
 // Cache for loaded icons to avoid re-importing
 const iconCache = new Map();
@@ -25,6 +25,7 @@ let importPromise = null;
  */
 const TablerIcon = memo(({ iconName, fallbackIcon = 'IconHome2', ...props }) => {
   const [IconComponent, setIconComponent] = useState(() => iconCache.get(iconName) || null);
+  const hasAnimatedRef = useRef(IconComponent !== null);
 
   useEffect(() => {
     if (!iconName) return;
@@ -69,13 +70,20 @@ const TablerIcon = memo(({ iconName, fallbackIcon = 'IconHome2', ...props }) => 
   const width = props.style?.width || props.width || 16;
   const height = props.style?.height || props.height || 16;
 
+  // Only apply animation on first load, not on subsequent re-renders
+  const shouldAnimate = IconComponent && !hasAnimatedRef.current;
+  if (IconComponent) {
+    hasAnimatedRef.current = true;
+  }
+
   // Memoize icon style - must be called before any conditional returns (Rules of Hooks)
   const iconStyle = useMemo(
     () => ({
       ...props.style,
-      animation: `${ANIMATION_NAME} 0.15s ease-in`,
+      ...(shouldAnimate ? { animation: `${ANIMATION_NAME} 0.15s ease-in` } : {}),
     }),
-    [props.style]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.style, shouldAnimate]
   );
 
   // Return placeholder while loading to prevent layout shift
