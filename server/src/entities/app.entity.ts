@@ -104,6 +104,7 @@ export class App extends BaseEntity {
     dataSourceContext?: string | null;
     threadId?: string | null;
     chatMessages?: any[];
+    interrupt?: boolean;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
