@@ -646,7 +646,21 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "tj-setup/observability-otel",
+        {
+          "type": "category",
+          "label": "Observability",
+          "link": {
+            "type": "doc",
+            "id": "tj-setup/observability/observability-otel"
+          },
+          "items": [
+            "tj-setup/observability/observability-otel",
+            "tj-setup/observability/datadog",
+            "tj-setup/observability/new-relic",
+            "tj-setup/observability/grafana",
+            "tj-setup/observability/last9"
+          ]
+        },
         "tj-setup/lockbox-master-key-rotation"
       ]
     },
