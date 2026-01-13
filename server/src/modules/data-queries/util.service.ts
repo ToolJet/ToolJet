@@ -285,6 +285,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'openapi' ||
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
+            dataSource.kind === 'googlesheetsv2' ||
             dataSource.kind === 'slack' ||
             dataSource.kind === 'zendesk'
           ) {

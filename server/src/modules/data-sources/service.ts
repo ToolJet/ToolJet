@@ -31,7 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
-  ) { }
+  ) {}
 
   async getForApp(
     query: GetQueryVariables,
@@ -333,7 +333,15 @@ export class DataSourcesService implements IDataSourcesService {
     );
 
     try {
-      const result = await service.invokeMethod(methodName, sourceOptions, args);
+      const result = await service.invokeMethod(
+        methodName,
+        {
+          user: { id: user?.id },
+          app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+        },
+        sourceOptions,
+        args
+      );
       return { status: 'ok', data: result };
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

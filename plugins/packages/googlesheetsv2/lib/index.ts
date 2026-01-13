@@ -7,14 +7,26 @@ import {
   App,
   User,
   ConnectionTestResult,
-  validateAndSetRequestOptionsBasedOnAuthType
+  validateAndSetRequestOptionsBasedOnAuthType,
 } from '@tooljet-plugins/common';
-import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets, deleteFromSpreadsheetByFilter, bulkUpdateByPrimaryKey, copySpreadsheetData, listAllSpreadsheets, deleteByRange, updateSpreadsheet } from './operations';
+import {
+  readData,
+  appendData,
+  deleteData,
+  batchUpdateToSheet,
+  createSpreadSheet,
+  listAllSheets,
+  deleteFromSpreadsheetByFilter,
+  bulkUpdateByPrimaryKey,
+  copySpreadsheetData,
+  listAllSpreadsheets,
+  deleteByRange,
+  updateSpreadsheet,
+} from './operations';
 import got, { Headers, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions, QueryOptions, ConvertedFormat } from './types';
 import { google } from 'googleapis';
 export default class Googlesheetsv2QueryService implements QueryService {
-
   authUrl(source_options: SourceOptions): string {
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -26,24 +38,14 @@ export default class Googlesheetsv2QueryService implements QueryService {
         ? 'https://www.googleapis.com/auth/spreadsheets'
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
-    const clientId =
-      oauth_type === 'tooljet_app'
-        ? process.env.GOOGLE_CLIENT_ID
-        : source_options?.client_id?.value;
-
-    const clientSecret =
-      oauth_type === 'tooljet_app'
-        ? process.env.GOOGLE_CLIENT_SECRET
-        : source_options?.client_secret?.value;
+    const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : source_options?.client_id?.value;
 
     const alwaysScope = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
-    const allScopes = new Set(
-      `${userScopes} ${alwaysScope}`.trim().split(/\s+/)
-    );
+    const allScopes = new Set(`${userScopes} ${alwaysScope}`.trim().split(/\s+/));
 
     const scope = Array.from(allScopes).join(' ');
-    if (!clientId || !clientSecret) {
+    if (!clientId) {
       throw Error('You need to define Google OAuth environment variables');
     }
 
@@ -65,7 +67,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
 
     const getSourceOptionValue = (key: string) => {
       const option = Array.isArray(source_options)
-        ? source_options.find(item => item.key === key)
+        ? source_options.find((item) => item.key === key)
         : source_options[key];
 
       if (Array.isArray(source_options)) {
@@ -154,11 +156,8 @@ export default class Googlesheetsv2QueryService implements QueryService {
         ? 'https://www.googleapis.com/auth/spreadsheets'
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
-    const alwaysScopes = [
-      'https://www.googleapis.com/auth/drive.metadata.readonly'];
-    const allScopesSet = new Set(
-      `${userScopes} ${alwaysScopes.join(' ')}`.trim().split(/\s+/)
-    );
+    const alwaysScopes = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
+    const allScopesSet = new Set(`${userScopes} ${alwaysScopes.join(' ')}`.trim().split(/\s+/));
     const finalScopes = Array.from(allScopesSet).join(' ');
 
     const addSourceOptions = {
@@ -221,8 +220,13 @@ export default class Googlesheetsv2QueryService implements QueryService {
     return result;
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string, dataSourceUpdatedAt?: string, context?: { user?: User; app?: App }): Promise<QueryResult> {
-
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt?: string,
+    context?: { user?: User; app?: App }
+  ): Promise<QueryResult> {
     const oauth_type = sourceOptions?.oauth_type?.value;
     if (oauth_type === 'tooljet_app') {
       sourceOptions['client_id'] = process.env.GOOGLE_CLIENT_ID;
@@ -236,9 +240,9 @@ export default class Googlesheetsv2QueryService implements QueryService {
     const spreadsheetRange = queryOptions.spreadsheet_range ? queryOptions.spreadsheet_range : 'A1:Z500';
     let accessToken = '';
     if (sourceOptions['authentication_type'] === 'service_account') {
-      accessToken = await this.getConnection(sourceOptions)
+      accessToken = await this.getConnection(sourceOptions);
     } else {
-      accessToken = sourceOptions['access_token']
+      accessToken = sourceOptions['access_token'];
     }
 
     const queryOptionFilter = {
@@ -269,7 +273,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
       } else if (typeof authHeader === 'string') {
         accessToken = authHeader.replace('Bearer ', '');
       }
-
     }
 
     try {
@@ -284,7 +287,15 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'read':
-          result = await readData(spreadsheetId, spreadsheetRange, queryOptions.sheet, this.authHeader(accessToken), queryOptions.majorDimension, queryOptions.valueRenderOption, queryOptions.dateTimeRenderOption);
+          result = await readData(
+            spreadsheetId,
+            spreadsheetRange,
+            queryOptions.sheet,
+            this.authHeader(accessToken),
+            queryOptions.majorDimension,
+            queryOptions.valueRenderOption,
+            queryOptions.dateTimeRenderOption
+          );
           break;
 
         case 'create':
@@ -302,7 +313,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
             queryOptions.filter
           );
           break;
-        case "delete_by_filter":
+        case 'delete_by_filter':
           {
             const filters = queryOptions.filter ? JSON.parse(queryOptions.filter) : [];
             result = await deleteFromSpreadsheetByFilter(
@@ -312,21 +323,22 @@ export default class Googlesheetsv2QueryService implements QueryService {
             );
           }
           break;
-        case 'bulk_update_by_primary_key': {
-          const { sheet, primary_key, rows } = queryOptions;
-          if (!primary_key || !rows)
-            throw new Error('sheet, primary_key, and rows are required for bulk_update_by_primary_key');
+        case 'bulk_update_by_primary_key':
+          {
+            const { sheet, primary_key, rows } = queryOptions;
+            if (!primary_key || !rows)
+              throw new Error('sheet, primary_key, and rows are required for bulk_update_by_primary_key');
 
-          const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows;
+            const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows;
 
-          result = await bulkUpdateByPrimaryKey(
-            spreadsheetId,
-            sheet,
-            primary_key,
-            parsedRows,
-            this.authHeader(accessToken)
-          );
-        }
+            result = await bulkUpdateByPrimaryKey(
+              spreadsheetId,
+              sheet,
+              primary_key,
+              parsedRows,
+              this.authHeader(accessToken)
+            );
+          }
           break;
         case 'copy_spreadsheet':
           result = await copySpreadsheetData(
@@ -418,28 +430,63 @@ export default class Googlesheetsv2QueryService implements QueryService {
     };
   }
 
-  async invokeMethod(methodName: string, sourceOptions: any, args?: any): Promise<any> {
+  async invokeMethod(
+    methodName: string,
+    context: { user?: User; app?: App },
+    sourceOptions: any,
+    args?: any
+  ): Promise<any> {
+    let accessToken = '';
+    if (sourceOptions['multiple_auth_enabled']) {
+      const customHeaders = { 'tj-x-forwarded-for': '::1' };
+      const newSourceOptions = this.constructSourceOptions(sourceOptions);
+      const queryOptions = {};
+      const authValidatedRequestOptions = this.convertQueryOptions(queryOptions, customHeaders);
+
+      const _requestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
+        newSourceOptions,
+        context,
+        authValidatedRequestOptions as any,
+        { kind: 'googlesheetsv2' }
+      );
+
+      if (_requestOptions.status === 'needs_oauth') {
+        return _requestOptions;
+      }
+      const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
+      const authHeader = requestOptions.headers['Authorization'];
+
+      if (Array.isArray(authHeader)) {
+        accessToken = authHeader[0].replace('Bearer ', '');
+      } else if (typeof authHeader === 'string') {
+        accessToken = authHeader.replace('Bearer ', '');
+      }
+    } else {
+      accessToken = sourceOptions['access_token'];
+    }
     if (methodName === 'getSpreadsheets') {
-      return await this.getSpreadsheets(sourceOptions);
+      return await this.getSpreadsheets(sourceOptions, accessToken);
     }
 
     if (methodName === 'getSheets') {
-      return await this.getSheets(sourceOptions, args);
+      return await this.getSheets(sourceOptions, accessToken, args);
     }
 
     throw new QueryError('Method not found', `Method ${methodName} is not supported for Google Sheets plugin`, {
-      availableMethods: ['getSpreadsheets', 'getSheets']
+      availableMethods: ['getSpreadsheets', 'getSheets'],
     });
   }
 
-  private async getSpreadsheets(sourceOptions: any): Promise<any> {
-    let accessToken = '';
+  private async getSpreadsheets(sourceOptions: any, accessToken: string): Promise<any> {
     if (sourceOptions['authentication_type'] === 'service_account') {
-      accessToken = await this.getConnection(sourceOptions)
+      accessToken = await this.getConnection(sourceOptions);
     } else {
-      accessToken = sourceOptions['access_token']
       if (!accessToken) {
-        throw new OAuthUnauthorizedClientError('Authentication required', 'Google Sheets access token not found. Please authenticate first.', {});
+        throw new OAuthUnauthorizedClientError(
+          'Authentication required',
+          'Google Sheets access token not found. Please authenticate first.',
+          {}
+        );
       }
     }
 
@@ -451,7 +498,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
         data: spreadsheets.map((s: any) => ({
           label: s.name,
           value: s.id,
-        }))
+        })),
       };
     } catch (error: any) {
       if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
@@ -461,19 +508,21 @@ export default class Googlesheetsv2QueryService implements QueryService {
     }
   }
 
-  private async getSheets(sourceOptions: any, args?: any): Promise<any> {
+  private async getSheets(sourceOptions: any, accessToken: string, args?: any): Promise<any> {
     const spreadsheetId = args?.values?.spreadsheet_id;
     if (!spreadsheetId) {
       return { data: [] };
     }
 
-    let accessToken = '';
     if (sourceOptions['authentication_type'] === 'service_account') {
-      accessToken = await this.getConnection(sourceOptions)
+      accessToken = await this.getConnection(sourceOptions);
     } else {
-      accessToken = sourceOptions['access_token']
       if (!accessToken) {
-        throw new OAuthUnauthorizedClientError('Authentication required', 'Google Sheets access token not found. Please authenticate first.', {});
+        throw new OAuthUnauthorizedClientError(
+          'Authentication required',
+          'Google Sheets access token not found. Please authenticate first.',
+          {}
+        );
       }
     }
 
@@ -485,7 +534,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
         data: sheets.map((s: any) => ({
           label: s.properties.title,
           value: s.properties.title,
-        }))
+        })),
       };
     } catch (error: any) {
       if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
@@ -494,7 +543,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
       throw new QueryError('Failed to fetch sheets', error.message, error);
     }
   }
-
 
   async refreshToken(sourceOptions) {
     if (!sourceOptions['refresh_token']) {
@@ -563,15 +611,18 @@ export default class Googlesheetsv2QueryService implements QueryService {
     const serviceAccountKey = JSON.parse(sourceOptions['service_account_key']);
     serviceAccountKey.private_key = serviceAccountKey.private_key.replace(/\\n/g, '\n');
 
-    const scope =
+    const scopes =
       sourceOptions?.access_type === 'write'
-        ? 'https://www.googleapis.com/auth/spreadsheets'
-        : 'https://www.googleapis.com/auth/spreadsheets.readonly';
+        ? ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.metadata.readonly']
+        : [
+            'https://www.googleapis.com/auth/spreadsheets.readonly',
+            'https://www.googleapis.com/auth/drive.metadata.readonly',
+          ];
 
     const jwtClient = new google.auth.JWT({
       email: serviceAccountKey?.client_email,
       key: serviceAccountKey?.private_key,
-      scopes: scope,
+      scopes,
     });
     const tokenResponse = await jwtClient.authorize();
 
@@ -609,8 +660,3 @@ export default class Googlesheetsv2QueryService implements QueryService {
     return accessToken;
   }
 }
-
-
-
-
-

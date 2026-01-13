@@ -122,7 +122,7 @@ async function validateAndMaybeSetOAuthHeaders(
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
     const grantType = sourceOptions['grant_type'];
     const tokenData = sourceOptions['tokenData'];
-    const isAppPublic = context?.app.isPublic;
+    const isAppPublic = context?.app?.isPublic;
     const userData = context?.user;
     const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
 

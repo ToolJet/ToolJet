@@ -550,6 +550,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (
       [
         'googlesheets',
+        'googlesheetsv2',
         'slack',
         'zendesk',
         'salesforce',
