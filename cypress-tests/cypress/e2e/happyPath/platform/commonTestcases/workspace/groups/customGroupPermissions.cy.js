@@ -173,7 +173,8 @@ describe("Custom Group Permissions", () => {
       data.appName,
       data.folderName,
       data.firstName,
-      data.appName
+      data.appName,
+      true
     );
 
     cy.apiLogout();
