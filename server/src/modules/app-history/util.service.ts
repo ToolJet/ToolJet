@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ACTION_TYPE } from '@modules/app-history/constants';
@@ -10,7 +10,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 @Injectable()
 export class AppHistoryUtilService {
   constructor(
-    @InjectQueue('app-history') protected readonly historyQueue: Queue,
+    @Optional() @InjectQueue('app-history') protected readonly historyQueue: Queue,
     protected readonly logger: TransactionLogger,
     protected readonly nameResolverRepository: NameResolverRepository
   ) {}
