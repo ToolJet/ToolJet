@@ -5048,6 +5048,7 @@ div#driver-page-overlay {
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
+  background-color: transparent;
   &:hover {
     background-color: var(--interactive-hover);
     border: 1px solid var(--border-weak);
