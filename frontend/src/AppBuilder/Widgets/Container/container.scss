@@ -1,14 +1,6 @@
 .wj-container-header {
     position: relative;
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0px;
-      right: 0px;
-      height: 1px;
-      background-color: var(--cc-container-header-divider-color, var(--cc-default-border));
-    }
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
   }
 
 .dynamic-height-target {
