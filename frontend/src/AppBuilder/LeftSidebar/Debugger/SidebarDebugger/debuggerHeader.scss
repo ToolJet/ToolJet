@@ -70,7 +70,8 @@
     border-bottom-color: var(--border-accent-strong, #4368e3);
 
     .debugger-tab-label {
-      color: var(--text-placeholder, #1b1f24);
+      color: var(--text-default, #1b1f24);
+      font-weight: 500; // Active tab has medium weight
     }
 
     // Active + hover
@@ -102,10 +103,10 @@
   .debugger-tab-label {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 500; // Inactive tabs
     line-height: 18px;
     color: var(--text-placeholder, #6a727c);
     white-space: nowrap;
-    transition: color 0.15s ease;
+    transition: color 0.15s ease, font-weight 0.15s ease;
   }
 }

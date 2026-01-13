@@ -21,14 +21,14 @@ export function AddNewPageMenu({ darkMode }) {
   };
 
   return (
-    <div className={`page-type-buttons-container ${darkMode && 'dark-mode'}`}>
+    <div className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}>
       <Button
         ref={newPageBtnRef}
         key="new-page-btn"
         fill="var(--icon-default)"
         leadingIcon="plus"
         variant="outline"
-        className="add-new-page icon-btn"
+        className="add-new-page icon-btn d-flex flex-grow-1"
         id="add-new-page"
         onClick={() => {
           setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });

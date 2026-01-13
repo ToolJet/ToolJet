@@ -1465,7 +1465,7 @@ button {
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
-    border-top: 1px solid var(--slate5) !important;
+    border-top: none !important;
   }
 
   &.module-editor-inspector {
@@ -5043,20 +5043,20 @@ div#driver-page-overlay {
 
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
-  color: var(--slate12);
+  color: var(--text-default);
   border: 1px solid transparent !important;
   border-radius: 6px;
-  background-color: var(--base);
-
+  font-size: 14px;
+  font-weight: 500;
   &:hover {
-    background-color: var(--slate4);
-    border: 1px solid var(--slate7);
+    background-color: var(--interactive-hover);
+    border: 1px solid var(--border-weak);
   }
 
-  &:focus {
+  &:focus, &:active {
     border: 1px solid var(--indigo9) !important;
-    background-color: var(--indigo2);
-    box-shadow: 0px 0px 0px 1px #c6d4f9;
+    background-color: var(--indigo2) !important;
+    box-shadow: 0px 0px 0px 1px #c6d4f9 !important;
   }
 }
 

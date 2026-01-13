@@ -210,7 +210,7 @@
     }
 
     .accordion-body {
-        gap: 4px;
+        gap: 12px;
         display: flex;
         flex-direction: column;
     }
@@ -656,7 +656,7 @@
     justify-content: center;
     border-radius: 6px;
     width: 28px;
-    height: 28px;
+    height: 32px;
     cursor: pointer;
 
     &:hover {

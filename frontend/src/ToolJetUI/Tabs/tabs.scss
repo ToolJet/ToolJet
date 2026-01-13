@@ -1,28 +1,102 @@
+// Right sidebar tabs - matching Figma design exactly
+// Two-level structure: outer button (padding + border) → inner .tab-label (hover/focus bg)
+// Figma: https://www.figma.com/design/XQdM9x8x9YHcj1lUK8abUG/Rocket-components?node-id=6848-534
 .tj-tabs {
   .nav-tabs {
-    border-bottom: 0px !important;
-    height: 34px !important;
+    border-bottom: 1px solid var(--border-weak, #e4e7eb);
+    display: flex;
+    align-items: stretch; // Ensure nav-items stretch to full height for border overlap
+    gap: 4px;
+    padding: 0 16px;
   }
 
+  // Target only tab navigation items, not any .nav-item in tab content
+  > .nav-tabs > .nav-item {
+    flex: 1; // Each tab takes equal width
+    display: flex;
+    justify-content: center; // Center the button horizontally
 
+    button.nav-link {
+      align-self: stretch; // Stretch button to full height for border alignment
+      // Outer container - Figma: px-0 py-[6px]
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 0; // Figma: py-[6px] px-0
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      margin-bottom: -1px;
+      transition: border-color 0.15s ease;
+      border-radius: 0;
+      cursor: pointer;
 
-  .nav-item {
-    font-size: 12px !important;
-    line-height: 20px !important;
-    font-family: 'IBM Plex Sans';
+      // Inner label (base) - Figma: px-[7px] py-[2px] rounded-[6px] gap-[4px]
+      .tab-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px; // Figma: gap-[4px]
+        padding: 2px 7px; // Figma: py-[2px] px-[7px]
+        border-radius: 6px; // Figma: rounded-[6px]
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 12px; // Figma: text-[12px]
+        font-weight: 500; // Figma: Medium
+        line-height: 18px; // Figma: leading-[18px]
+        color: var(--text-placeholder, #6a727c); // Figma: text/placeholder
+        white-space: nowrap;
+        transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      }
 
-    button {
-      height: 34px !important;
+      // Hover state - Figma: bg-[rgba(136,144,153,0.12)] on inner only
+      &:hover:not(.active) {
+        .tab-label {
+          background-color: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+        }
+      }
+
+      // Selected/Active state - Figma: border-b-2 border-[#4368e3], text color #1b1f24
+      &.active {
+        border-bottom: 2px solid var(--border-accent-strong, #4368e3);
+
+        .tab-label {
+          color: var(--text-default, #1b1f24); // Figma: text/default
+          background-color: transparent;
+        }
+
+        // Active + hover - Figma: still shows hover bg
+        &:hover {
+          .tab-label {
+            background-color: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+          }
+        }
+      }
+
+      // Focus state - Figma: bg-white, shadow-[0px_0px_0px_2px_#4368e3]
+      &:focus-visible {
+        outline: none;
+
+        .tab-label {
+          background-color: var(--bg-surface-layer-01, #ffffff); // Figma: bg-white
+          box-shadow: 0px 0px 0px 2px var(--interactive-focusactive, #4368e3); // Figma: focus ring
+          color: var(--text-default, #1b1f24);
+        }
+      }
+
+      // Disabled state
+      &.disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
     }
   }
 
-  .nav-item .nav-link {
-    color: var(--slate11) !important;
-  }
-
-  .nav-tabs .nav-link.active {
-    border-radius: 0 !important;
-    border-width: 2px !important;
-    color: var(--indigo9) !important;
+  // Tab content
+  .tab-content {
+    .tab-pane {
+      &:not(.active) {
+        display: none;
+      }
+    }
   }
 }

@@ -50,6 +50,8 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { Button } from '@/components/ui/Button/Button';
+import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -556,94 +558,104 @@ export const Inspector = ({
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
-        <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
-            shouldFreeze && 'disabled'
-          }`}
-        >
-          <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
-          {!isModuleContainer && (
-            <>
-              <div className="width-unset" data-cy={'component-inspector-options'}>
-                <OverlayTrigger
-                  trigger={'click'}
-                  placement={'bottom-end'}
-                  rootClose={false}
-                  show={showHeaderActionsMenu}
-                  overlay={
-                    <Popover
-                      id="list-menu"
-                      className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
-                    >
-                      <Popover.Body bsPrefix="list-item-popover-body">
-                        {INSPECTOR_HEADER_OPTIONS.map((option) => {
-                          const optionBody = (
-                            <div
-                              data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
-                              className="list-item-popover-option"
-                              key={option?.value}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleInspectorHeaderActions(option.value);
-                              }}
-                            >
-                              <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
+          <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className="panel-header-actions">
+            {!isModuleContainer && (
+              <>
+                <div data-cy={'component-inspector-options'}>
+                  <OverlayTrigger
+                    trigger={'click'}
+                    placement={'bottom-end'}
+                    rootClose={false}
+                    show={showHeaderActionsMenu}
+                    overlay={
+                      <Popover
+                        id="list-menu"
+                        className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                      >
+                        <Popover.Body bsPrefix="list-item-popover-body">
+                          {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                            const optionBody = (
                               <div
-                                className={classNames('list-item-option-menu-label', {
-                                  'color-tomato9': option.value === 'delete',
-                                  'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
-                                })}
+                                data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                                className="list-item-popover-option"
+                                key={option?.value}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInspectorHeaderActions(option.value);
+                                }}
                               >
-                                {option?.label}
+                                <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                                <div
+                                  className={classNames('list-item-option-menu-label', {
+                                    'color-tomato9': option.value === 'delete',
+                                    'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
+                                  })}
+                                >
+                                  {option?.label}
+                                </div>
+                                {option.value === 'permission' &&
+                                  !hasAppPermissionComponent &&
+                                  option.trailingIcon &&
+                                  option.trailingIcon}
                               </div>
-                              {option.value === 'permission' &&
-                                !hasAppPermissionComponent &&
-                                option.trailingIcon &&
-                                option.trailingIcon}
-                            </div>
-                          );
+                            );
 
-                          return option.value === 'permission' ? (
-                            <ToolTip
-                              key={option.value}
-                              message={
-                                "You don't have access to component permissions. Upgrade your plan to access this feature."
-                              }
-                              placement="left"
-                              show={!hasAppPermissionComponent}
-                            >
-                              {optionBody}
-                            </ToolTip>
-                          ) : (
-                            optionBody
-                          );
-                        })}
-                      </Popover.Body>
-                    </Popover>
-                  }
-                >
-                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                  </span>
-                </OverlayTrigger>
-              </div>
-              <AppPermissionsModal
-                modalType="component"
-                resourceId={selectedComponentId}
-                resourceName={allComponents[selectedComponentId]?.component?.name}
-                showModal={showComponentPermissionModal}
-                toggleModal={toggleComponentPermissionModal}
-                darkMode={darkMode}
-                fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
-                deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
-                onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
-              />
-            </>
-          )}
-          <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleRightSidebarToggle}>
-            <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
+                            return option.value === 'permission' ? (
+                              <ToolTip
+                                key={option.value}
+                                message={
+                                  "You don't have access to component permissions. Upgrade your plan to access this feature."
+                                }
+                                placement="left"
+                                show={!hasAppPermissionComponent}
+                              >
+                                {optionBody}
+                              </ToolTip>
+                            ) : (
+                              optionBody
+                            );
+                          })}
+                        </Popover.Body>
+                      </Popover>
+                    }
+                  >
+                    <Button
+                      iconOnly
+                      leadingIcon="ellipsis-vertical"
+                      onClick={() => setShowHeaderActionsMenu(true)}
+                      variant="ghost"
+                      size="medium"
+                      isLucid={true}
+                      data-cy="menu-icon"
+                    />
+                  </OverlayTrigger>
+                </div>
+                <AppPermissionsModal
+                  modalType="component"
+                  resourceId={selectedComponentId}
+                  resourceName={allComponents[selectedComponentId]?.component?.name}
+                  showModal={showComponentPermissionModal}
+                  toggleModal={toggleComponentPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
+                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                  deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                  onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+                />
+              </>
+            )}
+            <Button
+              iconOnly
+              leadingIcon="x"
+              onClick={handleRightSidebarToggle}
+              variant="ghost"
+              size="medium"
+              isLucid={true}
+              data-cy="inspector-close-button"
+            />
           </div>
         </div>
 
