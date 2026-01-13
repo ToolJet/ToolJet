@@ -16,7 +16,7 @@ export class CreateWorkflowBundlesTable1755863999455 implements MigrationInterfa
           {
             name: 'app_version_id',
             type: 'uuid',
-            isUnique: true,
+            isUnique: false,
             isNullable: false,
           },
           {

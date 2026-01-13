@@ -81,16 +81,15 @@ describe('PythonExecutorService', () => {
       it('should wrap code with state injection', () => {
         const wrappedCode = (service as any).wrapUserCode('result = x + 1', stateFile, outputFile);
 
-        expect(wrappedCode).toContain('state = json.load');
-        expect(wrappedCode).toContain('globals().update(state)');
+        expect(wrappedCode).toContain('_state = json.load');
+        expect(wrappedCode).toContain('globals().update(_state)');
         expect(wrappedCode).toContain('result = x + 1');
       });
 
       it('should preserve builtin references', () => {
         const wrappedCode = (service as any).wrapUserCode('result = open', stateFile, outputFile);
 
-        expect(wrappedCode).toContain('_open = open');
-        expect(wrappedCode).toContain('_json_dump = json.dump');
+        expect(wrappedCode).toContain('_open, _compile, _eval, _exec, _json_dump = open, compile, eval, exec, json.dump');
       });
 
       it('should use provided file paths', () => {
@@ -263,9 +262,9 @@ describe('PythonExecutorService', () => {
 
     describe('.execute - sandbox ENABLED mode (nsjail)', () => {
       // Helper function to skip tests at runtime if sandbox is not enabled
+      // Note: Jest doesn't have Jasmine's pending() - tests return early instead
       const skipIfNoNsjail = () => {
         if (sandboxMode !== SandboxMode.ENABLED) {
-          pending('nsjail sandbox not available - skipping');
           return true;
         }
         return false;
