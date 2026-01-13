@@ -58,3 +58,12 @@ If you are currently on PostgreSQL 13.x, you may continue using it; however, upg
 :::info
 Redis is used for caching and session management in ToolJet. Ensure that Redis 7.x is installed and running before deploying ToolJet.
 :::
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

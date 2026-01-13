@@ -11,8 +11,7 @@ ToolJet will be releasing new LTS versions every 3-5 months with an end-of-life 
 
 ### Prerequisites
 
-:::warning
-**Critical: Backup Your PostgreSQL Instance**
+:::warning Critical: Backup Your PostgreSQL Instance
 
 Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
@@ -41,3 +40,12 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 - [Upgrade ToolJet on Kubernetes(AKS)](/docs/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Azure Container Apps](/docs/setup/azure-container#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Google Cloud Run](/docs/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

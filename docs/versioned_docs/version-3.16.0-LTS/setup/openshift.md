@@ -56,7 +56,7 @@ TOOLJET_DB_PASS=<password>
 **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
 :::
 
-<details>
+<details id="tj-dropdown">
 <summary>Why does ToolJet require two databases?</summary>
 
 ToolJet requires **two separate database names** for optimal functionality:
@@ -105,11 +105,11 @@ For additional environment variables, refer to our [environment variables docume
    ```
    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
    ```
-   <img className="screenshot-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
+   <img className="screenshot-full img-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
    Once you have added the files click on create.
 
 3. Navigate to topology tab and use the visual connector to establish the connect between tooljet-deployment and postgresql as shown in the screenshot below.
-   <img className="screenshot-full" src="/img/setup/openshift/toplogy.png" alt="topology" />
+   <img className="screenshot-full img-full" src="/img/setup/openshift/toplogy.png" alt="topology" />
 
 :::info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
@@ -226,6 +226,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
+<br/>
 ---
 
-_If you have any questions, join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com._
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

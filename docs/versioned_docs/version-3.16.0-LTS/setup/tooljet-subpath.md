@@ -1,6 +1,6 @@
 ---
 id: tooljet-subpath
-title: Deploying ToolJet on a subpath
+title: Deploying ToolJet on a Subpath
 ---
 
 ToolJet can now be deployed at a subpath rather than the root (`/`) of a public domain. Example subpath installation URL: **`http://www.yourcompany.com/apps/tooljet`**
@@ -43,4 +43,11 @@ Ensure both databases are included in your backup before proceeding with the upg
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
 - **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

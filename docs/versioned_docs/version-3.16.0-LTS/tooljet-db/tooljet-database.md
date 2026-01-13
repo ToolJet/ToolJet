@@ -5,12 +5,7 @@ title: Overview
 
 Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database require no setup and gives you a powerful user interface for managing your data.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdb-v2.png" alt="ToolJet database" />
-</div>
-
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full img-full" src="/img/tjdb/preview.png" alt="ToolJet Database" />
 
 ## Features
 
@@ -24,18 +19,10 @@ ToolJet database allows you to:
 - Uniquely identify each record in a table using **Primary Keys**, ensuring data integrity and enabling efficient querying and indexing.
 - Establish relationships between tables using **Foreign Keys**, allowing you to create associations based on the Primary Key of one table and maintain referential integrity.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Accessing ToolJet Database
 
 Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
 
-The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
+The ToolJet Database is available on both **[ToolJet Cloud](https://tooljet.com)** and **[Self Hosted](/docs/setup/)** deployment. You can manage your database and its data using the **Database editor UI**.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdbside-v2.png" alt="ToolJet database" />
-</div>
-
-</div>
+<img className="screenshot-full img-m" src="/img/tjdb/tjdb-panel.png" alt="ToolJet database" />
