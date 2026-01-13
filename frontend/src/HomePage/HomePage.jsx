@@ -1160,9 +1160,14 @@ class HomePageComponent extends React.Component {
       importedAppName: selectedApp?.git_app_name,
     });
     if (selectedApp?.app_name_exist === 'EXIST') {
-      this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
+      this.setState({
+        importingGitAppOperations: { message: 'App name already exists' },
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+      });
+    } else {
+      this.setState({ importingGitAppOperations: {}, fetchingLatestCommitData: true, latestCommitData: null });
     }
-    this.setState({ importingGitAppOperations: {}, fetchingLatestCommitData: true, latestCommitData: null });
     const selectedBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.git_branch || orgGit?.git_lab_branch;
 
     try {
