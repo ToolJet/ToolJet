@@ -25,7 +25,11 @@ To establish a connection with the MariaDB global datasource, you can either cli
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
+<div style={{ textAlign: 'center' }}>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB data source connection" />
+
+</div>
 
 </div>
 
@@ -46,7 +50,7 @@ Query results can be transformed using Transformation. For more information on t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate-v2.png" alt="MariaDB query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/query-v3.png" alt="MariaDB query" />
 
 </div>
 
@@ -85,7 +89,7 @@ VALUES ('John Doe', 25, 'john@example.com');
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUser.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/create-insert-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -101,7 +105,7 @@ VALUES
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUsers.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/create-insert-mutliple-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -115,7 +119,7 @@ SELECT * FROM user;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-1-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -127,7 +131,7 @@ SELECT name, age, email FROM user;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-2-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -141,7 +145,7 @@ WHERE age > 25;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/read-select-3-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -157,7 +161,7 @@ WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/update-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -171,7 +175,7 @@ DELETE FROM user WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/deleteuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mariadb/delete-v3.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
