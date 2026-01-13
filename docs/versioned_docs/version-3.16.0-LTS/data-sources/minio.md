@@ -18,7 +18,7 @@ ToolJet requires the following to connect to your DynamoDB:
 - **Access key**
 - **Secret key**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/minio-connect.png" alt="miniIo connect" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/minio-connect.png" alt="miniIo data source connection" />
 
 </div>
 
@@ -30,8 +30,6 @@ ToolJet requires the following to connect to your DynamoDB:
 2. Select the data source added in the previous step as the data source.
 3. Select the operation that you want to perform.
 4. Click on the **Run** button to run the query
-
-<img className="screenshot-full" src="/img/datasource-reference/minio/minio-query.png" alt="miniIo query" />
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
@@ -51,7 +49,7 @@ Query results can be transformed using transformations. Read our transformations
 - **[Presigned url for download](#presigned-url-for-download)**
 - **[Presigned url for upload](#presigned-url-for-upload)**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/minioOperations.png" alt="minIo Operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/listops-v3.png" alt="minIo Operations" style={{marginBottom:'15px'}}/>
 
 ### Read Object
 
@@ -62,7 +60,7 @@ Retrieve an object from a bucket.
 - **Bucket**
 - **Object Name**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/readObject.png" alt="minIo read object" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/read-query.png" alt="minIo read object" style={{marginBottom:'15px'}}/>
 
 ### Put Object
 
@@ -78,24 +76,13 @@ Upload or update an object in a bucket.
 
 - **Content Type**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/putObejct.png" alt="minIo put object" style={{marginBottom:'15px'}}/>
-
-### Remove Object
-
-Delete an object from a bucket.
-
-#### Required Parameter:
-
-- **Bucket**
-- **Object Name**
-
-<img className="screenshot-full" src="/img/datasource-reference/minio/removeObject.png" alt="minIo remove object" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/put-query.png" alt="minIo put object" style={{marginBottom:'15px'}}/>
 
 ### List Buckets
 
 Retrieve a list of all buckets.
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/listBucket.png" alt="minIo list bucket" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/list-buck-query.png" alt="minIo list bucket" style={{marginBottom:'15px'}}/>
 
 ### List Objects in a Bucket
 
@@ -109,7 +96,7 @@ List objects within a specified bucket.
 
 - **Prefix**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/listObjectBucket.png" alt="minIo list objects in a bucket" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/list-obj-query.png" alt="minIo list objects in a bucket" style={{marginBottom:'15px'}}/>
 
 ### Presigned URL for Download
 
@@ -124,7 +111,7 @@ Generate a presigned URL for downloading an object.
 
 - **Expires in**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/urlDownload.png" alt="minIo presigned url for download" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/url-download-query.png" alt="minIo presigned url for download" style={{marginBottom:'15px'}}/>
 
 ### Presigned URL for Upload
 
@@ -139,6 +126,17 @@ Generate a presigned URL for uploading an object.
 
 - **Expires in**
 
-<img className="screenshot-full" src="/img/datasource-reference/minio/urlDownload.png" alt="minIo presigned url for download" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/url-upload-query.png" alt="minIo presigned url for upload" style={{marginBottom:'15px'}}/>
+
+### Remove Object
+
+Delete an object from a bucket.
+
+#### Required Parameter:
+
+- **Bucket**
+- **Object Name**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/minio/remove-query.png" alt="minIo remove object" style={{marginBottom:'15px'}}/>
 
 </div>
