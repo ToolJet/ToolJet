@@ -811,6 +811,7 @@ export class AppImportExportService {
         icon: appParams.icon,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
+        co_relation_id: appParams?.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
