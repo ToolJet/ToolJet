@@ -59,9 +59,8 @@ Inside the Looped function, choose the action what you wish to perform for each 
 ## Example 2 - Bulk User Deactivation Based on Inactivity
 Consider a workflow that fetches users inactive for a certain period of time and mark them as inactive.
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/sneakPeek.png" alt="Mail Loop" />
+<img className="screenshot-full img-full" style={{ marginBottom:'15px' }} src="/img/workflows/nodes/logic/loop/deactivateUsers/sneakPeek.png" alt="Mail Loop" />
 
-<br /> <br />
 **Step 1 - Fetch inactive users**  
 Create a ToolJet database node to fetch users with last_activity older than 5 days and with status as *active* and name it `findOldActiveUsers`. Here's a sample user from the list.
 
@@ -74,9 +73,8 @@ Create a ToolJet database node to fetch users with last_activity older than 5 da
 }
 ```
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/findOldActiveUsers.png" alt="Find Old and Active Users" />
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/deactivateUsers/findOldActiveUsers.png" style={{ marginBottom:'15px' }} alt="Find Old and Active Users" />
 
-<br /> <br />
 **Step 2 - Create a loop node**  
 Create a loop node named `makeInactive`. This node will loop over the data returned from **findOldActiveUsers** and mark the status of users to *inactive*.
 

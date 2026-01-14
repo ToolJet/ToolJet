@@ -3,8 +3,6 @@ id: if-else
 title: If Condition Node
 ---
 
-<br/>
-
 The **If Condition** node lets you create conditional logic in your workflow. It evaluates a JavaScript expression or condition and routes the workflow execution based on whether the condition is true or false. This allows you to control the flow dynamically, enabling different paths for different data, events, or user inputs.
 
 Common use cases include:
