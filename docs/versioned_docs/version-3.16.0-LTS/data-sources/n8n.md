@@ -20,7 +20,7 @@ Webhooks in n8n can be configured to operate with or without **Authentication**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/basicauth.png" alt="n8n basicauth"  />
+<img className="screenshot-full img-full" src="/img/datasource-reference/n8n/basicauth.png" alt="n8n basicauth connection"  />
 
 </div>
 
@@ -30,7 +30,7 @@ Webhooks in n8n can be configured to operate with or without **Authentication**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/headerauth.png" alt="n8n headerauth"  />
+<img className="screenshot-full img-full" src="/img/datasource-reference/n8n/headerauth.png" alt="n8n headerauth connection"  />
 
 </div>
 
@@ -56,7 +56,7 @@ Choose the GET Method from the dropdown.
 #### Optional Parameter:
   - **URL parameters** 
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/get.png" alt="n8n query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/n8n/get-query.png" alt="n8n query" style={{marginBottom:'15px'}} />
 
 ### POST Method
 
@@ -68,6 +68,6 @@ Choose the POST Method from the dropdown.
 #### Optional Parameter:
   - **URL parameters** 
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/POST.png" alt="n8n query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/n8n/post-query.png" alt="n8n query" />
 
 </div>
