@@ -36,7 +36,7 @@ You can also transform the query results using the **[Transformations](/docs/app
 
 **API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/soap-api/headers.png" alt="SOAP API Headers" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post.png" alt="SOAP API Headers" />
 
 **Request Body Example:**
 
@@ -52,7 +52,7 @@ You can also transform the query results using the **[Transformations](/docs/app
 </soapenv:Envelope>
 ```
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/soap-api/api-body.png" alt="SOAP API Headers" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post-body.png" alt="SOAP API Headers" />
 
 **Additional Notes:**
 
