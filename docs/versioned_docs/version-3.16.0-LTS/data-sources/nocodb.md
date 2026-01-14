@@ -11,12 +11,16 @@ ToolJet lets you connect with NocoDB to perform actions and retrieve data.
 
 To connect to the NocoDB data source in ToolJet, you can either click on the **+ Add new data source** button on the query panel or navigate to the [Data Source](/docs/data-sources/overview/) page on the ToolJet Dashboard.
 
+ToolJet allows you to connect to your NocoDB by two methods.They are **NocoDB Cloud** and **Self Hosted**.
+
 Connecting to your NocoDB database requires the following details:
 
 - **API token**
 - **Host**
 
-<img className="screenshot-full" src="/img/datasource-reference/nocodb/connection.png" alt="NocoDB Connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/connection.png" alt="NocoDB cloud connection" />
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/self-hosted-connection.png" alt="NocoDB self hosted connection" />
 
 </div>
 
@@ -33,6 +37,9 @@ ToolJet supports the following operations for NocoDB:
 - **[Update record](#update-record)**
 - **[Delete record](#delete-record)**
 
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/listops.png" alt="NocoDB supported operations" />
+
+
 ### List Records
 
 This operation retrieves a list of records present in the specified table.
@@ -43,7 +50,7 @@ This operation retrieves a list of records present in the specified table.
 #### Optional Parameters
 - **Query String**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/list-record.png" alt="NocoDB List Records" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/list-query.png" alt="NocoDB List Records" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -64,7 +71,7 @@ This operation can be used to fetch the number of records present in the table.
 #### Optional Parameters
 - **Query String**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/get-count.png" alt="NocoDB Get Count" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/getcount-query.png" alt="NocoDB Get Count" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -86,7 +93,7 @@ This operation can be used to fetch the record specified by the Table ID and Row
 #### Optional Parameters
 - **Query String**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/get-record.png" alt="NocoDB Get Record" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/getrec-query.png" alt="NocoDB Get Record" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -106,7 +113,7 @@ This operation can be used to create new records.
 - **Table ID**
 - **Records**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/create-record.png" alt="NocoDB Create Record" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/create-query.png" alt="NocoDB Create Record" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -127,7 +134,7 @@ This operation can be used to update the record.
 - **Row ID**
 - **Records**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/update-record.png" alt="NocoDB Update Record" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/update-query.png" alt="NocoDB Update Record" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -148,7 +155,7 @@ This operation can be used to delete a record.
 - **Table ID**
 - **Row ID**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/nocodb/delete-record.png" alt="NocoDB Delete Record" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/delete-query.png" alt="NocoDB Delete Record" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
