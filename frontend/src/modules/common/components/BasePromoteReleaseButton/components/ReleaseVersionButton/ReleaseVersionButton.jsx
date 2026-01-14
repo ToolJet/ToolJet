@@ -18,7 +18,7 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
-  const { isReleaseVersionEnabled, canReleaseLicense } = getCanPromoteAndRelease();
+  const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
   const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
     (state) => ({
       isVersionReleased: version
@@ -63,8 +63,6 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
   const onReleaseConfirm = () => {
     releaseVersion();
   };
-  const LICENSE_BLOCKED_TOOLTIP =
-    'You don’t have access to dev lifecycle permissions. Upgrade your plan to access this feature.';
 
   // Inline variant for dropdown
   if (variant === 'inline') {
@@ -76,26 +74,22 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
           onConfirm={onReleaseConfirm}
         />
         <ToolTip
-          message={  
-                !canReleaseLicense
-                ? LICENSE_BLOCKED_TOOLTIP
-                : !isReleaseVersionEnabled
-                ? "You don't have access to release application. Contact admin to know more."
-                : 'Release this version'
+          message={
+            !isReleaseVersionEnabled
+              ? "You don't have access to release application. Contact admin to know more."
+              : 'Release this version'
           }
-          placement="left"
+          placement="top"
           show={true}
         >
-          <span>
           <button
             className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={isVersionReleased || !isReleaseVersionEnabled ||  !canReleaseLicense || isReleasing}
+            disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
             onClick={onReleaseButtonClick}
             data-cy="release-version-button"
           >
             {isReleasing ? 'Releasing...' : 'Release'}
           </button>
-          </span>
         </ToolTip>
       </>
     );
@@ -111,15 +105,10 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
       />
       <div>
         <ToolTip
-          message={
-          !canReleaseLicense
-          ? LICENSE_BLOCKED_TOOLTIP
-          : "You don't have access to release application. Contact admin to know more."
-          }
+          message="You don't have access to release application. Contact admin to know more."
           placement="bottom"
-          show={!canReleaseLicense || !isReleaseVersionEnabled}
+          show={!isReleaseVersionEnabled}
         >
-          <span>
           <Button
             variant="secondary"
             data-cy={`button-release`}
@@ -127,13 +116,12 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
               'released-button': isVersionReleased,
             })}
             isLoading={isReleasing}
-            disabled={ !canReleaseLicense || !isReleaseVersionEnabled || isVersionReleased || isReleasing}
+            disabled={isVersionReleased}
             onClick={onReleaseButtonClick}
           >
             <Globe width="16" height="16" className="tw-text-icon-accent" />
             {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
           </Button>
-          </span>
         </ToolTip>
       </div>
     </>
