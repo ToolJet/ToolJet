@@ -63,6 +63,7 @@ import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
 import CurrencyInput from './currencyinput.jsx';
 import PopoverMenu from './popovermenu.jsx';
+import Progressbar from './progressbar.jsx';
 import TagsInput from './tagsinput.jsx';
 
 const WidgetIcon = (props) => {
@@ -219,6 +220,8 @@ const WidgetIcon = (props) => {
     case 'currencyinput':
     case 'currencyinputlegacy':
       return <CurrencyInput {...props} />;
+    case 'progressbar':
+      return <Progressbar {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

@@ -2266,7 +2266,7 @@ export const createComponentsSlice = (set, get) => ({
       const getComponentProperties = (componentDefinition) => {
         const properties = componentDefinition.component.definition?.properties;
         const componentType = componentDefinition.component.component;
-        if (componentType === 'CircularProgressBar') {
+        if (componentType === 'CircularProgressBar' || componentType === 'ProgressBar') {
           return {
             ...properties,
             text: {

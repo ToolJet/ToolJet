@@ -68,7 +68,7 @@ import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
-
+import { ProgressBar } from '@/AppBuilder/Widgets/Progressbar/Progressbar';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // import './requestIdleCallbackPolyfill';
@@ -157,7 +157,7 @@ export const AllComponents = {
   Chat,
   ModuleContainer,
   ModuleViewer,
-  PopoverMenu,
+  ProgressBar,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);
@@ -353,7 +353,6 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${
-    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-  }px)`;
+  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+    }px)`;
 };
