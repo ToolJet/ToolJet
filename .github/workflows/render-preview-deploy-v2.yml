@@ -23,7 +23,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ce-review-app-v2'
+      github.event.label.name == 'create-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -216,7 +216,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ce-review-app-v2'
+                name: 'create-ce-review-app'
               });
             } catch (e) { console.log('Label not found:', e.message); }
             
@@ -225,7 +225,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app-v2']
+              labels: ['active-ce-review-app']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app-v2');
+            const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
 
@@ -347,7 +347,7 @@ jobs:
   suspend-ce:
     if: |
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ce-review-app-v2'
+      github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -380,7 +380,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ce-review-app-v2'
+                name: 'active-ce-review-app'
               });
             } catch (e) { console.log('Label not found:', e.message); }
 
@@ -391,7 +391,7 @@ jobs:
   resume-ce:
     if: |
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ce-review-app-v2'
+      github.event.label.name == 'suspend-ce-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -423,7 +423,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ce-review-app-v2']
+              labels: ['active-ce-review-app']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -432,7 +432,7 @@ jobs:
 
   destroy-ce:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app-v2') ||
+      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -469,9 +469,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labelsToRemove = [
-              'destroy-ce-review-app-v2',
-              'suspend-ce-review-app-v2', 
-              'active-ce-review-app-v2'
+              'destroy-ce-review-app',
+              'suspend-ce-review-app', 
+              'active-ce-review-app'
             ];
             
             for (const label of labelsToRemove) {
@@ -494,7 +494,7 @@ jobs:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
-      github.event.label.name == 'create-ee-review-app-v2'
+      github.event.label.name == 'create-ee-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -697,7 +697,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-ee-review-app-v2'
+                name: 'create-ee-review-app'
               });
             } catch (e) { console.log('Label not found:', e.message); }
             
@@ -705,7 +705,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-review-app-v2']
+              labels: ['active-ee-review-app']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -730,7 +730,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            const hasLabel = labels.data.some(l => l.name === 'active-ee-review-app-v2');
+            const hasLabel = labels.data.some(l => l.name === 'active-ee-review-app');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
 
@@ -828,7 +828,7 @@ jobs:
   suspend-ee:
     if: |
       github.event.action == 'labeled' &&
-      github.event.label.name == 'suspend-ee-review-app-v2'
+      github.event.label.name == 'suspend-ee-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -861,7 +861,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-ee-review-app-v2'
+                name: 'active-ee-review-app'
               });
             } catch (e) { console.log('Label not found:', e.message); }
 
@@ -872,7 +872,7 @@ jobs:
   resume-ee:
     if: |
       github.event.action == 'unlabeled' &&
-      github.event.label.name == 'suspend-ee-review-app-v2'
+      github.event.label.name == 'suspend-ee-review-app'
     runs-on: ubuntu-latest
 
     steps:
@@ -904,7 +904,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-ee-review-app-v2']
+              labels: ['active-ee-review-app']
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -913,7 +913,7 @@ jobs:
 
   destroy-ee:
     if: |
-      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-review-app-v2') ||
+      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
@@ -950,9 +950,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labelsToRemove = [
-              'destroy-ee-review-app-v2',
-              'suspend-ee-review-app-v2',
-              'active-ee-review-app-v2'
+              'destroy-ee-review-app',
+              'suspend-ee-review-app',
+              'active-ee-review-app'
             ];
             
             for (const label of labelsToRemove) {
