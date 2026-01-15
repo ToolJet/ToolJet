@@ -28,7 +28,7 @@ on:
         description: 'Git branch to deploy (must start with "lts-", e.g., lts-3.16)'
         required: true
       environment:
-        description: 'Deployment environment'
+        description: "Deployment environment"
         required: true
         type: choice
         options:
@@ -167,8 +167,8 @@ jobs:
           SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
           TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
-          TOOLJET_EDITION: cloud
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
+          TOOLJET_EDITION: cloud
 
       - name: 🚀 Deploy Pre-built Artifacts to Vercel
         run: |
