@@ -31,7 +31,6 @@ export const Viewer = ({
   const { t } = useTranslation();
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
-  const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
 
   const {
@@ -96,7 +95,6 @@ export const Viewer = ({
   const isAppLoaded = !!editingVersion;
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  const isLicenseNotValid = checkIfLicenseNotValid();
 
   useEffect(() => {
     if (window.name && !getPatToken()) {
@@ -210,7 +208,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
-                            {isLicenseNotValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
+                            {isAppLoaded && <TooljetBanner isDarkMode={darkMode} isModuleMode={moduleMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

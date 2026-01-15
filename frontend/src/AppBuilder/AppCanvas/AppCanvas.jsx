@@ -28,6 +28,7 @@ import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
 import { debounce } from 'lodash';
 import useCanvasMinWidth from './useCanvasMinWidth';
 import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
+import TooljetBanner from '@/AppBuilder/Viewer/TooljetBanner';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -343,6 +344,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 </div>
               </div>
             </div>
+            {isPreviewInEditor && <TooljetBanner isDarkMode={darkMode} isModuleMode={appType === 'module'} />}
           </div>
         </div>
         {currentMode === 'edit' && <EditorSelecto />}

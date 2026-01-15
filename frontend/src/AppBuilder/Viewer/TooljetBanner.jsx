@@ -1,7 +1,14 @@
 import React from 'react';
 import TooljetLogoText from '@/_ui/Icon/solidIcons/TooljetLogoText';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
-const TooljetBanner = ({ isDarkMode }) => {
+const TooljetBanner = ({ isDarkMode, isModuleMode }) => {
+  const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
+  const isLicenseNotValid = checkIfLicenseNotValid();
+
+  if (!isLicenseNotValid || isModuleMode) return;
+
   return (
     <div
       data-cy="powered-tj-banner"
