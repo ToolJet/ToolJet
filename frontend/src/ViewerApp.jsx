@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AppsRoute } from '@/Routes';
 import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import EmbedApp from '@/AppBuilder/EmbedApp';
@@ -38,6 +38,7 @@ import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
  */
 const ViewerApp = () => {
   const { isAppDarkMode } = useAppDarkMode();
+  const location = useLocation();
   const metadataFetchedRef = useRef(false);
 
   // Toast options for viewer
@@ -119,34 +120,42 @@ const ViewerApp = () => {
     };
   }, []);
 
+  // Check if we're on the embed-apps path (detect which base route we're mounted under)
+  const isEmbedAppsPath = location.pathname.includes('/embed-apps/');
+
   return (
     <>
       <div className="main-wrapper" data-cy="main-wrapper">
-        <Routes>
-          {/* Main viewer route: /applications/:slug/:pageHandle? */}
-          <Route
-            path="/:slug/:pageHandle?"
-            element={
-              <AppsRoute componentType="viewer">
-                <Viewer switchDarkMode={switchDarkMode} darkMode={isAppDarkMode} />
-              </AppsRoute>
-            }
-          />
+        {isEmbedAppsPath ? (
+          // Embedded app route: /embed-apps/:appId
+          <Routes>
+            <Route path="/:appId" element={<EmbedApp />} />
+          </Routes>
+        ) : (
+          // Viewer routes: /applications/*
+          <Routes>
+            {/* Main viewer route: /applications/:slug/:pageHandle? */}
+            <Route
+              path="/:slug/:pageHandle?"
+              element={
+                <AppsRoute componentType="viewer">
+                  <Viewer switchDarkMode={switchDarkMode} darkMode={isAppDarkMode} />
+                </AppsRoute>
+              }
+            />
 
-          {/* Versioned viewer route with environment */}
-          <Route
-            path="/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
-            element={
-              <AppsRoute componentType="viewer">
-                <Viewer switchDarkMode={switchDarkMode} darkMode={isAppDarkMode} />
-              </AppsRoute>
-            }
-          />
-
-          {/* Embedded app route: /embed-apps/:appId */}
-          <Route path="/:appId" element={<EmbedApp />} />
-        </Routes >
-      </div >
+            {/* Versioned viewer route with environment */}
+            <Route
+              path="/:slug/versions/:versionId/environments/:environmentId/:pageHandle?"
+              element={
+                <AppsRoute componentType="viewer">
+                  <Viewer switchDarkMode={switchDarkMode} darkMode={isAppDarkMode} />
+                </AppsRoute>
+              }
+            />
+          </Routes>
+        )}
+      </div>
 
       <Toast toastOptions={toastOptions} />
     </>
@@ -155,4 +164,3 @@ const ViewerApp = () => {
 
 export default ViewerApp;
 
-const V = () => <>Hello</>
