@@ -977,7 +977,6 @@ class DataSourceManagerComponent extends React.Component {
       'microsoft_graph',
       'hubspot',
       'gmail',
-      'googlesheetsv2',
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);

@@ -912,7 +912,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 const url = data.data.auth_url; // Backend generates and return sthe auth url
                 const kind = data.data?.kind;
                 localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
-                if (['slack', 'googlesheets', 'zendesk', 'googlesheetsv2'].includes(kind)) {
+                if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
                   fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
                   break;
                 }
