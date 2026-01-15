@@ -116,6 +116,9 @@ export class AppGitPullUpdateDto {
   @IsBoolean()
   @IsOptional()
   isVersionTag?: boolean;
+
+  @IsOptional()
+  taggedVersionName?: string;
 }
 export class AppGitUpdateDto {
   @IsBoolean()
