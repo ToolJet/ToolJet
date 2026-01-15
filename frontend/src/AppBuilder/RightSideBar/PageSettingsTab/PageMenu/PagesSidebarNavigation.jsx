@@ -460,7 +460,7 @@ export const PagesSidebarNavigation = ({
         className="app-name"
       >
         {!logoHidden && (
-          <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+          <div onClick={switchToHomePage} className="cursor-pointer">
             <AppLogo height={32} isLoadingFromHeader={false} />
           </div>
         )}

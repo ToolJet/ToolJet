@@ -1,16 +1,7 @@
 name: Render Preview Deploy V2 (DockerHub-based)
 
-# Version: 2.3
-# Changes from v2.2:
-#   - EE now uses LTS Dockerfile (./docker/LTS/ee/ee-preview.Dockerfile) instead of pre-release
-#   - LTS Dockerfile has proper submodule handling with lts-3.16 fallback
-# Changes from v2.1:
-#   - Single image tag per PR (ce-pr-{NUMBER} and ee-pr-{NUMBER})
-#   - Removed commit SHA from tags
-#   - DockerHub cache updates same tag on each push
-
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled, unlabeled, closed, synchronize]
 
 env:
@@ -36,6 +27,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
@@ -61,6 +65,26 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
           cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
+
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
 
       - name: Create Render Service
         id: create-service
@@ -103,15 +127,17 @@ jobs:
                 {"key": "SMTP_PASSWORD", "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"},
                 {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"}
               ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
+              },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
-                },
-                "env": "image",
-                "envSpecificDetails": {
-                  "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -227,6 +253,20 @@ jobs:
             const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app-v2');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - name: Checkout PR branch
         if: steps.check-active.outputs.is_active == 'true'
@@ -458,6 +498,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
@@ -486,6 +539,26 @@ jobs:
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
 
       - name: Create Render Service
         id: create-service
@@ -536,15 +609,17 @@ jobs:
                 {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
                 {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
               ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
+              },
               "serviceDetails": {
+                "runtime": "image",
                 "disk": {
                   "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
-                },
-                "env": "image",
-                "envSpecificDetails": {
-                  "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pr-${{ env.PR_NUMBER }}"
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -658,6 +733,20 @@ jobs:
             const hasLabel = labels.data.some(l => l.name === 'active-ee-review-app-v2');
             core.setOutput('is_active', hasLabel);
             return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
 
       - name: Checkout PR branch
         if: steps.check-active.outputs.is_active == 'true'
@@ -876,4 +965,3 @@ jobs:
                 });
               } catch (e) { console.log(`Label ${label} not found`); }
             }
-            
