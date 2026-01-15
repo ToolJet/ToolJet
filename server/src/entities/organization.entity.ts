@@ -37,6 +37,12 @@ export class Organization extends BaseEntity {
   @Column({ name: 'domain' })
   domain: string;
 
+  @Column({ name: 'password_allowed_domains', nullable: true })
+  passwordAllowedDomains: string;
+
+  @Column({ name: 'password_restricted_domains', nullable: true })
+  passwordRestrictedDomains: string;
+
   @Column({ name: 'is_default', default: false })
   isDefault: boolean;
 

@@ -96,10 +96,7 @@ class BaseManageGroupPermissions extends React.Component {
         console.error('Error occurred in duplicating:', err);
 
         // Use the actual backend message if available
-        const message =
-          err?.data?.message ||
-          err?.error ||
-          'Could not duplicate group.\nPlease try again!';
+        const message = err?.data?.message || err?.error || 'Could not duplicate group.\nPlease try again!';
 
         toast.error(message);
       });
@@ -193,7 +190,7 @@ class BaseManageGroupPermissions extends React.Component {
     return list;
   };
 
-  fetchGroups = (type = 'admin', callback = () => { }) => {
+  fetchGroups = (type = 'admin', callback = () => {}) => {
     this.setState({
       isLoading: true,
     });
@@ -207,8 +204,8 @@ class BaseManageGroupPermissions extends React.Component {
           type == 'admin'
             ? defaultGroups[0].id
             : type == 'current'
-              ? this.findCurrentGroupDetails(groupPermissions)
-              : groupPermissions.at(-1).id;
+            ? this.findCurrentGroupDetails(groupPermissions)
+            : groupPermissions.at(-1).id;
         this.setState(
           {
             groups: groupPermissions.filter((group) => group.type === 'custom'),
@@ -813,12 +810,12 @@ class BaseManageGroupPermissions extends React.Component {
                               permissionGroup.disabled
                                 ? null
                                 : () => {
-                                  this.setState({
-                                    selectedGroupPermissionId: permissionGroup.id,
-                                    selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
-                                    selectedGroupObject: permissionGroup,
-                                  });
-                                }
+                                    this.setState({
+                                      selectedGroupPermissionId: permissionGroup.id,
+                                      selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.name),
+                                      selectedGroupObject: permissionGroup,
+                                    });
+                                  }
                             }
                             disabled={permissionGroup.disabled}
                             toolTipDisabled={permissionGroup.disabled}
@@ -866,6 +863,7 @@ class BaseManageGroupPermissions extends React.Component {
                   <Loader />
                 ) : (
                   <ManageGroupPermissionResources
+                    key={this.state.selectedGroupPermissionId}
                     groupPermissionId={this.state.selectedGroupPermissionId}
                     darkMode={this.props.darkMode}
                     selectedGroup={this.state.selectedGroup}

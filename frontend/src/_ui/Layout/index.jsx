@@ -121,7 +121,21 @@ function Layout({
                 to={isEndUser ? getPrivateRoute('dashboard') : getPrivateRoute('home')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {isWhiteLabellingDataLoading ? '' : logo ? <img width="26px" height="26px" src={logo} /> : <Logo />}
+                {isWhiteLabellingDataLoading ? (
+                  ''
+                ) : logo ? (
+                  <img
+                    width="26px"
+                    height="26px"
+                    src={logo}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null; // prevent infinite loop
+                      e.currentTarget.src = 'assets/images/logo-fallback.svg';
+                    }}
+                  />
+                ) : (
+                  <Logo />
+                )}
               </Link>
             </div>
             <LeftNavSideBar

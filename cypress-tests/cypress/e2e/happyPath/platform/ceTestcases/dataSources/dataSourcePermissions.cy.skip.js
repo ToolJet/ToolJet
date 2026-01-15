@@ -229,7 +229,7 @@ describe("Datasource Manager", () => {
     cy.get(".p-2 > .tj-base-btn").click();
     cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName2}-postgresql`,
       "postgresql",

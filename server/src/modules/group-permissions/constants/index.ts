@@ -74,6 +74,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
       hideFromDashboard: false,
+      canAccessDevelopment: true,
+      canAccessStaging: true,
+      canAccessProduction: true,
+      canAccessReleased: true,
     },
     [ResourceType.DATA_SOURCE]: {
       action: {
@@ -91,6 +95,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: false,
       canView: true,
       hideFromDashboard: false,
+      canAccessDevelopment: false,
+      canAccessStaging: false,
+      canAccessProduction: false,
+      canAccessReleased: true,
     },
     [ResourceType.WORKFLOWS]: {
       canEdit: false,
@@ -102,6 +110,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
       hideFromDashboard: false,
+      canAccessDevelopment: true,
+      canAccessStaging: true,
+      canAccessProduction: true,
+      canAccessReleased: true,
     },
     [ResourceType.DATA_SOURCE]: {
       action: {

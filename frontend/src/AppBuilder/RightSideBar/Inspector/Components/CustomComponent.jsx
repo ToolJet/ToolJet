@@ -32,12 +32,12 @@ export const CustomComponent = function CustomComponent({
     title: 'Code',
     children: (
       <CodeHinter
-        type="basic"
+        type="multiline"
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         lang="jsx"
         lineNumbers={true}
-        className="custom-component"
+        className="custom-component custom-component-inspector-multiline"
         onChange={(value) => paramUpdated({ name: 'code' }, 'value', value, 'properties')}
         componentName={`component/${component.component.name}/code`}
         height={400}

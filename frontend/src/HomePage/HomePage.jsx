@@ -396,7 +396,7 @@ class HomePageComponent extends React.Component {
 
     //  Check app limit before cloning
     if (!canAddUnlimited && current >= total) {
-      toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
+      toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
       return;
     }
     this.setState({ isCloningApp: true });
@@ -562,7 +562,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -570,7 +570,8 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -735,6 +736,10 @@ class HomePageComponent extends React.Component {
 
   canUpdateApp = (app) => {
     return this.canUserPerform(this.state.currentUser, 'update', app);
+  };
+
+  canViewApp = (app) => {
+    return this.canUserPerform(this.state.currentUser, 'read', app) && !this.canUpdateApp(app);
   };
 
   canDeleteApp = (app) => {
@@ -1256,6 +1261,10 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const hasMultiEnvironment = featureAccess?.multiEnvironment || false;
+    // Only exclude env param if license is invalid/expired (basic plan)
+    // If license is valid but multi-environment feature is not available, still include env param
+    const shouldExcludeEnvParam = invalidLicense;
     const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
@@ -1384,8 +1393,9 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                    }`}
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1461,8 +1471,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1709,8 +1719,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1725,12 +1735,13 @@ class HomePageComponent extends React.Component {
                               showCreateAppModal: true,
                             })
                           }
-                          data-cy={`create-new-${this.props.appType === 'workflow'
+                          data-cy={`create-new-${
+                            this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
-                            }-button`}
+                              ? 'modules'
+                              : 'apps'
+                          }-button`}
                         >
                           <>
                             {isImportingApp && (
@@ -1739,10 +1750,11 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1803,8 +1815,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1898,8 +1910,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1958,6 +1970,7 @@ class HomePageComponent extends React.Component {
                     canCreateApp={this.canCreateApp}
                     canDeleteApp={this.canDeleteApp}
                     canUpdateApp={this.canUpdateApp}
+                    canViewApp={this.canViewApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
                     exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}
@@ -1968,7 +1981,7 @@ class HomePageComponent extends React.Component {
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
-                    basicPlan={invalidLicense}
+                    basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
                   />

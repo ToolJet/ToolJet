@@ -63,8 +63,12 @@ export const Table = memo(
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
-    const hoverColor = getModifiedColor(containerBackgroundColor, 'hover');
-    const activeColor = getModifiedColor(containerBackgroundColor, 'active');
+    const hoverColor = getModifiedColor(containerBackgroundColor, 6);
+    const scrollColor = getModifiedColor(containerBackgroundColor, 12);
+    const editableColumnColor = getModifiedColor(containerBackgroundColor, 12);
+    const stripedBackgroundColor = getModifiedColor(containerBackgroundColor, 3);
+    const stripedHoverColor = getModifiedColor(containerBackgroundColor, 9);
+    const stripedEditableColumnColor = getModifiedColor(containerBackgroundColor, 15);
 
     const {
       columns,
@@ -198,9 +202,13 @@ export const Table = memo(
           '--cc-table-action-icon-color': iconColor,
           '--cc-table-footer-action-hover': hoverColor,
           '--cc-table-row-hover': hoverColor,
-          '--cc-table-row-active': activeColor,
-          '--cc-table-scroll-bar-color': activeColor,
+          '--cc-table-scroll-bar-color': scrollColor,
           '--cc-table-border-color': borderColor,
+          '--cc-table-editable-column-hover': editableColumnColor,
+          '--cc-table-edited-cell': 'rgba(233, 163, 57, 0.1)',
+          '--cc-table-striped-row-bg-color': stripedBackgroundColor,
+          '--cc-table-striped-row-hover': stripedHoverColor,
+          '--cc-table-striped-editable-column-hover': stripedEditableColumnColor,
         }}
       >
         <TableContainer

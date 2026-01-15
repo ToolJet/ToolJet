@@ -476,6 +476,7 @@ export class ComponentsService implements IComponentsService {
                   'Steps',
                   'RadioButtonV2',
                   'Tags',
+                  'TagsInput',
                 ].includes(componentData.type) &&
                 _.isArray(objValue)
               ) {
