@@ -34,7 +34,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-  const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
+  const scrollTopRef = useRef(0);
+  const isScrolling = useEnableMainCanvasScroll({ canvasContentRef, scrollTopRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -171,9 +172,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     const canvas = canvasContainerRef.current;
     if (!canvas) return;
 
-    const handleResize = debounce(handleResizeImmediate, 300);
     const onDone = () => {
-      handleResize();
+      handleResizeImmediate();
       notifyTransitionDone('canvas');
     };
 
@@ -191,6 +191,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
 
     setPreviewPhase('switching-mode');
   }, [allCollapsed, previewPhase]);
+
+  useLayoutEffect(() => {
+    const el = canvasContentRef.current;
+    if (!el) return;
+    el.scrollTop = scrollTopRef.current;
+  });
 
   const canvasContainerStyles = useMemo(() => {
     if (isModuleMode) {

@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 
 // It is used to show the scrollbar of the main canvas only when the user is scrolling
-export default function useEnableMainCanvasScroll({ canvasContentRef }) {
+export default function useEnableMainCanvasScroll({ canvasContentRef, scrollTopRef }) {
   const scrollTimeoutRef = useRef(null);
   const [isScrolling, setIsScrolling] = useState(false);
 
   useEffect(() => {
+    const element = canvasContentRef.current;
+    if (!element) return;
+
     const handleScroll = () => {
+      scrollTopRef.current = element.scrollTop;
       setIsScrolling(true);
 
       if (scrollTimeoutRef.current) {
@@ -18,16 +22,12 @@ export default function useEnableMainCanvasScroll({ canvasContentRef }) {
       }, 600);
     };
 
-    const element = canvasContentRef.current;
-
-    if (!element) return;
-
     element.addEventListener('scroll', handleScroll);
 
     return () => {
       element.removeEventListener('scroll', handleScroll);
     };
-  }, [canvasContentRef]);
+  }, [canvasContentRef, scrollTopRef]);
 
   return isScrolling;
 }
