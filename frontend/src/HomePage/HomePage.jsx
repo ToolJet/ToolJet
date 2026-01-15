@@ -542,6 +542,7 @@ class HomePageComponent extends React.Component {
   };
 
   importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
@@ -855,7 +856,7 @@ class HomePageComponent extends React.Component {
       lastCommitUser: last_commit_user,
       lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
-      appName: this.state.importedAppName,
+      appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
     };
     gitSyncService
