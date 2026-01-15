@@ -323,6 +323,7 @@ class HomePageComponent extends React.Component {
   };
 
   createApp = async (appName, type, prompt) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
@@ -363,6 +364,7 @@ class HomePageComponent extends React.Component {
   };
 
   renameApp = async (newAppName, appId) => {
+    newAppName = newAppName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
@@ -386,6 +388,7 @@ class HomePageComponent extends React.Component {
   };
 
   cloneApp = async (appName, appId) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     const { appsLimit } = this.state;
     const current = appsLimit?.current ?? 0;
     const total = appsLimit?.total ?? 0;
