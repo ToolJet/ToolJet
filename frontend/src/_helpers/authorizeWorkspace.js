@@ -25,6 +25,16 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 export const authorizeWorkspace = () => {
   /* Default APIs */
   const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  const pathname = getPathname();
+  const isAuthPage = pathname.startsWith('/signup') || pathname.startsWith('/login')
+  if (isAuthPage) {
+   updateCurrentSession({
+     triggeredOnce: true,
+     authentication_status: false,
+   });
+   return;
+ }
+
   // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({
