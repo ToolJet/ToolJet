@@ -384,6 +384,7 @@ const TableForm = ({
         }}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
+          isErrorText ||
           isEmpty(tableName) ||
           tableName.trim().length === 0 ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
