@@ -168,10 +168,10 @@ RUN mkdir -p /home/appuser \
     && npm cache clean --force
 
 # Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
-  RUN mkdir -p /app/tooljet/gitsync \
-      && chown -R appuser:0 /app/tooljet \
-      && chmod -R g+w /app/tooljet \
-      && chmod g+s /app/tooljet /app/tooljet/gitsync
+RUN mkdir -p /app/server/tooljet/gitsync \
+    && chown -R appuser:0 /app/server/tooljet \
+    && chmod -R g+w /app/server/tooljet \
+    && chmod g+s /app/server/tooljet /app/server/tooljet/gitsync
 
 # Create rsyslog directory for audit logs with proper permissions
 RUN mkdir -p /home/appuser/rsyslog \
