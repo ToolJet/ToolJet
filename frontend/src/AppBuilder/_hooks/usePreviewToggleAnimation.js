@@ -42,6 +42,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
 
+  const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const targetMode = useStore((state) => state.targetMode, shallow);
   const setCurrentMode = useStore((state) => state.setCurrentMode, shallow);
 
@@ -52,8 +53,8 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const resetSettledAnimatedComponents = useStore((state) => state.resetSettledAnimatedComponents, shallow);
 
   const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldMount, setShouldMount] = useState(true);
-  const [shouldApplyHideClass, setShouldApplyHideClass] = useState(false);
+  const [shouldMount, setShouldMount] = useState(currentMode === 'edit');
+  const [shouldApplyHideClass, setShouldApplyHideClass] = useState(currentMode !== 'edit');
   const openedPanelsRef = useRef([]);
   const hasCapturedOpenPanelsRef = useRef(false);
 
