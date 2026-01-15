@@ -7,6 +7,7 @@ name: Deploy to Vercel
 # - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
 # - VERCEL_ORG_ID: team_SsaGMOGYsC8KFX3InHcUiy3T
 # - VERCEL_PROJECT_ID: prj_iX5rpyQy7hq8upcHijcED3jkRQn4
+# - VERCEL_DEPLOY_EMAIL: Email associated with the Vercel token (must have team access)
 # - CUSTOM_GITHUB_TOKEN: For submodule checkout
 # - ALLOWED_USER1_USERNAME, ALLOWED_USER2_USERNAME, ALLOWED_USER3_USERNAME: Authorized users
 # - CLOUD_GOOGLE_MAPS_API_KEY, CLOUD_NODE_ENV, CLOUD_SENTRY_*, etc.: Build environment variables
@@ -139,6 +140,16 @@ jobs:
           TOOLJET_EDITION: cloud
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
 
+      - name: 🔧 Configure git author for Vercel
+        run: |
+          cd repo
+          # Override git author to match Vercel token owner
+          # This prevents "Git author must have access to team" error
+          git config user.email "${{ secrets.VERCEL_DEPLOY_EMAIL }}"
+          git config user.name "GitHub Actions Deployer"
+          echo "✅ Git author configured for deployment"
+          echo "📧 Git user.email: $(git config user.email)"
+
       - name: 🚀 Deploy to Vercel
         run: |
           npm install -g vercel@latest
@@ -147,12 +158,14 @@ jobs:
             echo "🚀 Deploying to production..."
             vercel deploy --prod \
               --token=$VERCEL_TOKEN \
-              --cwd=frontend/build
+              --cwd=frontend/build \
+              --force
           else
             echo "🔍 Deploying to preview..."
             vercel deploy \
               --token=$VERCEL_TOKEN \
-              --cwd=frontend/build
+              --cwd=frontend/build \
+              --force
           fi
         working-directory: repo
         env:
