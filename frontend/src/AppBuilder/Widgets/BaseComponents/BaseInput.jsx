@@ -165,10 +165,11 @@ export const BaseInput = ({
                   : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-            ...(defaultAlignment === 'top' && {
-              height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
-              flex: 1,
-            }),
+            ...(defaultAlignment === 'top' &&
+              label?.length != 0 && {
+                height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
+                flex: 1,
+              }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
           }}
         >

@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { Button } from '@/AppBuilder/Widgets/Button';
 import { Text } from '@/AppBuilder/Widgets/Text';
-
+import { AudioRecorder } from '@/AppBuilder/Widgets/AudioRecorder/AudioRecorder';
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
 import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
@@ -54,12 +54,14 @@ import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
   import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainer }))
 );
 const ModuleViewer = lazy(() => import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer })));
+
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -167,6 +169,8 @@ export const AllComponents = {
   ModuleContainer,
   ModuleViewer,
   TagsInput,
+  AudioRecorder,
+  Camera,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;
