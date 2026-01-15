@@ -2612,7 +2612,9 @@ hr {
   .modal-dialog-scrollable.modal-fullscreen .modal-content {
     max-height: 100% !important;
   }
+}
 
+.editor, .editor-preview {
   .modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
     // Modal header height
     padding-bottom: 0;
