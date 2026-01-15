@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button'; 
 import Select from '@/_ui/Select';
 import { dataqueryService } from '@/_services';
 import { get, debounce } from 'lodash';
@@ -314,7 +315,7 @@ const DynamicSelector = ({
 
     return (
         <div className="dynamic-selector-container">
-            <div className="d-flex align-items-center gap-2 mb-3">
+            <div className="d-flex align-items-center gap-2 mb-1">
                 <div className="flex-grow-1">
                     {isFxMode ? (
                         <CodeHinter
@@ -350,22 +351,15 @@ const DynamicSelector = ({
                     </div>
                 )}
 
-                {!isFxMode && !dependsOn.length && <ButtonSolid
-                    variant="secondary"
-                    size="sm"
+               {!isFxMode && !dependsOn.length && <ButtonComponent
+                    variant="outline"
+                    size="medium"
                     onClick={() => handleFetch(false)}
-                    disabled={isLoading || disabled}
-                    className="btn rounded-lg tw-ml-2"
+                    disabled={disabled}
+                    isLoading={isLoading}
                 >
-                    {isLoading ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" />
-                            Loading...
-                        </>
-                    ) : (
-                        operationLabel || 'Fetch'
-                    )}
-                </ButtonSolid>}
+                    {operationLabel || 'Fetch'}
+                </ButtonComponent>}
             </div>
 
             {error && (
@@ -375,8 +369,8 @@ const DynamicSelector = ({
             )}
 
             {description && (
-                <small className="text-muted d-block mb-3">
-                    {description}
+                <small className="text-muted d-block" style={{ fontSize: '12px' }}>
+                    {isFxMode ? description : `Select ${label ?? 'value'} from dropdown.`}
                 </small>
             )}
 
