@@ -5,7 +5,7 @@ title: Platform Overview
 
 ## What is ToolJet?
 
-ToolJet is an AI-native platform for building applications and agents. Teams can generate full apps from natural language prompts, create intelligent agents to automate workflows, and refine them visually with pre-built UI components. ToolJet integrates with 75+ data sources and APIs out of the box, and offers role-based access control with group sync for secure, enterprise-grade user management.  
+ToolJet is an AI-native platform for building applications and agents. Teams can generate full apps from natural language prompts, create intelligent agents to automate workflows, and refine them visually with pre-built UI components. ToolJet integrates with 80+ data sources and APIs out of the box, and offers role-based access control with group sync for secure, enterprise-grade user management.  
 
 ## How ToolJet Works:
 
@@ -17,7 +17,7 @@ ToolJet is an AI-native platform for building applications and agents. Teams can
 
 2. **Build Visually**: Extend apps with drag-and-drop components, themes, and custom logic in JavaScript or Python.
 
-3. **Connect Data Sources**: Integrate 75+ databases, APIs, and services.
+3. **Connect Data Sources**: Integrate 80+ databases, APIs, and services.
 
 4. **Automate with Agents**: Deploy AI agents that can query data, take actions, and orchestrate workflows.
 
