@@ -1,16 +1,25 @@
 name: Deploy to Vercel
 
-# This workflow deploys the ToolJet frontend to Vercel
-# Pattern based on cloud-frontend.yml and cloud-frontend-gcp.yml
+# This workflow deploys the ToolJet frontend to Vercel using the official pattern
+# Pattern: vercel pull → vercel build → vercel deploy --prebuilt
+# This approach bypasses the "git author must have access to team" error
 #
 # Required GitHub Secrets:
 # - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
 # - VERCEL_ORG_ID: team_SsaGMOGYsC8KFX3InHcUiy3T
 # - VERCEL_PROJECT_ID: prj_iX5rpyQy7hq8upcHijcED3jkRQn4
-# - VERCEL_DEPLOY_EMAIL: Email associated with the Vercel token (must have team access)
 # - CUSTOM_GITHUB_TOKEN: For submodule checkout
 # - ALLOWED_USER1_USERNAME, ALLOWED_USER2_USERNAME, ALLOWED_USER3_USERNAME: Authorized users
-# - CLOUD_GOOGLE_MAPS_API_KEY, CLOUD_NODE_ENV, CLOUD_SENTRY_*, etc.: Build environment variables
+#
+# Vercel Project Configuration (must be set in Vercel Dashboard):
+# - Build Command: npm run build:plugins:prod && npm run build:frontend
+# - Output Directory: frontend/build
+# - Install Command: npm install
+# - Node.js Version: 22.15.1
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 on:
   workflow_dispatch:
@@ -119,12 +128,33 @@ jobs:
         with:
           node-version: 22.15.1
 
+      - name: 📦 Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: 🔽 Pull Vercel Environment Information
+        run: |
+          cd repo
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "🔽 Pulling Vercel production environment configuration..."
+            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            echo "🔽 Pulling Vercel preview environment configuration..."
+            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+
       - name: 📦 Install dependencies
         run: npm install
         working-directory: repo
 
-      - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
+      - name: 🛠️ Build Project with Vercel
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "🛠️ Building for production..."
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            echo "🛠️ Building for preview..."
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          fi
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -140,35 +170,13 @@ jobs:
           TOOLJET_EDITION: cloud
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
 
-      - name: 🔧 Configure git author for Vercel
+      - name: 🚀 Deploy Pre-built Artifacts to Vercel
         run: |
-          cd repo
-          # Override git author to match Vercel token owner
-          # This prevents "Git author must have access to team" error
-          git config user.email "${{ secrets.VERCEL_DEPLOY_EMAIL }}"
-          git config user.name "GitHub Actions Deployer"
-          echo "✅ Git author configured for deployment"
-          echo "📧 Git user.email: $(git config user.email)"
-
-      - name: 🚀 Deploy to Vercel
-        run: |
-          npm install -g vercel@latest
-
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            echo "🚀 Deploying to production..."
-            vercel deploy --prod \
-              --token=$VERCEL_TOKEN \
-              --cwd=frontend/build \
-              --force
+            echo "🚀 Deploying pre-built artifacts to production..."
+            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
-            echo "🔍 Deploying to preview..."
-            vercel deploy \
-              --token=$VERCEL_TOKEN \
-              --cwd=frontend/build \
-              --force
+            echo "🚀 Deploying pre-built artifacts to preview..."
+            vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
           fi
         working-directory: repo
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
