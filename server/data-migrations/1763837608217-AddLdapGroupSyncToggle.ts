@@ -1,7 +1,4 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import { filePathForEnvVars } from '../scripts/database-config-utils';
 import { loadEnvironmentVariables } from '../scripts/env-utils';
 
 export class AddLdapGroupSyncToggle1763837608217 implements MigrationInterface {
@@ -10,7 +7,7 @@ export class AddLdapGroupSyncToggle1763837608217 implements MigrationInterface {
 
         const data = loadEnvironmentVariables(process.env.NODE_ENV);
         const rawValue = data.DISABLE_LDAP_GROUP_SYNC;
-        const desiredBool = rawValue === 'false';
+        const desiredBool = rawValue !== 'true';
         const sqlBool = String(desiredBool);
 
         // The key for LDAP is 'enableGroupSync'
