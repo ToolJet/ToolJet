@@ -304,11 +304,11 @@ button {
 }
 
 .rc-slider-track {
-  background-color: $primary !important;
+  background-color: $primary;
 }
 
 .rc-slider-handle {
-  border-color: $primary !important;
+  border-color: $primary;
 }
 
 .auth-main {
@@ -2624,7 +2624,6 @@ hr {
 .config-handle {
   top: -22px;
   position: fixed;
-  max-height: 10px;
   z-index: 100;
   min-width: 108px;
 
@@ -10094,6 +10093,7 @@ tbody {
   min-width: 300px;
   flex-grow: 1;
   gap: 12px;
+  min-width: 0;
 }
 
 .apps-folder-permission-wrap,
@@ -17811,7 +17811,7 @@ section.ai-message-prompt-input-wrapper {
 
 .table-component-footer,
 .table-card-header {
-  .tj-ghost-black-btn:hover {
+  .tj-ghost-black-btn:hover:not(:disabled) {
     background-color: var(--cc-table-footer-action-hover, #eceef0) !important;
   }
 }

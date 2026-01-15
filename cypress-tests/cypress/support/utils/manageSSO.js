@@ -1,20 +1,51 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import * as common from "Support/utils/common";
+import {
+  instanceSSOConfig,
+  openInstanceSettings,
+  passwordToggle,
+  verifyTooltipDisabled,
+} from "Support/utils/platform/eeCommon";
 import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
-import {
-  openInstanceSettings,
-  verifyTooltipDisabled,
-  instanceSSOConfig,
-  passwordToggle,
-} from "Support/utils/platform/eeCommon";
 
 export const verifyLoginSettings = (pageName) => {
-  cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
-  cy.get(ssoSelector.allowedDomainInput).should("be.visible");
-  cy.get(ssoSelector.workspaceLoginUrl).should("be.visible");
-  cy.get(commonSelectors.copyIcon).should("be.visible");
+  //Verify Password and SSO Domain section
+  cy.get(ssoSelector.passwordLoginDropdown).verifyVisibleElement("have.text", ssoText.passwordLoginDropdownLabel).click();
+  cy.get(ssoSelector.passwordAllowedDomainsLabel).should("be.visible");
+  cy.scrollToElement(ssoSelector.passwordAllowedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.passwordAllowedDomainsInput, "allow.com");
+  cy.scrollToElement(ssoSelector.passwordRestrictedDomainsLabel);
+  cy.scrollToElement(ssoSelector.passwordRestrictedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.passwordRestrictedDomainsInput, "restrict.com");
+  cy.get(ssoSelector.ssoLoginDropdown).verifyVisibleElement("have.text", ssoText.ssoLoginDropdownLabel).click();
+  cy.scrollToElement(ssoSelector.ssoAllowedDomainsLabel);
+  cy.scrollToElement(ssoSelector.ssoAllowedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.ssoAllowedDomainsInput, "allow.com");
+  cy.get(ssoSelector.saveButton).verifyVisibleElement("have.text", ssoText.saveButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText[`${pageName}SsoToast`]
+  );
+
+  [
+    ssoSelector.passwordAllowedDomainsInput,
+    ssoSelector.passwordRestrictedDomainsInput,
+    ssoSelector.ssoAllowedDomainsInput
+  ].forEach(selector => {
+    cy.clearAndType(selector, `{selectall}{backspace}`);
+  });
+  cy.scrollToElement(ssoSelector.saveButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText[`${pageName}SsoToast`]
+  );
+
+  cy.scrollToElement(ssoSelector.ssoLoginDropdown).click();
+  cy.scrollToElement(ssoSelector.passwordLoginDropdown).click();
+  cy.scrollToElement(ssoSelector.workspaceLoginUrl);
+  cy.scrollToElement(commonSelectors.copyIcon);
 
   cy.get(ssoSelector.cancelButton).verifyVisibleElement(
     "have.text",
@@ -24,8 +55,7 @@ export const verifyLoginSettings = (pageName) => {
     "have.text",
     ssoText.saveButton
   );
-
-  cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
+  cy.scrollToElement(ssoSelector.passwordEnableToggle);
 
   //Configure sign up toggle
   cy.get(ssoSelector.enableSignUpToggle).check();
@@ -38,13 +68,6 @@ export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.enableSignUpToggle).uncheck();
   cy.get(ssoSelector.saveButton).click();
   cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
-
-  cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
-  cy.get(ssoSelector.saveButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    ssoText[`${pageName}SsoToast`]
-  );
 
   cy.get(ssoSelector.passwordEnableToggle).uncheck();
   cy.get(commonSelectors.modalComponent).should("be.visible");
@@ -315,10 +338,13 @@ export const gitSSOPageElements = (pageName) => {
 export const oidcSSOPageElements = (pageName) => {
   cy.wait(1000);
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcTitle).verifyVisibleElement(
-    "have.text",
-    ssoText.oidcTitle
-  );
+  if (pageName === "workspace") {
+    cy.get('[data-cy="add-oidc-provider-button"]').click();
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", "OIDC 1");
+  }
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcTitle).verifyVisibleElement("have.text", ssoText.oidcTitle);
+  }
   cy.get(ssoSelector.statusLabel)
     .eq(0)
     .should("be.visible")
@@ -338,18 +364,29 @@ export const oidcSSOPageElements = (pageName) => {
     cy.get(ssoSelector.statusLabel)
       .eq(0)
       .verifyVisibleElement("have.text", ssoText.enabledLabel);
-  }
 
+    cy.get('[data-cy="name-label"]').verifyVisibleElement("have.text", "Name");
+  }
   cy.clearAndType(ssoSelector.nameInput, ssoText.testName);
   cy.clearAndType(ssoSelector.clientIdInput, ssoText.testclientId);
   cy.clearAndType(ssoSelector.clientSecretInput, ssoText.testclientSecret);
   cy.clearAndType(ssoSelector.wellKnownUrlInput, ssoText.testWellknownUrl);
   cy.get(ssoSelector.cancelButton).eq(1).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="oidc-modal-cancel-button"]').click();
+  }
+
   cy.get(ssoSelector.oidc).click();
-  cy.get(ssoSelector.oidcEnableToggle).click();
+  if (pageName === "workspace") {
+    cy.get('[data-cy="provider-name-oidc-1"]').click();
+  }
+
+  if (pageName === "instance") {
+    cy.get(ssoSelector.oidcEnableToggle).click();
+  }
 
   if (pageName === "workspace") {
-    cy.get(ssoSelector.nameInput).should("have.value", "");
+    cy.get(ssoSelector.nameInput).should("have.value", "OIDC 1");
     cy.get(ssoSelector.clientIdInput).should("have.value", "");
     cy.get(ssoSelector.clientSecretInput).should(
       "have.value",
@@ -914,12 +951,13 @@ export const authResponse = (matcher) => {
   }).as("authorizeCheck");
 };
 
-export const addOIDCConfig = (
+export const addOktaOIDCConfig = (
   groupMapping,
   level = "workspace",
   extra = {}
 ) => {
   const config = {
+    ...(level === "workspace" ? { configId: "22f22523-7bc2-4134-891d-88bdfec073cd" } : {}),
     type: "openid",
     configs: {
       name: "",
@@ -1027,12 +1065,12 @@ export const gitHubSignInWithAssertion = (
  * @param {string} email - The email of the user to delete
  */
 export const cleanupTestUser = (email) => {
-  cy.runSqlQuery(
+  cy.runSqlQueryOnDB(
     `SELECT EXISTS(SELECT 1 FROM users WHERE email = '${email}');`
   ).then((result) => {
     cy.log("User existence :", JSON.stringify(result?.rows?.[0]?.exists));
     if (result?.rows?.[0]?.exists) {
-      cy.runSqlQuery(`CALL delete_users(ARRAY['${email}']::text[]);`);
+      cy.runSqlQueryOnDB(`CALL delete_users(ARRAY['${email}']::text[]);`);
     }
   });
 };

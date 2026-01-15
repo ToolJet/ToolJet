@@ -5,7 +5,7 @@ import { IAppEnvironmentResponse } from './IAppEnvironmentResponse';
 import { EntityManager } from 'typeorm';
 
 export interface IAppEnvironmentService {
-  init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse>;
+  init(editingVersionId: string, organizationId: string, user?: any): Promise<IAppEnvironmentResponse>;
   processActions(
     organizationId: string,
     action: string,

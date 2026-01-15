@@ -31,6 +31,8 @@ import {
   generateOrgInviteURL,
   isValidDomain,
   generateWorkspaceSlug,
+  validatePasswordServer,
+  validatePasswordDomain,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
@@ -81,6 +83,7 @@ export class OnboardingService implements IOnboardingService {
 
   async signup(appSignUpDto: AppSignupDto) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
+    validatePasswordServer(password);
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Check if the configs allows user signups
@@ -97,12 +100,21 @@ export class OnboardingService implements IOnboardingService {
           throw new NotFoundException('Could not found organization details. Please verify the orgnization id');
         }
         /* Check if the workspace allows user signup or not */
-        const { enableSignUp, domain } = signingUpOrganization;
+        const { enableSignUp, passwordAllowedDomains, passwordRestrictedDomains } = signingUpOrganization;
         if (!enableSignUp) {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
-        if (!isValidDomain(email, domain)) {
-          throw new ForbiddenException('You cannot sign up using the email address - Domain verification failed.');
+        if (
+          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        }
+      } else {
+        // No organization provided - validate against instance-level settings
+        if (
+          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
         }
       }
 
@@ -154,7 +166,7 @@ export class OnboardingService implements IOnboardingService {
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
       userCreateDto;
-
+    validatePasswordServer(password); 
     const nameObj = this.onboardingUtilService.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -260,6 +272,9 @@ export class OnboardingService implements IOnboardingService {
 
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
+        }
+        if (password && isPasswordMandatory(user.source)) {
+          validatePasswordServer(password);
         }
 
         const activateDefaultWorkspace =
@@ -493,6 +508,9 @@ export class OnboardingService implements IOnboardingService {
     const { email, password, organizationToken } = activateAccountWithToken;
     const signupUser = await this.userRepository.findByEmail(email);
     const invitedUser = await this.organizationUsersUtilService.findByWorkspaceInviteToken(organizationToken);
+    if (password) {
+      validatePasswordServer(password);
+    }
 
     /* Server level check for this API */
     if (!signupUser || invitedUser.email.toLowerCase() !== signupUser.email.toLowerCase()) {
@@ -722,6 +740,7 @@ export class OnboardingService implements IOnboardingService {
 
   async setupFirstUser(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { name, workspaceName, password, email } = userCreateDto;
+    validatePasswordServer(password);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization

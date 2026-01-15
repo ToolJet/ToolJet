@@ -88,7 +88,10 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
       },
       (error) => {
         setIsEditingVersion(false);
-        const errorMessage = error?.error || t('editor.appVersionManager.updateFailed', 'Failed to update version');
+        const errorMessage =
+          error?.error === 'Already exists!'
+            ? 'Version already exists!'
+            : t('editor.appVersionManager.updateFailed', 'Failed to update version');
         setNameError(errorMessage);
         toast.error(errorMessage);
       }

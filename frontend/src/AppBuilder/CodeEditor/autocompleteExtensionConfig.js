@@ -101,7 +101,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || (type === 'Function' && !hint.endsWith('.run()')) ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || (type === 'Function' && !(hint.endsWith('.run()') || hint.endsWith('.reset()'))) ? `${hint}()` : hint;
 
     const currentWord = input.split('{{').pop().split('}}')[0];
     const hasDepth = currentWord.includes('.');
@@ -201,10 +201,6 @@ export function findNearestSubstring(inputStr, currentCurosorPos) {
   let end = currentCurosorPos - 1; // Adjust for zero-based indexing
   let substring = '';
   const inputSubstring = inputStr.substring(0, end + 1);
-
-  console.log(`Initial cursor position: ${currentCurosorPos}`);
-  console.log(`Character at cursor: '${inputStr[end]}'`);
-  console.log(`Input substring: '${inputSubstring}'`);
 
   // Iterate backwards from the character before the cursor
   for (let i = end; i >= 0; i--) {

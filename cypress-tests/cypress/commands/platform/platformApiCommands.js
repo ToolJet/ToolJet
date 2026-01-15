@@ -554,6 +554,85 @@ Cypress.Commands.add(
   }
 );
 
+
+Cypress.Commands.add(
+  "getOktaAuthorizationCode",
+  ({ username, password, clientId, redirectUri, oktaDomain }) => {
+    // Step 1: Authenticate with Okta to get session token
+    return cy
+      .request({
+        method: "POST",
+        url: `https://${oktaDomain}/api/v1/authn`,
+        body: { username, password },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      })
+      .then((authnResp) => {
+        expect(authnResp.body.status).to.eq("SUCCESS");
+        const sessionToken = authnResp.body.sessionToken;
+        Cypress.log({ message: "Okta session token obtained" });
+
+        // Step 2: Exchange session token for authorization code
+        const authorizeUrl =
+          `https://${oktaDomain}/oauth2/v1/authorize` +
+          `?client_id=${clientId}` +
+          `&response_type=code` +
+          `&scope=openid email profile groups` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&state=teststate1` +
+          `&nonce=randomvalue` +
+          `&sessionToken=${sessionToken}`;
+
+        return cy.request({
+          method: "GET",
+          url: authorizeUrl,
+          followRedirect: false,
+        });
+      })
+      .then((authResp) => {
+        // Extract authorization code from redirect
+        const redirectUrl = authResp.headers["location"];
+        const params = new URL(redirectUrl).searchParams;
+        const code = params.get("code");
+
+        if (!code) {
+          throw new Error("Authorization code not found in redirect URL");
+        }
+
+        Cypress.log({ message: "Authorization code obtained" });
+        return code;
+      });
+  }
+);
+
+
+Cypress.Commands.add(
+  "exchangeCodeForTokens",
+  ({ code, clientId, clientSecret, redirectUri, oktaDomain }) => {
+    return cy
+      .request({
+        method: "POST",
+        url: `https://${oktaDomain}/oauth2/v1/token`,
+        form: true,
+        body: {
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: redirectUri,
+          client_id: clientId,
+          client_secret: clientSecret,
+        },
+      })
+      .then((tokenResp) => {
+        expect(tokenResp.status).to.eq(200);
+        Cypress.log({ message: "Tokens obtained successfully" });
+        return tokenResp.body;
+      });
+  }
+);
+
+
 Cypress.Commands.add(
   "oidcLogin",
   ({
@@ -565,7 +644,11 @@ Cypress.Commands.add(
     oktaDomain,
     organizationId,
     redirectTo = "/",
+    level = "workspace",
   }) => {
+    cy.log(`Starting OIDC login flow (${level}-level)`);
+
+    // Intercept sign-in request to inject organizationId and redirectTo
     cy.intercept("POST", "/api/oauth/sign-in/*", (req) => {
       if (!req.body.organizationId) {
         req.body.organizationId = organizationId;
@@ -575,78 +658,54 @@ Cypress.Commands.add(
       }
       req.continue();
     }).as("oidcSignIn");
-    cy.getSsoConfigId("openid").then((ssoConfigId) => {
-      const configIdToUse = ssoConfigId;
-      let url;
-      if (!configIdToUse) {
-        url = `${Cypress.env("server_host")}/api/oauth/openid/configs`;
-      } else {
-        url = `${Cypress.env("server_host")}/api/oauth/openid/configs/${configIdToUse}`;
+
+    // Build config URL based on level
+    const WORKSPACE_OIDC_CONFIG_ID = "22f22523-7bc2-4134-891d-88bdfec073cd";
+    const configUrl =
+      level === "instance"
+        ? `${Cypress.env("server_host")}/api/oauth/openid/configs`
+        : `${Cypress.env("server_host")}/api/oauth/openid/configs/${WORKSPACE_OIDC_CONFIG_ID}`;
+
+    cy.log(`Fetching OIDC config from: ${configUrl}`);
+
+    // Fetch OIDC configuration
+    cy.request({
+      method: "GET",
+      url: configUrl,
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json",
+      },
+    }).then((configResp) => {
+      expect(configResp.status).to.eq(200);
+
+      const authorizationUrl = configResp.body.authorizationUrl;
+      if (!authorizationUrl) {
+        throw new Error("Authorization URL not found in OIDC config");
       }
 
-      cy.request({
-        method: "GET",
-        url: url,
-        headers: {
-          Accept: "*/*",
-          "Content-Type": "application/json",
-        },
-      }).then((configResp) => {
-        expect(configResp.status).to.eq(200);
+      cy.log(`Authorization URL: ${authorizationUrl}`);
 
-        const autherizationUrl = configResp.body.authorizationUrl;
-        cy.request({
-          method: "POST",
-          url: `https://${oktaDomain}/api/v1/authn`,
-          body: {
-            username,
-            password,
-          },
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        })
-          .then((authnResp) => {
-            expect(authnResp.body.status).to.eq("SUCCESS");
-            const sessionToken = authnResp.body.sessionToken;
-
-            const authorizeUrl =
-              `https://${oktaDomain}/oauth2/v1/authorize` +
-              `?client_id=${clientId}` +
-              `&response_type=code` +
-              `&scope=openid email profile groups` +
-              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-              `&state=teststate1` +
-              `&nonce=randomvalue` +
-              `&sessionToken=${sessionToken}`;
-
-            cy.request({
-              method: "GET",
-              url: authorizeUrl,
-              followRedirect: false,
-            });
-          })
-          .then((authResp) => {
-            const redirectUrl = authResp.headers["location"];
-            const params = new URL(redirectUrl).searchParams;
-            const code = params.get("code");
-            cy.request({
-              method: "POST",
-              url: `https://${oktaDomain}/oauth2/v1/token`,
-              form: true,
-              body: {
-                grant_type: "authorization_code",
-                code,
-                redirect_uri: redirectUri,
-                client_id: clientId,
-                client_secret: clientSecret,
-              },
-            });
-          })
-          .then((tokenResp) => {
-            cy.visit(autherizationUrl);
-          });
+      // Get authorization code from Okta
+      cy.getOktaAuthorizationCode({
+        username,
+        password,
+        clientId,
+        redirectUri,
+        oktaDomain,
+      }).then((authCode) => {
+        // Exchange code for tokens
+        cy.exchangeCodeForTokens({
+          code: authCode,
+          clientId,
+          clientSecret,
+          redirectUri,
+          oktaDomain,
+        }).then(() => {
+          // Visit authorization URL to complete ToolJet login
+          cy.log("Completing ToolJet login");
+          cy.visit(authorizationUrl);
+        });
       });
     });
   }
@@ -690,6 +749,19 @@ Cypress.Commands.add(
     });
   }
 );
+Cypress.Commands.add(
+  "apiUpdateAutoSSO",
+  (state, scope = "instance", returnCached = false) => {
+    cy.getAuthHeaders(returnCached).then((headers) => {
+      cy.request({
+        method: "PATCH",
+        url: `${Cypress.env("server_host")}/api/login-configs/${scope}-general`,
+        headers: headers,
+        body: { automaticSsoLogin: state },
+      });
+    });
+  }
+);
 
 Cypress.Commands.add(
   "apiFullUserOnboarding",
@@ -723,7 +795,7 @@ Cypress.Commands.add(
       performOnboarding(userEmail, userPassword, organizationToken);
     }
 
-    function performOnboarding (email, password, orgToken) {
+    function performOnboarding(email, password, orgToken) {
       cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `
