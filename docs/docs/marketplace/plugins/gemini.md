@@ -22,7 +22,6 @@ Use this operation to generate text based on the prompt, system instructions, an
 - **Model**: Specifies the Gemini model to use for generating responses.
     - Gemini 1.5 Flash
     - Gemini 1.5 Flash-8B
-    - Gemini 1.5 Pro
     - Gemini 2.0 Flash
 
 - **Prompt**: The main user input for generating responses.

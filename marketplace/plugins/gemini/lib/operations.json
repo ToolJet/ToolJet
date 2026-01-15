@@ -27,7 +27,6 @@
         "list": [
           { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash" },
           { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B" },
-          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro" },
           { "value": "models/gemini-2.0-flash-exp", "name": "Gemini 2.0 Flash" }
         ]
       },
@@ -69,43 +68,6 @@
         }     
     },
     "models/gemini-1.5-flash-8b": {
-        "system_prompt": {
-          "label": "System prompt",
-          "key": "system_prompt",
-          "type": "codehinter",
-          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
-          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
-          "mandatory": false,
-          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
-        },
-        "prompt": {
-          "label": "Prompt",
-          "key": "prompt",
-          "type": "codehinter",
-          "description": "Enter your prompt",
-          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
-          "mandatory": true
-        },
-        "max_tokens": {
-          "label": "Max tokens",
-          "key": "max_tokens",
-          "type": "codehinter",
-          "description": "Controls the length of the generated text.",
-          "placeholder": "1000",
-          "mandatory": false,
-          "tooltip": "Controls the length of the generated text."
-        },
-        "temperature": {
-          "label": "Temperature",
-          "key": "temperature",
-          "type": "codehinter",
-          "description": "Controls the randomness/creativity of the generated text",
-          "placeholder": "0.1",
-          "mandatory": false,
-          "tooltip": "Controls the randomness/creativity of the generated text"
-        }
-    },
-    "models/gemini-1.5-pro": {
         "system_prompt": {
           "label": "System prompt",
           "key": "system_prompt",
