@@ -7,9 +7,9 @@ const initialState = {
     },
   },
   isPreviewInEditor: false,
-  previewPhase: 'idle', // previewPhase tracks the current stage of the preview transition: 'idle' | 'closing-panels' | 'switching-mode' | 'animating' | 'mounting-sidebars'
+  previewPhase: 'idle', // previewPhase tracks the current stage of the preview transition: 'idle' | 'closing-panels' | 'switching-mode' | 'animating' | 'mounting-sidebars' | 'unmounting-sidebars' | 'restoring-panels'
   targetMode: 'edit', // targetMode indicates which mode we are transitioning into: 'edit | 'view'
-  transitionCounter: 4, // tracks how many animated elements are left to complete. Currently counts 4: left, right, query, canvas. Update if needed.
+  settledAnimatedComponents: [], // tracks which components are done animating. Currently stores: left, right, query, canvas. Update if needed.
 };
 
 export const createModeSlice = (set, get) => ({
@@ -53,7 +53,15 @@ export const createModeSlice = (set, get) => ({
   setPreviewPhase: (phase) =>
     set(
       (state) => {
-        const validPhases = ['idle', 'closing-panels', 'switching-mode', 'animating', 'mounting-sidebars'];
+        const validPhases = [
+          'idle',
+          'closing-panels',
+          'switching-mode',
+          'animating',
+          'mounting-sidebars',
+          'unmounting-sidebars',
+          'restoring-panels',
+        ];
         if (validPhases.includes(phase)) state.previewPhase = phase;
       },
       false,
@@ -74,22 +82,27 @@ export const createModeSlice = (set, get) => ({
       setPreviewPhase('closing-panels');
     } else setPreviewPhase('mounting-sidebars');
   },
-  notifyTransitionDone: () =>
+  notifyTransitionDone: (component) =>
     set(
       (state) => {
         /**
          * Called by each animated element when its CSS transition finishes.
-         * Decrements (or increments) transitionCounter based on direction.
-         * Be cautious: if one element never fires transitionend,
-         * counter will never reach 0 and the transition will never settle.
+         * Stores components that are done animating in an array.
+         * Be cautious: if one element out of the required ones never fires transitionend, the transition will never settle.
          */
-        if (state.targetMode === 'view') {
-          state.transitionCounter -= 1;
-        } else {
-          state.transitionCounter += 1;
+        if (!state.settledAnimatedComponents.includes(component)) {
+          state.settledAnimatedComponents.push(component);
         }
       },
       false,
       'notifyTransitionDone'
+    ),
+  resetSettledAnimatedComponents: () =>
+    set(
+      (state) => {
+        state.settledAnimatedComponents = [];
+      },
+      false,
+      'resetSettledAnimatedComponents'
     ),
 });

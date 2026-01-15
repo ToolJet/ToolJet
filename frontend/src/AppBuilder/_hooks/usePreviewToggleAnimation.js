@@ -23,12 +23,6 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
  * prevents layout thrashing, and keeps transitions deterministic
  * across devices and performance conditions.
  *
- * Important invariants:
- * - We assume exactly 4 transition steps happen per full transition.
- *   If future UI adds/removes panels this number must be updated.
- * - transitionCounter is used to track how many individual panel animations
- *   have completed. Keep counters in sync with number of listeners.
- *
  * @param {Object} options - Configuration options
  * @param {string} options.animationType - 'width' | 'height' | 'both'
  * @returns {Object} Animation state and classes
@@ -54,84 +48,154 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
 
-  const transitionCounter = useStore((state) => state.transitionCounter, shallow);
+  const settledAnimatedComponents = useStore((state) => state.settledAnimatedComponents, shallow);
+  const resetSettledAnimatedComponents = useStore((state) => state.resetSettledAnimatedComponents, shallow);
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldMount, setShouldMount] = useState(true);
   const [shouldApplyHideClass, setShouldApplyHideClass] = useState(false);
   const openedPanelsRef = useRef([]);
+  const hasCapturedOpenPanelsRef = useRef(false);
 
-  // Central preview transition controller.
+  // Any non-idle previewPhase indicates an active editor ↔ preview transition.
   useEffect(() => {
-    if (previewPhase !== 'idle') setIsAnimating(true);
-    else setIsAnimating(false);
-
-    if (previewPhase === 'closing-panels') {
-      const openedPanels = [];
-      if (isQueryPaneExpanded) {
-        setIsQueryPaneExpanded(false);
-        openedPanels.push('query');
-      }
-      if (isSidebarOpen) {
-        toggleLeftSidebar(false);
-        openedPanels.push('left');
-      }
-      if (isRightSidebarOpen) {
-        setRightSidebarOpen(false);
-        openedPanels.push('right');
-      }
-      // Keep track of panels that were open before preview mode
-      openedPanelsRef.current = openedPanels;
-    }
-
-    if (previewPhase === 'switching-mode') {
-      setIsPreviewInEditor(targetMode === 'view');
-      setCurrentMode(targetMode);
-      updateCanvasBottomHeight(currentPageComponents, moduleId);
-      setPreviewPhase('animating');
-    }
-
-    if (previewPhase === 'animating') {
-      setShouldApplyHideClass(targetMode === 'view');
-    }
-
-    if (previewPhase === 'mounting-sidebars') {
-      setShouldMount(true);
-      setPreviewPhase('switching-mode');
-    }
+    setIsAnimating(previewPhase !== 'idle');
   }, [previewPhase]);
 
+  // Capture open panels once when entering `closing-panels`
+  // and close them without re-running on derived state updates.
+  useEffect(() => {
+    if (previewPhase !== 'closing-panels') {
+      hasCapturedOpenPanelsRef.current = false;
+      return;
+    }
+
+    //Prevent re-running on dependency changes
+    if (hasCapturedOpenPanelsRef.current) return;
+
+    hasCapturedOpenPanelsRef.current = true;
+
+    const openedPanels = [];
+    if (isQueryPaneExpanded) {
+      setIsQueryPaneExpanded(false);
+      openedPanels.push('query');
+    }
+    if (isSidebarOpen) {
+      toggleLeftSidebar(false);
+      openedPanels.push('left');
+    }
+    if (isRightSidebarOpen) {
+      setRightSidebarOpen(false);
+      openedPanels.push('right');
+    }
+    // Keep track of panels that were open before preview mode
+    openedPanelsRef.current = openedPanels;
+  }, [
+    previewPhase,
+    isQueryPaneExpanded,
+    isRightSidebarOpen,
+    isSidebarOpen,
+    setIsQueryPaneExpanded,
+    toggleLeftSidebar,
+    setRightSidebarOpen,
+  ]);
+
+  // Apply editor ↔ preview mode switch and advance to `animating` phase.
+  useEffect(() => {
+    if (previewPhase !== 'switching-mode') return;
+
+    setIsPreviewInEditor(targetMode === 'view');
+    setCurrentMode(targetMode);
+    updateCanvasBottomHeight(currentPageComponents, moduleId);
+    setPreviewPhase('animating');
+  }, [
+    previewPhase,
+    targetMode,
+    currentPageComponents,
+    moduleId,
+    setIsPreviewInEditor,
+    setCurrentMode,
+    updateCanvasBottomHeight,
+    setPreviewPhase,
+  ]);
+
+  // Apply hide classes during `animating` based on the target mode.
+  useEffect(() => {
+    if (previewPhase !== 'animating') return;
+
+    setShouldApplyHideClass(targetMode === 'view');
+  }, [previewPhase, targetMode]);
+
+  // Remount sidebars when returning from preview mode,
+  // then advance to `switching-mode` to restore editor state.
+  useEffect(() => {
+    if (previewPhase !== 'mounting-sidebars') return;
+
+    setShouldMount(true);
+    setPreviewPhase('switching-mode');
+  }, [previewPhase, setPreviewPhase]);
+
+  // Unmount sidebars after preview animations complete and return the system to the `idle` phase.
+  useEffect(() => {
+    if (previewPhase !== 'unmounting-sidebars') return;
+
+    setShouldMount(false);
+    setPreviewPhase('idle');
+  }, [previewPhase, setPreviewPhase]);
+
+  // Restore previously open panels and complete the preview transition.
+  useEffect(() => {
+    if (previewPhase !== 'restoring-panels') return;
+
+    if (openedPanelsRef.current.includes('query')) {
+      setIsQueryPaneExpanded(true);
+    }
+
+    if (openedPanelsRef.current.includes('left')) {
+      const selectedItem = localStorage.getItem('selectedSidebarItem');
+      setSelectedSidebarItem(selectedItem);
+      toggleLeftSidebar(true);
+    }
+
+    if (openedPanelsRef.current.includes('right')) {
+      setRightSidebarOpen(true);
+    }
+
+    openedPanelsRef.current = [];
+    setPreviewPhase('idle');
+  }, [
+    previewPhase,
+    setIsQueryPaneExpanded,
+    setPreviewPhase,
+    setRightSidebarOpen,
+    setSelectedSidebarItem,
+    toggleLeftSidebar,
+  ]);
+
   /**
-   * When all transitions complete (counter hits 0),
-   * we unmount collapsed bars and reset to idle.
-   * Multiple transitions decrement this counter.
+   * Wait for all registered panel/canvas animations to settle.
    *
-   * Magic number 4 exists because we are tracking:
-   * left + right + query + canvas
-   *
-   * If any new animated element is added to preview transitions,
-   * update this number accordingly.
+   * Once every required component has finished animating, advance the
+   * preview flow to either unmount sidebars (view mode) or restore
+   * previously open panels (edit mode).
    */
   useEffect(() => {
-    if (transitionCounter === 0) {
-      setShouldMount(false);
-      setPreviewPhase('idle');
+    if (settledAnimatedComponents.length === 0) return;
+
+    const requiredComponents = ['leftSidebar', 'rightSidebar', 'queryPanel', 'canvas'];
+
+    const isAllSettled = requiredComponents.every((comp) => settledAnimatedComponents.includes(comp));
+
+    if (!isAllSettled) return;
+
+    if (targetMode === 'view') {
+      setPreviewPhase('unmounting-sidebars');
+    } else {
+      setPreviewPhase('restoring-panels');
     }
 
-    if (transitionCounter === 4) {
-      setPreviewPhase('idle');
-
-      // Open the panels that were already open before preview mode
-      if (openedPanelsRef.current.includes('query')) setIsQueryPaneExpanded(true);
-      if (openedPanelsRef.current.includes('left')) {
-        const selectedItem = localStorage.getItem('selectedSidebarItem');
-        setSelectedSidebarItem(selectedItem);
-        toggleLeftSidebar(true);
-      }
-      if (openedPanelsRef.current.includes('right')) setRightSidebarOpen(true);
-      openedPanelsRef.current = [];
-    }
-  }, [transitionCounter]);
+    resetSettledAnimatedComponents();
+  }, [resetSettledAnimatedComponents, setPreviewPhase, settledAnimatedComponents, targetMode]);
 
   // Build transition classes based on animation type
   const transitionClasses = useMemo(() => {

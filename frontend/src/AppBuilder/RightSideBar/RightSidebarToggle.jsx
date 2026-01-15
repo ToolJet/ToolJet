@@ -36,8 +36,10 @@ const RightSidebarToggle = ({ darkMode = false }) => {
     const bar = rightSideBarRef.current;
     if (!bar) return;
 
-    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
-    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+    const onDone = () => notifyTransitionDone('rightSidebar');
+
+    bar.addEventListener('transitionend', onDone, { once: true });
+    return () => bar.removeEventListener('transitionend', onDone);
   }, [previewPhase]);
 
   const handleToggle = (item) => {

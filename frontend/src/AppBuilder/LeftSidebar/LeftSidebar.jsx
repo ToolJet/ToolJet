@@ -124,8 +124,10 @@ export const BaseLeftSidebar = ({
     const bar = leftSidebarRef.current;
     if (!bar) return;
 
-    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
-    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+    const onDone = () => notifyTransitionDone('leftSidebar');
+
+    bar.addEventListener('transitionend', onDone, { once: true });
+    return () => bar.removeEventListener('transitionend', onDone);
   }, [previewPhase]);
 
   const renderPopoverContent = () => {

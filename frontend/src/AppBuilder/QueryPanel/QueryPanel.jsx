@@ -102,8 +102,10 @@ export const QueryPanel = ({ darkMode }) => {
     const bar = queryBarRef.current;
     if (!bar) return;
 
-    bar.addEventListener('transitionend', notifyTransitionDone, { once: true });
-    return () => bar.removeEventListener('transitionend', notifyTransitionDone);
+    const onDone = () => notifyTransitionDone('queryPanel');
+
+    bar.addEventListener('transitionend', onDone, { once: true });
+    return () => bar.removeEventListener('transitionend', onDone);
   }, [previewPhase]);
 
   const onMouseDown = useCallback(

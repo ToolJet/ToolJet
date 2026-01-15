@@ -173,7 +173,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     const handleResize = debounce(handleResizeImmediate, 300);
     const onDone = () => {
       handleResize();
-      notifyTransitionDone();
+      notifyTransitionDone('canvas');
     };
 
     canvas.addEventListener('transitionend', onDone, { once: true });
