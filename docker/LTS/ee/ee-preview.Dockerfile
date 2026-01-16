@@ -2,8 +2,49 @@ FROM node:22.15.1 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN mkdir -p /app
+# Build nsjail for Python sandboxing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    g++ \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /build-nsjail
+RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
+    cd nsjail && \
+    make && \
+    strip nsjail
+
+# Build Python runtime with pre-installed packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/python-runtime
+
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.6.4 \
+    typing-extensions==4.10.0
+
+RUN mkdir -p /app
 WORKDIR /app
 
 # Set GitHub token, branch and repository URL as build arguments
@@ -117,7 +158,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Redis 7.x from official Redis repository for BullMQ compatibility
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -131,57 +172,14 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
 
-# ==============================================================================
-# nsjail Build for Python Sandboxing
-# ==============================================================================
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    autoconf \
-    bison \
-    flex \
-    gcc \
-    g++ \
-    libprotobuf-dev \
-    libnl-route-3-dev \
-    libtool \
-    make \
-    pkg-config \
-    protobuf-compiler \
-    && rm -rf /var/lib/apt/lists/*
+# Copy nsjail and Python runtime from builder
+COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
+RUN chmod 755 /usr/local/bin/nsjail
 
-WORKDIR /build-nsjail
-RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
-    cd nsjail && \
-    make && \
-    strip nsjail && \
-    cp nsjail /usr/local/bin/ && \
-    cd / && rm -rf /build-nsjail
-
-# ==============================================================================
-# Python Installation for Workflow runpy nodes
-# ==============================================================================
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-venv \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create isolated Python environment
-RUN python3 -m venv /opt/python-runtime
-
-# Upgrade pip and install common packages
-RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/python-runtime/bin/pip install --no-cache-dir \
-    numpy==1.26.4 \
-    pandas==2.2.1 \
-    requests==2.31.0 \
-    httpx==0.27.0 \
-    python-dateutil==2.9.0 \
-    pytz==2024.1 \
-    pydantic==2.6.4 \
-    typing-extensions==4.10.0
+COPY --from=builder /opt/python-runtime /opt/python-runtime
 
 # Create nsjail config directory and Python execution temp directory
-RUN mkdir -p /etc/nsjail /tmp/python-exec && chmod 777 /tmp/python-exec
+RUN mkdir -p /etc/nsjail /tmp/python-exec && chmod 1777 /tmp/python-exec
 
 WORKDIR /
 
