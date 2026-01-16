@@ -18,7 +18,7 @@ export const createGitSyncSlice = (set, get) => ({
 
     return featureAccess?.gitSync && selectedEnvironment?.priority === 1
       ? set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal')
-      : () => { };
+      : () => {};
   },
   fetchAppGit: async (currentOrganizationId, currentAppVersionId) => {
     set((state) => ({ appLoading: true }), false, 'setAppLoading');
@@ -28,10 +28,11 @@ export const createGitSyncSlice = (set, get) => ({
       const orgGit = data?.app_git?.org_git;
       const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
       const appGit = data?.app_git;
-      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured
+      set((state) => ({ appGit }), false, 'setAppGit');
+      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured;
       // Update branchingEnabled in branchSlice
       get().updateBranchingEnabled?.(isBranchingEnabled);
-      set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured')
+      set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured');
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
@@ -49,5 +50,5 @@ export const createGitSyncSlice = (set, get) => ({
   },
   setAppGit(appGit) {
     set((state) => ({ appGit: appGit }), false, 'setAppGit');
-  }
+  },
 });

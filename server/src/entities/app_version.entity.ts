@@ -82,6 +82,7 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'created_by' })
   user: User;
 
+  // need to review if this should be a non-nullable field with default value as DRAFT status
   @Column({
     name: 'status',
     type: 'enum',

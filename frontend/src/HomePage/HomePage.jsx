@@ -108,6 +108,8 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      latestCommitData: null,
+      fetchingLatestCommitData: false,
       featuresLoaded: false,
       showCreateAppModal: false,
       showCreateAppFromTemplateModal: false,
@@ -393,7 +395,7 @@ class HomePageComponent extends React.Component {
 
     //  Check app limit before cloning
     if (!canAddUnlimited && current >= total) {
-      toast.error("You have reached your maximum limit for apps. Upgrade your plan for more.");
+      toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
       return;
     }
     this.setState({ isCloningApp: true });
@@ -559,7 +561,7 @@ class HomePageComponent extends React.Component {
     let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        ({ installedPluginsInfo =[] } = await pluginsService.installDependentPlugins(
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
           this.state.dependentPlugins,
           true
         ));
@@ -567,7 +569,8 @@ class HomePageComponent extends React.Component {
 
       if (importJSON.app[0].definition.appV2.type !== this.props.appType) {
         toast.error(
-          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${this.props.appType === 'module' ? 'modules' : 'apps'
+          `${this.props.appType === 'module' ? 'App' : 'Module'} could not be imported in ${
+            this.props.appType === 'module' ? 'modules' : 'apps'
           } section. Switch to ${this.props.appType === 'module' ? 'apps' : 'modules'} section and try again.`,
           { style: { maxWidth: '425px' } }
         );
@@ -822,6 +825,7 @@ class HomePageComponent extends React.Component {
       .gitPull()
       .then((data) => {
         this.setState({ appsFromRepos: data?.meta_data });
+        console.log('testing something rohan', data?.meta_data);
       })
       .catch((error) => {
         toast.error(error?.error);
@@ -833,6 +837,8 @@ class HomePageComponent extends React.Component {
 
   importGitApp = () => {
     const { appsFromRepos, selectedAppRepo, orgGit } = this.state;
+    console.log('importGitApp -> selectedAppRepo', selectedAppRepo);
+    console.log('apps from repo', appsFromRepos);
     const appToImport = appsFromRepos[selectedAppRepo];
     const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
       appToImport;
@@ -843,12 +849,12 @@ class HomePageComponent extends React.Component {
       gitAppName: git_app_name,
       gitVersionName: git_version_name,
       gitVersionId: git_version_id,
-      lastCommitMessage: last_commit_message,
-      lastCommitUser: last_commit_user,
-      lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
       appName: this.state.importedAppName,
       allowEditing: this.state.isAppImportEditable,
+      ...(last_commit_message && { lastCommitMessage: last_commit_message }),
+      ...(last_commit_user && { lastCommitUser: last_commit_user }),
+      ...(lastpush_date && { lastPushDate: new Date(lastpush_date) }),
     };
     gitSyncService
       .importGitApp(body)
@@ -1146,6 +1152,34 @@ class HomePageComponent extends React.Component {
     });
   };
 
+  handleAppRepoChange = async (newVal) => {
+    const { appsFromRepos, orgGit } = this.state;
+    const selectedApp = appsFromRepos[newVal];
+    this.setState({
+      selectedAppRepo: newVal,
+      importedAppName: selectedApp?.git_app_name,
+    });
+    if (selectedApp?.app_name_exist === 'EXIST') {
+      this.setState({
+        importingGitAppOperations: { message: 'App name already exists' },
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+      });
+    } else {
+      this.setState({ importingGitAppOperations: {}, fetchingLatestCommitData: true, latestCommitData: null });
+    }
+    const selectedBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.git_branch || orgGit?.git_lab_branch;
+
+    try {
+      const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedBranch);
+      this.setState({ latestCommitData: data?.metaData, fetchingLatestCommitData: false });
+      // TODO: Handle the response data
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+      this.setState({ fetchingLatestCommitData: false });
+    }
+  };
+
   // Helper functions for workflow limit checks
   hasWorkflowLimitReached = () => {
     const { workflowInstanceLevelLimit, workflowWorkspaceLevelLimit } = this.state;
@@ -1226,6 +1260,8 @@ class HomePageComponent extends React.Component {
       fetchingAppsFromRepos,
       selectedAppRepo,
       appsFromRepos,
+      latestCommitData,
+      fetchingLatestCommitData,
       importingApp,
       importingGitAppOperations,
       featuresLoaded,
@@ -1331,7 +1367,6 @@ class HomePageComponent extends React.Component {
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
     const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
-
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -1381,8 +1416,9 @@ class HomePageComponent extends React.Component {
 
               <div className="groups-list">
                 <div
-                  className={`border rounded text-sm container ${missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
-                    }`}
+                  className={`border rounded text-sm container ${
+                    missingGroupsExpanded ? 'max-h-48 overflow-y-auto' : ''
+                  }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
                     User groups
@@ -1458,8 +1494,8 @@ class HomePageComponent extends React.Component {
               this.props.appType === 'workflow'
                 ? 'homePage.deleteWorkflowAndData'
                 : this.props.appType === 'front-end'
-                  ? 'homePage.deleteAppAndData'
-                  : deleteModuleText,
+                ? 'homePage.deleteAppAndData'
+                : deleteModuleText,
               {
                 appName: appToBeDeleted?.name,
               }
@@ -1515,18 +1551,7 @@ class HomePageComponent extends React.Component {
                     <Select
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
-                      onChange={(newVal) => {
-                        this.setState(
-                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
-                          () => {
-                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                            } else {
-                              this.setState({ importingGitAppOperations: {} });
-                            }
-                          }
-                        );
-                      }}
+                      onChange={this.handleAppRepoChange}
                       width={'100%'}
                       value={selectedAppRepo}
                       placeholder={'Select app from git repository...'}
@@ -1585,17 +1610,26 @@ class HomePageComponent extends React.Component {
                         Last commit
                       </label>
                       <div className="last-commit-info form-control">
-                        <div className="message-info">
-                          <div data-cy="las-commit-message">
-                            {appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}
-                          </div>
-                          <div data-cy="last-commit-version">{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
-                        </div>
-                        <div className="author-info" data-cy="auther-info">
-                          {`Done by ${appsFromRepos[selectedAppRepo]?.last_commit_user} at ${moment(
-                            new Date(appsFromRepos[selectedAppRepo]?.lastpush_date)
-                          ).format('DD MMM YYYY, h:mm a')}`}
-                        </div>
+                        {fetchingLatestCommitData ? (
+                          // need to add UI for loading state here -> Pending
+                          <div className="message-info">Loading...</div>
+                        ) : (
+                          <>
+                            <div className="message-info">
+                              <div data-cy="last-commit-message">
+                                {latestCommitData?.latestCommit[0]?.message || 'No commits yet'}
+                              </div>
+                              <div data-cy="last-commit-version">{latestCommitData?.gitVersionName}</div>
+                            </div>
+                            {latestCommitData?.latestCommit[0]?.author && latestCommitData?.latestCommit[0]?.date && (
+                              <div className="author-info" data-cy="auther-info">
+                                {`Done by ${latestCommitData?.latestCommit[0]?.author} at ${moment(
+                                  new Date(latestCommitData?.latestCommit[0]?.date)
+                                ).format('DD MMM YYYY, h:mm a')}`}
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1706,8 +1740,8 @@ class HomePageComponent extends React.Component {
                       this.props.appType === 'workflow'
                         ? 'workflows'
                         : this.props.appType === 'module'
-                          ? 'modules'
-                          : 'apps'
+                        ? 'modules'
+                        : 'apps'
                     }
                     isAvailable={true}
                     noTooltipIfValid={true}
@@ -1722,12 +1756,13 @@ class HomePageComponent extends React.Component {
                               showCreateAppModal: true,
                             })
                           }
-                          data-cy={`create-new-${this.props.appType === 'workflow'
+                          data-cy={`create-new-${
+                            this.props.appType === 'workflow'
                               ? 'workflows'
                               : this.props.appType === 'module'
-                                ? 'modules'
-                                : 'apps'
-                            }-button`}
+                              ? 'modules'
+                              : 'apps'
+                          }-button`}
                         >
                           <>
                             {isImportingApp && (
@@ -1736,10 +1771,11 @@ class HomePageComponent extends React.Component {
                             {this.props.appType === 'module'
                               ? 'Create new module'
                               : this.props.t(
-                                `${this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
-                                }.header.createNewApplication`,
-                                'Create new app'
-                              )}
+                                  `${
+                                    this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                                  }.header.createNewApplication`,
+                                  'Create new app'
+                                )}
                           </>
                         </Button>
                         <Dropdown.Toggle
@@ -1800,8 +1836,8 @@ class HomePageComponent extends React.Component {
                       classes="mb-3 small"
                       limits={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -1895,8 +1931,8 @@ class HomePageComponent extends React.Component {
                       appType={this.props.appType}
                       workflowsLimit={
                         workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
-                          100 > workflowInstanceLevelLimit.percentage >= 90 ||
-                          workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                        100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                        workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
                           ? workflowInstanceLevelLimit
                           : workflowWorkspaceLevelLimit
                       }
@@ -2027,3 +2063,7 @@ const withStore = (Component) => (props) => {
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));
+
+// Need to fix latest commit thing ->
+// Call the same api with latest commit flag as true once the user selects a specific app from the list,
+// It should make that call once the endpoint is selected

@@ -77,15 +77,9 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
         // Clear currentBranch if initial version is not a branch
         const versionType = response.editorVersion?.versionType || response.editorVersion?.version_type;
-        console.log('DEBUG init: editorVersion:', response.editorVersion);
-        console.log('DEBUG init: versionType:', versionType);
-        console.log('DEBUG init: current state.currentBranch:', state.currentBranch);
         if (versionType !== 'branch') {
-          console.log('DEBUG init: Clearing currentBranch because versionType is not branch');
           stateUpdate.currentBranch = null;
         }
-        console.log('DEBUG init: stateUpdate.currentBranch:', stateUpdate.currentBranch);
-
         return stateUpdate;
       });
     } catch (error) {

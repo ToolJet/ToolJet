@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => {},
+  handleCommitOnVersionCreation,
   versionId,
   onVersionCreated,
   isBranchingEnabled,
@@ -153,17 +153,27 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
-      if (isGitSyncEnabled) {
-        const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
-        const appGit = gitData?.app_git;
-        await handleCommitOnVersionCreation(appGit);
-      }
+      // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
         description: versionDescription,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
+      if (isGitSyncEnabled) {
+        handleCommitOnVersionCreation(selectedVersionForCreation, selectedVersion)
+          .then((commitDone) => {
+            if (!commitDone) return;
+            if (isBranchingEnabled) {
+              return gitSyncService.createGitTag(appId, selectedVersionForCreation.id, versionDescription);
+            }
+          })
+          .catch((error) => {
+            console.error('Commit or tag failed:', error);
+            toast.error(error?.data?.message || 'Commit or tag failed');
+          });
+      }
+
       toast.success('Version Created successfully');
       setVersionName('');
       setVersionDescription('');
@@ -206,10 +216,7 @@ const CreateVersionModal = ({
                 changeEditorVersionAction(
                   appId,
                   newVersionData.editing_version.id,
-                  () => {
-                    console.log('Successfully switched environment and version');
-                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
-                  },
+                  () => {},
                   (error) => {
                     console.error('Error switching to newly created version:', error);
                     toast.error('Version created but failed to switch to it');
@@ -222,9 +229,7 @@ const CreateVersionModal = ({
             await changeEditorVersionAction(
               appId,
               newVersionData.editing_version.id,
-              () => {
-                handleCommitOnVersionCreation(newVersionData, selectedVersion);
-              },
+              () => {},
               (error) => {
                 console.error('Error switching to newly created version:', error);
                 toast.error('Version created but failed to switch to it');

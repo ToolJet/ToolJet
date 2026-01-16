@@ -13,6 +13,7 @@ export const gitSyncService = {
   gitPull,
   importGitApp,
   checkForUpdates,
+  checkForUpdatesByAppName,
   confirmPullChanges,
   updateStatus,
   getGitStatus,
@@ -26,6 +27,7 @@ export const gitSyncService = {
   switchBranch,
   updateGitConfigs,
   getGitConfigs,
+  createGitTag,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -152,6 +154,18 @@ function checkForUpdates(appId, branchName = '') {
   return fetch(`${config.apiUrl}/app-git/gitpull/app/${appId}?branch=${branchName}`, requestOptions).then(
     handleResponse
   );
+}
+
+function checkForUpdatesByAppName(appName, branchName = '') {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  const params = new URLSearchParams();
+  if (appName) params.append('appName', appName);
+  if (branchName) params.append('branch', branchName);
+  return fetch(`${config.apiUrl}/app-git/gitpull/app?${params.toString()}`, requestOptions).then(handleResponse);
 }
 
 function gitPull() {
@@ -333,4 +347,13 @@ function getGitConfigs(organizationId, versionId) {
   );
 }
 
+function createGitTag(appId, versionId, versionDescription) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ message: versionDescription }),
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}/tag`, requestOptions).then(handleResponse);
+}
 // Remove all app-git api's to separate service from here.

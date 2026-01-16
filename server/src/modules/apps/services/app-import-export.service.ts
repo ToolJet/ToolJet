@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nes
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -44,7 +44,6 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
-import { AppVersionStatus } from '@entities/app_version.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -812,6 +811,7 @@ export class AppImportExportService {
         icon: appParams.icon,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
+        co_relation_id: appParams?.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -2164,11 +2164,13 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
-          status: AppVersionStatus.DRAFT,
+          status: appVersion.status || AppVersionStatus.DRAFT,
+          versionType: appVersion.versionType,
           parent_version_id: appVersion?.id || null,
+          createdById: user.id,
+          co_relation_id: appVersion.id,
         });
       }
-
       if (isNormalizedAppDefinitionSchema) {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;

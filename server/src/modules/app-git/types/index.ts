@@ -5,6 +5,7 @@ import { MODULES } from '@modules/app/constants/modules';
 interface Features {
   [FEATURE_KEY.GIT_CREATE_APP]: FeatureConfig;
   [FEATURE_KEY.GIT_GET_APP]: FeatureConfig;
+  [FEATURE_KEY.GIT_GET_APP_BY_NAME]: FeatureConfig;
   [FEATURE_KEY.GIT_GET_APPS]: FeatureConfig;
   [FEATURE_KEY.GIT_GET_APP_CONFIG]: FeatureConfig;
   [FEATURE_KEY.GIT_SYNC_APP]: FeatureConfig;
