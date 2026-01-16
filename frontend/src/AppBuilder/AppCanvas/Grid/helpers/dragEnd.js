@@ -220,7 +220,21 @@ export const getDroppableSlotIdOnScreen = (event, widgets) => {
       (ele) => ele.id.replace('canvas-', '')?.slice(0, 36) !== event.target.id && ele.classList.contains('real-canvas')
     );
     const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
-    const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+    // Find the most deeply nested (most specific) canvas - this handles nested containers correctly
+    // If canvas A contains canvas B, B is the more specific target and should be selected
+    let draggedOverContainer = null;
+    for (const canvas of draggedOverElements) {
+      if (!canvas.classList.contains('real-canvas')) continue;
+      if (!draggedOverContainer) {
+        draggedOverContainer = canvas;
+        continue;
+      }
+      // If current draggedOverContainer contains this canvas, this canvas is more specific (nested deeper)
+      if (draggedOverContainer.contains(canvas)) {
+        draggedOverContainer = canvas;
+      }
+    }
+
 
     // Determine potential new parent
     const newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
