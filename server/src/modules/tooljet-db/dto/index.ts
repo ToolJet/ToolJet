@@ -117,7 +117,7 @@ export class ConstraintTypeDto {
 export class CreatePostgrestTableDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(31, { message: 'Table name must be less than 32 characters' })
+  @MaxLength(32, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
     message:
@@ -245,7 +245,7 @@ export class EditTableDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(31, { message: 'Table name must be less than 32 characters' })
+  @MaxLength(32, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
     message:
