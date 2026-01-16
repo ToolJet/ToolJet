@@ -279,10 +279,12 @@
               "type": "category",
               "label": "Component Catalog",
               "items": [
+                "widgets/audio-recorder",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
                 "widgets/calendar",
+                "widgets/camera",
                 {
                   "type": "category",
                   "label": "Chart",
