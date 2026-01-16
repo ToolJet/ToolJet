@@ -61,7 +61,7 @@ http {
 
         # Redirect all other HTTP traffic to HTTPS
         location / {
-            return 301 https://$host$request_uri;
+            return 301 https://${DOMAIN_NAME}$request_uri;
         }
     }
 
@@ -103,7 +103,7 @@ http {
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
-            proxy_set_header Host $host;
+            proxy_set_header Host ${DOMAIN_NAME};
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
@@ -117,7 +117,7 @@ http {
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
-            proxy_set_header Host $host;
+            proxy_set_header Host ${DOMAIN_NAME};
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
@@ -129,7 +129,7 @@ http {
         location / {
             proxy_pass http://tooljet_app;
             proxy_http_version 1.1;
-            proxy_set_header Host $host;
+            proxy_set_header Host ${DOMAIN_NAME};
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
