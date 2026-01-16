@@ -47,16 +47,32 @@ To configure the authentication:
         
     *   Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
 
-### Allowed Domains (Password Login)
-- You can specify Allowed Domains for password login. If one or more allowed domains are added, only users signing in with those domains will be allowed to use password authentication. All other domains will not be able to use password login.
-If the allowed domains list is left empty, all domains are permitted unless explicitly restricted.
+## Domain Constraints
 
-- You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
+Domain constraints allow workspace admins to control which email domains are permitted to authenticate using SSO or password login. These settings help ensure that only users from approved domains can sign in, while providing flexibility for different workspaces within the cloud deployment.
 
-### Restricted Domains (Password Login)
-You can specify Restricted Domains to block specific domains from using password login. This is typically used to ensure that internal users (e.g., corp.com) cannot bypass SSO by signing in with a password.
+### Allowed Domains
 
-Restricted domains apply only to password login and never to SSO.
+Allowed Domains can be configured separately for **SSO login** and **Password login**, and each follows the same behavior:
+
+- **Allowed Domains (SSO Login)**  
+  If one or more allowed domains are added for SSO, only users belonging to those domains will be able to sign in using SSO. All other domains will be blocked from using SSO authentication.  
+  When the allowed list is empty, any domain is permitted to use SSO.
+
+- **Allowed Domains (Password Login)**  
+  If allowed domains are defined for password login, only users from those domains can sign in with a password. All other domains will not be allowed to use password authentication.  
+  When the allowed list is empty, all domains are permitted unless a domain is explicitly restricted.
+
+You can add multiple domain names by separating them with commas.  
+**Example:** `corp.com`, `corp.io`, `corp.ai`
+
+### Restricted Domains (Password Login Only)
+
+Restricted Domains apply only to password login and are used to block specific domains from authenticating with a password. This setting is often used to enforce stricter access rules. For example, ensuring internal users must use SSO and cannot bypass it by signing in with a password.
+
+Restrictions take priority over allowed settings.  
+If a domain is added to the restricted list for password login, users from that domain will not be able to sign in using a password, even if the same domain is included in the allowed list.
+
 
         
 ## Automatic SSO Login
