@@ -190,7 +190,7 @@ COPY --from=builder /opt/python-runtime /opt/python-runtime
 
 # Copy nsjail configuration file
 RUN mkdir -p /etc/nsjail
-COPY ./docker/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
+COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
 # Create Python execution directories
 RUN mkdir -p \
