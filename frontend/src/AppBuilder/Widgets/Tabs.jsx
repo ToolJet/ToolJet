@@ -6,9 +6,6 @@ import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
-import { set } from 'lodash';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -81,7 +78,7 @@ export const Tabs = function Tabs({
 
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
-
+  const commonBackgroundColor = styles?.commonBackgroundColor;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   // config for tabs. Includes title
   const tabs = isExpectedDataType(properties.tabs, 'array');
@@ -147,7 +144,7 @@ export const Tabs = function Tabs({
   );
   const [tabItems, setTabItems] = useState(parsedTabs);
   const tabItemsRef = useRef(tabItems);
-  const [bgColor, setBgColor] = useState('#fff');
+  const [bgColor, setBgColor] = useState(commonBackgroundColor);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -175,7 +172,7 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
-    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
+    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : commonBackgroundColor);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode, parsedTabs]);
 
@@ -184,7 +181,10 @@ export const Tabs = function Tabs({
       setTab: async function (id) {
         if (currentTab != id) {
           setCurrentTab(id);
-          setExposedVariable('currentTab', id);
+          setExposedVariables({
+            currentTab: id,
+            currentTabTitle: tabItems.find((tab) => tab.id === id)?.title,
+          });
           fireEvent('onTabSwitch');
           setSelectedComponents([]);
         }
@@ -221,6 +221,7 @@ export const Tabs = function Tabs({
         });
       },
       currentTab: currentTab,
+      currentTabTitle: tabItems.find((tab) => tab.id === currentTab)?.title,
     };
     setExposedVariables(exposedVariables);
 
@@ -270,6 +271,13 @@ export const Tabs = function Tabs({
       }
     };
   }, [tabsRef.current, tabWidth, tabItems]);
+
+  const parsedTabsString = JSON.stringify(parsedTabs);
+  useEffect(() => {
+    const title = parsedTabs?.find((tab) => tab.id === currentTab)?.title;
+    setExposedVariable('currentTabTitle', title);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsedTabsString]);
 
   useEffect(() => {
     checkScroll();
@@ -435,9 +443,13 @@ export const Tabs = function Tabs({
                       setIsTransitioning(true);
                       setTimeout(() => setIsTransitioning(false), 300); // Match transition duration
                     }
-
-                    !tab?.disabled && setCurrentTab(tab.id);
-                    !tab?.disabled && setExposedVariable('currentTab', tab.id);
+                    if (!tab?.disabled) {
+                      setCurrentTab(tab.id);
+                      setExposedVariables({
+                        currentTab: tab.id,
+                        currentTabTitle: tab.title,
+                      });
+                    }
                     fireEvent('onTabSwitch');
                   }}
                   onMouseEnter={() => handleMouseEnter(tab?.id)}
@@ -547,6 +559,7 @@ export const Tabs = function Tabs({
                     isDynamicHeightEnabled={isDynamicHeightEnabled}
                     currentTab={currentTab}
                     isTransitioning={isTransitioning}
+                    commonBackgroundColor={commonBackgroundColor}
                   />
                 )}
               </div>
@@ -584,6 +597,7 @@ export const Tabs = function Tabs({
                         isDynamicHeightEnabled={isDynamicHeightEnabled}
                         currentTab={currentTab}
                         isTransitioning={isTransitioning}
+                        commonBackgroundColor={commonBackgroundColor}
                       />
                     )}
                   </animated.div>
@@ -621,6 +635,7 @@ const TabContent = memo(function TabContent({
   isDynamicHeightEnabled,
   currentTab,
   isTransitioning,
+  commonBackgroundColor,
 }) {
   const loading = tab?.loading;
   const disable = tab?.disable;
@@ -640,7 +655,7 @@ const TabContent = memo(function TabContent({
         position: 'relative',
         top: '0px',
         width: '100%',
-        backgroundColor: fieldBackgroundColor || bgColor,
+        backgroundColor: fieldBackgroundColor || bgColor || commonBackgroundColor,
         opacity: disable ? 0.5 : 1,
         pointerEvents: disable ? 'none' : 'auto',
         overflow: 'hidden', // Ensure TabContent doesn't overflow
@@ -667,7 +682,7 @@ const TabContent = memo(function TabContent({
           allowContainerSelect={true}
           styles={{
             overflow: isTransitioning || isDynamicHeightEnabled ? 'hidden' : 'hidden auto',
-            backgroundColor: fieldBackgroundColor || bgColor,
+            backgroundColor: fieldBackgroundColor || bgColor || commonBackgroundColor,
             opacity: disable ? 0.5 : 1,
             width: '100%', // Ensure it doesn't exceed container width
             maxWidth: '100%', // Additional constraint
