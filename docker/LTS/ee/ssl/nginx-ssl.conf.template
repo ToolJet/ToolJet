@@ -1,0 +1,143 @@
+# Nginx SSL configuration for ToolJet EE with Let's Encrypt
+# This template uses envsubst to replace ${DOMAIN_NAME}
+
+# Note: No 'user' directive - nginx runs as the user who starts it (appuser)
+# The container runs as non-root with setcap for port binding
+worker_processes auto;
+pid /tmp/nginx.pid;
+error_log /var/log/nginx/error.log warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # Non-root temp paths
+    client_body_temp_path /tmp/client_body;
+    proxy_temp_path /tmp/proxy;
+    fastcgi_temp_path /tmp/fastcgi;
+    uwsgi_temp_path /tmp/uwsgi;
+    scgi_temp_path /tmp/scgi;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml application/json application/javascript
+               application/xml application/xml+rss text/javascript application/x-javascript;
+
+    # Upstream to NestJS application
+    upstream tooljet_app {
+        server 127.0.0.1:3000;
+        keepalive 32;
+    }
+
+    # HTTP server - redirect to HTTPS + ACME challenge
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name ${DOMAIN_NAME};
+
+        # ACME challenge for Let's Encrypt
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+            try_files $uri =404;
+        }
+
+        # Redirect all other HTTP traffic to HTTPS
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # HTTPS server
+    server {
+        listen 443 ssl;
+        listen [::]:443 ssl;
+        http2 on;
+        server_name ${DOMAIN_NAME};
+
+        # SSL certificates
+        ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+
+        # Modern TLS configuration
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+        ssl_prefer_server_ciphers off;
+
+        # SSL session settings
+        ssl_session_timeout 1d;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_tickets off;
+
+        # OCSP Stapling
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        ssl_trusted_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/chain.pem;
+        resolver 8.8.8.8 8.8.4.4 valid=300s;
+        resolver_timeout 5s;
+
+        # Request size limits
+        client_max_body_size 100M;
+        client_body_buffer_size 128k;
+
+        # WebSocket support for /ws endpoint
+        location /ws {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+
+        # WebSocket support for /yjs endpoint (Y.js collaboration)
+        location /yjs {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+
+        # Proxy all other requests to NestJS
+        location / {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+            proxy_send_timeout 300;
+        }
+    }
+}

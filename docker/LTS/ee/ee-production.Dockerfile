@@ -92,6 +92,12 @@ RUN apt-get update && \
         git \
         openssh-client \
         freetds-dev \
+        nginx \
+        certbot \
+        python3-certbot-nginx \
+        gettext-base \
+        libcap2-bin \
+        openssl \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -157,6 +163,10 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
+# Copy SSL setup files for Let's Encrypt support
+COPY ./docker/LTS/ee/ssl/ /app/server/ssl/
+RUN chmod +x /app/server/ssl/*.sh
+
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 
@@ -201,6 +211,17 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chown -R appuser:0 /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
+
+# Create directories for Let's Encrypt SSL support (nginx + certbot)
+RUN mkdir -p /var/www/certbot /etc/letsencrypt /var/log/nginx \
+    /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
+    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt /var/log/nginx \
+       /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
+    && chmod -R g=u /var/www/certbot /etc/letsencrypt /var/log/nginx \
+       /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi
+
+# Allow non-root nginx to bind to privileged ports (80, 443)
+RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx || true
 
 ENV HOME=/home/appuser
 # Switch back to appuser

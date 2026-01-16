@@ -8,6 +8,65 @@ if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi
 
+# =============================================================================
+# Let's Encrypt SSL Support
+# When ENABLE_DOMAIN_SSL=true, nginx handles SSL termination on ports 80/443
+# and proxies to NestJS on internal port 3000
+# =============================================================================
+
+# Extract domain from TOOLJET_HOST (removes protocol, port, path)
+extract_domain() {
+    echo "${1#*://}" | cut -d: -f1 | cut -d/ -f1
+}
+
+ENABLE_DOMAIN_SSL="${ENABLE_DOMAIN_SSL:-false}"
+
+if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
+    echo "=== Let's Encrypt SSL Mode Enabled ==="
+
+    # Validate required variables
+    if [ -z "$TOOLJET_HOST" ]; then
+        echo "ERROR: TOOLJET_HOST must be set when ENABLE_DOMAIN_SSL=true"
+        echo "Example: TOOLJET_HOST=https://tooljet.example.com"
+        exit 1
+    fi
+    if [ -z "$LETSENCRYPT_EMAIL" ]; then
+        echo "ERROR: LETSENCRYPT_EMAIL must be set when ENABLE_DOMAIN_SSL=true"
+        echo "Example: LETSENCRYPT_EMAIL=admin@example.com"
+        exit 1
+    fi
+
+    DOMAIN_NAME=$(extract_domain "$TOOLJET_HOST")
+    echo "Domain: $DOMAIN_NAME"
+    echo "Email: $LETSENCRYPT_EMAIL"
+    echo "Staging: ${LETSENCRYPT_STAGING:-false}"
+
+    # NestJS listens internally, nginx handles external traffic
+    export PORT=3000
+    export LISTEN_ADDR="127.0.0.1"
+
+    # Generate nginx config with domain substitution
+    export DOMAIN_NAME
+    envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
+
+    # Obtain certificate (script checks if valid cert already exists)
+    echo "Obtaining SSL certificate..."
+    /app/server/ssl/ssl-setup.sh "$DOMAIN_NAME" "$LETSENCRYPT_EMAIL" "${LETSENCRYPT_STAGING:-false}"
+
+    # Start nginx (handles ports 80 and 443)
+    echo "Starting nginx..."
+    nginx -c /tmp/nginx.conf
+
+    # Start background renewal daemon (checks every 12 hours)
+    /app/server/ssl/cert-renewal-cron.sh &
+
+    echo "=== SSL setup complete ==="
+    echo "nginx listening on :80 (redirect) and :443 (SSL)"
+    echo "NestJS will listen on :3000 (internal only)"
+fi
+
+# =============================================================================
+
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
   echo "Starting Redis server locally..."
