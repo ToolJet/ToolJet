@@ -2,7 +2,7 @@ import { Button } from '@/AppBuilder/Widgets/Button';
 import { Image } from '@/AppBuilder/Widgets/Image/Image';
 import { Text } from '@/AppBuilder/Widgets/Text';
 import { Table } from '@/AppBuilder/Widgets/NewTable/Table';
-
+import { AudioRecorder } from '@/AppBuilder/Widgets/AudioRecorder/AudioRecorder';
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
 import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
@@ -68,6 +68,7 @@ import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
+import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -158,6 +159,8 @@ export const AllComponents = {
   ModuleContainer,
   ModuleViewer,
   PopoverMenu,
+  AudioRecorder,
+  Camera,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);
