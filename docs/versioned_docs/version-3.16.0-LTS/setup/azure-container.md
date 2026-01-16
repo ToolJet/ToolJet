@@ -5,14 +5,13 @@ title: Azure Container Apps
 
 # Deploying ToolJet on Azure Container Apps
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
 Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet.
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 ## Deploying ToolJet Application
@@ -32,7 +31,6 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/ee-entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
    <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
 7. Under "Environmental variables", please add the below ToolJet application variables:
-
    ```env
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
@@ -43,48 +41,35 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
    PG_PASS=<password>
    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
    ```
-
-   Update the `TOOLJET_HOST` environment variable to reflect the default host assigned by Azure Container Apps, if you're not using a custom domain.
-
+   Update the `TOOLJET_HOST` environment variable to reflect the default host assigned by Azure Container Apps, if you're not using a custom domain. <br/>
    If using Azure Database for Postgresql-Flexible server, also add:
-
    ```env
    PGSSLMODE = require
    ```
-
    To set up [ToolJet Database](#tooljet-database), the following **environment variables are mandatory** and must be configured:
-
    ```env
    TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
    TOOLJET_DB_HOST=<postgresql-database-host>
    TOOLJET_DB_USER=<username>
    TOOLJET_DB_PASS=<password>
    ```
-
    :::note
    Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
    :::
-
    Additionally, for **PostgREST**, the following **mandatory** environment variables must be set in Tooljet container:
-
    :::tip
    If you have openssl installed, you can run the
    command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
    If this parameter is not specified, PostgREST will refuse authentication requests.
    :::
-
    ```env
     PGRST_HOST=127.0.0.1:3002
     PGRST_JWT_SECRET=
    ```
-
-   **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
-
+   **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**  <br/> <br/>
    **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
-
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
-
 8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 9. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.
@@ -126,10 +111,6 @@ ToolJet runs with **built-in Redis** for multiplayer editing and background jobs
 ## ToolJet Database
 
 Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
 ## Workflows
 
@@ -173,13 +154,32 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 
 ## Upgrading to the Latest LTS Version
 
+:::info
+If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
+:::
+
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+### Prerequisites for Upgrading
 
-#### Prerequisites for Upgrading to the Latest LTS Version:
+:::warning Critical: Backup Your PostgreSQL Instance
 
-- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
-- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
+
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

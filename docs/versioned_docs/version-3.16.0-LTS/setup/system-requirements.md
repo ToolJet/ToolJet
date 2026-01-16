@@ -33,10 +33,37 @@ ToolJet is developed for Linux-based operating systems. Please consider using a 
 
 Note: Adjustments can be made based on specific needs and the expected load on the server.
 
-## Database software:
+## Database and Cache Software:
 
-- It is recommended that your PostgreSQL database is of version 16.x.
+### PostgreSQL
+
+- **Version:** PostgreSQL 16.x is recommended
+- **Minimum Specifications:**
+  - **RAM:** 8GB
+  - **Storage:** 20GB minimum (should scale based on data volume)
+  - **CPU:** 2 vCPUs
 
 :::info
 If you are currently on PostgreSQL 13.x, you may continue using it; however, upgrading to version 16.x is advised for improved performance and features. Additionally, PostgreSQL 13.x officially reached end-of-life in November 2025.
 :::
+
+### Redis
+
+- **Version:** Redis 7.x is required
+- **Minimum Specifications:**
+  - **RAM:** 512MB (1GB recommended for production workloads)
+  - **Storage:** 1GB minimum
+  - **CPU:** 1 vCPU
+
+:::info
+Redis is used for caching and session management in ToolJet. Ensure that Redis 7.x is installed and running before deploying ToolJet.
+:::
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)
