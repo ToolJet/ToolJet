@@ -233,6 +233,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           isEditMode={true} // Made TRUE always to avoid setting default options again
           queryName={queryName}
           currentEnvironment={currentEnvironment}
+          currentAppEnvironmentId={currentEnvironment?.id}
           onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
         />
       </div>
