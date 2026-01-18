@@ -70,7 +70,7 @@ import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
 import { jsonExplorerConfig } from './jsonExplorer';
-
+import { jsonEditorConfig } from './jsonEditor';
 export {
   buttonConfig,
   tableConfig,
@@ -144,4 +144,5 @@ export {
   cameraConfig,
   tagsInputConfig,
   jsonExplorerConfig,
+  jsonEditorConfig,
 };

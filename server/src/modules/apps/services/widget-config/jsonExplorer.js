@@ -118,7 +118,6 @@ export const jsonExplorerConfig = {
         },
         events: [],
         styles: {
-            visibility: { value: '{{true}}' },
             borderRadius: { value: '{{6}}' },
             borderColor: { value: 'var(--cc-default-border)' },
             backgroundColor: { value: 'var(--cc-surface1-surface)' },

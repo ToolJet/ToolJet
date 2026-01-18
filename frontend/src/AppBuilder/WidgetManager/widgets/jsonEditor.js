@@ -1,8 +1,8 @@
-export const jsonExplorerConfig = {
-    name: 'JSONExplorer',
-    displayName: 'JSON Explorer',
-    description: 'Explore JSON data',
-    component: 'JSONExplorer',
+export const jsonEditorConfig = {
+    name: 'JSONEditor',
+    displayName: 'JSON Editor',
+    description: 'Edit JSON data',
+    component: 'JSONEditor',
     defaultSize: {
         width: 15,
         height: 120,
@@ -26,12 +26,6 @@ export const jsonExplorerConfig = {
             validation: { schema: { type: 'boolean' }, defaultValue: true },
             section: 'additionalActions',
         },
-        shouldShowRootNode: {
-            type: 'toggle',
-            displayName: 'Show root node',
-            validation: { schema: { type: 'boolean' }, defaultValue: true },
-            section: 'additionalActions',
-        },
         loadingState: {
             type: 'toggle',
             displayName: 'Loading state',
@@ -41,6 +35,12 @@ export const jsonExplorerConfig = {
         visibility: {
             type: 'toggle',
             displayName: 'Visibility',
+            validation: { schema: { type: 'boolean' } },
+            section: 'additionalActions',
+        },
+        disabledState: {
+            type: 'toggle',
+            displayName: 'Disable',
             validation: { schema: { type: 'boolean' } },
             section: 'additionalActions',
         },
@@ -87,8 +87,10 @@ export const jsonExplorerConfig = {
     },
     exposedVariables: {
         value: { a: { b: [1, 2, 3, 4, 5, 6] }, c: { d: false }, e: 'Hello World' },
+        isValid: true,
         isVisible: true,
         isLoading: false,
+        isDisabled: false,
     },
     actions: [
         {
@@ -101,6 +103,11 @@ export const jsonExplorerConfig = {
             displayName: 'Set loading',
             params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
+        {
+            handle: 'setDisable',
+            displayName: 'Set disable',
+            params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        },
     ],
     definition: {
         others: {
@@ -112,9 +119,9 @@ export const jsonExplorerConfig = {
                 value: `{{{ \n\ta : { \n\t\tb : [1,2,3,4,5,6] \n\t}, \n\tc: { \n\t\td : false \n\t}, \n\te: "Hello World" \n}}}`,
             },
             shouldExpandEntireJSON: { value: '{{true}}' },
-            shouldShowRootNode: { value: '{{true}}' },
             loadingState: { value: '{{false}}' },
             visibility: { value: '{{true}}' },
+            disabledState: { value: '{{false}}' },
         },
         events: [],
         styles: {

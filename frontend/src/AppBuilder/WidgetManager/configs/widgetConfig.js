@@ -70,6 +70,7 @@ import {
   cameraConfig,
   tagsInputConfig,
   jsonExplorerConfig,
+  jsonEditorConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -158,6 +159,7 @@ export const widgets = [
   qrscannerConfig,
   chatConfig,
   jsonExplorerConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,
