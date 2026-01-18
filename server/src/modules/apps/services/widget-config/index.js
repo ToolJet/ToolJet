@@ -69,7 +69,7 @@ import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
-
+import { jsonExplorerConfig } from './jsonExplorer';
 const widgets = {
   buttonConfig,
   tableConfig,
@@ -142,6 +142,7 @@ const widgets = {
   popoverMenuConfig,
   audioRecorderConfig,
   cameraConfig,
+  jsonExplorerConfig,
 };
 
 const universalProps = {

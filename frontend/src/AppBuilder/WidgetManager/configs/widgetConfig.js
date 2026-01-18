@@ -69,6 +69,7 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  jsonExplorerConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -156,6 +157,7 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  jsonExplorerConfig,
 
   //Legacy
   modalConfig,

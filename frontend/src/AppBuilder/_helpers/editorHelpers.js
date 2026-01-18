@@ -69,7 +69,8 @@ import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
-
+import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
+import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // import './requestIdleCallbackPolyfill';
@@ -161,6 +162,8 @@ export const AllComponents = {
   PopoverMenu,
   AudioRecorder,
   Camera,
+  JSONEditor,
+  JSONExplorer,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);
@@ -356,7 +359,6 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${
-    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-  }px)`;
+  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+    }px)`;
 };

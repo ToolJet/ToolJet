@@ -45,6 +45,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Kanban',
   'AudioRecorder',
   'Camera',
+  'JSONExplorer',
+  'JSONEditor',
 ];
 
 const RenderWidget = ({
