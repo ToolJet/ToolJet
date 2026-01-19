@@ -159,7 +159,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
   useEffect(() => {
     if (previewPhase !== 'mounting-grid') return;
 
-    setShouldGridMount(true);
+    setTimeout(() => setShouldGridMount(true), 0);
   }, [previewPhase, setShouldGridMount]);
 
   // Restore previously open panels and complete the preview transition.
@@ -213,7 +213,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
       return;
     }
 
-    const requiredComponents = ['leftSidebar', 'rightSidebar', 'queryPanel', 'canvas'];
+    const requiredComponents = ['leftSidebar', 'rightSidebar', 'queryPanel'];
 
     const isAllSettled = requiredComponents.every((comp) => settledAnimatedComponents.includes(comp));
 

@@ -256,7 +256,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
               { 'overflow-x-auto': currentMode === 'edit' },
               { 'overflow-x-hidden': moduleId !== 'canvas' }, // Disbling horizontal scroll for modules in view mode
-              { 'tw-transition-all tw-duration-300 tw-ease-linear': previewPhase === 'animating' }
+              { 'tw-transition-all tw-duration-0 tw-ease-linear': previewPhase === 'animating' }
             )}
             style={canvasContainerStyles}
           >
