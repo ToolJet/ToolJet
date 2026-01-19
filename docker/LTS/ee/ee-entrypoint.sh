@@ -19,7 +19,37 @@ extract_domain() {
     echo "${1#*://}" | cut -d: -f1 | cut -d/ -f1
 }
 
-ENABLE_DOMAIN_SSL="${ENABLE_DOMAIN_SSL:-false}"
+# Function to get SSL config from database
+get_ssl_config() {
+    local field=$1
+    local default=$2
+
+    # Only query DB if PostgreSQL is configured
+    if [ -n "$PG_HOST" ] && [ -n "$PG_DB" ] && [ -n "$PG_USER" ]; then
+        PGPASSWORD="$PG_PASS" psql -h "$PG_HOST" -p "${PG_PORT:-5432}" -U "$PG_USER" -d "$PG_DB" \
+            -t -A -c "SELECT $field FROM ssl_configurations ORDER BY created_at ASC LIMIT 1" 2>/dev/null || echo "$default"
+    else
+        echo "$default"
+    fi
+}
+
+# Read SSL settings from database (with env var fallback)
+if [ -z "$ENABLE_DOMAIN_SSL" ]; then
+    ENABLE_DOMAIN_SSL=$(get_ssl_config "enabled" "false")
+fi
+
+if [ -z "$LETSENCRYPT_EMAIL" ]; then
+    LETSENCRYPT_EMAIL=$(get_ssl_config "email" "")
+fi
+
+if [ -z "$LETSENCRYPT_STAGING" ]; then
+    LETSENCRYPT_STAGING=$(get_ssl_config "staging" "false")
+fi
+
+# Export for use in SSL setup
+export ENABLE_DOMAIN_SSL
+export LETSENCRYPT_EMAIL
+export LETSENCRYPT_STAGING
 
 if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
     echo "=== Let's Encrypt SSL Mode Enabled ==="
