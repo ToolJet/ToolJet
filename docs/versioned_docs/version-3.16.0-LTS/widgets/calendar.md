@@ -3,8 +3,6 @@ id: calendar
 title: Calendar
 ---
 
-# Calendar
-
 The **Calendar** component allows you to visually organize and schedule events. You can set the default view (day, week, or month), enable/disable various display options, and bind data to events and resources.
 
 <img className="screenshot-full" src="/img/widgets/calendar/calendar-component-v2.png" alt="ToolJet - Widget Reference - Calendar" />
@@ -155,11 +153,13 @@ A Tooltip is often used to specify extra information about something when the us
 
 ## Styles
 
-| Style | Description |
-| ----- | ------------- |
-| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| **Cell Size in Views Classified by Resource** | When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time. |
-| **Header Date Format on Week View** | This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting. By default, its set to `DD MMM`. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Visibility | Controls component visibility. | Toggle on or off, or set programmatically using **fx**. |
+| Cell size in views classified by resource | Controls cell size when resources are specified. | Choose between **Compact** or **Spacious**. |
+| Header date format on week view | Determines column header format for each day in week view. | Enter a date format following momentjs standard (default: `DD MMM`). |
+| Border color | Sets the border color of the calendar. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the calendar. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

@@ -84,30 +84,34 @@ The following actions of the component can be controlled using the component-spe
 
 ### Trigger Button
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div>                  | <div style={{ width:"250px"}}> Configuration Options </div>                                      |
-| :--------------------------------------------- | :----------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| Icon                                           | Add an icon to the modal trigger button.                           | Choose from the icon library.                                                                    |
-| Icon color                                     | Select the icon color.                                             | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
-| Icon position                                  | Decide whether the icon should be positioned to the left or right. | Choose from the position switch.                                                                 |
-| Background                                     | Sets the background color of the trigger button.                   | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
-| Text                                           | Sets the text color of the trigger button.                         | Select a color or click on **fx** and input code that programmatically returns a hex color code. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Icon | Add an icon to the modal trigger button. | Choose from the icon library. |
+| Icon color | Sets the color of the icon. | Select a color from the color picker or set it programmatically using **fx**. |
+| Icon position | Sets the position of the icon. | Choose between **Left** or **Right**. |
+| Background | Sets the background color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
+| Text | Sets the text color of the trigger button. | Select a color from the color picker or set it programmatically using **fx**. |
 
 ### Header
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background | Sets the background color of the header.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Divider | Sets the color of the divider.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Background | Sets the background color of the header. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider between header and body. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 ### Container
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background | Sets the background color of the container.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Background | Sets the background color of the modal body. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 ### Footer
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background | Sets the background color of the footer.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Divider | Sets the color of the divider.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Background | Sets the background color of the footer. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Divider | Sets the color of the divider between body and footer. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::
