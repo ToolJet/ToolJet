@@ -67,6 +67,7 @@ import { currencyinputConfig } from './currencyinput';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { tagsInputConfig } from './TagsInput';
+import { keyValuePairConfig } from './keyValuePair';
 
 export {
   buttonConfig,
@@ -138,4 +139,5 @@ export {
   rangeSliderV2Config,
   popoverMenuConfig,
   tagsInputConfig,
+  keyValuePairConfig,
 };

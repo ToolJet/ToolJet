@@ -67,6 +67,7 @@ import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
+import { keyValuePairConfig } from './keyValuePair';
 
 const widgets = {
   buttonConfig,
@@ -137,7 +138,8 @@ const widgets = {
   chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
-  popoverMenuConfig
+  popoverMenuConfig,
+  keyValuePairConfig
 };
 
 const universalProps = {

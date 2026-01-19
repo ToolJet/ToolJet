@@ -67,6 +67,7 @@ import {
   chatConfig,
   popoverMenuConfig,
   tagsInputConfig,
+  keyValuePairConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -78,6 +79,7 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,

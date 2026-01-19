@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -129,6 +130,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Html',
   'CodeEditor',
   'Form',
+  'KeyValuePair',
 ];
 
 export const Inspector = ({
@@ -869,6 +871,9 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
+
+      case 'KeyValuePair':
+        return <KeyValuePair {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

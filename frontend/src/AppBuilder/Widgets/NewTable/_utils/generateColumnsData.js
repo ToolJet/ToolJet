@@ -7,20 +7,19 @@ import {
   StringColumn,
   NumberColumn,
   BooleanColumn,
-  TagsColumn,
-  RadioColumn,
-  ToggleColumn,
   DatepickerColumn,
   LinkColumn,
-  // SelectColumn,
-  // MultiSelectColumn,
   ImageColumn,
   CustomSelectColumn,
-  CustomDropdownColumn,
   TextColumn,
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
+  // Deprecated columns
+  TagsColumn,
+  RadioColumn,
+  ToggleColumn,
+  CustomDropdownColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import SelectSearch from 'react-select-search';

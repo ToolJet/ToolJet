@@ -68,6 +68,7 @@ import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 import { ModuleContainer, ModuleViewer } from '@/modules/Modules/components';
 import { Chat } from '@/AppBuilder/Widgets/Chat';
+import { KeyValuePair } from '@/AppBuilder/Widgets/KeyValuePair';
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -158,6 +159,7 @@ export const AllComponents = {
   ModuleContainer,
   ModuleViewer,
   PopoverMenu,
+  KeyValuePair,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/AppBuilder/Widgets/PDF').then((module) => module.PDF);

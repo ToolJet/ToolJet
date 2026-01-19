@@ -1,0 +1,390 @@
+.key-value-pair-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative; // For popover positioning
+
+  &.kv-padding-default {
+    padding: 12px;
+    padding-bottom: 60px; // Extra space for popover when visible
+  }
+
+  &.kv-padding-none {
+    padding: 0;
+    padding-bottom: 48px; // Space for popover
+  }
+
+  &.invisible {
+    display: none;
+  }
+
+  // ChangeSet Popover - centered, 10px from bottom
+  .kv-changeset-popover {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surfaces-surface-01);
+    border: 1px solid var(--borders-default);
+    border-radius: 8px;
+    padding: 6px 8px;
+    z-index: 10;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+
+    .kv-changeset-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kv-changeset-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    // Cancel button - ghost style
+    .kv-btn-cancel {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: transparent;
+      border: 1px solid var(--borders-default);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+
+      &:hover {
+        background: var(--surfaces-surface-02);
+      }
+    }
+
+    // Save button - primary style
+    .kv-btn-save {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: white;
+      background: var(--primary-accent-strong);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .key-value-pair-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 60px;
+  }
+
+  .key-value-pair-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+// Key-Value Row Styles
+.key-value-row {
+  display: flex;
+  align-items: flex-start;
+  min-height: 32px;
+
+  // Side alignment (horizontal - label on left, value on right)
+  &.kv-row-side {
+    flex-direction: row;
+    gap: 16px;
+
+    .key-value-label {
+      flex-shrink: 0;
+      padding-top: 6px; // Align with input text
+    }
+
+    .key-value-value {
+      flex: 1;
+      min-width: 0; // Allow text truncation
+    }
+  }
+
+  // Reverse direction (label on right)
+  &.kv-row-reverse {
+    flex-direction: row-reverse;
+
+    .key-value-label {
+      text-align: right;
+    }
+  }
+
+  // Top alignment (stacked - label above value)
+  &.kv-row-top {
+    flex-direction: column;
+    gap: 4px;
+
+    .key-value-label {
+      width: 100% !important;
+    }
+
+    .key-value-value {
+      width: 100%;
+    }
+  }
+}
+
+// Label styling
+.key-value-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+// Value styling
+.key-value-render-value {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+  word-break: break-word;
+  min-height: 38px;
+  display: flex; /* Changed from default block to flex to align value and icon */
+  align-items: center; /* Center icon vertically with text */
+  justify-content: space-between; /* Push icon to right if needed, or stick to content */
+  width: 100%;
+  /* Actually, to keep text alignment working (left/right) with flex, we need care.
+     If alignment is 'side', horizontalAlignment prop on adapter handles text-align.
+     But we want the icon to be "next to" the text usually, or fixed on the right?
+     Design image shows icon on the FAR right of the container maybe? 
+     Or just next to the text.
+     Let's make it flex, with the content taking available space.
+  */
+  
+  > span, > div:not(.kv-edit-icon) {
+      flex: 1; /* Allow content to grow */
+  }
+
+  // Editable field styling - input with border
+  &.kv-value-editable, &.kv-value-editing {
+    input,
+    textarea,
+    [contenteditable='true'] {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+      line-height: 20px;
+      color: inherit;
+      background-color: var(--surfaces-surface-01);
+      border: 1px solid var(--borders-default);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s ease-in-out;
+
+      &:focus {
+        border-color: var(--primary-accent-strong);
+        box-shadow: 0 0 0 2px rgba(67, 104, 227, 0.1);
+      }
+
+      &:disabled {
+        background-color: var(--surfaces-surface-03);
+        color: var(--text-disabled);
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: var(--text-placeholder);
+      }
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    // Override renderer heights for editable context
+    .h-100 {
+      height: auto !important;
+    }
+  }
+
+  // Edit Icon
+  .kv-edit-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    // Always visible
+    opacity: 1;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--primary-accent-strong);
+    }
+  }
+
+  // Link styling
+  a {
+    color: var(--cc-primary-brand);
+    text-decoration: none;
+    word-break: break-all;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // Boolean/Toggle alignment
+  .form-check,
+  .boolean-switch {
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-check-input {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  // Image styling
+  img {
+    max-width: 100%;
+    max-height: 100px;
+    border-radius: 4px;
+    object-fit: contain;
+  }
+
+  // Tags styling
+  .tags,
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .badge,
+    .tag {
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 400;
+      border-radius: 4px;
+      background-color: var(--surfaces-surface-03);
+      color: var(--text-primary);
+    }
+  }
+
+  // JSON/Code styling
+  pre {
+    margin: 0;
+    padding: 8px;
+    font-size: 12px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    background-color: var(--surfaces-surface-02);
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+
+  // Validation error
+  .invalid-feedback {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--status-error-strong);
+  }
+
+  // Select dropdown override
+  .key-value-select,
+  .key-value-multiselect {
+    min-width: 150px;
+  }
+
+  // Datepicker override
+  .key-value-datepicker {
+    .form-control {
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid var(--borders-default);
+      border-radius: 6px;
+    }
+  }
+}
+
+// kv-input styles for field adapters
+.kv-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-primary);
+  background-color: var(--surfaces-surface-01);
+  border: 1px solid var(--borders-default);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    border-color: var(--primary-accent-strong);
+    box-shadow: 0 0 0 2px rgba(67, 104, 227, 0.1);
+  }
+
+  &:disabled {
+    background-color: var(--surfaces-surface-03);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
+
+  &.is-invalid {
+    border-color: var(--status-error-strong);
+  }
+}
+
+.kv-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+// Dark mode overrides
+.key-value-pair-container.dark-mode,
+[data-theme='dark'] .key-value-pair-container {
+  background-color: var(--surfaces-app-bg-default);
+
+  .key-value-value.kv-value-editable {
+    input,
+    textarea,
+    [contenteditable='true'] {
+      background-color: var(--surfaces-surface-02);
+      border-color: var(--borders-default);
+      color: var(--text-primary);
+    }
+  }
+
+  .key-value-value pre {
+    background-color: var(--surfaces-surface-03);
+  }
+}
+
+// Input element styles
+.key-value-pair-container {
+  .kv-value-editing .long-text-input {
+    width: 100%;
+    resize: vertical;
+    overflow-y: auto;
+    position: absolute;
+    padding: 8px !important;
+    outline: none !important;
+    border: 1px solid var(--interactive-overlays-focus-outline) !important;
+    background-color: var(--cc-surface1-surface) !important;
+    z-index: 99999 !important;
+    align-items: flex-start !important;
+  }
+}

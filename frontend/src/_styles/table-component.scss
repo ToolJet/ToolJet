@@ -1476,7 +1476,7 @@
   }
 }
 
-
+.jet-data-table {
 .long-text-input {
   height: 100%;
   // display: flex;
@@ -1501,6 +1501,10 @@
     align-items: flex-start !important;
   }
 }
+}
+
+
+
 
 .table> :not(caption)>*>* {
   padding: 0;
