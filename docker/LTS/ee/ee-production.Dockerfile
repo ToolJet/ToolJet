@@ -70,13 +70,13 @@ RUN git submodule update --init --recursive
 
 # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
 RUN git submodule foreach " \
-  if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
-     git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+    if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+    git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
     git checkout ${BRANCH_NAME}; \
-  else \
+    else \
     echo 'Branch ${BRANCH_NAME} not found in submodule \$name, falling back to lts-3.16'; \
     git checkout lts-3.16; \
-  fi"
+    fi"
 
 # Scripts for building
 COPY ./package.json ./package.json
@@ -123,25 +123,25 @@ FROM debian:12-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        curl \
-        wget \
-        gnupg \
-        unzip \
-        ca-certificates \
-        xz-utils \
-        tar \
-        postgresql-client \
-        redis \
-        libaio1 \
-        git \
-        openssh-client \
-        freetds-dev \
-        python3.11 \
-        python3.11-venv \
-        libprotobuf32 \
-        libnl-route-3-200 \
-        procps \
-        libcap2-bin \
+    curl \
+    wget \
+    gnupg \
+    unzip \
+    ca-certificates \
+    xz-utils \
+    tar \
+    postgresql-client \
+    redis \
+    libaio1 \
+    git \
+    openssh-client \
+    freetds-dev \
+    python3.11 \
+    python3.11-venv \
+    libprotobuf32 \
+    libnl-route-3-200 \
+    procps \
+    libcap2-bin \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -183,7 +183,8 @@ RUN useradd --create-home --home-dir /home/appuser appuser
 
 # Copy nsjail and Python runtime from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
-RUN chmod 755 /usr/local/bin/nsjail
+RUN chmod 755 /usr/local/bin/nsjail && \
+    setcap cap_sys_admin,cap_net_admin,cap_sys_ptrace+ep /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
 COPY --from=builder /opt/python-runtime /opt/python-runtime
