@@ -29,7 +29,7 @@ export class FeatureAbilityGuard extends AbilityGuard {
         };
       case APP_TYPES.MODULE:
         return {
-          resourceType: MODULES.APP,
+          resourceType: MODULES.MODULES,
         };
       default:
         return null;
