@@ -163,9 +163,9 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
-# Copy SSL setup files for Let's Encrypt support
+# Copy SSL configuration template for Let's Encrypt support
+# Note: Shell scripts removed - certificate management now handled by NestJS
 COPY ./docker/LTS/ee/ssl/ /app/server/ssl/
-RUN chmod +x /app/server/ssl/*.sh
 
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
