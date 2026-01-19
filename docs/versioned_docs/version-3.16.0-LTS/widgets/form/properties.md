@@ -49,3 +49,31 @@ Refer to the [Generate Form](/docs/widgets/form/form) guide for more details.
 |:---------- |:----------- |:----------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+## Styles
+
+### Header
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form header. | Select a color from the color picker or set it programmatically using **fx**. |
+| Divider | Sets the color of the divider line between the header and form body. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form body. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border color | Sets the border color of the form container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the form container. | Enter a numeric value (e.g., `6`) or set it programmatically using **fx**. |
+
+### Footer
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the form footer. | Select a color from the color picker or set it programmatically using **fx**. |
+| Divider | Sets the color of the divider line between the form body and footer. | Select a color from the color picker or set it programmatically using **fx**. |
+
+:::info
+Any property having an **fx** button next to its field can be **programmatically configured**.
+:::
