@@ -4,17 +4,27 @@ import { SslConfigurationRepository } from './repository';
 
 export class SslConfigurationModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
-    const { SslConfigurationService, SslConfigurationController } = await this.getProviders(
+    const {
+      SslConfigurationService,
+      SslConfigurationController,
+      SslCertificateLifecycleService,
+      SslCertificateRenewalScheduler,
+    } = await this.getProviders(
       configs,
       'ssl-configuration',
-      ['service', 'controller']
+      ['service', 'controller', 'ssl-lifecycle.service', 'ssl-renewal.scheduler']
     );
 
     return {
       module: SslConfigurationModule,
-      providers: [SslConfigurationService, SslConfigurationRepository],
+      providers: [
+        SslConfigurationService,
+        SslConfigurationRepository,
+        SslCertificateLifecycleService,
+        SslCertificateRenewalScheduler,
+      ],
       controllers: isMainImport ? [SslConfigurationController] : [],
-      exports: [SslConfigurationService],
+      exports: [SslConfigurationService, SslCertificateLifecycleService],
     };
   }
 }

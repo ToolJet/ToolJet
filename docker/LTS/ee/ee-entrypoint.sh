@@ -8,10 +8,67 @@ if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi
 
+# Start Redis server only if REDIS_HOST is localhost or not set
+if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
+  echo "Starting Redis server locally..."
+  redis-server /etc/redis/redis.conf &
+elif [ -n "$REDIS_URL" ]; then
+  echo "REDIS_URL connection is set: $REDIS_URL"
+else
+  echo "Using external Redis at $REDIS_HOST:$REDIS_PORT."
+
+  # Validate external Redis connection
+  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300 -- echo "Redis is up"; then
+    echo "Error: Unable to connect to Redis at $REDIS_HOST:$REDIS_PORT."
+    exit 1
+  fi
+fi
+
+# Check if PGRST_HOST starts with "localhost"
+if [[ "$PGRST_HOST" == localhost:* ]]; then
+  echo "Starting PostgREST server locally..."
+
+  # Generate PostgREST configuration in a writable directory
+  POSTGREST_CONFIG_PATH="/tmp/postgrest.conf"
+
+  echo "db-uri = \"${PGRST_DB_URI}\"" > "$POSTGREST_CONFIG_PATH"
+  echo "db-pre-config = \"postgrest.pre_config\"" >> "$POSTGREST_CONFIG_PATH"
+  echo "server-port = \"${PGRST_SERVER_PORT}\"" >> "$POSTGREST_CONFIG_PATH"
+
+  # Starting PostgREST
+  echo "Starting PostgREST..."
+  postgrest "$POSTGREST_CONFIG_PATH" &
+else
+  echo "Using external PostgREST at $PGRST_HOST."
+fi
+
+# Determine setup command based on the presence of ./server/dist
+if [ -d "./server/dist" ]; then
+  SETUP_CMD='npm run db:setup:prod'
+else
+  SETUP_CMD='npm run db:setup'
+fi
+
+# Wait for PostgreSQL connection
+if [ -z "$DATABASE_URL" ]; then
+  ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- echo "PostgreSQL is up"
+else
+  PG_HOST=$(echo "$DATABASE_URL" | awk -F'[/:@?]' '{print $6}')
+  PG_PORT=$(echo "$DATABASE_URL" | awk -F'[/:@?]' '{print $7}')
+
+  ./server/scripts/wait-for-it.sh "$PG_HOST:$PG_PORT" --strict --timeout=300 -- echo "PostgreSQL is up"
+fi
+
+# Run setup command if defined
+if [ -n "$SETUP_CMD" ]; then
+  $SETUP_CMD
+fi
+
 # =============================================================================
 # Let's Encrypt SSL Support
 # When ENABLE_DOMAIN_SSL=true, nginx handles SSL termination on ports 80/443
 # and proxies to NestJS on internal port 3000
+# NOTE: This must run AFTER database setup because SSL config is read from DB
 # =============================================================================
 
 # Extract domain from TOOLJET_HOST (removes protocol, port, path)
@@ -79,78 +136,20 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
     export DOMAIN_NAME
     envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
 
-    # Obtain certificate (script checks if valid cert already exists)
-    echo "Obtaining SSL certificate..."
-    /app/server/ssl/ssl-setup.sh "$DOMAIN_NAME" "$LETSENCRYPT_EMAIL" "${LETSENCRYPT_STAGING:-false}"
-
     # Start nginx (handles ports 80 and 443)
     echo "Starting nginx..."
     nginx -c /tmp/nginx.conf
 
-    # Start background renewal daemon (checks every 12 hours)
-    /app/server/ssl/cert-renewal-cron.sh &
+    # NOTE: Certificate management now handled by NestJS
+    # - Initial acquisition: SslCertificateLifecycleService.onModuleInit()
+    # - Renewal: SslCertificateRenewalScheduler (every 12 hours)
 
-    echo "=== SSL setup complete ==="
+    echo "=== SSL infrastructure ready ==="
     echo "nginx listening on :80 (redirect) and :443 (SSL)"
     echo "NestJS will listen on :3000 (internal only)"
+    echo "Certificate management handled by NestJS automatically"
 fi
 
 # =============================================================================
-
-# Start Redis server only if REDIS_HOST is localhost or not set
-if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
-  echo "Starting Redis server locally..."
-  redis-server /etc/redis/redis.conf &
-elif [ -n "$REDIS_URL" ]; then
-  echo "REDIS_URL connection is set: $REDIS_URL"
-else
-  echo "Using external Redis at $REDIS_HOST:$REDIS_PORT."
-
-  # Validate external Redis connection
-  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300 -- echo "Redis is up"; then
-    echo "Error: Unable to connect to Redis at $REDIS_HOST:$REDIS_PORT."
-    exit 1
-  fi
-fi
-
-# Check if PGRST_HOST starts with "localhost"
-if [[ "$PGRST_HOST" == localhost:* ]]; then
-  echo "Starting PostgREST server locally..."
-
-  # Generate PostgREST configuration in a writable directory
-  POSTGREST_CONFIG_PATH="/tmp/postgrest.conf"
-
-  echo "db-uri = \"${PGRST_DB_URI}\"" > "$POSTGREST_CONFIG_PATH"
-  echo "db-pre-config = \"postgrest.pre_config\"" >> "$POSTGREST_CONFIG_PATH"
-  echo "server-port = \"${PGRST_SERVER_PORT}\"" >> "$POSTGREST_CONFIG_PATH"
-
-  # Starting PostgREST
-  echo "Starting PostgREST..."
-  postgrest "$POSTGREST_CONFIG_PATH" &
-else
-  echo "Using external PostgREST at $PGRST_HOST."
-fi
-
-# Determine setup command based on the presence of ./server/dist
-if [ -d "./server/dist" ]; then
-  SETUP_CMD='npm run db:setup:prod'
-else
-  SETUP_CMD='npm run db:setup'
-fi
-
-# Wait for PostgreSQL connection
-if [ -z "$DATABASE_URL" ]; then
-  ./server/scripts/wait-for-it.sh $PG_HOST:${PG_PORT:-5432} --strict --timeout=300 -- echo "PostgreSQL is up"
-else
-  PG_HOST=$(echo "$DATABASE_URL" | awk -F'[/:@?]' '{print $6}')
-  PG_PORT=$(echo "$DATABASE_URL" | awk -F'[/:@?]' '{print $7}')
-
-  ./server/scripts/wait-for-it.sh "$PG_HOST:$PG_PORT" --strict --timeout=300 -- echo "PostgreSQL is up"
-fi
-
-# Run setup command if defined
-if [ -n "$SETUP_CMD" ]; then
-  $SETUP_CMD
-fi
 
 exec "$@"
