@@ -13,8 +13,10 @@ To connect to the NocoDB data source in ToolJet, you can either click on the **+
 
 Connecting to your NocoDB database requires the following details:
 
-- **API token**
-- **Host**
+- **API token**: your NocoDB accpimt API token. Read [here](https://nocodb.com/docs/product-docs/account-settings/api-tokens) on how to get the API token.
+- **API Version**: choose which NocoDB API version to run. API v3 is newer has the documentation [here](https://nocodb.com/apis/v3/data). If you just started, it is recommended to use API v3.
+- **Host**: NocoDB Cloud or Self Hosted. If Self Hosted you'll need to fill additional `Base URL` property.
+- **Base URL**: only when you choose Self Hosted as `Host` property. This is the url to your NocoDB instance.
 
 <img className="screenshot-full" src="/img/datasource-reference/nocodb/connection.png" alt="NocoDB Connection" />
 
