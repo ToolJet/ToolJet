@@ -5,8 +5,6 @@ title: Run Actions from RunJS query
 
 ToolJet allows you to execute various [actions](/docs/actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Run Query 
 
 To trigger a query, you can use the below functions:
@@ -25,13 +23,21 @@ await actions.runQuery('getSalesData')
 
 In the screenshot below, we are triggering two different queries using two different syntax available for `Run Query` action.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
-</div>
+### Reset Query
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+To reset a query, you can use the below functions:
+
+```js
+queries.getSalesData.reset()
+// replace getSalesData with your query name
+```
+or
+```js
+await actions.resetQuery('getSalesData') 
+// replace getSalesData with your query name
+```
 
 ### Get Query Data
 
@@ -67,10 +73,6 @@ let value = queries.getTodos.getLoadingState();
 //replace getTodos with your query name
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Set Variables
 
 To create a variable, you can use the below function:
@@ -78,10 +80,6 @@ To create a variable, you can use the below function:
 ```javascript
 actions.setVariable('<variableName>', `<variableValue>`)
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Unset Variable
 
@@ -92,10 +90,6 @@ To delete a created variable, you can use the below function:
 ```javascript
 actions.unSetVariable('<variableName>')
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Get Variables
 
@@ -118,10 +112,6 @@ actions.setPageVariable('number',1);
 return actions.getPageVariable('number');
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Logout
 
 To log out the current logged-in user from the ToolJet, use the below function:
@@ -129,10 +119,6 @@ To log out the current logged-in user from the ToolJet, use the below function:
 ```javascript
 actions.logout();
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Show Modal
 
@@ -142,10 +128,6 @@ To open a modal using RunJS query, use the below function:
 actions.showModal('<modalName>')
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Close Modal
 
 To close a modal using RunJS query, use the below function:
@@ -153,10 +135,6 @@ To close a modal using RunJS query, use the below function:
 ```javascript
 actions.closeModal('<modalName>')
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Set Local Storage 
 
@@ -168,10 +146,6 @@ Set a value in local storage using the below code:
 actions.setLocalStorage('key', 'value');
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Copy to Clipboard
 
 Use the below code to copy content to the clipboard:
@@ -179,10 +153,6 @@ Use the below code to copy content to the clipboard:
 ```javascript
 actions.copyToClipboard('<contentToCopy>')
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Generate File
 
@@ -212,10 +182,6 @@ Example for generating PDF file:
 actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}') // generate a text file named Pdffile1 with the data from the current page of table
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Go to App
 
 You can switch to a different application using the below action:
@@ -226,10 +192,6 @@ actions.goToApp('slug',queryparams)
 
 - `slug` can be found in URL of the released app after `application/` or in the share modal that opens up when you click on the `Share` button on the top-right of the app-builder
 - `queryparams` can be provided in this format - `[ ['key1','value1' ], ['key2','value2'] ]`
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Show Alert
 
@@ -246,10 +208,6 @@ Example:
 actions.showAlert('error' , 'This is an error' )
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Run Multiple Actions From RunJS Query
 
 To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
@@ -264,5 +222,3 @@ async function countdown(){
   await actions.showAlert('info','This is an information')
 }
 ```
-
-</div>
