@@ -1,15 +1,19 @@
 import { commonSelectors, cyParamName } from "Selectors/common";
-import { usersText } from "Texts/manageUsers";
-import { usersSelector } from "Selectors/manageUsers";
 import { ssoSelector } from "Selectors/manageSSO";
-import { ssoText } from "Texts/manageSSO";
-import * as common from "Support/utils/common";
-import { commonText } from "Texts/common";
+import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
+import * as common from "Support/utils/common";
+import { fillInputField } from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { ssoText } from "Texts/manageSSO";
+import { usersText } from "Texts/manageUsers";
+
 const envVar = Cypress.env("environment");
 
-export const manageUsersElements = () => {
-  cy.get(`[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`).should(($el) => {
+export const verifyManageUsersPageElements = () => {
+  cy.get(
+    `[data-cy="breadcrumb-header-${cyParamName(commonText.breadcrumbworkspaceSettingTitle)}"]>>`
+  ).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
       commonText.breadcrumbworkspaceSettingTitle
     );
@@ -161,18 +165,21 @@ export const inviteUserToWorkspace = (firstName, email) => {
   cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.signUpButton).click();
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const confirmInviteElements = (email) => {
+export const confirmInviteElements = (
+  email,
+  workspaceName = "My workspace"
+) => {
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text",
     "Sign up"
   );
   cy.get('[data-cy="signup-info"]').verifyVisibleElement(
     "have.text",
-    "Sign up to the workspace - My workspace. "
+    `Sign up to the workspace - ${workspaceName}. `
   );
 
   // cy.verifyLabel("Email")
@@ -238,10 +245,8 @@ export const bulkUserUpload = (
       .and("have.text", toastMessage);
     cy.get(usersSelector.modalClose).click();
   } else {
-    cy.get(commonSelectors.newToastMessage)
-      .should("be.visible")
-      .and("have.text", toastMessage);
-    cy.get(usersSelector.toastCloseButton).click();
+    cy.get(".go3958317564").should("be.visible").and("have.text", toastMessage);
+    cy.get('[data-cy="toast-close-button"]').click();
   }
   cy.wait(1500);
 };
@@ -268,47 +273,53 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(onboardingSelectors.nameInput, firstName);
-  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+  fillInputField({ Name: firstName, "Email address": email });
 };
 
 export const selectUserGroup = (groupName) => {
   cy.wait(1500);
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
 };
 
-export const inviteUserWithUserGroups = (
-  firstName,
-  email,
-  groupName1,
-  groupName2
-) => {
+export const selectGroup = (groupName, timeout = 1000) => {
+  cy.get(usersSelector.groupSelector).eq(0).type(groupName);
+  cy.wait(timeout);
+  cy.get(usersSelector.groupSelectInput).eq(0).check();
+};
+
+export const updateUserGroup = (groupName) => {
+  cy.get(usersSelector.userActionButton).click();
+  cy.get(usersSelector.editUserDetailsButton).click();
+  selectGroup(groupName);
+};
+
+export const inviteUserWithUserGroups = (firstName, email, ...groupNames) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[0]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
+    cy.get(usersSelector.groupSelector).eq(0).type(groupNames[1]);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -327,45 +338,36 @@ export const inviteUserWithUserGroups = (
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const fetchAndVisitInviteLink = (email) => {
+export const fetchAndVisitInviteLink = (
+  email,
+  workspaceName = "My workspace"
+) => {
   let invitationToken, organizationToken, workspaceId, userId;
 
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  })
+  cy.runSqlQueryOnDB(`select invitation_token from users where email='${email}';`)
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: "select id from organizations where name='My workspace';",
-      });
+      return cy.runSqlQueryOnDB(
+        `select id from organizations where name='${workspaceName}';`
+      );
     })
     .then((resp) => {
       workspaceId = resp.rows[0]?.id;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      });
+      return cy.runSqlQueryOnDB(`select id from users where email='${email}';`);
     })
     .then((resp) => {
       userId = resp.rows[0]?.id;
-
-      cy.task("dbConnection", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select invitation_token from organization_users where user_id='${userId}';`,
-      });
+      return cy.runSqlQueryOnDB(
+        `select invitation_token from organization_users where user_id='${userId}';`
+      );
     })
     .then((resp) => {
       organizationToken =
         resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
-
       const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
 
       cy.apiLogout();
-      cy.wait(1000);
+      cy.wait(200);
       cy.visit(url);
     });
 };
@@ -375,32 +377,36 @@ export const fetchAndVisitInviteLinkViaMH = (email) => {
     expect(mails).to.have.length.greaterThan(0);
     const lastMail = mails[mails.length - 1];
     const mailContent = lastMail && lastMail.Content ? lastMail.Content : {};
-    const mailBody = mailContent.Body || mailContent.Html || '';
+    const mailBody = mailContent.Body || mailContent.Html || "";
 
     // Clean the email body by removing quoted-printable encoding and HTML entities
     let cleanedBody = mailBody
-      .replace(/=\r?\n/g, '') // Remove quoted-printable line breaks (= at end of line)
-      .replace(/=3D/g, '=')   // Decode =3D back to =
+      .replace(/=\r?\n/g, "") // Remove quoted-printable line breaks (= at end of line)
+      .replace(/=3D/g, "=") // Decode =3D back to =
       .replace(/&quot;/g, '"')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
 
     // Extract URL from href attribute or plain text
-    let inviteUrl = '';
+    let inviteUrl = "";
 
     // Try to find URL in href attribute first
-    const hrefMatch = cleanedBody.match(/href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i);
+    const hrefMatch = cleanedBody.match(
+      /href=["']?(http[^"'\s>]*invitation[^"'\s>]*)/i
+    );
     if (hrefMatch) {
       inviteUrl = hrefMatch[1];
     } else {
       // Fallback: look for URL in plain text
-      const urlMatch = cleanedBody.match(/https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i);
-      inviteUrl = urlMatch ? urlMatch[0] : '';
+      const urlMatch = cleanedBody.match(
+        /https?:\/\/[^\s"'<>]*invitation[s]?[^\s"'<>]*/i
+      );
+      inviteUrl = urlMatch ? urlMatch[0] : "";
     }
 
     expect(inviteUrl).to.not.be.empty;
-    cy.log('Found invite URL: ' + inviteUrl);
+    cy.log("Found invite URL: " + inviteUrl);
     cy.visit(inviteUrl);
   });
 };
@@ -411,14 +417,14 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.wait(2000);
 
   cy.get("body").then(($body) => {
-    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+    const selectDropdown = $body.find(usersSelector.groupSelector);
 
     if (selectDropdown.length === 0) {
-      cy.get('[data-cy="user-group-select"]>>>>>').click();
+      cy.get(usersSelector.groupSelector).click();
     }
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.get(usersSelector.groupSelector).eq(0).type(role);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
     cy.wait(1000);
   });
 
@@ -435,4 +441,159 @@ export const inviteUserWithUserRole = (firstName, email, role) => {
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+};
+export const verifyUserStatusAndMetadata = (
+  email,
+  expectedStatus = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.searchUser(email);
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get("td small").should("have.text", expectedStatus);
+      cy.get("td[data-name='meta-header'] .metadata")
+        .should("be.visible")
+        .and("have.text", expectedMetadata);
+    });
+};
+
+export const openEditUserDetails = (
+  email,
+  activeStatusText = usersText.activeStatus,
+  expectedMetadata = "{..}"
+) => {
+  common.navigateToManageUsers();
+
+  verifyUserStatusAndMetadata(email, activeStatusText, expectedMetadata);
+
+  navigateToEditUser(email);
+};
+
+export const navigateToEditUser = (email) => {
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get('[data-cy="user-actions-button"]').click();
+    });
+  cy.get('[data-cy="edit-user-details-button"]')
+    .verifyVisibleElement("have.text", "Edit user details")
+    .click();
+};
+
+export const cleanAllUsers = () => {
+  let authHeaders;
+  const emailsToDelete = new Set();
+  const devEmail = "dev@tooljet.io";
+
+  const collectEmails = (users = []) => {
+    users.forEach(({ email }) => {
+      if (!email) {
+        return;
+      }
+
+      const normalized = String(email).toLowerCase();
+
+      if (normalized !== devEmail) {
+        emailsToDelete.add(email);
+      }
+    });
+  };
+
+  const fetchUsersByPage = (page = 1) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/users`,
+        headers: authHeaders,
+        qs: {
+          page,
+          searchText: "",
+          status: "",
+        },
+        log: false,
+      })
+      .then(({ body }) => {
+        collectEmails(body?.users ?? []);
+
+        const totalPages = Number(body?.meta?.total_pages) || 1;
+        return { totalPages };
+      });
+  };
+
+  return cy
+    .getAuthHeaders()
+    .then((headers) => {
+      authHeaders = headers;
+    })
+    .then(() => fetchUsersByPage(1))
+    .then(({ totalPages }) => {
+      if (totalPages <= 1) {
+        return;
+      }
+
+      const remainingPages = Array.from(
+        { length: totalPages - 1 },
+        (_, index) => index + 2
+      );
+      return cy
+        .wrap(remainingPages)
+        .each((pageNumber) => fetchUsersByPage(pageNumber));
+    })
+    .then(() => {
+      if (!emailsToDelete.size) {
+        return cy.log("No users to clean up");
+      }
+
+      const deletableEmails = Array.from(emailsToDelete);
+
+      cy.log(`Batch deleting ${deletableEmails.length} users...`);
+
+      const sanitizedEmails = deletableEmails.map((email) =>
+        email.replace(/'/g, "''")
+      );
+      const emailsArrayLiteral = `ARRAY['${sanitizedEmails.join("','")}']::text[]`;
+
+      return cy.runSqlQueryOnDB(`CALL delete_users(${emailsArrayLiteral});`);
+    });
+};
+
+export const apiArchiveUnarchiveUser = (
+  email,
+  action,
+  workspaceId = Cypress.env("workspaceId")
+) => {
+  return cy.apiGetUserDetails().then((res) => {
+    const resp = res?.body ?? res;
+    cy.log("org-users response: " + JSON.stringify(resp));
+
+    const users = Array.isArray(resp?.users) ? resp.users : [];
+    const orgUser = users.find((u) => u.email === email);
+
+    if (!orgUser?.id) {
+      throw new Error(`Organization user record not found for email: ${email}`);
+    }
+
+    const organizationId = orgUser.organization_id || workspaceId;
+
+    return cy
+      .getAuthHeaders()
+      .then((headers) =>
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/organization-users/${orgUser.id}/${action}`,
+          headers,
+          body: { organizationId },
+          log: false,
+        })
+      )
+      .then((response) => {
+        expect(response.status).to.be.oneOf([200, 201, 204]);
+        Cypress.log({
+          name: "Status Updated",
+          message: `User ${email} ${action}d`,
+        });
+        return response;
+      });
+  });
 };

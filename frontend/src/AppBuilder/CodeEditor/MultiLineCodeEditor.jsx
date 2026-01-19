@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -255,6 +255,7 @@ const MultiLineCodeEditor = (props) => {
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
           isQueryManager={isInsideQueryPane}
+          position={{ height: height }}
         />
 
         <CodeHinter.Portal
@@ -276,7 +277,7 @@ const MultiLineCodeEditor = (props) => {
                 ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
-                height={'100%'}
+                height={heightInPx}
                 minHeight={heightInPx}
                 {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
@@ -285,6 +286,9 @@ const MultiLineCodeEditor = (props) => {
                   langExtention,
                   search({
                     createPanel: handleSearchPanel,
+                  }),
+                  tooltips({
+                    parent: document.body,
                   }),
                   javascriptLanguage.data.of({
                     autocomplete: overRideFunction,

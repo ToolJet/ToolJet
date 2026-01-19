@@ -102,8 +102,8 @@ $btn-dark-color: #FFFFFF;
 }
 
 .leftsidebar-panel-header {
-  padding: 12px 16px 0px 16px;
-
+  padding: 16px;
+  border-bottom: 1px solid var(--border-weak);
 
   .panel-header-container {
     display: flex;
@@ -532,12 +532,3 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-//[Container-widget]Show scrollbar only on hover
-.widget-type-container {
-  overflow: hidden auto;
-  scrollbar-width: none;
-
-  &:hover {
-    scrollbar-width: auto;
-  }
-}

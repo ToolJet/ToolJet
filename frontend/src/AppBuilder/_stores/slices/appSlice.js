@@ -1,12 +1,12 @@
 import { appsService, appVersionService } from '@/_services';
-import { decimalToHex } from '@/Editor/editorConstants';
+import { decimalToHex, APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
-import _, { isEmpty } from 'lodash';
+import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
@@ -120,7 +120,17 @@ export const createAppSlice = (set, get) => ({
     ),
 
   updateCanvasBottomHeight: (components, moduleId = 'canvas') => {
-    const { currentLayout, getCurrentMode, setCanvasHeight, temporaryLayouts, getResolvedValue } = get();
+    const {
+      currentLayout,
+      getCurrentMode,
+      setCanvasHeight,
+      temporaryLayouts,
+      getResolvedValue,
+      pageSettings,
+      getPagesSidebarVisibility,
+      license,
+      getCurrentAdditionalActionValue,
+    } = get();
     const currentMode = getCurrentMode(moduleId);
 
     // Only keep canvas components (components with no parent) & show on layout true
@@ -142,14 +152,15 @@ export const createAppSlice = (set, get) => ({
 
     const maxPermanentHeight = currentMainCanvasComponents.reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
-      const visibility =
-        getResolvedValue(component?.component?.definition?.properties?.visibility?.value) ||
-        getResolvedValue(component?.component?.definition?.styles?.visibility?.value);
-
-      const height = visibility ? layout.height : 10;
       if (!layout) {
         return max;
       }
+
+      const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+      if (currentMode === 'view' && !visibility) {
+        return max;
+      }
+      const height = visibility ? layout.height : 10;
       const sum = layout.top + height;
       return Math.max(max, sum);
     }, 0);
@@ -157,14 +168,30 @@ export const createAppSlice = (set, get) => ({
     const temporaryLayoutsMaxHeight = Object.entries(temporaryLayouts)
       .filter(([componentId, layout]) => currentMainCanvasComponents.find((component) => componentId === component.id))
       .reduce((max, [componentId, layout]) => {
-        const sum = layout.top + layout.height;
+        const component = currentMainCanvasComponents.find((component) => componentId === component.id);
+        const visibility = getCurrentAdditionalActionValue(component.id, null, 'isVisible', 'visibility', moduleId);
+        if (currentMode === 'view' && !visibility) {
+          return max;
+        }
+        const sum = layout.top + (visibility ? layout.height : 10);
         return Math.max(max, sum);
       }, 0);
 
     const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
 
+    const isLicensed =
+      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
+    const { position, hideHeader, hideLogo } = pageSettings?.definition?.properties || {};
+    const headerHidden = isLicensed ? hideHeader : false;
+    const logoHidden = isLicensed ? hideLogo : false;
+    const isPagesSidebarHidden = getPagesSidebarVisibility(moduleId);
+    const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
-    const frameHeight = currentMode === 'view' ? 45 : 85;
+    const frameHeight =
+      currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
     setCanvasHeight(canvasHeight, moduleId);
   },
@@ -271,9 +298,8 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
-        slug ?? appId
-      }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
+        }/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,
@@ -391,6 +417,18 @@ export const createAppSlice = (set, get) => ({
       get().updateAppData(convertKeysToCamelCase(payload), moduleId);
     } catch (error) {
       console.log(error);
+    }
+  },
+
+  checkIfLicenseNotValid: () => {
+    const { featureAccess } = get().license;
+    const licenseStatus = featureAccess?.licenseStatus;
+    // When purchased, then isExpired key is also avialale else its not available
+    if (licenseStatus) {
+      if (has(licenseStatus, 'isExpired')) {
+        return licenseStatus?.isExpired;
+      }
+      return !licenseStatus?.isLicenseValid;
     }
   },
 });

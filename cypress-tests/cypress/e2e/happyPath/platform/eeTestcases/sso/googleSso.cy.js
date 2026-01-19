@@ -1,159 +1,131 @@
-import { fake } from "Fixtures/fake";
+import { commonSelectors } from "Selectors/common";
+import { toggleSsoViaUI, updateSsoId, cleanupTestUser } from "Support/utils/manageSSO";
+import { fillInputField } from "Support/utils/common";
+import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+describe('Google SSO Tests', () => {
+    const TEST_USER_EMAIL = 'qatooljet@gmail.com';
+    const TEST_USER_NAME = 'The QA';
+    const WORKSPACE_URL = '/my-workspace';
+    const WORKSPACE_SETTINGS_URL = '/my-workspace/workspace-settings/workspace-login';
+    const GOOGLE_SSO_BUTTON_SELECTOR = '[data-cy="google-sso-button"]';
 
-import {
-    addCSA,
-    verifyCSA
-} from "Support/utils/editor/textInput";
+    const emptyGoogleConfig = {
+        "type": "google",
+        "configs": {
+            "clientId": "",
+        },
+        "enabled": false
+    };
 
-import { addMultiEventsWithAlert } from "Support/utils/events";
-import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeData } from "Support/utils/inspector";
+    const googleSsoConfig = Cypress.env("googleSsoConfig");
 
-describe('Button Component Tests', () => {
+    const ERROR_MESSAGES = {
+        USER_NOT_EXIST_SIGNUP: "Google login failed - User does not exist, please sign up",
+        USER_NOT_IN_WORKSPACE: "Google login failed - User does not exist in the workspace"
+    };
 
+    const TEST_SSO_ID = '688f4b68-8c3b-41b2-aecb-1c1e9a112de1';
     beforeEach(() => {
-        // cy.apiLogin();
-        // cy.apiCreateApp(`${fake.companyName}-Button-App`);
-        // cy.openApp();
-        // cy.dragAndDropWidget("Button", 500, 500);
-        // cy.get('[data-cy="query-manager-toggle-button"]').click();
+        cy.apiLogin();
+        cy.getAuthHeaders().as('adminHeaders').then((adminHeaders) => {
+            cy.apiUpdateSSOConfig(emptyGoogleConfig, 'instance', adminHeaders);
+            cy.apiUpdateAllowSignUp(false, 'organization', adminHeaders);
+            cy.apiUpdateAllowSignUp(false, 'instance', adminHeaders);
+            cy.apiUpdateSSOConfig(emptyGoogleConfig, 'workspace', adminHeaders);
+            cleanupTestUser(TEST_USER_EMAIL);
+        });
     });
 
-    it('should verify all the exposed values on inspector', () => {
-        cy.loginByGoogleApi()
-        cy.pause()
-        cy.get(commonWidgetSelector.sidebarinspector).click();
-        cy.get(".tooltip-inner").invoke("hide");
-        cy.mhGetAllMails().then((emails) => {
-            // Log the emails to the Cypress console
-            cy.log(emails);
+    it('should verify sso without configuration on instance', () => {
+
+        toggleSsoViaUI('Google')
+        cy.apiLogout();
+        cy.visit('/');
+        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
+        cy.origin('https://accounts.google.com', () => {
+            cy.contains('Authorization Error').should('be.visible');
         });
 
-
-        cy.pause();
-        // openNode("components");
-        // openAndVerifyNode("button1", exposedValues, verifyNodeData);
-        // verifyNodes(functions, verifyNodeData);
-        //id is pending
-
     });
-    it.only('logs in via the full GitHub SSO flow (Cypress-only)', () => {
-        const githubUsername = Cypress.env('GITHUB_USERNAME');
-        const githubPassword = Cypress.env('GITHUB_PASSWORD');
 
-        // Start at your app first to establish localhost as the top origin
-        cy.visit('http://localhost:8082');
-        cy.get('[data-cy="git-sso-button"]').click();
-        cy.pause()
-        // 1. Click the GitHub SSO button instead of visiting OAuth URL directly
+    it('should verify sso without configuration on workspace', () => {
 
+        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL)
+        cy.apiLogout();
 
-
-        // 2. Enter GitHub credentials - now we need cy.origin since we're going from localhost to github
-        // cy.origin('https://github.com', { args: { githubUsername, githubPassword } }, ({ githubUsername, githubPassword }) => {
-
-        cy.pause()
-        cy.get('input[name="login"]', { timeout: 15000 }).type(githubUsername);
-        cy.get('input[name="password"]').type(githubPassword, { log: false });
-        cy.get('input[name="commit"]').click();
-
-        // 3. Approve the app if prompted (still within the same cy.origin block)
-        cy.get('button', { timeout: 10000 }).then($btns => {
-            const approveBtn = $btns.filter((i, el) => el.innerText.includes('Authorize') || el.value?.includes('Authorize'));
-            if (approveBtn.length) {
-                cy.wrap(approveBtn).click({ force: true });
-            }
+        cy.visit(WORKSPACE_URL);
+        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
+        cy.origin('https://accounts.google.com', () => {
+            cy.contains('Authorization Error').should('be.visible');
         });
-        // });
-
-        // 3. Wait for redirect back to your app and assert successful login
-        cy.url({ timeout: 15000 }).should('include', '/sso/git');
-
-        // After the OAuth callback, you should be redirected to your app's main page
-        cy.url({ timeout: 10000 }).should('include', 'localhost:8082');
-
-        // Adjust this assertion based on what actually appears after successful login
-        // This might be a dashboard, user profile, or specific page element
-        cy.get('body').should('be.visible'); // Basic check that page loaded
     });
 
 
-    it('should verify all the events from the button', () => {
-        const events = [
-            { event: "On hover", message: "On hover Event" },
-            { event: "On Click", message: "On Click Event" },
-        ];
+    it('should verify signup via sso to instance', () => {
 
-        addMultiEventsWithAlert(events);
-        const textInputSelector = '[data-cy="draggable-widget-button1"]';
+        toggleSsoViaUI('Google');
+        fillInputField(googleSsoConfig);
+        cy.get(commonSelectors.saveButton).eq(1).click();
 
-        const verifyTextInputEvents = (selector) => {
-            cy.get(selector).realHover()
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On hover Event', false);
+        cy.wait(1000);
+        cy.apiLogout();
+        cy.visit('/');
+        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
 
-            cy.get(selector).click();
-            cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
-        };
+        cy.apiLoginByGoogle('');
+        cy.verifyToastMessage(commonSelectors.toastMessage, ERROR_MESSAGES.USER_NOT_EXIST_SIGNUP);
 
-        verifyTextInputEvents(textInputSelector);
+        cy.apiLogin();
+        cy.getAuthHeaders().then((freshAdminHeaders) => {
+            cy.apiUpdateAllowSignUp(true, 'instance', freshAdminHeaders);
+            cy.apiLogout();
+
+            cy.apiLoginByGoogle('');
+
+            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
+
+        });
     });
 
-    it.skip('should verify all the CSA from button', () => {
-        addMultiEventsWithAlert([
-            { event: "On hover", message: "On hover Event" },
-            { event: "On Click", message: "On Click Event" },
-        ]);
-        const actions = [
-            { event: "On click", action: "Set visibility", valueToggle: "{{false}}" }, //b2
-            { event: "On click", action: "Visibility(deprecated)", valueToggle: "{{true}}" },//b3
-            { event: "On click", action: "Disable(deprecated)", valueToggle: "{{true}}" },//b4
-            { event: "On click", action: "Set disable", valueToggle: "{{false}}" },//b5
-            { event: "On click", action: "Set text", value: "New Button Text" },//b6
-            { event: "On click", action: "Click" },//b7
-            { event: "On click", action: "Set loading", valueToggle: "{{true}}" },//b8
-            { event: "On click", action: "Loading(deprecated)", valueToggle: "{{false}}" },//b9
+    it('should verify signup via sso to workspace', () => {
+        const orgId = Cypress.env("workspaceId");
+        updateSsoId(TEST_SSO_ID, 'google', `${orgId}`);
 
-        ];
-        addCSA("button1", actions);
-        let component = "button1";
-        cy.get(commonWidgetSelector.draggableWidget("button2")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
+        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
+        fillInputField(googleSsoConfig);
+        cy.get(commonSelectors.saveButton).eq(1).click();
 
-        cy.get(commonWidgetSelector.draggableWidget("button3")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).should("be.visible");
+        cy.wait(1000);
+        cy.apiLogout();
+        cy.visit(WORKSPACE_URL);
+        cy.get(GOOGLE_SSO_BUTTON_SELECTOR).click();
 
-        cy.get(commonWidgetSelector.draggableWidget("button4")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).parent().should("have.attr", "disabled");
+        cy.apiLoginByGoogle();
+        cy.verifyToastMessage(commonSelectors.toastMessage, ERROR_MESSAGES.USER_NOT_IN_WORKSPACE);
 
-        cy.get(commonWidgetSelector.draggableWidget("button5")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).parent().should("not.have.attr", "disabled");
+        cy.apiLogin();
+        cy.getAuthHeaders().then((freshAdminHeaders) => {
+            cy.apiUpdateAllowSignUp(true, 'organization', freshAdminHeaders);
+            cy.apiLogout();
 
-        cy.get(commonWidgetSelector.draggableWidget("button6")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
+            cy.visit(WORKSPACE_URL);
+            cy.apiLoginByGoogle();
+            cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
-        cy.get(commonWidgetSelector.draggableWidget("button7")).click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
+        });
+    });
+    it('should verify invite and login via sso to workspace', () => {
+        toggleSsoViaUI('Google', WORKSPACE_SETTINGS_URL);
+        fillInputField(googleSsoConfig);
+        cy.get(commonSelectors.saveButton).eq(1).click();
 
-        cy.get(commonWidgetSelector.draggableWidget("button8")).click();
-        cy.get(commonWidgetSelector.draggableWidget(component))
-            .parent()
-            .within(() => {
-                cy.get(".tj-widget-loader").should("be.visible");
-            });
+        cy.apiUserInvite(TEST_USER_NAME, TEST_USER_EMAIL);
+        fetchAndVisitInviteLink(TEST_USER_EMAIL);
 
-        cy.get(commonWidgetSelector.draggableWidget("button9")).click();
-        cy.notVisible(".tj-widget-loader");
+        cy.apiLoginByGoogle()
+        cy.get(commonSelectors.acceptInviteButton).click()
+        cy.get(commonSelectors.breadcrumbPageTitle).should('have.text', 'All apps');
 
     });
-
-    // afterEach(() => {
-    //     cy.apiDeleteApp();
-    // });
-
-});
-
-it('xyz', function () {
-    cy.visit('localhost:8082')
-
 });

@@ -11,6 +11,8 @@ import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
+import { authenticationService } from '@/_services';
+import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
   const params = useParams();
@@ -58,24 +60,65 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
-      const { versionName, environmentName, ...restDetails } = accessDetails;
+      const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
-        const search = queryString.stringify({
-          env: environmentName,
-          version: versionName,
-          ...restQueryParams,
-        });
-        /* means. the User is trying to load old preview URL. Let's change these to query params */
-        navigate(
-          {
-            pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
-            search,
-          },
-          { replace: true, state: location?.state }
-        );
+        const envFromUrl = restQueryParams.env;
+
+        // Get user's environment access permissions
+        const session = authenticationService.currentSessionValue;
+        const perms = session?.app_group_permissions;
+        const hasEditPermission =
+          perms?.is_all_editable ||
+          (appId && Array.isArray(perms?.editable_apps_id) && perms.editable_apps_id.includes(appId));
+
+        // Get environment access for this user - use appId instead of slug
+        const environmentAccess = getEnvironmentAccessFromPermissions(perms, appId);
+
+        // For all users (edit and view), validate environment access and use safe environment
+        // Even editors need to be restricted if they don't have permission to requested environment
+        const requestedEnv = (environmentName || envFromUrl || '').toLowerCase();
+        const effectiveEnv = getSafeEnvironment(environmentAccess, requestedEnv, hasEditPermission);
+
+        // Check if license is invalid/expired (basic plan) - from store
+        const storeState = useStore.getState();
+        const featureAccess = storeState?.license?.featureAccess;
+        // Only exclude env if license is explicitly expired or invalid
+        // If license status is undefined (not loaded yet), default to including env
+        const isBasicPlan =
+          featureAccess?.licenseStatus?.isExpired === true ||
+          featureAccess?.licenseStatus?.isLicenseValid === false ||
+          featureAccess?.plan === 'starter';
+
+        // Don't add env param for free/basic/starter plan, expired or invalid license
+        // Also don't add env if it wasn't in the original URL (user didn't request specific env)
+        const shouldIncludeEnv = !isBasicPlan && (envFromUrl || environmentName);
+
+        const queryParams = {
+          // Keep other params but let env/version below override
+          ...Object.fromEntries(Object.entries(restQueryParams).filter(([k]) => k !== 'env' && k !== 'version')),
+          version: versionName || restQueryParams.version,
+          // Only add env if license is valid AND env was explicitly requested in URL
+          ...(shouldIncludeEnv && effectiveEnv ? { env: effectiveEnv } : {}),
+        };
+
+        const newSearch = queryString.stringify(queryParams);
+        const currentSearch = location.search?.replace('?', '');
+
+        // Only navigate if the search params actually changed to avoid infinite loops
+        if (newSearch !== currentSearch) {
+          /* means. the User is trying to load old preview URL. Let's change these to query params */
+          navigate(
+            {
+              pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`,
+              search: newSearch,
+            },
+            { replace: true, state: location?.state }
+          );
+        }
       }
-      setExtraProps(restDetails);
+      // Include appId in extraProps so it's available to the app
+      setExtraProps({ ...restDetails, id: appId });
       setLoading(false);
     }
   };

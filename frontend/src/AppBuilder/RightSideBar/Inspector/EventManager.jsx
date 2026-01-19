@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
-import { ActionTypes } from '@/Editor/ActionTypes';
+import { ActionTypes } from './ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
@@ -12,19 +12,16 @@ import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
+import { useAppDataActions } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
-import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -37,7 +34,6 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { components as selectComponents } from 'react-select';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { APP_MODES } from '@/AppBuilder/LeftSidebar/GlobalSettings/AppModeToggle';
 
 export const EventManager = ({
   sourceId,
@@ -75,7 +71,6 @@ export const EventManager = ({
   const actionsUpdatedLoader = useStore((state) => state.eventsSlice.getActionsUpdatedLoader(), shallow);
   const eventToDeleteLoaderIndex = useStore((state) => state.eventsSlice.getEventToDeleteLoaderIndex(), shallow);
 
-  const { handleYmapEventUpdates } = useContext(EditorContext) || {};
   const { updateState } = useAppDataActions();
 
   const currentEvents = allAppEvents?.filter((event) => {
@@ -94,11 +89,6 @@ export const EventManager = ({
   const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    handleYmapEventUpdates && handleYmapEventUpdates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ allAppEvents })]);
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
@@ -387,7 +377,6 @@ export const EventManager = ({
 
     const eventSourceid = updatedEvent?.sourceId;
 
-    // useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([eventSourceid]);
     newEvents[index] = updatedEvent;
 
     handleLowPriorityWork(() => {
@@ -448,8 +437,6 @@ export const EventManager = ({
       attachedTo: sourceId,
       index: eventIndex,
     });
-
-    handleYmapEventUpdates();
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -514,7 +501,7 @@ export const EventManager = ({
       <Popover
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'dark-theme'} shadow`}
+        className={`${darkMode && 'dark-theme'} shadow inspector-event-manager-popover`}
         data-cy="popover-card"
       >
         <Popover.Body
@@ -712,7 +699,7 @@ export const EventManager = ({
               </div>
             )}
 
-            {event.actionId === 'run-query' && (
+            {['run-query', 'reset-query'].includes(event.actionId) && (
               <>
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
@@ -755,7 +742,9 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+                {event.actionId === 'run-query' && (
+                  <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+                )}
               </>
             )}
 

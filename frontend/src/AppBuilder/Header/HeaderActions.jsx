@@ -11,8 +11,6 @@ import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 import { ToggleLayoutButtons } from './ToggleLayoutButtons';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
-
-
 const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPreviewBtn = true }) {
   const {
     currentLayout,
@@ -64,33 +62,33 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       )}
       {showPreviewBtn && (
 
-        <ButtonComponent
-          size="default"
-          variant="outline"
-          leadingIcon="play01"
-          data-cy="preview-link-button"
-          style={{ padding: "7px 12px" }}
 
+        <Link
+          title="Preview"
+          to={appPreviewLink}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="preview-link-button"
+          className="text-decoration-none"
+          style={{ color: 'var(--text-default)' }}
         >
-          <Link
-            title="Preview"
-            to={appPreviewLink}
-            target="_blank"
-            rel="noreferrer"
+          <ButtonComponent
+            isLucid
+            size="default"
+            variant="outline"
+            leadingIcon="play"
             data-cy="preview-link-button"
-            className="text-decoration-none"
-            style={{ color: 'var(--text-default)' }}
+            style={{ padding: "7px 12px" }}
           >
 
             Preview
-          </Link>
-        </ButtonComponent>
+          </ButtonComponent>
+        </Link>
+      )}
 
-      )
-      }
-      < Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
+      <Tooltip id="tooltip-for-undo" className="tooltip" data-cy="undo-tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" data-cy="redo-tooltip" />
-    </div >
+    </div>
   );
 };
 

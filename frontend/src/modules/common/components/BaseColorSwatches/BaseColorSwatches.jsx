@@ -67,6 +67,7 @@ const BaseColorSwatches = ({
     return (
       <Popover
         className={classNames(
+          'codebuilder-color-swatches-popover',
           { 'dark-theme': darkMode },
           { 'inspector-color-input-popover': colorPickerPosition === 'top' }
         )}
@@ -182,6 +183,7 @@ const BaseColorSwatches = ({
               fallbackPlacements={['top', 'left']}
               rootClose={true}
               overlay={eventPopover()}
+              rootCloseEvent="mousedown" // close picker when mousedown anywhere on screen
             >
               {ColorPickerInputBox()}
             </OverlayTrigger>

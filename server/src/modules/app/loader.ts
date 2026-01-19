@@ -2,7 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { getImportPath } from './constants';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
+import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';
 import { getEnvVars } from '../../../scripts/database-config-utils';
 import { LoggerModule } from 'nestjs-pino';
@@ -12,10 +12,10 @@ import { RequestContextModule } from '@modules/request-context/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { GuardValidatorModule } from './validators/feature-guard.validator';
-import { SentryModule } from '@modules/observability/sentry/module';
 import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -45,9 +45,13 @@ export class AppModuleLoader {
       }),
       ScheduleModule.forRoot(),
       BullModule.forRoot({
-        redis: {
+        connection: {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT) || 6379,
+          ...(process.env.REDIS_USERNAME && { username: process.env.REDIS_USERNAME }),
+          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+          ...(process.env.REDIS_DB && { db: parseInt(process.env.REDIS_DB) }),
+          ...(process.env.REDIS_TLS === 'true' && { tls: {} }),
         },
       }),
       await ConfigModule.forRoot({
@@ -67,7 +71,7 @@ export class AppModuleLoader {
           })(),
           autoLogging: {
             ignore: (req) => {
-              if (req.url === '/api/health') {
+              if (req.url === '/api/health' || req.url === '/api/metrics') {
                 return true;
               }
               return false;
@@ -99,9 +103,8 @@ export class AppModuleLoader {
             censor: '[REDACTED]',
           },
           customProps: (req, res) => {
-            return {
-              transactionId: res?.['locals']?.tj_transactionId || '',
-            };
+            const id = res?.['locals']?.tj_transactionId;
+            return id ? { transactionId: id } : {};
           },
         },
       }),
@@ -118,14 +121,6 @@ export class AppModuleLoader {
         OpenTelemetryModule.forRoot({
           metrics: {
             hostMetrics: true,
-            apiMetrics: {
-              enable: true,
-              defaultAttributes: {
-                custom: 'metrics',
-              },
-              ignoreRoutes: ['/favicon.ico', '/api/health'],
-              ignoreUndefinedRoutes: false,
-            },
           },
         })
       );
@@ -142,13 +137,7 @@ export class AppModuleLoader {
     }
 
     if (process.env.APM_VENDOR == 'sentry') {
-      staticModules.unshift(
-        SentryModule.forRoot({
-          dsn: process.env.SENTRY_DNS,
-          tracesSampleRate: 1.0,
-          debug: !!process.env.SENTRY_DEBUG,
-        })
-      );
+      staticModules.unshift(SentryModule.forRoot());
     }
 
     /**

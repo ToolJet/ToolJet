@@ -18,6 +18,7 @@ import {
   VersionReleaseDto,
 } from './dto';
 import { APP_TYPES, FEATURE_KEY } from './constants';
+import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
 import { AppsUtilService } from './util.service';
@@ -79,22 +80,50 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        resourceData: {
+          appSlug: app.slug,
+          isPublic: app.isPublic,
+        },
+        metadata: {
+          icon: icon || null,
+        },
       });
 
       return decamelizeKeys(app);
     });
   }
 
-  async validatePrivateAppAccess(app: App, ability: AppAbility, validateAppAccessDto: ValidateAppAccessDto) {
-    const { versionName, environmentName, versionId, envId } = validateAppAccessDto;
+  async validatePrivateAppAccess(
+    app: App,
+    ability: AppAbility,
+    user: User,
+    validateAppAccessDto: ValidateAppAccessDto
+  ) {
+    const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
       slug: app.slug,
       type: app.type,
     };
+    // Check permissions
+    const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+    const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+    // For preview/viewer access: enforce access type for users without edit permission
+    if (!hasEditPermission) {
+      // Viewer role: require access_type=view explicitly; reject edit or missing
+      if (accessType?.toLowerCase() !== 'view') {
+        throw new ForbiddenException({
+          organizationId: app.organizationId,
+          type: 'restricted-preview',
+        });
+      }
+    }
     /* If the request comes from preview which needs version id */
     if (versionName || environmentName || (versionId && envId)) {
-      if (!ability.can(FEATURE_KEY.UPDATE, App, app.id)) {
+      // Check permissions (already computed above)
+
+      if (!hasEditPermission && !hasViewPermission) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -118,12 +147,55 @@ export class AppsService implements IAppsService {
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
+
       const environment = await this.appsUtilService.validateVersionEnvironment(
         environmentName,
         envId,
         version.currentEnvironmentId,
         app.organizationId
       );
+
+      // Validate environment access for all users (both builders and viewers)
+      // Skip validation only for released environment (everyone with view access can see released)
+      if (environment) {
+        const envName = environment.name.toLowerCase();
+
+        // Always allow access to released environment for all users who can view the app
+        if (envName !== 'released') {
+          const request = RequestContext?.currentContext?.req as any;
+          const userPermissions = request?.tj_user_permissions;
+          const appPermissions = userPermissions?.APP;
+
+          let hasEnvironmentAccess = false;
+          if (appPermissions) {
+            switch (envName) {
+              case 'development':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'development'
+                );
+                break;
+              case 'staging':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(appPermissions, app.id, 'staging');
+                break;
+              case 'production':
+                hasEnvironmentAccess = AbilityUtilService.canAccessAppInEnvironment(
+                  appPermissions,
+                  app.id,
+                  'production'
+                );
+                break;
+            }
+          }
+
+          // If user doesn't have access to this environment, reject with restricted-preview
+          // Apply to all users (builders and viewers)
+          if (!hasEnvironmentAccess) {
+            throw new ForbiddenException('restricted-preview');
+          }
+        }
+      }
       if (version) response['versionName'] = version.name;
       if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
@@ -143,11 +215,7 @@ export class AppsService implements IAppsService {
       throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const { id, slug } = app;
-    return {
-      slug: slug,
-      id: id,
-    };
+    return { id: app.id, slug: app.slug };
   }
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
@@ -165,12 +233,24 @@ export class AppsService implements IAppsService {
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
 
+    if (appUpdateDto.is_maintenance_on !== undefined && appUpdateDto.is_maintenance_on !== app.isMaintenanceOn) {
+      this.eventEmitter.emit('app.maintenance-toggled', {
+        appId: app.id,
+        isMaintenanceOn: appUpdateDto.is_maintenance_on,
+      });
+    }
+
     //APP_UPDATE audit
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId,
       organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      resourceData: {
+        appSlug: app.slug,
+        isPublic: app.isPublic,
+        updatedFields: Object.keys(appUpdateDto),
+      },
       metadata: { updateParams: { app: appUpdateDto } },
     });
 
@@ -207,6 +287,10 @@ export class AppsService implements IAppsService {
       organizationId: user.organizationId,
       resourceId: app.id,
       resourceName: app.name,
+      resourceData: {
+        appSlug: app.slug,
+        isPublic: app.isPublic,
+      },
     });
   }
 
@@ -271,9 +355,7 @@ export class AppsService implements IAppsService {
       ? await this.versionRepository.findDataQueriesForVersion(app.editingVersion.id)
       : [];
 
-    const pagesForVersion = app.editingVersion
-      ? await this.pageService.findPagesForVersion(app.editingVersion.id)
-      : [];
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
     const eventsForVersion = app.editingVersion
       ? await this.eventService.findEventsForVersion(app.editingVersion.id)
       : [];
@@ -349,9 +431,7 @@ export class AppsService implements IAppsService {
         ? await this.versionRepository.findVersion(app.currentVersionId)
         : await this.versionRepository.findVersion(app.editingVersion?.id);
 
-      const pagesForVersion = app.editingVersion
-        ? await this.pageService.findPagesForVersion(versionToLoad.id)
-        : [];
+      const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
       const appTheme = await this.organizationThemeUtilService.getTheme(
         app.organizationId,
@@ -384,6 +464,10 @@ export class AppsService implements IAppsService {
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,
+        editing_version: {
+          id: versionToLoad.id,
+          name: versionToLoad.name,
+        },
       };
     };
 
@@ -403,7 +487,12 @@ export class AppsService implements IAppsService {
       //check if the app version is eligible for release
       const currentEnvironment: AppEnvironment = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
+        .select([
+          'app_environments.id',
+          'app_environments.name',
+          'app_environments.isDefault',
+          'app_environments.priority',
+        ])
         .innerJoinAndSelect('app_versions', 'app_versions', 'app_versions.current_environment_id = app_environments.id')
         .where('app_versions.id = :versionToBeReleased', {
           versionToBeReleased,
@@ -414,15 +503,18 @@ export class AppsService implements IAppsService {
         LICENSE_FIELD.MULTI_ENVIRONMENT,
         user.organizationId
       );
-      /* 
-          Allow version release only if the environment is on 
-          production with a valid license or 
-          expired license and development environment (priority no.1) (CE rollback) 
+      /*
+          Allow version release only if the environment is on
+          production with a valid license or
+          expired license and development environment (priority no.1) (CE rollback)
           */
 
       if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
+
+      // Get version details for audit log
+      const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 
@@ -432,6 +524,14 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        resourceData: {
+          appSlug: app.slug,
+          isPublic: app.isPublic,
+          releasedVersionId: versionToBeReleased,
+          releasedVersionName: releasedVersion?.name,
+          environmentId: currentEnvironment?.id,
+          environmentName: currentEnvironment?.name,
+        },
         metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
       });
       return;

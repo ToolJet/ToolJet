@@ -20,6 +20,7 @@ export const TableExposedVariables = ({
   pageIndex = 1,
   lastClickedRowRef,
   hasDataChanged,
+  paginationBtnClicked,
 }) => {
   const { moduleId } = useModuleContext();
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -78,6 +79,14 @@ export const TableExposedVariables = ({
     [table]
   );
 
+  const getColumnKey = useCallback(
+    (columnId) => {
+      const column = table.getColumn(columnId);
+      return column.columnDef.accessorKey;
+    },
+    [table]
+  );
+
   useEffect(() => {
     setExposedVariables({
       currentData: data,
@@ -127,13 +136,6 @@ export const TableExposedVariables = ({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
       });
-    } else if (!allowSelection) {
-      setExposedVariables({
-        selectedRow: {},
-        selectedRowId: null,
-        selectedRows: [],
-        selectedRowsId: [],
-      });
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -146,13 +148,27 @@ export const TableExposedVariables = ({
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
+
+    // Fire onPageChanged event only when the page was changed using pagination buttons and input in table footer,
+    // not when using setPage CSA to maintain backward compatibility
+    if (paginationBtnClicked.current) {
+      mounted && fireEvent('onPageChanged');
+    }
+    paginationBtnClicked.current = false; // reset the flag
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIndex, setExposedVariables]); // Didn't add mounted as it's not a dependency
+  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
     if (sorting.length > 0) {
-      const sortApplied = [{ column: getColumnName(sorting[0].id), direction: sorting[0].desc ? 'desc' : 'asc' }];
+      const sortApplied = [
+        {
+          column: getColumnName(sorting[0].id),
+          columnKey: getColumnKey(sorting[0].id),
+          direction: sorting[0].desc ? 'desc' : 'asc',
+        },
+      ];
       setExposedVariables({ sortApplied });
       fireEvent('onSort');
       prevSortingLength.current = sorting.length;
@@ -161,7 +177,7 @@ export const TableExposedVariables = ({
       prevSortingLength.current && fireEvent('onSort');
       prevSortingLength.current = null;
     }
-  }, [sorting, getColumnName, setExposedVariables, fireEvent]);
+  }, [sorting, getColumnName, getColumnKey, setExposedVariables, fireEvent]);
 
   //   // Expose current page data
   useEffect(() => {
@@ -227,6 +243,14 @@ export const TableExposedVariables = ({
       });
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
+
+
+  // Clear dataUpdates & changeSet when data is changed
+  useEffect(() => {
+    if (!hasDataChanged) return;
+    clearEditedRows(id);
+    setExposedVariables({ dataUpdates: [], changeSet: {}, updatedData: data });
+  }, [hasDataChanged, clearEditedRows, id, setExposedVariables, data]);
 
   useEffect(() => {
     if (!hasDataChanged) return;

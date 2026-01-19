@@ -14,7 +14,7 @@ describe("Chaining of queries", () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-chaining-App`);
     cy.openApp();
-    cy.apiFetchDataSourcesId();
+    cy.apiFetchDataSourcesIdFromApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
@@ -57,7 +57,7 @@ describe("Chaining of queries", () => {
       dsKind: "tooljetdb",
     });
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `http://localhost:3000/api/data-sources`,
       `cypress-${dsName}-qc-postgresql`,
       "postgresql",

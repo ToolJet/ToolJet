@@ -386,6 +386,16 @@ class HomePageComponent extends React.Component {
   };
 
   cloneApp = async (appName, appId) => {
+    const { appsLimit } = this.state;
+    const current = appsLimit?.current ?? 0;
+    const total = appsLimit?.total ?? 0;
+    const canAddUnlimited = appsLimit?.canAddUnlimited ?? false;
+
+    //  Check app limit before cloning
+    if (!canAddUnlimited && current >= total) {
+      toast.error('You have reached your maximum limit for apps. Upgrade your plan for more.');
+      return;
+    }
     this.setState({ isCloningApp: true });
     try {
       const data = await appsService.cloneResource(
@@ -686,7 +696,7 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
+    } else if (this.props.appType === 'front-end') {
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -707,6 +717,9 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
+    } else {
+      // Module permissions return true if builder
+      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
     }
   }
 
@@ -720,6 +733,10 @@ class HomePageComponent extends React.Component {
 
   canUpdateApp = (app) => {
     return this.canUserPerform(this.state.currentUser, 'update', app);
+  };
+
+  canViewApp = (app) => {
+    return this.canUserPerform(this.state.currentUser, 'read', app) && !this.canUpdateApp(app);
   };
 
   canDeleteApp = (app) => {
@@ -1241,16 +1258,29 @@ class HomePageComponent extends React.Component {
     }
 
     const invalidLicense = featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid;
+    const hasMultiEnvironment = featureAccess?.multiEnvironment || false;
+    // Only exclude env param if license is invalid/expired (basic plan)
+    // If license is valid but multi-environment feature is not available, still include env param
+    const shouldExcludeEnvParam = invalidLicense;
+    const moduleEnabled = featureAccess?.modulesEnabled || false;
     const deleteModuleText =
       'This action will permanently delete the module from all connected applications. This cannot be reversed. Confirm deletion?';
 
     const getDisabledState = () => {
       if (this.props.appType === 'module') {
-        return invalidLicense;
+        return !moduleEnabled;
       } else if (this.props.appType === 'front-end') {
         return appsLimit?.percentage >= 100;
       } else {
         return this.hasWorkflowLimitReached();
+      }
+    };
+
+    const showCreateAppButtonTooltip = () => {
+      if (this.props.appType === 'module') {
+        return true;
+      } else {
+        return this.canCreateApp();
       }
     };
     const modalConfigs = {
@@ -1475,6 +1505,7 @@ class HomePageComponent extends React.Component {
             handleConfirm={this.importGitApp}
             confirmBtnProps={{
               title: 'Import app',
+              tooltipMessage: '',
               isLoading: importingApp,
               disabled: importingApp || !selectedAppRepo || importingGitAppOperations?.message,
             }}
@@ -1678,7 +1709,7 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
               <div className="create-new-app-license-wrapper">
-                {this.canCreateApp() && (
+                {showCreateAppButtonTooltip() && (
                   <LicenseTooltip
                     limits={appsLimit}
                     feature={
@@ -1889,7 +1920,7 @@ class HomePageComponent extends React.Component {
                         <div>Create reusable groups of components and queries via modules.</div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <a
-                            href="https://docs.tooljet.ai/docs/app-builder/modules/overview"
+                            href="https://docs.tooljet.com/docs/app-builder/modules/overview"
                             target="_blank"
                             className="docs-link"
                             rel="noreferrer"
@@ -1901,7 +1932,7 @@ class HomePageComponent extends React.Component {
                       </div>
 
                       <ButtonSolid
-                        disabled={invalidLicense}
+                        disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
                         onClick={this.openCreateAppModal}
@@ -1910,8 +1941,8 @@ class HomePageComponent extends React.Component {
                         variant="tertiary"
                       >
                         <ToolTip
-                          show={invalidLicense}
-                          message="Modules are available only on paid plans"
+                          show={!moduleEnabled}
+                          message="Modules are not available on your current plan."
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
@@ -1936,6 +1967,7 @@ class HomePageComponent extends React.Component {
                     canCreateApp={this.canCreateApp}
                     canDeleteApp={this.canDeleteApp}
                     canUpdateApp={this.canUpdateApp}
+                    canViewApp={this.canViewApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
                     exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}
@@ -1946,7 +1978,8 @@ class HomePageComponent extends React.Component {
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
                     appType={this.props.appType}
-                    basicPlan={invalidLicense}
+                    basicPlan={shouldExcludeEnvParam}
+                    moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
                   />
                 )}

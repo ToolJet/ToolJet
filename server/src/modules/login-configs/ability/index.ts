@@ -22,6 +22,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         [
           FEATURE_KEY.GET_ORGANIZATION_CONFIGS,
           FEATURE_KEY.UPDATE_ORGANIZATION_SSO,
+          FEATURE_KEY.DELETE_ORGANIZATION_SSO,
           FEATURE_KEY.UPDATE_ORGANIZATION_GENERAL_CONFIGS,
           FEATURE_KEY.INSTANCE_SSO_INHERIT,
         ],
