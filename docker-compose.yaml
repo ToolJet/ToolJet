@@ -77,7 +77,7 @@ services:
 
   postgrest:
     container_name: postgrest
-    image: postgrest/postgrest:v12.0.2
+    image: postgrest/postgrest:v12.2.0
     ports:
       - "3001:3000"
     env_file:
