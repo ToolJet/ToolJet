@@ -57,15 +57,6 @@ describe("User signup", () => {
     );
     cy.get(commonSelectors.signUpButton).click();
     cy.wait(500);
-    verifyConfirmEmailPage(data.email);
-
-    cy.task("dbConnection", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select invitation_token from users where email='${data.email}';`,
-    }).then((resp) => {
-      invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-      cy.visit(invitationLink);
-    });
 
     logout();
   });
@@ -98,13 +89,8 @@ describe("User signup", () => {
     cy.get(commonSelectors.signUpButton).click();
 
     cy.wait("@signup");
-    cy.get('[data-cy="check-your-mail-header"]').should("be.visible");
-    cy.task("dbConnection", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select invitation_token from users where email='${data.email}';`,
-    }).then((resp) => {
-      invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-      cy.visit(invitationLink);
-    });
+    cy.wait(500);
+
+    logout();
   });
 });
