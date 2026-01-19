@@ -8,7 +8,7 @@ Using the **Form** component's property panel, you can control the form structur
 ## Structure
 
 | <div style={{ width:"120px"}}> Property </div> | Description | Expected Value |
-|----------|-------------|:---------------|
+|:----------|:-------------|:---------------|
 | Header | Show or hide the form header. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Footer | Show or hide the form footer. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Submit button | Select a **Button** that will be used to submit the form. | Choose any **Button** that is a child component inside the **Form** component from the dropdown or dynamically configure the value by clicking on **fx** and entering a logical expression. |

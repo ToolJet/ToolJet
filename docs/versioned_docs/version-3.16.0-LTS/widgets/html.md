@@ -11,7 +11,7 @@ A logistics company needs to display shipment tracking details with branded styl
 
 ## Properties
 
-| Property | Description | Expected Value |
+| <div style={{ width:"100px"}}> Property </div> | Description | Expected Value |
 |:---------|:------------|:---------------|
 | Raw HTML | The HTML content to render. Inline CSS can be added to HTML tags for styling. Content is sanitized using DOMPurify for security. | HTML string (e.g., `<div style="color: blue;">Hello</div>`) |
 
@@ -35,12 +35,12 @@ Links in the HTML content automatically open in a new tab with `target="_blank"`
 
 The following actions of the component can be controlled using the component-specific actions (CSA):
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| <div style={{ width:"120px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
-| setRawHTML( ) | Sets the Raw HTML content of the component. | `await components.html1.setRawHTML('<h1>New Content</h1>')` |
-| setVisibility( ) | Sets the visibility of the component. | `await components.html1.setVisibility(false)` |
-| setLoading( ) | Sets the loading state of the component. | `await components.html1.setLoading(true)` |
-| setDisable( ) | Disables or enables the component. | `await components.html1.setDisable(true)` |
+| setRawHTML( ) | Sets the Raw HTML content of the component. | `components.html1.setRawHTML('<h1>New Content</h1>')` |
+| setVisibility( ) | Sets the visibility of the component. | `components.html1.setVisibility(false)` |
+| setLoading( ) | Sets the loading state of the component. | `components.html1.setLoading(true)` |
+| setDisable( ) | Disables or enables the component. | `components.html1.setDisable(true)` |
 
 ## Exposed Variables
 
