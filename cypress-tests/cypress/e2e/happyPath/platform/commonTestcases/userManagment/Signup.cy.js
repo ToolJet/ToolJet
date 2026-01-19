@@ -69,8 +69,8 @@ describe("User signup", () => {
 
     logout();
   });
-
-  it("Verify invalid invitation link", () => {
+  // This test is skipped because it is not required for EE.
+  it.skip("Verify invalid invitation link", () => {
     cy.log(invitationLink);
     cy.visit(invitationLink);
     verifyInvalidInvitationLink();
