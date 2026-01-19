@@ -238,6 +238,9 @@ export const CustomSelectColumn = ({
   isNewRow,
   autoAssignColors = false,
   id,
+  isFocused,
+  setIsFocused,
+  widgetType,
 }) => {
   const optionColors = useMemo(() => {
     return options.reduce((acc, option, index) => {
@@ -248,7 +251,7 @@ export const CustomSelectColumn = ({
   }, [options, autoAssignColors]);
 
   const validateWidget = useStore((state) => state.validateWidget, shallow);
-  const [isFocused, setIsFocused] = useState(false);
+  // const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
   const cellTextColor = useTextColor(id, textColor);
@@ -263,12 +266,17 @@ export const CustomSelectColumn = ({
   const { isValid, validationError } = validationData;
 
   useEffect(() => {
+    // Enable click-outside-to-close for: multiselect, new row cells, or key-value-pair widget
+    if (!isMulti && !isNewRow && widgetType !== 'key-value-pair') return;
+
     const handleDocumentClick = (event) => {
-      if ((isMulti || isNewRow) && !containerRef.current?.contains(event.target)) setIsFocused(false);
+      if (!containerRef.current?.contains(event.target)) {
+        setIsFocused?.(false);
+      }
     };
     document.addEventListener('mousedown', handleDocumentClick);
     return () => document.removeEventListener('mousedown', handleDocumentClick);
-  }, [isMulti, isNewRow]);
+  }, [isMulti, isNewRow, widgetType, setIsFocused]);
 
   const customComponents = {
     MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
@@ -400,7 +408,7 @@ export const CustomSelectColumn = ({
           className="w-100 d-flex align-items-center"
           ref={containerRef}
           onClick={(e) => {
-            if (isNewRow && isEditable) {
+            if ((isNewRow && isEditable) || widgetType === 'key-value-pair') {
               setIsFocused((prev) => !prev);
             }
           }}
@@ -426,8 +434,8 @@ export const CustomSelectColumn = ({
             isClearable={false}
             clearIndicator={false}
             darkMode={darkMode}
-            menuIsOpen={isFocused || undefined}
-            isFocused={isFocused || undefined}
+            menuIsOpen={isFocused}
+            isFocused={isFocused}
             optionColors={optionColors}
           />
         </div>

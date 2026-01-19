@@ -79,7 +79,7 @@ const KeyValueRow = ({
     if (canEdit) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById('key-value-string-field').focus();
+        document.getElementById('key-value-string-field')?.focus();
         console.log(valueRef.current?.closest('#key-value-string-field'));
       }, 0);
     }
@@ -199,7 +199,7 @@ const KeyValueRow = ({
         return <span style={{ color: textColor }}>{String(value ?? '')}</span>;
     }
   };
-
+  console.log(canEdit, isEditing, 'canEdit');
   return (
     <div className={rowClassName}>
       <div
@@ -214,7 +214,9 @@ const KeyValueRow = ({
       </div>
       <div className={`key-value-render-value ${showInput ? 'kv-value-editing' : ''}`} ref={valueRef}>
         {renderValue()}
-        {canEdit && !isEditing && <SquarePen width={16} height={16} onClick={handleEditClick} />}
+        {canEdit && !isEditing && (
+          <SquarePen width={16} height={16} className="cursor-pointer" onClick={handleEditClick} />
+        )}
       </div>
     </div>
   );

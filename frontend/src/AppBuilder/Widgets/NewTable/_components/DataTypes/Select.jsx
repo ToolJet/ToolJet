@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CustomSelect } from './CustomSelect';
 
 export const SelectColumn = ({
@@ -14,6 +14,7 @@ export const SelectColumn = ({
   horizontalAlignment,
   isMaxRowHeightAuto,
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
   return (
     <div className="h-100 d-flex align-items-center flex-column justify-content-center">
       <CustomSelect
@@ -34,6 +35,8 @@ export const SelectColumn = ({
         horizontalAlignment={horizontalAlignment}
         isEditable={isEditable}
         isMaxRowHeightAuto={isMaxRowHeightAuto}
+        isFocused={isFocused}
+        setIsFocused={setIsFocused}
       />
     </div>
   );

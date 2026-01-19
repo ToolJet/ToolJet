@@ -18,9 +18,10 @@ export const SelectField = ({
   horizontalAlignment = 'left',
   optionsLoadingState = false,
   defaultOptionsList = [],
-  isMulti = false,
   id,
   column = {},
+  isEditing,
+  setIsEditing,
 }) => {
   return (
     <div className="h-100 d-flex align-items-center flex-column justify-content-center">
@@ -36,13 +37,16 @@ export const SelectField = ({
         darkMode={darkMode}
         defaultOptionsList={defaultOptionsList}
         textColor={textColor}
-        isMulti={isMulti}
+        isMulti={false}
         containerWidth={containerWidth}
         optionsLoadingState={optionsLoadingState}
         horizontalAlignment={horizontalAlignment}
         isEditable={isEditable}
         id={id}
         column={column}
+        widgetType={'key-value-pair'}
+        isFocused={isEditing}
+        setIsFocused={setIsEditing}
       />
     </div>
   );

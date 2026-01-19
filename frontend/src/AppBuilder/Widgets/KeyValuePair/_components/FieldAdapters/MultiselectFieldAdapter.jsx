@@ -21,6 +21,8 @@ export const MultiselectField = ({
   id,
   column = {},
   isMaxRowHeightAuto,
+  isEditing,
+  setIsEditing,
 }) => {
   return (
     <div className="h-100 d-flex align-items-center flex-column justify-content-center">
@@ -44,6 +46,9 @@ export const MultiselectField = ({
         id={id}
         column={column}
         isMaxRowHeightAuto={isMaxRowHeightAuto}
+        isFocused={isEditing}
+        setIsFocused={setIsEditing}
+        widgetType={'key-value-pair'}
       />
     </div>
   );

@@ -10,6 +10,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getFieldIcon, FIELD_TYPE_OPTIONS } from '../utils';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
+import DatepickerProperties from '../../Table/ColumnManager/DatepickerProperties';
+import { OptionsList } from '../../Table/SelectOptionsList/OptionsList';
 
 //TO-DO --> Update it to use resuable Table components
 const CustomOption = (props) => {
@@ -73,7 +75,6 @@ export const PropertiesTabElements = ({
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),
   };
-
   return (
     <>
       {/* Field Type Selector */}
@@ -185,6 +186,32 @@ export const PropertiesTabElements = ({
           />
         </div>
       </div>
+      {['select', 'newMultiSelect', 'datepicker'].includes(field.fieldType) && <hr className="mx-0 my-2" />}
+      {field.fieldType === 'datepicker' && (
+        <div className="field" style={{ marginTop: '-24px' }}>
+          <DatepickerProperties
+            column={field}
+            index={index}
+            darkMode={darkMode}
+            currentState={currentState}
+            onColumnItemChange={onFieldItemChange}
+            component={component}
+          />
+        </div>
+      )}
+      {['select', 'newMultiSelect'].includes(field.fieldType) && (
+        <OptionsList
+          column={field}
+          props={props}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          getPopoverFieldSource={getPopoverFieldSource}
+          // setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          onColumnItemChange={onFieldItemChange}
+        />
+      )}
     </>
   );
 };
