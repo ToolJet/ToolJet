@@ -136,13 +136,68 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
     export DOMAIN_NAME
     envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
 
-    # Start nginx (handles ports 80 and 443)
-    echo "Starting nginx..."
-    nginx -c /tmp/nginx.conf
+    # Initial certificate acquisition (first-time setup only)
+    # NestJS will handle renewals after startup
+    if [ ! -d "/etc/letsencrypt/live/$DOMAIN_NAME" ]; then
+        echo "First-time setup: No certificate found for $DOMAIN_NAME"
+        echo "Acquiring certificate via Let's Encrypt..."
 
-    # NOTE: Certificate management now handled by NestJS
-    # - Initial acquisition: SslCertificateLifecycleService.onModuleInit()
-    # - Renewal: SslCertificateRenewalScheduler (every 12 hours)
+        STAGING_FLAG=""
+        if [ "$LETSENCRYPT_STAGING" = "true" ]; then
+            STAGING_FLAG="--staging"
+            echo "Using Let's Encrypt staging environment"
+        fi
+
+        certbot certonly --webroot -w /var/www/certbot \
+            -d "$DOMAIN_NAME" \
+            --email "$LETSENCRYPT_EMAIL" \
+            --agree-tos \
+            --non-interactive \
+            --keep-until-expiring \
+            $STAGING_FLAG
+
+        if [ $? -eq 0 ]; then
+            echo "✓ Certificate acquired successfully for $DOMAIN_NAME"
+        else
+            echo "❌ WARNING: Certificate acquisition failed"
+            echo ""
+            echo "Possible causes:"
+            echo "  - Domain DNS not pointing to this server (check DNS records)"
+            echo "  - Port 80 blocked by firewall (certbot needs port 80 for ACME challenge)"
+            echo "  - Let's Encrypt rate limit reached (5 certs per domain per week)"
+            echo "  - Network connectivity issues"
+            echo ""
+            echo "⚠️  DISABLING SSL MODE FOR THIS RUN"
+            echo "Application will start in HTTP mode (no SSL/TLS encryption)"
+            echo ""
+            echo "To enable SSL:"
+            echo "  1. Fix the issues above"
+            echo "  2. Restart the container"
+            echo "  3. NestJS will also retry certificate acquisition after startup"
+            echo ""
+
+            # Disable SSL mode to allow application to start
+            ENABLE_DOMAIN_SSL=false
+            # Reset PORT and LISTEN_ADDR to defaults (non-SSL mode)
+            unset PORT
+            unset LISTEN_ADDR
+        fi
+    else
+        echo "✓ Certificate already exists for $DOMAIN_NAME"
+    fi
+
+    # Start nginx only if SSL mode is still enabled (cert exists or was acquired)
+    if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
+        echo "Starting nginx..."
+        nginx -c /tmp/nginx.conf
+    else
+        echo "ℹ️  nginx not started (SSL mode disabled)"
+    fi
+
+    # NOTE: Certificate lifecycle management
+    # - Initial acquisition: Handled above (first-time setup in entrypoint)
+    # - Validation & fallback: SslCertificateLifecycleService.onModuleInit()
+    # - Renewals: SslCertificateRenewalScheduler (every 12 hours)
 
     echo "=== SSL infrastructure ready ==="
     echo "nginx listening on :80 (redirect) and :443 (SSL)"
