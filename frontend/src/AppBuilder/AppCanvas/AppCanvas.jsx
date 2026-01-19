@@ -29,6 +29,7 @@ import { debounce } from 'lodash';
 import useCanvasMinWidth from './useCanvasMinWidth';
 import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
 import TooljetBanner from '@/AppBuilder/Viewer/TooljetBanner';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -75,6 +76,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const previewPhase = useStore((state) => state.previewPhase, shallow);
   const setPreviewPhase = useStore((state) => state.setPreviewPhase);
   const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
+  const { shouldGridMount: mountGrid } = usePreviewToggleAnimation();
 
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
@@ -96,6 +98,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     isModuleMode,
   });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
+
+  const shouldGridMount = mountGrid && currentMode === 'edit' && !(currentLayout === 'mobile' && isAutoMobileLayout);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -343,9 +347,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                       </div>
                     )}
 
-                    {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                    {shouldGridMount ? (
                       <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                    )}
+                    ) : null}
                   </HotkeyProvider>
                 </div>
               </div>

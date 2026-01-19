@@ -39,7 +39,7 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
     shallow
   );
 
-  const { isAnimating } = usePreviewToggleAnimation();
+  const { isAnimating, setIsAnimating } = usePreviewToggleAnimation();
 
   const clearSelectionBorder = useCallback(() => {
     clearSelectedComponents();
@@ -73,7 +73,10 @@ const HeaderActions = function HeaderActions({ moduleId, darkMode, showFullWidth
           leadingIcon={currentMode === 'edit' ? 'play' : 'square-pen'}
           data-cy="preview-link-button"
           style={{ width: currentMode === 'edit' ? '92px' : '70px', padding: '7px 12px' }}
-          onClick={() => toggleCurrentMode(moduleId)}
+          onClick={() => {
+            setIsAnimating(true); // Show preview loading as soon as the user clicks the button
+            toggleCurrentMode(moduleId);
+          }}
           className={'tw-transition-[width] tw-duration-300 tw-ease-linear'}
           isLoading={isAnimating}
           disabled={isAnimating}

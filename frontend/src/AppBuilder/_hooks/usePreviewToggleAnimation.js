@@ -16,8 +16,9 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
  * 1. Open panels are synchronously closed via state updates
  * 2. Once all panels are collapsed, `previewPhase` advances
  * 3. Mode switches and isPreviewInEditor flag is updated.
- * 3. Collapsed bars and Canvas animate in/out based on the current phase
- * 4. Unmountes/Mounts happen only after animations complete
+ * 4. Unmounts happen before animations complete
+ * 5. Collapsed bars and Canvas animate in/out based on the current phase
+ * 6. Mounts happen only after animations complete
  *
  * This phase-driven approach avoids timing-based hacks (e.g. setTimeout),
  * prevents layout thrashing, and keeps transitions deterministic
@@ -54,6 +55,7 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldMount, setShouldMount] = useState(currentMode === 'edit');
+  const [shouldGridMount, setShouldGridMount] = useState(currentMode === 'edit');
   const [shouldApplyHideClass, setShouldApplyHideClass] = useState(currentMode !== 'edit');
   const openedPanelsRef = useRef([]);
   const hasCapturedOpenPanelsRef = useRef(false);
@@ -108,7 +110,9 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
     setIsPreviewInEditor(targetMode === 'view');
     setCurrentMode(targetMode);
     updateCanvasBottomHeight(currentPageComponents, moduleId);
-    setPreviewPhase('animating');
+
+    if (targetMode === 'view') setPreviewPhase('unmounting-grid');
+    else setPreviewPhase('animating');
   }, [
     previewPhase,
     targetMode,
@@ -119,6 +123,13 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
     updateCanvasBottomHeight,
     setPreviewPhase,
   ]);
+
+  // Unmount grid
+  useEffect(() => {
+    if (previewPhase !== 'unmounting-grid') return;
+
+    setShouldGridMount(false);
+  }, [previewPhase, setShouldGridMount]);
 
   // Apply hide classes during `animating` based on the target mode.
   useEffect(() => {
@@ -143,6 +154,13 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
     setShouldMount(false);
     setPreviewPhase('idle');
   }, [previewPhase, setPreviewPhase]);
+
+  // Mount grid
+  useEffect(() => {
+    if (previewPhase !== 'mounting-grid') return;
+
+    setShouldGridMount(true);
+  }, [previewPhase, setShouldGridMount]);
 
   // Restore previously open panels and complete the preview transition.
   useEffect(() => {
@@ -181,7 +199,19 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
    * previously open panels (edit mode).
    */
   useEffect(() => {
-    if (settledAnimatedComponents.length === 0) return;
+    if (
+      settledAnimatedComponents.length === 0 ||
+      !['animating', 'mounting-grid', 'unmounting-grid'].includes(previewPhase)
+    )
+      return;
+
+    // Also track grid mount/unmount completion and accordingly proceed to next phase
+    if (settledAnimatedComponents.length === 1 && settledAnimatedComponents.includes('grid')) {
+      if (targetMode === 'view') setPreviewPhase('animating');
+      else setPreviewPhase('restoring-panels');
+
+      return;
+    }
 
     const requiredComponents = ['leftSidebar', 'rightSidebar', 'queryPanel', 'canvas'];
 
@@ -189,14 +219,11 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
 
     if (!isAllSettled) return;
 
-    if (targetMode === 'view') {
-      setPreviewPhase('unmounting-sidebars');
-    } else {
-      setPreviewPhase('restoring-panels');
-    }
+    if (targetMode === 'view') setPreviewPhase('unmounting-sidebars');
+    else setPreviewPhase('mounting-grid');
 
     resetSettledAnimatedComponents();
-  }, [resetSettledAnimatedComponents, setPreviewPhase, settledAnimatedComponents, targetMode]);
+  }, [resetSettledAnimatedComponents, setPreviewPhase, settledAnimatedComponents, targetMode, previewPhase]);
 
   // Build transition classes based on animation type
   const transitionClasses = useMemo(() => {
@@ -231,7 +258,9 @@ export const usePreviewToggleAnimation = ({ animationType = 'width' } = {}) => {
 
   return {
     shouldMount,
+    shouldGridMount,
     isAnimating,
     animationClasses,
+    setIsAnimating,
   };
 };
