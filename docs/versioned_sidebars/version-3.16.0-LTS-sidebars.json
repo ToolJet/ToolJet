@@ -437,6 +437,7 @@
             "data-sources/elasticsearch",
             "data-sources/gcs",
             "data-sources/googlesheets",
+            "data-sources/googlesheets2.0",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
