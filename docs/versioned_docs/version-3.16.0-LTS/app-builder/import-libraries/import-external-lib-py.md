@@ -23,10 +23,6 @@ Trigger this RunPy query once to install these packages.
 
  <img className="screenshot-full img-full" src="/img/app-builder/custom-code/install_py.png" alt="Installing py modules" />
 
-:::tip
-Enable the **Run this query on application load** option in the query settings to make the libraries available throughout the application as soon as the app is loaded.
-:::
-
 ## Use Cases
 
 ### Parse CSV Data

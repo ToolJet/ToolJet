@@ -262,7 +262,15 @@
             "app-builder/modules/data-flow"
           ]
         },
-        "app-builder/embed-application",
+        {
+          "type": "category",
+          "label": "Embed Application",
+          "items": [
+            "app-builder/embed-app/overview",
+            "app-builder/embed-app/public-app",
+            "app-builder/embed-app/private-app"
+          ]
+        },
         {
           "type": "category",
           "label": "References",
@@ -271,10 +279,12 @@
               "type": "category",
               "label": "Component Catalog",
               "items": [
+                "widgets/audio-recorder",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
                 "widgets/calendar",
+                "widgets/camera",
                 {
                   "type": "category",
                   "label": "Chart",
@@ -366,6 +376,7 @@
                 },
                 "widgets/tabs",
                 "widgets/tags",
+                "widgets/tags-input",
                 "widgets/text-input",
                 "widgets/text",
                 "widgets/text-area",
@@ -637,7 +648,22 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "tj-setup/observability-otel"
+        {
+          "type": "category",
+          "label": "Observability",
+          "link": {
+            "type": "doc",
+            "id": "tj-setup/observability/observability-otel"
+          },
+          "items": [
+            "tj-setup/observability/observability-otel",
+            "tj-setup/observability/datadog",
+            "tj-setup/observability/new-relic",
+            "tj-setup/observability/grafana",
+            "tj-setup/observability/last9"
+          ]
+        },
+        "tj-setup/lockbox-master-key-rotation"
       ]
     },
     {
@@ -709,6 +735,8 @@
                 "user-management/sso/oidc/azuread",
                 "user-management/sso/oidc/okta",
                 "user-management/sso/oidc/google",
+                "user-management/sso/oidc/onelogin",
+                "user-management/sso/oidc/auth0",
                 "user-management/sso/oidc/ssouserinfo"
               ]
             },
@@ -722,7 +750,8 @@
               },
               "items": [
                 "user-management/sso/saml/setup",
-                "user-management/sso/saml/okta"
+                "user-management/sso/saml/okta",
+                "user-management/sso/saml/entra-id"
               ]
             },
             {
@@ -824,7 +853,6 @@
           "label": "GitSync CI/CD",
           "items": [
             "development-lifecycle/cicd/overview",
-            "development-lifecycle/cicd/gitsync-api",
             "development-lifecycle/cicd/example"
           ]
         },
@@ -910,7 +938,8 @@
       "collapsed": true,
       "items": [
         "tooljet-api",
-        "user-management/authentication/self-hosted/pat"
+        "user-management/authentication/self-hosted/pat",
+        "development-lifecycle/cicd/gitsync-api"
       ]
     },
     {

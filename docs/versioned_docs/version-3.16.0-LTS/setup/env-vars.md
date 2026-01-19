@@ -52,6 +52,9 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_USER`: Database username
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
+
 
 #### Why ToolJet Requires Two Databases
 
@@ -89,7 +92,7 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.x or higher, v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
 
 **Required Variables:**
 
@@ -196,6 +199,33 @@ You can control workflow execution behavior using the following environment vari
 | `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
 | `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
 
+#### Configuring Non Email Identifier for ToolJet OIDC
+You can setup OIDC using non email identifier for authenticating users to ToolJet (for example, an employee ID) by setting the following environment variables.
+
+| Variable | Description |
+|-----------|-------------|
+| `SSO_UNIQUE_ID_FIELD` | Unique identifier field name sent back by the IdP. |
+| `SSO_CUSTOM_EMAIL_DOMAIN` | Domain name that will be used to construct dummy email id. |
+
+ To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
+
+#### Configure Stronger Password Validation Rules
+ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
+
+- `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
+
+When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
+| Rule | Requirement |
+|-----------|-------------|
+| Password length | 12-24 characters | 
+| Uppercase letters | A-Z |
+| Lowercase letters | a-z |
+| Numbers | 0-9 |
+| Special characters | ! @ # $ % ^ & * ( ) _ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
+
+:::info
+These validations apply to both the instance and workspace levels.
+:::
 ### Third-Party Integrations
 
 #### Slack
@@ -342,3 +372,12 @@ Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high card
 :::
 
 For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

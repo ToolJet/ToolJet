@@ -32,6 +32,7 @@ ToolJet AI supports generating queries with [RunJS](/docs/data-sources/run-js) a
 
 - [Postgres](/docs/data-sources/postgresql/)
 - [MongoDB](/docs/data-sources/mongodb)
+- [OpenAPI](/docs/data-sources/openapi)
 
 ## Generating Code
 

@@ -26,7 +26,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Get All Users](#get-all-users)
 - [Get All Workspaces](#get-all-workspaces)
 - [Get All App Details](#get-all-app-details)
-- [Get User by ID](#get-user-by-id)
+- [Get User by Identifier](#get-user-by-identifier)
 - [Create User](#create-user)
 - [Update User](#update-user)
 - [Update User Role](#update-user-role)
@@ -58,18 +58,21 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 
 ### Get All Users
 
-    - **Description:** Retrieves a list of all the users.
+    - **Description:** Retrieves a list of all users along with their workspace permissions and group memberships. You can optionally filter the list by user group names.
     - **URL:** `/api/ext/users`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
+    - **Query Parameters:**
+      - groups_names: Comma-separated list of user group names to filter the results (e.g., `nexus-dev,beta-tester`).
     - **Response:** Array of User objects.
 
 
     ```bash title="cURL Request"
-    curl -X GET https://{your-domain}/api/ext/users \
+    curl -X GET "https://{your-domain}/api/ext/users?group_names=nexus-dev,beta-tester" \
       -H "Authorization: Basic <access_token>" \
       -H "Content-Type: application/json"
+
     ```
 
   <details id="tj-dropdown">
@@ -288,15 +291,15 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
     ```
 </details>
 
-### Get User by ID
+### Get User by Identifier
 
-    - **Description:** Returns a user by their ID.
-    - **URL:** `/api/ext/user/:id`
+    - **Description:** Returns details of a user, including their workspaces, permissions, and groups. The user can be identified by UUID or email address.
+    - **URL:** `/api/ext/user/:identifier`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
-        - id (string): The ID of the user.
+        - **identifier** (string): UUID (e.g., `d1493ea9-315c-4d13-8132-328dc0486655`) or email (e.g., `john@example.com`) of the user.
     - **Response:** User object.
 
     ```bash title="cURL Request"
@@ -351,7 +354,7 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 
 ### Create User
 
-    - **Description:** Creates a new user.
+    - **Description:** Creates a user with workspace assignments and returns full user details.
     - **URL:** `/api/ext/users`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
@@ -420,13 +423,13 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 
 ### Update User
 
-    - **Description:** Finds and updates a user by their ID.
-    - **URL:** `/api/ext/user/:id`
+    - **Description:** Partially updates fields of a user identified by UUID or email. Returns no content (204) on successful update.
+    - **URL:** `/api/ext/user/:identifier`
     - **Method:** PATCH
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
-        - id (string): The ID of the user.
+        - identifier (string): UUID (e.g., `d1493ea9-315c-4d13-8132-328dc0486655`) or email (e.g., `john@example.com`) of the user to update.
     - **Body:** The body object can contain the following fields:
         - `name` (string, optional): The updated name of the user.
         - `email` (string, optional): The updated email address of the user.
@@ -464,7 +467,7 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 
 ### Update User Role
 
-    - **Description:** Updates the user role for a particular workspace.
+    - **Description:** Updates the role of a user within a specific workspace.
     - **URL:** `/api/ext/update-user-role/workspace/workspaceId`
     - **Method:** PUT
     - **Authorization:** `Basic <access_token>`
@@ -473,15 +476,15 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
         - workspaceId (string): The unique identifier of the workspace.
     - **Body:** The body object can contain the following fields:
         - `newRole` (string, required): The updated user role of the user.
-        - `userId` (string, required): The unique identifier of the user.
+        - `email` (string, required): Email of the user whose role is being updated.
 
     ```bash title="cURL Request"
-    curl -X PUT https://{your-domain}/api/ext/update-user-role/workspace/:workspaceId \
+    curl -X PUT https://{your-domain}/api/ext/update-user-role/workspace/{workspaceId} \
       -H "Authorization: Basic <access_token>" \
       -H "Content-Type: application/json" \
       -d '{
         "newRole": "<new_role>",
-        "userId": "<user_id>"
+        "email": "<user_email>"
       }'
     ```
 
@@ -612,16 +615,16 @@ curl -X GET 'https://{your-tooljet-instance.com}/api/ext/users' \
 
 ### Export Application
 
-    - **Description:** Export a ToolJet Application from a specified workspace.
+    - **Description:** Exports a ToolJet application from a specified workspace, including pages, queries, data sources, environments, versions, and metadata.
     - **URL:** `/api/ext/export/workspace/:workspace_id/apps/:app_id`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
-      - **workspace_id**: The ID of the workspace.
-      - **app_id**: The ID of the application.
+      - **workspace_id**: The ID of the workspace containing the app.
+      - **app_id**: The ID of the application to export.
     - **Query Params:**
-      - **exportTJDB** (boolean): Specifies whether to export TJDB data or not. By default **true**.
+      - **exportTJDB** (boolean): Specifies whether to export TJDB data or not. By default **false**.
       - **appVersion** (string): Accepts a specific version of the application that is to be exported.
       - **exportAllVersions** (boolean): Defines whether to export all the available versions. By default it exports the latest version of the app.
     - **Response:** Exported application json.
