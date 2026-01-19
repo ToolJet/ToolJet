@@ -245,5 +245,13 @@
     "id": "googlecalendar",
     "author": "Tooljet",
     "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "elevenlabs-agents",
+    "description": "api plugin from elevenlabs-agents",
+    "version": "1.0.0",
+    "id": "elevenlabs-agents",
+    "author": "Tooljet",
+    "timestamp": "Thu, 18 Dec 2025 07:57:54 GMT"
   }
 ]

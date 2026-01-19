@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "ElevenLabs Agents",
+  "description": "Operations for ElevenLabs Conversational Agents",
+  "type": "api",
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select the operation to perform",
+      "list": [
+        {
+          "value": "get_conversation_token",
+          "name": "Get Conversation Token (WebRTC)"
+        },
+        {
+          "value": "get_signed_url",
+          "name": "Get Signed URL (WebSocket)"
+        }
+      ]
+    },
+
+    "get_conversation_token": {
+      "agent_id": {
+        "label": "Agent ID",
+        "key": "agent_id",
+        "type": "text",
+        "description": "Public or private ElevenLabs agent ID",
+        "mandatory": true,
+        "placeholder": "agent_XXXXXXXX"
+      }
+    },
+
+    "get_signed_url": {
+      "agent_id": {
+        "label": "Agent ID",
+        "key": "agent_id",
+        "type": "text",
+        "description": "Private ElevenLabs agent ID",
+        "mandatory": true,
+        "placeholder": "agent_XXXXXXXX"
+      }
+    }
+  }
+}
