@@ -169,9 +169,7 @@ RUN mkdir -p /home/appuser \
 
 # Create gitsync directory with proper permissions for RedHat/OpenShift arbitrary UID support
 RUN mkdir -p /app/server/tooljet/gitsync \
-    && chown -R appuser:0 /app/server/tooljet \
-    && chmod -R g+w /app/server/tooljet \
-    && chmod g+s /app/server/tooljet /app/server/tooljet/gitsync
+    && chmod 2777 /app/server/tooljet/gitsync
 
 # Create rsyslog directory for audit logs with proper permissions
 RUN mkdir -p /home/appuser/rsyslog \
