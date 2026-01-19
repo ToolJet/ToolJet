@@ -49,6 +49,8 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/google": "^1.2.22",
+    "@ai-sdk/mistral": "^1.2.8",
     "@ai-sdk/openai": "^1.3.24",
     "@bull-board/api": "^6.16.2",
     "@bull-board/express": "^6.16.2",
