@@ -1,11 +1,11 @@
 
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Sharepoint datasource",
+  "title": "SharePoint datasource",
   "description": "A schema defining Sharepoint datasource",
   "type": "api",
   "source": {
-    "name": "Sharepoint",
+    "name": "SharePoint",
     "kind": "sharepoint",
     "exposedVariables": {
       "isLoading": false,
