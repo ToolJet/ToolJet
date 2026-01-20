@@ -13,14 +13,15 @@ To connect to the NocoDB data source in ToolJet, you can either click on the **+
 
 ToolJet allows you to connect to your NocoDB by two methods.They are **NocoDB Cloud** and **Self Hosted**.
 
-Connecting to your NocoDB database requires the following details:
+### NocoDB Cloud
+Connect to the managed NocoDB Cloud service using an API token, with hosting and infrastructure fully handled by NocoDB.
 
-- **API token**
-- **Host**
+<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/connection.png" alt="NocoDB cloud connection" style={{ marginBottom:'15px' }} />
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/connection.png" alt="NocoDB cloud connection" />
+### Self-Hosted NocoDB
+Connect to a self-hosted NocoDB instance by providing the API token and the base URL of your deployment.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/self-hosted-connection.png" alt="NocoDB self hosted connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/nocodb/self-hosted-connection.png" alt="NocoDB self hosted connection" style={{ marginBottom:'15px' }} />
 
 </div>
 
@@ -45,10 +46,10 @@ ToolJet supports the following operations for NocoDB:
 This operation retrieves a list of records present in the specified table.
 
 #### Required Parameters
-- **Table ID**
+- Table ID
 
 #### Optional Parameters
-- **Query String**
+- Query String
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/list-query.png" alt="NocoDB List Records" />
 
@@ -66,10 +67,10 @@ Table ID: your-table-id
 This operation can be used to fetch the number of records present in the table.
 
 #### Required Parameters
-- **Table ID**
+- Table ID
 
 #### Optional Parameters
-- **Query String**
+- Query String
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/getcount-query.png" alt="NocoDB Get Count" />
 
@@ -87,11 +88,11 @@ Table ID: your-table-id
 This operation can be used to fetch the record specified by the Table ID and Row ID.
 
 #### Required Parameters
-- **Table ID**
-- **Row ID**
+- Table ID
+- Row ID
 
 #### Optional Parameters
-- **Query String**
+- Query String
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/getrec-query.png" alt="NocoDB Get Record" />
 
@@ -110,8 +111,8 @@ Row ID: your-row-id
 This operation can be used to create new records.
 
 #### Required Parameters
-- **Table ID**
-- **Records**
+- Table ID
+- Records
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/create-query.png" alt="NocoDB Create Record" />
 
@@ -130,9 +131,9 @@ Records: {title: 'ToolJet'}
 This operation can be used to update the record.
 
 #### Required Parameters
-- **Table ID**
-- **Row ID**
-- **Records**
+- Table ID
+- Row ID
+- Records
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/update-query.png" alt="NocoDB Update Record" />
 
@@ -152,8 +153,8 @@ Records: {title: 'NocoDB'}
 This operation can be used to delete a record.
 
 #### Required Parameters
-- **Table ID**
-- **Row ID**
+- Table ID
+- Row ID
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/nocodb/delete-query.png" alt="NocoDB Delete Record" />
 
