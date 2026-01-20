@@ -865,7 +865,7 @@ jobs:
 
   render-bot-check-deployment:
     runs-on: ubuntu-latest
-    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment'
+    if: github.event.action == 'labeled' && github.event.label.name == 'render-check-deployment-old'
     steps:
       - name: Get PR labels
         id: get_labels
@@ -1018,7 +1018,7 @@ jobs:
             });
 
       - name: Remove label
-        if: contains(steps.get_labels.outputs.result, 'render-check-deployment')
+        if: contains(steps.get_labels.outputs.result, 'render-check-deployment-old')
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1028,7 +1028,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'render-check-deployment'
+                name: 'render-check-deployment-old'
               })
             } catch (e) {
               console.log(e)

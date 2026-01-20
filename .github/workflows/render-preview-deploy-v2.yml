@@ -1446,3 +1446,253 @@ jobs:
                 });
               } catch (e) { console.log(`Label ${label} not found`); }
             }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CHECK DEPLOYMENT STATUS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  render-check-deployment:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'render-check-deployment'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check CE V2 Deployment Status
+        id: check-ce
+        run: |
+          # Fetch CE service
+          SERVICE_RESPONSE=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          SERVICE_ID=$(echo "$SERVICE_RESPONSE" | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "CE_STATUS=not_found" >> $GITHUB_ENV
+            echo "CE_MESSAGE=No CE V2 deployment found. Add label 'create-ce-review-app' to create deployment." >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          echo "CE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          # Fetch latest deployment
+          DEPLOY_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          DEPLOY_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.status // "unknown"')
+          DEPLOY_CREATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.createdAt // "unknown"')
+          DEPLOY_UPDATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.updatedAt // "unknown"')
+          
+          echo "CE_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
+          echo "CE_CREATED=$DEPLOY_CREATED" >> $GITHUB_ENV
+          echo "CE_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
+
+      - name: Comment CE Deployment Status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.CE_SERVICE_ID;
+            const status = process.env.CE_STATUS;
+            const updated = process.env.CE_UPDATED;
+            
+            let statusEmoji = '❓';
+            if (status === 'live') statusEmoji = '✅';
+            else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
+            else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            
+            let message = '';
+            
+            if (status === 'not_found') {
+              message = `### Community Edition (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ce-review-app\` to create deployment`;
+            } else {
+              const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
+              
+              message = `### Community Edition (V2)\n` +
+                        `- **App URL**: https://tooljet-ce-v2-pr-${prNumber}.onrender.com\n` +
+                        `- **Dashboard**: https://dashboard.render.com/web/${serviceId}\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ce-pr-${prNumber}\`\n` +
+                        `- **Deployment Status**: ${statusEmoji} ${status}\n` +
+                        `- **Last Updated**: ${timeAgo}`;
+              
+              if (status === 'build_failed' || status === 'failed') {
+                message += `\n- ⚠️ Check Render dashboard for deployment logs`;
+              }
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Check EE LTS V2 Deployment Status
+        id: check-ee-lts
+        run: |
+          # Fetch EE LTS service
+          SERVICE_RESPONSE=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          SERVICE_ID=$(echo "$SERVICE_RESPONSE" | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "EE_LTS_STATUS=not_found" >> $GITHUB_ENV
+            echo "EE_LTS_MESSAGE=No EE LTS V2 deployment found. Add label 'create-ee-lts-review-app' to create deployment." >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          echo "EE_LTS_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          # Fetch latest deployment
+          DEPLOY_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          DEPLOY_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.status // "unknown"')
+          DEPLOY_CREATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.createdAt // "unknown"')
+          DEPLOY_UPDATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.updatedAt // "unknown"')
+          
+          echo "EE_LTS_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
+          echo "EE_LTS_CREATED=$DEPLOY_CREATED" >> $GITHUB_ENV
+          echo "EE_LTS_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
+
+      - name: Comment EE LTS Deployment Status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.EE_LTS_SERVICE_ID;
+            const status = process.env.EE_LTS_STATUS;
+            const updated = process.env.EE_LTS_UPDATED;
+            
+            let statusEmoji = '❓';
+            if (status === 'live') statusEmoji = '✅';
+            else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
+            else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            
+            let message = '';
+            
+            if (status === 'not_found') {
+              message = `### Enterprise Edition - LTS (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-lts-review-app\` to create deployment`;
+            } else {
+              const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
+              
+              message = `### Enterprise Edition - LTS (V2)\n` +
+                        `- **App URL**: https://tooljet-ee-v2-pr-${prNumber}.onrender.com\n` +
+                        `- **Dashboard**: https://dashboard.render.com/web/${serviceId}\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\`\n` +
+                        `- **Deployment Status**: ${statusEmoji} ${status}\n` +
+                        `- **Last Updated**: ${timeAgo}`;
+              
+              if (status === 'build_failed' || status === 'failed') {
+                message += `\n- ⚠️ Check Render dashboard for deployment logs`;
+              }
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Check EE Pre-release V2 Deployment Status
+        id: check-ee-prerelease
+        run: |
+          # Fetch EE Pre-release service
+          SERVICE_RESPONSE=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          SERVICE_ID=$(echo "$SERVICE_RESPONSE" | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "EE_PRERELEASE_STATUS=not_found" >> $GITHUB_ENV
+            echo "EE_PRERELEASE_MESSAGE=No EE Pre-release V2 deployment found. Add label 'create-ee-pre-release-review-app' to create deployment." >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          echo "EE_PRERELEASE_SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          # Fetch latest deployment
+          DEPLOY_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys?limit=1" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          DEPLOY_STATUS=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.status // "unknown"')
+          DEPLOY_CREATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.createdAt // "unknown"')
+          DEPLOY_UPDATED=$(echo "$DEPLOY_RESPONSE" | jq -r '.[0].deploy.updatedAt // "unknown"')
+          
+          echo "EE_PRERELEASE_STATUS=$DEPLOY_STATUS" >> $GITHUB_ENV
+          echo "EE_PRERELEASE_CREATED=$DEPLOY_CREATED" >> $GITHUB_ENV
+          echo "EE_PRERELEASE_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
+
+      - name: Comment EE Pre-release Deployment Status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.EE_PRERELEASE_SERVICE_ID;
+            const status = process.env.EE_PRERELEASE_STATUS;
+            const updated = process.env.EE_PRERELEASE_UPDATED;
+            
+            let statusEmoji = '❓';
+            if (status === 'live') statusEmoji = '✅';
+            else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
+            else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            
+            let message = '';
+            
+            if (status === 'not_found') {
+              message = `### Enterprise Edition - Pre-release (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-pre-release-review-app\` to create deployment`;
+            } else {
+              const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
+              
+              message = `### Enterprise Edition - Pre-release (V2)\n` +
+                        `- **App URL**: https://tooljet-ee-pre-release-v2-pr-${prNumber}.onrender.com\n` +
+                        `- **Dashboard**: https://dashboard.render.com/web/${serviceId}\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\`\n` +
+                        `- **Deployment Status**: ${statusEmoji} ${status}\n` +
+                        `- **Last Updated**: ${timeAgo}`;
+              
+              if (status === 'build_failed' || status === 'failed') {
+                message += `\n- ⚠️ Check Render dashboard for deployment logs`;
+              }
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Remove render-check-deployment label
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'render-check-deployment'
+              });
+            } catch (e) {
+              console.log('Label not found:', e.message);
+            }
