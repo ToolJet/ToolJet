@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { redisUIConfig, redisFormConfig } from "Constants/constants/marketplace/datasources/redis";
 
 const data = {};
@@ -20,7 +20,7 @@ describe("Redis", () => {
         cy.apiDeleteDataSource(redisDataSourceName);
     });
 
-    it("1. Redis - Verify connection form UI elements - ALL FIELDS", () => {
+    it("1. Redis - Verify connection form UI elements", () => {
         cy.apiCreateDataSource(
             `${Cypress.env("server_host")}/api/data-sources`,
             `${redisDataSourceName}`,
@@ -39,9 +39,7 @@ describe("Redis", () => {
                 { key: "client_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(redisDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(redisDataSourceName)).click();
+        openDataSourceConnection(redisDataSourceName);
         verifyConnectionFormUI(redisUIConfig.defaultFields);
     });
 
@@ -64,9 +62,7 @@ describe("Redis", () => {
                 { key: "client_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(redisDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(redisDataSourceName)).click();
+        openDataSourceConnection(redisDataSourceName);
 
         fillDSConnectionForm(redisFormConfig, []);
 
@@ -92,9 +88,7 @@ describe("Redis", () => {
                 { key: "client_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(redisDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(redisDataSourceName)).click();
+        openDataSourceConnection(redisDataSourceName);
 
         fillDSConnectionForm(redisFormConfig, redisFormConfig.invalidHost);
         verifyDSConnection("failed", "Connection could not be established");

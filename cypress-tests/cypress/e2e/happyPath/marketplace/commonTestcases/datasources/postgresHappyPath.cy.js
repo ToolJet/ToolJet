@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { postgresUIConfig, postgresFormConfig } from "Constants/constants/marketplace/datasources/postgres";
 
 const data = {};
@@ -39,9 +39,9 @@ describe("PostgreSQL", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
+
+        openDataSourceConnection(postgresqlDataSourceName);
+
         verifyConnectionFormUI(postgresUIConfig.defaultFields);
     });
 
@@ -64,9 +64,7 @@ describe("PostgreSQL", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
+        openDataSourceConnection(postgresqlDataSourceName);
 
         fillDSConnectionForm(postgresFormConfig, []);
 
@@ -92,10 +90,7 @@ describe("PostgreSQL", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
-
+        openDataSourceConnection(postgresqlDataSourceName);
         verifyConnectionFormUI(postgresUIConfig.defaultFields);
 
         fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidSsl);
