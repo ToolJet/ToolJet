@@ -96,7 +96,7 @@
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
     "ajv": "^8.14.0",
-    "bcrypt": "^5.0.1",
+    "bcrypt": "^6.0.0",
     "bullmq": "^5.58.9",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
