@@ -1462,7 +1462,25 @@ jobs:
       - name: Check CE V2 Deployment Status
         id: check-ce
         run: |
-          # Fetch CE service
+          # Check if GitHub Actions workflow is running
+          WORKFLOW_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.github.com/repos/${{ github.repository }}/actions/runs?event=pull_request&status=in_progress&per_page=5" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}')
+          
+          # Check for active CE build workflow
+          ACTIVE_WORKFLOW=$(echo "$WORKFLOW_RESPONSE" | jq -r --arg pr "${{ env.PR_NUMBER }}" \
+            '.workflow_runs[] | select(.name == "Render Preview Deploy V2 (DockerHub-based)" and (.head_branch | contains("'${{ env.BRANCH_NAME }}'")) and .status == "in_progress") | .id' | head -1)
+          
+          if [ -n "$ACTIVE_WORKFLOW" ]; then
+            WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/$ACTIVE_WORKFLOW"
+            echo "CE_STATUS=building_image" >> $GITHUB_ENV
+            echo "CE_WORKFLOW_URL=$WORKFLOW_URL" >> $GITHUB_ENV
+            echo "CE_MESSAGE=Docker image is currently being built in GitHub Actions" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          # Fetch CE service from Render
           SERVICE_RESPONSE=$(curl --silent --request GET \
             --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
@@ -1501,15 +1519,23 @@ jobs:
             const serviceId = process.env.CE_SERVICE_ID;
             const status = process.env.CE_STATUS;
             const updated = process.env.CE_UPDATED;
+            const workflowUrl = process.env.CE_WORKFLOW_URL;
             
             let statusEmoji = '❓';
             if (status === 'live') statusEmoji = '✅';
             else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
             else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            else if (status === 'building_image') statusEmoji = '🔨';
             
             let message = '';
             
-            if (status === 'not_found') {
+            if (status === 'building_image') {
+              message = `### Community Edition (V2)\n` +
+                        `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ce-pr-${prNumber}\`\n` +
+                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
+                        `- ℹ️ Render service will be created after image build completes`;
+            } else if (status === 'not_found') {
               message = `### Community Edition (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ce-review-app\` to create deployment`;
             } else {
               const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
@@ -1536,7 +1562,25 @@ jobs:
       - name: Check EE LTS V2 Deployment Status
         id: check-ee-lts
         run: |
-          # Fetch EE LTS service
+          # Check if GitHub Actions workflow is running
+          WORKFLOW_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.github.com/repos/${{ github.repository }}/actions/runs?event=pull_request&status=in_progress&per_page=5" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}')
+          
+          # Check for active EE LTS build workflow
+          ACTIVE_WORKFLOW=$(echo "$WORKFLOW_RESPONSE" | jq -r --arg pr "${{ env.PR_NUMBER }}" \
+            '.workflow_runs[] | select(.name == "Render Preview Deploy V2 (DockerHub-based)" and (.head_branch | contains("'${{ env.BRANCH_NAME }}'")) and .status == "in_progress") | .id' | head -1)
+          
+          if [ -n "$ACTIVE_WORKFLOW" ]; then
+            WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/$ACTIVE_WORKFLOW"
+            echo "EE_LTS_STATUS=building_image" >> $GITHUB_ENV
+            echo "EE_LTS_WORKFLOW_URL=$WORKFLOW_URL" >> $GITHUB_ENV
+            echo "EE_LTS_MESSAGE=Docker image is currently being built in GitHub Actions" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          # Fetch EE LTS service from Render
           SERVICE_RESPONSE=$(curl --silent --request GET \
             --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
@@ -1575,15 +1619,23 @@ jobs:
             const serviceId = process.env.EE_LTS_SERVICE_ID;
             const status = process.env.EE_LTS_STATUS;
             const updated = process.env.EE_LTS_UPDATED;
+            const workflowUrl = process.env.EE_LTS_WORKFLOW_URL;
             
             let statusEmoji = '❓';
             if (status === 'live') statusEmoji = '✅';
             else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
             else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            else if (status === 'building_image') statusEmoji = '🔨';
             
             let message = '';
             
-            if (status === 'not_found') {
+            if (status === 'building_image') {
+              message = `### Enterprise Edition - LTS (V2)\n` +
+                        `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\`\n` +
+                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
+                        `- ℹ️ Render service will be created after image build completes`;
+            } else if (status === 'not_found') {
               message = `### Enterprise Edition - LTS (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-lts-review-app\` to create deployment`;
             } else {
               const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
@@ -1610,7 +1662,25 @@ jobs:
       - name: Check EE Pre-release V2 Deployment Status
         id: check-ee-prerelease
         run: |
-          # Fetch EE Pre-release service
+          # Check if GitHub Actions workflow is running
+          WORKFLOW_RESPONSE=$(curl --silent --request GET \
+            --url "https://api.github.com/repos/${{ github.repository }}/actions/runs?event=pull_request&status=in_progress&per_page=5" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}')
+          
+          # Check for active EE Pre-release build workflow
+          ACTIVE_WORKFLOW=$(echo "$WORKFLOW_RESPONSE" | jq -r --arg pr "${{ env.PR_NUMBER }}" \
+            '.workflow_runs[] | select(.name == "Render Preview Deploy V2 (DockerHub-based)" and (.head_branch | contains("'${{ env.BRANCH_NAME }}'")) and .status == "in_progress") | .id' | head -1)
+          
+          if [ -n "$ACTIVE_WORKFLOW" ]; then
+            WORKFLOW_URL="https://github.com/${{ github.repository }}/actions/runs/$ACTIVE_WORKFLOW"
+            echo "EE_PRERELEASE_STATUS=building_image" >> $GITHUB_ENV
+            echo "EE_PRERELEASE_WORKFLOW_URL=$WORKFLOW_URL" >> $GITHUB_ENV
+            echo "EE_PRERELEASE_MESSAGE=Docker image is currently being built in GitHub Actions" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          # Fetch EE Pre-release service from Render
           SERVICE_RESPONSE=$(curl --silent --request GET \
             --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
@@ -1649,15 +1719,23 @@ jobs:
             const serviceId = process.env.EE_PRERELEASE_SERVICE_ID;
             const status = process.env.EE_PRERELEASE_STATUS;
             const updated = process.env.EE_PRERELEASE_UPDATED;
+            const workflowUrl = process.env.EE_PRERELEASE_WORKFLOW_URL;
             
             let statusEmoji = '❓';
             if (status === 'live') statusEmoji = '✅';
             else if (status === 'build_failed' || status === 'failed') statusEmoji = '❌';
             else if (status === 'building' || status === 'deploying') statusEmoji = '⏳';
+            else if (status === 'building_image') statusEmoji = '🔨';
             
             let message = '';
             
-            if (status === 'not_found') {
+            if (status === 'building_image') {
+              message = `### Enterprise Edition - Pre-release (V2)\n` +
+                        `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
+                        `- **Docker Image**: \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\`\n` +
+                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
+                        `- ℹ️ Render service will be created after image build completes`;
+            } else if (status === 'not_found') {
               message = `### Enterprise Edition - Pre-release (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-pre-release-review-app\` to create deployment`;
             } else {
               const timeAgo = updated !== 'unknown' ? `<t:${Math.floor(new Date(updated).getTime() / 1000)}:R>` : 'unknown';
