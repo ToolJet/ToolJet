@@ -122,7 +122,9 @@ const getPreviewQueryParams = (slug) => {
     (slug && Array.isArray(appPerms?.editable_apps_id) && appPerms.editable_apps_id.includes(slug));
 
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, slug);
-  const safeEnv = hasEditPermission ? envParam : getSafeEnvironment(environmentAccess, envParam, hasEditPermission);
+  // Pass requested environment directly to backend for all users
+  // Backend will validate environment access and return restricted-preview error if denied
+  const safeEnv = envParam;
 
   // Only add environment_name if there's an explicit env query param
   // Don't add default environment for apps not in editable_apps_id yet (newly created apps)

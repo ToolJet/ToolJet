@@ -15,8 +15,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   }
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
-    const { superAdmin, isAdmin } = UserAllPermissions;
-    if (superAdmin || isAdmin) {
+    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
+    if (superAdmin || isAdmin || isBuilder) {
       can([FEATURE_KEY.THEMES_CREATE], OrganizationThemes);
       can([FEATURE_KEY.THEMES_DELETE], OrganizationThemes);
       can([FEATURE_KEY.THEMES_GET_ALL], OrganizationThemes);
