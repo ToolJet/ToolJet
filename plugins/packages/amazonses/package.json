@@ -17,8 +17,9 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/client-sesv2": "^3.264.0",
-    "@aws-sdk/credential-providers": "^3.267.0",
+    "@aws-sdk/client-sesv2": "^3.971.0",
+    "@aws-sdk/client-sts": "^3.971.0",
+    "@aws-sdk/credential-providers": "^3.971.0",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

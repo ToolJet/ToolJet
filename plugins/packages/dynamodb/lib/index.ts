@@ -10,7 +10,10 @@ import {
   createTable,
   putItem,
 } from './operations';
-const AWS = require('aws-sdk');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { STSClient, AssumeRoleCommand, AssumeRoleCommandOutput } from '@aws-sdk/client-sts';
+import { fromInstanceMetadata } from '@aws-sdk/credential-providers';
 import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
 
 export default class DynamodbQueryService implements QueryService {
@@ -67,54 +70,85 @@ export default class DynamodbQueryService implements QueryService {
       status: 'ok',
     };
   }
-  async getAssumeRoleCredentials(roleArn: string): Promise<AssumeRoleCredentials> {
-    const sts = new AWS.STS();
 
-    return new Promise((resolve, reject) => {
-      const timestamp = new Date().getTime();
-      const roleName = roleArn.split('/')[1];
-      const params = {
-        RoleArn: roleArn,
-        RoleSessionName: `dynamodb-${roleName}-${timestamp}`,
-      };
+  async getAssumeRoleCredentials(roleArn: string, region: string): Promise<AssumeRoleCredentials> {
+    const stsClient = new STSClient({ region });
 
-      sts.assumeRole(params, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({
-            accessKeyId: data.Credentials.AccessKeyId,
-            secretAccessKey: data.Credentials.SecretAccessKey,
-            sessionToken: data.Credentials.SessionToken,
-          });
-        }
-      });
+    const timestamp = new Date().getTime();
+    const roleName = roleArn.split('/')[1];
+
+    const command = new AssumeRoleCommand({
+      RoleArn: roleArn,
+      RoleSessionName: `dynamodb-${roleName}-${timestamp}`,
     });
+
+    try {
+      const data: AssumeRoleCommandOutput = await stsClient.send(command);
+
+      return {
+        accessKeyId: data.Credentials?.AccessKeyId,
+        secretAccessKey: data.Credentials?.SecretAccessKey,
+        sessionToken: data.Credentials?.SessionToken,
+      };
+    } catch (err) {
+      throw new Error(`Failed to assume role: ${err.message}`);
+    }
   }
 
-  async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions, options?: { operation: string }): Promise<any> {
     const useAWSInstanceProfile = sourceOptions['instance_metadata_credentials'] === 'aws_instance_credentials';
     const region = sourceOptions['region'];
     const useRoleArn = sourceOptions['instance_metadata_credentials'] === 'aws_arn_role';
 
-    let credentials = null;
+    let credentials;
+
     if (useAWSInstanceProfile) {
-      credentials = new AWS.EC2MetadataCredentials({ httpOptions: { timeout: 5000 } });
+      // Use EC2 instance metadata credentials
+      credentials = fromInstanceMetadata({
+        timeout: 5000,
+        maxRetries: 1,
+      });
     } else if (useRoleArn) {
-      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn']);
-      credentials = new AWS.Credentials(
-        assumeRoleCredentials.accessKeyId,
-        assumeRoleCredentials.secretAccessKey,
-        assumeRoleCredentials.sessionToken
-      );
+      // Assume role and use temporary credentials
+      const assumeRoleCredentials = await this.getAssumeRoleCredentials(sourceOptions['role_arn'], region);
+      credentials = {
+        accessKeyId: assumeRoleCredentials.accessKeyId,
+        secretAccessKey: assumeRoleCredentials.secretAccessKey,
+        sessionToken: assumeRoleCredentials.sessionToken,
+      };
     } else {
-      credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
+      // Use explicit access key and secret key
+      credentials = {
+        accessKeyId: sourceOptions['access_key'],
+        secretAccessKey: sourceOptions['secret_key'],
+      };
     }
 
-    if (['create_table', 'list_tables', 'describe_table'].includes(options['operation'])) {
-      return new AWS.DynamoDB({ region, credentials });
+    // Create base DynamoDB client
+    const dynamoDBClient = new DynamoDBClient({
+      region,
+      credentials,
+    });
+
+    // For operations that need the low-level client (create_table, list_tables, describe_table)
+    if (options?.operation && ['create_table', 'list_tables', 'describe_table'].includes(options.operation)) {
+      return dynamoDBClient;
     } else {
-      return new AWS.DynamoDB.DocumentClient({ region, credentials });
+      // For document operations, wrap with DynamoDBDocumentClient
+      return DynamoDBDocumentClient.from(dynamoDBClient, {
+        marshallOptions: {
+          // Whether to automatically convert empty strings, blobs, and sets to `null`
+          convertEmptyValues: false,
+          // Whether to remove undefined values while marshalling
+          removeUndefinedValues: true,
+          // Whether to convert typeof object to map attribute
+          convertClassInstanceToMap: false,
+        },
+        unmarshallOptions: {
+          // Whether to return numbers as a string instead of converting them to native JavaScript numbers
+          wrapNumbers: false,
+        },
+      });
     }
   }
 }
