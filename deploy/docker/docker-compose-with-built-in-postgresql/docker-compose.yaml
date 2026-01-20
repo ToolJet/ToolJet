@@ -6,6 +6,7 @@ services:
     stdin_open: true
     container_name: Tooljet-app
     image: tooljet/tooljet-ce:ce-lts-latest
+    platform: linux/amd64
     restart: always
     env_file: .env
     ports:
@@ -19,7 +20,7 @@ services:
 
   postgres:
     container_name: ${PG_HOST}
-    image: postgres:13
+    image: postgres:16
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
