@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateAppHistoryPayloadConstraint1735800000000 implements MigrationInterface {
+export class UpdateAppHistoryPayloadConstraint1767225600000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Drop the old check constraint that requires deltas to be arrays
     await queryRunner.query(`
@@ -20,10 +20,9 @@ export class UpdateAppHistoryPayloadConstraint1735800000000 implements Migration
       END $$;
     `);
 
-    // Delete rows where change_payload is not an object (e.g., old delta arrays)
-    await queryRunner.query(`
-      DELETE FROM app_history WHERE jsonb_typeof(change_payload) != 'object'
-    `);
+    // Clear all existing data - old architecture data is incompatible with new format
+    // Previously: delta used array format, now: both snapshot and delta use object format
+    await queryRunner.query(`TRUNCATE app_history CASCADE`);
 
     // Add new simplified constraint - both snapshot and delta are objects
     await queryRunner.query(`
