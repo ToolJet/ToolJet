@@ -1,0 +1,181 @@
+---
+id: marketplace-overview
+title: 'Marketplace: Overview'
+---
+
+import '../homepage.css';
+import Link from '@docusaurus/Link';
+
+export const Card = ({ className = '', href, children }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                {children}
+            </div>
+        </div>
+    );
+    return href ? (
+        <Link to={href} className="no-underline hover:no-underline block h-full">
+            {cardContent}
+        </Link>
+    ) : cardContent;
+};
+
+export const PluginCard = ({ pluginId, title, href }) => (
+    <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-3 h-full flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                    <img
+                        src={`/img/marketplace/plugins/${pluginId}/icon.svg`}
+                        alt={title}
+                        style={{ width: '24px', height: '24px', boxShadow: 'none', borderRadius: '0' }}
+                    />
+                </div>
+                <span className="text-sm font-semibold text-black dark:text-white">{title}</span>
+            </div>
+        </div>
+    </Card>
+);
+
+export const PluginSection = ({ title, children }) => (
+    <div style={{ marginBottom: '3rem', paddingBottom: '2rem', borderBottom: '1px solid #e5e7eb' }}>
+        <h3 className="text-lg font-semibold text-black dark:text-white mb-4">{title}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {children}
+        </div>
+    </div>
+);
+
+The ToolJet Marketplace provides a collection of plugins that extend ToolJet's integration capabilities. These plugins connect ToolJet to external services like AI providers, databases, cloud platforms, and business applications.
+
+- **ToolJet Cloud**: All plugins come pre-installed. Configure the credentials and start using them in your applications.
+- **Self-hosted**: Install plugins from the Marketplace, then configure credentials to use them.
+
+<img className="screenshot-full img-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
+
+## Installing a Plugin (Self-Hosted Only)
+
+1. Click the **Settings** icon at the bottom-left of the dashboard.
+2. Select **Marketplace** from the menu.
+3. Navigate to the **Marketplace** tab to view all available plugins.
+4. Click the **Install** button on any plugin card. Once installed, the button changes to **Installed**.
+
+<img className="screenshot-full img-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" />
+
+## Configuring Plugins
+
+After installing a plugin (or for pre-installed plugins on ToolJet Cloud), configure its credentials:
+
+1. Go to the **Data sources** tab in the dashboard.
+2. Scroll down to the **Plugins** section to see available plugins.
+3. Click on a plugin to configure its connection credentials.
+4. Once configured, the plugin appears in the Query Panel when creating new queries.
+
+<img className="screenshot-full img-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
+
+{/* ## Updating a Plugin
+
+When a new version of an installed plugin is available, you'll see an update notification on the plugin card in the **Installed** tab. Click the update link to upgrade to the latest version. */}
+
+## Removing a Plugin (Self-Hosted Only)
+
+:::warning
+Removing a plugin will delete all queries associated with it from your applications. If any queries are linked to the plugin, you'll need to remove those queries first before uninstalling.
+:::
+
+1. Go to **Settings** > **Marketplace**.
+2. Navigate to the **Installed** tab.
+3. Click **Remove** on the plugin you want to uninstall.
+
+## Available Plugins
+
+<PluginSection title="AI">
+    <PluginCard pluginId="anthropic" title="Anthropic" href="/docs/marketplace/plugins/marketplace-plugin-anthropic" />
+    <PluginCard pluginId="bedrock" title="AWS Bedrock" href="/docs/marketplace/plugins/marketplace-plugin-aws-bedrock" />
+    <PluginCard pluginId="cohere" title="Cohere" href="/docs/marketplace/plugins/marketplace-plugin-cohere" />
+    <PluginCard pluginId="gemini" title="Gemini" href="/docs/marketplace/plugins/marketplace-plugin-gemini" />
+    <PluginCard pluginId="huggingface" title="Hugging Face" href="/docs/marketplace/plugins/marketplace-plugin-hugging_face" />
+    <PluginCard pluginId="mistral" title="Mistral AI" href="/docs/marketplace/plugins/marketplace-plugin-mistral_ai" />
+    <PluginCard pluginId="openai" title="OpenAI" href="/docs/marketplace/plugins/marketplace-plugin-openai" />
+    <PluginCard pluginId="portkey" title="Portkey" href="/docs/marketplace/plugins/marketplace-plugin-portkey" />
+</PluginSection>
+
+<PluginSection title="Databases">
+    <PluginCard pluginId="redshift" title="AWS Redshift" href="/docs/marketplace/plugins/marketplace-plugin-awsredshift" />
+    <PluginCard pluginId="spanner" title="Google Cloud Spanner" href="/docs/marketplace/plugins/marketplace-plugin-spanner" />
+    <PluginCard pluginId="harperdb" title="HarperDB" href="/docs/marketplace/plugins/marketplace-plugin-harperdb" />
+    <PluginCard pluginId="pocketbase" title="Pocketbase" href="/docs/marketplace/plugins/marketplace-plugin-pocketbase" />
+    <PluginCard pluginId="prestodb" title="PrestoDB" href="/docs/marketplace/plugins/marketplace-plugin-Presto" />
+    <PluginCard pluginId="supabase" title="Supabase" href="/docs/marketplace/plugins/marketplace-plugin-supabase" />
+</PluginSection>
+
+<PluginSection title="Vector Databases">
+    <PluginCard pluginId="pinecone" title="Pinecone" href="/docs/marketplace/plugins/marketplace-plugin-pinecone" />
+    <PluginCard pluginId="qdrant" title="Qdrant" href="/docs/marketplace/plugins/marketplace-plugin-qdrant" />
+    <PluginCard pluginId="weaviate" title="Weaviate" href="/docs/marketplace/plugins/marketplace-plugin-weaviate" />
+</PluginSection>
+
+<PluginSection title="Cloud Services">
+    <PluginCard pluginId="lambda" title="AWS Lambda" href="/docs/marketplace/plugins/marketplace-plugin-aws-lambda" />
+    <PluginCard pluginId="textract" title="AWS Textract" href="/docs/marketplace/plugins/marketplace-plugin-textract" />
+</PluginSection>
+
+<PluginSection title="Monitoring">
+    <PluginCard pluginId="prometheus" title="Prometheus" href="/docs/marketplace/plugins/marketplace-plugin-prometheus" />
+</PluginSection>
+
+<PluginSection title="Business Apps">
+    <PluginCard pluginId="clickup" title="ClickUp" href="/docs/marketplace/plugins/marketplace-plugin-clickup" />
+    <PluginCard pluginId="hubspot" title="HubSpot" href="/docs/marketplace/plugins/marketplace-plugin-hubspot" />
+    <PluginCard pluginId="jira" title="Jira" href="/docs/marketplace/plugins/marketplace-plugin-jira" />
+    <PluginCard pluginId="salesforce" title="Salesforce" href="/docs/marketplace/plugins/marketplace-plugin-salesforce" />
+</PluginSection>
+
+<PluginSection title="Communication">
+    <PluginCard pluginId="engagespot" title="Engagespot" href="/docs/marketplace/plugins/marketplace-plugin-engagespot" />
+    <PluginCard pluginId="gmail" title="Gmail" href="/docs/marketplace/plugins/marketplace-plugin-gmail" />
+    <PluginCard pluginId="googlecal" title="Google Calendar" href="/docs/marketplace/plugins/marketplace-plugin-googlecalendar" />
+    <PluginCard pluginId="plivo" title="Plivo" href="/docs/marketplace/plugins/marketplace-plugin-plivo" />
+</PluginSection>
+
+<PluginSection title="Developer Tools">
+    <PluginCard pluginId="azurerepos" title="Azure Repos" href="/docs/marketplace/plugins/marketplace-plugin-azurerepos" />
+    <PluginCard pluginId="github" title="GitHub" href="/docs/marketplace/plugins/marketplace-plugin-github" />
+    <PluginCard pluginId="microsoft-graph" title="Microsoft Graph" href="/docs/marketplace/plugins/marketplace-plugin-microsoft_graph" />
+    <PluginCard pluginId="sharepoint" title="SharePoint" href="/docs/marketplace/plugins/marketplace-plugin-sharepoint" />
+</PluginSection>
+
+<PluginSection title="Shipping & Logistics">
+    <PluginCard pluginId="aftership" title="AfterShip" href="/docs/marketplace/plugins/marketplace-plugin-aftership" />
+    <PluginCard pluginId="easypost" title="EasyPost" href="/docs/marketplace/plugins/marketplace-plugin-easypost" />
+    <PluginCard pluginId="fedex" title="FedEx" href="/docs/marketplace/plugins/marketplace-plugin-fedex" />
+    <PluginCard pluginId="ups" title="UPS" href="/docs/marketplace/plugins/marketplace-plugin-ups" />
+</PluginSection>
+
+<PluginSection title="Payments">
+    <PluginCard pluginId="authorizenet" title="Authorize.net" href="/docs/marketplace/plugins/marketplace-plugin-authorizenet" />
+</PluginSection>
+
+:::info For Plugin Developers
+Learn how to create your own plugins in the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)**.
+:::
+
+<br/>
+
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

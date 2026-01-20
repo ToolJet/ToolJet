@@ -1,0 +1,114 @@
+---
+id: setup
+title: Deploy ToolJet
+slug: /setup/
+---
+
+import '../homepage.css';
+import Link from '@docusaurus/Link';
+
+export const Card = ({ className = '', href, children }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                {children}
+            </div>
+        </div>
+    );
+    return href ? (
+        <Link to={href} className="no-underline hover:no-underline block h-full" style={{ textDecoration: 'none' }}>
+            {cardContent}
+        </Link>
+    ) : cardContent;
+};
+
+export const SetupCard = ({ iconId, title, description, href }) => (
+    <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-8 h-full flex flex-col">
+            <div className="flex flex-col space-y-1.5">
+                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
+                    <img
+                        src={`/img/setup/icons/${iconId}.svg`}
+                        alt={title}
+                        style={{ width: '28px', height: '28px', boxShadow: 'none', borderRadius: '0' }}
+                    />
+                </div>
+                <h3 className="text-xl font-semibold leading-none tracking-tight text-black dark:text-white" style={{ textDecoration: 'none' }}>{title}</h3>
+            </div>
+            <div className="pt-2 flex-grow">
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5" style={{ textDecoration: 'none' }}>{description}</p>
+            </div>
+        </div>
+    </Card>
+);
+
+export const SetupSection = ({ title, description, children }) => (
+    <div style={{ marginBottom: '3rem', paddingBottom: '2rem', borderBottom: '1px solid #e5e7eb' }}>
+        <h2 className="text-2xl font-bold text-black dark:text-white">{title}</h2>
+        {description && <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">{description}</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {children}
+        </div>
+    </div>
+);
+
+Check out the different methods you can use to deploy ToolJet on your machine.
+
+## Getting Started
+
+<!--- <SetupSection title="Getting Started" description="Get up and running with ToolJet quickly"> --->
+<SetupSection description="Get up and running with ToolJet quickly">
+    <SetupCard iconId="try-tooljet" title="Try ToolJet" description="Try out ToolJet with a single docker command. Experience a seamless setup and explore the full capabilities of ToolJet." href="/docs/setup/try-tooljet" />
+    <SetupCard iconId="system-requirements" title="System Requirements" description="Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance." href="/docs/setup/system-requirements" />
+    <SetupCard iconId="choose-your-tooljet" title="Choose Your ToolJet" description="Discover the ideal ToolJet version for your development needs. Choose between our LTS versions or explore Pre-Release versions." href="/docs/setup/choose-your-tooljet" />
+</SetupSection>
+
+## Deployment Options
+
+<SetupSection description="Deploy ToolJet on your preferred platform">
+    <SetupCard iconId="digitalocean" title="DigitalOcean" description="Quickly deploy ToolJet using the Deploy to DigitalOcean button for a hassle-free setup experience." href="/docs/setup/digitalocean" />
+    <SetupCard iconId="docker" title="Docker" description="Deploy ToolJet on a server using docker-compose. Ideal for development and production environments." href="/docs/setup/docker" />
+    <SetupCard iconId="ami" title="AWS AMI" description="Deploy ToolJet on AWS AMI instances for a scalable and reliable cloud infrastructure." href="/docs/setup/ami" />
+    <SetupCard iconId="ecs" title="AWS ECS" description="Deploy ToolJet on AWS ECS for containerized deployments with automatic scaling capabilities." href="/docs/setup/ecs" />
+    <SetupCard iconId="openshift" title="Openshift" description="Deploy ToolJet on Openshift for enterprise-grade Kubernetes deployments." href="/docs/setup/openshift" />
+    <SetupCard iconId="helm" title="Helm" description="Deploy ToolJet with Helm Chart for simplified Kubernetes package management." href="/docs/setup/helm" />
+    <SetupCard iconId="kubernetes" title="Kubernetes" description="Deploy ToolJet on a Kubernetes cluster for orchestrated container management." href="/docs/setup/kubernetes" />
+    <SetupCard iconId="kubernetes" title="Kubernetes (GKE)" description="Deploy ToolJet on Google Kubernetes Engine for managed Kubernetes on Google Cloud." href="/docs/setup/kubernetes-gke" />
+    <SetupCard iconId="kubernetes" title="Kubernetes (AKS)" description="Deploy ToolJet on Azure Kubernetes Service for managed Kubernetes on Azure." href="/docs/setup/kubernetes-aks" />
+    <SetupCard iconId="kubernetes" title="Kubernetes (EKS)" description="Deploy ToolJet on Amazon Elastic Kubernetes Service for managed Kubernetes on AWS." href="/docs/setup/kubernetes-eks" />
+    <SetupCard iconId="azure-container" title="Azure Container Apps" description="Deploy ToolJet on Azure Container Apps for serverless container hosting." href="/docs/setup/azure-container" />
+    <SetupCard iconId="google-cloud-run" title="Google Cloud Run" description="Deploy ToolJet on Cloud Run with GCloud CLI for serverless container execution." href="/docs/setup/google-cloud-run" />
+</SetupSection>
+
+## Configuration
+
+<SetupSection description="Configure ToolJet for your environment">
+    <SetupCard iconId="env-vars" title="Environment Variables" description="Environment variables required by ToolJet Client and Server to start running properly." href="/docs/setup/env-vars" />
+    <SetupCard iconId="http-proxy" title="HTTP Proxy" description="Environment variables required by ToolJet to connect via HTTP proxy for network configurations." href="/docs/setup/http-proxy" />
+    <SetupCard iconId="tooljet-subpath" title="Deploying on a Subpath" description="Steps to deploy ToolJet on a subpath rather than root of domain for flexible URL structures." href="/docs/setup/tooljet-subpath" />
+</SetupSection>
+
+## Upgrades & Migrations
+
+<SetupSection description="Upgrade and migrate your ToolJet installation">
+    <SetupCard iconId="upgrade-to-lts" title="Upgrade to LTS" description="Guide to upgrade ToolJet to the latest Long Term Support version for extended support and stability." href="/docs/setup/upgrade-to-lts" />
+    <SetupCard iconId="upgrade-to-v3" title="Upgrade to v3" description="Breaking changes and migration guide for upgrading to ToolJet v3." href="/docs/setup/upgrade-to-v3" />
+    <SetupCard iconId="upgrade-to-v3.16" title="Upgrade to v3.16" description="Migration guide and breaking changes for upgrading to ToolJet v3.16." href="/docs/setup/upgrade-to-v3.16" />
+    <SetupCard iconId="cloud-v3-migration" title="Cloud v3 Migration" description="Breaking changes and migration guide for ToolJet Cloud v3 users." href="/docs/setup/cloud-v3-migration" />
+    <SetupCard iconId="v2-migration-guide" title="V2 Migration Guide" description="Things to know before migrating to ToolJet V2 from earlier versions." href="/docs/setup/v2-migration" />
+</SetupSection>
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)
