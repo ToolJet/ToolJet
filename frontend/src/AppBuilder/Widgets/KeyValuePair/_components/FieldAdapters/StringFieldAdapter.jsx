@@ -21,6 +21,7 @@ export const StringField = ({
   SearchHighlightComponent,
   isEditing,
   setIsEditing,
+  id,
 }) => {
   return (
     <StringRenderer
@@ -37,7 +38,7 @@ export const StringField = ({
       validationError={validationError}
       searchText={searchText}
       SearchHighlightComponent={SearchHighlightComponent}
-      id={'key-value-string-field'}
+      id={id}
       setIsEditing={setIsEditing}
     />
   );

@@ -1,35 +1,38 @@
 import React from 'react';
-import { default as ReactMarkdown } from 'react-markdown';
-import DOMPurify from 'dompurify';
+import { MarkdownRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/MarkdownRenderer';
 
 /**
  * MarkdownFieldAdapter - KeyValuePair adapter for Markdown display
  *
- * Displays markdown content with proper rendering.
+ * Uses MarkdownRenderer for consistent Markdown rendering across the app.
  */
-export const MarkdownField = ({ value, darkMode = false, horizontalAlignment = 'left' }) => {
-  const getCellValue = (val) => {
-    let transformedValue = val;
-    if (typeof val !== 'string') {
-      try {
-        transformedValue = String(val);
-      } catch {
-        transformedValue = '';
-      }
-    }
-    return DOMPurify.sanitize(transformedValue.trim());
-  };
-
+export const MarkdownField = ({
+  value = '',
+  isEditable = false,
+  onChange,
+  textColor,
+  horizontalAlignment = 'left',
+  containerWidth,
+  darkMode = false,
+  maxHeight,
+  isEditing,
+  setIsEditing,
+  id,
+}) => {
   return (
-    <div
-      className="key-value-markdown"
-      style={{
-        textAlign: horizontalAlignment,
-        color: darkMode ? 'var(--text-primary)' : 'inherit',
-      }}
-    >
-      <ReactMarkdown>{getCellValue(value)}</ReactMarkdown>
-    </div>
+    <MarkdownRenderer
+      value={value}
+      isEditable={isEditable}
+      onChange={onChange}
+      textColor={textColor}
+      horizontalAlignment={horizontalAlignment}
+      containerWidth={containerWidth}
+      darkMode={darkMode}
+      maxHeight={maxHeight}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
+      id={id}
+    />
   );
 };
 

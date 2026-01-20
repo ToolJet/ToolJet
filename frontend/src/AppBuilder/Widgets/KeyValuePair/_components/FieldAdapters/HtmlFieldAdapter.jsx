@@ -1,32 +1,37 @@
 import React from 'react';
-import DOMPurify from 'dompurify';
+import { HTMLRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/HTMLRenderer';
 
 /**
  * HtmlFieldAdapter - KeyValuePair adapter for HTML display
  *
- * Displays sanitized HTML content.
+ * Uses HTMLRenderer for consistent HTML rendering across the app.
  */
-export const HtmlField = ({ value, darkMode = false, horizontalAlignment = 'left' }) => {
-  const getCellValue = (val) => {
-    let transformedValue = val;
-    if (typeof val !== 'string') {
-      try {
-        transformedValue = String(val);
-      } catch {
-        transformedValue = '';
-      }
-    }
-    return DOMPurify.sanitize(transformedValue.trim());
-  };
-
+export const HtmlField = ({
+  value = '',
+  isEditable = false,
+  onChange,
+  textColor,
+  horizontalAlignment = 'left',
+  containerWidth,
+  darkMode = false,
+  maxHeight,
+  setIsEditing,
+  isEditing,
+  id,
+}) => {
   return (
-    <div
-      className="key-value-html"
-      style={{
-        textAlign: horizontalAlignment,
-        color: darkMode ? 'var(--text-primary)' : 'inherit',
-      }}
-      dangerouslySetInnerHTML={{ __html: getCellValue(value) }}
+    <HTMLRenderer
+      value={value}
+      isEditable={isEditable}
+      onChange={onChange}
+      textColor={textColor}
+      horizontalAlignment={horizontalAlignment}
+      containerWidth={containerWidth}
+      darkMode={darkMode}
+      maxHeight={maxHeight}
+      setIsEditing={setIsEditing}
+      isEditing={isEditing}
+      id={id}
     />
   );
 };

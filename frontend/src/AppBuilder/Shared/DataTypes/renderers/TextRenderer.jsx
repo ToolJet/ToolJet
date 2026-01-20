@@ -24,6 +24,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
  * @param {React.Component} props.SearchHighlightComponent - Optional component for search highlighting
  */
 export const TextRenderer = ({
+  id,
   value = '',
   isEditable = false,
   onChange,
@@ -36,9 +37,11 @@ export const TextRenderer = ({
   validationError,
   searchText,
   SearchHighlightComponent,
+  isEditing,
+  setIsEditing,
 }) => {
   const [showOverlay, setShowOverlay] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  // const [isEditing, setIsEditing] = useState(false);
   const containerRef = useRef(null);
   const cellRef = useRef(null);
 
@@ -104,6 +107,7 @@ export const TextRenderer = ({
     return (
       <div
         ref={cellRef}
+        id={id}
         contentEditable="true"
         className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
           darkMode ? 'textarea-dark-theme' : ''

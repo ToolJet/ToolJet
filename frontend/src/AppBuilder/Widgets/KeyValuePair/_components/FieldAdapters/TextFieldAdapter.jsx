@@ -1,72 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { TextRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/TextRenderer';
 
 /**
  * TextFieldAdapter - KeyValuePair adapter for multiline text
  *
- * For KeyValuePair, we use a textarea when editable.
+ * Uses TextRenderer for consistent text rendering across the app.
  */
 export const TextField = ({
   value = '',
   isEditable = false,
   onChange,
-  onBlur,
-  autoFocus = false,
   textColor,
   horizontalAlignment = 'left',
-  darkMode: _darkMode = false,
+  containerWidth,
+  darkMode = false,
+  maxHeight,
   isValid = true,
   validationError,
-  accentColor,
+  searchText,
+  SearchHighlightComponent,
+  setIsEditing,
+  isEditing,
+  id,
 }) => {
-  const [localValue, setLocalValue] = useState(value);
-
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  const handleChange = (e) => {
-    setLocalValue(e.target.value);
-  };
-
-  const handleBlur = (e) => {
-    if (localValue !== value) {
-      onChange?.(localValue);
-    }
-    onBlur?.(e);
-  };
-
-  // Editable: render textarea
-  if (isEditable) {
-    return (
-      <div className="kv-text-field">
-        <textarea
-          value={localValue ?? ''}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          autoFocus={autoFocus}
-          rows={3}
-          className={`kv-input kv-textarea ${!isValid ? 'is-invalid' : ''}`}
-          style={{
-            textAlign: horizontalAlignment,
-            '--accent-color': accentColor,
-          }}
-        />
-        {!isValid && validationError && <div className="invalid-feedback">{validationError}</div>}
-      </div>
-    );
-  }
-
-  // Read-only: render multiline text
   return (
-    <div
-      style={{
-        color: textColor,
-        textAlign: horizontalAlignment,
-        whiteSpace: 'pre-wrap',
-      }}
-    >
-      {String(value ?? '')}
-    </div>
+    <TextRenderer
+      value={value}
+      isEditable={isEditable}
+      onChange={onChange}
+      textColor={textColor}
+      horizontalAlignment={horizontalAlignment}
+      containerWidth={containerWidth}
+      darkMode={darkMode}
+      maxHeight={maxHeight}
+      isValid={isValid}
+      validationError={validationError}
+      searchText={searchText}
+      SearchHighlightComponent={SearchHighlightComponent}
+      setIsEditing={setIsEditing}
+      isEditing={isEditing}
+      id={id}
+    />
   );
 };
 

@@ -1,89 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { NumberRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/NumberRenderer';
 
 /**
  * NumberFieldAdapter - KeyValuePair adapter for number input
  *
- * For KeyValuePair, we use a simple input element when editable.
+ * Uses NumberRenderer for consistent number rendering across the app.
  */
 export const NumberField = ({
-  value,
+  value = '',
   isEditable = false,
   onChange,
-  onBlur,
-  autoFocus = false,
   textColor,
   horizontalAlignment = 'left',
-  darkMode: _darkMode = false,
-  decimalPlaces = null,
+  containerWidth,
+  darkMode = false,
+  field,
   isValid = true,
   validationError,
-  accentColor,
+  searchText,
+  SearchHighlightComponent,
+  setIsEditing,
+  id,
 }) => {
-  const [localValue, setLocalValue] = useState(value ?? '');
-
-  useEffect(() => {
-    setLocalValue(value ?? '');
-  }, [value]);
-
-  const handleChange = (e) => {
-    setLocalValue(e.target.value);
-  };
-
-  const handleBlur = (e) => {
-    if (localValue === '') {
-      onChange?.(null);
-    } else {
-      const numValue = Number(localValue);
-      if (!isNaN(numValue) && numValue !== value) {
-        onChange?.(numValue);
-      }
-    }
-    onBlur?.(e);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.target.blur();
-    }
-  };
-
-  // Calculate step for decimal places
-  const step = decimalPlaces !== null && decimalPlaces > 0 ? `0.${'0'.repeat(decimalPlaces - 1)}1` : '1';
-
-  // Editable: render input element
-  if (isEditable) {
-    return (
-      <div className="kv-number-field">
-        <input
-          type="number"
-          value={localValue}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          autoFocus={autoFocus}
-          step={step}
-          className={`kv-input ${!isValid ? 'is-invalid' : ''}`}
-          style={{
-            textAlign: horizontalAlignment,
-            '--accent-color': accentColor,
-          }}
-        />
-        {!isValid && validationError && <div className="invalid-feedback">{validationError}</div>}
-      </div>
-    );
-  }
-
-  // Read-only: render plain text
-  const displayValue = value != null ? String(value) : '';
   return (
-    <span
-      style={{
-        color: textColor,
-        textAlign: horizontalAlignment,
-      }}
-    >
-      {displayValue}
-    </span>
+    <NumberRenderer
+      value={value}
+      isEditable={isEditable}
+      onChange={onChange}
+      textColor={textColor}
+      horizontalAlignment={horizontalAlignment}
+      containerWidth={containerWidth}
+      darkMode={darkMode}
+      decimalPlaces={field?.decimalPlaces}
+      isValid={isValid}
+      validationError={validationError}
+      searchText={searchText}
+      SearchHighlightComponent={SearchHighlightComponent}
+      setIsEditing={setIsEditing}
+      id={id}
+      className={'kv-number-field-input'}
+    />
   );
 };
 

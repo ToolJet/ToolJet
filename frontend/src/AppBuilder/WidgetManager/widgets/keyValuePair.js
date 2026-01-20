@@ -22,7 +22,12 @@ export const keyValuePairConfig = {
     data: {
       type: 'code',
       displayName: ' ',
-      validation: { schema: { type: 'object' } },
+      validation: {
+        schema: {
+          type: 'object',
+        },
+        defaultValue: "[{ id: 1, name: 'Sarah', email: 'sarah@mail.com' }]",
+      },
       conditionallyRender: {
         key: 'dataSourceSelector',
         value: 'rawJson',
@@ -44,7 +49,7 @@ export const keyValuePairConfig = {
       type: 'code',
       displayName: 'Field data',
       validation: {
-        schema: { type: 'array', element: { type: 'object' } },
+        schema: { type: 'object' },
         defaultValue:
           "[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]",
       },

@@ -138,12 +138,24 @@ export const KeyValuePair = (props) => {
               darkMode,
               false
             )}
-            {renderElement(
+            {/* {renderElement(
               component,
               componentMeta,
               paramUpdated,
               dataQueries,
               'fieldDynamicData',
+              'properties',
+              currentState,
+              components,
+              darkMode,
+              false
+            )} */}
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'data',
               'properties',
               currentState,
               components,
@@ -159,7 +171,7 @@ export const KeyValuePair = (props) => {
         children: (
           <div>
             <div>{renderCustomElement('useDynamicField')}</div>
-            {useDynamicField && <div>{renderCustomElement('fieldData')}</div>}
+            {useDynamicField && <div>{renderCustomElement('fieldDynamicData')}</div>}
             {!useDynamicField && (
               <FieldsList
                 filteredFields={filteredFields}

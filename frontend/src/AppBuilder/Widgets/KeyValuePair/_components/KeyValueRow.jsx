@@ -40,8 +40,6 @@ const KeyValueRow = ({
     label,
     fieldType = 'string',
     isEditable = false,
-    // Field-specific options
-    options = [],
     decimalPlaces,
     toggleOnBg,
     toggleOffBg,
@@ -78,8 +76,7 @@ const KeyValueRow = ({
     if (canEdit) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById('key-value-string-field')?.focus();
-        console.log(valueRef.current?.closest('#key-value-string-field'));
+        document.getElementById(fieldKey)?.focus();
       }, 0);
     }
   };
@@ -101,6 +98,7 @@ const KeyValueRow = ({
   const renderValue = () => {
     // Common props for adapters
     const commonProps = {
+      id: fieldKey,
       value,
       onChange,
       textColor,
@@ -119,13 +117,13 @@ const KeyValueRow = ({
     // console.log(fieldType, 'fieldType');
     switch (fieldType) {
       case 'string':
-        return <StringField {...commonProps} />;
+        return <StringField {...commonProps} field={field} />;
 
       case 'number':
-        return <NumberField {...commonProps} decimalPlaces={decimalPlaces} />;
+        return <NumberField {...commonProps} field={field} />;
 
       case 'text':
-        return <TextField {...commonProps} />;
+        return <TextField {...commonProps} field={field} />;
 
       case 'datepicker':
         return (
@@ -134,6 +132,7 @@ const KeyValueRow = ({
             dateFormat={dateFormat}
             showTimeSelect={showTimeSelect}
             timeFormat={timeFormat}
+            field={field}
           />
         );
 
@@ -144,16 +143,13 @@ const KeyValueRow = ({
         return <SelectField {...commonProps} field={field} isMulti />;
 
       case 'boolean':
-        return <BooleanField {...commonProps} toggleOnBg={toggleOnBg} toggleOffBg={toggleOffBg} />;
+        return <BooleanField {...commonProps} toggleOnBg={toggleOnBg} toggleOffBg={toggleOffBg} field={field} />;
 
       case 'link':
-        // If a link is editable, we render the StringField in edit mode to edit the URL/text
-        if (showInput) {
-          return <StringField {...commonProps} />;
-        }
         return (
           <LinkField
             value={value}
+            field={field}
             displayText={field.displayText}
             linkTarget={linkTarget}
             textColor={textColor}
@@ -163,16 +159,16 @@ const KeyValueRow = ({
         );
 
       case 'image':
-        return <ImageField value={value} width={imageWidth} height={imageHeight} objectFit={objectFit} />;
+        return <ImageField value={value} width={imageWidth} height={imageHeight} objectFit={objectFit} field={field} />;
 
       case 'json':
-        return <JsonField value={value} indentation={jsonIndentation} darkMode={darkMode} />;
+        return <JsonField value={value} indentation={jsonIndentation} darkMode={darkMode} field={field} />;
 
       case 'markdown':
-        return <MarkdownField value={value} darkMode={darkMode} />;
+        return <MarkdownField {...commonProps} value={value} darkMode={darkMode} field={field} id={fieldKey} />;
 
       case 'html':
-        return <HtmlField value={value} darkMode={darkMode} />;
+        return <HtmlField {...commonProps} value={value} darkMode={darkMode} field={field} id={fieldKey} />;
 
       default:
         // Fallback to plain text

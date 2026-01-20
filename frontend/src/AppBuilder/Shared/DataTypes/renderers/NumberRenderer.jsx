@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { noop } from 'lodash';
 
 /**
  * Utility function to generate input step for decimal places
@@ -64,6 +65,9 @@ export const NumberRenderer = ({
   validationError,
   searchText,
   SearchHighlightComponent,
+  setIsEditing = noop,
+  id,
+  className,
 }) => {
   const cellValue = decimalPlaces !== null ? removingExcessDecimalPlaces(initialValue, decimalPlaces) : initialValue;
   const [displayValue, setDisplayValue] = useState(cellValue);
@@ -133,6 +137,7 @@ export const NumberRenderer = ({
     return (
       <div className="h-100 d-flex flex-column justify-content-center position-relative">
         <input
+          id={id}
           type="number"
           style={{
             color: textColor || 'inherit',
@@ -141,7 +146,7 @@ export const NumberRenderer = ({
             background: 'inherit',
             paddingRight: '20px',
           }}
-          className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
+          className={`${className} input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
           value={displayValue}
           onChange={(e) => setDisplayValue(e.target.value)}
           step={getInputStep(decimalPlaces)}
@@ -153,6 +158,7 @@ export const NumberRenderer = ({
             }
           }}
           onBlur={() => {
+            setIsEditing(false); // Required for KeyValuePair
             if (displayValue !== cellValue) {
               handleValueChange(displayValue);
             }

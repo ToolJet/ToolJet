@@ -350,21 +350,30 @@
 // }
 }
 
-// Input element styles
-
-// For String, Number, Textarea
 .key-value-pair-container {
-  .kv-value-editing .long-text-input {
-    width: 100%;
-    resize: vertical;
-    overflow-y: auto;
-    position: absolute;
-    padding: 8px !important;
-    outline: none !important;
-    border: 1px solid var(--interactive-overlays-focus-outline) !important;
-    background-color: var(--cc-surface1-surface) !important;
-    z-index: 99999 !important;
-    align-items: flex-start !important;
+  // Input element styles
+  .kv-value-editing {
+    border: 2px solid var(--primary-brand);
+    background-color: var(--cc-surface1-surface);
+    outline: none;
+    border-radius: 6px;
+
+    // For String
+    .long-text-input {
+      width: 100%;
+      // resize: vertical;
+      // overflow-y: auto;
+      position: absolute;
+      z-index: 99999 !important;
+      align-items: flex-start !important;
+      padding: 8px !important;
+    }
+
+    // For Number
+    .kv-number-field-input {
+      padding: 9px
+    }
+    // For Textarea
   }
 }
 
@@ -419,9 +428,9 @@
         }
       }
 
-      &:focus-within {
-        border: 1px solid var(--indigo9) !important;
-        background-color: var(--cc-surface1-surface) !important;
+      // &:focus-within {
+      //   border: 1px solid var(--indigo9) !important;
+      //   background-color: var(--cc-surface1-surface) !important;
 
-      }
+      // }
     }
