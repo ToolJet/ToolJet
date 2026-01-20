@@ -60,14 +60,6 @@ describe("User signup", () => {
 
     logout();
   });
-  // This test is skipped because it is not required for EE.
-  it.skip("Verify invalid invitation link", () => {
-    cy.log(invitationLink);
-    cy.visit(invitationLink);
-    verifyInvalidInvitationLink();
-    cy.get(commonSelectors.pageLogo).click();
-    cy.get('[data-cy="sign-in-header"]').should("be.visible");
-  });
 
   it("Verify onboarding flow", () => {
     // rewrite for for EE and cloud
