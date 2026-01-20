@@ -164,11 +164,12 @@ export const KeyValuePair = ({
             labelColor={labelColor}
             textColor={textColor}
             accentColor={accentColor}
-            labelWidth={computedLabelWidth}
+            labelWidth={labelWidth}
             alignment={alignment}
             direction={direction}
             darkMode={darkMode}
             isDisabled={isDisabled}
+            autoLabelWidth={autoLabelWidth}
           />
         ))}
       </div>

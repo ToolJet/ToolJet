@@ -89,7 +89,6 @@
   .key-value-pair-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
   }
 }
 
@@ -98,11 +97,10 @@
   display: flex;
   align-items: flex-start;
   min-height: 32px;
-
+  width: 100%;
   // Side alignment (horizontal - label on left, value on right)
   &.kv-row-side {
     flex-direction: row;
-    gap: 16px;
 
     .key-value-label {
       flex-shrink: 0;
@@ -127,7 +125,6 @@
   // Top alignment (stacked - label above value)
   &.kv-row-top {
     flex-direction: column;
-    gap: 4px;
 
     .key-value-label {
       width: 100% !important;
@@ -166,10 +163,7 @@
      Or just next to the text.
      Let's make it flex, with the content taking available space.
   */
-  
-  > span, > div:not(.kv-edit-icon) {
-      flex: 1; /* Allow content to grow */
-  }
+
 
   // Editable field styling - input with border
   // &.kv-value-editable, &.kv-value-editing {
@@ -214,22 +208,6 @@
   //   }
   // }
 
-  // Edit Icon
-  .kv-edit-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    // Always visible
-    opacity: 1;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--primary-accent-strong);
-    }
-  }
 
   // Link styling
   // a {

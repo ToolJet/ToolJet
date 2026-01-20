@@ -13,6 +13,12 @@ import {
   HtmlField,
 } from './FieldAdapters';
 import { SquarePen } from 'lucide-react';
+import Label from '@/_ui/Label';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { cn } from '@/lib/utils';
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -33,6 +39,7 @@ const KeyValueRow = ({
   direction,
   darkMode,
   isDisabled,
+  autoLabelWidth,
 }) => {
   const {
     key: fieldKey,
@@ -40,7 +47,6 @@ const KeyValueRow = ({
     label,
     fieldType = 'string',
     isEditable = false,
-    decimalPlaces,
     toggleOnBg,
     toggleOffBg,
     linkTarget,
@@ -48,7 +54,6 @@ const KeyValueRow = ({
     imageWidth,
     imageHeight,
     objectFit,
-    horizontalAlignment = 'left',
     // Date options
     dateFormat,
     showTimeSelect,
@@ -68,6 +73,7 @@ const KeyValueRow = ({
   const canEdit = isEditable && !isDisabled;
   // Show input if editing is active
   const showInput = canEdit && isEditing;
+  const _width = getLabelWidthOfInput('ofComponent', labelWidth);
 
   const isTopAlignment = alignment === 'top';
   const isRightDirection = direction === 'right';
@@ -113,8 +119,7 @@ const KeyValueRow = ({
       isEditing: showInput,
       setIsEditing,
     };
-    // console.log(showInput, 'showInput');
-    // console.log(fieldType, 'fieldType');
+
     switch (fieldType) {
       case 'string':
         return <StringField {...commonProps} field={field} />;
@@ -180,17 +185,26 @@ const KeyValueRow = ({
   };
   return (
     <div className={rowClassName}>
-      <div
-        className="key-value-render-label"
-        style={{
-          width: labelWidth,
-          color: labelColor,
-          textAlign: isRightDirection && !isTopAlignment ? 'right' : 'left',
+      <Label
+        label={displayLabel}
+        width={labelWidth}
+        _width={_width}
+        color={labelColor}
+        direction={direction}
+        defaultAlignment={alignment}
+        inputId={fieldKey}
+        classes={{
+          labelContainer: cn({
+            'tw-self-center': alignment !== 'top',
+            'tw-flex-shrink-0': alignment === 'top',
+          }),
         }}
+      />
+      <div
+        className={`key-value-render-value ${showInput ? 'kv-value-editing' : ''}`}
+        ref={valueRef}
+        style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
       >
-        {displayLabel}
-      </div>
-      <div className={`key-value-render-value ${showInput ? 'kv-value-editing' : ''}`} ref={valueRef}>
         {renderValue()}
         {canEdit && !isEditing && (
           <SquarePen width={16} height={16} className="cursor-pointer" onClick={handleEditClick} />

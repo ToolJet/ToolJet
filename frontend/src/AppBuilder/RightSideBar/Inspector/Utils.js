@@ -69,7 +69,8 @@ export function renderCustomStyles(
     componentConfig.component == 'CurrencyInput' ||
     componentConfig.component == 'DaterangePicker' ||
     componentConfig.component == 'StarRating' ||
-    componentConfig.component == 'PopoverMenu'
+    componentConfig.component == 'PopoverMenu' ||
+    componentConfig.component == 'KeyValuePair'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
