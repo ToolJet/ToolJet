@@ -25,7 +25,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
   }, [show]);
 
   const isDisabled = useMemo(() => {
-    return isLoading || (passwordOption === 'manual' && password.length < 5);
+    return isLoading || (passwordOption === 'manual' && (password.length < 5 || password.trim().length === 0));
   }, [isLoading, passwordOption, password]);
 
   const togglePasswordVisibility = () => {
