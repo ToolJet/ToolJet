@@ -240,7 +240,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 isModuleMode={isModuleMode}
               >
                 {environmentLoadingState !== 'loading' && (
-                  <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved}>
+                  <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved} deferCheck={isModuleMode || appType === 'module'}>
                     <div className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
                       {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
                       <Container

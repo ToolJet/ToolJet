@@ -5,7 +5,8 @@ import cx from 'classnames';
 const SuspenseCountContext = createContext();
 
 // Added this to track the number of pending Suspense components
-export const SuspenseCountProvider = ({ onAllResolved, children }) => {
+// deferCheck: When true, defers the resolution check to handle nested lazy loading (e.g., ModuleContainer -> Table)
+export const SuspenseCountProvider = ({ onAllResolved, children, deferCheck = false }) => {
   const pendingCount = useRef(0);
   const hasInitialized = useRef(false);
   const hasResolved = useRef(false);
@@ -25,15 +26,27 @@ export const SuspenseCountProvider = ({ onAllResolved, children }) => {
 
   const decrement = useCallback(() => {
     pendingCount.current -= 1;
-    checkAndResolve();
-  }, [checkAndResolve]);
+    if (deferCheck) {
+      // Defer to allow newly mounted component's effects to complete
+      setTimeout(() => checkAndResolve(), 0);
+    } else {
+      checkAndResolve();
+    }
+  }, [checkAndResolve, deferCheck]);
 
   // After first render, mark initialized and check if already ready
   useEffect(() => {
     hasInitialized.current = true;
-    // If nothing is pending after mount, we're ready (no lazy components)
-    checkAndResolve();
-  }, [checkAndResolve]);
+    if (deferCheck) {
+      // Defer the check to ensure all child component effects have completed.
+      // This fixes a race condition in module preview where cached lazy components
+      // don't trigger Suspense fallbacks, causing onAllResolved to fire too early.
+      const timeoutId = setTimeout(() => checkAndResolve(), 0);
+      return () => clearTimeout(timeoutId);
+    } else {
+      checkAndResolve();
+    }
+  }, [checkAndResolve, deferCheck]);
 
   return (
     <SuspenseCountContext.Provider value={{ increment, decrement, isLoading }}>
