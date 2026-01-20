@@ -412,9 +412,18 @@ export default class Googlesheetsv2QueryService implements QueryService {
       }
       // For OAuth if token is expired or invalid it returns 401 or 403
       // For other authentication types just throw generic error so that user can re-authenticate
+      const statusCode = 
+        error.response?.statusCode ||          
+        error.description?.statusCode ||        
+        error.data?.statusCode ||               
+        error.statusCode ||                     
+        error.data?.response?.statusCode ||     
+        error.data?.error?.statusCode ||
+        error.data?.error?.response?.statusCode;         
+
       if (
         sourceOptions['authentication_type'] !== 'service_account' &&
-        (error?.response?.statusCode === 401 || error?.response?.statusCode === 403)
+        (statusCode === 401 || statusCode === 403)
       ) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
           ...error,
@@ -501,7 +510,15 @@ export default class Googlesheetsv2QueryService implements QueryService {
         })),
       };
     } catch (error: any) {
-      if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
+      const statusCode = 
+        error.response?.statusCode ||          
+        error.description?.statusCode ||        
+        error.data?.statusCode ||               
+        error.statusCode ||                     
+        error.data?.response?.statusCode ||     
+        error.data?.error?.statusCode ||
+        error.data?.error?.response?.statusCode; 
+      if (statusCode === 401 ||statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
       }
       throw error;
@@ -537,27 +554,65 @@ export default class Googlesheetsv2QueryService implements QueryService {
         })),
       };
     } catch (error: any) {
-      if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
+      const statusCode = 
+        error.response?.statusCode ||          
+        error.description?.statusCode ||        
+        error.data?.statusCode ||               
+        error.statusCode ||                     
+        error.data?.response?.statusCode ||     
+        error.data?.error?.statusCode ||
+        error.data?.error?.response?.statusCode;
+      if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
       }
       throw new QueryError('Failed to fetch sheets', error.message, error);
     }
   }
 
-  async refreshToken(sourceOptions) {
+ async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
+  let refreshToken: string;
+  
+  if (sourceOptions?.multiple_auth_enabled) {
+    const tokenData = sourceOptions['tokenData'];
+    if (!tokenData || !Array.isArray(tokenData)) {
+      throw new QueryError('Query could not be completed', 'Token data not found for multi-auth', {});
+    }
+    
+    const currentToken = !isAppPublic
+      ? tokenData.find((token: any) => token.user_id === userId)
+      : userId
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
+    
+    if (!currentToken?.refresh_token) {
+      throw new QueryError('Query could not be completed', 'Refresh token not found for user', {});
+    }
+    refreshToken = currentToken['refresh_token'];
+  } else {
     if (!sourceOptions['refresh_token']) {
       throw new QueryError('Query could not be completed', 'Refresh token empty', {});
     }
+    refreshToken = sourceOptions['refresh_token'];
+  }
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    let clientId = '';
+    let clientSecret = '';
+    const oauth_type = sourceOptions['oauth_type'];
+
+    if (oauth_type === 'tooljet_app') {
+      clientId = process.env.GOOGLE_CLIENT_ID;
+      clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    } else {
+      clientId = sourceOptions['client_id'];
+      clientSecret = sourceOptions['client_secret'];
+    }
     const grantType = 'refresh_token';
 
     const data = {
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: grantType,
-      refresh_token: sourceOptions['refresh_token'],
+      refresh_token: refreshToken,
     };
 
     const accessTokenDetails = {};
@@ -570,7 +625,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
       });
       const result = JSON.parse(response.body);
 
-      if (!(response.statusCode >= 200 || response.statusCode < 300)) {
+      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
         throw new QueryError(
           'could not connect to Googlesheets',
           JSON.stringify({ statusCode: response?.statusCode, message: response?.body }),
