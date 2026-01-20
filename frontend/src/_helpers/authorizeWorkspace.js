@@ -25,7 +25,6 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 export const authorizeWorkspace = () => {
   /* Default APIs */
   const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-
   // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({
