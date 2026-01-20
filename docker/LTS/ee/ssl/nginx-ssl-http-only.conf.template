@@ -1,0 +1,99 @@
+# Nginx HTTP-only configuration for Let's Encrypt ACME challenge
+# This template is used ONLY during initial certificate acquisition
+# After certificate is obtained, nginx is reloaded with the full SSL config
+
+# Note: No 'user' directive - nginx runs as the user who starts it (appuser)
+# The container runs as non-root with setcap for port binding
+worker_processes auto;
+pid /tmp/nginx.pid;
+error_log /var/log/nginx/error.log warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # Non-root temp paths
+    client_body_temp_path /tmp/client_body;
+    proxy_temp_path /tmp/proxy;
+    fastcgi_temp_path /tmp/fastcgi;
+    uwsgi_temp_path /tmp/uwsgi;
+    scgi_temp_path /tmp/scgi;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log /var/log/nginx/access.log main;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    # Upstream to NestJS application
+    upstream tooljet_app {
+        server 127.0.0.1:3000;
+        keepalive 32;
+    }
+
+    # HTTP-only server for ACME challenge and temporary access
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name ${DOMAIN_NAME};
+
+        # ACME challenge for Let's Encrypt - CRITICAL for certificate acquisition
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+            try_files $uri =404;
+        }
+
+        # Temporarily serve the application over HTTP during cert acquisition
+        # This allows the app to remain accessible while obtaining certificates
+        location / {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Host ${DOMAIN_NAME};
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_read_timeout 300;
+            proxy_connect_timeout 300;
+            proxy_send_timeout 300;
+        }
+
+        # WebSocket support for /ws endpoint
+        location /ws {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host ${DOMAIN_NAME};
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+
+        # WebSocket support for /yjs endpoint (Y.js collaboration)
+        location /yjs {
+            proxy_pass http://tooljet_app;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host ${DOMAIN_NAME};
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 86400;
+            proxy_send_timeout 86400;
+        }
+    }
+}

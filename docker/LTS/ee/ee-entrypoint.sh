@@ -132,23 +132,35 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
     export PORT=3000
     export LISTEN_ADDR="127.0.0.1"
 
-    # Generate nginx config with domain substitution
     export DOMAIN_NAME
-    envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
 
-    # Start nginx FIRST (so it can serve ACME challenges)
-    echo "Starting nginx to handle ACME challenges..."
-    nginx -c /tmp/nginx.conf
-
-    # Small delay to ensure nginx is ready
-    sleep 2
-
-    # NOW run certbot (nginx is already serving HTTP on port 80)
-    # Initial certificate acquisition (first-time setup only)
-    # NestJS will handle renewals after startup
+    # Check if certificate already exists
     if [ ! -d "/etc/letsencrypt/live/$DOMAIN_NAME" ]; then
         echo "First-time setup: No certificate found for $DOMAIN_NAME"
-        echo "Acquiring certificate via Let's Encrypt..."
+        echo ""
+        echo "=== PHASE 1: Starting nginx in HTTP-only mode for ACME challenge ==="
+
+        # Generate HTTP-only config (no SSL block - won't fail on missing certs)
+        envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl-http-only.conf.template > /tmp/nginx.conf
+
+        # Start nginx in HTTP-only mode
+        echo "Starting nginx (HTTP-only mode)..."
+        nginx -c /tmp/nginx.conf
+
+        # Verify nginx started successfully
+        if ! pgrep -x "nginx" > /dev/null; then
+            echo "❌ ERROR: nginx failed to start"
+            echo "Check nginx error logs: /var/log/nginx/error.log"
+            exit 1
+        fi
+
+        echo "✓ nginx started successfully on port 80"
+        echo ""
+
+        # Small delay to ensure nginx is ready
+        sleep 2
+
+        echo "=== PHASE 2: Acquiring Let's Encrypt certificate ==="
 
         STAGING_FLAG=""
         if [ "$LETSENCRYPT_STAGING" = "true" ]; then
@@ -156,6 +168,8 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
             echo "Using Let's Encrypt staging environment"
         fi
 
+        # Run certbot (nginx is now serving HTTP on port 80)
+        echo "Running certbot for domain: $DOMAIN_NAME"
         certbot certonly --webroot -w /var/www/certbot \
             --config-dir /etc/letsencrypt \
             --work-dir /var/lib/letsencrypt \
@@ -169,8 +183,22 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
 
         if [ $? -eq 0 ]; then
             echo "✓ Certificate acquired successfully for $DOMAIN_NAME"
-            echo "Reloading nginx with SSL configuration..."
-            nginx -s reload
+            echo ""
+            echo "=== PHASE 3: Reloading nginx with SSL configuration ==="
+
+            # Generate full SSL config (with HTTPS support)
+            envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
+
+            # Test new config before reloading
+            if nginx -c /tmp/nginx.conf -t 2>/dev/null; then
+                echo "✓ SSL configuration valid"
+                echo "Reloading nginx with SSL support..."
+                nginx -s reload
+                echo "✓ nginx reloaded successfully - HTTPS now active"
+            else
+                echo "❌ ERROR: SSL configuration test failed"
+                echo "nginx will continue running in HTTP-only mode"
+            fi
         else
             echo "❌ WARNING: Certificate acquisition failed"
             echo ""
@@ -180,7 +208,7 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
             echo "  - Let's Encrypt rate limit reached (5 certs per domain per week)"
             echo "  - Network connectivity issues"
             echo ""
-            echo "nginx will continue running in HTTP mode"
+            echo "nginx will continue running in HTTP-only mode"
             echo "Certificate acquisition will be retried on next restart or via API"
             echo ""
             # DON'T disable SSL mode - keep PORT and LISTEN_ADDR set
@@ -188,7 +216,23 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
         fi
     else
         echo "✓ Certificate already exists for $DOMAIN_NAME"
-        # nginx already started above
+        echo ""
+
+        # Generate full SSL config (certificate already exists)
+        envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
+
+        # Start nginx with SSL support
+        echo "Starting nginx with SSL support..."
+        nginx -c /tmp/nginx.conf
+
+        # Verify nginx started successfully
+        if ! pgrep -x "nginx" > /dev/null; then
+            echo "❌ ERROR: nginx failed to start"
+            echo "Check nginx error logs: /var/log/nginx/error.log"
+            exit 1
+        fi
+
+        echo "✓ nginx started successfully - HTTPS active"
     fi
 
     # nginx is now running - whether cert acquisition succeeded or not
