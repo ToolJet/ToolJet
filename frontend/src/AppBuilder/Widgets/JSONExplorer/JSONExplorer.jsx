@@ -8,13 +8,14 @@ export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
   const { properties, styles, setExposedVariable, setExposedVariables } = props;
 
-  const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility } = properties;
+  const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
+    isDisabled: disabledState,
   });
 
   // ===== HELPER FUNCTIONS =====
@@ -67,6 +68,13 @@ export const JSONExplorer = function JSONExplorer(props) {
       },
     },
     {
+      dep: disabledState,
+      sideEffect: () => {
+        updateExposedVariablesState('isDisabled', disabledState);
+        setExposedVariable('isDisabled', disabledState);
+      },
+    },
+    {
       dep: value,
       sideEffect: () => {
         setExposedVariable('value', value);
@@ -78,6 +86,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     const exposedVariables = {
       isLoading: loadingState,
       isVisible: visibility,
+      isDisabled: disabledState,
       value: value,
       setLoading: async function (value) {
         updateExposedVariablesState('isLoading', !!value);
@@ -86,6 +95,10 @@ export const JSONExplorer = function JSONExplorer(props) {
       setVisibility: async function (value) {
         updateExposedVariablesState('isVisible', !!value);
         setExposedVariable('isVisible', !!value);
+      },
+      setDisabled: async function (value) {
+        updateExposedVariablesState('isDisabled', !!value);
+        setExposedVariable('isDisabled', !!value);
       },
     };
     setExposedVariables(exposedVariables);

@@ -17,7 +17,7 @@ export const jsonEditorConfig = {
             displayName: 'Json',
             validation: {
                 schema: { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
-                defaultValue: `{{{ \n\ta : { \n\t\tb : [1,2,3,4,5,6] \n\t}, \n\tc: { \n\t\td : false \n\t}, \n\te: "Hello World" \n}}}`,
+                defaultValue: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
             },
         },
         shouldExpandEntireJSON: {
@@ -86,7 +86,7 @@ export const jsonEditorConfig = {
         },
     },
     exposedVariables: {
-        value: { a: { b: [1, 2, 3, 4, 5, 6] }, c: { d: false }, e: 'Hello World' },
+        value: { text: "Hello World", number: 64, boolean: true, nullValue: null, fruits: ["banana", "mango", "grape"], objectA: { value: "testing", enabled: false }, items: [] },
         isValid: true,
         isVisible: true,
         isLoading: false,
@@ -116,7 +116,7 @@ export const jsonEditorConfig = {
         },
         properties: {
             value: {
-                value: `{{{ \n\ta : { \n\t\tb : [1,2,3,4,5,6] \n\t}, \n\tc: { \n\t\td : false \n\t}, \n\te: "Hello World" \n}}}`,
+                value: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
             },
             shouldExpandEntireJSON: { value: '{{true}}' },
             loadingState: { value: '{{false}}' },

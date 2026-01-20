@@ -17,7 +17,7 @@ export const jsonExplorerConfig = {
             displayName: 'Json',
             validation: {
                 schema: { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
-                defaultValue: `{{{ \n\ta : { \n\t\tb : [1,2,3,4,5,6] \n\t}, \n\tc: { \n\t\td : false \n\t}, \n\te: "Hello World" \n}}}`,
+                defaultValue: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
             },
         },
         shouldExpandEntireJSON: {
@@ -41,6 +41,12 @@ export const jsonExplorerConfig = {
         visibility: {
             type: 'toggle',
             displayName: 'Visibility',
+            validation: { schema: { type: 'boolean' } },
+            section: 'additionalActions',
+        },
+        disabledState: {
+            type: 'toggle',
+            displayName: 'Disable',
             validation: { schema: { type: 'boolean' } },
             section: 'additionalActions',
         },
@@ -86,9 +92,10 @@ export const jsonExplorerConfig = {
         },
     },
     exposedVariables: {
-        value: { a: { b: [1, 2, 3, 4, 5, 6] }, c: { d: false }, e: 'Hello World' },
+        value: { text: "Hello World", number: 64, boolean: true, nullValue: null, fruits: ["banana", "mango", "grape"], objectA: { value: "testing", enabled: false }, items: [] },
         isVisible: true,
         isLoading: false,
+        isDisabled: false,
     },
     actions: [
         {
@@ -101,6 +108,11 @@ export const jsonExplorerConfig = {
             displayName: 'Set loading',
             params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
+        {
+            handle: 'setDisable',
+            displayName: 'Set disable',
+            params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+        },
     ],
     definition: {
         others: {
@@ -109,12 +121,13 @@ export const jsonExplorerConfig = {
         },
         properties: {
             value: {
-                value: `{{{ \n\ta : { \n\t\tb : [1,2,3,4,5,6] \n\t}, \n\tc: { \n\t\td : false \n\t}, \n\te: "Hello World" \n}}}`,
+                value: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
             },
             shouldExpandEntireJSON: { value: '{{true}}' },
             shouldShowRootNode: { value: '{{true}}' },
             loadingState: { value: '{{false}}' },
             visibility: { value: '{{true}}' },
+            disabledState: { value: '{{false}}' },
         },
         events: [],
         styles: {
