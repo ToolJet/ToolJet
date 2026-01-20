@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { mysqlUIConfig, mysqlFormConfig } from "Constants/constants/marketplace/datasources/mysql";
 
 const data = {};
@@ -40,9 +40,9 @@ describe("MySQL", () => {
                 { key: "root_cert", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName)).click();
+
+        openDataSourceConnection(mysqlDataSourceName);
+
         verifyConnectionFormUI(mysqlUIConfig.defaultFields);
     });
 
@@ -66,9 +66,8 @@ describe("MySQL", () => {
                 { key: "root_cert", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName)).click();
+
+        openDataSourceConnection(mysqlDataSourceName);
 
         fillDSConnectionForm(mysqlFormConfig, []);
 
@@ -95,9 +94,8 @@ describe("MySQL", () => {
                 { key: "root_cert", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mysqlDataSourceName)).click();
+
+        openDataSourceConnection(mysqlDataSourceName);
 
         verifyConnectionFormUI(mysqlUIConfig.defaultFields);
 

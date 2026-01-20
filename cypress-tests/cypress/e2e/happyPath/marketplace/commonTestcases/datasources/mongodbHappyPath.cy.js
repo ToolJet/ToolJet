@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { mongodbUIConfig, mongodbFormConfig } from "Constants/constants/marketplace/datasources/mongodb";
 
 const data = {};
@@ -40,10 +40,11 @@ describe("MongoDB", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName)).click();
+
+        openDataSourceConnection(mongodbDataSourceName);
+
         verifyConnectionFormUI(mongodbUIConfig.defaultFieldsManual);
+
         fillDSConnectionDropdown({ type: "dropdown", fieldName: "Connection type", text: "Connect using connection string" });
         verifyConnectionFormUI(mongodbUIConfig.defaultFieldsConnectionString);
 
@@ -69,9 +70,8 @@ describe("MongoDB", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName)).click();
+
+        openDataSourceConnection(mongodbDataSourceName);
 
         fillDSConnectionForm(mongodbFormConfig.valid, []);
 
@@ -101,9 +101,8 @@ describe("MongoDB", () => {
                 { key: "connection_string", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mongodbDataSourceName)).click();
+
+        openDataSourceConnection(mongodbDataSourceName);
 
         fillDSConnectionForm(mongodbFormConfig, mongodbFormConfig.invalidHost);
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");

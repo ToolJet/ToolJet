@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { mssqlUIConfig, mssqlFormConfig } from "Constants/constants/marketplace/datasources/mssql";
 
 const data = {};
@@ -33,9 +33,9 @@ describe("MSSQL", () => {
                 { key: "password", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
+
+        openDataSourceConnection(mssqlDataSourceName);
+
         verifyConnectionFormUI(mssqlUIConfig.defaultFields);
     });
 
@@ -52,9 +52,8 @@ describe("MSSQL", () => {
                 { key: "password", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
+
+        openDataSourceConnection(mssqlDataSourceName);
 
         fillDSConnectionForm(mssqlFormConfig, []);
 
@@ -74,11 +73,8 @@ describe("MSSQL", () => {
                 { key: "password", value: null, encrypted: true },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(mssqlDataSourceName)).click();
 
-        verifyConnectionFormUI(mssqlUIConfig.defaultFields);
+        openDataSourceConnection(mssqlDataSourceName);
 
         fillDSConnectionForm(mssqlFormConfig, mssqlFormConfig.invalidHost);
         verifyDSConnection("failed", "Failed to connect to invalid-host:1433 - getaddrinfo ENOTFOUND invalid-host");

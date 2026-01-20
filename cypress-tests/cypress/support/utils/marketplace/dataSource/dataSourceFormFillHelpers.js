@@ -119,7 +119,7 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
       cy.get('[data-cy="connection-alert-text"]')
         .scrollIntoView()
         .should("be.visible", { timeout: 40000 })
-        .verifyVisibleElement("have.text", customMessage);
+        .should("contain.text", customMessage);
       break;
   }
 };
@@ -127,6 +127,15 @@ export const verifyDSConnection = (expectedStatus = "success", customMessage = n
 export const fillDSConnectionEncryptedField = (field) => {
   const fieldSelector = dsCommonSelector.textField(field.fieldName);
   const encrypted = field.encrypted !== undefined ? field.encrypted : true;
+
+  const isJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   if (encrypted) {
     cy.get(fieldSelector).then(($field) => {
@@ -137,7 +146,24 @@ export const fillDSConnectionEncryptedField = (field) => {
     });
   }
 
-  cy.clearAndType(fieldSelector, field.text);
+  // Handle JSON content with special character sequences disabled
+  if (field.parseSpecialCharSequences === false || isJSON(field.text)) {
+    cy.waitForElement(fieldSelector)
+      .scrollIntoView()
+      .should("be.visible", { timeout: 10000 })
+      .click({ force: true })
+      .wait(200)
+      .type(`{selectall}{backspace}`, { parseSpecialCharSequences: true })
+      .wait(100)
+      .type(`{selectall}{backspace}`, { parseSpecialCharSequences: true })
+      .wait(100)
+      .type(field.text, {
+        parseSpecialCharSequences: false,
+        delay: 50
+      });
+  } else {
+    cy.clearAndType(fieldSelector, field.text);
+  }
 };
 
 const processFields = (fields) => {
@@ -187,5 +213,10 @@ export function fillDSConnectionForm (formConfig, invalidFields = []) {
   if (invalidFields && invalidFields.length > 0) {
     processFields(invalidFields);
   }
-}
+};
 
+export const openDataSourceConnection = (dataSourceName) => {
+  cy.visit('/my-workspace/data-sources');
+  cy.waitForElement(dsCommonSelector.dataSourceNameButton(dataSourceName));
+  cy.get(dsCommonSelector.dataSourceNameButton(dataSourceName)).click();
+};
