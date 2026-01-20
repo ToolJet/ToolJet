@@ -64,6 +64,8 @@ import Chat from './chat.jsx';
 import CurrencyInput from './currencyinput.jsx';
 import PopoverMenu from './popovermenu.jsx';
 import Progressbar from './progressbar.jsx';
+import AudioRecorder from './audiorecorder.jsx';
+import Camera from './camera.jsx';
 import TagsInput from './tagsinput.jsx';
 
 const WidgetIcon = (props) => {
@@ -222,6 +224,10 @@ const WidgetIcon = (props) => {
       return <CurrencyInput {...props} />;
     case 'progressbar':
       return <Progressbar {...props} />;
+    case 'audiorecorder':
+      return <AudioRecorder {...props} />;
+    case 'camera':
+      return <Camera {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

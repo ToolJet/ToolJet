@@ -68,6 +68,8 @@ import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { progressbarConfig } from './progressbar';
+import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
 
 const widgets = {
   buttonConfig,
@@ -140,6 +142,8 @@ const widgets = {
   moduleViewerConfig,
   popoverMenuConfig,
   progressbarConfig,
+  audioRecorderConfig,
+  cameraConfig,
 };
 
 const universalProps = {

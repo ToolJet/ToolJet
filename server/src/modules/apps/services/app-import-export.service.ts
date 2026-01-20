@@ -2726,6 +2726,10 @@ function migrateProperties(
         }
         delete styles.highlightColor;
       }
+
+      if (!styles.commonBackgroundColor) {
+        styles.commonBackgroundColor = { value: 'var(--cc-surface1-surface)' };
+      }
     }
 
     // Image

@@ -44,6 +44,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'CircularProgressBar',
   'Kanban',
   'ProgressBar',
+  'AudioRecorder',
+  'Camera',
 ];
 
 const RenderWidget = ({

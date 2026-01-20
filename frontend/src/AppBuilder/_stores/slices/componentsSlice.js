@@ -1361,10 +1361,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1466,7 +1466,12 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
-    const { component } = getComponentDefinition(componentId, moduleId);
+    const componentDef = getComponentDefinition(componentId, moduleId);
+    // Safety check: return early if component doesn't exist
+    if (!componentDef?.component) {
+      return;
+    }
+    const { component } = componentDef;
     const oldValue = component.definition[paramType][property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
@@ -2192,8 +2197,12 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    const currentCanvasHeight =
-      getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
+    const componentDef = getCurrentPageComponents(moduleId)[componentId];
+    // If the component doesn't exist, return early (can happen during cross-container moves)
+    if (!componentDef?.component) {
+      return returnDiff ? null : undefined;
+    }
+    const currentCanvasHeight = componentDef?.component?.definition?.properties?.canvasHeight?.value;
     if (currentCanvasHeight === maxHeight) {
       return returnDiff ? null : undefined;
     }
