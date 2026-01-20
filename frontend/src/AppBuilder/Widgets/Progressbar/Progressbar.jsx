@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Label from '@/_ui/Label';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import './progressbar.scss';
 
 export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
-  const isInitialRender = useRef(true);
+  // ===== PROPS DESTRUCTURING =====
+  const { labelType, text, progress, visibility, loadingState } = properties;
 
-  // Properties
-  const { labelType, text, progress, visibility: initialVisibility } = properties;
-
-  // Styles
   const {
     textColor,
     alignment,
@@ -22,6 +21,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     textSize,
   } = styles;
 
+  // ===== COMPUTED VALUES =====
   // Calculate font size as percentage of component height (textSize: 1-100, default 26)
   const validTextSize = textSize >= 1 && textSize <= 100 ? textSize : 26;
   const fontSize = `${(height * validTextSize) / 100}px`;
@@ -30,60 +30,84 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   const validProgressBarWidth = progressBarWidth >= 1 && progressBarWidth <= 100 ? progressBarWidth : 20;
   const barHeight = (height * validProgressBarWidth) / 100;
 
-  // State
-  const [visibility, setVisibility] = useState(initialVisibility);
-  const [progressValue, setProgressValue] = useState(progress);
+  // ===== STATE MANAGEMENT =====
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+    value: Math.min(Math.max(progress || 0, 0), 100),
+    isVisible: visibility,
+    isLoading: loadingState,
+  });
 
   // Clamp progress value between 0 and 100
-  const clampedProgress = Math.min(Math.max(progressValue || 0, 0), 100);
+  const clampedProgress = exposedVariablesTemporaryState.value;
   const isCompleted = clampedProgress >= 100;
 
   // Determine label text
   const labelText = labelType === 'custom' ? text : `${Math.round(clampedProgress)}%`;
 
-  // Update visibility when properties change
-  useEffect(() => {
-    if (visibility !== initialVisibility) setVisibility(initialVisibility);
-  }, [initialVisibility]);
+  // ===== HELPER FUNCTIONS =====
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
 
-  // Update progress when properties change
-  useEffect(() => {
-    setProgressValue(progress);
-  }, [progress]);
+  // ===== EFFECTS =====
+  useBatchedUpdateEffectArray([
+    {
+      dep: progress,
+      sideEffect: () => {
+        const clamped = Math.min(Math.max(progress || 0, 0), 100);
+        updateExposedVariablesState('value', clamped);
+        setExposedVariable('value', clamped);
+      },
+    },
+    {
+      dep: visibility,
+      sideEffect: () => {
+        updateExposedVariablesState('isVisible', visibility);
+        setExposedVariable('isVisible', visibility);
+      },
+    },
+    {
+      dep: loadingState,
+      sideEffect: () => {
+        updateExposedVariablesState('isLoading', loadingState);
+        setExposedVariable('isLoading', loadingState);
+      },
+    },
+  ]);
 
-  // Expose variables after initial render
   useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      setExposedVariables({
-        value: clampedProgress,
-        isVisible: visibility,
-        setValue: async (value) => setProgressValue(value),
-        setVisibility: async (value) => setVisibility(value),
-      });
-    }
+    const exposedVariables = {
+      value: Math.min(Math.max(progress || 0, 0), 100),
+      isVisible: visibility,
+      isLoading: loadingState,
+      setValue: async function (value) {
+        const clamped = Math.min(Math.max(value || 0, 0), 100);
+        updateExposedVariablesState('value', clamped);
+        setExposedVariable('value', clamped);
+      },
+      setVisibility: async function (value) {
+        updateExposedVariablesState('isVisible', !!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setLoading: async function (value) {
+        updateExposedVariablesState('isLoading', !!value);
+        setExposedVariable('isLoading', !!value);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update exposed variables when they change
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariable('value', clampedProgress);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clampedProgress]);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariable('isVisible', visibility);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  if (!visibility) {
+  if (!exposedVariablesTemporaryState.isVisible) {
     return null;
   }
 
+  // ===== COMPUTED STYLES =====
   // Determine progress bar color
   const progressColor = isCompleted ? completionColor : progressTrackColor;
 
@@ -115,6 +139,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     overflow: 'hidden',
   };
 
+  // ===== MAIN RENDER =====
   return (
     <div style={containerStyles} data-cy={dataCy} id={id}>
       <Label
@@ -131,15 +156,37 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
       />
       <div style={progressBarContainerStyles}>
         <div style={progressBarWrapperStyles}>
-          <div
-            style={{
-              width: `${clampedProgress}%`,
-              height: '100%',
-              backgroundColor: progressColor,
-              transition: 'width 0.3s ease, background-color 0.3s ease',
-              borderRadius: `${barHeight / 2}px`,
-            }}
-          />
+          {exposedVariablesTemporaryState.isLoading ? (
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  width: '21%',
+                  height: '100%',
+                  backgroundColor: progressTrackColor,
+                  borderRadius: `${barHeight / 2}px`,
+                  animation: 'progressLoading 1.5s ease-in-out infinite',
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: `${clampedProgress}%`,
+                height: '100%',
+                backgroundColor: progressColor,
+                transition: 'width 0.3s ease, background-color 0.3s ease',
+                borderRadius: `${barHeight / 2}px`,
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

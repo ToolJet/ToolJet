@@ -52,6 +52,12 @@ export const progressbarConfig = {
             validation: { schema: { type: 'string' } },
             section: 'additionalActions',
         },
+        loadingState: {
+            type: 'toggle',
+            displayName: 'Loading state',
+            validation: { schema: { type: 'boolean' }, defaultValue: false },
+            section: 'additionalActions',
+        },
         visibility: {
             type: 'toggle',
             displayName: 'Visibility',
@@ -190,6 +196,7 @@ export const progressbarConfig = {
     exposedVariables: {
         value: 50,
         isVisible: true,
+        isLoading: false,
     },
     actions: [
         {
@@ -201,6 +208,11 @@ export const progressbarConfig = {
             handle: 'setVisibility',
             displayName: 'Set visibility',
             params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+        },
+        {
+            handle: 'setLoading',
+            displayName: 'Set loading',
+            params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
         },
     ],
 
@@ -219,6 +231,7 @@ export const progressbarConfig = {
             },
             tooltip: { value: '' },
             visibility: { value: '{{true}}' },
+            loadingState: { value: '{{false}}' },
         },
         events: [],
         styles: {
