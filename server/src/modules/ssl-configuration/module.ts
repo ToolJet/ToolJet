@@ -9,10 +9,23 @@ export class SslConfigurationModule extends SubModule {
       SslConfigurationController,
       SslCertificateLifecycleService,
       SslCertificateRenewalScheduler,
+      NginxProcessService,
+      NginxConfigurationService,
+      CertificateAcquisitionService,
+      SslBootstrapService,
     } = await this.getProviders(
       configs,
       'ssl-configuration',
-      ['service', 'controller', 'ssl-lifecycle.service', 'ssl-renewal.scheduler']
+      [
+        'service',
+        'controller',
+        'ssl-lifecycle.service',
+        'ssl-renewal.scheduler',
+        'nginx-process.service',
+        'nginx-configuration.service',
+        'certificate-acquisition.service',
+        'ssl-bootstrap.service',
+      ]
     );
 
     return {
@@ -22,9 +35,20 @@ export class SslConfigurationModule extends SubModule {
         SslConfigurationRepository,
         SslCertificateLifecycleService,
         SslCertificateRenewalScheduler,
+        NginxProcessService,
+        NginxConfigurationService,
+        CertificateAcquisitionService,
+        SslBootstrapService,
       ],
       controllers: isMainImport ? [SslConfigurationController] : [],
-      exports: [SslConfigurationService, SslCertificateLifecycleService],
+      exports: [
+        SslConfigurationService,
+        SslCertificateLifecycleService,
+        NginxProcessService,
+        NginxConfigurationService,
+        CertificateAcquisitionService,
+        SslBootstrapService,
+      ],
     };
   }
 }
