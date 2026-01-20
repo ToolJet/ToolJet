@@ -8,7 +8,6 @@ import {
   ImageField,
   DatepickerField,
   SelectField,
-  MultiselectField,
   JsonField,
   MarkdownField,
   HtmlField,
@@ -109,7 +108,6 @@ const KeyValueRow = ({
       darkMode,
       isValid,
       validationError,
-      horizontalAlignment,
       // Pass edit state
       isEditable: showInput,
       autoFocus: true, // Auto focus when switching to edit mode
@@ -140,10 +138,10 @@ const KeyValueRow = ({
         );
 
       case 'select':
-        return <SelectField {...commonProps} options={options} />;
+        return <SelectField {...commonProps} field={field} />;
 
       case 'newMultiSelect':
-        return <MultiselectField {...commonProps} options={options} />;
+        return <SelectField {...commonProps} field={field} isMulti />;
 
       case 'boolean':
         return <BooleanField {...commonProps} toggleOnBg={toggleOnBg} toggleOffBg={toggleOffBg} />;
@@ -165,31 +163,16 @@ const KeyValueRow = ({
         );
 
       case 'image':
-        return (
-          <ImageField
-            value={value}
-            width={imageWidth}
-            height={imageHeight}
-            objectFit={objectFit}
-            horizontalAlignment={horizontalAlignment}
-          />
-        );
+        return <ImageField value={value} width={imageWidth} height={imageHeight} objectFit={objectFit} />;
 
       case 'json':
-        return (
-          <JsonField
-            value={value}
-            indentation={jsonIndentation}
-            darkMode={darkMode}
-            horizontalAlignment={horizontalAlignment}
-          />
-        );
+        return <JsonField value={value} indentation={jsonIndentation} darkMode={darkMode} />;
 
       case 'markdown':
-        return <MarkdownField value={value} darkMode={darkMode} horizontalAlignment={horizontalAlignment} />;
+        return <MarkdownField value={value} darkMode={darkMode} />;
 
       case 'html':
-        return <HtmlField value={value} darkMode={darkMode} horizontalAlignment={horizontalAlignment} />;
+        return <HtmlField value={value} darkMode={darkMode} />;
 
       default:
         // Fallback to plain text
@@ -199,7 +182,6 @@ const KeyValueRow = ({
         return <span style={{ color: textColor }}>{String(value ?? '')}</span>;
     }
   };
-  console.log(canEdit, isEditing, 'canEdit');
   return (
     <div className={rowClassName}>
       <div

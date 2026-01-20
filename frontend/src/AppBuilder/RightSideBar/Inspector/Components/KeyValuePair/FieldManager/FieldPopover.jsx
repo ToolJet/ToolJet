@@ -15,7 +15,6 @@ export const FieldPopoverContent = ({
   props,
   fieldEventChanged,
 }) => {
-  const [activeTab, setActiveTab] = useState('propertiesTab');
   const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
   const popoverRef = useRef(null);
 
@@ -41,26 +40,6 @@ export const FieldPopoverContent = ({
 
   return (
     <>
-      <Popover.Header>
-        <div className="d-flex custom-gap-4 align-self-stretch tj-text tj-text-xsm font-weight-500 text-secondary cursor-pointer">
-          <div
-            className={`${activeTab === 'propertiesTab' && 'active-column-tab'} column-header-tab`}
-            onClick={() => {
-              if (activeTab !== 'propertiesTab') setActiveTab('propertiesTab');
-            }}
-          >
-            Properties
-          </div>
-          <div
-            className={`${activeTab === 'stylesTab' && 'active-column-tab'} column-header-tab`}
-            onClick={() => {
-              if (activeTab !== 'stylesTab') setActiveTab('stylesTab');
-            }}
-          >
-            Styles
-          </div>
-        </div>
-      </Popover.Header>
       <Popover.Body
         ref={popoverRef}
         className={`table-column-popover ${darkMode && 'theme-dark'} ${isGoingBelowScreen ? 'show-scrollbar' : ''}`}

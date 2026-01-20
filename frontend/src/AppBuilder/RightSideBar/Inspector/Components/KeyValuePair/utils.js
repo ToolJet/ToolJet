@@ -11,7 +11,6 @@ import {
   HTMLTypeIcon,
   NumberTypeIcon,
   StringTypeIcon,
-  TagsTypeIcon,
 } from '../Table/_assets';
 
 export const getFieldIcon = (fieldType) => {

@@ -103,7 +103,7 @@ export const PropertiesTabElements = ({
       {/* Field Name */}
       <div className="field px-3" data-cy={`input-and-label-field-name`}>
         <label data-cy={`label-field-name`} className="form-label">
-          {t('widget.KeyValuePair.fieldName', 'Field name')}
+          {t('widget.KeyValuePair.fieldName', 'Label')}
         </label>
         <CodeHinter
           currentState={currentState}
@@ -157,7 +157,8 @@ export const PropertiesTabElements = ({
           </div>
           {(field?.fxActiveFields?.includes('isEditable') || resolveReferences(field?.isEditable)) && (
             <ValidationProperties
-              column={field}
+              item={field}
+              itemType={field?.fieldType}
               index={index}
               darkMode={darkMode}
               currentState={currentState}
@@ -207,9 +208,10 @@ export const PropertiesTabElements = ({
           darkMode={darkMode}
           currentState={currentState}
           getPopoverFieldSource={getPopoverFieldSource}
-          // setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          setColumnPopoverRootCloseBlocker={setFieldPopoverRootCloseBlocker}
           component={component}
           onColumnItemChange={onFieldItemChange}
+          paramToUpdate="fields"
         />
       )}
     </>

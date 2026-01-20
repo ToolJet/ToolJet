@@ -1,13 +1,13 @@
 import React from 'react';
 import { CustomSelectColumn } from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/CustomSelect';
-
+import useStore from '@/AppBuilder/_stores/store';
 /**
  * SelectFieldAdapter - KeyValuePair adapter for Select dropdown
  *
  * Uses CustomSelect from Table for consistent select rendering across the app.
  */
 export const SelectField = ({
-  options = [],
+  field,
   value,
   onChange,
   isEditable = false,
@@ -15,14 +15,29 @@ export const SelectField = ({
   darkMode = false,
   textColor,
   containerWidth,
-  horizontalAlignment = 'left',
   optionsLoadingState = false,
   defaultOptionsList = [],
   id,
-  column = {},
   isEditing,
   setIsEditing,
+  isMulti = false,
 }) => {
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  let options = [];
+  let useDynamicOptions = getResolvedValue(field?.useDynamicOptions);
+  if (useDynamicOptions) {
+    const dynamicOptions = getResolvedValue(field?.dynamicOptions || []);
+    options = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+  } else {
+    options = field?.options ?? [];
+    options =
+      options?.map((option) => ({
+        label: option.label,
+        value: option.value,
+        optionColor: option.optionColor,
+        labelColor: option.labelColor,
+      })) ?? [];
+  }
   return (
     <div className="h-100 d-flex align-items-center flex-column justify-content-center">
       <CustomSelectColumn
@@ -37,16 +52,16 @@ export const SelectField = ({
         darkMode={darkMode}
         defaultOptionsList={defaultOptionsList}
         textColor={textColor}
-        isMulti={false}
+        isMulti={isMulti}
         containerWidth={containerWidth}
         optionsLoadingState={optionsLoadingState}
-        horizontalAlignment={horizontalAlignment}
         isEditable={isEditable}
         id={id}
-        column={column}
+        column={field}
         widgetType={'key-value-pair'}
         isFocused={isEditing}
         setIsFocused={setIsEditing}
+        autoAssignColors={field?.autoAssignColors}
       />
     </div>
   );
