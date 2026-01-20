@@ -71,27 +71,27 @@ export const clickhouseFormConfig = {
         {
             type: "input",
             fieldName: "Host",
-            text: Cypress.env('clickhouse_host') || "localhost"
+            text: Cypress.env('clickhouse_host')
         },
         {
             type: "input",
             fieldName: "Port",
-            text: Cypress.env('clickhouse_port') || "8123"
+            text: Cypress.env('clickhouse_port')
         },
         {
             type: "input",
             fieldName: "Database name",
-            text: Cypress.env('clickhouse_database') || ""
+            text: Cypress.env('clickhouse_database')
         },
         {
             type: "input",
             fieldName: "Username",
-            text: Cypress.env('clickhouse_user') || ""
+            text: Cypress.env('clickhouse_user')
         },
         {
             type: "encrypted",
             fieldName: "Password",
-            text: Cypress.env('clickhouse_password') || ""
+            text: Cypress.env('clickhouse_password')
         },
         {
             type: "dropdown",
