@@ -8,6 +8,7 @@ import {
   User,
   ConnectionTestResult,
   validateAndSetRequestOptionsBasedOnAuthType,
+  getCurrentToken,
 } from '@tooljet-plugins/common';
 import {
   readData,
@@ -572,27 +573,22 @@ export default class Googlesheetsv2QueryService implements QueryService {
  async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
   let refreshToken: string;
   
-  if (sourceOptions?.multiple_auth_enabled) {
-    const tokenData = sourceOptions['tokenData'];
-    if (!tokenData || !Array.isArray(tokenData)) {
-      throw new QueryError('Query could not be completed', 'Token data not found for multi-auth', {});
-    }
-    
-    const currentToken = !isAppPublic
-      ? tokenData.find((token: any) => token.user_id === userId)
-      : userId
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : tokenData[0];
-    
-    if (!currentToken?.refresh_token) {
-      throw new QueryError('Query could not be completed', 'Refresh token not found for user', {});
-    }
-    refreshToken = currentToken['refresh_token'];
+  const currentUserToken = sourceOptions['refresh_token']
+              ? sourceOptions
+              : getCurrentToken(
+                  sourceOptions['multiple_auth_enabled'],
+                  sourceOptions['tokenData'],
+                  userId,
+                 isAppPublic
+                );
+  if (currentUserToken && currentUserToken['refresh_token']) {
+    refreshToken = currentUserToken['refresh_token'];
   } else {
-    if (!sourceOptions['refresh_token']) {
-      throw new QueryError('Query could not be completed', 'Refresh token empty', {});
-    }
-    refreshToken = sourceOptions['refresh_token'];
+    throw new QueryError(
+      'could not connect to Googlesheets',
+      'Refresh token not found. Please re-authenticate to continue.',
+      {}
+    );
   }
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     let clientId = '';
@@ -635,7 +631,6 @@ export default class Googlesheetsv2QueryService implements QueryService {
 
       if (result['access_token']) {
         accessTokenDetails['access_token'] = result['access_token'];
-        accessTokenDetails['refresh_token'] = result['refresh_token'];
       } else {
         throw new QueryError(
           'access_token not found in the response',
