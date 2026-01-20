@@ -50,7 +50,7 @@
           "label": "Deployment",
           "link": {
             "type": "doc",
-            "id": "setup/index"
+            "id": "setup/setup"
           },
           "items": [
             {

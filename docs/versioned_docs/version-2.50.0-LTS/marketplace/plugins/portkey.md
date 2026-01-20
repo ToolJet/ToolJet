@@ -10,7 +10,7 @@ ToolJet can integrate with Portkey to access AI services such as text completion
 </div>
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -56,27 +56,28 @@ This operation generates text completions based on a given prompt.
     <details id="tj-dropdown">
     <summary>**Response Example**</summary>
     ```json
+
 {
-  "id": "cmpl-9vNUfM8OP0SwSqXcnPwkqzR7ep8Sy",
-  "object": "text_completion",
-  "created": 1723462033,
-  "model": "gpt-3.5-turbo-instruct",
-  "choices": [
-    {
-      "text": "nn"Experience the perfect brew at Bean There."",
-      "index": 0,
-      "logprobs": null,
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 10,
-    "total_tokens": 23
-  }
+"id": "cmpl-9vNUfM8OP0SwSqXcnPwkqzR7ep8Sy",
+"object": "text_completion",
+"created": 1723462033,
+"model": "gpt-3.5-turbo-instruct",
+"choices": [
+{
+"text": "nn"Experience the perfect brew at Bean There."",
+"index": 0,
+"logprobs": null,
+"finish_reason": "stop"
 }
-    ```
-    </details>
+],
+"usage": {
+"prompt_tokens": 13,
+"completion_tokens": 10,
+"total_tokens": 23
+}
+}
+```
+</details>
 
 ### Chat
 
@@ -226,6 +227,7 @@ This operation creates embeddings for given input text.
 </details>
 
 For all operations, you can optionally specify:
+
 - **Config**: Configuration options for the request.
 - **Virtual Key**: A specific virtual key to use for the request, overriding the default.
 
