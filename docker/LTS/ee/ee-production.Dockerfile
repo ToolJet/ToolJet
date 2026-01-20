@@ -213,11 +213,11 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
 # Create directories for Let's Encrypt SSL support (nginx + certbot)
-RUN mkdir -p /var/www/certbot /etc/letsencrypt /var/log/nginx \
+RUN mkdir -p /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
     /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
-    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt /var/log/nginx \
+    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
        /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi \
-    && chmod -R g=u /var/www/certbot /etc/letsencrypt /var/log/nginx \
+    && chmod -R g=u /var/www/certbot /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /var/log/nginx \
        /tmp/client_body /tmp/proxy /tmp/fastcgi /tmp/uwsgi /tmp/scgi
 
 # Allow non-root nginx to bind to privileged ports (80, 443)

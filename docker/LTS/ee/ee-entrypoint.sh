@@ -149,6 +149,9 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
         fi
 
         certbot certonly --webroot -w /var/www/certbot \
+            --config-dir /etc/letsencrypt \
+            --work-dir /var/lib/letsencrypt \
+            --logs-dir /var/log/letsencrypt \
             -d "$DOMAIN_NAME" \
             --email "$LETSENCRYPT_EMAIL" \
             --agree-tos \
