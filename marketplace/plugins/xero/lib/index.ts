@@ -7,11 +7,10 @@ import {
   OAuthUnauthorizedClientError,
   getCurrentToken,
 } from '@tooljet-marketplace/common';
-import { SourceOptions, ConvertedFormat, QueryResult, } from './types';
+import { SourceOptions, ConvertedFormat, QueryResult } from './types';
 import got, { OptionsOfTextResponseBody } from 'got';
 
 export default class Xero implements QueryService {
-
   authUrl(source_options: SourceOptions): string {
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -19,17 +18,14 @@ export default class Xero implements QueryService {
     const oauth_type = source_options.oauth_type.value;
 
     let clientId: string;
-    let clientSecret: string;
 
     if (oauth_type === 'tooljet_app') {
       clientId = process.env.XERO_CLIENT_ID;
-      clientSecret = process.env.XERO_CLIENT_SECRET;
     } else {
       clientId = source_options?.client_id?.value;
-      clientSecret = source_options?.client_secret?.value;
     }
 
-    if (!clientId || !clientSecret) {
+    if (!clientId) {
       const errorMessage = 'Missing OAuth credentials: "clientId" or "clientSecret" not provided.';
       const errorDetails = {
         message: errorMessage,
@@ -37,7 +33,6 @@ export default class Xero implements QueryService {
         code: 'MISSING_OAUTH_CREDENTIALS',
         missing: {
           clientId: !clientId,
-          clientSecret: !clientSecret,
         },
       };
       throw new QueryError('Invalid configuration', errorMessage, errorDetails);
@@ -46,7 +41,8 @@ export default class Xero implements QueryService {
     const scope = source_options?.scopes?.value;
     const finalScope = scope.includes('offline_access') ? scope : `${scope} offline_access`;
     const encodedScope = encodeURIComponent(finalScope);
-    const baseUrl = `https://login.xero.com/identity/connect/authorize?response_type=code&client_id=${clientId}` +
+    const baseUrl =
+      `https://login.xero.com/identity/connect/authorize?response_type=code&client_id=${clientId}` +
       `&redirect_uri=${fullUrl}oauth2/authorize`;
 
     return `${baseUrl}&scope=${encodedScope}&access_type=offline&prompt=consent`;
@@ -71,7 +67,6 @@ export default class Xero implements QueryService {
       method,
       headers: customHeaders || {},
     };
-
 
     if (params?.query && Object.keys(params.query).length > 0) {
       const urlParams = new URLSearchParams();
@@ -104,13 +99,16 @@ export default class Xero implements QueryService {
       header_prefix: 'Bearer ',
       audience: '',
       client_auth: 'header',
-      headers: [['', ''], ['tj-x-forwarded-for', '::1']],
+      headers: [
+        ['', ''],
+        ['tj-x-forwarded-for', '::1'],
+      ],
       custom_query_params: [['', '']],
       custom_auth_params: [['', '']],
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
       retry_network_errors: true,
-      scopes: encodeURIComponent(scope)
+      scopes: encodeURIComponent(scope),
     };
   }
 
@@ -160,7 +158,7 @@ export default class Xero implements QueryService {
       const response = await got('https://identity.xero.com/connect/token', {
         method: 'post',
         form: data,
-        responseType: 'json'
+        responseType: 'json',
       });
 
       const result = response.body as { access_token?: string; refresh_token?: string };
@@ -188,11 +186,7 @@ export default class Xero implements QueryService {
       }
 
       const errorMessage =
-        parsed?.Title ||
-        parsed?.error_description ||
-        parsed?.error ||
-        error?.message ||
-        'Xero token refresh failed';
+        parsed?.Title || parsed?.error_description || parsed?.error || error?.message || 'Xero token refresh failed';
 
       const errorDetails = {
         status: error?.response?.statusCode || null,
@@ -210,14 +204,14 @@ export default class Xero implements QueryService {
       ];
     }
 
-    const oauth_type = source_options.find((item) => item.key === 'oauth_type')?.value;
-    const clientId = oauth_type === 'tooljet_app'
-      ? process.env.XERO_CLIENT_ID
-      : source_options.find((item) => item.key === 'client_id')?.value;
+    const getOption = (key: string) =>
+      Array.isArray(source_options) ? source_options.find((item) => item.key === key)?.value : source_options?.[key];
 
-    const clientSecret = oauth_type === 'tooljet_app'
-      ? process.env.XERO_CLIENT_SECRET
-      : source_options.find((item) => item.key === 'client_secret')?.value;
+    const oauth_type = getOption('oauth_type');
+
+    const clientId = oauth_type === 'tooljet_app' ? process.env.XERO_CLIENT_ID : getOption('client_id');
+
+    const clientSecret = oauth_type === 'tooljet_app' ? process.env.XERO_CLIENT_SECRET : getOption('client_secret');
 
     const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
@@ -233,7 +227,7 @@ export default class Xero implements QueryService {
       const response = await got('https://identity.xero.com/connect/token', {
         method: 'post',
         form: data,
-        responseType: 'json'
+        responseType: 'json',
       });
 
       const tokenResponse = response.body as { access_token: string; refresh_token: string };
@@ -259,7 +253,13 @@ export default class Xero implements QueryService {
     }
   }
 
-  async run(sourceOptions: any, queryOptions: any, dataSourceId: string, dataSourceUpdatedAt: string, context?: { user?: User; app?: App }): Promise<QueryResult> {
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    context?: { user?: User; app?: App }
+  ): Promise<QueryResult> {
     if (sourceOptions['oauth_type'] === 'tooljet_app') {
       sourceOptions['client_id'] = process.env.XERO_CLIENT_ID;
       sourceOptions['client_secret'] = process.env.XERO_CLIENT_SECRET;
@@ -277,42 +277,42 @@ export default class Xero implements QueryService {
     let baseUrl: string;
 
     switch (specType.toLowerCase()) {
-      case "accounts":
-      case "contacts":
-      case "invoices":
-      case "payments":
-      case "reports":
-        baseUrl = "https://api.xero.com/api.xro/2.0";
+      case 'accounts':
+      case 'contacts':
+      case 'invoices':
+      case 'payments':
+      case 'reports':
+        baseUrl = 'https://api.xero.com/api.xro/2.0';
         break;
-      case "finance":
-        baseUrl = "https://api.xero.com/finance.xro/1.0";
+      case 'finance':
+        baseUrl = 'https://api.xero.com/finance.xro/1.0';
         break;
-      case "files":
-        baseUrl = "https://api.xero.com/files.xro/1.0";
+      case 'files':
+        baseUrl = 'https://api.xero.com/files.xro/1.0';
         break;
-      case "identity":
-        baseUrl = "https://api.xero.com";
+      case 'identity':
+        baseUrl = 'https://api.xero.com';
         break;
-      case "bank_feeds":
-        baseUrl = "https://api.xero.com/bankfeeds.xro/1.0";
+      case 'bank_feeds':
+        baseUrl = 'https://api.xero.com/bankfeeds.xro/1.0';
         break;
-      case "projects":
-        baseUrl = "https://api.xero.com/projects.xro/2.0";
+      case 'projects':
+        baseUrl = 'https://api.xero.com/projects.xro/2.0';
         break;
-      case "payroll_au":
-        baseUrl = "https://api.xero.com/payroll.xro/1.0";
+      case 'payroll_au':
+        baseUrl = 'https://api.xero.com/payroll.xro/1.0';
         break;
-      case "payroll_uk":
-        baseUrl = "https://api.xero.com/payroll.xro/2.0";
+      case 'payroll_uk':
+        baseUrl = 'https://api.xero.com/payroll.xro/2.0';
         break;
-      case "payroll_nz":
-        baseUrl = "https://api.xero.com/payroll.xro/2.0";
+      case 'payroll_nz':
+        baseUrl = 'https://api.xero.com/payroll.xro/2.0';
         break;
-      case "app_store":
-        baseUrl = "https://api.xero.com/appstore.xro/1.0";
+      case 'app_store':
+        baseUrl = 'https://api.xero.com/appstore.xro/1.0';
         break;
-      case "assets":
-        baseUrl = "https://api.xero.com/assets.xro/1.0";
+      case 'assets':
+        baseUrl = 'https://api.xero.com/assets.xro/1.0';
         break;
 
       default:
@@ -320,7 +320,6 @@ export default class Xero implements QueryService {
     }
 
     let url = `${baseUrl}${path}`;
-
 
     for (const param in pathParams) {
       url = url.replace(`{${param}}`, encodeURIComponent(pathParams[param]));
@@ -343,7 +342,7 @@ export default class Xero implements QueryService {
       requestOptions.headers = {
         ...(requestOptions.headers || {}),
         'Xero-tenant-id': queryOptions?.tenant_id,
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       };
     } else {
@@ -378,11 +377,7 @@ export default class Xero implements QueryService {
     } catch (error: any) {
       // Handle OAuth unauthorized errors - triggers token refresh flow
       if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
-        throw new OAuthUnauthorizedClientError(
-          'OAuth token expired or invalid',
-          error.message,
-          error
-        );
+        throw new OAuthUnauthorizedClientError('OAuth token expired or invalid', error.message, error);
       }
 
       let parsed;
@@ -400,7 +395,7 @@ export default class Xero implements QueryService {
         Detail: parsed?.Detail,
         code: error?.code,
         Instance: parsed?.Instance,
-        modelState: parsed?.modelState
+        modelState: parsed?.modelState,
       };
       throw new QueryError('Query execution failed', errorMessage, errorDetails);
     }
@@ -412,7 +407,7 @@ export default class Xero implements QueryService {
     }
 
     throw new QueryError('Method not found', `Method ${methodName} is not supported for Xero plugin`, {
-      availableMethods: ['getTenants']
+      availableMethods: ['getTenants'],
     });
   }
 
@@ -422,14 +417,14 @@ export default class Xero implements QueryService {
 
     if (isMultiAuthEnabled) {
       // Find userId's token from tokenData
-      accessToken = sourceOptions['tokenData'].find((token: any) => token.user_id === userId)?.access_token;
+      accessToken = sourceOptions['tokenData']?.find((token: any) => token.user_id === userId)?.access_token;
     } else {
       accessToken = sourceOptions['access_token'];
     }
 
     if (!accessToken) {
       throw new QueryError('Authentication required', 'Xero access token not found. Please authenticate first.', {
-        code: 'MISSING_ACCESS_TOKEN'
+        code: 'MISSING_ACCESS_TOKEN',
       });
     }
 
@@ -437,10 +432,10 @@ export default class Xero implements QueryService {
       const response = await got('https://api.xero.com/connections', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
       const tenants = JSON.parse(response.body);
@@ -453,18 +448,13 @@ export default class Xero implements QueryService {
           name: tenant.tenantName,
           type: tenant.tenantType,
           createdDate: tenant.createdDateUtc,
-          updatedDate: tenant.updatedDateUtc
-        }))
+          updatedDate: tenant.updatedDateUtc,
+        })),
       };
     } catch (error: any) {
       // Handle OAuth unauthorized errors
-      if (error?.response?.statusCode === 401 ||
-        error?.response?.statusCode === 403) {
-        throw new OAuthUnauthorizedClientError(
-          'OAuth token expired or invalid',
-          error.message,
-          error
-        );
+      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
+        throw new OAuthUnauthorizedClientError('OAuth token expired or invalid', error.message, error);
       }
 
       let parsed;
@@ -479,11 +469,10 @@ export default class Xero implements QueryService {
         statusCode: error?.response?.statusCode,
         error: parsed?.error,
         error_description: parsed?.error_description,
-        code: error?.code
+        code: error?.code,
       };
 
       throw new QueryError('Failed to fetch tenants', errorMessage, errorDetails);
     }
   }
 }
-
