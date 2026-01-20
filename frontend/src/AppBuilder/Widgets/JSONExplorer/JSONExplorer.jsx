@@ -1,21 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { JSONTree } from 'react-json-tree';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './jsonExplorer.scss';
 
 export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
-  const { properties, styles, setExposedVariable, setExposedVariables } = props;
+  const {
+    id,
+    height,
+    properties,
+    styles,
+    setExposedVariable,
+    setExposedVariables,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    currentMode,
+    subContainerIndex,
+  } = props;
 
   const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState,
+  });
+  const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
+  const containerRef = useRef(null);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: forceDynamicHeightUpdate,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
   });
 
   // ===== HELPER FUNCTIONS =====
@@ -26,7 +54,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     }));
   };
 
-  const shouldExpandNodeInitially = (keyPath, data, level) => {
+  const shouldExpandNodeInitially = (_keyPath, _data, _level) => {
     return shouldExpandEntireJSON;
   };
 
@@ -37,6 +65,7 @@ export const JSONExplorer = function JSONExplorer(props) {
   };
 
   const containerComputedStyles = {
+    height: isDynamicHeightEnabled ? '100%' : height,
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
@@ -77,7 +106,14 @@ export const JSONExplorer = function JSONExplorer(props) {
     {
       dep: value,
       sideEffect: () => {
+        setForceDynamicHeightUpdate((prev) => !prev);
         setExposedVariable('value', value);
+      },
+    },
+    {
+      dep: shouldExpandEntireJSON,
+      sideEffect: () => {
+        setForceDynamicHeightUpdate((prev) => !prev);
       },
     },
   ]);
@@ -105,9 +141,27 @@ export const JSONExplorer = function JSONExplorer(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Listen for DOM changes when nodes are expanded/collapsed
+  useEffect(() => {
+    if (!containerRef.current || !isDynamicHeightEnabled) return;
+
+    const observer = new MutationObserver(() => {
+      // Trigger dynamic height recalculation when DOM structure changes
+      setForceDynamicHeightUpdate((prev) => !prev);
+    });
+
+    observer.observe(containerRef.current, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+    });
+
+    return () => observer.disconnect();
+  }, [isDynamicHeightEnabled]);
+
   // ===== MAIN RENDER =====
   return (
-    <div className="json-explorer" style={containerComputedStyles}>
+    <div ref={containerRef} className="json-explorer" style={containerComputedStyles}>
       {exposedVariablesTemporaryState.isLoading ? (
         <Loader width="24" absolute={false} />
       ) : (

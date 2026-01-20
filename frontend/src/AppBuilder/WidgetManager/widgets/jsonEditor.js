@@ -26,6 +26,15 @@ export const jsonEditorConfig = {
             validation: { schema: { type: 'boolean' }, defaultValue: true },
             section: 'additionalActions',
         },
+        dynamicHeight: {
+            type: 'toggle',
+            displayName: 'Dynamic height',
+            validation: {
+                schema: { type: 'boolean' },
+                defaultValue: false,
+            },
+            section: 'additionalActions',
+        },
         loadingState: {
             type: 'toggle',
             displayName: 'Loading state',
@@ -122,6 +131,7 @@ export const jsonEditorConfig = {
             loadingState: { value: '{{false}}' },
             visibility: { value: '{{true}}' },
             disabledState: { value: '{{false}}' },
+            dynamicHeight: { value: '{{false}}' },
         },
         events: [],
         styles: {

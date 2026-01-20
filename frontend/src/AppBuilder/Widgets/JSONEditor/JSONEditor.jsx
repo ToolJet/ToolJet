@@ -2,9 +2,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import CodeMirror, { EditorView } from '@uiw/react-codemirror';
-import { foldAll, unfoldAll } from '@codemirror/language';
+import { foldAll, unfoldAll, foldEffect, unfoldEffect } from '@codemirror/language';
 import { json, jsonParseLinter } from '@codemirror/lang-json';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { linter, lintGutter } from '@codemirror/lint';
@@ -12,19 +13,46 @@ import './jsonEditor.scss';
 
 export const JSONEditor = function JSONEditor(props) {
   // ===== PROPS DESTRUCTURING =====
-  const { properties, styles, setExposedVariable, setExposedVariables, darkMode } = props;
+  const {
+    id,
+    height,
+    properties,
+    styles,
+    setExposedVariable,
+    setExposedVariables,
+    darkMode,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    currentMode,
+    subContainerIndex,
+  } = props;
 
   const { shouldExpandEntireJSON, loadingState, visibility, disabledState } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState,
   });
   const [value, setValue] = useState(JSON.stringify(properties.value, null, 2));
+  const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const editorRef = useRef(null);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: forceDynamicHeightUpdate,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility,
+    subContainerIndex,
+  });
 
   // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
@@ -52,6 +80,7 @@ export const JSONEditor = function JSONEditor(props) {
   );
 
   const containerComputedStyles = {
+    height: isDynamicHeightEnabled ? '100%' : height,
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
@@ -68,16 +97,31 @@ export const JSONEditor = function JSONEditor(props) {
 
   const theme = useMemo(() => (darkMode ? okaidia : githubLight), [darkMode]);
 
-  const ThemeOverride = EditorView.theme(
-    {
-      '.cm-scroller': {
-        backgroundColor: backgroundColor,
-      },
-    },
-    { dark: darkMode }
-  );
-
   const extensions = useMemo(() => {
+    const ThemeOverride = EditorView.theme(
+      {
+        '.cm-scroller': {
+          backgroundColor: backgroundColor,
+        },
+      },
+      { dark: darkMode }
+    );
+
+    // Listen for fold/unfold events to trigger dynamic height recalculation
+    const foldListener = EditorView.updateListener.of((update) => {
+      if (!update.transactions.length || !isDynamicHeightEnabled) return;
+
+      for (const tr of update.transactions) {
+        for (const effect of tr.effects) {
+          if (effect.is(foldEffect) || effect.is(unfoldEffect)) {
+            // Trigger dynamic height update when content is folded/unfolded
+            setForceDynamicHeightUpdate((prev) => !prev);
+            break;
+          }
+        }
+      }
+    });
+
     return [
       json(),
       linter(jsonParseLinter(), {
@@ -90,8 +134,9 @@ export const JSONEditor = function JSONEditor(props) {
       }),
       lintGutter(),
       ThemeOverride,
+      foldListener,
     ];
-  }, [backgroundColor, darkMode]);
+  }, [backgroundColor, darkMode, isDynamicHeightEnabled]);
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -113,6 +158,7 @@ export const JSONEditor = function JSONEditor(props) {
       dep: properties.value,
       sideEffect: () => {
         setValue(JSON.stringify(properties.value, null, 2));
+        setForceDynamicHeightUpdate((prev) => !prev);
         setExposedVariables({ value: properties.value, isValid: true });
       },
     },
@@ -171,11 +217,14 @@ export const JSONEditor = function JSONEditor(props) {
           }}
           value={value}
           height={'100%'}
+          minHeight={isDynamicHeightEnabled ? `${height}px` : height}
+          maxHeight={isDynamicHeightEnabled ? 'none' : height}
           width="100%"
           theme={theme}
           extensions={extensions}
           onChange={(newValue) => {
             setValue(newValue);
+            setForceDynamicHeightUpdate((prev) => !prev);
             try {
               const parsedValue = JSON.parse(newValue);
               setExposedVariables({ value: parsedValue, isValid: true });
