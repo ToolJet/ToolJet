@@ -136,6 +136,14 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
     export DOMAIN_NAME
     envsubst '${DOMAIN_NAME}' < /app/server/ssl/nginx-ssl.conf.template > /tmp/nginx.conf
 
+    # Start nginx FIRST (so it can serve ACME challenges)
+    echo "Starting nginx to handle ACME challenges..."
+    nginx -c /tmp/nginx.conf
+
+    # Small delay to ensure nginx is ready
+    sleep 2
+
+    # NOW run certbot (nginx is already serving HTTP on port 80)
     # Initial certificate acquisition (first-time setup only)
     # NestJS will handle renewals after startup
     if [ ! -d "/etc/letsencrypt/live/$DOMAIN_NAME" ]; then
@@ -161,6 +169,8 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
 
         if [ $? -eq 0 ]; then
             echo "✓ Certificate acquired successfully for $DOMAIN_NAME"
+            echo "Reloading nginx with SSL configuration..."
+            nginx -s reload
         else
             echo "❌ WARNING: Certificate acquisition failed"
             echo ""
@@ -170,32 +180,18 @@ if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
             echo "  - Let's Encrypt rate limit reached (5 certs per domain per week)"
             echo "  - Network connectivity issues"
             echo ""
-            echo "⚠️  DISABLING SSL MODE FOR THIS RUN"
-            echo "Application will start in HTTP mode (no SSL/TLS encryption)"
+            echo "nginx will continue running in HTTP mode"
+            echo "Certificate acquisition will be retried on next restart or via API"
             echo ""
-            echo "To enable SSL:"
-            echo "  1. Fix the issues above"
-            echo "  2. Restart the container"
-            echo "  3. NestJS will also retry certificate acquisition after startup"
-            echo ""
-
-            # Disable SSL mode to allow application to start
-            ENABLE_DOMAIN_SSL=false
-            # Reset PORT and LISTEN_ADDR to defaults (non-SSL mode)
-            unset PORT
-            unset LISTEN_ADDR
+            # DON'T disable SSL mode - keep PORT and LISTEN_ADDR set
+            # nginx is already running and will serve HTTP-only
         fi
     else
         echo "✓ Certificate already exists for $DOMAIN_NAME"
+        # nginx already started above
     fi
 
-    # Start nginx only if SSL mode is still enabled (cert exists or was acquired)
-    if [ "$ENABLE_DOMAIN_SSL" = "true" ]; then
-        echo "Starting nginx..."
-        nginx -c /tmp/nginx.conf
-    else
-        echo "ℹ️  nginx not started (SSL mode disabled)"
-    fi
+    # nginx is now running - whether cert acquisition succeeded or not
 
     # NOTE: Certificate lifecycle management
     # - Initial acquisition: Handled above (first-time setup in entrypoint)
