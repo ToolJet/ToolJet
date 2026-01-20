@@ -38,4 +38,4 @@ By default, 4 data sources will be available on every app on ToolJet:
 - **[Run JavaScript Query](/docs/data-sources/run-js/)**
 - **[Run Python Query](/docs/data-sources/run-py/)**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/newui/overview/defds.png" alt="Data Sources: Overview" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/newui/overview/default-data-sources.png" alt="Data Sources: Overview" />
