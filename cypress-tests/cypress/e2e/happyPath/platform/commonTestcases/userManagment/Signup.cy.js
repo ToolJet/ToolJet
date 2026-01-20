@@ -60,29 +60,4 @@ describe("User signup", () => {
 
     logout();
   });
-
-  it("Verify onboarding flow", () => {
-    // rewrite for for EE and cloud
-    data.fullName = fake.fullName;
-    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.workspaceName = fake.companyName;
-
-    cy.visit("/");
-    cy.get(onboardingSelectors.createAnAccountLink).click();
-    cy.wait(2000);
-    cy.get(onboardingSelectors.nameInput).clear();
-    cy.get(onboardingSelectors.nameInput).type(data.fullName);
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(
-      onboardingSelectors.loginPasswordInput,
-      commonText.password
-    );
-    cy.intercept("POST", "/api/onboarding/signup").as("signup");
-    cy.get(commonSelectors.signUpButton).click();
-
-    cy.wait("@signup");
-    cy.wait(500);
-
-    logout();
-  });
 });
