@@ -23,6 +23,10 @@ export class OrganizationGitUpdateDto {
   autoCommit: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  autoSync?: boolean;
+
+  @IsOptional()
   @IsString()
   @IsIn(['ed25519', 'rsa'])
   keyType: 'ed25519' | 'rsa';
@@ -36,6 +40,10 @@ export class OrganizationGitConfigUpdateDto {
   @IsOptional()
   @IsBoolean()
   autoCommit?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  autoSync?: boolean;
 
   @IsOptional()
   @IsBoolean()

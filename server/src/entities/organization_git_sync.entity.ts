@@ -32,6 +32,9 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'auto_commit', nullable: false, default: false })
   autoCommit: boolean;
 
+  @Column({ name: 'auto_sync', nullable: false, default: false })
+  autoSync: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
