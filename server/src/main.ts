@@ -1,3 +1,4 @@
+import './otel/tracing'; // CRITICAL: This MUST be the first import to ensure OTEL patches modules before they load
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';

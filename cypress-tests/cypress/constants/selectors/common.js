@@ -28,7 +28,7 @@ export const commonSelectors = {
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
-  pageLogo: "[data-cy=page-logo]",
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy=page-logo]',
   workEmailLabel: '[data-cy="work-email-label"]',
   workEmailInputField: "[data-cy=work-email-input]",
   emailInputError: '[data-cy="email-error-message"]',
@@ -97,6 +97,7 @@ export const commonSelectors = {
   manageUsersOption: '[data-cy="users-list-item"]',
   manageGroupsOption: '[data-cy="groups-list-item"]',
   manageSSOOption: '[data-cy="workspace-login-list-item"]',
+  themesOption: '[data-cy="themes-list-item"]',
   workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
@@ -260,6 +261,7 @@ export const commonSelectors = {
   leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
   modalHeader: '[data-cy="modal-header"]',
   modalCloseButton: '[data-cy="modal-close"]',
+  modalIcon: '[data-cy="modal-icon"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
   createAppTitle: '[data-cy="create-app-title"]',
@@ -278,6 +280,7 @@ export const commonSelectors = {
   CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
   settingsIcon: '[data-cy="settings-icon"]',
   previewSettings: '[data-cy="preview-settings"]',
+  previewText: '[data-cy="preview-chip"]',
   marketplaceOption: '[data-cy="marketplace-option"]',
   backToAppOption: '[data-cy="back-to-app-option"]',
   databaseOption: '[data-cy="database-option"]',
@@ -303,7 +306,7 @@ export const commonSelectors = {
   labelFieldAlert: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-is-required-field-alert-text"]`;
   },
-  pageLogo: '[data-cy="page-logo"]',
+  pageLogo: 'svg[viewBox="0 0 375 63"], [data-cy="page-logo"]',
   homePageIcon: '[data-cy="home-page-icon"]',
 };
 
@@ -423,7 +426,7 @@ export const commonWidgetSelector = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   iframeLinkLabel: '[data-cy="iframe-link-label"]',
   ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
-  appSlugLabel: '[data-cy="unique-app-slug-field-label"]',
+  appSlugLabel: '[data-cy="label-unique-app-slug"]',
   appSlugInput: '[data-cy="app-slug-input-field"]',
   appSlugInfoLabel: '[data-cy="helper-text"]',
   appLinkLabel: '[data-cy="app-link-label"]',

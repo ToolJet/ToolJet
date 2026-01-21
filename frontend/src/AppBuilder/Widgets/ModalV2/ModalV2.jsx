@@ -6,7 +6,7 @@ import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZInde
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
-
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   getModalBodyHeight,
   getModalHeaderHeight,
@@ -29,6 +29,11 @@ export const ModalV2 = function Modal({
   fireEvent,
   dataCy,
   height,
+  currentMode,
+  adjustComponentPositions,
+  currentLayout,
+  componentCount,
+  subContainerIndex,
 }) {
   const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
@@ -44,6 +49,7 @@ export const ModalV2 = function Modal({
     showFooter,
     headerHeight,
     footerHeight,
+    dynamicHeight,
   } = properties;
   const {
     iconColor,
@@ -55,6 +61,8 @@ export const ModalV2 = function Modal({
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
   } = styles;
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
@@ -62,6 +70,7 @@ export const ModalV2 = function Modal({
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
@@ -73,6 +82,20 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    visibility: isVisible,
+    subContainerIndex,
+  });
+
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
@@ -166,6 +189,8 @@ export const ModalV2 = function Modal({
     triggerButtonTextColor,
     isVisible,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
     direction,
   });
 
@@ -183,7 +208,9 @@ export const ModalV2 = function Modal({
       className="d-flex align-items-center"
       data-disabled={isDisabledTrigger}
       data-cy={dataCy}
-      style={{ height: '100%' }}
+      style={{
+        height: '100%',
+      }}
     >
       {useDefaultButton && isVisible && (
         <button
@@ -266,6 +293,8 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
+          subContainerIndex,
+          isDynamicHeightEnabled,
         }}
       />
     </div>

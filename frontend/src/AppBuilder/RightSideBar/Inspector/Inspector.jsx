@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { v4 as uuidv4 } from 'uuid';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -106,6 +107,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'TagsInput',
   'Button',
   'Icon',
   'Image',
@@ -126,6 +128,10 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CircularProgressBar',
   'CustomComponent',
   'Html',
+  'AudioRecorder',
+  'Camera',
+  'CodeEditor',
+  'Form',
 ];
 
 export const Inspector = ({
@@ -147,6 +153,8 @@ export const Inspector = ({
   const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
   const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
   const setComponentPermission = useStore((state) => state.setComponentPermission);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
   const dataQueries = useDataQueries();
 
   const currentState = useCurrentState();
@@ -238,6 +246,25 @@ export const Inspector = ({
     if (attr) {
       oldValue = allParams[param.name][attr];
       allParams[param.name][attr] = value;
+
+      // When commonBackgroundColor changes for Tabs component, sync to all tab items if dynamic options are disabled
+      if (
+        component.component.component === 'Tabs' &&
+        param.name === 'commonBackgroundColor' &&
+        paramType === 'styles'
+      ) {
+        const useDynamicOptions = getResolvedValue(newDefinition.properties?.useDynamicOptions?.value);
+        if (!useDynamicOptions && newDefinition.properties?.tabItems?.value) {
+          const updatedTabItems = newDefinition.properties.tabItems.value.map((tabItem) => ({
+            ...tabItem,
+            fieldBackgroundColor: { value },
+          }));
+          newDefinition.properties.tabItems.value = updatedTabItems;
+          // // Also update the store for tabItems
+          setComponentProperty(selectedComponentId, 'tabItems', updatedTabItems, 'properties', 'value', false);
+          setTabsPropertiesPanelKey(uuidv4());
+        }
+      }
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
@@ -456,8 +483,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -472,6 +499,7 @@ export const Inspector = ({
   const propertiesTab = isMounted && (
     <div className={`${shouldFreeze && 'disabled'}`}>
       <GetAccordion
+        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
         componentName={componentMeta.component}
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
@@ -554,8 +582,9 @@ export const Inspector = ({
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
       <div>
         <div
-          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${shouldFreeze && 'disabled'
-            }`}
+          className={`flex-row d-flex align-items-center inspector-component-title-input-holder inspector-action-container ${
+            shouldFreeze && 'disabled'
+          }`}
         >
           <div className={`flex-grow-1 p-0 ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
           {!isModuleContainer && (
@@ -567,7 +596,10 @@ export const Inspector = ({
                   rootClose={false}
                   show={showHeaderActionsMenu}
                   overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                    <Popover
+                      id="list-menu"
+                      className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                    >
                       <Popover.Body bsPrefix="list-item-popover-body">
                         {INSPECTOR_HEADER_OPTIONS.map((option) => {
                           const optionBody = (
@@ -599,7 +631,9 @@ export const Inspector = ({
                           return option.value === 'permission' ? (
                             <ToolTip
                               key={option.value}
-                              message={'You don\'t have access to component permissions. Upgrade your plan to access this feature.'}
+                              message={
+                                "You don't have access to component permissions. Upgrade your plan to access this feature."
+                              }
                               placement="left"
                               show={!hasAppPermissionComponent}
                             >
@@ -660,6 +694,8 @@ const getDocsLink = (componentMeta) => {
       return 'https://docs.tooljet.com/docs/widgets/multiselect';
     case 'DaterangePicker':
       return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }
@@ -798,13 +834,13 @@ const handleRenderingConditionalStyles = (
 };
 
 const GetAccordion = React.memo(
-  ({ componentName, ...restProps }) => {
+  ({ componentName, tabsPropertiesPanelKey, ...restProps }) => {
     switch (componentName) {
       case 'Table':
         return <Table {...restProps} />;
 
       case 'Tabs':
-        return <TabsLayout {...restProps} />;
+        return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
 
       case 'Chart':
         return <Chart {...restProps} />;
@@ -830,6 +866,7 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
       case 'RadioButtonV2':
+      case 'TagsInput':
         return <Select {...restProps} />;
 
       case 'Tags':

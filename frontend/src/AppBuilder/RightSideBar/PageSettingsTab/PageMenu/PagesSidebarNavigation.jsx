@@ -319,6 +319,12 @@ export const PagesSidebarNavigation = ({
     };
   }, [position]);
 
+  useEffect(() => {
+    // Keep sidebar pin state updated based on style of page menu and whether it is collapsable or not
+    if (style === 'icon') setIsSidebarPinned(false);
+    if (style === 'text' || (style === 'texticon' && !collapsable)) setIsSidebarPinned(true);
+  }, [style, collapsable, setIsSidebarPinned]);
+
   if (isMobileDevice) {
     return null;
   }
@@ -460,7 +466,7 @@ export const PagesSidebarNavigation = ({
         className="app-name"
       >
         {!logoHidden && (
-          <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+          <div onClick={switchToHomePage} className="cursor-pointer">
             <AppLogo height={32} isLoadingFromHeader={false} />
           </div>
         )}
@@ -547,6 +553,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const Sidebar = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const isPreviewMode = searchParams.has('env') || searchParams.has('version');
     return (
       <div
         ref={(el) => {
@@ -560,7 +568,7 @@ export const PagesSidebarNavigation = ({
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
-          'no-preview-settings': isReleasedVersionId,
+          'no-preview-settings': !isPreviewMode,
           'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
           'collapsable-only':
             !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',
@@ -671,14 +679,14 @@ export const PagesSidebarNavigation = ({
         {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned
           <SidebarProvider
-            open={style === 'icon' ? false : isSidebarPinned}
+            open={isSidebarPinned}
             onOpenChange={setIsSidebarPinned}
             sidebarWidth="256px"
             sidebarWidthIcon="54px"
             className="!tw-min-h-0 tw-h-full"
           >
             <SidebarWrapper
-              collapsible={style === 'text' ? 'none' : 'icon'}
+              collapsible={style === 'text' || (style === 'texticon' && !collapsable) ? 'none' : 'icon'}
               className="group-data-[side=left]:!tw-border-r-0"
             >
               <Sidebar />
@@ -714,10 +722,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);
@@ -753,10 +766,15 @@ export const PagesSidebarNavigation = ({
             >
               <span style={{ cursor: 'default' }}>Page and nav</span>
             </ConfigHandleButton>
-            <ConfigHandleButton>
+            <ConfigHandleButton
+              customStyles={{
+                background: 'var(--background-surface-layer-01)',
+                border: '1px solid var(--border-weak)',
+              }}
+            >
               <PencilRuler
                 size={12}
-                color="var(--icon-inverse)"
+                color="var(--icon-strong)"
                 onClick={() => {
                   setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
                   setRightSidebarOpen(true);

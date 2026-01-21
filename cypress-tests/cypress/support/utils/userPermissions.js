@@ -85,19 +85,21 @@ export const verifyBuilderPermissions = (
   cy.get(commonSelectors.yesButton).click();
 
   cy.ifEnv("Enterprise", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       appName,
       "restapi",
       [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
     );
-    cy.apiDeleteGDS(appName);
+    cy.apiDeleteDataSource(appName);
 
     cy.apiCreateWorkflow(appName);
     cy.apiDeleteWorkflow(appName);
   });
 
   verifySettingsAccess(isAdmin);
+  cy.get(commonSelectors.workspaceSettings).click();
+  cy.get(commonSelectors.manageSSOOption).should("not.exist");
 };
 
 export const verifyBasicPermissions = (canCreate = true) => {

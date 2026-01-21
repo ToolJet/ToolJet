@@ -379,6 +379,8 @@ export const createEventsSlice = (set, get) => ({
           'onTabSwitch',
           'onFocus',
           'onBlur',
+          'onTagAdded',
+          'onTagDeleted',
           'onOpen',
           'onClose',
           'onRowClicked',
@@ -395,6 +397,9 @@ export const createEventsSlice = (set, get) => ({
           'onMessageSent',
           'onClearHistory',
           'onTableDataDownload',
+          'onRecordingStart',
+          'onRecordingSave',
+          'onImageSave',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -454,9 +459,8 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
-            event.actionId ? `[Action ${event.actionId}]` : ''
-          }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
+            }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -608,6 +612,10 @@ export const createEventsSlice = (set, get) => ({
               });
               return Promise.reject(error);
             }
+          }
+          case 'reset-query': {
+            const { queryId } = event;
+            return get().queryPanel.resetQuery(queryId, moduleId);
           }
           case 'logout': {
             return logoutAction();
@@ -832,13 +840,23 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'control-component': {
             try {
+              const { getComponentDefinition } = get();
               // let component = Object.values(getCurrentState()?.components ?? {}).filter(
               //   (component) => component.id === event.componentId
               // )[0];
               if (!event.componentSpecificActionHandle) {
                 throw new Error('No component-specific action handle provided.');
               }
-              const component = getExposedValueOfComponent(event.componentId);
+              const componentDefinition = getComponentDefinition(event.componentId, moduleId);
+              const componentName = componentDefinition?.component?.name;
+              const parent = componentDefinition?.component?.parent;
+              const parentDefinition = getComponentDefinition(parent, moduleId);
+              const parentType = parentDefinition?.component?.component;
+              let component = getExposedValueOfComponent(event.componentId);
+              if (parentType === 'Form' && componentName) {
+                component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+              }
+
               if (!event.componentId || !Object.keys(component).length) {
                 throw new Error('No component ID provided for control-component action.');
               }
@@ -995,6 +1013,21 @@ export const createEventsSlice = (set, get) => ({
         };
 
         return executeAction(event, mode, {}, moduleId);
+      };
+
+      const resetQuery = (queryName = '') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+        if (query) {
+          return executeAction(
+            {
+              actionId: 'reset-query',
+              queryId: query.id,
+            },
+            mode,
+            {},
+            moduleId
+          );
+        }
       };
 
       const setVariable = (key = '', value = '') => {
@@ -1270,6 +1303,7 @@ export const createEventsSlice = (set, get) => ({
         log,
         logError,
         toggleAppMode,
+        resetQuery,
       };
     },
     // Selectors

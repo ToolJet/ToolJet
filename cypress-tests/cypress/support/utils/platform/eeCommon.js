@@ -524,7 +524,7 @@ export const passwordToggle = (enable, formName = "instance") => {
     cy.request(
       {
         method: "PATCH",
-        url: `http://localhost:3000/api/login-configs/${formName}-sso`,
+        url: `${Cypress.env("server_host")}/api/login-configs/${formName}-sso`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -552,7 +552,7 @@ export const resetInstanceDomain = () => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/login-configs/instance-general",
+        url: `${Cypress.env("server_host")}/api/login-configs/instance-general`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -570,7 +570,7 @@ export const defaultInstanceSSO = (enable = true) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/login-configs/organization-general/inherit-sso",
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general/inherit-sso`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -603,4 +603,9 @@ export const updateAutoSSOToggle = (allow = false) => {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE instance_settings SET value = '${allow}' WHERE key = 'AUTOMATIC_SSO_LOGIN';`,
   });
+};
+
+export const verifyPreviewIsDisabled = () => {
+  cy.get(commonSelectors.previewSettings).should("not.exist");
+  cy.get(commonSelectors.previewText).should("not.exist") 
 };
