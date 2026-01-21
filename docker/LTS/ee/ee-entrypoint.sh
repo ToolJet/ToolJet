@@ -24,6 +24,72 @@ else
   fi
 fi
 
+# Start embedded SeaweedFS if enabled and storage backend is seaweed
+if [ "${STORAGE_BACKEND:-seaweed}" = "seaweed" ] && [ "${SEAWEED_EMBEDDED:-true}" = "true" ]; then
+  echo "Preparing ToolJet application..."
+
+  # Ensure data directory exists (in case volume mount doesn't preserve it)
+  mkdir -p "${SEAWEED_DIR:-/data/seaweedfs}"
+
+  # Create S3 configuration for anonymous access (Phase 1)
+  cat > /tmp/seaweedfs-s3.json <<'EOF'
+{
+  "identities": [
+    {
+      "name": "anonymous",
+      "credentials": [
+        {
+          "accessKey": "any",
+          "secretKey": "any"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    }
+  ]
+}
+EOF
+
+  # Start SeaweedFS server with all components
+  weed server \
+    -dir="${SEAWEED_DIR:-/data/seaweedfs}" \
+    -ip=127.0.0.1 \
+    -ip.bind=0.0.0.0 \
+    -master.port="${SEAWEED_MASTER_PORT:-9333}" \
+    -volume.port="${SEAWEED_VOLUME_PORT:-8080}" \
+    -filer=true \
+    -filer.port="${SEAWEED_FILER_PORT:-8888}" \
+    -s3 \
+    -s3.port="${SEAWEED_S3_PORT:-8333}" \
+    -s3.config=/tmp/seaweedfs-s3.json \
+    > /tmp/seaweedfs.log 2>&1 &
+
+  SEAWEED_PID=$!
+
+  # Wait for S3 API to be ready (critical for ToolJet startup)
+  max_attempts=30
+  attempt=0
+  while [ $attempt -lt $max_attempts ]; do
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:${SEAWEED_S3_PORT:-8333}" | grep -q "200\|301\|302\|403"; then
+      break
+    fi
+    attempt=$((attempt + 1))
+    sleep 1
+  done
+
+  if [ $attempt -eq $max_attempts ]; then
+    echo "Warning: SeaweedFS S3 API did not become ready within 30 seconds"
+    echo "Checking SeaweedFS logs:"
+    tail -20 /tmp/seaweedfs.log
+  else
+    # Create default tooljet bucket
+    curl -s -X PUT "http://localhost:${SEAWEED_S3_PORT:-8333}/tooljet" > /dev/null 2>&1
+  fi
+fi
+
 # Check if PGRST_HOST starts with "localhost"
 if [[ "$PGRST_HOST" == localhost:* ]]; then
   echo "Starting PostgREST server locally..."
