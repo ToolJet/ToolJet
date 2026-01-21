@@ -19,11 +19,11 @@ ToolJet requires the following to connect to Stripe datasource.
 
 - **Stripe API key**
 
-<img className="screenshot-full" src="/img/datasource-reference/stripe/connect-v2.png" alt="ToolJet - Data source - Stripe" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/stripe/connect-v2.png" alt="ToolJet - Data source - Stripe" style={{marginBottom:'15px'}}/>
 
-You can get the Stripe API key from the dashboard of your Stripe account. Go to the Stripe account dashboard, click on the **Developers** on the top right, then on the left-sidebar go to the **API Keys**, you can simple reveal the **Secret Key** and copy-paste on ToolJet.
+You can obtain the Stripe API keys from your Stripe dashboard. From the dashboard home page, navigate to **Developers** and then select **API keys** from the left sidebar. Reveal the **Secret key** and copy it to configure the Stripe data source in ToolJet.
 
-<img className="screenshot-full" src="/img/datasource-reference/stripe/apikey.png" alt="ToolJet - Data source - Stripe"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/stripe/dashboard-stripe.png" alt="ToolJet - Data source - Stripe"/>
 
 </div>
 
@@ -47,6 +47,8 @@ Query results can be transformed using transformations. Read our transformations
 ## Supported Operations
 
 You can check out the some of the operations mentioned below. All the operations for Stripe are available and can be performed from ToolJet. Check out the **[Stripe API documentation](https://stripe.com/docs/api/)** for the detailed information about each operation.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/stripe/listops.png" alt="Stripe supported operations"/>
 
 <h3 style={{paddingTop: "15px"}}>Account Operations</h3>
 
