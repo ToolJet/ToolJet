@@ -5,7 +5,7 @@ title: Table Columns
 
 Whenever data is loaded into a Table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section. You can also rearrange the columns by dragging and dropping them. 
 
-<img className="screenshot-full img-full" src="/img/widgets/table/columns-v2.png" alt="ToolJet - Component Reference - Columns" />
+<img className="screenshot-full img-full" src="/img/widgets/table/columns-v3.png" alt="ToolJet - Component Reference - Columns" />
 
 ## Use Dynamic Column
 
@@ -28,7 +28,7 @@ For example, if you enter the below JSON, the table will display a column labele
 }
 ```
 
-<img className="screenshot-full img-full" src="/img/widgets/table/dynamic-columns-v2.png" alt="ToolJet - Component Reference - Dynamic Columns" />
+<img className="screenshot-full img-full" src="/img/widgets/table/dynamic-columns-v3.png" alt="ToolJet - Component Reference - Dynamic Columns" />
 
 ## Types of Columns
 

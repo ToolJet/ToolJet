@@ -3,14 +3,9 @@ id: calendar
 title: Calendar
 ---
 
-# Calendar
-
 The **Calendar** component allows you to visually organize and schedule events. You can set the default view (day, week, or month), enable/disable various display options, and bind data to events and resources.
 
-<div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/calendar/calendar-component-v2.png" alt="ToolJet - Widget Reference - Calendar" />
-
-</div>
+<img className="screenshot-full" src="/img/widgets/calendar/calendar-component-v2.png" alt="ToolJet - Widget Reference - Calendar" />
 
 :::info Restricted components
 Certain components are restricted from being placed within the **Popout** of the **Calendar** component:
@@ -18,18 +13,12 @@ Certain components are restricted from being placed within the **Popout** of the
 - Calendar, Kanban.
   :::
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Date Format**                                | Determines the format in which any date passed to the calendar via any of the properties will be parsed. It also determines the format in which any date made available by the calendar via exposed variables will be displayed. It uses the date format conventions of [moment.js](https://momentjs.com/).                                                                                                                                                                                 |
-| **Default Date**                               | Determines the date on which the calendar's view will be centered on. By default, the default date is set to the current date using moment.js i.e. `{{moment().format("MM-DD-YYYY HH:mm:ss A Z")}}`. If the calendar is on `month` view, it will show the month on which this date exists. If the calendar is on `week` view, it will show the week on which this date exists. This property needs to be formatted using the `Date format` property which is configurable on the inspector. |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
+| :--------------------------------------------- | :------------------------------------------------ |
+| **Date Format** | Determines the format in which any date passed to the calendar via any of the properties will be parsed. It also determines the format in which any date made available by the calendar via exposed variables will be displayed. It uses the date format conventions of [moment.js](https://momentjs.com/). |
+| **Default Date** | Determines the date on which the calendar's view will be centered on. By default, the default date is set to the current date using moment.js i.e. `{{moment().format("MM-DD-YYYY HH:mm:ss A Z")}}`. If the calendar is on `month` view, it will show the month on which this date exists. If the calendar is on `week` view, it will show the week on which this date exists. This property needs to be formatted using the `Date format` property which is configurable on the inspector. |
 
 ### Events
 
@@ -54,10 +43,6 @@ Assuming that you set the date format to `MM-DD-YYYY HH:mm:ss A Z`, setting the 
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Event Object Properties
 
 | <div style={{ width:"100px"}}> Name </div> | <div style={{ width:"100px"}}> Description </div>                                                                      |
@@ -74,10 +59,6 @@ Assuming that you set the date format to `MM-DD-YYYY HH:mm:ss A Z`, setting the 
 
 You may supply any other additional property to the event(s). These additional properties will available to you when the calendar widget
 exposes any of the events via its exposed variables.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Resources
 
@@ -99,15 +80,7 @@ For example, to categorize week/day view into for three rooms, we specify `resou
 
 If we specify the `resourceId` of any of the events as `1`, then that event will be assigned to `Room A`, generating the following calendar, assuming that we've set the view to `day` and are viewing the day on which this event exists.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/widgets/calendar/calendar-resource.png" alt="ToolJet - Widget Reference - Calendar" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/widgets/calendar/calendar-resource.png" alt="ToolJet - Widget Reference - Calendar" />
 
 ### Default View
 
@@ -115,95 +88,55 @@ Determines whether the calendar would display a `day`, a `week` or a `month`. Se
 
 The view that is currently selected will be exposed as the variable `currentView`.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Start Time on Week and Day View
 
 This determines the time at which week view and day view cells begins. Keep in mind that this field accepts a date, but still only the time and timezone(if provided) are taken from this date. The date should be provided in the date format chosen by you in the first property field.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### End Time on Week and Day View
 
 This determines the time at which week view and day view cells ends. Keep in mind that this field accepts a date, but still only the time and timezone(if provided) are taken from this date. The date should be provided in the date format chosen by you in the first property field.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Show Toolbar
 
 Determines whether the calendar toolbar should be displayed or not. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Show View Switcher
 
 Determines whether the calendar's buttons that allow user to switch between `month`, `week` and `day` level views will be displayed. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Highlight Today
 
 Determines whether the today's card on the calendar should be highlighted or not. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Show Popover When the Event is Clicked
 
 Determines whether to display a popover whenever an event is clicked. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Events
 
-|         Event         |                                                                                                           Description                                                                                                           |
-| :-------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| **On Event Selected** |                                                        This event is fired when the user clicks on a calendar event. Last selected event is exposed as `selectedEvent`.                                                         |
+| Event | Description |
+| :--------: | :----------: |
+| **On Event Selected** | This event is fired when the user clicks on a calendar event. Last selected event is exposed as `selectedEvent`. |
 | **on Slot Selected**  | This event is fired when the user either clicks on an calendar slot(empty cell or empty space of a cell with event) or when they click and drag to select multiple slots. Last selected slot(s) are exposed as `selectedSlots`. |
-| **On Date Navigate**  |                      This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar. The corresponding date to which the user navigated, will be exposed as `currentDate`.                       |
-|  **On View Change**   |                                                        This event is fired when a different view is selected by the user. The current view is exposed as `currentView`.                                                         |
+| **On Date Navigate**  | This event is fired when the user clicks on `Today`, `Next` or `Back` buttons on the calendar. The corresponding date to which the user navigated, will be exposed as `currentDate`. |
+|  **On View Change**   | This event is fired when a different view is selected by the user. The current view is exposed as `currentView`. |
 
 :::info
 Check [Action Reference](/docs/actions/run-query) docs to get the detailed information about all the **Actions**.
 :::
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Component Specific Actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the Calendar component.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Exposed Variables
 
-| Variables     | Description                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Variables     | Description |
+| ------------- | ----------- |
 | selectedEvent | This variable stores information about the event that has been chosen on the calendar component. This object comprises keys like **title**, **start**, **end**, **allDay**, and **color**, and they can be accessed dynamically through JS using the following syntax: `{{components.calendar1.selectedEvent.title}}` or `{{components.calendar1.selectedEvent.start}}`     |
 | selectedSlots | The variable selectedSlots contains the values of the slots chosen on the calendar component. This object comprises keys like **slots**, **start**, **end**, **resourceId**, and **action**, and they can be accessed dynamically through JS using the following syntax: `{{components.calendar1.selectedSlots.slots[0]}}` or `{{components.calendar1.selectedSlots.end}}`. |
-| currentView   | The currentView variable holds the type of view currently set on the calendar. The value updates when the user changes the view from the calendar header. Types of views supported: `month`, `week`, and `day`. The value can be accessed using `{{components.calendar1.currentView}}`                                                                                      |
-| currentDate   | The currentDate variable holds the current date data. The date returned by the variable is in the `MM-DD-YYYY HH:mm:ss A Z` format. The value can be accessed using `{{components.calendar1.currentDate}}`                                                                                                                                                                  |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| currentView   | The currentView variable holds the type of view currently set on the calendar. The value updates when the user changes the view from the calendar header. Types of views supported: `month`, `week`, and `day`. The value can be accessed using `{{components.calendar1.currentView}}` |
+| currentDate   | The currentDate variable holds the current date data. The date returned by the variable is in the `MM-DD-YYYY HH:mm:ss A Z` format. The value can be accessed using `{{components.calendar1.currentDate}}` |
 
 ## General
 
@@ -211,31 +144,23 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Layout
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"150px"}}> Description </div>       | <div style={{ width:"250px"}}> Configuration Options </div>                                                  |
-| :------------------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------- |
-| **Show on Desktop**                          | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
-| **Show on Mobile**                           | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"150px"}}> Description </div>       | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :------------------------------------------- | :------------------------------------------------------ | :---------------------------------------- |
+| **Show on Desktop** | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
+| **Show on Mobile** | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
 
 ## Styles
 
-|                     Style                     |                                                                                                                         Description                                                                                                                         |
-| :-------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|                **Visibility**                 | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| **Cell Size in Views Classified by Resource** |                                       When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time.                                       |
-|      **Header Date Format on Week View**      |             This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting. By default, its set to `DD MMM`.             |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Visibility | Controls component visibility. | Toggle on or off, or set programmatically using **fx**. |
+| Cell size in views classified by resource | Controls cell size when resources are specified. | Choose between **Compact** or **Spacious**. |
+| Header date format on week view | Determines column header format for each day in week view. | Enter a date format following momentjs standard (default: `DD MMM`). |
+| Border color | Sets the border color of the calendar. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the calendar. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
-
-</div>

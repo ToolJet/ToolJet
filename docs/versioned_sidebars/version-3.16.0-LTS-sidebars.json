@@ -394,6 +394,7 @@
               "label": "Actions Reference",
               "items": [
                 "actions/run-query",
+                "actions/reset-query",
                 "actions/show-alert",
                 "actions/control-component",
                 "actions/show-modal",
