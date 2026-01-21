@@ -6,7 +6,7 @@ title: Pinecone
 ToolJet integrates with Pinecone to utilize its vector database capabilities. This integration enables ToolJet to perform vector operations such as updating, querying, and managing vector embeddings in Pinecone indexes.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -16,7 +16,6 @@ For connecting to Pinecone, the following credential is required:
 - **API Key**: API key for Pinecone can be generated from the [Pinecone Console](https://app.pinecone.io/organizations/-/projects/-/keys).
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/connection.png" alt="Configuring Pinecone in ToolJet" />
-
 
 ## Supported Operations
 
@@ -43,16 +42,17 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 ```json
 {
-  "namespaces":{
-    "":{
-      "recordCount":100
+  "namespaces": {
+    "": {
+      "recordCount": 100
     }
   },
-  "dimension":1024,
-  "indexFullness":0,
-  "totalRecordCount":100
+  "dimension": 1024,
+  "indexFullness": 0,
+  "totalRecordCount": 100
 }
 ```
+
 </details>
 
 ### List Vector IDs
@@ -77,27 +77,25 @@ This operation retrieves a list of vector IDs from a specified index.
 
 ```yaml
 {
-  "vectors":[
-    {"id":"0"},
-    {"id":"1"},
-    {"id":"10"},
-    {"id":"11"},
-    {"id":"12"},
-    {"id":"13"},
-    {"id":"14"},
-    {"id":"15"},
-    {"id":"16"},
-    {"id":"17"}
-  ],
-  "pagination":{
-    "next":"eyJza2lwX3Bhc3QiOiIxNyIsInByZWZpeCI6bnVsbH0="
-  },
-  "namespace":"",
-  "usage":{
-    "readUnits":1
-  }
+  "vectors":
+    [
+      { "id": "0" },
+      { "id": "1" },
+      { "id": "10" },
+      { "id": "11" },
+      { "id": "12" },
+      { "id": "13" },
+      { "id": "14" },
+      { "id": "15" },
+      { "id": "16" },
+      { "id": "17" },
+    ],
+  "pagination": { "next": "eyJza2lwX3Bhc3QiOiIxNyIsInByZWZpeCI6bnVsbH0=" },
+  "namespace": "",
+  "usage": { "readUnits": 1 },
 }
 ```
+
 </details>
 
 ### Fetch Vectors
@@ -119,14 +117,9 @@ This operation retrieves specific vectors by their IDs from an index.
 <summary>**Example Response**</summary>
 
 ```yaml
-{
-  "records":{},
-  "namespace":"",
-  "usage":{
-    "readUnits":1
-  }
-}
+{ "records": {}, "namespace": "", "usage": { "readUnits": 1 } }
 ```
+
 </details>
 
 ### Upsert Vectors
@@ -142,7 +135,7 @@ This operation inserts or updates vectors in an index.
 
 - **Namespace**: Specific namespace to upsert vectors into
 
-<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> 
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -150,6 +143,7 @@ This operation inserts or updates vectors in an index.
 ```yaml
 Upsert Successful
 ```
+
 </details>
 
 ### Update a Vector
@@ -176,6 +170,7 @@ This operation updates a single vector's values or metadata.
 ```yaml
 Update Successful
 ```
+
 </details>
 
 ### Delete Vectors
@@ -201,6 +196,7 @@ This operation deletes vectors from an index.
 ```yaml
 Delete Successful
 ```
+
 </details>
 
 ### Query Vectors

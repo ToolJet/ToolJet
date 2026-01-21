@@ -6,7 +6,7 @@ title: Pinecone
 ToolJet integrates with Pinecone to utilize its vector database capabilities. This integration enables ToolJet to perform vector operations such as updating, querying, and managing vector embeddings in Pinecone indexes.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -16,7 +16,6 @@ For connecting to Pinecone, the following credential is required:
 - **API Key**: API key for Pinecone can be generated from the [Pinecone Console](https://app.pinecone.io/organizations/-/projects/-/keys).
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/connection.png" alt="Configuring Pinecone in ToolJet" />
-
 
 ## Supported Operations
 
@@ -36,7 +35,7 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 - **Index**: The name of the index to get statistics for.
 
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
  -->
 
@@ -55,6 +54,7 @@ This operation retrieves statistics about a specific index in your Pinecone data
   }
 }
 ```
+
 </details>
 
 ### List Vector IDs
@@ -72,7 +72,7 @@ This operation retrieves a list of vector IDs from a specified index.
 - **Pagination Token**: Token for retrieving the next page of results.
 - **Namespace**: Specific namespace to query within the index.
 
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
  -->
 
@@ -86,6 +86,7 @@ Limit: 100
 Pagination Token: Tm90aGluzYB0byBZzWUGaGVyZQo=
 Namespace: example-namespace
 ```
+
 </details>
 
 ### Fetch Vectors
@@ -101,7 +102,7 @@ This operation retrieves specific vectors by their IDs from an index.
 
 - **Namespace**: Specific namespace to fetch vectors from.
 
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
  -->
 
@@ -113,6 +114,7 @@ Index: example-index
 IDs: ["id-1", "id-2"]
 Namespace: example-namespace
 ```
+
 </details>
 
 ### Upsert Vectors
@@ -127,7 +129,7 @@ This operation inserts or updates vectors in an index.
 #### Optional Parameters:
 
 - **Namespace**: Specific namespace to upsert vectors into.
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> -->
 
 <details>
@@ -135,9 +137,10 @@ This operation inserts or updates vectors in an index.
 
 ```yaml
 Index: example-index
-Vectors: [{"id": "vec1", "values": [0.1, 0.2, 0.3]}]
+Vectors: [{ "id": "vec1", "values": [0.1, 0.2, 0.3] }]
 Namespace: example-namespace
 ```
+
 </details>
 
 ### Update a Vector
@@ -155,8 +158,8 @@ This operation updates a single vector's values or metadata.
 - **Sparse Vector**: Sparse vector representation.
 - **Metadata**: Additional metadata for the vector.
 - **Namespace**: Specific namespace containing the vector.
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" /> 
+<!--
+    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" />
     -->
 
 <details>
@@ -166,10 +169,11 @@ This operation updates a single vector's values or metadata.
 Index: example-index
 ID: id-3
 Values: [4.0, 2.0]
-Sparse Vector: {"indices": [1, 5], "values": [0.5, 0.5]}
-Metadata: {"genre": "comedy"}
+Sparse Vector: { "indices": [1, 5], "values": [0.5, 0.5] }
+Metadata: { "genre": "comedy" }
 Namespace: example-namespace
 ```
+
 </details>
 
 ### Delete Vectors
@@ -187,7 +191,7 @@ This operation deletes vectors from an index.
 - **Namespace**: Specific namespace to delete vectors from.
 - **Filter**: Filter condition for selective deletion.
 
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
  -->
 
@@ -199,8 +203,9 @@ Index: example-index
 IDs: ["id-1", "id-2"]
 Delete All: true
 Namespace: example-namespace
-Filter: {"genre": {"$in": ["documentary", "action"]}}
+Filter: { "genre": { "$in": ["documentary", "action"] } }
 ```
+
 </details>
 
 ### Query Vectors
@@ -221,7 +226,7 @@ This operation queries vectors in an index based on similarity.
 - **Include Metadata**: Boolean to include metadata in results.
 - **Sparse Vector**: Sparse vector for hybrid search.
 
-<!-- 
+<!--
     <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/query-vectors.png" alt="Query Vectors Operation" />
  -->
 
@@ -233,9 +238,10 @@ Index: example-index
 Vectors: [0.3, 0.3, 0.3, 0.3, 0.3]
 Namespace: example-namespace
 Top K: 3
-Filter: {"genre": {"$in": ["documentary", "action"]}}
+Filter: { "genre": { "$in": ["documentary", "action"] } }
 Include Values: true
 Include Metadata: true
-Sparse Vector: {"indices": [1, 5], "values": [0.5, 0.5]}
+Sparse Vector: { "indices": [1, 5], "values": [0.5, 0.5] }
 ```
+
 </details>
