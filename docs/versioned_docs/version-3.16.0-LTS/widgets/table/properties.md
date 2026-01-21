@@ -6,7 +6,7 @@ slug: /widgets/table/
 
 The **Table** component displays and manages data, connecting seamlessly with databases and APIs. It allows users to view and edit data directly within the table. This document goes through all the properties related to the **Table** component.
 
-<img className="screenshot-full img-full" src="/img/widgets/table/table-preview-v2.png" alt="ToolJet - Component Reference - Table Preview" />
+<img className="screenshot-full img-full" src="/img/widgets/table/table-preview-v3.png" alt="ToolJet - Component Reference - Table Preview" />
 
 ## Data
 
@@ -33,7 +33,7 @@ Go to the **[Table Columns](/docs/widgets/table/table-columns)** guide to know m
 
 ## Action Buttons
 
-<img className="screenshot-full img-full" src="/img/widgets/table/action-v2.png" alt="ToolJet - Component Reference - Actions" />
+<img className="screenshot-full img-full" src="/img/widgets/table/action-v3.png" alt="ToolJet - Component Reference - Actions" />
 
 <br/><br/>
 
@@ -77,7 +77,7 @@ Below are the button text properties that you can set.
 
 ## Search, Sort and Filter
 
-<img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Component Reference - Table" /> 
+<img className="screenshot-full img-s" src="/img/widgets/table/searchsort-v2.png" alt="ToolJet - Component Reference - Table" /> 
 
 
 ### Show search
