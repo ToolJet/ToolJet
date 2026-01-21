@@ -66,6 +66,8 @@ import PopoverMenu from './popovermenu.jsx';
 import AudioRecorder from './audiorecorder.jsx';
 import Camera from './camera.jsx';
 import TagsInput from './tagsinput.jsx';
+import JSONExplorer from './jsonexplorer.jsx';
+import JSONEditor from './jsoneditor.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -225,6 +227,10 @@ const WidgetIcon = (props) => {
       return <AudioRecorder {...props} />;
     case 'camera':
       return <Camera {...props} />;
+    case 'jsonexplorer':
+      return <JSONExplorer {...props} />;
+    case 'jsoneditor':
+      return <JSONEditor {...props} />;
     default:
       return <BoundedBox {...props} />;
   }
