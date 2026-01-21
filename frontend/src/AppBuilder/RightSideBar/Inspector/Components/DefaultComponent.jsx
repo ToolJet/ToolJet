@@ -47,6 +47,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Kanban',
   'Html',
   'TagsInput',
+  'ProgressBar',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -70,6 +71,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   StarRating: 'Data',
   CircularProgressBar: 'Data',
   Kanban: 'Board configuration',
+  ProgressBar: 'Data',
   AudioRecorder: 'Content',
   Camera: 'Content',
 };
@@ -179,6 +181,7 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'ProgressBar',
       'AudioRecorder',
       'Camera',
     ],
