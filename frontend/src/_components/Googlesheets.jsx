@@ -60,13 +60,13 @@ const Googlesheets = ({
             <div data-cy="google-sheet-connection-form-header" className="form-label">
               {t('globals.authorize', 'Authorize')}
             </div>
-            <p data-cy="google-sheet-connection-form-description">
+            <small data-cy="google-sheet-connection-form-description" className="text-muted d-block mb-3">
               {t(
                 'googleSheets.enableReadAndWrite',
                 'If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access',
                 { whiteLabelText }
               )}
-            </p>
+            </small>
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
