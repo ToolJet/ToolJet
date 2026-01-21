@@ -11,6 +11,11 @@ ToolJet can connect to Snowflake databases to read and write data.
 
 To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
 
+### Basic Authentication
+Authenticates to Snowflake using a username and password to establish a direct connection with the specified account, role, and warehouse.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth.png" alt="ToolJet - Snowflake connection" style={{ marginBottom:'15px' }} />
+
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 
@@ -27,11 +32,20 @@ ToolJet requires the following to connect to Snowflake database.
 You can also configure for **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
 :::
 
-You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Calendar account securely.
+You can enable **Authentication required for all users** in the configuration to enforce user-level authentication. When enabled, users are redirected to the OAuth 2.0 consent screen the first time a query from this data source is executed within an application, ensuring secure, user-specific authorization. ToolJet supports OAuth 2.0 authentication using both **Custom App** and **ToolJet App** configurations, allowing flexible integration based on your OAuth provider setup.
 
 Note: After completing the OAuth flow, the query must be triggered again to load the data.
 
-<img className="screenshot-full img-m" src="/img/datasource-reference/snowflake/snowflake-connect-v4.png" alt="ToolJet - Snowflake connection" />
+### OAuth2.0 - Custom App
+Uses credentials from your own OAuth application to authenticate and authorize access via a custom OAuth provider configuration.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/oauth-custom-app.png" alt="ToolJet - Snowflake connection" style={{ marginBottom:'15px' }} />
+
+
+### OAuth2.0 - ToolJet App
+Uses ToolJet’s preconfigured OAuth application to simplify authentication without requiring you to create and manage your own OAuth app.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/oauth-tj-app.png" alt="ToolJet - Snowflake connection" style={{ marginBottom:'15px' }} />
 
 </div>
 
@@ -44,7 +58,7 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 3. Select the **SQL Mode** form the dropdown and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/snowflake-query-v2.png" alt="ToolJet - Snowflake query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/query-v5.png" alt="ToolJet - Snowflake query" />
 
 ```sql
 select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
