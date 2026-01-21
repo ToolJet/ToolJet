@@ -5,6 +5,8 @@ export const sslService = {
   getConfig,
   updateConfig,
   validatePrerequisites,
+  getCertificateStatus,
+  acquireCertificate,
 };
 
 function getConfig() {
@@ -29,4 +31,22 @@ function validatePrerequisites() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/ssl/validate`, requestOptions).then(handleResponse);
+}
+
+function getCertificateStatus() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/ssl/certificate/status`, requestOptions).then(handleResponse);
+}
+
+function acquireCertificate() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/ssl/certificate/acquire`, requestOptions).then(handleResponse);
 }
