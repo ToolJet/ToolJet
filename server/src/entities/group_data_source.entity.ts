@@ -22,10 +22,6 @@ export class GroupDataSources extends BaseEntity {
   @Column({ name: 'data_sources_group_permissions_id' })
   dataSourcesGroupPermissionsId: string;
 
-  // Review with Parth if we need this
-  // @Column({ name: 'co_relation_id', nullable: true })
-  // co_relation_id: string;
-
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
