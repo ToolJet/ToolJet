@@ -9,4 +9,5 @@ export interface AgentTool {
     isArray?: boolean; // True if this parameter should be a JSON array (e.g., extracted from items[0])
   }>;
   dataSourceQueryId: string;
+  nodeIdOnDefinition?: string; // The node ID on the workflow definition (for tracking tool execution)
 }

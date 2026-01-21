@@ -9,7 +9,10 @@ export interface IAgentNodeService {
     addLog: AddLogFunction,
     organizationId: string,
     environmentId: string,
-    workflowDefinition: any
+    workflowDefinition: any,
+    onToolExecuted: (toolNodeIdOnDefinition: string, result: any, state: Record<string, any>) => Promise<void>,
+    createAddLogFunction: any,
+    logs: any[],
   ): Promise<{
     status: string;
     data: any;

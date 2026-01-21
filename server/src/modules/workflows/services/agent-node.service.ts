@@ -6,7 +6,7 @@ type AddLogFunction = (message: string, nodeLabel: string, status: 'normal' | 's
 
 @Injectable()
 export class AgentNodeService implements IAgentNodeService {
-  constructor() {}
+  constructor() { }
 
   async executeAgentNode(
     currentNode: WorkflowExecutionNode,
@@ -14,7 +14,10 @@ export class AgentNodeService implements IAgentNodeService {
     addLog: AddLogFunction,
     organizationId: string,
     environmentId: string,
-    workflowDefinition: any
+    workflowDefinition: any,
+    onToolExecuted: (toolNodeIdOnDefinition: string, result: any, state: Record<string, any>) => Promise<void>,
+    createAddLogFunction: any,
+    logs: any[],
   ): Promise<{
     status: string;
     data: any;
