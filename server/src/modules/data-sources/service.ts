@@ -31,7 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
-  ) {}
+  ) { }
 
   async getForApp(
     query: GetQueryVariables,
@@ -158,7 +158,7 @@ export class DataSourcesService implements IDataSourcesService {
     const { name, options } = updateDataSourceDto;
     const { dataSourceId, environmentId } = updateOptions;
 
-        // Fetch datasource details for audit log
+    // Fetch datasource details for audit log
     const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
 
     await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
@@ -310,7 +310,8 @@ export class DataSourcesService implements IDataSourcesService {
     dataSource: DataSource,
     methodName: string,
     user: User,
-    environmentId: string
+    environmentId: string,
+    args?: any
   ): Promise<QueryResult> {
     const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
 
@@ -332,7 +333,7 @@ export class DataSourcesService implements IDataSourcesService {
     );
 
     try {
-      const result = await service.invokeMethod(methodName, sourceOptions);
+      const result = await service.invokeMethod(methodName, sourceOptions, args);
       return { status: 'ok', data: result };
     } catch (error) {
       if (error.constructor.name === 'QueryError') {

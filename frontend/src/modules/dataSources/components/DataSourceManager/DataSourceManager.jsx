@@ -264,7 +264,7 @@ class DataSourceManagerComponent extends React.Component {
       'microsoft_graph',
       'hubspot',
       'gmail',
-    ];
+      'xero'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -407,6 +407,9 @@ class DataSourceManagerComponent extends React.Component {
   checkShouldRenderFooterComponent = (datasourceKind, datasourceOptions) => {
     switch (datasourceKind) {
       case 'googlesheets': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'googlesheetsv2': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
       default:
@@ -971,8 +974,9 @@ class DataSourceManagerComponent extends React.Component {
       'googlecalendar',
       'snowflake',
       'microsoft_graph',
+      'xero',
       'hubspot',
-      'gmail',
+      'gmail'
     ];
 
     const shouldRenderFooterComponent = this.checkShouldRenderFooterComponent(selectedDataSource?.kind, options);
