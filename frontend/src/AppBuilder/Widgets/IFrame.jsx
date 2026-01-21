@@ -6,6 +6,11 @@ export const IFrame = function IFrame({ width, height, properties, styles, dataC
   const { visibility, disabledState, boxShadow } = styles;
 
   useEffect(() => {
+    setIframeSrc(source);
+  }, [source]);
+
+
+  useEffect(() => {
     setExposedVariables({
       setUrl: (url) => {
         if (typeof url === 'string') {
