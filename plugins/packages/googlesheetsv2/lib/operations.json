@@ -1,0 +1,607 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Googlesheetsv2 datasource",
+  "description": "A schema defining Googlesheets datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "read",
+    "majorDimension": "ROWS",
+    "valueRenderOption": "FORMATTED_VALUE",
+    "dateTimeRenderOption": "SERIAL_NUMBER",
+    "ValueInputOption":"RAW"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "create",
+          "name": "Create a spreadsheet"
+        },
+        {
+          "value": "list_all",
+          "name": "List all sheets of a spreadsheet"
+        },
+        {
+          "value": "list_all_spreadsheets",
+          "name": "List all spreadsheets"
+        },
+        {
+          "value": "delete_by_filter",
+          "name": "Delete data from a spreadsheet by data filter"
+        },
+        {
+          "value": "bulk_update_by_primary_key",
+          "name": "Bulk update using primary key"
+        },
+        {
+          "value": "copy_spreadsheet",
+          "name": "Copy data between spreadsheets"
+        },
+        {
+          "value": "read",
+          "name": "Read data from a spreadsheet"
+        },
+        {
+          "value": "append",
+          "name": "Append data to a spreadsheet"
+        },
+        {
+          "value": "info",
+          "name": "Get spreadsheet info"
+        },
+        {
+          "value": "update",
+          "name": "Update data to a spreadsheet"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete row from a spreadsheet"
+        },
+        {
+          "value": "delete_by_range",
+          "name": "Delete data from a spreadsheet by range"
+        },
+        {
+          "value": "update_spreadsheet",
+          "name": "Update a spreadsheet"
+        }
+      ]
+    },
+    "read": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id",
+        "required": true
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "required": true
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "required": true
+      },
+      "majorDimension": {
+      "label": "Major Dimensions",
+      "key": "majorDimension",
+      "type": "dropdown",
+      "description": "Single select dropdown for Major Dimensions",
+      "list": [
+        {
+          "value": "ROWS",
+          "name": "ROWS"
+        },
+        {
+          "value": "COLUMNS",
+          "name": "COLUMNS"
+        }
+      ]
+    },
+    "valueRenderOption": {
+      "label": "Value render",
+      "key": "valueRenderOption",
+      "type": "dropdown",
+      "description": "Single select dropdown for Value Render",
+      "list": [
+        {
+          "value": "FORMATTED_VALUE",
+          "name": "FORMATTED_VALUE"
+        },
+        {
+          "value": "UNFORMATTED_VALUE",
+          "name": "UNFORMATTED_VALUE"
+        },
+        {
+          "value": "FORMULA",
+          "name": "FORMULA"
+        }
+      ]
+    },
+    "dateTimeRenderOption": {
+      "label": "Date Time",
+      "key": "dateTimeRenderOption",
+      "type": "dropdown",
+      "description": "Single select dropdown for Date Time",
+      "list": [
+        {
+          "value": "SERIAL_NUMBER",
+          "name": "SERIAL_NUMBER"
+        },
+        {
+          "value": "FORMATTED_STRING",
+          "name": "FORMATTED_STRING"
+        }
+      ]
+    }
+  },
+    "create": {
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter name of new spreadsheet",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter name of new spreadsheet"
+      }
+    },
+    "list_all": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      }
+    },
+    "list_all_spreadsheets": {
+      "page_size": {
+        "label": "Page Size",
+        "key": "page_size",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "10",
+        "description": "The maximum number of spreadsheets to return",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "page_token": {
+        "label": "Page token",
+        "key": "page_token",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "aBCdEFgHIjKLmNOpqRstuvWXYzaBCdEFgHIjKLmNOpqRstuvWXYz",
+        "description": "A token to retrieve the next page of results.",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "name contains 'report'",
+        "description": "'A query string for filtering spreadsheets. Example: name contains report'",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "delete_by_filter": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Filter",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter Filter"
+      }
+    },
+    "bulk_update_by_primary_key": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet Id"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "",
+        "description": "Enter sheet name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "primary_key": {
+        "label": "Primary key",
+        "key": "primary_key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Column name that uniquely identifies rows (e.g. 'id')",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "ID"
+      },
+      "rows": {
+        "label": "Data",
+        "key": "rows",
+        "type": "codehinter",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "description": "Enter an array of objects to update/insert. Example: [{\"id\":1,\"name\":\"John\"}]",
+        "placeholder": "{'ID': 1, 'Status': 'Done'}, {'ID': 2, 'Status': 'In Progress'}]"
+      }
+     },
+   "copy_spreadsheet": {
+      "source_spreadsheet_id": {
+        "label": "Source Spreadsheet ID",
+        "key": "source_spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the source spreadsheet",
+        "placeholder": "Enter source spreadsheet ID",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "destination_spreadsheet_id": {
+        "label": "Destination Spreadsheet ID",
+        "key": "destination_spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the destination spreadsheet",
+        "placeholder": "Enter destination spreadsheet ID",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "source_range": {
+        "label": "Source Range",
+        "key": "source_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Sheet1!A1:B10",
+        "description": "The range of cells to copy from the source spreadsheet. If not specified, the entire sheet is copied.",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "destination_range": {
+        "label": "Destination Range",
+        "key": "destination_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Sheet1!A1",
+        "description": "The top-left cell where the copied data will be pasted.",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "append": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "rows": {
+        "label": "Rows",
+        "key": "rows",
+        "type": "codehinter",
+        "description": "Enter rows",
+        "height": "150px",
+        "editorType": "extendedSingleLine",
+        "placeholder": "Enter rows"
+      }
+    },
+    "info": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      }
+    },
+    "delete_row": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "sheet": {
+        "label": "GID",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter sheet"
+      },
+      "row_index": {
+        "label": "Delete row number",
+        "key": "row_index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter row number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter row number"
+      }
+    },
+    "update": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "sheet": {
+        "label": "Sheet name",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter sheet name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Leave blank to use first sheet"
+      },
+      "where_field": {
+        "label": "Where",
+        "key": "where_field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter field"
+      },
+      "where_operation": {
+        "label": "Operator",
+        "key": "where_operation",
+        "className": "col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for where operation",
+        "list": [
+          {
+            "value": "===",
+            "name": "==="
+          }
+        ]
+      },
+      "where_value": {
+        "label": "Value",
+        "key": "where_value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter value",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "placeholder": "Enter value"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "height": "150px",
+        "editorType": "extendedSingleLine",
+        "description": "Enter body"
+      }
+    },
+    "delete_by_range":{
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+     "shiftDimension": {
+      "label": "Shift Dimension",
+      "key": "shiftDimension",
+      "type": "dropdown",
+      "description": "Single select dropdown for Date Time",
+      "list": [
+        {
+          "value": "ROWS",
+          "name": "ROWS"
+        },
+        {
+          "value": "COLUMNS",
+          "name": "COLUMNS"
+        }
+      ]
+    }
+    },
+    "update_spreadsheet" : {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
+      },
+      "spreadsheet_range": {
+        "label": "Range",
+        "key": "spreadsheet_range",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "A1:Z500",
+        "description": "Enter range",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "sheet": {
+        "label": "Sheet",
+        "key": "sheet",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Leave blank to use first sheet",
+        "description": "Enter sheet",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+       "values": {
+        "label": "Values",
+        "key": "values",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "[['new value 1', 'new value 2']]",
+        "description": "Enter Value",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "ValueInputOption": {
+      "label": "Input Options",
+      "key": "ValueInputOption",
+      "type": "dropdown",
+      "description": "Single select dropdown for Input Options",
+      "list": [
+        {
+          "value": "RAW",
+          "name": "RAW"
+        },
+        {
+          "value": "USER_ENTERED",
+          "name": "USER_ENTERED"
+        },
+        {
+          "value": "FORMULA",
+          "name": "FORMULA"
+        }
+      ]
+    }
+    }
+  }
+}
