@@ -1459,8 +1459,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get PR labels
+        id: get-labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const labelNames = labels.data.map(l => l.name);
+            
+            // Check if CE deployment was created or is active
+            const hasCE = labelNames.includes('create-ce-review-app') || labelNames.includes('active-ce-review-app');
+            
+            // Check if EE LTS deployment was created or is active
+            const hasEELTS = labelNames.includes('create-ee-lts-review-app') || labelNames.includes('active-ee-lts-review-app');
+            
+            // Check if EE Pre-release deployment was created or is active
+            const hasEEPrerelease = labelNames.includes('create-ee-pre-release-review-app') || labelNames.includes('active-ee-pre-release-review-app');
+            
+            core.setOutput('has_ce', hasCE);
+            core.setOutput('has_ee_lts', hasEELTS);
+            core.setOutput('has_ee_prerelease', hasEEPrerelease);
+            
+            console.log(`CE: ${hasCE}, EE LTS: ${hasEELTS}, EE Pre-release: ${hasEEPrerelease}`);
+            return labelNames;
+
       - name: Check CE V2 Deployment Status
         id: check-ce
+        if: steps.get-labels.outputs.has_ce == 'true'
         run: |
           # Check if GitHub Actions workflow is running
           WORKFLOW_RESPONSE=$(curl --silent --request GET \
@@ -1511,6 +1541,7 @@ jobs:
           echo "CE_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
 
       - name: Comment CE Deployment Status
+        if: steps.get-labels.outputs.has_ce == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1533,7 +1564,6 @@ jobs:
               message = `### Community Edition (V2)\n` +
                         `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
                         `- **Docker Image**: \`tooljet/tooljet-render:ce-pr-${prNumber}\`\n` +
-                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
                         `- ℹ️ Render service will be created after image build completes`;
             } else if (status === 'not_found') {
               message = `### Community Edition (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ce-review-app\` to create deployment`;
@@ -1561,6 +1591,7 @@ jobs:
 
       - name: Check EE LTS V2 Deployment Status
         id: check-ee-lts
+        if: steps.get-labels.outputs.has_ee_lts == 'true'
         run: |
           # Check if GitHub Actions workflow is running
           WORKFLOW_RESPONSE=$(curl --silent --request GET \
@@ -1611,6 +1642,7 @@ jobs:
           echo "EE_LTS_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
 
       - name: Comment EE LTS Deployment Status
+        if: steps.get-labels.outputs.has_ee_lts == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1633,7 +1665,6 @@ jobs:
               message = `### Enterprise Edition - LTS (V2)\n` +
                         `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
                         `- **Docker Image**: \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\`\n` +
-                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
                         `- ℹ️ Render service will be created after image build completes`;
             } else if (status === 'not_found') {
               message = `### Enterprise Edition - LTS (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-lts-review-app\` to create deployment`;
@@ -1661,6 +1692,7 @@ jobs:
 
       - name: Check EE Pre-release V2 Deployment Status
         id: check-ee-prerelease
+        if: steps.get-labels.outputs.has_ee_prerelease == 'true'
         run: |
           # Check if GitHub Actions workflow is running
           WORKFLOW_RESPONSE=$(curl --silent --request GET \
@@ -1711,6 +1743,7 @@ jobs:
           echo "EE_PRERELEASE_UPDATED=$DEPLOY_UPDATED" >> $GITHUB_ENV
 
       - name: Comment EE Pre-release Deployment Status
+        if: steps.get-labels.outputs.has_ee_prerelease == 'true'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1733,7 +1766,6 @@ jobs:
               message = `### Enterprise Edition - Pre-release (V2)\n` +
                         `- **Status**: 🔨 Building Docker image in GitHub Actions\n` +
                         `- **Docker Image**: \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\`\n` +
-                        `- **Build Workflow**: [View Progress](${workflowUrl})\n` +
                         `- ℹ️ Render service will be created after image build completes`;
             } else if (status === 'not_found') {
               message = `### Enterprise Edition - Pre-release (V2)\n- Status: ℹ️ No deployment found\n- Add label \`create-ee-pre-release-review-app\` to create deployment`;
