@@ -69,6 +69,7 @@ export const ModalV2 = function Modal({
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
+  const clearSelectionAndShowComponentsTab = useStore((state) => state.clearSelectionAndShowComponentsTab, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
@@ -129,6 +130,7 @@ export const ModalV2 = function Modal({
 
   const onHideModal = () => {
     hideModal();
+    clearSelectionAndShowComponentsTab();
   };
 
   useEffect(() => {
