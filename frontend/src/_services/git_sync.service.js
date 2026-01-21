@@ -47,10 +47,11 @@ function create(organizationId, gitUrl, gitType) {
 }
 
 function updateConfig(organizationGitId, updateParam, gitType = '') {
-  const { gitUrl, autoCommit, keyType, branchingEnabled } = updateParam;
+  const { gitUrl, autoCommit, keyType, branchingEnabled, autoSync } = updateParam;
   const body = {
     ...(gitUrl && { gitUrl }),
     ...(autoCommit != null && { autoCommit }),
+    ...(autoSync != null && { autoSync }),
     ...(keyType && { keyType }),
     ...(branchingEnabled && { branchingEnabled }),
   };
