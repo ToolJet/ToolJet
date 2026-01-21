@@ -16,7 +16,6 @@
 			"description": "Single select dropdown for operation",
 			"list": [
 				{ "value": "chat", "name": "Chat" },
-				{ "value": "completion", "name": "Completion" },
 				{ "value": "image_generation", "name": "Generate AI Image(s)" },
 				{ "value": "generate_embedding", "name": "Generate embedding" }
 			]
@@ -36,7 +35,6 @@
 					{ "value": "o4-mini", "name": "o4 Mini" },
 					{ "value": "o3", "name": "o3" },
 					{ "value": "o3-mini", "name": "o3 Mini" },
-					{ "value": "o1-mini", "name": "o1 Mini" },
 					{ "value": "o1", "name": "o1" },
 					{ "value": "gpt-4.1", "name": "GPT-4.1" },
 					{ "value": "gpt-4.1-mini", "name": "GPT-4.1 Mini" },
@@ -343,48 +341,6 @@
 				}
 			},
             "o3-mini": {
-				"prompt": {
-					"label": "Message",
-					"key": "prompt",
-					"type": "codehinter",
-					"description": "Enter message",
-					"placeholder": "Draft an email or other piece of writing",
-					"height": "150px"
-				},
-				"max_tokens": {
-					"label": "Max Tokens",
-					"key": "max_tokens",
-					"type": "codehinter",
-					"description": "Enter from 1 to 2048",
-					"width": "320px",
-					"height": "36px"
-				},
-				"temperature": {
-					"label": "Temperature",
-					"key": "temperature",
-					"type": "codehinter",
-					"description": "Enter from 0 to 1",
-					"width": "320px",
-					"height": "36px"
-				},
-				"stop_sequence": {
-					"label": "Stop Sequence",
-					"key": "stop_sequence",
-					"type": "codehinter",
-					"description": "Enter stop sequence",
-					"width": "320px",
-					"height": "36px"
-				},
-				"suffix": {
-					"label": "Suffix",
-					"key": "suffix",
-					"type": "codehinter",
-					"description": "Enter suffix",
-					"width": "320px",
-					"height": "36px"
-				}
-			},
-			"o1-mini": {
 				"prompt": {
 					"label": "Message",
 					"key": "prompt",
@@ -805,58 +761,7 @@
 				}
 			}
 		},
-		"completion": {
-			"model": {
-				"label": "Model",
-				"key": "model",
-				"type": "dropdown-component-flip",
-				"description": "Select OpenAI Model",
-				"list": [
-					{ "value": "gpt-3.5-turbo-instruct", "name": "GPT 3.5 Turbo" }
-				]
-			},
-              "gpt-3.5-turbo-instruct": {
-                "prompt": {
-                  "label": "Prompt",
-                  "key": "prompt",
-                  "type": "codehinter",
-                  "description": "Enter prompt",
-                  "height": "150px"
-                },
-                "max_tokens": {
-                  "label": "Max Tokens",
-                  "key": "max_tokens",
-                  "type": "codehinter",
-                  "description": "Enter from 1 to 2048",
-                  "width": "320px",
-                  "height": "36px"
-                },
-                "temperature": {
-                  "label": "Temperature",
-                  "key": "temperature",
-                  "type": "codehinter",
-                  "description": "Enter from 0 to 1",
-                  "width": "320px",
-                  "height": "36px"
-                },
-                "stop_sequence": {
-                  "label": "Stop Sequence",
-                  "key": "stop_sequence",
-                  "type": "codehinter",
-                  "description": "Enter stop sequence",
-                  "width": "320px",
-                  "height": "36px"
-                },
-                "suffix": {
-                  "label": "Suffix",
-                  "key": "suffix",
-                  "type": "codehinter",
-                  "description": "Enter suffix",
-                  "width": "320px",
-                  "height": "36px"
-                }
-              }
-		},
+
 		"image_generation": {
   			"model": {
     			"label": "Model",
