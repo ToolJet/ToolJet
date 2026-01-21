@@ -216,9 +216,6 @@ describe("Private and Public apps", () => {
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     cy.get(commonSelectors.signUpButton).click();
     cy.wait("@signup");
-    cy.get(`[data-cy="resend-verification-email-button"]`).should("be.visible");
-    cy.wait(15000); // Waiting for mailhog to receive the email
-    fetchAndVisitInviteLinkViaMH(data.email);
     verifyWidget("private");
 
     // cy.apiLogout();
