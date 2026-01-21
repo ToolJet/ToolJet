@@ -76,21 +76,24 @@ sudo ln -s "$(which npm)" /usr/bin/npm
 
 sudo npm i -g npm@10.9.2
 
-# Setup openresty
-wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
-echo "deb http://openresty.org/package/ubuntu jammy main" > openresty.list
-sudo mv openresty.list /etc/apt/sources.list.d/
+# Setup nginx
 retry_apt_update
-sudo apt-get -y install --no-install-recommends openresty
+sudo apt-get -y install --no-install-recommends nginx
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
      libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev \
      libreadline-dev libssl-dev libmysqlclient-dev build-essential \
      freetds-dev libpq-dev
-sudo apt-get install -y luarocks
-sudo luarocks install lua-resty-auto-ssl
-sudo mkdir /etc/resty-auto-ssl /var/log/openresty /etc/fallback-certs
-sudo chown -R www-data:www-data /etc/resty-auto-ssl
+
+# Install certbot for Let's Encrypt SSL certificates
+sudo snap install core
+sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -sf /snap/bin/certbot /usr/bin/certbot
+
+# Create directories for SSL certificates and ACME challenges
+sudo mkdir -p /etc/letsencrypt /var/www/certbot /var/log/nginx
+sudo chown -R www-data:www-data /var/www/certbot
 
 # Oracle db client library setup
 sudo apt install -y libaio1 
@@ -105,20 +108,12 @@ curl -o instantclient-basiclite-11.zip https://tooljet-plugins-production.s3.us-
 # Set the Instant Client library paths
 export LD_LIBRARY_PATH="/usr/lib/instantclient/instantclient_11_2:/usr/lib/instantclient/instantclient_21_10${LD_LIBRARY_PATH}" 
 
-# Gen fallback certs
-sudo openssl rand -out /home/ubuntu/.rnd -hex 256
-sudo chown www-data:www-data /home/ubuntu/.rnd
-sudo openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
-     -subj '/CN=sni-support-required-for-valid-ssl' \
-     -keyout /etc/fallback-certs/resty-auto-ssl-fallback.key \
-     -out /etc/fallback-certs/resty-auto-ssl-fallback.crt
-
 # Setup nginx config
 export SERVER_HOST="${SERVER_HOST:=localhost}"
 export SERVER_USER="${SERVER_USER:=www-data}"
 VARS_TO_SUBSTITUTE='$SERVER_HOST:$SERVER_USER'
 envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
-sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
+sudo cp /tmp/nginx-substituted.conf /etc/nginx/nginx.conf
 
 # Download and setup postgrest binary
 curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.2.0/postgrest-v12.2.0-linux-static-x64.tar.xz
@@ -204,6 +199,16 @@ cp "$BUILD_DIR/plugins/package.json" "$PROD_DIR/plugins/"
 mv /tmp/.env "$PROD_DIR/.env"
 mv /tmp/setup_app "$PROD_DIR/setup_app"
 sudo chmod +x "$PROD_DIR/setup_app"
+
+# Setup web root for nginx
+# Remove default /var/www if it exists and create symlink to frontend build
+sudo rm -rf /var/www/html
+sudo mkdir -p /var/www
+# Symlink contents by symlinking the build directory itself as /var/www
+# This allows nginx root /var/www; to serve the built frontend
+sudo rm -f /var/www/index.html
+sudo cp -r "$PROD_DIR/frontend/build/." /var/www/
+sudo chown -R www-data:www-data /var/www
 
 # Clean up build directory
 echo "Cleaning up build directory..."
