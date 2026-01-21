@@ -1,4 +1,5 @@
 import { User } from '@entities/user.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import {
   BadRequestException,
@@ -44,6 +45,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -61,7 +63,8 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly abilityService: AbilityService
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -105,9 +108,14 @@ export class AppsService implements IAppsService {
       slug: app.slug,
       type: app.type,
     };
-    // Check permissions
-    const hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
+    // Check permissions - first check app-level, then folder-level
+    let hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+    // If no app-level edit permission, check folder-level edit apps permission
+    if (!hasEditPermission) {
+      hasEditPermission = await this.checkFolderEditPermission(app.id, user);
+    }
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
@@ -157,7 +165,8 @@ export class AppsService implements IAppsService {
 
       // Validate environment access for all users (both builders and viewers)
       // Skip validation only for released environment (everyone with view access can see released)
-      if (environment) {
+      // Also skip validation for module apps - they don't have environment restrictions
+      if (environment && app.type !== APP_TYPES.MODULE) {
         const envName = environment.name.toLowerCase();
 
         // Always allow access to released environment for all users who can view the app
@@ -320,6 +329,28 @@ export class AppsService implements IAppsService {
         for (const app of apps) {
           const appVersionId = app?.appVersions?.[0]?.id;
           app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
+        }
+      }
+
+      // Get folder IDs for all apps to support folder-level permission checks
+      const appIds = apps.map((app) => app.id);
+      if (appIds.length > 0) {
+        const folderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .where('folderApp.appId IN (:...appIds)', { appIds })
+          .getMany();
+
+        // Create a map of app ID to folder IDs
+        const appFolderMap = new Map<string, string[]>();
+        for (const folderApp of folderApps) {
+          const existing = appFolderMap.get(folderApp.appId) || [];
+          existing.push(folderApp.folderId);
+          appFolderMap.set(folderApp.appId, existing);
+        }
+
+        // Add folder IDs to each app
+        for (const app of apps) {
+          app.folderIds = appFolderMap.get(app.id) || [];
         }
       }
 
@@ -535,6 +566,46 @@ export class AppsService implements IAppsService {
         metadata: { data: { name: 'App Released', versionToBeReleased: versionReleaseDto.versionToBeReleased } },
       });
       return;
+    });
+  }
+
+  /**
+   * Check if user has folder-level edit permission for the app.
+   * This checks if the app belongs to any folder where the user has canEditApps permission.
+   */
+  protected async checkFolderEditPermission(appId: string, user: User): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Get folder permissions from the ability service
+      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: MODULES.FOLDER }],
+        organizationId: user.organizationId,
+      });
+
+      const folderPermissions = userPermissions?.[MODULES.FOLDER];
+      if (!folderPermissions) {
+        return false;
+      }
+
+      // If user can edit apps in all folders, they have edit permission
+      if (folderPermissions.isAllEditApps) {
+        return true;
+      }
+
+      // Get the folders this app belongs to
+      const folderApps = await manager
+        .createQueryBuilder(FolderApp, 'folder_apps')
+        .where('folder_apps.app_id = :appId', { appId })
+        .getMany();
+
+      if (!folderApps || folderApps.length === 0) {
+        return false;
+      }
+
+      // Check if any of the app's folders are in the list of folders where user can edit apps
+      const appFolderIds = folderApps.map((fa) => fa.folderId);
+      const editableFolderIds = folderPermissions.editAppsInFoldersId || [];
+
+      return appFolderIds.some((folderId) => editableFolderIds.includes(folderId));
     });
   }
 }

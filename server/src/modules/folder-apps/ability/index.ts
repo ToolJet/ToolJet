@@ -15,9 +15,17 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
   protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
     const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
-    const folderPermission = userPermission.folderCRUD;
-    if (superAdmin || folderPermission || isAdmin) {
+    const canCreateFolder = userPermission.folderCreate;
+    const canDeleteFolder = userPermission.folderDelete;
+    if (superAdmin || isAdmin) {
       can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+    } else {
+      if (canCreateFolder) {
+        can([FEATURE_KEY.CREATE_FOLDER_APP], FolderApp);
+      }
+      if (canDeleteFolder) {
+        can([FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
+      }
     }
     can([FEATURE_KEY.GET_FOLDERS], FolderApp); // No permission required
   }

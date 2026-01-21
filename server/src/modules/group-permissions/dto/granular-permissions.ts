@@ -36,7 +36,7 @@ export class CreateGranularPermissionDto {
   createResourcePermissionObject: CreateResourcePermissionObject<any>;
 }
 
-export class UpdateGranularPermissionDto<T extends ResourceType.APP | ResourceType.DATA_SOURCE> {
+export class UpdateGranularPermissionDto<T extends ResourceType.APP | ResourceType.DATA_SOURCE | ResourceType.FOLDER> {
   @IsString()
   @IsOptional()
   name: string;

@@ -25,7 +25,11 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
-  folderCRUD: boolean;
+  folderCreate: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  folderDelete: boolean;
 
   @IsBoolean()
   @IsOptional()

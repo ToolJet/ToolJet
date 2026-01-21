@@ -124,7 +124,7 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   userFullName = (user) => {
-     return `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+    return `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {
@@ -1034,27 +1034,56 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           type="checkbox"
                                           onChange={() => {
                                             this.updateGroupPermission(groupPermission.id, {
-                                              folderCRUD: !groupPermission.folderCRUD,
+                                              folderCreate: !groupPermission.folderCreate,
                                             });
                                             this.setState({
-                                              updateParam: { folderCRUD: !groupPermission.folderCRUD },
+                                              updateParam: { folderCreate: !groupPermission.folderCreate },
                                             });
                                           }}
-                                          checked={groupPermission.folderCRUD}
+                                          checked={groupPermission.folderCreate}
                                           disabled={disablePermissionUpdate}
                                           data-cy="folder-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="folder-create-label">
                                           {this.props.t(
-                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
-                                            'Create/Update/Delete'
+                                            'header.organization.menus.manageGroups.permissionResources.create',
+                                            'Create'
                                           )}
                                         </span>
                                         <span
                                           class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
-                                          data-cy="folder-helper-text"
+                                          data-cy="folder-create-helper-text"
                                         >
-                                          All operations on folders
+                                          Create new folders
+                                        </span>
+                                      </label>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              folderDelete: !groupPermission.folderDelete,
+                                            });
+                                            this.setState({
+                                              updateParam: { folderDelete: !groupPermission.folderDelete },
+                                            });
+                                          }}
+                                          checked={groupPermission.folderDelete}
+                                          disabled={disablePermissionUpdate}
+                                          data-cy="folder-delete-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="folder-delete-label">
+                                          {this.props.t(
+                                            'header.organization.menus.manageGroups.permissionResources.delete',
+                                            'Delete'
+                                          )}
+                                        </span>
+                                        <span
+                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          data-cy="folder-delete-helper-text"
+                                        >
+                                          Delete existing folders
                                         </span>
                                       </label>
                                     </div>

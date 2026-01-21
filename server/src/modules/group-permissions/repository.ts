@@ -120,6 +120,11 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               dataSource: true,
             },
           },
+          foldersGroupPermissions: {
+            groupFolders: {
+              folder: true,
+            },
+          },
         },
         where: {
           group: {
@@ -173,6 +178,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           group: true,
           appsGroupPermissions: true,
           dataSourcesGroupPermission: true,
+          foldersGroupPermissions: true,
         },
       });
     }, manager || this.manager);
@@ -235,17 +241,17 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               },
             },
             ...(lastName
-           ? [
-               {
-                 ...baseWhere,
-                 user: {
-                   ...baseWhere.user,
-                   firstName: ILike(`%${firstName}%`),
-                   lastName: ILike(`%${lastName}%`),
-                 },
-               },
-             ]
-           : []),
+              ? [
+                  {
+                    ...baseWhere,
+                    user: {
+                      ...baseWhere.user,
+                      firstName: ILike(`%${firstName}%`),
+                      lastName: ILike(`%${lastName}%`),
+                    },
+                  },
+                ]
+              : []),
           ],
           relations: {
             group: true,

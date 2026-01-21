@@ -8,6 +8,7 @@ export const groupPermissionV2Service = {
   getGroup,
   getGroups,
   fetchAddableApps,
+  fetchAddableFolders,
   getUsersInGroup,
   getUsersNotInGroup,
   updateUserRole,
@@ -85,6 +86,17 @@ function fetchAddableDs() {
   );
 }
 
+function fetchAddableFolders() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/addable-folders`, requestOptions).then(
+    handleResponse
+  );
+}
+
 function getGroups() {
   const requestOptions = {
     method: 'GET',
@@ -120,7 +132,14 @@ function createGranularPermission(id, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  const type = body.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (body.type === 'app') {
+    type = 'app';
+  } else if (body.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/${id}/granular-permissions/${type}`, requestOptions).then(
     handleResponse
   );
@@ -134,7 +153,14 @@ function updateGranularPermission(permission, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  const type = permission.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (permission.type === 'app') {
+    type = 'app';
+  } else if (permission.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
     handleResponse
   );
@@ -147,7 +173,14 @@ function deleteGranularPermission(permission) {
     headers: authHeader(),
     credentials: 'include',
   };
-  const type = permission.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (permission.type === 'app') {
+    type = 'app';
+  } else if (permission.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
     handleResponse
   );
