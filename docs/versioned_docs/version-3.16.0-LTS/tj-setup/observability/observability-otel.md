@@ -1,6 +1,7 @@
 ---
 id: observability-otel
 title: Observability Overview
+sidebar_label: Overview
 ---
 
 ToolJet supports OpenTelemetry (OTEL) for comprehensive observability, enabling you to monitor application performance, track query executions, and analyze the health of ToolJet services and infrastructure through metrics. OpenTelemetry provides a standardized, vendor-agnostic way to collect observability data, allowing ToolJet to integrate with any OTEL-compatible third-party monitoring tool such as [Datadog](/docs/tj-setup/observability/datadog), [New Relic](/docs/tj-setup/observability/new-relic), and [Grafana](/docs/tj-setup/observability/grafana).

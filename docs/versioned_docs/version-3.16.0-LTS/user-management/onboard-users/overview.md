@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: Onboard and Offboard Users
+sidebar_label: Overview
 ---
 
 ToolJet provides flexible options for onboarding users and a straightforward process for offboarding users when needed.

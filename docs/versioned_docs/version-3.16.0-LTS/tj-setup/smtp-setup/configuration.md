@@ -1,6 +1,7 @@
 ---
 id: configuration
-title: Configuration
+title: Configuring SMTP Server
+sidebar_label: Configuration
 ---
 
 This feature is exclusive to self-hosted ToolJet, allowing you to configure a custom SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 

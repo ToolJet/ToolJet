@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: SSO Overview
+sidebar_label: Overview
 ---
 
 Single Sign-On (SSO) is an authentication process that allows users to access multiple applications or services with a single set of login credentials. By eliminating the need to log in separately to each application, SSO enhances user experience and security.
