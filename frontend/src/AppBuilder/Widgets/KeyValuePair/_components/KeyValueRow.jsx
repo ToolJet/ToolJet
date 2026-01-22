@@ -179,7 +179,7 @@ const KeyValueRow = ({
     if (isRightDirection) return {};
     return { paddingLeft: `${labelWidth}%` };
   };
-  console.log(hasChanges, 'hasChanges');
+
   return (
     <div className="kv-row-container">
       <div className={rowClassName}>

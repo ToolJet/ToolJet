@@ -10,9 +10,9 @@ export const DatepickerField = ({
   value,
   onChange,
   isEditable = false,
-  dateFormat = 'MM/DD/YYYY',
-  showTimeSelect = false,
-  timeFormat = 'HH:mm',
+  // dateFormat = 'MM/DD/YYYY',
+  // showTimeSelect = false,
+  // timeFormat = 'HH:mm',
   darkMode = false,
   textColor,
   field,
@@ -21,24 +21,28 @@ export const DatepickerField = ({
   isEditing,
 }) => {
   // Extract field-specific settings
-  const dateDisplayFormat = field?.dateFormat ?? dateFormat;
-  const isTimeChecked = field?.showTimeSelect ?? showTimeSelect;
-  const isTwentyFourHrFormatEnabled = (field?.timeFormat ?? timeFormat) === 'HH:mm';
-  const isDateSelectionEnabled = field?.isDateSelectionEnabled ?? true;
-
+  const dateDisplayFormat = field?.dateFormat;
+  const isTimeChecked = field?.isTimeChecked || false;
+  const isTwentyFourHrFormatEnabled = field?.isTwentyFourHrFormatEnabled || false;
+  const isDateSelectionEnabled = field?.isDateSelectionEnabled || true;
   return (
     <DatePickerRenderer
+      id={id}
       value={value}
       onChange={onChange}
       isEditable={isEditable}
       dateDisplayFormat={dateDisplayFormat}
-      parseDateFormat={dateDisplayFormat}
+      parseDateFormat={field?.parseDateFormat}
       isTimeChecked={isTimeChecked}
       isDateSelectionEnabled={isDateSelectionEnabled}
       isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
+      timeZoneValue={field?.timeZoneValue}
+      timeZoneDisplay={field?.timeZoneDisplay}
+      unixTimestamp={field?.unixTimestamp}
+      parseInUnixTimestamp={field?.parseInUnixTimestamp}
+      disabledDates={field?.disabledDates}
       textColor={textColor}
       darkMode={darkMode}
-      id={id}
       isInputFocused={isEditing}
       setIsInputFocused={setIsEditing}
       widgetType="KeyValuePair"
