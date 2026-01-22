@@ -32,6 +32,7 @@ export function AppModal({
   appType,
   dependentPluginsDetail = [],
   dependentPlugins = [],
+  isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -225,6 +226,7 @@ export function AppModal({
                       checked={commitEnabled}
                       type="checkbox"
                       onChange={handleCommitEnableChange}
+                      disabled={isAutoCommit}
                       data-cy="git-commit-input"
                     />
                   </div>
