@@ -73,13 +73,13 @@
     },
     "read": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "placeholder": "Enter spreadsheet_id",
@@ -180,13 +180,13 @@
     },
     "list_all": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -228,13 +228,13 @@
     },
     "delete_by_filter": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -278,7 +278,7 @@
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -327,13 +327,13 @@
     },
     "copy_spreadsheet": {
       "source_spreadsheet_id": {
-        "label": "Source Spreadsheet ID",
+        "label": "Source Spreadsheet",
         "key": "source_spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter the ID of the source spreadsheet",
         "placeholder": "Enter source spreadsheet ID",
@@ -341,13 +341,13 @@
         "className": "codehinter-plugins"
       },
       "destination_spreadsheet_id": {
-        "label": "Destination Spreadsheet ID",
+        "label": "Destination Spreadsheet",
         "key": "destination_spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter the ID of the destination spreadsheet",
         "placeholder": "Enter destination spreadsheet ID",
@@ -377,13 +377,13 @@
     },
     "append": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -420,13 +420,13 @@
     },
     "info": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -436,13 +436,13 @@
     },
     "delete_row": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -481,13 +481,13 @@
     },
     "update": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -567,13 +567,13 @@
     },
     "delete_by_range": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",
@@ -628,13 +628,13 @@
     },
     "update_spreadsheet": {
       "spreadsheet_id": {
-        "label": "Spreadsheet ID",
+        "label": "Spreadsheet",
         "key": "spreadsheet_id",
         "type": "dynamic-selector",
         "fxEnabled": true,
         "operation": {
           "invokeMethod": "getSpreadsheets",
-          "label": "Authenticate"
+          "label": "Fetch Spreadsheets"
         },
         "description": "Enter spreadsheet_id",
         "height": "36px",

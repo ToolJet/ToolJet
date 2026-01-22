@@ -60,7 +60,7 @@ const Googlesheets = ({
             <div data-cy="google-sheet-connection-form-header" className="form-label">
               {t('globals.authorize', 'Authorize')}
             </div>
-            <p data-cy="google-sheet-connection-form-description">
+            <p data-cy="google-sheet-connection-form-description" className="text-muted" style={{fontSize:'12px', marginBottom: '12px'}}>
               {t(
                 'googleSheets.enableReadAndWrite',
                 'If you want your ${whiteLabelText} apps to modify your Google sheets, make sure to select read and write access',
