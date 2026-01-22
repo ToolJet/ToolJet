@@ -60,6 +60,12 @@ export const textinputConfig = {
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
@@ -307,6 +313,7 @@ export const textinputConfig = {
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {

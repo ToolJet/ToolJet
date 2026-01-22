@@ -3,6 +3,7 @@ import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
+import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
@@ -43,9 +44,13 @@ export const BaseInput = ({
   inputType = 'text',
   additionalInputProps = {},
   rightIcon,
+  getCustomStyles,
   isDynamicHeightEnabled,
   id,
   classes = null,
+  showClearBtn,
+  onClear,
+  clearButtonRightOffset = 0,
 }) => {
   const {
     padding,
@@ -70,6 +75,10 @@ export const BaseInput = ({
   const { label, placeholder } = properties;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
@@ -96,6 +105,45 @@ export const BaseInput = ({
 
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon] ?? Icons['IconHome2'];
+
+  const finalStyles = getCustomStyles ? getCustomStyles(inputStyles) : inputStyles;
+  const clearButtonBaseRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonRight =
+    clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+  const clearButtonTop =
+    inputType === 'textarea'
+      ? defaultAlignment === 'top'
+        ? '30px'
+        : '10px'
+      : defaultAlignment === 'top' && hasLabel
+      ? 'calc(50% + 10px)'
+      : '50%';
+  const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
+  const clearButton = shouldShowClearBtn ? (
+    <button
+      type="button"
+      className="tj-input-clear-btn"
+      aria-label="Clear"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClear?.();
+      }}
+      style={{
+        position: 'absolute',
+        right: clearButtonRight,
+        top: clearButtonTop,
+        transform: clearButtonTransform,
+        zIndex: 3,
+      }}
+    >
+      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+    </button>
+  ) : null;
 
   return (
     <>
@@ -207,7 +255,7 @@ export const BaseInput = ({
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             placeholder={placeholder}
-            style={inputStyles}
+            style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
             aria-disabled={disable || loading}
@@ -217,7 +265,7 @@ export const BaseInput = ({
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
-
+          {clearButton}
           {loading ? <Loader classes={classes} style={loaderStyle} absolute={false} width="16" /> : rightIcon}
         </div>
       </div>

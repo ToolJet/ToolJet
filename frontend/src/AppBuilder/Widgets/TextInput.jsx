@@ -8,6 +8,18 @@ export const TextInput = (props) => {
     inputType: 'TextInput',
   };
   const inputLogic = useInput(transformedProps);
-
-  return <BaseInput {...props} {...inputLogic} inputType="text" />;
+  const showClearBtn = props.properties?.showClearBtn;
+  const handleClear = () => {
+    inputLogic.setInputValue('');
+    props.fireEvent('onChange');
+  };
+  return (
+    <BaseInput
+      {...props}
+      {...inputLogic}
+      inputType="text"
+      showClearBtn={showClearBtn}
+      onClear={handleClear}
+    />
+  );
 };
