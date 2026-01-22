@@ -24,13 +24,16 @@ import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '../constants/granular_permiss
 import { RolesRepository } from '@modules/roles/repository';
 import { IGranularPermissionsUtilService } from '../interfaces/IUtilService';
 import { APP_TYPES } from '@modules/apps/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class GranularPermissionsUtilService implements IGranularPermissionsUtilService {
   constructor(
     protected roleUtilService: RolesUtilService,
     protected groupPermissionsRepository: GroupPermissionsRepository,
-    protected roleRepository: RolesRepository
+    protected roleRepository: RolesRepository,
+    protected licenseTermsService: LicenseTermsService
   ) {}
 
   validateGranularPermissionCreateOperation(group: GroupPermissions) {
@@ -229,6 +232,15 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       return;
     }
 
+    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+
+    if (hasMultiEnvironment) {
+      return;
+    }
+
     const usersInGroup = await this.groupPermissionsRepository.getUsersInGroup(groupId, organizationId, null, manager);
 
     if (!usersInGroup?.length) {
@@ -372,11 +384,10 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       const canAccessDevelopment = (actions as any).canAccessDevelopment;
       const canAccessStaging = (actions as any).canAccessStaging;
 
-      const isBuilderLevelUpdate =
-        canEdit === true || canAccessProduction === true || canAccessDevelopment === true || canAccessStaging === true;
-
       const hasBuilderLevelEnvironments =
         canAccessProduction === true || canAccessDevelopment === true || canAccessStaging === true;
+
+      const isBuilderLevelUpdate = canEdit === true;
 
       await this.validateResourceAction(
         {
@@ -421,12 +432,23 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     allowRoleChange: boolean,
     manager: EntityManager
   ) {
-    const { organizationId, groupId, isBuilderPermissions } = params;
+    const { organizationId, groupId, isBuilderPermissions, isEnvironmentPermissions } = params;
 
-    if (!isBuilderPermissions) {
-      // Group does not have any builder permissions - No need to proceed
+    if (isEnvironmentPermissions && !isBuilderPermissions) {
+      const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
+
+      if (hasMultiEnvironment) {
+        return;
+      }
+    }
+
+    if (!isBuilderPermissions && !isEnvironmentPermissions) {
       return;
     }
+
     const groupUsers = await this.groupPermissionsRepository.getUsersInGroup(groupId, organizationId, null, manager);
 
     if (!groupUsers?.length) {
@@ -441,7 +463,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
       manager
     );
     if (endUsersList.length) {
-      // Group has builder permissions and end users are present
+      // Group has builder permissions (o non-released env in basic plan) and end users are present
       if (!allowRoleChange) {
         // If role change is not allowed
         throw new MethodNotAllowedException({

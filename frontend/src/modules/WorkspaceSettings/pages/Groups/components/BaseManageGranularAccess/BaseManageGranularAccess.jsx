@@ -836,6 +836,7 @@ class BaseManageGranularAccess extends React.Component {
             groupName={currentGroupPermission.name}
             isBuilderLevel={currentGroupPermission.isBuilderLevel}
             hasEndUsers={this.props.hasEndUsers}
+            isBasicPlan={isBasicPlan}
           />
         )}
         {this.state.showEmptyResourceContainer && !isLoading ? (

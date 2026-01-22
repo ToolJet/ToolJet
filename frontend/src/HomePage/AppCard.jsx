@@ -127,11 +127,10 @@ export default function AppCard({
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
-  const hasOnlyReleasedAccess =
-    !environmentAccess.development &&
-    !environmentAccess.staging &&
-    !environmentAccess.production &&
-    environmentAccess.released;
+
+  // Check if user has access to any non-released environment (dev, staging, or production)
+  const hasNonReleasedAccess =
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
 
   // Check if user is a builder based on role, not just editable apps
   const isBuilder = hasBuilderRole(session?.role ?? {});
@@ -354,7 +353,7 @@ export default function AppCard({
                 </ToolTip>
               </div>
             )}
-            {!canUpdate && canView && appType !== 'module' && !hasOnlyReleasedAccess && isBuilder && ViewButton}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedAccess && ViewButton}
             {appType !== 'module' && LaunchButton}
           </div>
         </div>

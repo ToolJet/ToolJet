@@ -27,7 +27,9 @@ export function EnvironmentSelect(props) {
       rest.data.value === 'canAccessProduction' ||
       rest.data.value === 'canAccessDevelopment' ||
       rest.data.value === 'canAccessStaging';
-    const shouldDisable = isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment);
+    // Only disable non-released environments for end-users in basic/starter plans (without valid license)
+    // In paid plans, end-users can access all environments
+    const shouldDisable = isDisabled || (isEndUserGroup && isBuilderOnlyEnvironment && props.isBasicPlan);
 
     const style = {
       alignItems: 'center',
@@ -43,39 +45,6 @@ export function EnvironmentSelect(props) {
       onMouseLeave,
       style,
     };
-
-    if (isEndUserGroup && isBuilderOnlyEnvironment) {
-      return (
-        <OverlayTrigger
-          placement="left"
-          overlay={
-            <BSTooltip id={`tooltip-builder-env-${rest.data.value}`}>End-users can only access released apps</BSTooltip>
-          }
-        >
-          <div style={{ width: '100%' }}>
-            <components.Option
-              {...rest}
-              isDisabled={shouldDisable}
-              isFocused={isFocused}
-              isSelected={isSelected}
-              getStyles={getStyles}
-              innerProps={innerPropsWithHandlers}
-              className={shouldDisable && 'disabled'}
-            >
-              <input
-                style={{ width: '1.2rem', height: '1.2rem', borderRadius: '6px !important' }}
-                type="checkbox"
-                className="form-check-input"
-                checked={isSelected}
-                disabled={shouldDisable}
-                data-cy={`environment-check-${rest.data.value}`}
-              />
-              <div className="select-option">{children}</div>
-            </components.Option>
-          </div>
-        </OverlayTrigger>
-      );
-    }
 
     return (
       <components.Option
