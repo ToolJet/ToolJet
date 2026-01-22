@@ -96,6 +96,8 @@ export const DropdownV2 = ({
     accentColor,
     padding,
     widthType,
+    menuWidthMode,
+    menuCustomWidth,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -314,6 +316,66 @@ export const DropdownV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;
+
+  const toCssWidth = (val) => {
+    if (val === undefined || val === null) return null;
+    if (typeof val === 'number') return `${val}px`;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (!trimmed) return null;
+      if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return `${trimmed}px`;
+      return trimmed;
+    }
+    return null;
+  };
+
+  const menuContentWidth = useMemo(() => {
+    if (menuWidthMode !== 'matchContent') return null;
+    if (!Array.isArray(selectOptions) || selectOptions.length === 0) return null;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+
+      const baseFont = window?.getComputedStyle?.(ref?.current || document.body)?.font || '14px Inter, sans-serif';
+      context.font = baseFont;
+
+      const maxLabelWidth = selectOptions.reduce((acc, option) => {
+        const labelText = `${option?.label ?? ''}`;
+        return Math.max(acc, context.measureText(labelText).width || 0);
+      }, 0);
+
+      const paddingAllowance = 44; // matches option horizontal padding/spacing
+      const computed = Math.ceil(maxLabelWidth + paddingAllowance);
+      const capped = Math.min(computed, 520);
+      return Number.isFinite(capped) ? `${capped}px` : null;
+    } catch (_e) {
+      return null;
+    }
+  }, [menuWidthMode, selectOptions, ref]);
+
+  const menuWidthStyle = useMemo(() => {
+    const viewportClamp = 'calc(100vw - 24px)';
+    const customWidth = toCssWidth(menuCustomWidth);
+
+    if (menuWidthMode === 'matchField' && triggerWidth) {
+      const widthPx = `${triggerWidth}px`;
+      return { width: widthPx, minWidth: widthPx, maxWidth: viewportClamp };
+    }
+
+    if (menuWidthMode === 'matchContent' && menuContentWidth) {
+      return { width: menuContentWidth, maxWidth: 'min(520px, calc(100vw - 24px))' };
+    }
+
+    if (menuWidthMode === 'custom' && customWidth) {
+      return { width: customWidth, maxWidth: viewportClamp };
+    }
+
+    return { maxWidth: viewportClamp };
+  }, [menuWidthMode, menuCustomWidth, triggerWidth, menuContentWidth]);
+
   const customStyles = {
     container: (base) => ({
       ...base,
@@ -417,6 +479,7 @@ export const DropdownV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
+      ...menuWidthStyle,
       padding: '0 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
@@ -428,9 +491,14 @@ export const DropdownV2 = ({
     }),
     menu: (provided) => ({
       ...provided,
+      ...menuWidthStyle,
       borderRadius: '8px',
       boxShadow: 'unset',
       margin: 0,
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
@@ -519,6 +587,7 @@ export const DropdownV2 = ({
             inputValue={searchInputValue}
             placeholder={placeholder}
             menuPortalTarget={document.body}
+            menuWidthStyle={menuWidthStyle}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
