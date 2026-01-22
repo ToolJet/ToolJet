@@ -170,6 +170,7 @@ export const Modal = function Modal({
       height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
+      overflow: 'hidden',
     },
     modalHeader: {
       backgroundColor:
