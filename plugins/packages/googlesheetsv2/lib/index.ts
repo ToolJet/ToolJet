@@ -288,6 +288,10 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'read':
+          if(!queryOptions.sheet){
+            throw new Error('Sheet is required for read operation');
+          }
+
           result = await readData(
             spreadsheetId,
             spreadsheetRange,
@@ -327,7 +331,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
         case 'bulk_update_by_primary_key':
           {
             const { sheet, primary_key, rows } = queryOptions;
-            if (!primary_key || !rows)
+            if (!primary_key || !rows || !sheet)
               throw new Error('sheet, primary_key, and rows are required for bulk_update_by_primary_key');
 
             const parsedRows = typeof rows === 'string' ? JSON.parse(rows) : rows;
@@ -351,6 +355,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
           );
           break;
         case 'delete_by_range':
+
+          if(!queryOptions.sheet){
+            throw new Error('Sheet is required for delete_by_range operation');
+          }
+
           result = await deleteByRange(
             queryOptions.spreadsheet_id,
             queryOptions.sheet,
@@ -360,6 +369,10 @@ export default class Googlesheetsv2QueryService implements QueryService {
           );
           break;
         case 'update_spreadsheet':
+
+          if(!queryOptions.sheet){
+            throw new Error('Sheet is required for update_spreadsheet operation');
+          }
           result = await updateSpreadsheet(
             queryOptions.spreadsheet_id,
             queryOptions.sheet,
@@ -371,10 +384,16 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'append':
+          if(!queryOptions.sheet){
+            throw new Error('Sheet is required for append operation');
+          }
           result = await appendData(spreadsheetId, queryOptions.sheet, queryOptions.rows, this.authHeader(accessToken));
           break;
 
         case 'update':
+          if(!queryOptions.sheet){
+            throw new Error('Sheet is required for update operation');
+          }
           result = await batchUpdateToSheet(
             spreadsheetId,
             spreadsheetRange,
@@ -387,6 +406,9 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'delete_row':
+          if(!queryOptions.sheet){
+            throw new Error('GID is required for delete_row operation');
+          }
           result = await deleteData(
             spreadsheetId,
             queryOptions.sheet,

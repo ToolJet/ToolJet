@@ -241,24 +241,6 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter spreadsheet_id"
       },
-      "sheet": {
-        "label": "Sheet",
-        "key": "sheet",
-        "type": "dynamic-selector",
-        "dependsOn": [
-          "spreadsheet_id"
-        ],
-        "fxEnabled": true,
-        "operation": {
-          "invokeMethod": "getSheets",
-          "label": "Fetch Sheets"
-        },
-        "placeholder": "Leave blank to use first sheet",
-        "description": "Enter sheet",
-        "width": "320px",
-        "height": "36px",
-        "className": "codehinter-plugins"
-      },
       "filter": {
         "label": "Filter",
         "key": "filter",
