@@ -280,6 +280,34 @@ export const dropdownV2Config = {
       ],
       accordian: 'container',
     },
+    menuWidthMode: {
+      type: 'select',
+      displayName: 'Menu width',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'matchContent',
+      },
+      options: [
+        { name: 'Match the field', value: 'matchField' },
+        { name: 'Match the content', value: 'matchContent' },
+        { name: 'Custom', value: 'custom' },
+      ],
+      accordian: 'container',
+      isFxNotRequired: true,
+      description: 'Control dropdown menu width: match field, match content, or set custom.',
+    },
+    menuCustomWidth: {
+      type: 'input',
+      displayName: 'Custom menu width',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      },
+      conditionallyRender: {
+        key: 'menuWidthMode',
+        value: 'custom',
+      },
+      accordian: 'container',
+    },
   },
   exposedVariables: {
     searchText: '',
@@ -381,6 +409,8 @@ export const dropdownV2Config = {
       iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       widthType: { value: 'ofComponent' },
+      menuWidthMode: { value: 'matchContent' },
+      menuCustomWidth: { value: '' },
     },
   },
 };
