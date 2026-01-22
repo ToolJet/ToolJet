@@ -2350,17 +2350,37 @@ export const createComponentsSlice = (set, get) => ({
 
     const currentPageId = getCurrentPageId(moduleId);
 
-    Object.entries(pagesInfo).forEach(([action, data]) => {
+    Object.entries(pagesInfo).forEach(([action, pages]) => {
       switch (action) {
         case 'create': {
-          if (!(Array.isArray(data) && data.length)) return;
+          if (!(Array.isArray(pages) && pages.length)) return;
 
-          setPages([...get().modules[moduleId].pages, ...data]);
+          const formattedPages = pages.map((page) => {
+            if (page.components) {
+              return {
+                ...page,
+                components:
+                  page.components?.create?.reduce((componentMapById, comp) => {
+                    const { id, component, layouts } = comp;
+
+                    if (id) {
+                      componentMapById[id] = { id, component, layouts, name: component?.name ?? '' };
+                    }
+
+                    return componentMapById;
+                  }, {}) ?? {},
+              };
+            }
+
+            return { ...page, components: {} };
+          });
+
+          setPages([...get().modules[moduleId].pages, ...formattedPages]);
           break;
         }
         case 'update': {
-          if (data?.length) {
-            data.forEach((item) => {
+          if (pages?.length) {
+            pages.forEach((item) => {
               if (!isEmpty(item?.components) && item.id) {
                 // TODO: Might remove above if condition later on, this is just because backend response seems a bit different than expected
                 if (item.id === currentPageId) {
@@ -2439,9 +2459,9 @@ export const createComponentsSlice = (set, get) => ({
           break;
         }
         case 'delete': {
-          if (!data?.length) return;
+          if (!pages?.length) return;
 
-          data.forEach((pageIdToDelete) => {
+          pages.forEach((pageIdToDelete) => {
             deletePage(pageIdToDelete, { saveAfterAction: false });
           });
 
