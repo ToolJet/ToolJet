@@ -24,8 +24,8 @@
     transform: translateX(-50%);
     background: var(--surfaces-surface-01);
     border: 1px solid var(--borders-default);
-    border-radius: 8px;
-    padding: 6px 8px;
+    border-radius: 9px;
+    padding: 8px;
     z-index: 10;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
 
@@ -43,15 +43,15 @@
 
     // Cancel button - ghost style
     .kv-btn-cancel {
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 4px 10px;
+      font-size: 12px;
+      line-height: 20px;
       font-weight: 500;
       color: var(--text-primary);
       background: transparent;
       border: 1px solid var(--borders-default);
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.15s ease;
 
       &:hover {
         background: var(--surfaces-surface-02);
@@ -60,15 +60,15 @@
 
     // Save button - primary style
     .kv-btn-save {
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 4px 10px;
+      font-size: 12px;
+      line-height: 20px;
       font-weight: 500;
-      color: white;
+      color: var(--surfaces-surface-01);
       background: var(--primary-accent-strong);
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: opacity 0.15s ease;
 
       &:hover {
         opacity: 0.9;
@@ -183,7 +183,6 @@
   .kv-value-editing:not(.kv-boolean) {
     outline: 2px solid var(--primary-brand);
     background-color: var(--cc-surface1-surface);
-    // outline: none;
     border-radius: 6px;
 
     // For String

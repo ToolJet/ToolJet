@@ -80,7 +80,7 @@ const KeyValueRow = ({
     if (isEditable) {
       setIsEditing(true);
       setTimeout(() => {
-        document.getElementById(fieldKey)?.focus();
+        document.getElementById(`${componentId}-${fieldKey}`)?.focus();
       }, 0);
     }
   };

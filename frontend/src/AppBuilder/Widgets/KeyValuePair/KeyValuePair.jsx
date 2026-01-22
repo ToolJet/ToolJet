@@ -139,7 +139,7 @@ export const KeyValuePair = ({
         ))}
       </div>
 
-      {/* ChangeSet Popover - centered, 10px from bottom */}
+      {/* ChangeSet Popover */}
       {hasChanges && (
         <div className="kv-changeset-popover">
           <div className="kv-changeset-content">
