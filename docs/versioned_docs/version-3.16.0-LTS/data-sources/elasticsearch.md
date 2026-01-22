@@ -384,7 +384,7 @@ This operation provides a compact, column-aligned view of indices in a cluster. 
         "body": null,
         "querystring": "format=json",
         "headers": {
-          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v18.18.2)"
+          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v22.15.1)"
         },
         "timeout": 30000
       },
@@ -457,7 +457,7 @@ This operation retrieves the status of the cluster’s health. For more details,
         "body": null,
         "querystring": "",
         "headers": {
-          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v18.18.2)"
+          "user-agent": "opensearch-js/1.2.0 (linux 6.5.0-1021-aws-x64; Node.js v22.15.1)"
         },
         "timeout": 30000
       },
