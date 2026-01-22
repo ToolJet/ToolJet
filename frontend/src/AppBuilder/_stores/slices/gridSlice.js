@@ -5,8 +5,6 @@ import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const initialState = {
-  hoveredComponentForGrid: '',
-  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
@@ -23,17 +21,12 @@ const initialState = {
 
 export const createGridSlice = (set, get) => ({
   ...initialState,
-  setHoveredComponentForGrid: (id) =>
-    set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
-  getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
   checkHoveredComponentDynamicHeight: (id) => {
     const { getResolvedComponent } = get();
     const resolvedProperties = getResolvedComponent(id)?.properties;
     const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
-  setHoveredComponentBoundaryId: (id) =>
-    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   incrementCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
       type: 'incrementCanvasUpdater',

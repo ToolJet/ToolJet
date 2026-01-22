@@ -1,5 +1,6 @@
 import React, { memo, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
@@ -60,7 +61,7 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
     );
 
-    const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
+    const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
       const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
@@ -104,7 +105,7 @@ const WidgetWrapper = memo(
       width: width + 'px',
       height:
         isDynamicHeightEnabledInModeView &&
-        (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
+          (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
           ? 'auto'
           : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,

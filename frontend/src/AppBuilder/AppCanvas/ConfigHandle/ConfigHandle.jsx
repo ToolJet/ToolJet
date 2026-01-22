@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import { ToolTip } from '@/_components/ToolTip';
@@ -58,16 +59,17 @@ export const ConfigHandle = ({
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
-  const _showHandle = useStore((state) => {
-    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
-    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
-    // If one component is hovered and one is selected, show the handle for the hovered component
+
+  // If one component is hovered and one is selected, show the handle for the hovered component
+  const _showHandle = useTransientStore((state) => {
+    const isWidgetHovered = state.hoveredComponentForGrid === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '' || state.hoveredComponentBoundaryId !== '';
     return (
       ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
       isWidgetHovered ||
       (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
     );
-  }, shallow);
+  });
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
