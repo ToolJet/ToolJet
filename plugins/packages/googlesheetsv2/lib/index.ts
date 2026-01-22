@@ -413,19 +413,16 @@ export default class Googlesheetsv2QueryService implements QueryService {
       }
       // For OAuth if token is expired or invalid it returns 401 or 403
       // For other authentication types just throw generic error so that user can re-authenticate
-      const statusCode = 
-        error.response?.statusCode ||          
-        error.description?.statusCode ||        
-        error.data?.statusCode ||               
-        error.statusCode ||                     
-        error.data?.response?.statusCode ||     
+      const statusCode =
+        error.response?.statusCode ||
+        error.description?.statusCode ||
+        error.data?.statusCode ||
+        error.statusCode ||
+        error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
-        error.data?.error?.response?.statusCode;         
+        error.data?.error?.response?.statusCode;
 
-      if (
-        sourceOptions['authentication_type'] !== 'service_account' &&
-        (statusCode === 401 || statusCode === 403)
-      ) {
+      if (sourceOptions['authentication_type'] !== 'service_account' && (statusCode === 401 || statusCode === 403)) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
           ...error,
           ...errorDetails,
@@ -461,7 +458,15 @@ export default class Googlesheetsv2QueryService implements QueryService {
       );
 
       if (_requestOptions.status === 'needs_oauth') {
-        return _requestOptions;
+        throw new QueryError(
+          'Could not connect to Googlesheets',
+          JSON.stringify({
+            statusCode: 401,
+            message: 'OAuth authentication required',
+            data: 'OAuth authentication required',
+          }),
+          {}
+        );
       }
       const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
       const authHeader = requestOptions.headers['Authorization'];
@@ -511,15 +516,15 @@ export default class Googlesheetsv2QueryService implements QueryService {
         })),
       };
     } catch (error: any) {
-      const statusCode = 
-        error.response?.statusCode ||          
-        error.description?.statusCode ||        
-        error.data?.statusCode ||               
-        error.statusCode ||                     
-        error.data?.response?.statusCode ||     
+      const statusCode =
+        error.response?.statusCode ||
+        error.description?.statusCode ||
+        error.data?.statusCode ||
+        error.statusCode ||
+        error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
-        error.data?.error?.response?.statusCode; 
-      if (statusCode === 401 ||statusCode === 403) {
+        error.data?.error?.response?.statusCode;
+      if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
       }
       throw error;
@@ -555,12 +560,12 @@ export default class Googlesheetsv2QueryService implements QueryService {
         })),
       };
     } catch (error: any) {
-      const statusCode = 
-        error.response?.statusCode ||          
-        error.description?.statusCode ||        
-        error.data?.statusCode ||               
-        error.statusCode ||                     
-        error.data?.response?.statusCode ||     
+      const statusCode =
+        error.response?.statusCode ||
+        error.description?.statusCode ||
+        error.data?.statusCode ||
+        error.statusCode ||
+        error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
       if (statusCode === 401 || statusCode === 403) {
@@ -570,26 +575,21 @@ export default class Googlesheetsv2QueryService implements QueryService {
     }
   }
 
- async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
-  let refreshToken: string;
-  
-  const currentUserToken = sourceOptions['refresh_token']
-              ? sourceOptions
-              : getCurrentToken(
-                  sourceOptions['multiple_auth_enabled'],
-                  sourceOptions['tokenData'],
-                  userId,
-                 isAppPublic
-                );
-  if (currentUserToken && currentUserToken['refresh_token']) {
-    refreshToken = currentUserToken['refresh_token'];
-  } else {
-    throw new QueryError(
-      'could not connect to Googlesheets',
-      'Refresh token not found. Please re-authenticate to continue.',
-      {}
-    );
-  }
+  async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic) {
+    let refreshToken: string;
+
+    const currentUserToken = sourceOptions['refresh_token']
+      ? sourceOptions
+      : getCurrentToken(sourceOptions['multiple_auth_enabled'], sourceOptions['tokenData'], userId, isAppPublic);
+    if (currentUserToken && currentUserToken['refresh_token']) {
+      refreshToken = currentUserToken['refresh_token'];
+    } else {
+      throw new QueryError(
+        'could not connect to Googlesheets',
+        'Refresh token not found. Please re-authenticate to continue.',
+        {}
+      );
+    }
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     let clientId = '';
     let clientSecret = '';
