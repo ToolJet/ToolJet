@@ -51,6 +51,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pageKey = useStore((state) => state.pageKey);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -119,6 +120,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         16; // padding of 'div.canvas-container.page-container' container
       if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
     }
+
+    localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isViewerSidebarPinned]);
 
@@ -225,7 +228,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 isModuleMode={isModuleMode}
               >
                 {environmentLoadingState !== 'loading' && (
-                  <div className={cx({ 'h-100': isModuleMode })}>
+                  <div key={pageKey} className={cx({ 'h-100': isModuleMode })}>
                     <Container
                       id={moduleId}
                       gridWidth={gridWidth}
