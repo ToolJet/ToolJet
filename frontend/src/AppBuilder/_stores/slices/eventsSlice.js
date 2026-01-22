@@ -379,6 +379,8 @@ export const createEventsSlice = (set, get) => ({
           'onTabSwitch',
           'onFocus',
           'onBlur',
+          'onTagAdded',
+          'onTagDeleted',
           'onOpen',
           'onClose',
           'onRowClicked',
@@ -395,6 +397,9 @@ export const createEventsSlice = (set, get) => ({
           'onMessageSent',
           'onClearHistory',
           'onTableDataDownload',
+          'onRecordingStart',
+          'onRecordingSave',
+          'onImageSave',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);

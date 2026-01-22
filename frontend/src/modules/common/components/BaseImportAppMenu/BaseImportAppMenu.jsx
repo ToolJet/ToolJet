@@ -26,14 +26,16 @@ const BaseImportAppMenu = ({
           {t('homePage.header.chooseFromTemplate', 'Choose from template')}
         </Dropdown.Item>
       )}
-      {/* <label
+      <Dropdown.Item
+        as="label"
         className="homepage-dropdown-style tj-text tj-text-xsm"
         data-cy="import-option-label"
         onChange={readAndImport}
       >
         {t('homePage.header.import', 'Import from device')}
         <input type="file" accept=".json" ref={fileInput} style={{ display: 'none' }} data-cy="import-option-input" />
-      </label> */}
+      </Dropdown.Item>
+
       {showEEMenuItems && <EEMenuComponent {...props} />}
       {showCloudMenuItems && <CloudMenuComponent {...props} />}
     </Dropdown.Menu>

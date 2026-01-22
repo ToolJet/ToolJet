@@ -604,3 +604,8 @@ export const updateAutoSSOToggle = (allow = false) => {
     sql: `UPDATE instance_settings SET value = '${allow}' WHERE key = 'AUTOMATIC_SSO_LOGIN';`,
   });
 };
+
+export const verifyPreviewIsDisabled = () => {
+  cy.get(commonSelectors.previewSettings).should("not.exist");
+  cy.get(commonSelectors.previewText).should("not.exist") 
+};

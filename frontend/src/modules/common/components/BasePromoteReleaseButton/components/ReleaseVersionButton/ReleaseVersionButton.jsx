@@ -79,17 +79,19 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
               ? "You don't have access to release application. Contact admin to know more."
               : 'Release this version'
           }
-          placement="top"
-          show={true}
+          placement="left"
+          width="280px"
         >
-          <button
-            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
-            onClick={onReleaseButtonClick}
-            data-cy="release-version-button"
-          >
-            {isReleasing ? 'Releasing...' : 'Release'}
-          </button>
+          <span>
+            <button
+              className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+              disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
+              onClick={onReleaseButtonClick}
+              data-cy="release-version-button"
+            >
+              {isReleasing ? 'Releasing...' : 'Release'}
+            </button>
+          </span>
         </ToolTip>
       </>
     );
@@ -108,6 +110,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
           message="You don't have access to release application. Contact admin to know more."
           placement="bottom"
           show={!isReleaseVersionEnabled}
+          width="280px"
         >
           <Button
             variant="secondary"

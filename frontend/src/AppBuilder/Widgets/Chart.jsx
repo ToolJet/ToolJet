@@ -160,6 +160,30 @@ export const Chart = function Chart({
       },
       ...chartLayout.yaxis,
     },
+    // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
+    ...Object.keys(chartLayout)
+      .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
+      .reduce((acc, key) => {
+        acc[key] = {
+          showgrid: showGridLines,
+          showline: true,
+          color: fontColor,
+          automargin: true,
+          visible: showAxes,
+          gridcolor: modifiedGridLines,
+          linecolor: modifiedAxisColor,
+          title: {
+            font: {
+              color: modifiedTextColor,
+            },
+          },
+          tickfont: {
+            color: modifiedTextColor,
+          },
+          ...chartLayout[key],
+        };
+        return acc;
+      }, {}),
     margin: {
       l: padding,
       r: padding,
