@@ -6,12 +6,10 @@
 
   &.kv-padding-default {
     padding: 12px;
-    padding-bottom: 60px; // Extra space for popover when visible
   }
 
   &.kv-padding-none {
     padding: 0;
-    padding-bottom: 48px; // Space for popover
   }
 
   &.invisible {
