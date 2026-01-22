@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: Events ans Actions Overview
+sidebar_label: Overview
 ---
 
 In ToolJet, you can build dynamic, logic-driven applications using Events, Actions, Variables, and Component-Specific Actions (CSAs). These features let you define how your app responds to user interactions and system events without writing any backend code. Each component has a unique set of available events and CSAs based on its functionality. Refer to the [individual component](/docs/app-builder/building-ui/component-library) guides for more details.

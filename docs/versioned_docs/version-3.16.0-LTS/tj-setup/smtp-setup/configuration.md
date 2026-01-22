@@ -4,6 +4,12 @@ title: Configuring SMTP Server
 sidebar_label: Configuration
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+</div>
+
 This feature is exclusive to self-hosted ToolJet, allowing you to configure a custom SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 
 
 There are two ways to setup your email server in ToolJet:
