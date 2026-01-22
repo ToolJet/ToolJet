@@ -17,7 +17,7 @@ ToolJet requires the following to connect to WooCommerce
 - **Consumer key**
 - **Consumer secret**
 
-<img className="screenshot-full" src="/img/datasource-reference/woocommerce/woocomerce-auth-v2.png" alt="ToolJet - Data Source - Woocommerce" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/woocomerce-auth-v2.png" alt="ToolJet - Data Source - Woocommerce" />
 
 :::info
 NOTE: For generating keys visit admin dashboard of woocommerce , more info: https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript#authentication
@@ -42,47 +42,55 @@ Query results can be transformed using transformations. Read our transformations
 
 <div style={{paddingTop:'24px'}}>
 
-## Resource
+## List Resources
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/list-resources.png" alt="Woocommerce list resources" />
 
 ### Customer
 
 #### Supported Operations
 
-- **list customer**
-- **update customer**
-- **delete customer**
-- **batch update customer**
-- **create customer**
-- **retrieve customer**
+- **List customer** : Retrieves a list of all customers registered in the store.
+- **Update customer** : Updates the details of an existing customer.
+- **Delete customer** : Permanently deletes a customer from the store.
+- **Batch update customers** : Performs bulk create, update, or delete operations on customers.
+- **Create customer** : Creates a new customer account in WooCommerce.
+- **Retrieve customer** : Fetches detailed information of a specific customer by ID.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/customer-query.png" alt="Woocommerce customer querying" style={{ marginBottom:'15px' }} />
 
 ### Product
 
 #### Supported Operations
 
-- **list product**
-- **update product**
-- **delete product**
-- **batch update product**
-- **create product**
-- **retrieve product**
+- **List product** : Retrieves a list of all products available in the WooCommerce store.
+- **Update product** : Updates the information of an existing product.
+- **Delete product** : Permanently removes a product from the WooCommerce store.
+- **Batch update product** : Creates, updates, or deletes multiple products in a single request.
+- **Create product** : Creates a new product in the WooCommerce store with provided details.
+- **Retrieve product** : Fetches detailed information of a specific product using its ID.
 
 ### Order
 
 #### Supported Operations
 
-- **list order**
-- **update order**
-- **delete order**
-- **batch update order**
-- **create order**
-- **retrieve order**
+- **List order** : Retrieves a list of all orders placed in the store.
+- **Update order** : Updates the details or status of an existing order.
+- **Delete order** : Permanently deletes an order from the store.
+- **Batch update order** : Performs bulk create, update, or delete operations on orders.
+- **Create order** : Creates a new order in the WooCommerce store.
+- **Retrieve order** : Fetches detailed information of a specific order by ID.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/order-query.png" alt="Woocommerce order querying" style={{ marginBottom:'15px' }} />
 
 ### Coupon
 
 #### Supported Operations
 
-- **list coupon**
-- **create coupon**
+- **List coupon** : Retrieves a list of all discount coupons available in the store.
+- **Create coupon** : Creates a new discount coupon in WooCommerce.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/coupon-query.png" alt="Woocommerce coupon querying" style={{ marginBottom:'15px' }} />
 
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
