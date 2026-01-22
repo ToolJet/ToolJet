@@ -237,8 +237,11 @@
               "type": "category",
               "label": "Dynamic Access Rules",
               "items": [
-                "app-builder/walkthrough/row-level-security",
-                "app-builder/walkthrough/permissions"
+                "app-builder/dynamic-access-rule/overview",
+                "app-builder/dynamic-access-rule/component-level",
+                "app-builder/dynamic-access-rule/page-level",
+                "app-builder/dynamic-access-rule/query-level",
+                "app-builder/dynamic-access-rule/row-level-security"
               ]
             }
           ]
