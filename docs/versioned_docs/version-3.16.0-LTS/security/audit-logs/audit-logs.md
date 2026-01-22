@@ -1,6 +1,7 @@
 ---
 id: audit-logs
-title: Overview
+title: Audit Logs Overview
+sidebar_label: Overview
 ---
 
 <div className="badge badge--primary heading-badge">   

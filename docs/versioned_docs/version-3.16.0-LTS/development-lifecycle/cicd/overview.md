@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: GitSync CI/CD Overview
+sidebar_label: Overview
 ---
 <div className="badge badge--primary heading-badge">   
   <img 

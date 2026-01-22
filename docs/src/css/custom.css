@@ -890,6 +890,16 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   background-image: url('../../static/img/sidebar-icons/resources.svg');
 }
 
+/* Self-hosted only indicator for sidebar category */
+.self-hosted-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+  display: inline-block;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
 
 /* Dropdownns */
 

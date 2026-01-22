@@ -1,9 +1,8 @@
 ---
 id: overview
-title: Overview
+title: Data Sources Overview
+sidebar_label: Overview
 ---
-
-# Data Sources : Overview
 
 Data Sources pull in and push data to various sources, including databases, external APIs, and services. Once a data source is connected to a workspace, the connection can be shared with any application within that workspace.
 

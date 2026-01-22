@@ -4,6 +4,18 @@ title: Dynamic Access Rules
 sidebar_label: Overview
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+</div>
+
 In ToolJet you can configure dynamic access rules to build secure, role-based applications. You can configure permissions at the page level, query level, component level, and row level to ensure users only access the features and data they're authorized to use.
 
 ## When To Use

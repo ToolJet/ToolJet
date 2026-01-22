@@ -206,6 +206,10 @@
             {
               "type": "category",
               "label": "Events and Actions",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/events/overview"
+              },
               "items": [
                 "app-builder/events/overview",
                 "app-builder/events/event-triggers",
@@ -236,6 +240,10 @@
             {
               "type": "category",
               "label": "Dynamic Access Rules",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/dynamic-access-rule/overview"
+              },
               "items": [
                 "app-builder/dynamic-access-rule/overview",
                 "app-builder/dynamic-access-rule/component-level",
@@ -258,6 +266,10 @@
         {
           "type": "category",
           "label": "Modules",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/modules/overview"
+              },
           "items": [
             "app-builder/modules/overview",
             "app-builder/modules/create-module",
@@ -268,6 +280,10 @@
         {
           "type": "category",
           "label": "Embed Application",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/embed-app/overview"
+              },
           "items": [
             "app-builder/embed-app/overview",
             "app-builder/embed-app/public-app",
@@ -500,6 +516,10 @@
           "type": "category",
           "label": "Marketplace",
           "collapsed": true,
+          "link": {
+                "type": "doc",
+                "id": "marketplace/marketplace-overview"
+              },
           "items": [
             "marketplace/marketplace-overview",
             {
@@ -681,6 +701,10 @@
         {
           "type": "category",
           "label": "Onboard and Offboard Users",
+          "link": {
+            "type": "doc",
+            "id": "user-management/onboard-users/overview"
+          },
           "items": [
             "user-management/onboard-users/overview",
             "user-management/onboard-users/invite-user",
@@ -828,6 +852,10 @@
         {
           "type": "category",
           "label": "GitSync",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/gitsync/overview"
+          },
           "items": [
             "development-lifecycle/gitsync/overview",
             {
@@ -855,6 +883,10 @@
         {
           "type": "category",
           "label": "GitSync CI/CD",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/cicd/overview"
+          },
           "items": [
             "development-lifecycle/cicd/overview",
             "development-lifecycle/cicd/example"
@@ -893,6 +925,10 @@
         {
           "type": "category",
           "label": "Backup",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/backup/gitsync-backup"
+          },
           "items": [
             "development-lifecycle/backup/gitsync-backup"
           ]
@@ -926,6 +962,10 @@
         {
           "type": "category",
           "label": "Audit Logs",
+          "link": {
+            "type": "doc",
+            "id": "security/audit-logs/audit-logs"
+          },
           "items": [
             "security/audit-logs/audit-logs",
             "security/audit-logs/stream-audit-to-datadog"

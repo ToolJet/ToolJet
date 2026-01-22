@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: Embed ToolJet Application
+sidebar_label: Overview
 ---
 
 Embedding a ToolJet application allows you to deliver interactive dashboards, tools, or workflows directly inside other websites or internal portals. Instead of switching between tools, users can interact with your application where they already work, improving efficiency and engagement.
