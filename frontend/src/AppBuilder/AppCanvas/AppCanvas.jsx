@@ -57,6 +57,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const pageKey = useStore((state) => state.pageKey);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -241,7 +242,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               >
                 {environmentLoadingState !== 'loading' && (
                   <SuspenseCountProvider onAllResolved={handleAllSuspenseResolved} deferCheck={isModuleMode || appType === 'module'}>
-                    <div className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
+                    <div key={pageKey} className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
                       {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
                       <Container
                         id={moduleId}
