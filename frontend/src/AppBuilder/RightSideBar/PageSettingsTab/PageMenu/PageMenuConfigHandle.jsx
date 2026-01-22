@@ -4,7 +4,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { PencilRuler } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
 
-const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile }) => {
+const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
