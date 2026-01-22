@@ -13,7 +13,7 @@ function getOrganizationConfigs(organizationId) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  const headers = authHeader();
+  const headers = authHeader(false,organizationId);
   const orgId = headers['tj-workspace-id'];
 
   return fetch(
