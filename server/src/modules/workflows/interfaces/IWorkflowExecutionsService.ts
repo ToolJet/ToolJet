@@ -5,6 +5,15 @@ import { User } from 'src/entities/user.entity';
 import { Response } from 'express';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
+import { NodeQueryError } from '@ee/workflows/services/workflow-executions.service';
+
+
+export type AddLogFunction = (
+  message: string,
+  queryName?: string,
+  status?: 'normal' | 'success' | 'failure',
+  exception?: NodeQueryError
+) => void;
 
 export interface ResponseNodeMetadata {
   status: 'ok' | 'failed';
@@ -16,6 +25,8 @@ export interface ResponseNodeMetadata {
     };
   };
 }
+
+
 
 export interface IWorkflowExecutionsService {
   create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution>;

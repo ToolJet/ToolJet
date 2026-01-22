@@ -237,10 +237,10 @@ function DataSourceSelect({
     <div>
       <Select
         onChange={({ source } = {}) =>
-          source?.id !== 'if' && source?.id !== 'agentNode' && workflowDataSources
+          source?.id !== 'if' && source?.id !== 'agent' && workflowDataSources
             ? onNewNode(source.kind, source.id, source.plugin_id, source)
-            : source && (source?.id === 'if' || source?.id === 'response' || source?.id === 'agentNode')
-              ? onNewNode('if')
+            : source && (source?.id === 'if' || source?.id === 'response' || source?.id === 'agent')
+              ? onNewNode(source.id)
               : handleChangeDataSource(source)
         }
         classNames={{
