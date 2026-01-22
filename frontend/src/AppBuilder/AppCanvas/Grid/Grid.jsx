@@ -70,6 +70,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+  const getComponentLabel = useStore((state) => state.getComponentLabel, shallow);
 
   const { startAutoScroll, stopAutoScroll, updateMousePosition, getScrollDelta } = useCanvasAutoScroll(
     {},
@@ -720,13 +721,18 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const alignment = getComponentAlignment(currentWidget.id, moduleId);
+            const label = getComponentLabel(currentWidget.id, moduleId);
             let topAlignmentAddedHeight =
-              alignment === 'top' && directions[1] !== 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
+              alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
 
-            const height = Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT;
+            const height = Math.max(
+              GRID_HEIGHT,
+              Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
+            );
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = height - currentWidget?.height;
+            console.log('diffHeight', diffHeight);
             const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
             const isTopChanged = e.lastEvent?.direction?.[1] === -1;
 
@@ -759,9 +765,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.
             if ((!maxHeightHit || e.height < e.target.clientHeight) && diffHeight !== 0) {
-              e.target.style.height = `${
-                Math.round((e.lastEvent.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
-              }px`;
+              e.target.style.height = `${height}px`;
             }
             const resizeData = {
               id: e.target.id,
@@ -838,9 +842,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               let width = Math.round(ev.width / _gridWidth) * _gridWidth;
               width = width < _gridWidth ? _gridWidth : width;
               const alignment = getComponentAlignment(currentWidget.id, moduleId);
-              const topAlignmentAddedHeight = alignment === 'top' ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
               let posY = Math.round(ev.drag.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+              const label = getComponentLabel(currentWidget.id, moduleId);
+              const topAlignmentAddedHeight =
+                alignment === 'top' && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
               let height = Math.round((ev.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT;
               const heightDiff = height - currentWidget?.height;
               height = height < GRID_HEIGHT ? GRID_HEIGHT : height;

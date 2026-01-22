@@ -2459,4 +2459,9 @@ export const createComponentsSlice = (set, get) => ({
     const component = getResolvedComponent(componentId, null, moduleId);
     return component?.styles?.alignment;
   },
+  getComponentLabel: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.properties?.label;
+  },
 });
