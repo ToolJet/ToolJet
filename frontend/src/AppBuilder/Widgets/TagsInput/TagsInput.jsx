@@ -356,7 +356,7 @@ export const TagsInput = ({
     }
 
     // Comma - select existing option or create new tag
-    if (e.key === ',' && inputValue.trim()) {
+    if ((e.key === ',' || e.key === ';') && inputValue.trim()) {
       e.preventDefault();
       const trimmedInput = inputValue.trim();
       const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
