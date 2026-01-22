@@ -29,6 +29,7 @@ import cx from 'classnames';
  * Handles "click to edit" functionality.
  */
 const KeyValueRow = ({
+  componentId,
   field,
   value,
   onChange,
@@ -41,6 +42,7 @@ const KeyValueRow = ({
   darkMode,
   isDisabled,
   autoLabelWidth,
+  hasChanges,
 }) => {
   const {
     key: fieldKey,
@@ -100,14 +102,14 @@ const KeyValueRow = ({
   const renderValue = () => {
     // Common props for adapters
     const commonProps = {
-      id: fieldKey,
+      id: `${componentId}-${fieldKey}`,
       value,
       onChange,
       textColor,
       accentColor,
       darkMode,
       // Pass edit state
-      isEditable: isEditing,
+      isEditable,
       autoFocus: true, // Auto focus when switching to edit mode
       onBlur: handleBlur, // Exit edit mode on blur
       isEditing: showInput,
@@ -116,8 +118,6 @@ const KeyValueRow = ({
       // Validation callback
       onValidationChange: handleValidationChange,
     };
-
-    console.log(fieldType, 'fieldType', value);
 
     switch (fieldType) {
       case 'string':
@@ -176,9 +176,10 @@ const KeyValueRow = ({
   const getErrorOffset = () => {
     if (isTopAlignment) return {};
     if (autoLabelWidth) return {};
+    if (isRightDirection) return {};
     return { paddingLeft: `${labelWidth}%` };
   };
-
+  console.log(hasChanges, 'hasChanges');
   return (
     <div className="kv-row-container">
       <div className={rowClassName}>
@@ -202,16 +203,18 @@ const KeyValueRow = ({
           className={cx(`key-value-render-value kv-${fieldType}`, {
             'kv-value-editing': isEditing,
             'kv-editable': isEditable,
+            'kv-field-has-changes': hasChanges,
           })}
           ref={valueRef}
           style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
           onClick={handleEditClick}
         >
           {renderValue()}
-          {isEditable && (!isEditing || fieldType === 'boolean') && <SquarePen width={16} height={16} />}
+          {isEditable && (!isEditing || fieldType === 'boolean') && (
+            <SquarePen className="kv-edit-icon" width={16} height={16} />
+          )}
         </div>
       </div>
-      {/* Validation error - below row, aligned with value column */}
       {!validation.isValid && (
         <div className="kv-row-validation-error" style={getErrorOffset()}>
           <span className="invalid-feedback text-truncate">{validation.validationError}</span>

@@ -1,4 +1,6 @@
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import cx from 'classnames';
+import { has } from 'lodash';
 import KeyValueRow from './_components/KeyValueRow';
 import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -52,61 +54,29 @@ export const KeyValuePair = ({
 
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
-
   // Handle field value changes
-  const handleValueChange = useCallback(
-    (fieldKey, newValue) => {
-      setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
-
-      // Update exposed variables
-      const updatedEditedData = { ...editedData, [fieldKey]: newValue };
-      const updatedData = { ...data, ...updatedEditedData };
-      setExposedVariables({
-        data: updatedData,
-        changeSet: updatedEditedData,
-        changedField: { key: fieldKey, value: newValue },
-        unsavedChanges: true,
-      });
-
-      fireEvent('onChange');
-    },
-    [data, editedData, setExposedVariables, fireEvent]
-  );
+  const handleValueChange = useCallback((fieldKey, newValue) => {
+    setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
+  }, []);
 
   // Discard changes - reset to original data
   const discardChanges = useCallback(() => {
     setEditedData({});
-    setExposedVariables({
-      data: data,
-      changeSet: {},
-      unsavedChanges: false,
-    });
-    fireEvent('onDiscard');
-  }, [data, setExposedVariables, fireEvent]);
+  }, []);
 
   // Save changes
   const saveChanges = useCallback(() => {
-    // Data is already set to currentData, just clear the changeSet
     setEditedData({});
-    setExposedVariables({
-      data: currentData,
-      changeSet: {},
-      unsavedChanges: false,
-    });
-    fireEvent('onSave');
-  }, [currentData, setExposedVariables, fireEvent]);
+    fireEvent('onSaveKeyValuePairChanges');
+  }, [fireEvent]);
 
   // Expose variables and methods on mount / data change
   useEffect(() => {
     setExposedVariables({
-      data: currentData,
-      originalData: data,
+      data,
       changeSet: editedData,
-      unsavedChanges: hasChanges,
-      discardChanges: discardChanges,
-      saveChanges: saveChanges,
     });
-  }, [currentData, data, editedData, hasChanges, discardChanges, saveChanges, setExposedVariables]);
+  }, [data, editedData, setExposedVariables]);
 
   // Filter visible fields and generate from data if not provided
   const resolvedFields = useMemo(() => {
@@ -126,18 +96,9 @@ export const KeyValuePair = ({
     return fieldList.filter((field) => field.fieldVisibility !== false);
   }, [fields, data]);
 
-  const containerClassName = useMemo(() => {
-    let classes = ['key-value-pair-container'];
-    if (padding === 'default') classes.push('kv-padding-default');
-    if (padding === 'none') classes.push('kv-padding-none');
-    if (!isVisible) classes.push('invisible');
-    if (darkMode) classes.push('dark-mode');
-    return classes.join(' ');
-  }, [padding, isVisible, darkMode]);
-
   if (isLoading) {
     return (
-      <div className={containerClassName} data-cy={dataCy}>
+      <div className={'key-value-pair-container'} data-cy={dataCy}>
         <div className="key-value-pair-loading">
           <Loader width="24" />
         </div>
@@ -146,10 +107,20 @@ export const KeyValuePair = ({
   }
 
   return (
-    <div className={containerClassName} data-cy={dataCy} id={`component-${id}`}>
+    <div
+      className={cx('key-value-pair-container', {
+        'kv-padding-default': padding === 'default',
+        'kv-padding-none': padding === 'none',
+        invisible: !isVisible,
+        'dark-mode': darkMode,
+      })}
+      data-cy={dataCy}
+      id={`component-${id}`}
+    >
       <div className="key-value-pair-content">
         {resolvedFields.map((field, index) => (
           <KeyValueRow
+            componentId={id}
             key={field.key || field.id || index}
             field={field}
             value={currentData[field.key]}
@@ -163,6 +134,7 @@ export const KeyValuePair = ({
             darkMode={darkMode}
             isDisabled={isDisabled}
             autoLabelWidth={autoLabelWidth}
+            hasChanges={has(editedData, field.key)}
           />
         ))}
       </div>

@@ -12,7 +12,7 @@ const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 /**
  * DatepickerInput - Custom input component for the datepicker
  */
-const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputChange, onInputFocus }, ref) => (
+const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputChange, onInputFocus, id }, ref) => (
   <div className="table-column-datepicker-input-container">
     {readOnly ? (
       <div className="h-100 w-100 overflow-hidden" style={{ color: styles?.color }}>
@@ -30,6 +30,7 @@ const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputC
           style={styles}
           onChange={onInputChange}
           onFocus={onInputFocus}
+          id={id}
         />
         {!readOnly && (
           <span className="cell-icon-display">
@@ -366,7 +367,6 @@ export const DatePickerRenderer = ({
           timeIntervals={15}
           timeFormat={isTwentyFourHrFormatEnabled ? 'HH:mm' : 'h:mm aa'}
           onCalendarClose={() => {
-            console.log('isInputFocused', isInputFocused);
             if (isInputFocused) {
               handleInputDateChange(inputValue);
             }

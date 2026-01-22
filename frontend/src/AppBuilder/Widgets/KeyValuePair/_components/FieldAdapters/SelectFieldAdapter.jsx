@@ -1,10 +1,12 @@
-import React from 'react';
-import { CustomSelectColumn } from '@/AppBuilder/Widgets/NewTable/_components/DataTypes/CustomSelect';
+import React, { useEffect } from 'react';
+import { SelectRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/SelectRenderer';
 import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+
 /**
  * SelectFieldAdapter - KeyValuePair adapter for Select dropdown
  *
- * Uses CustomSelect from Table for consistent select rendering across the app.
+ * Uses shared SelectRenderer with KeyValuePair-specific options handling.
  */
 export const SelectField = ({
   field,
@@ -17,12 +19,15 @@ export const SelectField = ({
   containerWidth,
   optionsLoadingState = false,
   defaultOptionsList = [],
-  id,
   isEditing,
   setIsEditing,
   isMulti = false,
+  onValidationChange,
 }) => {
   const getResolvedValue = useStore.getState().getResolvedValue;
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
+
+  // Resolve options
   let options = [];
   let useDynamicOptions = getResolvedValue(field?.useDynamicOptions);
   if (useDynamicOptions) {
@@ -38,8 +43,24 @@ export const SelectField = ({
         labelColor: option.labelColor,
       })) ?? [];
   }
+
+  // Validation
+  const validationData = validateWidget({
+    validationObject: {
+      customRule: { value: field?.customRule },
+    },
+    widgetValue: value,
+    customResolveObjects: { value },
+  });
+  const { isValid, validationError } = validationData;
+
+  // Expose validation state to parent
+  useEffect(() => {
+    onValidationChange?.({ isValid, validationError });
+  }, [isValid, validationError, onValidationChange]);
+
   return (
-    <CustomSelectColumn
+    <SelectRenderer
       options={options}
       value={value}
       search={true}
@@ -55,12 +76,12 @@ export const SelectField = ({
       containerWidth={containerWidth}
       optionsLoadingState={field?.optionsLoadingState}
       isEditable={isEditable}
-      id={id}
-      column={field}
-      widgetType={'key-value-pair'}
+      widgetType="KeyValuePair"
       isFocused={isEditing}
       setIsFocused={setIsEditing}
       autoAssignColors={field?.autoAssignColors}
+      isValid={isValid}
+      validationError={validationError}
     />
   );
 };

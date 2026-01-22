@@ -80,7 +80,9 @@ export const keyValuePairConfig = {
       placeholder: 'e.g., Enter your full name',
     },
   },
-  events: {},
+  events: {
+    onSaveKeyValuePairChanges: { displayName: 'Save changes' },
+  },
   styles: {
     // Label section
     labelColor: {
@@ -174,9 +176,7 @@ export const keyValuePairConfig = {
   },
   exposedVariables: {
     data: {},
-    originalData: {},
-    changedField: {},
-    unsavedChanges: false,
+    changeSet: {},
   },
   actions: [
     {
@@ -193,18 +193,6 @@ export const keyValuePairConfig = {
       handle: 'setLoading',
       displayName: 'Set loading',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'resetData',
-      displayName: 'Reset data',
-    },
-    {
-      handle: 'saveChanges',
-      displayName: 'Save changes',
-    },
-    {
-      handle: 'cancelChanges',
-      displayName: 'Cancel changes',
     },
   ],
   definition: {

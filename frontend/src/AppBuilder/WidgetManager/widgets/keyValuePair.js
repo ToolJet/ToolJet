@@ -80,7 +80,9 @@ export const keyValuePairConfig = {
       placeholder: 'e.g., Enter your full name',
     },
   },
-  events: {},
+  events: {
+    onSaveKeyValuePairChanges: { displayName: 'Save changes' },
+  },
   styles: {
     // Label section
     labelColor: {

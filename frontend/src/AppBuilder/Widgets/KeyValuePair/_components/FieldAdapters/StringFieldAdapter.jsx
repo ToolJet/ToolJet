@@ -44,6 +44,7 @@ export const StringField = ({
       validationError={validationError}
       id={id}
       setIsEditing={setIsEditing}
+      widgetType="KeyValuePair"
     />
   );
 };

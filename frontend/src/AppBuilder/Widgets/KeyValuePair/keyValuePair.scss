@@ -5,7 +5,7 @@
   position: relative; // For popover positioning
 
   &.kv-padding-default {
-    padding: 12px;
+    padding: 2px;
   }
 
   &.kv-padding-none {
@@ -114,7 +114,6 @@
   }
 }
 
-// Row container - wraps the row and validation error
 .kv-row-container {
   display: flex;
   flex-direction: column;
@@ -131,6 +130,10 @@
   }
 }
 
+.key-value-row.kv-row-side + .kv-row-validation-error .invalid-feedback {
+  margin-left: 8px;
+}
+
 // Value styling
 .key-value-render-value {
   font-size: 14px;
@@ -145,20 +148,44 @@
   padding: 8px !important;
   position: relative;
 
+  .kv-row-top & {
+    margin-left: -8px;
+    width: calc(100% + 8px);
+  }
+
+  &.kv-select,
+  &.kv-newMultiSelect {
+    padding: 0 !important;
+    .kv-edit-icon {
+      margin-right: 8px;
+    }
+  }
+
   // For Link
   .table-link-hover {
     color: var(--primary-brand) !important;
   }
+
+  .kv-edit-icon {
+    flex-shrink: 0;
+    min-width: 16px;
+  }
 }
 
 .key-value-pair-container {
+
+  .kv-field-has-changes {
+    background-color: rgba(233, 163, 57, 0.1);
+    border-radius: 6px;
+
+  }
   // Input element styles
   .kv-value-editing:not(.kv-boolean) {
     outline: 2px solid var(--primary-brand);
     background-color: var(--cc-surface1-surface);
     // outline: none;
     border-radius: 6px;
-    
+
     // For String
     .long-text-input {
       width: 100%;
@@ -172,10 +199,36 @@
       // padding: 8px !important;
     }
 
-    // For Number
-    // .kv-number-field-input {
-    //   padding: 9px
-    // 
+  .has-number {
+  .arror-container {
+    display: none;
+  }
+
+  &:hover,
+  &:focus-within {
+    .arror-container {
+      display: flex !important;
+      border-left: 0.5px solid var(--borders-default) !important;
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      bottom: 0px;
+      flex-direction: column;
+      justify-content: center;
+
+      .numberinput-up-arrow-table {
+        right: 1px !important;
+        top: 1px !important;
+      }
+
+      .numberinput-down-arrow-table {
+        right: 1px !important;
+        bottom: 1px !important;
+      }
+    }
+  }
+}
+    
 
   }
 
@@ -183,6 +236,7 @@
     cursor: pointer;
     background-color: var(--interactive-overlays-fill-hover);
     border-radius: 6px;
+
   }
 }
 
@@ -208,7 +262,6 @@
           .react-select__value-container {
             display: flex;
             align-items: center;
-            padding: 0px;
           }
 
           .react-select__value-container--is-multi {
@@ -243,3 +296,48 @@
 
       // }
     }
+
+    .key-value-pair-container {
+     .kv-number {
+      .arror-container {
+        display: none;
+      }
+
+      &.kv-value-editing {
+        .arror-container {
+          display: flex !important;
+          position: absolute;
+          right: 0px;
+          top: 0px;
+          bottom: 0px;
+          flex-direction: column;
+          justify-content: center;
+
+          .numberinput-up-arrow-table {
+            right: 1px !important;
+            top: 1px !important;
+          }
+
+          .numberinput-down-arrow-table {
+            right: 1px !important;
+            bottom: 1px !important;
+          }
+        }
+      }
+     }
+
+     .kv-select,
+     .kv-newMultiSelect,
+     .kv-datepicker {
+      .cell-icon-display {
+        visibility: hidden;
+      }
+
+      &.kv-value-editing {
+        .cell-icon-display {
+          visibility: visible;
+        }
+      }
+     }
+    }
+

@@ -5,10 +5,11 @@ export { TextColumn } from './adapters/TextColumnAdapter';
 export { BooleanColumn } from './adapters/BooleanColumnAdapter';
 export { LinkColumn } from './adapters/LinkColumnAdapter';
 export { ImageColumn } from './adapters/ImageColumnAdapter';
+export { DatepickerColumn } from './adapters/Datepicker';
 
-// Original components - not yet migrated to shared renderers
-export { DatepickerColumn } from './Datepicker';
+// export { CustomSelectColumn } from './adapters/SelectColumnAdapter'; // Select & MultiSelect
 export { CustomSelectColumn } from './CustomSelect';
+// Original components - not yet migrated to shared renderers
 export { JsonColumn } from './JSON';
 export { MarkdownColumn } from './Markdown';
 export { HTMLColumn } from './HTML';

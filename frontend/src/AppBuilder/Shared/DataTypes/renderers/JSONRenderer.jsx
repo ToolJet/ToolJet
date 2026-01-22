@@ -144,7 +144,7 @@ export const JSONRenderer = ({
     ref?.current &&
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
-  console.log(isEditable, 'isEditable');
+
   return (
     <>
       <OverlayTrigger
