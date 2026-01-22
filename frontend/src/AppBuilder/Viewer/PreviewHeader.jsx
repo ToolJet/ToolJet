@@ -1,19 +1,23 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
+import { useLocation } from 'react-router-dom';
 import Header from './Header';
-import { shallow } from 'zustand/shallow';
 import PreviewSettings from './PreviewSettings';
 import useStore from '@/AppBuilder/_stores/store';
 
 const PreviewHeader = ({ showHeader, currentLayout, darkMode, setAppDefinitionFromVersion }) => {
-  const { isReleasedVersionId } = useStore(
-    (state) => ({
-      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
-    }),
-    shallow
-  );
+  const location = useLocation();
+  // Check if we're in preview mode (has env or version query params)
+  const searchParams = new URLSearchParams(location.search);
+  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
+
   const editingVersion = useStore((state) => state.editingVersion);
   const isMobileDevice = currentLayout === 'mobile';
+
+  // Don't render header at all if not in preview mode
+  if (!isPreviewMode) {
+    return null;
+  }
 
   const _renderPreviewSettings = () => (
     <PreviewSettings
@@ -26,11 +30,10 @@ const PreviewHeader = ({ showHeader, currentLayout, darkMode, setAppDefinitionFr
 
   if (isMobileDevice) {
     return (
-      !isEmpty(editingVersion) &&
-      !isReleasedVersionId && <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
+      !isEmpty(editingVersion) && <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
     );
   } else {
-    return !isReleasedVersionId && <Header>{_renderPreviewSettings()}</Header>;
+    return <Header>{_renderPreviewSettings()}</Header>;
   }
 };
 
