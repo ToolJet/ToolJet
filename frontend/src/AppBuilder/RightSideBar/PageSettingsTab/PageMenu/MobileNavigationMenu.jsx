@@ -17,8 +17,8 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
   const { moduleId } = useModuleContext();
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const selectedVersion = useStore((state) => state.selectedVersion, shallow);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
+  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile' && currentMode === 'view';
   const isPreviewInEditor = useStore((state) => state.isPreviewInEditor && currentMode === 'view', shallow);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
