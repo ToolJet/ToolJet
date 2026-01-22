@@ -126,13 +126,6 @@ export const KeyValuePair = ({
     return fieldList.filter((field) => field.fieldVisibility !== false);
   }, [fields, data]);
 
-  // Calculate label width based on settings
-  const computedLabelWidth = useMemo(() => {
-    if (alignment === 'top') return '100%';
-    if (autoLabelWidth) return 'auto';
-    return `${labelWidth}%`;
-  }, [alignment, autoLabelWidth, labelWidth]);
-
   const containerClassName = useMemo(() => {
     let classes = ['key-value-pair-container'];
     if (padding === 'default') classes.push('kv-padding-default');

@@ -26,20 +26,16 @@ export const JSONRenderer = ({
   darkMode = false,
   jsonIndentation = false,
   maxHeight,
+  isEditing,
+  setIsEditing,
+  id,
 }) => {
   const ref = useRef(null);
   const [hovered, setHovered] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
 
   const cellStyles = {
     color: textColor ?? 'inherit',
   };
-
-  useEffect(() => {
-    if (!isEditable && isEditing) {
-      setIsEditing(false);
-    }
-  }, [isEditable, isEditing]);
 
   function format(obj) {
     if (typeof obj !== 'object' || obj === null) {
@@ -86,6 +82,7 @@ export const JSONRenderer = ({
 
   const renderEditable = () => (
     <div
+      id={id}
       ref={ref}
       contentEditable={'true'}
       className={`h-100 text-container long-text-input d-flex align-items-center ${
@@ -147,7 +144,7 @@ export const JSONRenderer = ({
     ref?.current &&
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
-
+  console.log(isEditable, 'isEditable');
   return (
     <>
       <OverlayTrigger

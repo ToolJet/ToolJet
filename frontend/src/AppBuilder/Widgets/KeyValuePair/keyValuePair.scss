@@ -127,7 +127,12 @@
   align-items: center; /* Center icon vertically with text */
   justify-content: space-between; /* Push icon to right if needed, or stick to content */
   width: 100%;
-  
+  padding: 8px !important;
+
+   // For Link
+    .table-link-hover {
+      color: var(--primary-brand) !important
+    }
 
   // Validation error
   .invalid-feedback {
@@ -139,12 +144,12 @@
 
 .key-value-pair-container {
   // Input element styles
-  .kv-value-editing {
-    border: 2px solid var(--primary-brand);
+  .kv-value-editing:not(.kv-boolean) {
+    outline: 2px solid var(--primary-brand);
     background-color: var(--cc-surface1-surface);
-    outline: none;
+    // outline: none;
     border-radius: 6px;
-
+    
     // For String
     .long-text-input {
       width: 100%;
@@ -153,14 +158,20 @@
       position: absolute;
       z-index: 99999 !important;
       align-items: flex-start !important;
-      padding: 8px !important;
+      // padding: 8px !important;
     }
 
     // For Number
-    .kv-number-field-input {
-      padding: 9px
-    }
-    // For Textarea
+    // .kv-number-field-input {
+    //   padding: 9px
+    // 
+
+  }
+
+  .kv-editable:not(.kv-value-editing):hover {
+    cursor: pointer;
+    background-color: var(--interactive-overlays-fill-hover);
+    border-radius: 6px;
   }
 }
 

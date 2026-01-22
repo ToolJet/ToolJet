@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useTextColor from '../DataTypes/_hooks/useTextColor';
 import { getMaxHeight } from '../../_utils/helper';
 import useTableStore from '../../_stores/tableStore';
@@ -22,10 +22,17 @@ export const JsonColumn = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (newValue) => {
     handleCellValueChange(cell.row.index, column.key || column.name, newValue, cell.row.original);
   };
+
+  useEffect(() => {
+    if (!isEditable && isEditing) {
+      setIsEditing(false);
+    }
+  }, [isEditable, isEditing]);
 
   return (
     <JSONRenderer
@@ -37,6 +44,8 @@ export const JsonColumn = ({
       darkMode={darkMode}
       jsonIndentation={jsonIndentation}
       maxHeight={getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellHeight)}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
     />
   );
 };

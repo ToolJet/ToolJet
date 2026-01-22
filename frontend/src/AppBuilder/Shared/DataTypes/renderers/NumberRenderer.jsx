@@ -135,7 +135,7 @@ export const NumberRenderer = ({
 
   if (isEditable) {
     return (
-      <div className="h-100 d-flex flex-column justify-content-center position-relative">
+      <div className="h-100 w-100 d-flex flex-column justify-content-center position-relative">
         <input
           id={id}
           type="number"

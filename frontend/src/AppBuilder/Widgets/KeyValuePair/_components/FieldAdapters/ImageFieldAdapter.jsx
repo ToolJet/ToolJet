@@ -4,22 +4,15 @@ import { ImageRenderer } from '@/AppBuilder/Shared/DataTypes';
 /**
  * ImageFieldAdapter - KeyValuePair adapter for ImageRenderer
  */
-export const ImageField = ({
-  value,
-  width,
-  height,
-  borderRadius,
-  objectFit = 'contain',
-  horizontalAlignment = 'left',
-}) => {
+export const ImageField = ({ value, field }) => {
   return (
     <ImageRenderer
       value={value}
-      width={width}
-      height={height}
-      borderRadius={borderRadius}
-      objectFit={objectFit}
-      horizontalAlignment={horizontalAlignment}
+      width={field?.width || '100%'}
+      height={field?.height || '100%'}
+      borderRadius={field?.borderRadius}
+      objectFit={field?.objectFit}
+      horizontalAlignment={'left'}
     />
   );
 };

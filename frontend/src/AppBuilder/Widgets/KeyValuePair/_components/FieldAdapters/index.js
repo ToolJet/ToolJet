@@ -10,7 +10,6 @@ export { NumberField } from './NumberFieldAdapter';
 export { TextField } from './TextFieldAdapter';
 export { DatepickerField } from './DatepickerFieldAdapter';
 export { SelectField } from './SelectFieldAdapter';
-export { MultiselectField } from './MultiselectFieldAdapter';
 export { JsonField } from './JsonFieldAdapter';
 export { MarkdownField } from './MarkdownFieldAdapter';
 export { HtmlField } from './HtmlFieldAdapter';

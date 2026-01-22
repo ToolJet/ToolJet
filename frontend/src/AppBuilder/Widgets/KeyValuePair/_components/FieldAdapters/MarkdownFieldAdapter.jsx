@@ -10,25 +10,23 @@ export const MarkdownField = ({
   value = '',
   isEditable = false,
   onChange,
-  textColor,
-  horizontalAlignment = 'left',
   containerWidth,
   darkMode = false,
-  maxHeight,
   isEditing,
   setIsEditing,
   id,
+  field,
 }) => {
   return (
     <MarkdownRenderer
       value={value}
       isEditable={isEditable}
       onChange={onChange}
-      textColor={textColor}
-      horizontalAlignment={horizontalAlignment}
+      textColor={field?.textColor}
+      horizontalAlignment={'left'}
       containerWidth={containerWidth}
       darkMode={darkMode}
-      maxHeight={maxHeight}
+      // maxHeight={maxHeight}
       isEditing={isEditing}
       setIsEditing={setIsEditing}
       id={id}

@@ -19,6 +19,7 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { cn } from '@/lib/utils';
+import cx from 'classnames';
 
 /**
  * KeyValueRow - Renders a single key-value pair row
@@ -47,19 +48,10 @@ const KeyValueRow = ({
     label,
     fieldType = 'string',
     isEditable = false,
-    toggleOnBg,
-    toggleOffBg,
-    linkTarget,
-    underline,
-    imageWidth,
-    imageHeight,
-    objectFit,
     // Date options
     dateFormat,
     showTimeSelect,
     timeFormat,
-    // JSON options
-    jsonIndentation,
     // Validation
     isValid = true,
     validationError,
@@ -79,7 +71,7 @@ const KeyValueRow = ({
   const isRightDirection = direction === 'right';
 
   const handleEditClick = () => {
-    if (canEdit) {
+    if (isEditable) {
       setIsEditing(true);
       setTimeout(() => {
         document.getElementById(fieldKey)?.focus();
@@ -96,7 +88,7 @@ const KeyValueRow = ({
     'key-value-row',
     isTopAlignment ? 'kv-row-top' : 'kv-row-side',
     isRightDirection && !isTopAlignment ? 'kv-row-reverse' : '',
-    showInput ? 'kv-row-editing' : '',
+    isEditable ? 'kv-row-editing' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -113,12 +105,15 @@ const KeyValueRow = ({
       isValid,
       validationError,
       // Pass edit state
-      isEditable: showInput,
+      isEditable: isEditing,
       autoFocus: true, // Auto focus when switching to edit mode
       onBlur: handleBlur, // Exit edit mode on blur
       isEditing: showInput,
       setIsEditing,
+      field,
     };
+
+    console.log(fieldType, 'fieldType', value);
 
     switch (fieldType) {
       case 'string':
@@ -142,38 +137,28 @@ const KeyValueRow = ({
         );
 
       case 'select':
-        return <SelectField {...commonProps} field={field} />;
+        return <SelectField {...commonProps} />;
 
       case 'newMultiSelect':
-        return <SelectField {...commonProps} field={field} isMulti />;
+        return <SelectField {...commonProps} isMulti />;
 
       case 'boolean':
-        return <BooleanField {...commonProps} toggleOnBg={toggleOnBg} toggleOffBg={toggleOffBg} field={field} />;
+        return <BooleanField {...commonProps} />;
 
       case 'link':
-        return (
-          <LinkField
-            value={value}
-            field={field}
-            displayText={field.displayText}
-            linkTarget={linkTarget}
-            textColor={textColor}
-            underline={underline}
-            darkMode={darkMode}
-          />
-        );
+        return <LinkField {...commonProps} />;
 
       case 'image':
-        return <ImageField value={value} width={imageWidth} height={imageHeight} objectFit={objectFit} field={field} />;
+        return <ImageField {...commonProps} />;
 
       case 'json':
-        return <JsonField value={value} indentation={jsonIndentation} darkMode={darkMode} field={field} />;
+        return <JsonField {...commonProps} />;
 
       case 'markdown':
-        return <MarkdownField {...commonProps} value={value} darkMode={darkMode} field={field} id={fieldKey} />;
+        return <MarkdownField {...commonProps} />;
 
       case 'html':
-        return <HtmlField {...commonProps} value={value} darkMode={darkMode} field={field} id={fieldKey} />;
+        return <HtmlField {...commonProps} />;
 
       default:
         // Fallback to plain text
@@ -188,6 +173,7 @@ const KeyValueRow = ({
       <Label
         label={displayLabel}
         width={labelWidth}
+        auto={autoLabelWidth}
         _width={_width}
         color={labelColor}
         direction={direction}
@@ -201,14 +187,16 @@ const KeyValueRow = ({
         }}
       />
       <div
-        className={`key-value-render-value ${showInput ? 'kv-value-editing' : ''}`}
+        className={cx(`key-value-render-value kv-${fieldType}`, {
+          'kv-value-editing': isEditing,
+          'kv-editable': isEditable,
+        })}
         ref={valueRef}
         style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
+        onClick={handleEditClick}
       >
         {renderValue()}
-        {canEdit && !isEditing && (
-          <SquarePen width={16} height={16} className="cursor-pointer" onClick={handleEditClick} />
-        )}
+        {isEditable && (!isEditing || fieldType === 'boolean') && <SquarePen width={16} height={16} />}
       </div>
     </div>
   );

@@ -39,31 +39,29 @@ export const SelectField = ({
       })) ?? [];
   }
   return (
-    <div className="h-100 d-flex align-items-center flex-column justify-content-center">
-      <CustomSelectColumn
-        options={options}
-        value={value}
-        search={true}
-        onChange={onChange}
-        fuzzySearch
-        placeholder={placeholder}
-        disabled={!isEditable}
-        className="select-search table-select-search"
-        darkMode={darkMode}
-        defaultOptionsList={defaultOptionsList}
-        textColor={textColor}
-        isMulti={isMulti}
-        containerWidth={containerWidth}
-        optionsLoadingState={optionsLoadingState}
-        isEditable={isEditable}
-        id={id}
-        column={field}
-        widgetType={'key-value-pair'}
-        isFocused={isEditing}
-        setIsFocused={setIsEditing}
-        autoAssignColors={field?.autoAssignColors}
-      />
-    </div>
+    <CustomSelectColumn
+      options={options}
+      value={value}
+      search={true}
+      onChange={onChange}
+      fuzzySearch
+      placeholder={placeholder}
+      disabled={!isEditable}
+      className="select-search table-select-search"
+      darkMode={darkMode}
+      defaultOptionsList={defaultOptionsList}
+      textColor={textColor}
+      isMulti={isMulti}
+      containerWidth={containerWidth}
+      optionsLoadingState={field?.optionsLoadingState}
+      isEditable={isEditable}
+      id={id}
+      column={field}
+      widgetType={'key-value-pair'}
+      isFocused={isEditing}
+      setIsFocused={setIsEditing}
+      autoAssignColors={field?.autoAssignColors}
+    />
   );
 };
 

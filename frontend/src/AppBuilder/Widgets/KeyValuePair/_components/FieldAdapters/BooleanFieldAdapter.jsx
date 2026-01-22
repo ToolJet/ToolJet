@@ -4,22 +4,15 @@ import { BooleanRenderer } from '@/AppBuilder/Shared/DataTypes';
 /**
  * BooleanFieldAdapter - KeyValuePair adapter for BooleanRenderer
  */
-export const BooleanField = ({
-  value = false,
-  isEditable = false,
-  onChange,
-  toggleOnBg,
-  toggleOffBg,
-  horizontalAlignment = 'left',
-}) => {
+export const BooleanField = ({ value = false, isEditable = false, onChange, field }) => {
   return (
     <BooleanRenderer
       value={value}
       isEditable={isEditable}
       onChange={onChange}
-      toggleOnBg={toggleOnBg}
-      toggleOffBg={toggleOffBg}
-      horizontalAlignment={horizontalAlignment}
+      toggleOnBg={field.toggleOnBg}
+      toggleOffBg={field.toggleOffBg}
+      horizontalAlignment={'left'}
     />
   );
 };

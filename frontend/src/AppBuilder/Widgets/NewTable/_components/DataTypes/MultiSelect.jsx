@@ -16,28 +16,28 @@ export const MultiSelectColumn = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   return (
-    <div className="h-100 d-flex align-items-center flex-column justify-content-center">
-      <CustomSelect
-        options={options}
-        value={value}
-        search={true}
-        onChange={onChange}
-        fuzzySearch
-        placeholder="Select..."
-        disabled={!isEditable}
-        className="select-search table-select-search"
-        darkMode={darkMode}
-        defaultOptionsList={defaultOptionsList}
-        textColor={textColor}
-        isMulti={true}
-        containerWidth={containerWidth}
-        optionsLoadingState={optionsLoadingState}
-        horizontalAlignment={horizontalAlignment}
-        isEditable={isEditable}
-        isMaxRowHeightAuto={isMaxRowHeightAuto}
-        isFocused={isFocused}
-        setIsFocused={setIsFocused}
-      />
-    </div>
+    // <div className="h-100 d-flex align-items-center flex-column justify-content-center">
+    <CustomSelect
+      options={options}
+      value={value}
+      search={true}
+      onChange={onChange}
+      fuzzySearch
+      placeholder="Select..."
+      disabled={!isEditable}
+      className="select-search table-select-search"
+      darkMode={darkMode}
+      defaultOptionsList={defaultOptionsList}
+      textColor={textColor}
+      isMulti={true}
+      containerWidth={containerWidth}
+      optionsLoadingState={optionsLoadingState}
+      horizontalAlignment={horizontalAlignment}
+      isEditable={isEditable}
+      isMaxRowHeightAuto={isMaxRowHeightAuto}
+      isFocused={isFocused}
+      setIsFocused={setIsFocused}
+    />
+    // </div>
   );
 };

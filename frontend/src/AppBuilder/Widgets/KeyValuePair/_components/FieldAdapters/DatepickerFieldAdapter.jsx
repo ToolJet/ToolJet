@@ -1,12 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import DatePickerComponent from 'react-datepicker';
-import moment from 'moment-timezone';
-import 'react-datepicker/dist/react-datepicker.css';
+import React from 'react';
+import { DatePickerRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
 /**
  * DatepickerFieldAdapter - KeyValuePair adapter for Date display/editing
  *
- * Displays date values with optional editing via react-datepicker.
+ * Uses DatePickerRenderer for consistent date rendering across the app.
  */
 export const DatepickerField = ({
   value,
@@ -16,64 +14,35 @@ export const DatepickerField = ({
   showTimeSelect = false,
   timeFormat = 'HH:mm',
   darkMode = false,
-  horizontalAlignment = 'left',
+  textColor,
+  field,
+  id,
+  setIsEditing,
+  isEditing,
 }) => {
-  const [date, setDate] = useState(null);
-
-  // Parse value to date
-  useEffect(() => {
-    if (!value) {
-      setDate(null);
-      return;
-    }
-
-    const parsed = moment(value, dateFormat);
-    setDate(parsed.isValid() ? parsed.toDate() : null);
-  }, [value, dateFormat]);
-
-  const handleChange = useCallback(
-    (newDate) => {
-      setDate(newDate);
-      if (onChange) {
-        const formatted = moment(newDate).format(dateFormat);
-        onChange(formatted);
-      }
-    },
-    [onChange, dateFormat]
-  );
-
-  const displayValue = date ? moment(date).format(showTimeSelect ? `${dateFormat} ${timeFormat}` : dateFormat) : '';
-
-  if (!isEditable) {
-    return (
-      <div
-        style={{
-          textAlign: horizontalAlignment,
-          color: darkMode ? 'var(--text-primary)' : 'inherit',
-        }}
-      >
-        {displayValue || '-'}
-      </div>
-    );
-  }
+  // Extract field-specific settings
+  const dateDisplayFormat = field?.dateFormat ?? dateFormat;
+  const isTimeChecked = field?.showTimeSelect ?? showTimeSelect;
+  const isTwentyFourHrFormatEnabled = (field?.timeFormat ?? timeFormat) === 'HH:mm';
+  const isDateSelectionEnabled = field?.isDateSelectionEnabled ?? true;
 
   return (
-    <div
-      className="key-value-datepicker"
-      style={{
-        textAlign: horizontalAlignment,
-      }}
-    >
-      <DatePickerComponent
-        selected={date}
-        onChange={handleChange}
-        dateFormat={dateFormat}
-        showTimeSelect={showTimeSelect}
-        timeFormat={timeFormat}
-        className="form-control form-control-sm"
-        popperProps={{ strategy: 'fixed' }}
-      />
-    </div>
+    <DatePickerRenderer
+      value={value}
+      onChange={onChange}
+      isEditable={isEditable}
+      dateDisplayFormat={dateDisplayFormat}
+      parseDateFormat={dateDisplayFormat}
+      isTimeChecked={isTimeChecked}
+      isDateSelectionEnabled={isDateSelectionEnabled}
+      isTwentyFourHrFormatEnabled={isTwentyFourHrFormatEnabled}
+      textColor={textColor}
+      darkMode={darkMode}
+      id={id}
+      isInputFocused={isEditing}
+      setIsInputFocused={setIsEditing}
+      widgetType="KeyValuePair"
+    />
   );
 };
 

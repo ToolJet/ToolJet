@@ -1,24 +1,15 @@
 import React from 'react';
-import { determineJustifyContentValue } from '@/_helpers/utils';
+import { ImageRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/ImageRenderer';
 
 export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit, horizontalAlignment }) => {
-  if (!cellValue) return null;
-
   return (
-    <div
-      className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
-    >
-      <img
-        src={cellValue}
-        style={{
-          pointerEvents: 'auto',
-          width: width ? `${width}px` : 'auto',
-          height: height || '100%',
-          borderRadius: borderRadius ? `${borderRadius}%` : '0',
-          objectFit: objectFit || 'contain',
-        }}
-        alt=""
-      />
-    </div>
+    <ImageRenderer
+      value={cellValue}
+      width={width}
+      height={height}
+      borderRadius={borderRadius}
+      objectFit={objectFit}
+      horizontalAlignment={horizontalAlignment}
+    />
   );
 };

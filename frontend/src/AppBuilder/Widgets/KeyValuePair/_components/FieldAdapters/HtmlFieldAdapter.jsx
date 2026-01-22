@@ -10,25 +10,23 @@ export const HtmlField = ({
   value = '',
   isEditable = false,
   onChange,
-  textColor,
-  horizontalAlignment = 'left',
   containerWidth,
   darkMode = false,
-  maxHeight,
   setIsEditing,
   isEditing,
   id,
+  field,
 }) => {
   return (
     <HTMLRenderer
       value={value}
       isEditable={isEditable}
       onChange={onChange}
-      textColor={textColor}
-      horizontalAlignment={horizontalAlignment}
+      textColor={field?.textColor}
+      horizontalAlignment={'left'}
       containerWidth={containerWidth}
       darkMode={darkMode}
-      maxHeight={maxHeight}
+      // maxHeight={maxHeight}
       setIsEditing={setIsEditing}
       isEditing={isEditing}
       id={id}

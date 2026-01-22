@@ -1,40 +1,34 @@
 import React from 'react';
-import DOMPurify from 'dompurify';
+import { JSONRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/JSONRenderer';
 
 /**
  * JsonFieldAdapter - KeyValuePair adapter for JSON display
  *
- * Displays JSON data with optional formatting.
+ * Uses JSONRenderer for consistent JSON rendering across the app.
  */
-export const JsonField = ({ value, indentation = false, darkMode = false, horizontalAlignment = 'left' }) => {
-  const formatValue = (val) => {
-    try {
-      if (typeof val === 'object' && val !== null) {
-        return indentation ? JSON.stringify(val, null, 2) : JSON.stringify(val);
-      }
-      if (typeof val === 'string') {
-        const parsed = JSON.parse(val);
-        return indentation ? JSON.stringify(parsed, null, 2) : JSON.stringify(parsed);
-      }
-      return String(val ?? '');
-    } catch {
-      return String(val ?? '');
-    }
-  };
-
+export const JsonField = ({
+  value = '',
+  isEditable = false,
+  onChange,
+  darkMode = false,
+  field,
+  isEditing,
+  setIsEditing,
+  id,
+}) => {
   return (
-    <pre
-      style={{
-        margin: 0,
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        whiteSpace: indentation ? 'pre-wrap' : 'nowrap',
-        textAlign: horizontalAlignment,
-        color: darkMode ? 'var(--text-primary)' : 'inherit',
-      }}
-    >
-      {formatValue(value)}
-    </pre>
+    <JSONRenderer
+      value={value}
+      isEditable={isEditable}
+      onChange={onChange}
+      textColor={field?.textColor}
+      horizontalAlignment={'left'}
+      darkMode={darkMode}
+      // jsonIndentation={field?.jsonIndentation}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
+      id={id}
+    />
   );
 };
 

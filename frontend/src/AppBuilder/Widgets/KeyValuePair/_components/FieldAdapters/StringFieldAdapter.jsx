@@ -22,6 +22,7 @@ export const StringField = ({
   isEditing,
   setIsEditing,
   id,
+  field,
 }) => {
   return (
     <StringRenderer
@@ -29,11 +30,11 @@ export const StringField = ({
       isEditable={isEditable}
       isEditing={isEditing}
       onChange={onChange}
-      textColor={textColor}
-      horizontalAlignment={horizontalAlignment}
+      textColor={field?.textColor}
+      horizontalAlignment={'left'}
       containerWidth={containerWidth}
       darkMode={darkMode}
-      maxHeight={maxHeight}
+      // maxHeight={maxHeight}
       isValid={isValid}
       validationError={validationError}
       searchText={searchText}
