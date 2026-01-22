@@ -732,7 +732,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = height - currentWidget?.height;
-            console.log('diffHeight', diffHeight);
             const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
             const isTopChanged = e.lastEvent?.direction?.[1] === -1;
 
