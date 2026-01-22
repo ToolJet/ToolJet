@@ -87,8 +87,7 @@ const SignupPage = ({ configs, organizationId }) => {
                 isUserLoggingIn: false,
               });
               
-              // Redirect to home/dashboard
-              const redirectPath = redirectTo || '/home';
+              const redirectPath = current_organization_slug ? `/${current_organization_slug}` : (redirectTo || '/');
               navigate(redirectPath, { replace: true });
             } catch (error) {
               // Fallback: redirect to home/dashboard
