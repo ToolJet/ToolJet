@@ -32,11 +32,15 @@ import {
   logShutdownInfo,
   initSentry,
   initializeOtel,
+  validateSslEnvironmentVariables,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
+
+  // Validate SSL environment variables on startup
+  validateSslEnvironmentVariables(logger);
 
   try {
     logger.log('Creating NestJS application...');

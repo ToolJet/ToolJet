@@ -33,6 +33,41 @@ export class CreateSslConfigurationTable1768818758582 implements MigrationInterf
             isNullable: false,
           },
           {
+            name: 'domain',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'fullchain_pem',
+            type: 'text',
+            isNullable: true,
+          },
+          {
+            name: 'privkey_pem',
+            type: 'text',
+            isNullable: true,
+          },
+          {
+            name: 'cert_pem',
+            type: 'text',
+            isNullable: true,
+          },
+          {
+            name: 'chain_pem',
+            type: 'text',
+            isNullable: true,
+          },
+          {
+            name: 'acquired_at',
+            type: 'timestamp',
+            isNullable: true,
+          },
+          {
+            name: 'expires_at',
+            type: 'timestamp',
+            isNullable: true,
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             default: 'now()',
