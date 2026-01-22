@@ -272,6 +272,7 @@ export const createAppSlice = (set, get) => ({
         canvas: { pages },
       },
       getCurrentMode,
+      isPreviewInEditor,
     } = get();
     const isPreview = getCurrentMode(moduleId) !== 'edit';
     //!TODO clear all queued tasks
@@ -298,8 +299,9 @@ export const createAppSlice = (set, get) => ({
     let toNavigate = '';
 
     if (!isBackOrForward) {
-      toNavigate = `${subpath ? `${subpath}` : ''}/${isPreview ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${slug ?? appId
-        }/${handle}?${queryParamsString}`;
+      toNavigate = `${subpath ? `${subpath}` : ''}/${
+        isPreview && !isPreviewInEditor ? 'applications' : `${getWorkspaceId() + '/apps'}`
+      }/${slug ?? appId}/${handle}?${queryParamsString}`;
       navigate(toNavigate, {
         state: {
           isSwitchingPage: true,

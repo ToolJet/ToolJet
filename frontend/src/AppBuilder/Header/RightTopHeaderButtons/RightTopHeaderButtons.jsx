@@ -1,75 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { ReleaseVersionButton } from './ReleaseVersionButton';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { ManageAppUsers } from './ManageAppUsers';
 import { shallow } from 'zustand/shallow';
-import queryString from 'query-string';
-import { isEmpty } from 'lodash';
 import GitSyncManager from '../GitSyncManager';
 import useStore from '@/AppBuilder/_stores/store';
-import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useAppPreviewLink } from '@/_hooks/useAppPreviewLink';
 
-const RightTopHeaderButtons = ({ isModuleEditor }) => {
+const RightTopHeaderButtons = ({ currentMode, darkMode }) => {
   return (
-    <div className="d-flex justify-content-end navbar-right-section">
+    <div className="d-flex justify-content-end navbar-right-section tw-ml-[4px]">
       <div className=" release-buttons">
-        <GitSyncManager />
-        <div className="tw-hidden navbar-seperator" />
-        <PreviewAndShareIcons />
-        {/* {!isModuleEditor && <PromoteReleaseButton />} */}
+        {currentMode !== 'view' && (
+          <>
+            <GitSyncManager />
+            <div className="tw-hidden navbar-seperator" />
+          </>
+        )}
+        <PreviewAndShareIcons darkMode={darkMode} />
       </div>
     </div>
   );
 };
 
-const PreviewAndShareIcons = () => {
+const PreviewAndShareIcons = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
+  const appPreviewLink = useAppPreviewLink();
   const {
     featureAccess,
     currentPageHandle,
     selectedEnvironment,
     isVersionReleased,
-    editingVersion,
     appId,
     app,
     slug,
     isPublic,
-    currentVersionId,
-    selectedVersion,
+    appName,
   } = useStore(
     (state) => ({
       featureAccess: state.license?.featureAccess,
       currentPageHandle: state?.modules[moduleId].currentPageHandle,
       selectedEnvironment: state.selectedEnvironment,
       isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
-      editingVersion: state.editingVersion,
       appId: state.appStore.modules[moduleId].app.appId,
       app: state.appStore.modules[moduleId].app.app,
       slug: state.appStore.modules[moduleId].app.slug,
       isPublic: state.appStore.modules[moduleId].app.isPublic,
-      currentVersionId: state.currentVersionId,
-      selectedVersion: state.selectedVersion,
+      appName: state.appStore.modules[moduleId].app.appName,
     }),
     shallow
   );
-
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  const setCurrentMode = useStore((state) => state.setCurrentMode);
-  const [appPreviewLink, setAppPreviewLink] = useState();
-
-  useEffect(() => {
-    const previewQuery = queryString.stringify({
-      version: selectedVersion?.name,
-      ...(featureAccess?.multiEnvironment ? { env: selectedEnvironment?.name } : {}),
-    });
-    setAppPreviewLink(
-      editingVersion
-        ? `/applications/${slug || appId}/${currentPageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
-        : ''
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId, editingVersion, selectedEnvironment?.id, currentPageHandle]);
 
   return (
     <>
@@ -81,11 +60,13 @@ const PreviewAndShareIcons = () => {
               multiEnvironmentEnabled={featureAccess?.multiEnvironment}
               app={app}
               appId={appId}
+              appName={appName}
               slug={slug}
               pageHandle={currentPageHandle}
               darkMode={darkMode}
               isVersionReleased={isVersionReleased}
               isPublic={isPublic ?? false}
+              appPreviewLink={appPreviewLink}
             />
           )}
         </div>

@@ -90,6 +90,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
   const isPageMenuHidden = useStore((state) => state?.getPagesSidebarVisibility(moduleId), shallow);
+  const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
+
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
@@ -455,8 +457,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       moveableBox.addEventListener('mouseout', hideConfigHandle);
     }
     return () => {
-      moveableBox.removeEventListener('mouseover', showConfigHandle);
-      moveableBox.removeEventListener('mouseout', hideConfigHandle);
+      if (moveableBox) {
+        moveableBox.removeEventListener('mouseover', showConfigHandle);
+        moveableBox.removeEventListener('mouseout', hideConfigHandle);
+      }
     };
   }, [moveableRef?.current?._elementTargets?.length, checkHoveredComponentDynamicHeight, getComponentTypeFromId]);
 
@@ -602,6 +606,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   };
 
   useGroupedTargetsScrollHandler(groupedTargets, boxList, moveableRef);
+
+  useEffect(() => {
+    // PREVIEW FLOW - When entering the 'mounting/unmounting grid' phase, we wait for the grid mount/unmount completion then trigger `notifyTransitionDone()`
+
+    // Ensure DOM + layout are ready
+    requestAnimationFrame(() => notifyTransitionDone('grid'));
+    return () => notifyTransitionDone('grid');
+  }, []);
+
   if (mode !== 'edit') return null;
   return (
     <>

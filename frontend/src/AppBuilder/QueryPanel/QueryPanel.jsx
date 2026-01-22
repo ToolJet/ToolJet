@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import { diff } from 'deep-object-diff';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -24,6 +25,11 @@ export const QueryPanel = ({ darkMode }) => {
   const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  const { shouldMount, animationClasses } = usePreviewToggleAnimation({
+    animationType: 'height',
+  });
+  const previewPhase = useStore((state) => state.previewPhase, shallow);
+  const notifyTransitionDone = useStore((state) => state.notifyTransitionDone, shallow);
 
   const queryManagerPreferences = useRef(
     JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
@@ -32,6 +38,7 @@ export const QueryPanel = ({ darkMode }) => {
     }
   );
   const queryPaneRef = useRef(null);
+  const queryBarRef = useRef(null);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight >= 95
       ? 50
@@ -84,6 +91,22 @@ export const QueryPanel = ({ darkMode }) => {
     // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isQueryPaneExpanded, isWindowResizing]);
+
+  useEffect(() => {
+    /**
+     * PREVIEW FLOW - Listen for CSS transition completion on query panel's collapsed bar.
+     * We intentionally attach this to gate the next phase of preview transition.
+     */
+    if (previewPhase !== 'animating') return;
+
+    const bar = queryBarRef.current;
+    if (!bar) return;
+
+    const onDone = () => notifyTransitionDone('queryPanel');
+
+    bar.addEventListener('transitionend', onDone, { once: true });
+    return () => bar.removeEventListener('transitionend', onDone);
+  }, [previewPhase]);
 
   const onMouseDown = useCallback(
     (e) => {
@@ -153,10 +176,15 @@ export const QueryPanel = ({ darkMode }) => {
     setQueryPanelHeight(newIsExpanded ? height : 95);
   }, [height, isQueryPaneExpanded, setQueryPanelHeight, setIsQueryPaneExpanded]);
 
+  // Handle mount/unmount based on PREVIEW animation
+  if (!shouldMount) {
+    return null;
+  }
+
   return (
     <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
-        className={`query-pane ${isQueryPaneExpanded ? 'expanded' : 'collapsed'}`}
+        className={cx('query-pane', isQueryPaneExpanded ? 'expanded' : 'collapsed', animationClasses)}
         style={{
           height: 40,
           ...(isRightSidebarOpen && {
@@ -167,6 +195,7 @@ export const QueryPanel = ({ darkMode }) => {
           alignItems: 'center',
           zIndex: 2,
         }}
+        ref={queryBarRef}
       >
         <div
           style={{ width: '288px', paddingLeft: '12px', height: '100%' }}

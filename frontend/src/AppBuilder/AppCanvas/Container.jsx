@@ -6,7 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop, useDragLayer } from 'react-dnd';
 import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
+import { NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { ModuleContainerBlank } from '@/modules/Modules/components';
@@ -176,9 +176,6 @@ const Container = React.memo(
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {
-              if (currentLayout === 'mobile') {
-                return CANVAS_WIDTHS.deviceWindowWidth;
-              }
               if (currentMode === 'view') {
                 return '100%';
               } else {

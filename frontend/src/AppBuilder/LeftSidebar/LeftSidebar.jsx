@@ -23,6 +23,7 @@ import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
+import { usePreviewToggleAnimation } from '../_hooks/usePreviewToggleAnimation';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
 // TODO: need to add datasources to the sidebar.
@@ -36,6 +37,7 @@ export const BaseLeftSidebar = ({
   renderAIChat = () => null,
   isUserInZeroToOneFlow,
 }) => {
+  const leftSidebarRef = useRef(null);
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
     pinned,
@@ -49,6 +51,9 @@ export const BaseLeftSidebar = ({
     toggleLeftSidebar,
     isSidebarOpen,
     isDraggingQueryPane,
+    previewPhase,
+    isPreviewInEditor,
+    notifyTransitionDone,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -62,9 +67,16 @@ export const BaseLeftSidebar = ({
       state.toggleLeftSidebar,
       state.isSidebarOpen,
       state.queryPanel.isDraggingQueryPane,
+      state.previewPhase,
+      state.isPreviewInEditor,
+      state.notifyTransitionDone,
     ],
     shallow
   );
+
+  const { shouldMount, animationClasses } = usePreviewToggleAnimation({
+    animationType: 'width',
+  });
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
@@ -94,7 +106,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-        100
+          100
       );
     } else {
       setPopoverContentHeight(100);
@@ -102,10 +114,25 @@ export const BaseLeftSidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
 
+  useEffect(() => {
+    /**
+     * PREVIEW FLOW - Listen for CSS transition completion on collapsed left sidebar.
+     * We intentionally attach this to gate the next phase of preview transition.
+     */
+    if (previewPhase !== 'animating') return;
+
+    const bar = leftSidebarRef.current;
+    if (!bar) return;
+
+    const onDone = () => notifyTransitionDone('leftSidebar');
+
+    bar.addEventListener('transitionend', onDone, { once: true });
+    return () => bar.removeEventListener('transitionend', onDone);
+  }, [previewPhase]);
+
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
@@ -124,17 +151,17 @@ export const BaseLeftSidebar = ({
       case 'debugger':
         return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
       case 'settings':
-        return (
-          <GlobalSettings
-            darkMode={darkMode}
-            isModuleEditor={isModuleEditor}
-          />
-        );
+        return <GlobalSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />;
     }
   };
 
   // TODO: Move this logic to a wrapper component and show components based on the mode
-  if (currentMode === 'view') {
+  if (currentMode === 'view' && !isPreviewInEditor) {
+    return null;
+  }
+
+  // Handle mount/unmount based on PREVIEW animation
+  if (!shouldMount) {
     return null;
   }
 
@@ -219,9 +246,12 @@ export const BaseLeftSidebar = ({
 
   return (
     <div
-      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
+      className={cx('left-sidebar !tw-z-10 tw-gap-1.5', animationClasses, {
+        'dark-theme theme-dark': darkMode,
+      })}
       data-cy="left-sidebar-inspector"
       style={{ zIndex: 9999 }}
+      ref={leftSidebarRef}
     >
       {renderLeftSidebarItems()}
       <Popover
@@ -230,7 +260,8 @@ export const BaseLeftSidebar = ({
           if (selectedSidebarItem === 'tooljetai') return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
-          if (pinned || isWithinSidebar || isClickOnInspect) return;
+          const isPreviewToggled = e.target.closest('button[data-cy="preview-link-button"]');
+          if (pinned || isWithinSidebar || isClickOnInspect || isPreviewToggled) return;
           toggleLeftSidebar(false);
         }}
         open={isSidebarOpen}
