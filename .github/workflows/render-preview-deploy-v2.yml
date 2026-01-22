@@ -299,9 +299,9 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ce-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -349,9 +349,9 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ce-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -393,9 +393,9 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ce-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -436,9 +436,9 @@ jobs:
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ce-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -n "$SERVICE_ID" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -779,9 +779,9 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-lts-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -829,9 +829,9 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-lts-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -873,9 +873,9 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-lts-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -916,9 +916,9 @@ jobs:
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-lts-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -n "$SERVICE_ID" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -1259,9 +1259,9 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -1309,9 +1309,9 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -1353,9 +1353,9 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -z "$SERVICE_ID" ]; then
             echo "❌ Service not found"
@@ -1396,9 +1396,9 @@ jobs:
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url "https://api.render.com/v1/services?slug=tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}" \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
-            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.service.id // empty')
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
           if [ -n "$SERVICE_ID" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
