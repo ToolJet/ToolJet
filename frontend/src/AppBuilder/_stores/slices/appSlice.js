@@ -8,6 +8,7 @@ import queryString from 'query-string';
 import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
   isSaving: false,
@@ -19,6 +20,7 @@ const initialState = {
   isViewer: false,
   themeChanged: false,
   isComponentLayoutReady: false,
+  pageKey: uuidv4(),
   appPermission: {
     selectedUsers: [],
     selectedUserGroups: [],
@@ -251,6 +253,7 @@ export const createAppSlice = (set, get) => ({
   },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
+
     // reset stores
     if (get().pageSwitchInProgress) {
       toast('Please wait, page switch in progress', {
@@ -267,6 +270,7 @@ export const createAppSlice = (set, get) => ({
       setResolvedGlobals,
       setResolvedPageConstants,
       setPageSwitchInProgress,
+      getCurrentPageId,
       license,
       modules: {
         canvas: { pages },
@@ -291,6 +295,14 @@ export const createAppSlice = (set, get) => ({
       if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
+    const currentPageId = getCurrentPageId(moduleId);
+    const isSamePage = currentPageId === pageId;
+
+    if (isSamePage) {
+      set((state) => {
+        state.pageKey = uuidv4();
+      });
+    }
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().appStore.modules[moduleId].app.slug;
