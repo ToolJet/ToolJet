@@ -208,16 +208,18 @@ const OAuthWrapper = ({
             <div className="col-auto d-flex gap-2">
               {selectedDataSource?.kind === 'googlesheetsv2' ? (
                 <>
-                  <Button
-                    className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
-                    disabled={isSaving}
-                    onClick={() => authorizeWithProvider()}
-                  >
-                    {t(
-                      `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                      `Connect to ${dataSourceNameCapitalize}`
-                    )}
-                  </Button>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <Button
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      disabled={isSaving}
+                      onClick={() => authorizeWithProvider()}
+                    >
+                      {t(
+                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
+                        `Connect to ${dataSourceNameCapitalize}`
+                      )}
+                    </Button>
+                  )}
                   <Button
                     className={`m2 ${isSaving ? ' loading' : ''}`}
                     disabled={isSaving || isDisabled || !hasFieldsChanged()}
