@@ -1,6 +1,6 @@
 ---
 id: overview
-title: Events ans Actions Overview
+title: Events and Actions Overview
 sidebar_label: Overview
 ---
 
