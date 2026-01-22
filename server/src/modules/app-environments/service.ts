@@ -27,11 +27,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
     });
   }
 
-  async processActions(
-    organizationId: string | null,
-    action: string,
-    actionParameters: AppEnvironmentActionParametersDto
-  ) {
+  async processActions(user: any, action: string, actionParameters: AppEnvironmentActionParametersDto) {
     const { editorEnvironmentId, deletedVersionId, editorVersionId, appId } = actionParameters;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {

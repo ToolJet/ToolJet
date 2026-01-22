@@ -41,6 +41,13 @@ export const iframeConfig = {
     },
   },
   exposedVariables: {},
+  actions: [
+    {
+      handle: 'setUrl',
+      displayName: 'Set URL',
+      params: [{ handle: 'url', displayName: 'URL', defaultValue: '' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

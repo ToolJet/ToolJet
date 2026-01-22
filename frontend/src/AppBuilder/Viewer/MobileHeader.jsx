@@ -11,6 +11,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
+import { useLocation } from 'react-router-dom';
 
 const MobileHeader = ({
   showHeader,
@@ -23,6 +24,7 @@ const MobileHeader = ({
   pages,
   viewerWrapperRef,
 }) => {
+  const location = useLocation();
   const { moduleId } = useModuleContext();
   const { isReleasedVersionId } = useStore(
     (state) => ({
@@ -30,6 +32,16 @@ const MobileHeader = ({
     }),
     shallow
   );
+
+  // Check if we're in preview mode (has env or version query params)
+  const searchParams = new URLSearchParams(location.search);
+  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
+
+  // Don't render header at all if not in preview mode
+  if (!isPreviewMode) {
+    return null;
+  }
+
   const editingVersion = useStore((state) => state.editingVersion);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
   const pageSettings = useStore((state) => state.pageSettings);
@@ -103,15 +115,14 @@ const MobileHeader = ({
     />
   );
 
-  const _renderPreviewSettings = () =>
-    !isReleasedVersionId && (
-      <PreviewSettings
-        isMobileLayout
-        showHeader={showHeader}
-        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-        darkMode={darkMode}
-      />
-    );
+  const _renderPreviewSettings = () => (
+    <PreviewSettings
+      isMobileLayout
+      showHeader={showHeader}
+      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+      darkMode={darkMode}
+    />
+  );
 
   const MenuBtn = () => {
     const { toggleSidebar } = useSidebar();
@@ -132,9 +143,7 @@ const MobileHeader = ({
       className="!tw-min-h-0 !tw-block"
       style={bgStyles}
     >
-      {!isEmpty(editingVersion) && !isReleasedVersionId && (
-        <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>
-      )}
+      {!isEmpty(editingVersion) && <Header className={'preview-settings-mobile'}>{_renderPreviewSettings()}</Header>}
       {(!isPagesSidebarHidden || !headerHidden || !logoHidden) && (
         <Header className={'mobile-nav-container'}>
           {!isPagesSidebarHidden && showOnMobile && <MenuBtn />}

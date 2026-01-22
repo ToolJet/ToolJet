@@ -209,6 +209,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
       // If there's a search input, use multiple find operations and merge results
       if (searchInput) {
         const searchLower = searchInput.toLowerCase();
+        const [firstName, lastName] = searchLower.split(' ');
         return manager.find(GroupUsers, {
           where: [
             {
@@ -232,6 +233,18 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
                 lastName: ILike(`%${searchLower}%`),
               },
             },
+            ...(lastName
+           ? [
+               {
+                 ...baseWhere,
+                 user: {
+                   ...baseWhere.user,
+                   firstName: ILike(`%${firstName}%`),
+                   lastName: ILike(`%${lastName}%`),
+                 },
+               },
+             ]
+           : []),
           ],
           relations: {
             group: true,
@@ -293,7 +306,8 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
 
     return dbTransactionWrap((manager: EntityManager) => {
       if (searchInput) {
-        const searchLower = searchInput.toLowerCase();
+        const searchLower = searchInput.toLowerCase().trim();
+        const [firstName, lastName] = searchLower.split(/\s+/);
         return manager.find(User, {
           select: {
             id: true,
@@ -320,6 +334,15 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               ...baseWhere,
               lastName: ILike(`%${searchLower}%`),
             },
+            ...(lastName
+              ? [
+                  {
+                    ...baseWhere,
+                    firstName: ILike(`%${firstName}%`),
+                    lastName: ILike(`%${lastName}%`),
+                  },
+                ]
+              : []),
           ],
           order: {
             createdAt: 'DESC',

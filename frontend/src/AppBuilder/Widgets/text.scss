@@ -9,6 +9,12 @@
   h6 {
     margin-bottom: 0px;
   }
+  table {
+    th,tr,td {
+      border-width: 1px;
+      border-color: var(--cc-default-border)
+    }
+  }
 }
 
 .text-widget-section {

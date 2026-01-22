@@ -1,6 +1,11 @@
 import { appEnvironmentService, appVersionService, authenticationService } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
+import {
+  getEnvironmentAccessFromPermissions,
+  hasEnvironmentAccess,
+  getSafeEnvironment,
+} from '@/_helpers/environmentAccess';
 
 const initialState = {
   selectedVersion: null,
@@ -28,7 +33,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   init: async (editingVersionId, envFromQueryParams) => {
     try {
-      const response = await appEnvironmentService.init(editingVersionId);
+      const response = await appEnvironmentService.init(editingVersionId, envFromQueryParams);
+
       const previewInitialEnvironmentId = !envFromQueryParams
         ? null
         : response.environments.find((environment) => environment.name === envFromQueryParams)?.id;
@@ -40,7 +46,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const { app_group_permissions } = currentSession;
 
       // Get app ID from the response (similar to how AppEnvironments.jsx gets it)
-      const appId = response.editorVersion?.app?.id;
+      const appId = response.editorVersion?.app?.id || response.editorVersion?.appId;
 
       const hasEditPermission =
         app_group_permissions?.is_all_editable || (appId && app_group_permissions?.editable_apps_id?.includes(appId));
@@ -54,6 +60,73 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const developmentEnvironment = response.environments.find((env) => env.name === 'development');
         if (developmentEnvironment) {
           selectedEnvironment = developmentEnvironment;
+        }
+      }
+
+      // Check environment access and fallback to safe environment if needed
+      if (appId) {
+        const environmentAccess = getEnvironmentAccessFromPermissions(app_group_permissions, appId);
+        let requestedEnvName = previewInitialEnvironmentId
+          ? response.environments.find((env) => env.id === previewInitialEnvironmentId)?.name
+          : selectedEnvironment?.name;
+
+        // Check if user is the owner of the app
+        const currentUserId = currentSession?.current_user?.id;
+        const appOwnerId = response.editorVersion?.app?.user_id || response.editorVersion?.app?.userId;
+        const isOwner = currentUserId && appOwnerId && currentUserId === appOwnerId;
+
+        // Backend now checks if user has access to version's current environment
+        // and only falls back to development if they don't have access
+        if (hasEditPermission && !previewInitialEnvironmentId) {
+          // Use the environment returned by backend (response.editorEnvironment)
+          // which is already set in selectedEnvironment above
+          requestedEnvName = selectedEnvironment?.name;
+
+          // Special case: If user is owner and doesn't have explicit access to the requested environment,
+          // then fallback to development (this handles new apps where permissions haven't synced yet)
+          if (
+            isOwner &&
+            requestedEnvName !== 'development' &&
+            !hasEnvironmentAccess(environmentAccess, requestedEnvName)
+          ) {
+            requestedEnvName = 'development';
+            const developmentEnvironment = response.environments.find((env) => env.name === 'development');
+            if (developmentEnvironment) {
+              selectedEnvironment = developmentEnvironment;
+            }
+          }
+        }
+
+        // Check if user has access to the requested environment
+        // Skip this check if user is owner requesting development
+        const skipAccessCheck = isOwner && requestedEnvName === 'development';
+
+        if (!skipAccessCheck && requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
+          // User doesn't have access, find the closest available environment
+          const safeEnvName = getSafeEnvironment(environmentAccess, requestedEnvName, hasEditPermission);
+          const safeEnvironment = response.environments.find((env) => env.name === safeEnvName);
+
+          if (safeEnvironment) {
+            selectedEnvironment = safeEnvironment;
+
+            // Fetch the version for the safe environment
+            try {
+              const envChangeResponse = await appEnvironmentService.postEnvironmentChangedAction({
+                appId,
+                editorEnvironmentId: safeEnvironment.id,
+                editorVersionId: response.editorVersion?.id,
+              });
+
+              if (envChangeResponse.editorVersion) {
+                response.editorVersion = envChangeResponse.editorVersion;
+                response.appVersionEnvironment = response.environments.find(
+                  (env) => env.id === envChangeResponse.editorVersion.currentEnvironmentId
+                );
+              }
+            } catch (error) {
+              console.error('Error switching to safe environment:', error);
+            }
+          }
         }
       }
 
@@ -83,7 +156,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         return stateUpdate;
       });
     } catch (error) {
-      console.error('Error while initializing the environment dropdown', error);
+      console.error('❌ DEBUG - Error while initializing the environment dropdown', error);
     }
   },
   setCurrentVersionId: (currentVersionId) => set(() => ({ currentVersionId }), false, 'setCurrentVersionId'),
@@ -314,9 +387,10 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   environmentChangedAction: async (environment, _onSuccess, _onFailure) => {
     try {
       const environmentId = environment.id;
-      let selectedVersion;
-      let selectedEnvironment;
+      let selectedVersion = get().selectedVersion; // Initialize with current version
+      let selectedEnvironment = get().selectedEnvironment; // Initialize with current environment
       let selectedVersionDef;
+      let appVersionEnvironment = environment;
       if (get().selectedEnvironment.id !== environmentId) {
         selectedEnvironment = environment;
         let optionsToUpdate = {
@@ -332,33 +406,35 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         // Compare against the environment where the selected version currently lives
         const versionIsAvailableInEnvironment = environment?.priority <= get().appVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
+          // Current version doesn't exist in target environment - fetch a version that does
           const { appId } = useStore.getState().appStore.modules.canvas.app;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
-            // Preserve the currently selected version when switching environments (e.g., version=v5)
             editorVersionId: get().selectedVersion?.id,
           });
-          const selectedVersion = response.editorVersion;
-          const appVersionEnvironment = get().environments.find(
-            (environment) => environment.id === selectedVersion.currentEnvironmentId
-          );
+          selectedVersion = response.editorVersion;
+          appVersionEnvironment = get().environments.find((env) => env.id === selectedVersion.currentEnvironmentId);
 
-          //TODO: need to check if this is needed
-          // selectedVersionDef = await appVersionService.getAppVersionData(appId, selectedVersion.id);
-
+          // Set version from response and environment to the one passed in function (clicked environment)
           optionsToUpdate['selectedVersion'] = selectedVersion;
           optionsToUpdate['currentVersionId'] = selectedVersion.id;
           optionsToUpdate['appVersionEnvironment'] = appVersionEnvironment;
           optionsToUpdate['versionsPromotedToEnvironment'] = [selectedVersion];
+          optionsToUpdate['selectedEnvironment'] = environment; // Use clicked environment, not the version's environment
+
           const { shouldRenderPromoteButton, shouldRenderReleaseButton } = calculatePromoteAndReleaseButtonVisibility(
             selectedVersion.id,
-            environment,
+            environment, // Use clicked environment for button visibility
             useStore.getState().releasedVersionId,
             useStore.getState()?.license?.featureAccess
           );
           optionsToUpdate['shouldRenderPromoteButton'] = shouldRenderPromoteButton;
           optionsToUpdate['shouldRenderReleaseButton'] = shouldRenderReleaseButton;
+        } else {
+          // Version is available in target environment - just switch environment, keep same version
+          optionsToUpdate['selectedEnvironment'] = environment;
+          optionsToUpdate['appVersionEnvironment'] = environment;
         }
         set((state) => ({ ...state, ...optionsToUpdate }));
       }
@@ -383,6 +459,11 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       const { appId } = useStore.getState().appStore.modules.canvas.app;
 
       const response = await appVersionService.promoteEnvironment(appId, versionId, get().selectedEnvironment.id);
+
+      // Check if user has access to the promoted environment
+      const hasAccessToPromotedEnv = response.hasAccessToPromotedEnvironment !== false; // default to true if not specified
+      const promotedToEnvironment = response.promotedToEnvironment;
+
       set((state) => ({
         ...state,
         selectedEnvironment: response.editorEnvironment,
@@ -398,6 +479,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       }));
       onSuccess({
         selectedEnvironment: response.editorEnvironment,
+        hasAccessToPromotedEnvironment: hasAccessToPromotedEnv,
+        promotedToEnvironment: promotedToEnvironment,
       });
     } catch (error) {
       console.error(error);
