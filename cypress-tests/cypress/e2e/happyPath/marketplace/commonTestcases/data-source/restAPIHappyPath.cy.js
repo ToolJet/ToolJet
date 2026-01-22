@@ -13,9 +13,9 @@ const authenticationDropdownSelector =
 const grantTypeDropdown =
   ":nth-child(1) > :nth-child(2) > .react-select__control";
 const addAccessTokenDropdown =
-  ":nth-child(9) > .css-nwhe5y-container > .react-select__control";
+  ":nth-child(8) > .css-nwhe5y-container > .react-select__control";
 const clientAuthenticationDropdown =
-  ":nth-child(14) > .css-nwhe5y-container > .react-select__control";
+  ":nth-child(13) > .css-nwhe5y-container > .react-select__control";
 
 describe("Data source Rest API", () => {
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe("Data source Rest API", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
@@ -123,9 +123,10 @@ describe("Data source Rest API", () => {
     cy.get(
       restAPISelector.subHeaderLabel(restAPIText.authenticationText)
     ).should("have.text", restAPIText.authenticationText);
-    cy.get(
-      restAPISelector.subHeaderLabel(restAPIText.authenticationTypeLabel)
-    ).should("have.text", restAPIText.authenticationTypeLabel);
+    cy.get(".dynamic-form-element > .form-label").should(
+      "have.text",
+      restAPIText.authenticationTypeLabel
+    );
 
     cy.get(authenticationDropdownSelector).click();
     cy.contains(
@@ -174,10 +175,9 @@ describe("Data source Rest API", () => {
       "have.text",
       restAPIText.oAuthText
     );
-    cy.get(restAPISelector.subHeaderLabel(restAPIText.grantTypeLabel)).should(
-      "have.text",
-      restAPIText.grantTypeLabel
-    );
+    cy.get(
+      ":nth-child(3) > :nth-child(1) > :nth-child(1) > :nth-child(1) > .form-label"
+    ).should("have.text", restAPIText.grantTypeLabel);
     cy.get(grantTypeDropdown).click();
     cy.contains(
       `[id*="react-select-"]`,
@@ -329,10 +329,10 @@ describe("Data source Rest API", () => {
     );
     cy.contains("Save").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify connection response for all methods", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
@@ -465,10 +465,10 @@ describe("Data source Rest API", () => {
       expectedResponseShape: {},
     });
     cy.apiDeleteApp(`${fake.companyName}-restAPI-CURD-App`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for basic authentication type connection", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
@@ -528,10 +528,10 @@ describe("Data source Rest API", () => {
       urlSuffix: "/basic-auth/invaliduser/invalidpass",
     });
     cy.apiDeleteApp(`${fake.companyName}-restAPI-Basic-App`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for bearer authentication type connection", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
@@ -587,7 +587,7 @@ describe("Data source Rest API", () => {
     });
     cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-App`);
     cy.intercept("GET", "api/data_sources?**").as("datasource");
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi-invalid`,
       "restapi",
@@ -639,10 +639,10 @@ describe("Data source Rest API", () => {
       urlSuffix: "/bearer",
     });
     cy.apiDeleteApp(`${fake.companyName}-restAPI-Bearer-invalid`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-restapi`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it.skip("Should verify response for authentication code grant type connection", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",

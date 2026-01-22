@@ -3,6 +3,23 @@ import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 import { syntaxTree } from '@codemirror/language';
 
+/**
+ * Collects all unique JS method hints from all field types
+ * @param {Object} hints - The hints object containing jsHints
+ * @returns {Array} Array of unique JS method hints with type 'js_method'
+ */
+const collectUniqueJSMethodHints = (hints) => {
+  const uniqueHints = new Set();
+  Object.values(hints['jsHints']).forEach((fieldType) => {
+    fieldType['methods'].forEach((hint) => uniqueHints.add(hint));
+  });
+
+  return Array.from(uniqueHints, (hint) => ({
+    hint,
+    type: 'js_method',
+  }));
+};
+
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
@@ -17,14 +34,8 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
       type: 'js_method',
     }));
   } else {
-    JSLangHints = Object.keys(hints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    JSLangHints = collectUniqueJSMethodHints(hints);
   }
 
   const deprecatedWorkspaceVarsHints = ['client', 'server'];
@@ -55,11 +66,14 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     return suggestion.hint.includes(actualInput);
   });
 
+  const lastCharsAfterDot = actualInput.split('.').pop();
   const jsHints = JSLangHints.filter((cm) => {
-    const lastCharsAfterDot = actualInput.split('.').pop();
     if (cm.hint.includes(lastCharsAfterDot)) return true;
+    return false;
+  });
 
-    if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
+  jsHints.sort((a, b) => {
+    return a.hint.startsWith(lastCharsAfterDot) ? -1 : 1;
   });
 
   const searchInput = removeNestedDoubleCurlyBraces(input);
@@ -87,7 +101,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
   if (!hints) return [];
 
   const suggestions = hints.map(({ hint, type }) => {
-    let displayedHint = type === 'js_method' || (type === 'Function' && !hint.endsWith('.run()')) ? `${hint}()` : hint;
+    let displayedHint = type === 'js_method' || (type === 'Function' && !(hint.endsWith('.run()') || hint.endsWith('.reset()'))) ? `${hint}()` : hint;
 
     const currentWord = input.split('{{').pop().split('}}')[0];
     const hasDepth = currentWord.includes('.');
@@ -148,13 +162,11 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
           changes: pickedCompletionConfig,
         };
 
-        const actualInput = removeNestedDoubleCurlyBraces(doc.toString());
-
-        if (actualInput.length === 0) {
-          dispatchConfig.selection = {
-            anchor: anchorSelection,
-          };
-        }
+        dispatchConfig.selection = {
+          anchor:
+            pickedCompletionConfig.from +
+            (completion.type === 'js_methods' ? completion.label.length - 1 : completion.label.length),
+        };
 
         view.dispatch(dispatchConfig);
       },
@@ -190,10 +202,6 @@ export function findNearestSubstring(inputStr, currentCurosorPos) {
   let substring = '';
   const inputSubstring = inputStr.substring(0, end + 1);
 
-  console.log(`Initial cursor position: ${currentCurosorPos}`);
-  console.log(`Character at cursor: '${inputStr[end]}'`);
-  console.log(`Input substring: '${inputSubstring}'`);
-
   // Iterate backwards from the character before the cursor
   for (let i = end; i >= 0; i--) {
     if (inputStr[i] === ' ') {
@@ -218,14 +226,8 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
 
   let JSLangHints = [];
   if (lang === 'javascript') {
-    JSLangHints = Object.keys(allHints['jsHints'])
-      .map((key) => {
-        return hints['jsHints'][key]['methods'].map((hint) => ({
-          hint: hint,
-          type: 'js_method',
-        }));
-      })
-      .flat();
+    // Collect all unique JS method hints from all field types
+    JSLangHints = collectUniqueJSMethodHints(hints);
 
     JSLangHints = JSLangHints.filter((cm) => {
       let lastWordAfterDot = nearestSubstring.split('.');
@@ -323,10 +325,13 @@ export const getSuggestionsForMultiLine = (context, allHints, hints = {}, lang, 
               break;
             }
           }
-          dispacthConfig.selection = {
-            anchor: pickedCompletionConfig.from + completion.label.length - 1,
-          };
         }
+
+        dispacthConfig.selection = {
+          anchor:
+            pickedCompletionConfig.from +
+            (completion.type === 'js_methods' ? completion.label.length - 1 : completion.label.length),
+        };
 
         view.dispatch(dispacthConfig);
       };

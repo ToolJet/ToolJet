@@ -8,7 +8,7 @@ import { SsoConfigOidcGroupSyncRepository } from './oidc-group-sync.repository';
 import { SubModule } from '@modules/app/sub-module';
 
 export class LoginConfigsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { LoginConfigsService, LoginConfigsController, LoginConfigsUtilService } = await this.getProviders(
       configs,
       'login-configs',
@@ -23,7 +23,7 @@ export class LoginConfigsModule extends SubModule {
     return {
       module: LoginConfigsModule,
       imports: [await InstanceSettingsModule.register(configs), await EncryptionModule.register(configs)],
-      controllers: [LoginConfigsController],
+      controllers: isMainImport ? [LoginConfigsController] : [],
       providers: [
         LoginConfigsService,
         LoginConfigsUtilService,

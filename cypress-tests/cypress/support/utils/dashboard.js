@@ -1,13 +1,13 @@
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
-import { dashboardText } from "Texts/dashboard";
-import { commonText } from "Texts/common";
 import {
-  viewAppCardOptions,
-  verifyModal,
-  closeModal,
   cancelModal,
+  closeModal,
+  verifyModal,
+  viewAppCardOptions,
 } from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
 
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {
@@ -29,7 +29,7 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
   cy.get(".modal-body")
-    .parent()
+    .parent().parent()
     .within(() => {
       cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
     });

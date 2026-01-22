@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -9,12 +9,19 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import MentionComponentInChat from './MentionComponentInChat';
+import ConfigHandleButton from '../../../_components/ConfigHandleButton';
+import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
+import Popover from '@/_ui/Popover';
+import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
 
 export const ConfigHandle = ({
   id,
+  readOnly,
   widgetTop,
   widgetHeight,
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
@@ -25,21 +32,28 @@ export const ConfigHandle = ({
   visibility,
   isModuleContainer,
   subContainerIndex,
+  isDynamicHeightEnabled,
 }) => {
   const { moduleId } = useModuleContext();
-  const isLicenseValid = useStore((state) => state.isLicenseValid(), shallow);
+  const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
   const isMultipleComponentsSelected = useStore(
     (state) => (findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false),
     shallow
   );
-  const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
+  const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
   const currentTab = useStore(
     (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
+  const [hideDynamicHeightInfo, setHideDynamicHeightInfo] = useState(
+    localStorage.getItem('hideDynamicHeightInfo') === 'true'
+  );
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const timeoutRef = useRef(null);
   const position = widgetTop < 15 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
@@ -66,12 +80,19 @@ export const ConfigHandle = ({
 
   let height = visibility === false ? 10 : widgetHeight;
 
+  const deleteComponents = () => {
+    const selectedComponents = getSelectedComponents();
+    if (selectedComponents.length > 0) {
+      setWidgetDeleteConfirmation(true);
+    }
+  };
+
   const getTooltip = () => {
     const permission = component.permissions?.[0];
-    if (!permission) return null;
+    if (!permission) return 'Access restricted';
 
     const users = permission.groups || permission.users || [];
-    if (users.length === 0) return null;
+    if (users.length === 0) return 'Access restricted';
 
     const isSingle = permission.type === 'SINGLE';
     const isGroup = permission.type === 'GROUP';
@@ -88,8 +109,89 @@ export const ConfigHandle = ({
         : `Access restricted to ${users.length} user groups`;
     }
 
-    return null;
+    return 'Access restricted';
   };
+
+  const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
+  const getConfigHandleButtonStyle = isHiddenOrModalOpen
+    ? {
+      background: 'var(--interactive-selected)',
+      color: 'var(--text-default)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+      height: '24px',
+    }
+    : {
+      color: 'var(--text-on-solid)',
+      padding: '2px 6px',
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '6px',
+      height: '24px',
+    };
+  if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
+    getConfigHandleButtonStyle.background = '#9747FF';
+  }
+
+  const iconOnlyButtonStyle = {
+    height: '24px',
+    width: '24px',
+    cursor: 'pointer',
+    background: 'var(--background-surface-layer-01)',
+    border: '1px solid var(--border-weak)',
+  };
+
+  const handleMouseEnter = () => {
+    if (hideDynamicHeightInfo) return;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsPopoverOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (hideDynamicHeightInfo) return;
+    timeoutRef.current = setTimeout(() => {
+      setIsPopoverOpen(false);
+    }, 50); // Small delay to allow moving mouse to popover
+  };
+
+  const popoverContent = (
+    <div className="dynamic-height-info-wrapper" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <div className="dynamic-height-info-image">
+        <DynamicHeightInfo />
+      </div>
+      <div className="dynamic-height-info-body">
+        <p className="dynamic-height-info-text-title">Dynamic Height enabled</p>
+        <p className="dynamic-height-info-text-description">
+          Your component expands based on content but won&apos;t shrink below the height you set on canvas.
+        </p>
+      </div>
+      <div className="dynamic-height-info-button">
+        <ButtonComponent
+          size="medium"
+          variant="outline"
+          onClick={() => {
+            localStorage.setItem('hideDynamicHeightInfo', 'true');
+            setIsPopoverOpen(false);
+            setHideDynamicHeightInfo(true);
+          }}
+        >
+          Never show this again
+        </ButtonComponent>
+      </div>
+    </div>
+  );
+
+  if (readOnly) {
+    return null;
+  }
+
 
   return (
     <div
@@ -100,10 +202,13 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-            ? '-20px'
-            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+              ? '-26px'
+              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '2px',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -119,108 +224,95 @@ export const ConfigHandle = ({
       data-tooltip-html="Your plan is expired. <br/> Renew to use the modules."
       data-tooltip-place="right"
     >
-      {licenseValid && isRestricted && (
-        <ToolTip message={getTooltip()} show={licenseValid && isRestricted && !draggingComponentId}>
-          <span
-            style={{
-              background:
-                visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
-              border: position === 'bottom' ? '1px solid white' : 'none',
-              color: visibility === false && 'var(--text-placeholder)',
-              marginRight: '4px',
-            }}
-            className="badge handle-content"
+      <ConfigHandleButton customStyles={getConfigHandleButtonStyle} className="no-hover component-name-btn">
+        {isDynamicHeightEnabled && (
+          <Popover
+            open={isPopoverOpen}
+            side="bottom-start"
+            popoverContent={popoverContent}
+            popoverContentClassName="dynamic-height-info-popover"
           >
-            <SolidIcon width="12" name="lock" fill="var(--icon-on-solid)" />
-          </span>
-        </ToolTip>
-      )}
-      <span
-        style={{
-          background:
-            visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
-          border: position === 'bottom' ? '1px solid white' : 'none',
-          color: visibility === false && 'var(--text-placeholder)',
-        }}
-        className="badge handle-content"
-      >
-        <div
-          style={{ display: 'flex', alignItems: 'center' }}
-          onClick={(e) => {
-            e.preventDefault();
-            setSelectedComponentAsModal(id);
-          }}
-          role="button"
-          data-cy={`${componentName?.toLowerCase()}-config-handle`}
-          className="text-truncate"
-        >
-          {/* Settings Icon */}
-          <span
-            onClick={() => {
-              setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-              setRightSidebarOpen(true);
-            }}
-            style={{ cursor: 'pointer', marginRight: '5px' }}
-          >
-            <SolidIcon
-              name="propertiesstyles"
-              width="12"
-              height="12"
-              viewBox="0 0 16 16"
-              fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
-            />
-          </span>
-          <span>{componentName}</span>
-          {/* Divider */}
-          <hr
-            style={{
-              marginLeft: '10px',
-              height: '12px',
-              width: '2px',
-              backgroundColor: visibility === false ? 'var(--text-placeholder)' : '#fff',
-              opacity: 0.5,
-            }}
-          />
-        </div>
-        {/* Delete Button */}
-        {!isMultipleComponentsSelected && !shouldFreeze && (
-          <div>
-            <img
-              style={{ cursor: 'pointer', marginLeft: '5px' }}
-              src="assets/images/icons/inspect.svg"
-              width="12"
-              role="button"
-              height="12"
-              draggable="false"
-              onClick={() => setComponentToInspect(componentName)}
-              data-cy={`${componentName.toLowerCase()}-inspect-button`}
-              className="config-handle-inspect"
-            />
-            {!isModuleContainer && (
-              <span
-                style={{ cursor: 'pointer', marginLeft: '5px' }}
-                onClick={() => {
-                  deleteComponents([id]);
-                }}
-                data-cy={`${componentName.toLowerCase()}-delete-button`}
-              >
-                <SolidIcon
-                  name="trash"
-                  width="12"
-                  height="12"
-                  fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+            <div
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ToolTip message="Dynamic height enabled" show={hideDynamicHeightInfo} delay={{ show: 500, hide: 50 }}>
+                <VectorSquare
+                  size={14}
+                  color={
+                    isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-on-solid)' : 'var(--icon-default)'
+                  }
                 />
-              </span>
-            )}
+              </ToolTip>
+            </div>
+          </Popover>
+        )}
+        {!visibility && (
+          <div>
+            <EyeClosed
+              size={14}
+              color={isDynamicHeightEnabled && !isHiddenOrModalOpen ? 'var(--icon-on-solid)' : 'var(--icon-default)'}
+            />
           </div>
         )}
-      </span>
+        <span>{componentName}</span>
+      </ConfigHandleButton>
+
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => setComponentToInspect(componentName)}
+        message="State inspector"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-inspect-button`}
+      >
+        <SquareDashedMousePointer size={14} color="var(--icon-strong)" />
+      </ConfigHandleButton>
+
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => {
+          setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          setRightSidebarOpen(true);
+        }}
+        message="Properties & Styles"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-properties-styles-button`}
+      >
+        <PencilRuler size={14} color="var(--icon-strong)" />
+      </ConfigHandleButton>
+
+      {licenseValid && isRestricted && (
+        <ConfigHandleButton
+          customStyles={iconOnlyButtonStyle}
+          message={getTooltip()}
+          show={licenseValid && isRestricted && !draggingComponentId}
+          dataCy={`${componentName.toLowerCase()}-permissions-button`}
+        >
+          <Lock size={14} color="var(--icon-strong)" />
+        </ConfigHandleButton>
+      )}
+      {!isMultipleComponentsSelected && !shouldFreeze && <MentionComponentInChat componentName={componentName} />}
+      <ConfigHandleButton
+        customStyles={iconOnlyButtonStyle}
+        onClick={() => {
+          !shouldFreeze && deleteComponents();
+        }}
+        message="Delete component"
+        show={true}
+        dataCy={`${componentName.toLowerCase()}-delete-component-button`}
+        shouldHide={shouldFreeze}
+      >
+        <Trash size={14} color="var(--icon-strong)" />
+      </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {!isLicenseValid && componentType === 'ModuleViewer' && (
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
         <Tooltip
+          delay={{ show: 500, hide: 50 }}
           id={`invalid-license-modules-${componentName?.toLowerCase()}`}
           className="tooltip"
-          isOpen={_showHandle && componentType === 'ModuleViewer'}
+          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
           style={{ textAlign: 'center' }}
         />
       )}

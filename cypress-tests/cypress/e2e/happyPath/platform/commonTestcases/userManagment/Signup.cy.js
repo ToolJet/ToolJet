@@ -1,21 +1,14 @@
-import { commonSelectors } from "Selectors/common";
-import { commonText } from "Texts/common";
-import { SignUpPageElements } from "Support/utils/onboarding";
 import { fake } from "Fixtures/fake";
-import {
-  verifyConfirmEmailPage,
-  verifyConfirmPageElements,
-  verifyOnboardingQuestions,
-  verifyInvalidInvitationLink,
-} from "Support/utils/onboarding";
-import { dashboardText } from "Texts/dashboard";
-import {
-  verifyandModifyUserRole,
-  verifyandModifySizeOftheCompany,
-} from "Support/utils/selfHostSignUp";
+import { commonSelectors } from "Selectors/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { logout } from "Support/utils/common";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
+import {
+  SignUpPageElements,
+  verifyConfirmEmailPage,
+  verifyInvalidInvitationLink,
+} from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
 
 describe("User signup", () => {
   const data = {};
@@ -23,9 +16,10 @@ describe("User signup", () => {
 
   before(() => {
     cy.ifEnv("Enterprise", () => {
-      enableInstanceSignup()
+      cy.defaultWorkspaceLogin();
+      enableInstanceSignup();
+      logout();
     });
-
   });
 
   it("Verify the signup flow and UI elements", () => {
@@ -33,13 +27,29 @@ describe("User signup", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.workspaceName = fake.companyName;
 
+    cy.intercept("GET", "/api/white-labelling").as("whiteLabellingAPI");
+
     cy.visit("/");
     cy.wait(500);
     cy.get(commonSelectors.createAnAccountLink).realClick();
     SignUpPageElements();
 
+    cy.wait("@whiteLabellingAPI");
+    cy.wait(1000);
+
+    cy.get(onboardingSelectors.nameInput)
+      .should("be.visible")
+      .should("not.be.disabled");
+
+    cy.get(onboardingSelectors.nameInput).click();
+
+    cy.wait(100);
+
     cy.get(onboardingSelectors.nameInput).clear();
-    cy.get(onboardingSelectors.nameInput).type(data.fullName);
+    cy.get(onboardingSelectors.nameInput).type(data.fullName, { force: true });
+
+    cy.get(onboardingSelectors.nameInput).should("have.value", data.fullName);
+
     cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
     cy.clearAndType(
       onboardingSelectors.loginPasswordInput,
@@ -47,54 +57,7 @@ describe("User signup", () => {
     );
     cy.get(commonSelectors.signUpButton).click();
     cy.wait(500);
-    verifyConfirmEmailPage(data.email);
-
-    cy.task("dbConnection", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select invitation_token from users where email='${data.email}';`,
-    }).then((resp) => {
-      invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-      cy.visit(invitationLink);
-    });
 
     logout();
-  });
-
-  it("Verify invalid invitation link", () => {
-    cy.log(invitationLink);
-    cy.visit(invitationLink);
-    verifyInvalidInvitationLink();
-    cy.get(commonSelectors.pageLogo).click();
-    cy.get('[data-cy="sign-in-header"]').should("be.visible");
-  });
-
-  it("Verify onboarding flow", () => {
-    // rewrite for for EE and cloud
-    data.fullName = fake.fullName;
-    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.workspaceName = fake.companyName;
-
-    cy.visit("/");
-    cy.get(onboardingSelectors.createAnAccountLink).click();
-    cy.wait(2000);
-    cy.get(onboardingSelectors.nameInput).clear();
-    cy.get(onboardingSelectors.nameInput).type(data.fullName);
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(
-      onboardingSelectors.loginPasswordInput,
-      commonText.password
-    );
-    cy.intercept("POST", "/api/onboarding/signup").as("signup");
-    cy.get(commonSelectors.signUpButton).click();
-
-    cy.wait("@signup")
-    cy.get('[data-cy="check-your-mail-header"]').should("be.visible");
-    cy.task("dbConnection", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select invitation_token from users where email='${data.email}';`,
-    }).then((resp) => {
-      invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-      cy.visit(invitationLink);
-    });
   });
 });

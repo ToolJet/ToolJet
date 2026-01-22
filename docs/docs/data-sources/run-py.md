@@ -20,7 +20,7 @@ class Person:
     def __init__(self, name, age):
         self.name = name
         self.age = age
-
+        
     def myfunc(self):
         return "Hello my name is " + self.name
 
@@ -29,13 +29,12 @@ p1 = Person(tj_globals.currentUser.firstName, 36)
 components.text1.setText(p1.myfunc())
 ```
 
-4. The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/app-builder/events/use-case/csa)** to set the Text Component's value from the Python query.
+4. The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/tooljet-concepts/component-specific-actions)** to set the Text Component's value from the Python query. 
 
 :::tip
-
 - As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/).
 - Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
-  :::
+:::
 
 </div>
 
@@ -49,9 +48,7 @@ To trigger queries in Python, you can use the below functions:
 actions.runQuery('getSalesData')
 #replace getSalesData with your query name
 ```
-
 Or
-
 ```py
 queries.getSalesData.run()
 #replace getSalesData with your query name
@@ -63,7 +60,7 @@ queries.getSalesData.run()
 
 ## Get Query Data
 
-To immediately access the data returned by a query in **Run Python code**, you can use the below functions:
+To immediately access the data returned by a query in **Run Python code**, you can use the below functions: 
 
 ### Trigger a Query and Retrieve its Data
 
@@ -149,7 +146,7 @@ actions.getPageVariable('number')
 
 ## Using Transformations With Python
 
-**Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new **REST API** query, leave the method as _GET_ and enter the below url under the **URL** property.
+**Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new **REST API** query, leave the method as *GET* and enter the below url under the **URL** property.
 
 ```yaml
 https://dummyjson.com/products
@@ -169,7 +166,7 @@ products_data = {
 
 ### Filter the Titles From the Response
 
-To extract a list of product titles from the given data structure, we iterate through the _products_ list and collect each product's _title_ using the below code. Enable **Transformations** in the Query Editor and use the below code:
+To extract a list of product titles from the given data structure, we iterate through the *products* list and collect each product's *title* using the below code. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return [product["title"] for product in data["products"]]
@@ -177,7 +174,7 @@ return [product["title"] for product in data["products"]]
 
 ### Filter Products by Category
 
-To filter products by a specific category, such as _smartphones_, and extract their titles. Enable **Transformations** in the Query Editor and use the below code:
+To filter products by a specific category, such as *smartphones*, and extract their titles. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return [product["title"] for product in data["products"] if product["category"] == "smartphones"]
@@ -185,7 +182,7 @@ return [product["title"] for product in data["products"] if product["category"] 
 
 ### Calculate Average Price of a Category
 
-To calculate the average price of products within the _laptops_ category. Enable **Transformations** in the Query Editor and use the below code:
+To calculate the average price of products within the *laptops* category. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0
@@ -199,10 +196,10 @@ return sum(product["price"] for product in data["products"] if product["category
 
 Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
 
-For instance, if you have a **Run Python code** query named _updatedProductInfo_, you can pass `{{queries.updatedProductInfo.data}}` under the **Data** property of a Table component to populate it with the data returned by the _updatedProductInfo_ query.
+For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the **Data** property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 
 
 :::info
-Issues with writing custom Python code? Ask in our [Slack community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
+Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
 :::
 
 </div>

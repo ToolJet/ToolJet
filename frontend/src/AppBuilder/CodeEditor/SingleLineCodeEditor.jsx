@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved */
 import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
-import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
+import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
@@ -14,7 +14,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
@@ -24,17 +24,16 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { getAutocompletion, getSuggestionsForMultiLine } from './autocompleteExtensionConfig';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import CodeHinter from './CodeHinter';
-// import { EditorContext } from '../Context/EditorContextWrapper';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCssVarValue } from '@/Editor/Components/utils';
+import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import Icon from '@/_ui/Icon/solidIcons/index';
-import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
+import useWorkflowStore from '@/_stores/workflowStore';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { moduleId } = useModuleContext();
@@ -50,7 +49,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
-
   const customVariables = customResolvables?.[parentId]?.[0] || {};
 
   useEffect(() => {
@@ -85,10 +83,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
-
-  //! Re render the component when the componentName changes as the initialValue is not updated
-
-  // const { variablesExposedForPreview } = useContext(EditorContext) || {};
 
   // const customVariables = variablesExposedForPreview?.[componentId] ?? {};
 
@@ -239,14 +233,16 @@ const EditorInput = ({
 
   const { queryPanelKeybindings } = useQueryPanelKeyHooks(onBlurUpdate, currentValue, 'singleline');
 
-  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
+  const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
     [wrapperRef.current]
   );
   function autoCompleteExtensionConfig(context) {
-    const hintsWithoutParamHints = getWorkflowSuggestions ?? getSuggestions();
+    const hasWorkflowSuggestions =
+      workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
+    const hintsWithoutParamHints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const hints = {
@@ -254,7 +250,7 @@ const EditorInput = ({
       appHints: [...hintsWithoutParamHints.appHints, ...serverHints, ...paramHints],
     };
 
-    if (!getWorkflowSuggestions) {
+    if (!hasWorkflowSuggestions) {
       let word = context.matchBefore(/\w*/);
 
       const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
@@ -366,7 +362,6 @@ const EditorInput = ({
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const theme = darkMode ? okaidia : githubLight;
-
 
   // when full screen editor is closed, show the preview box
   useEffect(() => {
@@ -482,12 +477,20 @@ const EditorInput = ({
               extensions={
                 showSuggestions
                   ? [
-                    javascript({ jsx: lang === 'jsx' }),
-                    autoCompleteConfig,
-                    keymap.of([...customKeyMaps]),
-                    customTabKeymap,
-                  ]
-                  : [javascript({ jsx: lang === 'jsx' })]
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                      tooltips({
+                        parent: document.body,
+                      }),
+                    ]
+                  : [
+                      javascript({ jsx: lang === 'jsx' }),
+                      tooltips({
+                        parent: document.body,
+                      }),
+                    ]
               }
               onChange={(val) => {
                 setFirstTimeFocus(false);
@@ -542,6 +545,7 @@ const DynamicEditorBridge = (props) => {
     onVisibilityChange,
     isEventManagerParam = false,
     iconVisibility,
+    componentId,
   } = props;
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
@@ -553,11 +557,10 @@ const DynamicEditorBridge = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   let newInitialValue = initialValue,
     shouldResolve = true;
-
   // This is to handle the case when the initial value is a string and contains components or queries
   // and we need to replace the ids with names
   // but we don't want to resolve the references as it needs to be displayed as it is
-  if (paramName === 'generateFormFrom') {
+  if (paramName === 'generateFormFrom' || paramName === 'dataSourceSelector') {
     if (
       typeof initialValue === 'string' &&
       (initialValue?.includes('components') || initialValue?.includes('queries'))
@@ -586,8 +589,9 @@ const DynamicEditorBridge = (props) => {
 
     return (
       <div
-        className={`col-auto pt-0 fx-common fx-button-container ${(isEventManagerParam || codeShow) && 'show-fx-button-container'
-          }`}
+        className={`col-auto pt-0 fx-common fx-button-container ${
+          (isEventManagerParam || codeShow) && 'show-fx-button-container'
+        } ${paramType === 'slider' ? 'slider-fx-button-container' : ''}`}
       >
         <FxButton
           active={codeShow}
@@ -615,12 +619,16 @@ const DynamicEditorBridge = (props) => {
     return (
       <>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
-          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div
+            className={`field ${paramType === 'slider' ? 'slider-code-editor-label' : ''} ${className}`}
+            data-cy={`${cyLabel}-widget-parameter-label`}
+          >
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-                }`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
             {isDeprecated && (
               <span className={'list-item-deprecated-column-type'}>
@@ -652,6 +660,8 @@ const DynamicEditorBridge = (props) => {
         component={component}
         onVisibilityChange={onVisibilityChange}
         iconVisibility={iconVisibility}
+        componentId={componentId}
+        darkMode={darkMode}
       />
     );
   };

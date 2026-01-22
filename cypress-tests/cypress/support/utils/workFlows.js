@@ -2,89 +2,133 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
-import { deleteDatasource } from "Support/utils/dataSource";
 
-Cypress.Commands.add("createWorkflowApp", (wfName) => {
-  cy.get(workflowSelector.globalWorkFlowsIcon).click();
-  cy.get(workflowSelector.workflowsCreateButton).click();
-  cy.get(workflowSelector.workFlowNameInputField).type(wfName);
-  cy.get(workflowSelector.createWorkFlowsButton).click();
-});
-
-Cypress.Commands.add("fillStartNodeInput", () => {
+export const enterJsonInputInStartNode = (jsonValue) => {
   cy.get(workflowSelector.startNode).click({ force: true });
-
   cy.get(workflowSelector.parametersInputField)
     .click()
     .realType("{")
     .realType('"')
-    .realType("key")
+    .realType(workflowsText.jsonKeyPlaceholder)
     .realType('"')
     .realType(":")
     .realType('"')
-    .realType("your value")
+    .realType(jsonValue || workflowsText.jsonValuePlaceholder)
     .realType('"')
     .realType("}");
 
   cy.wait(500);
   cy.get("body").click(50, 50);
   cy.wait(500);
-});
+};
 
-Cypress.Commands.add("dataSourceNode", (nodeType) => {
-  cy.get(workflowSelector.startNodeHandleRight).trigger("mousedown", {
-    button: 0,
-    force: true,
-  });
+export const navigateBackToWorkflowsDashboard = () => {
+  cy.get(commonSelectors.pageLogo).click();
+  cy.get(commonSelectors.backToAppOption).click();
+};
 
-  cy.get(".react-flow__pane")
-    .trigger("mousemove", {
-      clientX: 600,
-      clientY: 300,
-      force: true,
-    })
-    .wait(500)
-    .trigger("mouseup", { force: true });
+export const revealWorkflowToken = (selectors) => {
+  cy.get(selectors.workflowTokenField)
+    .invoke("text")
+    .then((tokenText) => {
+      if (tokenText.includes("*")) {
+        cy.get(selectors.workflowTokenEyeIcon).click({ force: true });
+        cy.wait(300);
+        revealWorkflowToken(selectors);
+      }
+    });
+};
 
-  cy.contains(nodeType, { timeout: 5000 })
-    .scrollIntoView()
+export const importWorkflowApp = (
+  workflowName,
+  fixturePath = "cypress/fixtures/exportedApp.json"
+) => {
+  cy.get(workflowSelector.importWorkFlowsOption).click();
+  cy.get(workflowSelector.importWorkFlowsLabel).click();
+  cy.get('input[type="file"]').first().selectFile(fixturePath, { force: true });
+  cy.wait(2000);
+  cy.get(workflowSelector.workFlowNameInputField).clear().type(workflowName);
+  cy.get(workflowSelector.importWorkFlowsButton).click();
+};
+
+export const deleteAppandWorkflowAfterExecution = (workflowName, appName) => {
+  cy.backToApps();
+  cy.deleteApp(appName);
+  cy.get(workflowSelector.globalWorkFlowsIcon).click();
+  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
+  cy.get(commonSelectors.appCard(workflowName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
+    .click();
+  cy.get(workflowSelector.deleteWorkFlowOption).click();
+  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
+  cy.wait("@appDeleted");
+};
+
+export const verifyPreviewOutputText = (expectedOutput) => {
+  cy.get('[data-cy="preview-button"]').click();
+  cy.wait(2000);
+  cy.get('[data-cy="inspector-node-data"]')
+    .parents(".json-node-element")
+    .find(".json-tree-node-icon")
     .click({ force: true });
-});
 
-Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
+  cy.get('[data-cy="inspector-node-key"] .json-tree-valuetype', {
+    timeout: 5000,
+  })
+    .invoke("text")
+    .should("include", expectedOutput);
+};
+
+export const verifyTextInResponseOutputLimited = (expectedText, limit = 5) => {
   cy.get(workflowSelector.workflowRunButton).click();
   cy.get(workflowSelector.workflowLogs).should(
     "have.text",
-    "A few seconds ago"
+    workflowsText.workflowRunhelperText
   );
 
-  cy.get(workflowSelector.responseNodeOutput).click();
+  cy.get('[data-cy="response1-node-name"]').click();
   cy.wait(500);
-  cy.get(workflowSelector.optionsColumn).contains("Output").click();
-
+  cy.get('[data-cy="tab-output"]').click();
   cy.wait(500);
   cy.get("body").then(($body) => {
     if (
-      $body.find("span.node-key").filter((_, el) => el.innerText === "data")
+      $body
+        .find("span.node-key")
+        .filter((_, el) => el.innerText === workflowsText.responseNodeKey)
         .length
     ) {
-      cy.contains("span.node-key", "data", { timeout: 3000 })
+      cy.contains("span.node-key", workflowsText.responseNodeKey, {
+        timeout: 3000,
+      })
         .click({ force: true })
         .wait(300);
     }
   });
-
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="inspector-node-data"]').length) {
+      cy.get('[data-cy="inspector-node-data"]')
+        .parent()
+        .find('.json-tree-node-icon')
+        .first()
+        .then(($icon) => {
+          if ($icon[0].style.transform === "rotate(0deg)") {
+            cy.wrap($icon).click({ force: true }).wait(300);
+          }
+        });
+    }
+  });
   cy.get("body").then(($body) => {
     const icons = $body.find("span.json-tree-node-icon");
     if (icons.length > 0) {
-      cy.wrap(icons).each(($el) => {
+      cy.wrap(icons.slice(0, limit)).each(($el) => {
         if ($el[0].style.transform === "rotate(0deg)") {
           cy.wrap($el).click({ force: true }).wait(200);
         }
       });
     }
   });
-
   cy.get(".json-tree-valuetype", { timeout: 3000 }).then(($vals) => {
     const texts = [...$vals].map((el) => el.innerText.trim());
     const match = texts.some((txt) => txt.includes(expectedText));
@@ -93,55 +137,4 @@ Cypress.Commands.add("verifyTextInResponseOutput", (expectedText) => {
       `Expected some value to include "${expectedText}", but got:\n\n${texts.join("\n")}`
     ).to.be.true;
   });
-});
-
-Cypress.Commands.add("connectNodeToResponse", (nodeTitle, returnStatement) => {
-  cy.get(workflowSelector.nodeName(nodeTitle))
-    .should("exist")
-    .parents(".react-flow__node")
-    .as("sourceNode");
-
-  cy.get(workflowSelector.nodeHandleRight(nodeTitle)).trigger("mousedown", {
-    button: 0,
-    force: true,
-  });
-
-  cy.get(".react-flow__pane")
-    .trigger("mousemove", { clientX: 800, clientY: 400, force: true })
-    .trigger("mouseup", { force: true });
-
-  cy.wait(500);
-
-  cy.contains("Response", { timeout: 5000 }).click({ force: true });
-  cy.wait(500);
-
-  cy.get(workflowSelector.nodeName("response1"))
-    .parents(".react-flow__node")
-    .click({ force: true });
-
-  cy.get('.cm-content[contenteditable="true"]')
-    .clearAndTypeOnCodeMirror("")
-    .clearAndTypeOnCodeMirror("")
-    .clearAndTypeOnCodeMirror(returnStatement);
-
-  cy.get("body").click(50, 50);
-  cy.wait(500);
-});
-
-Cypress.Commands.add("deleteWorkflow", (wfName) => {
-  cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.backToWorkFlows();
-  cy.get(commonSelectors.appCard(wfName))
-    .realHover()
-    .find(commonSelectors.appCardOptionsButton)
-    .realHover()
-    .click();
-  cy.get(workflowSelector.deleteWorkFlowOption).click();
-  cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
-  cy.wait("@appDeleted");
-});
-
-Cypress.Commands.add("backToWorkFlows", () => {
-  cy.get(commonSelectors.pageLogo).click();
-  cy.get(commonSelectors.backToAppOption).click();
-});
+};

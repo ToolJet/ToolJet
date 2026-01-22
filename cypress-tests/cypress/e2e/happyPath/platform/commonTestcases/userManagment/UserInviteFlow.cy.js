@@ -1,63 +1,136 @@
-import { commonSelectors } from "Selectors/common";
+import { smtpConfig } from "Constants/constants/whitelabel";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { usersSelector } from "Selectors/manageUsers";
 import {
-  manageUsersElements,
-  fillUserInviteForm,
   confirmInviteElements,
-  selectUserGroup,
+  fetchAndVisitInviteLinkViaMH,
+  fillUserInviteForm,
   inviteUserWithUserGroups,
   inviteUserWithUserRole,
-  fetchAndVisitInviteLink,
+  selectGroup,
+  selectUserGroup,
+  updateUserGroup,
+  verifyManageUsersPageElements,
 } from "Support/utils/manageUsers";
+import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { visitWorkspaceInvitation, addNewUser } from "Support/utils/onboarding";
+import { usersText } from "Texts/manageUsers";
 
-import {
-  navigateToManageUsers,
-  logout,
-  searchUser,
-  navigateToManageGroups,
-} from "Support/utils/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
+import {
+  fillInputField,
+  logout,
+  navigateToManageUsers,
+  searchUser,
+} from "Support/utils/common";
+import { verifyUserInGroups } from "Support/utils/externalApi";
+import { apiCreateGroup } from "Support/utils/manageGroups";
 import { enableInstanceSignup } from "Support/utils/manageSSO";
 
-
-let invitationToken,
-  organizationToken,
-  workspaceId,
-  userId,
-  url = "";
-
 const data = {};
-const envVar = Cypress.env("environment");
 
 describe("user invite flow cases", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.ifEnv("Enterprise", () => {
-      enableInstanceSignup()
+      enableInstanceSignup();
     });
+    cy.apiConfigureSmtp(smtpConfig);
+  });
+
+  it("Should verify the user archive functionality", () => {
+    cy.intercept("GET", "/assets/translations/en.json").as("translations");
+
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    addNewUser(data.firstName, data.email);
+    cy.apiLogout();
+    cy.wait(2000);
+
+    cy.defaultWorkspaceLogin();
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.wait(1000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.archivedToast
+    );
+
+    cy.contains("td", data.email)
+      .parent()
+      .within(() => {
+        cy.get("td small").should("have.text", usersText.archivedStatus);
+      });
+
+    cy.apiLogout();
+    cy.visit("/");
+    //cy.wait("@translations");
+    cy.wait(4000);
+
+    cy.waitForElement(onboardingSelectors.loginPasswordInput);
+    cy.get(onboardingSelectors.loginPasswordInput, { timeout: 20000 })
+      .should("be.visible")
+      .click();
+    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.wait(3000);
+
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    cy.wait(4000);
+    cy.get(commonWidgetSelector.homePageLogo, { timeout: 50000 }).should(
+      "be.visible",
+      { timeout: 20000 }
+    );
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.wait(2000);
+    cy.get(usersSelector.userActionButton).click();
+    cy.get('[data-cy="archive-button"]').click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      usersText.unarchivedToast
+    );
+
+    visitWorkspaceInvitation(data.email, "My workspace");
+
+    cy.wait(3000);
+    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.get(usersSelector.acceptInvite).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
+    logout();
+    cy.wait(2000);
+
+    cy.defaultWorkspaceLogin();
+    cy.wait(2000);
+    navigateToManageUsers();
+    searchUser(data.email);
+    cy.contains("td", data.email)
+      .parent()
+      .within(() => {
+        cy.get("td small").should("have.text", usersText.activeStatus);
+      });
   });
 
   it("Should verify the Manage users page", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     navigateToManageUsers();
-
-    manageUsersElements();
+    verifyManageUsersPageElements();
 
     cy.get(commonSelectors.cancelButton).click();
     cy.get(usersSelector.usersPageTitle).should("be.visible");
-    cy.get(usersSelector.buttonAddUsers).click();
 
+    cy.get(usersSelector.buttonAddUsers, { timeout: 15000 }).click();
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
-    cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
-    cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
+    fillInputField({ Name: data.firstName, "Email address": data.email });
     cy.get(commonSelectors.inputFieldEmailAddress).clear();
     cy.get(usersSelector.emailError).verifyVisibleElement(
       "have.text",
@@ -65,11 +138,10 @@ describe("user invite flow cases", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).should("be.disabled");
 
-    cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
-    cy.clearAndType(
-      commonSelectors.inputFieldEmailAddress,
-      usersText.adminUserEmail
-    );
+    fillInputField({
+      Name: data.firstName,
+      "Email address": usersText.adminUserEmail,
+    });
     cy.get(usersSelector.buttonInviteUsers).click();
 
     cy.get('[data-cy="modal-icon"]').should("be.visible");
@@ -95,8 +167,11 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(2000);
-    fetchAndVisitInviteLink(data.email);
+    cy.wait(7000);
+    cy.apiLogout();
+    cy.wait(7000);
+
+    fetchAndVisitInviteLinkViaMH(data.email);
     confirmInviteElements(data.email);
 
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "pass");
@@ -141,67 +216,6 @@ describe("user invite flow cases", () => {
       });
   });
 
-  it("Should verify the user archive functionality", () => {
-    data.firstName = fake.firstName;
-    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-
-    addNewUser(data.firstName, data.email);
-
-    cy.apiLogout();
-
-    cy.defaultWorkspaceLogin();
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.wait(1000);
-    cy.get(usersSelector.userActionButton).click();
-    cy.get('[data-cy="archive-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.archivedToast
-    );
-
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.archivedStatus);
-      });
-
-    logout();
-    cy.visit("/");
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, usersText.password);
-    cy.get(onboardingSelectors.signInButton).click();
-
-    cy.defaultWorkspaceLogin();
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.wait(1000);
-    cy.get(usersSelector.userActionButton).click();
-    cy.get('[data-cy="archive-button"]').click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.unarchivedToast
-    );
-
-    visitWorkspaceInvitation(data.email, "My workspace");
-
-    cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-    cy.get(onboardingSelectors.signInButton).click();
-    cy.get(usersSelector.acceptInvite).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
-    logout();
-
-    cy.defaultWorkspaceLogin();
-    navigateToManageUsers();
-    searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.activeStatus);
-      });
-  });
-
   it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -214,13 +228,13 @@ describe("user invite flow cases", () => {
 
     fillUserInviteForm(data.firstName, data.email);
     cy.wait(1500);
-    cy.get('[data-cy="user-group-select"]>>>>>').dblclick();
+    cy.get(usersSelector.groupSelector).dblclick();
     cy.get("body").then(($body) => {
-      if (!$body.find('[data-cy="user-group-select"]>>>>>').length > 0) {
-        cy.get('[data-cy="user-group-select"]>>>>>').click();
+      if (!$body.find(usersSelector.groupSelector).length > 0) {
+        cy.get(usersSelector.groupSelector).click();
       }
     });
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Test");
+    cy.get(usersSelector.groupSelector).eq(0).type("Test");
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get(usersSelector.buttonAddUsers).click();
@@ -228,30 +242,20 @@ describe("user invite flow cases", () => {
     cy.get(".selected-value").verifyVisibleElement("have.text", "Admin");
     cy.get(commonSelectors.cancelButton).click();
 
+    // Verify default End-user role
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(".selected-value").should("have.text", "End-user");
     cy.get(commonSelectors.cancelButton).click();
 
     inviteUserWithUserRole(data.firstName, data.email, "Admin");
 
-    navigateToManageGroups();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.usersLink).click();
-    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
+    verifyUserInGroups(data.email, ["Admin"]);
 
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    cy.get(groupsSelector.createNewGroupButton).click();
-    cy.clearAndType(groupsSelector.groupNameInput, data.groupName1);
-    cy.get(groupsSelector.createGroupButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      groupsText.groupCreatedToast
-    );
-    cy.get(groupsSelector.createNewGroupButton).click();
-    cy.clearAndType(groupsSelector.groupNameInput, data.groupName2);
-    cy.get(groupsSelector.createGroupButton).click();
+    apiCreateGroup(data.groupName1);
+    apiCreateGroup(data.groupName2);
 
     navigateToManageUsers();
     inviteUserWithUserGroups(
@@ -264,21 +268,19 @@ describe("user invite flow cases", () => {
     cy.wait(1000);
 
     cy.defaultWorkspaceLogin();
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should(
+      "be.visible"
+    );
 
-    navigateToManageGroups();
-    cy.get(groupsSelector.groupLink(data.groupName1)).click();
-    cy.get(groupsSelector.usersLink).click();
-    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
-    cy.get(groupsSelector.groupLink(data.groupName2)).click();
-    cy.get(groupsSelector.usersLink).click();
-    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
+    verifyUserInGroups(data.email, [data.groupName1, data.groupName2]);
   });
 
   it("Should verify the edit user feature", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
+    apiCreateGroup(data.groupName);
     addNewUser(data.firstName, data.email);
     cy.apiLogout();
 
@@ -296,10 +298,7 @@ describe("user invite flow cases", () => {
     );
 
     cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get(usersSelector.addUsersCardTitle).verifyVisibleElement(
-      "have.text",
-      "Edit user details"
-    );
+
     cy.get(commonSelectors.labelFullNameInput).verifyVisibleElement(
       "have.text",
       "Name"
@@ -316,11 +315,11 @@ describe("user invite flow cases", () => {
       "have.value",
       data.email
     );
-    cy.get(commonSelectors.groupInputFieldLabel).verifyVisibleElement(
+    cy.get('[data-cy="user-group-label"]').verifyVisibleElement(
       "have.text",
       "User groups"
     );
-    cy.get('[data-cy="user-group-select"]>>>>>').should("be.visible");
+    cy.get(usersSelector.groupSelector).should("be.visible");
     cy.get(commonSelectors.cancelButton).verifyVisibleElement(
       "have.text",
       "Cancel"
@@ -330,18 +329,10 @@ describe("user invite flow cases", () => {
       "Update"
     );
 
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
-    cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
-
+    selectGroup("Admin");
     cy.get(commonSelectors.cancelButton).click();
 
-    cy.get(usersSelector.userActionButton).click();
-    cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
-    cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
-
+    updateUserGroup("Admin");
     cy.get(usersSelector.buttonInviteUsers).click();
 
     cy.get('[data-cy="modal-title"] > .tj-text-md').verifyVisibleElement(
@@ -353,17 +344,10 @@ describe("user invite flow cases", () => {
       data.email
     );
 
-    if (envVar === "Enterprise") {
-      cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
-        "have.text",
-        "Changing user default group from end-user to admin will affect the count of users covered by your plan.Are you sure you want to continue?"
-      );
-    } else {
-      cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
-        "have.text",
-        "Changing the user role from end-user to admin will grant the user access to all resources and settings.Are you sure you want to continue?"
-      );
-    }
+    cy.get('[data-cy="modal-body"]>').verifyVisibleElement(
+      "have.text",
+      "Changing user default group from end-user to admin will affect the count of users covered by your plan.Are you sure you want to continue?"
+    );
 
     cy.get('.modal-footer > [data-cy="cancel-button"]').verifyVisibleElement(
       "have.text",
@@ -375,36 +359,28 @@ describe("user invite flow cases", () => {
     );
     cy.get('[data-cy="modal-close-button"]').should("be.visible").click();
 
-    cy.get(usersSelector.userActionButton).click();
-    cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
-    cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    updateUserGroup("Admin");
 
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get(usersSelector.userActionButton).click();
     cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.get(usersSelector.groupSelector).eq(0).type("Admin");
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
     cy.get('.modal-footer > [data-cy="cancel-button"]').click();
 
     cy.get(usersSelector.userActionButton).click();
     cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.get(usersSelector.groupSelector).eq(0).type("Admin");
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.get(usersSelector.groupSelectInput).eq(0).check();
 
     cy.get(commonSelectors.cancelButton).click();
 
-    cy.get(usersSelector.userActionButton).click();
-    cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
-    cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    updateUserGroup("Admin");
 
     cy.get(usersSelector.buttonInviteUsers).click();
     cy.get('[data-cy="confirm-button"]').click();
@@ -413,17 +389,15 @@ describe("user invite flow cases", () => {
       commonSelectors.toastMessage,
       "User has been updated"
     );
+
     searchUser(data.email);
     cy.get('[data-name="role-header"] [data-cy="group-chip"]').should(
       "have.text",
       "Admin"
     );
 
-    cy.get(usersSelector.userActionButton).click();
-    cy.get(usersSelector.editUserDetailsButton).click();
-    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Builder");
-    cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    updateUserGroup("Builder");
+    selectGroup(data.groupName);
 
     cy.get(usersSelector.buttonInviteUsers).click();
     cy.get('[data-cy="confirm-button"]').click();
@@ -437,5 +411,6 @@ describe("user invite flow cases", () => {
       "have.text",
       "Builder"
     );
+    verifyUserInGroups(data.email, [data.groupName]);
   });
 });

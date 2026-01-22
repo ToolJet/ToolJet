@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -17,7 +17,6 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
-import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
@@ -25,7 +24,7 @@ import { handleSearchPanel } from './SearchBox';
 import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
-import WorkflowEditorContext from '@/modules/workflows/pages/WorkflowEditorPage/context';
+import useWorkflowStore from '@/_stores/workflowStore';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -55,6 +54,7 @@ const MultiLineCodeEditor = (props) => {
     editable = true,
     renderCopilot,
     setCodeEditorView,
+    onInputChange, // Added this prop to immediately handle value changes
   } = props;
   const editorRef = useRef(null);
 
@@ -74,7 +74,7 @@ const MultiLineCodeEditor = (props) => {
 
   const context = useContext(CodeHinterContext);
 
-  const { getWorkflowSuggestions } = useContext(WorkflowEditorContext);
+  const { workflowSuggestions } = useWorkflowStore((state) => ({ workflowSuggestions: state.suggestions }), shallow);
 
   const { suggestionList: paramList } = createReferencesLookup(context, true);
 
@@ -120,7 +120,10 @@ const MultiLineCodeEditor = (props) => {
     };
   }, [editorView]);
 
-  const handleChange = (val) => (currentValueRef.current = val);
+  const handleChange = (val) => {
+    currentValueRef.current = val;
+    onInputChange && onInputChange(val);
+  };
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -149,7 +152,9 @@ const MultiLineCodeEditor = (props) => {
   };
 
   function autoCompleteExtensionConfig(context) {
-    const hints = getWorkflowSuggestions ?? getSuggestions();
+    const hasWorkflowSuggestions =
+      workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
+    const hints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
     const allHints = {
@@ -250,6 +255,7 @@ const MultiLineCodeEditor = (props) => {
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
           isQueryManager={isInsideQueryPane}
+          position={{ height: height }}
         />
 
         <CodeHinter.Portal
@@ -271,7 +277,7 @@ const MultiLineCodeEditor = (props) => {
                 ref={editorRef}
                 value={initialValueWithReplacedIds}
                 placeholder={placeholder}
-                height={'100%'}
+                height={heightInPx}
                 minHeight={heightInPx}
                 {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
@@ -280,6 +286,9 @@ const MultiLineCodeEditor = (props) => {
                   langExtention,
                   search({
                     createPanel: handleSearchPanel,
+                  }),
+                  tooltips({
+                    parent: document.body,
                   }),
                   javascriptLanguage.data.of({
                     autocomplete: overRideFunction,

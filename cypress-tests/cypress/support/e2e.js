@@ -14,10 +14,20 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
+import "cypress-real-events/support";
+import "@cypress/code-coverage/support";
+import "cypress-real-events";
+
 import "../commands/commands";
 import "../commands/apiCommands";
-import "cypress-real-events";
-import "@cypress/code-coverage/support";
+import "../commands/workflowsApiCommands";
+import '../commands/workflowCommands';
+
+import '../commands/platform/platformApiCommands';
+
+import '../commands/marketplace/marketplaceAPICommands';
+import '../commands/marketplace/marketplaceCommands';
+
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -25,9 +35,3 @@ Cypress.on("uncaught:exception", (err, runnable) => {
   return false;
 });
 
-beforeEach(() => {
-  if (Cypress.env("deployment") === "proxy") {
-    cy.visit("/");
-    cy.get("button").contains("Visit Site").click();
-  }
-});

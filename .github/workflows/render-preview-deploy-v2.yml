@@ -1,0 +1,1448 @@
+name: Render Preview Deploy V2 (DockerHub-based)
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, closed, synchronize]
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+  DOCKERHUB_REPO: tooljet/tooljet-render
+  RENDER_OWNER_ID: tea-caeo4bj19n072h3dddc0
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # COMMUNITY EDITION (CE)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push CE Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/ce-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
+
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
+
+      - name: Create Render Service
+        id: create-service
+        run: |
+          RESPONSE=$(curl --silent --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{
+              "autoDeploy": "no",
+              "name": "ToolJet CE V2 PR #${{ env.PR_NUMBER }}",
+              "ownerId": "${{ env.RENDER_OWNER_ID }}",
+              "slug": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}",
+              "suspended": "not_suspended",
+              "type": "web_service",
+              "envVars": [
+                {"key": "PG_HOST", "value": "localhost"},
+                {"key": "PG_PORT", "value": "5432"},
+                {"key": "PG_USER", "value": "postgres"},
+                {"key": "PG_PASS", "value": "postgres"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ce-v2"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ce-v2-tjdb"},
+                {"key": "TOOLJET_DB_HOST", "value": "localhost"},
+                {"key": "TOOLJET_DB_USER", "value": "postgres"},
+                {"key": "TOOLJET_DB_PASS", "value": "postgres"},
+                {"key": "TOOLJET_DB_PORT", "value": "5432"},
+                {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-v2-tjdb"},
+                {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
+                {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
+                {"key": "PGRST_LOG_LEVEL", "value": "info"},
+                {"key": "PORT", "value": "80"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ce-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
+                {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_PORT", "value": "2525"},
+                {"key": "SMTP_USERNAME", "value": "${{ secrets.RENDER_SMTP_USERNAME }}"},
+                {"key": "SMTP_PASSWORD", "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"},
+                {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"}
+              ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
+              },
+              "serviceDetails": {
+                "runtime": "image",
+                "disk": {
+                  "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "mountPath": "/var/lib/postgresql/13/main",
+                  "sizeGB": 10
+                },
+                "healthCheckPath": "/api/health",
+                "numInstances": 1,
+                "openPorts": [{"port": 80, "protocol": "TCP"}],
+                "plan": "standard",
+                "pullRequestPreviewsEnabled": "no",
+                "region": "oregon"
+              }
+            }')
+
+          echo "Response: $RESPONSE"
+          SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "✅ Service created: $SERVICE_ID"
+
+      - name: Wait for Deployment
+        run: |
+          echo "⏳ Waiting for deployment to start..."
+          sleep 30
+          
+          for i in {1..60}; do
+            DEPLOY_STATUS=$(curl --silent --request GET \
+              --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].deploy.status // "pending"')
+            
+            echo "Deploy status: $DEPLOY_STATUS (attempt $i/60)"
+            
+            if [ "$DEPLOY_STATUS" == "live" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$DEPLOY_STATUS" == "failed" ] || [ "$DEPLOY_STATUS" == "canceled" ]; then
+              echo "❌ Deployment failed with status: $DEPLOY_STATUS"
+              exit 1
+            fi
+            
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.SERVICE_ID;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 CE Review App V2 Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ce-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
+                    `| **Docker Image** | \`tooljet/tooljet-render:ce-pr-${prNumber}\` |\n\n` +
+                    `_Deployed using DockerHub-based pipeline (V2)_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Remove trigger label
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ce-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            
+            // Add active label
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Rebuild and Redeploy on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ce:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if CE V2 is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ce-review-app');
+            core.setOutput('is_active', hasLabel);
+            return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push CE Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/ce-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
+
+      - name: Trigger Render Redeploy
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          # Get service ID
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          # Trigger deploy
+          DEPLOY_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{"clearCache": "do_not_clear"}')
+          
+          echo "Deploy triggered: $DEPLOY_RESPONSE"
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 CE Review App V2 Rebuilding\n\n` +
+                    `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
+                    `_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ce:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ce-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ce:
+    if: |
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ce-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/resume" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service resumed (using existing image from DockerHub)"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ce-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CE: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ce:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ce-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if CE V2 exists
+        id: check-exists
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -n "$SERVICE_ID" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Delete Render Service
+        if: steps.check-exists.outputs.exists == 'true'
+        run: |
+          curl --silent --request DELETE \
+            --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service deleted"
+
+      - name: Clean up Labels
+        if: steps.check-exists.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = [
+              'destroy-ce-review-app',
+              'suspend-ce-review-app', 
+              'active-ce-review-app'
+            ];
+            
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - LTS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push EE Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ee-lts-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
+
+      - name: Create Render Service
+        id: create-service
+        run: |
+          RESPONSE=$(curl --silent --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{
+              "autoDeploy": "no",
+              "name": "ToolJet EE V2 PR #${{ env.PR_NUMBER }}",
+              "ownerId": "${{ env.RENDER_OWNER_ID }}",
+              "slug": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}",
+              "suspended": "not_suspended",
+              "type": "web_service",
+              "envVars": [
+                {"key": "PG_HOST", "value": "localhost"},
+                {"key": "PG_PORT", "value": "5432"},
+                {"key": "PG_USER", "value": "postgres"},
+                {"key": "PG_PASS", "value": "postgres"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-v2"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-v2-tjdb"},
+                {"key": "TOOLJET_DB_HOST", "value": "localhost"},
+                {"key": "TOOLJET_DB_USER", "value": "postgres"},
+                {"key": "TOOLJET_DB_PASS", "value": "postgres"},
+                {"key": "TOOLJET_DB_PORT", "value": "5432"},
+                {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-v2-tjdb"},
+                {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
+                {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
+                {"key": "PGRST_LOG_LEVEL", "value": "info"},
+                {"key": "PORT", "value": "80"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
+                {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_PORT", "value": "2525"},
+                {"key": "SMTP_USERNAME", "value": "${{ secrets.RENDER_SMTP_USERNAME }}"},
+                {"key": "SMTP_PASSWORD", "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"},
+                {"key": "REDIS_HOST", "value": "localhost"},
+                {"key": "REDIS_PORT", "value": "6379"},
+                {"key": "REDIS_DB", "value": "0"},
+                {"key": "REDIS_TLS_ENABLED", "value": "false"},
+                {"key": "REDIS_PASSWORD", "value": ""},
+                {"key": "WORKER", "value": "true"},
+                {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"},
+                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
+                {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
+              ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-lts-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
+              },
+              "serviceDetails": {
+                "runtime": "image",
+                "disk": {
+                  "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "mountPath": "/var/lib/postgresql/13/main",
+                  "sizeGB": 10
+                },
+                "healthCheckPath": "/api/health",
+                "numInstances": 1,
+                "openPorts": [{"port": 80, "protocol": "TCP"}],
+                "plan": "pro",
+                "pullRequestPreviewsEnabled": "no",
+                "region": "oregon"
+              }
+            }')
+
+          echo "Response: $RESPONSE"
+          SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "✅ Service created: $SERVICE_ID"
+
+      - name: Wait for Deployment
+        run: |
+          echo "⏳ Waiting for deployment to start..."
+          sleep 30
+          
+          for i in {1..60}; do
+            DEPLOY_STATUS=$(curl --silent --request GET \
+              --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].deploy.status // "pending"')
+            
+            echo "Deploy status: $DEPLOY_STATUS (attempt $i/60)"
+            
+            if [ "$DEPLOY_STATUS" == "live" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$DEPLOY_STATUS" == "failed" ] || [ "$DEPLOY_STATUS" == "canceled" ]; then
+              echo "❌ Deployment failed with status: $DEPLOY_STATUS"
+              exit 1
+            fi
+            
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.SERVICE_ID;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE Review App V2 Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
+                    `| **Docker Image** | \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\` |\n\n` +
+                    `_Deployed using DockerHub-based pipeline (V2)_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ee-lts-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-lts-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE: Rebuild and Redeploy on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ee:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE V2 is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ee-lts-review-app');
+            core.setOutput('is_active', hasLabel);
+            return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push EE Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/LTS/ee/ee-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ee-lts-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Trigger Render Redeploy
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          DEPLOY_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{"clearCache": "do_not_clear"}')
+          
+          echo "Deploy triggered: $DEPLOY_RESPONSE"
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 EE Review App V2 Rebuilding\n\n` +
+                    `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
+                    `_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ee:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-lts-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ee:
+    if: |
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ee-lts-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/resume" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service resumed (using existing image from DockerHub)"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-lts-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ee:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-lts-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE V2 exists
+        id: check-exists
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -n "$SERVICE_ID" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Delete Render Service
+        if: steps.check-exists.outputs.exists == 'true'
+        run: |
+          curl --silent --request DELETE \
+            --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service deleted"
+
+      - name: Clean up Labels
+        if: steps.check-exists.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = [
+              'destroy-ee-lts-review-app',
+              'suspend-ee-lts-review-app',
+              'active-ee-lts-review-app'
+            ];
+            
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }
+
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ENTERPRISE EDITION (EE) - PRE-RELEASE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-and-deploy-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'create-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push EE Pre-release Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ee-pre-release-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Get Registry Credential ID
+        id: get-registry-cred
+        run: |
+          CRED_RESPONSE=$(curl --silent --request GET \
+            --url https://api.render.com/v1/registrycredentials \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
+          
+          # Extract the first Docker Hub credential ID (direct path, not nested)
+          REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
+          
+          if [ -z "$REGISTRY_CRED_ID" ]; then
+            echo "❌ No registry credentials found. Please add DockerHub credentials in Render Dashboard."
+            echo "Response: $CRED_RESPONSE"
+            exit 1
+          fi
+          
+          echo "REGISTRY_CRED_ID=$REGISTRY_CRED_ID" >> $GITHUB_ENV
+          echo "✅ Found registry credential"
+
+      - name: Create Render Service
+        id: create-service
+        run: |
+          RESPONSE=$(curl --silent --request POST \
+            --url https://api.render.com/v1/services \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{
+              "autoDeploy": "no",
+              "name": "ToolJet EE Pre-release V2 PR #${{ env.PR_NUMBER }}",
+              "ownerId": "${{ env.RENDER_OWNER_ID }}",
+              "slug": "tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}",
+              "suspended": "not_suspended",
+              "type": "web_service",
+              "envVars": [
+                {"key": "PG_HOST", "value": "localhost"},
+                {"key": "PG_PORT", "value": "5432"},
+                {"key": "PG_USER", "value": "postgres"},
+                {"key": "PG_PASS", "value": "postgres"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release-v2"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release-v2-tjdb"},
+                {"key": "TOOLJET_DB_HOST", "value": "localhost"},
+                {"key": "TOOLJET_DB_USER", "value": "postgres"},
+                {"key": "TOOLJET_DB_PASS", "value": "postgres"},
+                {"key": "TOOLJET_DB_PORT", "value": "5432"},
+                {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-pre-release-v2-tjdb"},
+                {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
+                {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
+                {"key": "PGRST_LOG_LEVEL", "value": "info"},
+                {"key": "PORT", "value": "80"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
+                {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
+                {"key": "SMTP_PORT", "value": "2525"},
+                {"key": "SMTP_USERNAME", "value": "${{ secrets.RENDER_SMTP_USERNAME }}"},
+                {"key": "SMTP_PASSWORD", "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"},
+                {"key": "REDIS_HOST", "value": "localhost"},
+                {"key": "REDIS_PORT", "value": "6379"},
+                {"key": "REDIS_DB", "value": "0"},
+                {"key": "REDIS_TLS_ENABLED", "value": "false"},
+                {"key": "REDIS_PASSWORD", "value": ""},
+                {"key": "WORKER", "value": "true"},
+                {"key": "TOOLJET_MARKETPLACE_URL", "value": "${{ secrets.MARKETPLACE_BUCKET }}"},
+                {"key": "BRANCH_NAME", "value": "${{ env.BRANCH_NAME }}"},
+                {"key": "CUSTOM_GITHUB_TOKEN", "value": "${{ secrets.CUSTOM_GITHUB_TOKEN }}"}
+              ],
+              "image": {
+                "ownerId": "${{ env.RENDER_OWNER_ID }}",
+                "imagePath": "docker.io/${{ env.DOCKERHUB_REPO }}:ee-pre-release-pr-${{ env.PR_NUMBER }}",
+                "registryCredentialId": "${{ env.REGISTRY_CRED_ID }}"
+              },
+              "serviceDetails": {
+                "runtime": "image",
+                "disk": {
+                  "name": "tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "mountPath": "/var/lib/postgresql/13/main",
+                  "sizeGB": 10
+                },
+                "healthCheckPath": "/api/health",
+                "numInstances": 1,
+                "openPorts": [{"port": 80, "protocol": "TCP"}],
+                "plan": "pro",
+                "pullRequestPreviewsEnabled": "no",
+                "region": "oregon"
+              }
+            }')
+
+          echo "Response: $RESPONSE"
+          SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Failed to create service"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          echo "✅ Service created: $SERVICE_ID"
+
+      - name: Wait for Deployment
+        run: |
+          echo "⏳ Waiting for deployment to start..."
+          sleep 30
+          
+          for i in {1..60}; do
+            DEPLOY_STATUS=$(curl --silent --request GET \
+              --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}/deploys?limit=1" \
+              --header 'accept: application/json' \
+              --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].deploy.status // "pending"')
+            
+            echo "Deploy status: $DEPLOY_STATUS (attempt $i/60)"
+            
+            if [ "$DEPLOY_STATUS" == "live" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$DEPLOY_STATUS" == "failed" ] || [ "$DEPLOY_STATUS" == "canceled" ]; then
+              echo "❌ Deployment failed with status: $DEPLOY_STATUS"
+              exit 1
+            fi
+            
+            sleep 30
+          done
+
+      - name: Comment Deployment URL
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = process.env.PR_NUMBER;
+            const serviceId = process.env.SERVICE_ID;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 EE Pre-release Review App V2 Deployed!\n\n` +
+                    `| Resource | Link |\n` +
+                    `|----------|------|\n` +
+                    `| **App URL** | https://tooljet-ee-pre-release-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
+                    `| **Docker Image** | \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\` |\n\n` +
+                    `_Deployed using DockerHub-based pipeline (V2) - Pre-release Edition_`
+            });
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-ee-pre-release-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+            
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-pre-release-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Rebuild and Redeploy on new commits
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  rebuild-ee-pre-release:
+    if: |
+      github.event.pull_request.head.repo.fork == false &&
+      github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE Pre-release V2 is active
+        id: check-active
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = labels.data.some(l => l.name === 'active-ee-pre-release-review-app');
+            core.setOutput('is_active', hasLabel);
+            return hasLabel;
+
+      - name: Free up disk space
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Checkout PR branch
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push EE Pre-release Image
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/pre-release/ee/ee-preview.Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:ee-pre-release-pr-${{ env.PR_NUMBER }}
+          platforms: linux/amd64
+          cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=max,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          build-args: |
+            CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            BRANCH_NAME=${{ env.BRANCH_NAME }}
+
+      - name: Trigger Render Redeploy
+        if: steps.check-active.outputs.is_active == 'true'
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          
+          DEPLOY_RESPONSE=$(curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            --header 'accept: application/json' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+            --data '{"clearCache": "do_not_clear"}')
+          
+          echo "Deploy triggered: $DEPLOY_RESPONSE"
+
+      - name: Comment Rebuild Status
+        if: steps.check-active.outputs.is_active == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const sha = '${{ github.event.pull_request.head.sha }}'.substring(0, 7);
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔄 EE Pre-release Review App V2 Rebuilding\n\n` +
+                    `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
+                    `_Using cached layers for faster build_`
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Suspend
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  suspend-ee-pre-release:
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/suspend" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service suspended"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-ee-pre-release-review-app'
+              });
+            } catch (e) { console.log('Label not found:', e.message); }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Resume
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  resume-ee-pre-release:
+    if: |
+      github.event.action == 'unlabeled' &&
+      github.event.label.name == 'suspend-ee-pre-release-review-app'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume Render Service
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -z "$SERVICE_ID" ]; then
+            echo "❌ Service not found"
+            exit 1
+          fi
+          
+          curl --silent --request POST \
+            --url "https://api.render.com/v1/services/$SERVICE_ID/resume" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service resumed (using existing image from DockerHub)"
+
+      - name: Update Labels
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-ee-pre-release-review-app']
+            });
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # EE Pre-release: Destroy
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  destroy-ee-pre-release:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-pre-release-review-app') ||
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if EE Pre-release V2 exists
+        id: check-exists
+        run: |
+          SERVICE_ID=$(curl --silent --request GET \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
+          
+          if [ -n "$SERVICE_ID" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Delete Render Service
+        if: steps.check-exists.outputs.exists == 'true'
+        run: |
+          curl --silent --request DELETE \
+            --url "https://api.render.com/v1/services/${{ env.SERVICE_ID }}" \
+            --header 'accept: application/json' \
+            --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+          
+          echo "✅ Service deleted"
+
+      - name: Clean up Labels
+        if: steps.check-exists.outputs.exists == 'true'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToRemove = [
+              'destroy-ee-pre-release-review-app',
+              'suspend-ee-pre-release-review-app',
+              'active-ee-pre-release-review-app'
+            ];
+            
+            for (const label of labelsToRemove) {
+              try {
+                await github.rest.issues.removeLabel({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label
+                });
+              } catch (e) { console.log(`Label ${label} not found`); }
+            }

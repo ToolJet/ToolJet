@@ -82,7 +82,7 @@ Timezone and User locale are mutually dependent. If you provide a timezone, you 
 <img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
 
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
 ```json
@@ -102,7 +102,7 @@ Sort: createdTime // Select direction: Ascending or Descending
 </details>
 
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
@@ -152,7 +152,7 @@ This operation fetches a specific record from the specified table.
 
 <img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v2.png" alt="Airtable Retrieve Record Query" />
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
   {
@@ -188,7 +188,7 @@ This operation creates a new record in the specified table.
     }
 }]
 ```
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
   {
@@ -227,7 +227,7 @@ Update a specific record by providing new data.
   "Email": "katrina.petersions2@example.com"
 }
 ```
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
   {
@@ -258,7 +258,7 @@ This operation removes a record from the specified table.
 
 <img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v2.png" alt="Airtable Delete Record Query" />
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   ```json
   {

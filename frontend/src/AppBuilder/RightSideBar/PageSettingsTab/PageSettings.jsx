@@ -1,32 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
-import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
-import CollapsableToggle from './CollapsableToggle';
 import { pageConfig } from './pageConfig';
 import Accordion from '@/_ui/Accordion';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
-import { NumberInput } from '@/Editor/CodeBuilder/Elements/NumberInput';
-import LabelStyleToggle from './LabelStyleToggle';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-// import { resolveReferences } from '@/_helpers/utils';
 import OverflowTooltip from '@/_components/OverflowTooltip';
-import { RIGHT_SIDE_BAR_TAB } from '../rightSidebarConstants';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
 import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
-import { camelCase, get, startCase, toLower, upperFirst } from 'lodash';
-import { Button } from '@/components/ui/Button/Button';
+import { get, startCase, toLower, upperFirst } from 'lodash';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
-import { AddNewPagePopup } from './PageMenu/AddNewPagePopup';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
-import EditAppName from '@/AppBuilder/Header/EditAppName';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -34,6 +26,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import './PageMenu/style.scss';
 
 export const PageSettings = () => {
   const pageSettings = useStore((state) => state.pageSettings);
@@ -44,7 +37,6 @@ export const PageSettings = () => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isVersionReleased = useStore((state) => state.isVersionReleased);
   const switchPage = useStore((state) => state.switchPage);
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
   const editingPageId = useStore((state) => state.editingPage?.id);
@@ -52,17 +44,14 @@ export const PageSettings = () => {
   const showPagePermissionModal = useStore((state) => state.showPagePermissionModal);
   const togglePagePermissionModal = useStore((state) => state.togglePagePermissionModal);
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
+  const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
   const treeRef = useRef(null);
-
-  const license = useStore((state) => state.license);
-  const isLicensed =
-    !get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const pagesMeta = useMemo(() => JSON.parse(JSON.stringify(pageConfig)), []);
 
@@ -111,25 +100,10 @@ export const PageSettings = () => {
     {
       title: 'Pages and menu',
       children: [
-        isLicensed ? (
-          <>
-            <AppPermissionsModal
-              modalType="page"
-              resourceId={editingPageId}
-              resourceName={editingPageName}
-              showModal={showPagePermissionModal}
-              toggleModal={togglePagePermissionModal}
-              darkMode={darkMode}
-              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
-              <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
-            </div>
-          </>
+        hasAppPagesAddNavGroupEnabled ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
+            <SortableTree darkMode={darkMode} collapsible indicator={true} treeRef={treeRef} />
+          </div>
         ) : (
           <SortableList
             Element={PageMenuItem}
@@ -139,7 +113,7 @@ export const PageSettings = () => {
             classNames="page-handler"
           />
         ),
-        <AddNewPageMenu isLicensed={isLicensed} key="new-page" darkMode={darkMode} />,
+        <AddNewPageMenu key="new-page" darkMode={darkMode} />,
       ],
     },
   ];
@@ -153,7 +127,6 @@ export const PageSettings = () => {
           pageSettingChanged={pageSettingChanged}
           key="header-and-navigation"
           darkMode={darkMode}
-          licenseValid={isLicensed}
         />,
         <NavigationMenu
           pageSettings={pageSettings}
@@ -213,6 +186,21 @@ export const PageSettings = () => {
             </Tab>
           </Tabs>
           <DeletePageConfirmationModal darkMode={darkMode} />
+          {appPagePermissionEnabled && (
+            <AppPermissionsModal
+              modalType="page"
+              resourceId={editingPageId}
+              resourceName={editingPageName}
+              showModal={showPagePermissionModal}
+              toggleModal={togglePagePermissionModal}
+              darkMode={darkMode}
+              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -248,9 +236,12 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   });
 });
 
-export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, licenseValid }) => {
+export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
   const { moduleId } = useModuleContext();
   const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
+  const hasAppPagesHeaderAndLogoEnabled = useStore(
+    (state) => state.license?.featureAccess?.appPagesHeaderAndLogoEnabled
+  );
 
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { hideHeader, name, hideLogo } = properties ?? {};
@@ -302,16 +293,22 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, lice
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show app header
-          <LicenseTooltip message={"App header can't be hidden on free plans"} placement="bottom" show={!licenseValid}>
-            <div className="d-flex align-items-center">{!licenseValid && <SolidIcon name="enterprisecrown" />}</div>
+          <LicenseTooltip
+            message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
+            placement="bottom"
+            show={!hasAppPagesHeaderAndLogoEnabled}
+          >
+            <div className="d-flex align-items-center">
+              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+            </div>
           </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
             type="checkbox"
-            checked={licenseValid ? !hideHeader : true}
-            disabled={!licenseValid}
+            checked={hasAppPagesHeaderAndLogoEnabled ? !hideHeader : true}
+            disabled={!hasAppPagesHeaderAndLogoEnabled}
             onChange={(e) => {
               pageSettingChanged({ hideHeader: !e.target.checked }, 'properties');
             }}
@@ -321,16 +318,22 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged, lice
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
           Show logo
-          <LicenseTooltip message={"Logo can't be hidden on free plans"} placement="bottom" show={!licenseValid}>
-            <div className="d-flex align-items-center">{!licenseValid && <SolidIcon name="enterprisecrown" />}</div>
+          <LicenseTooltip
+            message={"You don't have access to hide logo. Upgrade your plan to access this feature."}
+            placement="bottom"
+            show={!hasAppPagesHeaderAndLogoEnabled}
+          >
+            <div className="d-flex align-items-center">
+              {!hasAppPagesHeaderAndLogoEnabled && <SolidIcon name="enterprisecrown" />}
+            </div>
           </LicenseTooltip>
         </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
             type="checkbox"
-            checked={licenseValid ? !hideLogo : true}
-            disabled={!licenseValid}
+            checked={hasAppPagesHeaderAndLogoEnabled ? !hideLogo : true}
+            disabled={!hasAppPagesHeaderAndLogoEnabled}
             onChange={(e) => {
               pageSettingChanged({ hideLogo: !e.target.checked }, 'properties');
             }}

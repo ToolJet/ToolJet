@@ -7,7 +7,7 @@ Control component action invokes the component specific actions. Component speci
 
 You can find the component specific actions for the specific component in their respective documentation. For example, you can find the component specific actions for the **Bounded Box** component in the [Bounded Box](/docs/widgets/bounded-box) documentation.
 
-<details>
+<details id="tj-dropdown">
   <summary>Currently, Component specific actions are supported only by the below listed components.</summary>
   <div>
     <ul>

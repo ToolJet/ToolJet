@@ -18,12 +18,11 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -32,7 +31,7 @@ import toast from 'react-hot-toast';
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
  * This will get redundanted once api response for appdata is made uniform across all the endpoints.
  **/
-const normalizeQueryTransformationOptions = (query) => {
+export const normalizeQueryTransformationOptions = (query) => {
   if (query?.options) {
     if (query.options.enable_transformation) {
       const enableTransformation = query.options.enable_transformation;
@@ -86,6 +85,7 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
+  const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -127,7 +127,7 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = moduleMode ? '' : pathParams?.slug;
+  let slug = pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -140,6 +140,13 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
+    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
+  );
+
+  // Used to trigger app refresh flow after restoring app history
+  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
+  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
 
   const location = useRouter().location;
 
@@ -182,6 +189,7 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
+        checkAndSetTrueBuildSuggestionsFlag();
       }, 0);
     }
   }, [pageSwitchInProgress, currentPageId, moduleMode]);
@@ -228,17 +236,13 @@ const useAppData = (
     }
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
-    const isPublicAccess = moduleMode
-      ? false
-      : (currentSession?.load_app && currentSession?.authentication_failed) ||
-      (!queryParams.version && mode !== 'edit');
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        // clean up the module definition from the store
-        deleteModuleDefinition(appId);
         appDataPromise = Promise.resolve(moduleDefinition);
       } else {
         appDataPromise = appService.fetchApp(appId);
@@ -253,11 +257,16 @@ const useAppData = (
       }
     }
 
+    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
+      setEditorLoading(true, moduleId);
+    }
+
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
+        let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -278,7 +287,12 @@ const useAppData = (
         if (mode !== 'edit') {
           try {
             const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
+            const viewerEnvironment =
+              moduleMode && isPublicAccess
+                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
+                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
               name: viewerEnvironment?.environment?.name,
@@ -286,9 +300,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                  slug,
-                  viewerEnvironment?.environment?.id
-                )
+                    slug,
+                    viewerEnvironment?.environment?.id
+                  )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -314,13 +328,12 @@ const useAppData = (
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
         if (setConversation && setDocsConversation) {
-          setConversation(conversation);
+          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
         }
 
-        let showWalkthrough = true;
         // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
@@ -341,8 +354,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                  ? result.isMaintenanceOn
-                  : false,
+                ? result.isMaintenanceOn
+                : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -351,6 +364,7 @@ const useAppData = (
             aiGenerationMetadata: appData.ai_generation_metadata || {},
             appBuilderMode: appData.app_builder_mode || 'visual',
             isReleasedApp: isReleasedApp,
+            appType: appData.type,
           },
           moduleId
         );
@@ -358,6 +372,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
 
           // If the app builder mode is AI
           // - Do not show zero state - if there is some conversation already done or if route state has prompt
@@ -477,7 +492,12 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals(
+          'environment',
+          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          moduleId
+        );
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -503,17 +523,14 @@ const useAppData = (
           (conversation?.aiConversationMessages || []).length === 0
         ) {
           sendMessage(state.prompt);
-          showWalkthrough = false;
         }
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
+          // Use versionId from URL if available (preview mode), otherwise use editing version
+          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+          useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
@@ -522,8 +539,7 @@ const useAppData = (
 
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-        // only show if app is not created from prompt
-        if (showWalkthrough && !moduleMode) initEditorWalkThrough();
+
         !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
@@ -535,7 +551,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
@@ -590,8 +606,9 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
+    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
 
-    if (isEnvChanged || isVersionChanged) {
+    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -617,12 +634,16 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-                ? appData.isMaintenanceOn
-                : false,
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
           isReleasedApp: isReleasedApp,
+          appType: appData.type,
+          appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
+          aiGenerationMetadata: appData.ai_generation_metadata || {},
+          appBuilderMode: appData.appBuilderMode || 'visual',
         });
 
         setGlobalSettings(
@@ -630,6 +651,9 @@ const useAppData = (
         );
 
         setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
+        );
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
@@ -676,7 +700,9 @@ const useAppData = (
         }
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,
@@ -693,7 +719,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
 
   useEffect(() => {
     if (moduleMode) return;

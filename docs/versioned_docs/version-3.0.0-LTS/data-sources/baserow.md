@@ -60,7 +60,7 @@ This query lists all the fields in a table.
 
 <img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields-v2.png" alt="Baserow list fields" />
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
 
   ```yaml
@@ -114,7 +114,7 @@ This query lists all the rows in a table.
 
 <img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows-v2.png" alt="Baserow list"/>
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
@@ -162,7 +162,7 @@ This query lists all the rows in a table.
 
 <img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row-v2.png" alt="Baserow get" />
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
@@ -197,7 +197,7 @@ This query lists all the rows in a table.
 }
 ```
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
@@ -234,7 +234,7 @@ This query lists all the rows in a table.
 }
 ```
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
@@ -263,7 +263,7 @@ This query lists all the rows in a table.
 
 <img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row-v2.png" alt="Baserow move row" />
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
     
   ```json

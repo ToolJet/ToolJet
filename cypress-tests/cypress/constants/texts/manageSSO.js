@@ -1,26 +1,128 @@
 export const ssoText = {
   pagetitle: " Workspace login",
-  workspaceLoginPage: {
+
+  instanceLoginPage: {
+    cardTitle: "Instance login",
+    configurationLabel: "CONFIGURATION",
+    domainConstraintsLabel: "Domain constraints",
+    domainConstraintsHelperText: "Support multiple domains. Enter domain names separated by comma. Example: tooljet.com, tooljet.io",
+    superAdminUrlLabel: "Super admin login URL",
+    superAdminUrl: Cypress.env('proxy') === true
+      ? `${Cypress.config("server_host")}/login/super-admin`
+      : `${Cypress.config("baseUrl")}/login/super-admin`,
+    superAdminUrlHelperText: "Use this URL for super admin to login via password",
     enableSignupLabel: "Enable Signup",
-    helperText: "New account will be created for user's first time SSO sign in",
-    allowDefaultSSOLabel: "Allow default SSO",
-    allowDefaultSSOHelperText:
-      "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO.",
-    allowedDomainLabel: "Allowed domains",
-    allowedDomainHelperText:
-      "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
-    workspaceLoginUrl: "Login URL",
-    workspaceLoginHelpText: "Use this URL to login directly to this workspace",
+    enableSignupHelperText: "Users will be able to sign up without being invited",
+    workspaceConfigurationLabel: "Enable workspace configuration",
+    workspaceConfigurationHelperText: "Allow workspace admin to configure their workspace’s login differently",
+    autoSSOLabel: "Automatic SSO login",
+    autoSSOHelperText: "This will simulate the configured SSO login, bypassing the login screen in ToolJet",
+    instanceLogoutTitle: "Instance logout",
+    customLogoutUrlLabel: "Custom logout URL",
+    customLogoutUrlPlaceholder: "",
+    customLogoutUrlHelperText: "Set a personalized logout URL for users logging out of this instance.",
+    loginMethodsLabel: "LOGIN METHODS",
+    passwordLoginLabel: "Password login",
+    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
     ssoHeader: "SSO",
-    instanceSSOHelperText: "Display default SSO for workspace URL login",
     googleLabel: "Google",
     githubLabel: "GitHub",
-    defaultSSO: "Default SSO",
+    oidcLabel: "OpenID Connect",
   },
+  workspaceLoginPage: {
+    cardTitle: "Workspace login",
+    configurationLabel: "CONFIGURATION",
+    domainConstraintsLabel: "Domain constraints",
+    domainConstraintsHelperText: "Support multiple domains. Enter domain names separated by comma. Example: tooljet.com, tooljet.io",
+    workspaceLoginUrlLabel: "Login URL",
+    workspaceLoginUrl: Cypress.env('proxy') === true
+      ? `${Cypress.config("server_host")}/login/workspace`
+      : `${Cypress.config("baseUrl")}/login/my-workspace`,
+    workspaceLoginUrlHelperText: "Use this URL to login directly to this workspace",
+    enableSignupLabel: "Enable signup",
+    enableSignupHelperText: "Users will be able to sign up without being invited",
+    autoSSOLabel: "Automatic SSO login",
+    autoSSOHelperText: "This will simulate the configured SSO login, bypassing the login screen in ToolJet",
+    loginMethodsLabel: "LOGIN METHODS",
+    passwordLoginLabel: "Password login",
+    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
+    ssoHeader: "SSO",
+    instanceSsoCard: "Instance SSO (3)",
+    instanceSsoHelperText: "Display instance SSO for workspace URL login",
+    googleLabel: "Google",
+    githubLabel: "GitHub",
+    oidcLabel: "OpenID Connect",
+    ldapLabel: "LDAP",
+    samlLabel: "SAML",
+  },
+  googleSSOPageElements: {
+    clientIdLabel: "Client ID",
+    redirectUrlLabel: "Redirect URL",
+  },
+  googleSSOEnableModal: {
+    modalTitle: 'Enable Google',
+    modalMessage: 'Enabling Google at the workspace level will override any Google configurations set at the instance level.',
+    confirmationText: 'Are you sure you want to continue?',
+    enableButton: 'Enable',
+  },
+  githubSSOPageElements: {
+    hostNameLabel: "Host name",
+    clientIdLabel: "Client ID",
+    redirectUrlLabel: "Redirect URL",
+  },
+  githubSSOEnableModal: {
+    modalTitle: 'Enable Git',
+    modalMessage: 'Enabling Git at the workspace level will override any Git configurations set at the instance level.',
+    confirmationText: 'Are you sure you want to continue?',
+    enableButton: 'Enable',
+  },
+  oidcSSOPageElements: {
+    nameLabel: 'Name',
+    clientIdLabel: 'Client ID',
+    wellKnownUrlLabel: 'Well known URL',
+  },
+  oidcSSOEnableModal: {
+    modalTitle: 'Enable OpenID Connect',
+    modalMessage: 'Enabling OpenID Connect at the workspace level will override any OpenID Connect configurations set at the instance level.',
+    confirmationText: 'Are you sure you want to continue?',
+    enableButton: 'Enable',
+  },
+  ldapSSOPageElements: {
+    nameLabel: 'Name',
+    hostLabel: 'Host name',
+    portLabel: 'Port',
+    baseDnLabel: 'Base DN',
+  },
+  samlSSOPageElements: {
+    nameLabel: 'Name',
+    idpMetadataLabel: 'Identity provider metadata',
+    groupAttributeLabel: 'Group attribute',
+    redirectUrlLabel: 'Redirect URL',
+  },
+  groupsyncElements: {
+    groupsyncClaimLabel: 'Claim name',
+    groupsyncMappingLabel: 'Group mapping',
+  },
+
   cancelButton: "Cancel",
   saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
+  passwordLoginDropdownLabel: "Password login",
+  passwordAllowedDomainsLabel: "Allowed domains",
+  passwordRestrictedDomainsLabel: "Restricted domains",
+  ssoLoginDropdownLabel: "SSO login",
+  ssoAllowedDomainsLabel: "Allowed domains",
+  passwordDisableWarning: "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
+  superAdminInfoText: `Super admin can still access their account via ${
+    Cypress.env('proxy') === true
+      ? Cypress.config("server_host")
+      : Cypress.config("baseUrl")
+  }/login/super-admin`,
   ssoToast: "Organization settings have been updated",
+  workspaceSsoToast: "Organization settings have been updated",
+  copySuccessToast: "Copied to clipboard!",
+  defaultSsoToast: "Updated default sso settings",
+  instanceSsoToast: "Instance settings have been updated",
   ssoToast2: "updated SSO configurations",
   googleTitle: "Google",
   enabledLabel: "Enabled",
@@ -41,12 +143,16 @@ export const ssoText = {
   passwordTitle: "Password Login",
   passwordEnabledToast: "Enabled Password login",
   passwordDisabledToast: "Password login disabled successfully!",
-  passwordDisableWarning:
+  passwordDisableHelperText:
     "Disable password login only if you have configured SSO or else you will get locked out.",
+  disablePasswordLoginTitle: 'Disable password login',
+  passwordDisableWarning:
+    "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
   hostNameLabel: "Host name",
   hostNameHelpText: "Required if GitHub is self hosted",
   hostName: "Tooljet",
   signInHeader: "Sign in",
+  autoSSOToggleMessage: "Can be enabled only if password login is disabled & there's only one SSO enabled",
   workspaceSubHeader: (workspaceName) => {
     return `Sign in to your workspace - ${workspaceName}`;
   },
@@ -59,9 +165,58 @@ export const ssoText = {
   alertText: "Danger zone",
   disablePasswordHelperText:
     "Disable password login only if your SSO is configured otherwise you will get locked out",
-  disablePasswordHelperText:
-    "Disable password login only if your SSO is configured otherwise you will get locked out",
   toggleUpdateToast: (toggle) => {
-    return `Saved ${toggle} SSO configurations`
-  }
+    return `Saved ${toggle} SSO configurations`;
+  },
+  oidcTitle: 'OpenID Connect',
+  credentialTitle: 'Credentials',
+  oidcSSOToast: "Saved OpenID SSO configurations",
+  oidcEnabledToast: "Enabled OpenId SSO",
+  oidcDisabledToast: "Disabled OpenId SSO",
+  oidcUpdatedToast: "updated SSO configurations",
+  testName: "Tooljet OIDC",
+  testclientId: "24567098-mklj8t20za1smb2if.apps.googleusercontent.com",
+  testclientSecret: "2345-client-id-.apps.googleusercontent.com",
+  testWellknownUrl: "google.com",
+  oidcSSOText: "Sign in with Tooljet OIDC",
+  enabledLabel: "Enabled",
+  testclientId: "test-client-id",
+  ldapBaseDNHelperText: "Location without UID or CN",
+  ldapName: "Tooljet LDAP",
+  ldapHost: "20.46.235.63",
+  ldapPort: "389",
+  ldapBaseDn: "OU=ToolJet,DC=test-app,DC=tooljet,DC=dev",
+  ldapSSOToast: "Saved LDAP SSO configurations",
+  ldapSSOText: "Sign in with Tooljet LDAP",
+  ldapTitle: "LDAP",
+  samlTitle: "SAML",
+  samlName: "Tooljet SAML",
+  samlSSOText: "Sign in with Tooljet SAML",
+  samlSSOToast: "Saved SAML SSO configurations",
+  baseDNHelperText:
+    "Ensure the Identity provider metadata is in XML format. You can download it from your IdP's site",
+  groupAttributeHelperText:
+    "Define attribute for user-to-group mapping based on the IdP",
+  samlMetadataInput: 'Tooljet SAML test data',
+  samlGroupAttributeInput: 'groups',
+  groupMappingHelperText: 'Separate mappings with commas e.g., Marketing Team -> marketing, Sales Team -> sales',
+  clientSecretToast: "Client secret cannot be empty",
+
 };
+
+export const ssoEeText = {
+  samlModalElements: {
+    toggleLabel: "SAML",
+    NameLabel: "Name",
+    metaDataLabel: "Identity provider metadata",
+    baseDNHelperText:
+      "Ensure the Identity provider metadata is in XML format. You can download it from your IdP's site",
+    groupAttributeLabel: "Group attribute",
+    groupAttributeHelperText:
+      "Define attribute for user-to-group mapping based on the IdP",
+  },
+  enabledLabel: "Enabled",
+  testclientId: "test-client-id",
+
+};
+

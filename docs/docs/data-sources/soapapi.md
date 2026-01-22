@@ -25,13 +25,13 @@ Once you have connected to the REST API data source, you can easily write querie
 2. Select **REST API** from the Data Source section.
 3. Select the **POST** Method and enter your SOAP API endpoint.
 4. Add Headers
-   - **Content-Type** : **text/xml** (Specifies that the request body is XML.)
-   - Include any other required headers (e.g., Authorization, SOAPAction).
+    - **Content-Type** : **text/xml** (Specifies that the request body is XML.)
+    - Include any other required headers (e.g., Authorization, SOAPAction).
 5. Add Request **Body** in XML format.
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/beta/app-builder/custom-code/transform-data)** feature.
+You can also transform the query results using the **[Transformations](/docs/tutorial/transformations)** feature.
 :::
 
 **API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`
@@ -55,9 +55,8 @@ You can also transform the query results using the **[Transformations](/docs/bet
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/soap-api/api-body.png" alt="SOAP API Headers" />
 
 **Additional Notes:**
-
 - SOAP APIs typically use the POST method. Using a different method can cause errors.
-- Ensure that you have added Content-Type: text/xml header. The server requires the correct header to interpret the request as SOAP.
-- Include the SOAPAction header if specified in the API documentation.
+- Ensure that you have added Content-Type: text/xml header. The server requires the correct header to interpret the request as SOAP. 
+- Include the SOAPAction header if specified in the API documentation. 
 
 </div>

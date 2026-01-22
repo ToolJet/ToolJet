@@ -314,7 +314,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion('Layout', []);
+    openAccordion("Layout", []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -827,8 +827,7 @@ describe("Table", () => {
       .should(
         "have.css",
         "color",
-        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
-          data.color[3] / 100
+        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${data.color[3] / 100
         })`
       );
   });
@@ -1303,7 +1302,7 @@ describe("Table", () => {
 
   it("should verify server-side paginaion", () => {
     let dsName = fake.companyName;
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       "http://localhost:3000/api/v2/data_sources",
       `cypress-${dsName}-postgresql`,
       "postgresql",
@@ -1317,9 +1316,9 @@ describe("Table", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
-    cy.apiAddQueryToApp(
-      "q112",
-      {
+    cy.apiAddQueryToApp({
+      queryName: "q112",
+      options: {
         mode: "sql",
         transformationLanguage: "javascript",
         enableTransformation: false,
@@ -1328,9 +1327,9 @@ describe("Table", () => {
         ORDER BY id
         LIMIT 10 OFFSET {{(components.table1.pageIndex-1)*10}};`,
       },
-      `cypress-${dsName}-postgresql`,
-      "postgresql"
-    );
+      dsName: `cypress-${dsName}-postgresql`,
+      dsKind: "postgresql",
+    });
     cy.reload();
     openEditorSidebar(tableText.defaultWidgetName);
     cy.get("[data-state=off]:eq(3)").click();

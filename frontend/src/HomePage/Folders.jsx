@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
-import { folderService } from '@/_services';
+import { folderService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
@@ -16,7 +16,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 export const Folders = function Folders({
   folders,
@@ -77,7 +76,7 @@ export const Folders = function Folders({
   };
 
   function saveFolder() {
-    const newName = newFolderName?.trim();
+    const newName = newFolderName?.trim().replace(/\s+/g, ' ');
     if (!newName) {
       setErrorText("Folder name can't be empty");
       return;
@@ -85,7 +84,7 @@ export const Folders = function Folders({
     if (!errorText) {
       setCreationStatus(true);
       folderService
-        .create(newFolderName, appType)
+        .create(newName, appType)
         .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
@@ -171,7 +170,7 @@ export const Folders = function Folders({
   }
 
   function executeEditFolder() {
-    const folderName = newFolderName?.trim();
+    const folderName = newFolderName?.trim().replace(/\s+/g, ' ');
     if (folderName === updatingFolder?.name) {
       setUpdationStatus(false);
       setShowUpdateForm(false);
@@ -319,7 +318,9 @@ export const Folders = function Folders({
             )}
             style={{ height: '32px' }}
             onClick={() => handleFolderChange({})}
-            data-cy={`all-${appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'applications'}-link`}
+            data-cy={`all-${
+              appType === 'workflow' ? 'workflows' : appType === 'module' ? 'modules' : 'applications'
+            }-link`}
           >
             {appType === 'module'
               ? 'All modules'
@@ -410,6 +411,9 @@ export const Folders = function Folders({
               onClick={showUpdateForm ? executeEditFolder : saveFolder}
               data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               isLoading={isCreating || isUpdating}
+              disabled={!!errorText || // Disabled if there's a validation error
+              (showUpdateForm && newFolderName.trim() === updatingFolder?.name) ||
+              (!showUpdateForm && newFolderName.trim() === '')}
             >
               {showUpdateForm
                 ? t('homePage.foldersSection.editFolder', 'Edit Folder')

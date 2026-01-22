@@ -1,5 +1,5 @@
 export const cyParamName = (paramName = "") => {
-  return paramName.toLowerCase().replace(/\s+/g, "-");
+  return String(paramName).toLowerCase().replace(/\s+/g, "-");
 };
 
 export const onboardingSelectors = {
@@ -12,7 +12,7 @@ export const onboardingSelectors = {
   loginPasswordInput: "[data-cy='password-input']",
   signInButton: "[data-cy='sign-in-button']",
   passwordError: "[data-cy='password-error']",
-  nameInput: "[data-cy='name-input']",
+  nameInput: '[data-cy="name-input"]',
   nameLabel: '[data-cy="name-input-label"]',
   signupNameLabel: '[data-cy="name-label"]',
   forgotEmailInput: '[data-cy="email-input-field-input"]',
@@ -42,12 +42,15 @@ export const onboardingSelectors = {
   planToggleLabel: '[data-cy="plan-toggle-label"]',
   builderPrice: '[data-cy="builder-price"]',
   endUserPrice: '[data-cy="enduser-price"]',
+  proPlanPrice: '[data-cy="pro-plan-price"]',
   declineButton: '[data-cy="decline-button"]',
   skipButton: '[data-cy="skip-button"]',
   backLogo: '[data-cy="back-logo"]',
   backToApps: '[data-cy="back-to-apps"]',
   workspaceName: '[data-cy="workspace-name"]',
-  sampleAppHeader: '[data-cy="we\'ve-created-a-sample-application-for-you!-header"]',
+  scheduleACallButton: '[data-cy="schedule-a-call-button"]',
+  sampleAppHeader:
+    '[data-cy="we\'ve-created-a-sample-application-for-you!-header"]',
   stepsDetails: '[data-cy="steps-details"]',
   infoDescription: '[data-cy="info-description"]',
   comparePlansTitle: '[data-cy="compare-plans-title"]',
@@ -59,7 +62,8 @@ export const onboardingSelectors = {
   enterpriseTitle: '[data-cy="enterprise-title"]',
   customPricingHeader: '[data-cy="custom-pricing-header"]',
   noCreditCardBanner: '[data-cy="no-credit-card-banner"]',
-  beforeDiveInHeader: '[data-cy="before-we-dive-in,-would-you-like-to-start-your-free-trial?-header"]',
+  beforeDiveInHeader:
+    '[data-cy="before-we-dive-in,-would-you-like-to-start-your-free-trial?-header"]',
   tellUsAbit: '[data-cy="tell-us-a-bit-about-yourself-header"]',
   trialButton: '[data-cy="start-your-14-day-trial-button"]',
   comparePlanDescription: '[data-cy="compare-plans-description"]',
@@ -69,4 +73,17 @@ export const onboardingSelectors = {
   upgradeButton: '[data-cy="upgrade-button"]',
   planToggleInput: '[data-cy="plan-toggle-input"]',
   discountDetails: '[data-cy="discount-details"]',
-} 
+  userGroupSelect: '[data-cy="user-group-select"]',
+  userMetadataLabel: '[data-cy="user-metadata-label"]',
+  emptyKeyValueLabel: '[data-cy="label-empty-key-value"]',
+  encryptedLabel: '[data-cy="encrypted-label"]',
+  keyInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-key-input-field-${cyParamName(index)}"]`;
+  },
+  valueInputField: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-value-input-field-${cyParamName(index)}"]`;
+  },
+  deleteButton: (header, index) => {
+    return `[data-cy="${cyParamName(header)}-delete-button-${cyParamName(index)}"]`;
+  },
+};

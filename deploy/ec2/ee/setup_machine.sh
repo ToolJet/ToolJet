@@ -1,9 +1,72 @@
 #!/bin/bash
 
 set -e
+
+# Configure apt for better reliability
+sudo tee /etc/apt/apt.conf.d/99packer-reliability > /dev/null <<EOF
+Acquire::Retries "3";
+Acquire::http::Timeout "30";
+Acquire::https::Timeout "30";
+Acquire::ftp::Timeout "30";
+Acquire::Check-Valid-Until "false";
+EOF
+
+# Clean any stale apt cache from base image
+echo "Cleaning initial apt cache..."
+sudo rm -rf /var/lib/apt/lists/*
+sudo mkdir -p /var/lib/apt/lists/partial
+
+# Retry function for apt-get operations with exponential backoff
+retry_apt_update() {
+  local max_attempts=5
+  local timeout=30
+  local attempt=1
+  local exitCode=0
+
+  while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt of $max_attempts: Running apt-get update..."
+
+    # Clean apt cache before retry (important for corrupt cache issues)
+    if [ $attempt -gt 1 ]; then
+      echo "Cleaning apt cache before retry..."
+      sudo rm -rf /var/lib/apt/lists/*
+      sudo mkdir -p /var/lib/apt/lists/partial
+    fi
+
+    # Run apt-get update with timeout
+    if timeout $timeout sudo apt-get update; then
+      echo "apt-get update succeeded on attempt $attempt"
+      return 0
+    else
+      exitCode=$?
+      echo "apt-get update failed on attempt $attempt (exit code: $exitCode)"
+    fi
+
+    if [ $attempt -lt $max_attempts ]; then
+      # Exponential backoff: 5s, 10s, 20s, 40s
+      local sleep_time=$((5 * (2 ** ($attempt - 1))))
+      echo "Waiting ${sleep_time}s before retry..."
+      sleep $sleep_time
+    fi
+
+    attempt=$((attempt + 1))
+  done
+
+  echo "ERROR: apt-get update failed after $max_attempts attempts"
+  return $exitCode
+}
+
 # Setup prerequisite dependencies
-sudo apt-get update
-sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
+retry_apt_update
+sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl
+
+# Add PostgreSQL official APT repository
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+retry_apt_update
+
+# Install PostgreSQL client
+sudo apt-get -y install --no-install-recommends postgresql-client-14
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -15,9 +78,9 @@ sudo npm i -g npm@10.9.2
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
-echo "deb http://openresty.org/package/ubuntu bionic main" > openresty.list
+echo "deb http://openresty.org/package/ubuntu jammy main" > openresty.list
 sudo mv openresty.list /etc/apt/sources.list.d/
-sudo apt-get update
+retry_apt_update
 sudo apt-get -y install --no-install-recommends openresty
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
@@ -67,7 +130,7 @@ sudo rm postgrest-v12.2.0-linux-static-x64.tar.xz
 sudo add-apt-repository ppa:redislabs/redis -y
 
 # Install redis
-sudo apt-get update
+retry_apt_update
 sudo apt-get install redis-server -y
 
 # Setup app, postgrest and redis as systemd service
@@ -78,45 +141,80 @@ sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 # Start and enable Redis service
 sudo systemctl daemon-reload
 
-
-# Setup Neo4j with APOC plugin
-wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
-echo "deb https://debian.neo4j.com stable 5" | sudo tee /etc/apt/sources.list.d/neo4j.list
-sudo apt-get update
-sudo apt-get install -y neo4j=1:5.26.6
-sudo apt-mark hold neo4j
-
-# Setup APOC plugin
-sudo mkdir -p /var/lib/neo4j/plugins
-sudo wget -P /var/lib/neo4j/plugins https://github.com/neo4j/apoc/releases/download/5.26.6/apoc-5.26.6-core.jar
-
-# Update Neo4j config
-echo "dbms.security.procedures.unrestricted=apoc.*" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.security.procedures.allowlist=apoc.*,algo.*,gds.*" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.directories.plugins=/var/lib/neo4j/plugins" | sudo tee -a /etc/neo4j/neo4j.conf
-echo "dbms.security.auth_enabled=true" | sudo tee -a /etc/neo4j/neo4j.conf
-
 # Clean up APT cache
 sudo apt-get clean
 sudo rm -rf /var/lib/apt/lists/*
 
-# Setup app directory
-mkdir -p ~/app
+# Setup temporary build directory
+BUILD_DIR="/tmp/tooljet-build"
+PROD_DIR="/home/ubuntu/app"
+
+mkdir -p "$BUILD_DIR"
 
 git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
 
 #The below url will be edited dynamically when actions is triggered
-git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b lts-3.16 https://github.com/ToolJet/ToolJet.git "$BUILD_DIR" && cd "$BUILD_DIR"
 git submodule update --init --recursive
 git submodule foreach 'git checkout lts-3.16 || true'
 
-mv /tmp/.env ~/app/.env
-mv /tmp/setup_app ~/app/setup_app
-sudo chmod +x ~/app/setup_app
-
 npm install -g npm@10.9.2
 
-# Building ToolJet app
+# Building ToolJet app in temporary directory
 npm install -g @nestjs/cli
-export NODE_OPTIONS='--max-old-space-size=8000'
-TOOLJET_EDTION=ee npm run build
+NODE_OPTIONS='--max-old-space-size=8000' TOOLJET_EDITION=ee npm run build
+
+# Remove marketplace folder after build (used during build but not needed in production)
+echo "Removing marketplace folder after build..."
+rm -rf "$BUILD_DIR/marketplace"
+
+# Create production directory structure
+mkdir -p "$PROD_DIR"
+
+# Copy only production-necessary files (following Docker multi-stage build pattern)
+echo "Copying production artifacts to $PROD_DIR..."
+
+# Copy root package.json
+cp "$BUILD_DIR/package.json" "$PROD_DIR/"
+
+# Copy server production files
+mkdir -p "$PROD_DIR/server"
+cp -r "$BUILD_DIR/server/dist" "$PROD_DIR/server/"
+cp -r "$BUILD_DIR/server/node_modules" "$PROD_DIR/server/"
+cp "$BUILD_DIR/server/package.json" "$PROD_DIR/server/"
+[ -f "$BUILD_DIR/server/.version" ] && cp "$BUILD_DIR/server/.version" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/templates" ] && cp -r "$BUILD_DIR/server/templates" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/scripts" ] && cp -r "$BUILD_DIR/server/scripts" "$PROD_DIR/server/"
+[ -d "$BUILD_DIR/server/ee/keys" ] && mkdir -p "$PROD_DIR/server/ee/keys" && cp -r "$BUILD_DIR/server/ee/keys" "$PROD_DIR/server/ee/"
+[ -d "$BUILD_DIR/server/ee/ai/assets" ] && mkdir -p "$PROD_DIR/server/ee/ai/assets" && cp -r "$BUILD_DIR/server/ee/ai/assets" "$PROD_DIR/server/ee/ai/"
+
+# Copy frontend build
+mkdir -p "$PROD_DIR/frontend"
+cp -r "$BUILD_DIR/frontend/build" "$PROD_DIR/frontend/"
+
+# Copy plugins production files
+mkdir -p "$PROD_DIR/plugins/packages"
+cp -r "$BUILD_DIR/plugins/dist" "$PROD_DIR/plugins/"
+[ -f "$BUILD_DIR/plugins/client.js" ] && cp "$BUILD_DIR/plugins/client.js" "$PROD_DIR/plugins/"
+cp -r "$BUILD_DIR/plugins/node_modules" "$PROD_DIR/plugins/"
+[ -d "$BUILD_DIR/plugins/packages/common" ] && cp -r "$BUILD_DIR/plugins/packages/common" "$PROD_DIR/plugins/packages/"
+cp "$BUILD_DIR/plugins/package.json" "$PROD_DIR/plugins/"
+
+# Move runtime configuration files
+mv /tmp/.env "$PROD_DIR/.env"
+mv /tmp/setup_app "$PROD_DIR/setup_app"
+sudo chmod +x "$PROD_DIR/setup_app"
+
+# Clean up build directory
+echo "Cleaning up build directory..."
+cd /home/ubuntu
+rm -rf "$BUILD_DIR"
+
+echo "Production files copied successfully. Total size:"
+du -sh "$PROD_DIR"
+
+echo "Verifying critical files..."
+echo "- Plugins packages/common exists:" && ls -ld "$PROD_DIR/plugins/packages/common" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Server dist exists:" && ls -ld "$PROD_DIR/server/dist" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Frontend build exists:" && ls -ld "$PROD_DIR/frontend/build" 2>/dev/null && echo "✓" || echo "✗ MISSING"
+echo "- Plugins dist exists:" && ls -ld "$PROD_DIR/plugins/dist" 2>/dev/null && echo "✓" || echo "✗ MISSING"

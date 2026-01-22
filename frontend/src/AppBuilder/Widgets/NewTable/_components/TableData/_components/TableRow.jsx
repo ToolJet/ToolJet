@@ -22,6 +22,7 @@ export const TableRow = ({
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
+  const editedFields = useTableStore((state) => state.getEditedFieldsOnIndex(id, row.index), shallow);
 
   if (!row) return null;
 
@@ -70,6 +71,8 @@ export const TableRow = ({
           cellValue: cell.getValue(),
         });
 
+        const isEdited = editedFields?.[cell.column.columnDef?.accessorKey] || false;
+
         return (
           <td
             key={cell.id}
@@ -100,16 +103,19 @@ export const TableRow = ({
               'has-multiselect': cell.column.columnDef?.meta?.columnType === 'multiselect',
               'has-dropdown': cell.column.columnDef?.meta?.columnType === 'dropdown',
               isEditable: isEditable,
+              isEdited: isEdited,
             })}
             onClick={(e) => {
-              if (
-                (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
-                allowSelection &&
-                !selectRowOnCellEdit
-              ) {
-                // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
+              // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
+              if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
                 e.stopPropagation();
+                fireEvent('onRowClicked');
+              } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {
+                // if the cell is editable and the row is selected, don't unselect the row
+                e.stopPropagation();
+                fireEvent('onRowClicked');
               }
+
               setExposedVariables({
                 selectedCell: {
                   columnName: cell.column.columnDef?.header,
