@@ -114,6 +114,23 @@
   }
 }
 
+// Row container - wraps the row and validation error
+.kv-row-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+// Validation error - positioned below row, aligned with value column
+.kv-row-validation-error {
+  .invalid-feedback {
+    font-size: 11px;
+    margin-top: 4px;
+    color: var(--status-error-strong);
+    display: block;
+  }
+}
+
 // Value styling
 .key-value-render-value {
   font-size: 14px;
@@ -121,22 +138,16 @@
   color: var(--text-primary);
   word-break: break-word;
   min-height: 38px;
-  display: flex; /* Changed from default block to flex to align value and icon */
-  align-items: center; /* Center icon vertically with text */
-  justify-content: space-between; /* Push icon to right if needed, or stick to content */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 8px !important;
+  position: relative;
 
-   // For Link
-    .table-link-hover {
-      color: var(--primary-brand) !important
-    }
-
-  // Validation error
-  .invalid-feedback {
-    font-size: 11px;
-    margin-top: 4px;
-    color: var(--status-error-strong);
+  // For Link
+  .table-link-hover {
+    color: var(--primary-brand) !important;
   }
 }
 
@@ -151,6 +162,8 @@
     // For String
     .long-text-input {
       width: 100%;
+    //     outline: 2px solid var(--primary-brand);
+    // background-color: var(--cc-surface1-surface);
       // resize: vertical;
       // overflow-y: auto;
       position: absolute;

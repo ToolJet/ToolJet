@@ -1,15 +1,10 @@
 import React from 'react';
-import { NumberRenderer } from '@/AppBuilder/Shared/DataTypes';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import HighLightSearch from '../../HighLightSearch';
-import useTextColor from '../_hooks/useTextColor';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
+import useTextColor from '../../DataTypes/_hooks/useTextColor';
+import { NumberRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/NumberRenderer';
 
-/**
- * NumberColumnAdapter - Table adapter for NumberRenderer
- *
- * Wraps the shared NumberRenderer with Table-specific validation and styling.
- */
 export const NumberColumn = ({
   id,
   isEditable,
@@ -18,7 +13,6 @@ export const NumberColumn = ({
   horizontalAlignment,
   cellValue,
   column,
-  cell,
   row,
   searchText,
   containerWidth,
@@ -32,14 +26,23 @@ export const NumberColumn = ({
 
   const validationData = validateWidget({
     validationObject: {
-      minValue: { value: column?.minValue },
-      maxValue: { value: column?.maxValue },
-      regex: { value: column?.regex },
-      customRule: { value: column?.customRule },
+      minValue: {
+        value: column?.minValue,
+      },
+      maxValue: {
+        value: column?.maxValue,
+      },
+      regex: {
+        value: column?.regex,
+      },
+      customRule: {
+        value: column?.customRule,
+      },
     },
     widgetValue: cellValue,
     customResolveObjects: { cellValue },
   });
+
   const { isValid, validationError } = validationData;
 
   const handleChange = (newValue) => {
@@ -60,8 +63,7 @@ export const NumberColumn = ({
       validationError={validationError}
       searchText={searchText}
       SearchHighlightComponent={HighLightSearch}
+      className="table-column-type-input-element"
     />
   );
 };
-
-export default NumberColumn;

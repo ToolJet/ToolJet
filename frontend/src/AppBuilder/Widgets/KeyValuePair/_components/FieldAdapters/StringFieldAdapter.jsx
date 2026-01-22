@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StringRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/StringRenderer';
+import { useStringValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
 
 /**
  * StringFieldAdapter - KeyValuePair adapter for string input
@@ -15,30 +16,32 @@ export const StringField = ({
   containerWidth,
   darkMode = false,
   maxHeight,
-  isValid = true,
-  validationError,
-  searchText,
-  SearchHighlightComponent,
   isEditing,
   setIsEditing,
   id,
   field,
+  onValidationChange,
 }) => {
+  const { isValid, validationError } = useStringValidation(field, value);
+
+  // Expose validation state to parent
+  useEffect(() => {
+    onValidationChange?.({ isValid, validationError });
+  }, [isValid, validationError, onValidationChange]);
+
   return (
     <StringRenderer
       value={value}
       isEditable={isEditable}
       isEditing={isEditing}
       onChange={onChange}
-      textColor={field?.textColor}
-      horizontalAlignment={'left'}
+      textColor={field?.textColor ?? textColor}
+      horizontalAlignment={horizontalAlignment}
       containerWidth={containerWidth}
       darkMode={darkMode}
-      // maxHeight={maxHeight}
+      maxHeight={maxHeight}
       isValid={isValid}
       validationError={validationError}
-      searchText={searchText}
-      SearchHighlightComponent={SearchHighlightComponent}
       id={id}
       setIsEditing={setIsEditing}
     />

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   StringField,
   NumberField,
@@ -52,13 +52,12 @@ const KeyValueRow = ({
     dateFormat,
     showTimeSelect,
     timeFormat,
-    // Validation
-    isValid = true,
-    validationError,
   } = field;
 
   // Local state for edit mode
   const [isEditing, setIsEditing] = useState(false);
+  // Validation state from adapter
+  const [validation, setValidation] = useState({ isValid: true, validationError: null });
   const valueRef = useRef(null);
   const displayLabel = name || label || fieldKey;
   // Field is editable if configured AND not disabled
@@ -69,6 +68,11 @@ const KeyValueRow = ({
 
   const isTopAlignment = alignment === 'top';
   const isRightDirection = direction === 'right';
+
+  // Callback for adapters to report validation state
+  const handleValidationChange = useCallback((validationState) => {
+    setValidation(validationState);
+  }, []);
 
   const handleEditClick = () => {
     if (isEditable) {
@@ -102,8 +106,6 @@ const KeyValueRow = ({
       textColor,
       accentColor,
       darkMode,
-      isValid,
-      validationError,
       // Pass edit state
       isEditable: isEditing,
       autoFocus: true, // Auto focus when switching to edit mode
@@ -111,6 +113,8 @@ const KeyValueRow = ({
       isEditing: showInput,
       setIsEditing,
       field,
+      // Validation callback
+      onValidationChange: handleValidationChange,
     };
 
     console.log(fieldType, 'fieldType', value);
@@ -168,36 +172,51 @@ const KeyValueRow = ({
         return <span style={{ color: textColor }}>{String(value ?? '')}</span>;
     }
   };
+  // Get error offset based on label width for alignment
+  const getErrorOffset = () => {
+    if (isTopAlignment) return {};
+    if (autoLabelWidth) return {};
+    return { paddingLeft: `${labelWidth}%` };
+  };
+
   return (
-    <div className={rowClassName}>
-      <Label
-        label={displayLabel}
-        width={labelWidth}
-        auto={autoLabelWidth}
-        _width={_width}
-        color={labelColor}
-        direction={direction}
-        defaultAlignment={alignment}
-        inputId={fieldKey}
-        classes={{
-          labelContainer: cn({
-            'tw-self-center': alignment !== 'top',
-            'tw-flex-shrink-0': alignment === 'top',
-          }),
-        }}
-      />
-      <div
-        className={cx(`key-value-render-value kv-${fieldType}`, {
-          'kv-value-editing': isEditing,
-          'kv-editable': isEditable,
-        })}
-        ref={valueRef}
-        style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
-        onClick={handleEditClick}
-      >
-        {renderValue()}
-        {isEditable && (!isEditing || fieldType === 'boolean') && <SquarePen width={16} height={16} />}
+    <div className="kv-row-container">
+      <div className={rowClassName}>
+        <Label
+          label={displayLabel}
+          width={labelWidth}
+          auto={autoLabelWidth}
+          _width={_width}
+          color={labelColor}
+          direction={direction}
+          defaultAlignment={alignment}
+          inputId={fieldKey}
+          classes={{
+            labelContainer: cn({
+              'tw-self-center': alignment !== 'top',
+              'tw-flex-shrink-0': alignment === 'top',
+            }),
+          }}
+        />
+        <div
+          className={cx(`key-value-render-value kv-${fieldType}`, {
+            'kv-value-editing': isEditing,
+            'kv-editable': isEditable,
+          })}
+          ref={valueRef}
+          style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
+          onClick={handleEditClick}
+        >
+          {renderValue()}
+          {isEditable && (!isEditing || fieldType === 'boolean') && <SquarePen width={16} height={16} />}
+        </div>
       </div>
+      {/* Validation error - below row, aligned with value column */}
+      {!validation.isValid && (
+        <div className="kv-row-validation-error" style={getErrorOffset()}>
+          <span className="invalid-feedback text-truncate">{validation.validationError}</span>
+        </div>
+      )}
     </div>
   );
 };

@@ -39,6 +39,7 @@ export const StringRenderer = ({
   id,
   isEditing,
   setIsEditing = noop,
+  widgetType,
 }) => {
   const ref = useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -142,7 +143,7 @@ export const StringRenderer = ({
           </div>
         )}
       </div>
-      {!isValid && (
+      {widgetType !== 'KeyValuePair' && !isValid && (
         <div className="invalid-feedback text-truncate" onClick={focusInput}>
           {validationError}
         </div>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { StringRenderer } from '@/AppBuilder/Shared/DataTypes';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
+import { useStringValidation } from '@/AppBuilder/Shared/DataTypes/hooks/useValidation';
 import useTableStore from '../../../_stores/tableStore';
 import HighLightSearch from '../../HighLightSearch';
 import { getMaxHeight } from '../../../_utils/helper';
 import useTextColor from '../_hooks/useTextColor';
 import useValidationStyle from '../_hooks/useValidationStyle';
+import { shallow } from 'zustand/shallow';
+
 /**
  * StringColumnAdapter - Table adapter for StringRenderer
  *
@@ -27,24 +28,13 @@ export const StringColumn = ({
   searchText,
   id,
 }) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const [isEditing, setIsEditing] = useState(false);
   const cellTextColor = useTextColor(id, textColor);
 
-  const validationData = validateWidget({
-    validationObject: {
-      regex: { value: column.regex },
-      minLength: { value: column.minLength },
-      maxLength: { value: column.maxLength },
-      customRule: { value: column.customRule },
-    },
-    widgetValue: cellValue,
-    customResolveObjects: { cellValue },
-  });
-  const { isValid, validationError } = validationData;
+  const { isValid, validationError } = useStringValidation(column, cellValue);
   useValidationStyle(id, row, validationError);
 
   const handleChange = (newValue) => {

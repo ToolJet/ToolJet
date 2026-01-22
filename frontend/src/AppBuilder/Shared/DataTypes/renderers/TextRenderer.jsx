@@ -39,6 +39,7 @@ export const TextRenderer = ({
   SearchHighlightComponent,
   isEditing,
   setIsEditing,
+  widgetType,
 }) => {
   const [showOverlay, setShowOverlay] = useState(false);
   // const [isEditing, setIsEditing] = useState(false);
@@ -188,7 +189,7 @@ export const TextRenderer = ({
         >
           {renderContent()}
         </div>
-        {isEditable && !isValid && (
+        {isEditable && !isValid && widgetType !== 'KeyValuePair' && (
           <div className="invalid-feedback text-truncate" onClick={focusInput}>
             {validationError}
           </div>

@@ -68,6 +68,7 @@ export const NumberRenderer = ({
   setIsEditing = noop,
   id,
   className,
+  widgetType,
 }) => {
   const cellValue = decimalPlaces !== null ? removingExcessDecimalPlaces(initialValue, decimalPlaces) : initialValue;
   const [displayValue, setDisplayValue] = useState(cellValue);
@@ -185,7 +186,9 @@ export const NumberRenderer = ({
             />
           </div>
         </div>
-        {!isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
+        {!isValid && widgetType !== 'KeyValuePair' && (
+          <div className="invalid-feedback text-truncate">{validationError}</div>
+        )}
       </div>
     );
   }

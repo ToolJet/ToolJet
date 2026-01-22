@@ -1,17 +1,12 @@
-import React from 'react';
-import { TextRenderer } from '@/AppBuilder/Shared/DataTypes';
+import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import useTableStore from '../../../_stores/tableStore';
-import HighLightSearch from '../../HighLightSearch';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { getMaxHeight } from '../../../_utils/helper';
-import useTextColor from '../_hooks/useTextColor';
+import useTextColor from '../../DataTypes/_hooks/useTextColor';
+import { TextRenderer } from '@/AppBuilder/Shared/DataTypes/renderers/TextRenderer';
 
-/**
- * TextColumnAdapter - Table adapter for TextRenderer
- *
- * Wraps the shared TextRenderer with Table-specific hooks.
- */
 export const TextColumn = ({
   id,
   isEditable,
@@ -25,12 +20,12 @@ export const TextColumn = ({
   horizontalAlignment,
   searchText,
 }) => {
-  const validateWidget = useStore((state) => state.validateWidget, shallow);
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const cellTextColor = useTextColor(id, textColor);
-
+  const [isEditing, setIsEditing] = useState(false);
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
   const { isValid, validationError } = validateWidget({
     validationObject: {
       minLength: { value: column.minLength },
@@ -59,8 +54,8 @@ export const TextColumn = ({
       validationError={validationError}
       searchText={searchText}
       SearchHighlightComponent={HighLightSearch}
+      isEditing={isEditing}
+      setIsEditing={setIsEditing}
     />
   );
 };
-
-export default TextColumn;
