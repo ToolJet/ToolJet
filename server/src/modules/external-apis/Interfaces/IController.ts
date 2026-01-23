@@ -6,6 +6,7 @@ import {
   AppGitPullDto,
   AppGitPushDto,
   AppImportRequestDto,
+  AddUserToGroupsDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -33,6 +34,9 @@ export interface IExternalApisController {
 
   // Updates user role
   updateUserRole(workspaceId: string, editRoleDto: EditUserRoleDto): Promise<any>;
+
+  // Adds user to groups
+  addUserToGroups(userId: string, addUserToGroupsDto: AddUserToGroupsDto): Promise<void>;
 }
 
 export interface IExternalApisAppsController {

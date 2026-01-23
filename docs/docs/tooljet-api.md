@@ -30,6 +30,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Create User](#create-user)
 - [Update User](#update-user)
 - [Update User Role](#update-user-role)
+- [Add User to Groups](#add-user-to-groups)
 - [Replace User Workspace](#replace-user-workspace)
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
@@ -409,6 +410,64 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
 
     - **Response:** `200 OK`
+
+### Add User to Groups
+
+    - **Description:** Adds an existing user to one or more existing groups within a workspace.
+    - **URL:** `/api/ext/user/:userId/groups`
+    - **Method:** POST
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Params:**
+        - userId (string): The unique identifier of the user.
+    - **Body:** The body object must contain the following field:
+        - `groups` (array, required): An array of group objects to add the user to. Each group object must contain either:
+          - `id` (string): The unique identifier of the group, OR
+          - `name` (string): The name of the group
+
+<details id="tj-dropdown">
+
+<summary>Request Body Example (using group IDs)</summary>
+
+```json
+{
+  "groups": [
+    {
+      "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e"
+    },
+    {
+      "id": "1830a113-24e5-4e33-8af2-e6502d477239"
+    }
+  ]
+}
+```
+
+</details>
+
+<details id="tj-dropdown">
+
+<summary>Request Body Example (using group names)</summary>
+
+```json
+{
+  "groups": [
+    {
+      "name": "admin"
+    },
+    {
+      "name": "developer"
+    }
+  ]
+}
+```
+
+</details>
+
+    - **Response:** `200 OK`
+    - **Note:** 
+      - This endpoint can be used to add users to both default groups (all_users, admin, builder, end-user) and custom groups.
+      - The groups parameter accepts either group IDs or group names.
+      - If a user is already a member of a specified group, that group membership will be skipped without error.
 
 ### Replace User Workspaces Relations
 

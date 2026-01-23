@@ -37,6 +37,10 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.ADD_USER_TO_GROUPS]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
