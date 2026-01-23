@@ -10,7 +10,6 @@ import { decamelizeKeys } from 'humps';
 import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
-import { Organization } from 'src/entities/organization.entity';
 
 const PASSWORD_REGEX =
   /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
@@ -768,4 +767,3 @@ export async function validatePasswordDomain(
     instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
   );
 }
-
