@@ -769,24 +769,3 @@ export async function validatePasswordDomain(
   );
 }
 
-export async function getDefaultOrOldestWorkspaceOfInstance(
-  manager: EntityManager
-): Promise<Organization | null> {
-
-  // 1️⃣ Try default workspace
-  const defaultWorkspace = await manager.findOne(Organization, {
-    where: { isDefault: true },
-  });
-
-  if (defaultWorkspace) {
-    return defaultWorkspace;
-  }
-
-  // 2️⃣ Fallback → oldest workspace
-  const [oldestWorkspace] = await manager.find(Organization, {
-    order: { createdAt: 'ASC' },
-    take: 1,
-  });
-
-  return oldestWorkspace || null;
-}

@@ -33,7 +33,6 @@ import {
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,
-  getDefaultOrOldestWorkspaceOfInstance,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
@@ -81,6 +80,24 @@ export class OnboardingService implements IOnboardingService {
     protected readonly metadataUtilService: MetadataUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
+
+  private async getDefaultOrOldestWorkspaceOfInstance(
+    manager: EntityManager
+  ): Promise<Organization | null> {
+    const defaultWorkspace = await manager.findOne(Organization, {
+      where: { isDefault: true },
+    });
+
+    if (defaultWorkspace) {
+      return defaultWorkspace;
+    }
+    const [oldestWorkspace] = await manager.find(Organization, {
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+
+    return oldestWorkspace || null;
+  }
 
   async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
@@ -132,7 +149,7 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await getDefaultOrOldestWorkspaceOfInstance(manager);
+      const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
 
 
       if (existingUser) {
