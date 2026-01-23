@@ -267,19 +267,6 @@ export const dropdownV2Config = {
       },
       accordian: 'field',
     },
-    padding: {
-      type: 'switch',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 'default',
-      },
-      options: [
-        { displayName: 'Default', value: 'default' },
-        { displayName: 'None', value: 'none' },
-      ],
-      accordian: 'container',
-    },
     menuWidthMode: {
       type: 'select',
       displayName: 'Menu width',
@@ -292,7 +279,7 @@ export const dropdownV2Config = {
         { name: 'Match the content', value: 'matchContent' },
         { name: 'Custom', value: 'custom' },
       ],
-      accordian: 'container',
+      accordian: 'field',
       isFxNotRequired: true,
       description: 'Control dropdown menu width: match field, match content, or set custom.',
     },
@@ -306,6 +293,19 @@ export const dropdownV2Config = {
         key: 'menuWidthMode',
         value: 'custom',
       },
+      accordian: 'field',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
       accordian: 'container',
     },
   },
@@ -409,7 +409,7 @@ export const dropdownV2Config = {
       iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       widthType: { value: 'ofComponent' },
-      menuWidthMode: { value: 'matchContent' },
+      menuWidthMode: { value: 'matchField' },
       menuCustomWidth: { value: '' },
     },
   },
