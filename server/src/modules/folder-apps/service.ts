@@ -22,7 +22,7 @@ export class FolderAppsService implements IFolderAppsService {
   async create(folderId: string, appId: string): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId, folderId },
+        where: { appId },
       });
 
       if (existingFolderApp) {
