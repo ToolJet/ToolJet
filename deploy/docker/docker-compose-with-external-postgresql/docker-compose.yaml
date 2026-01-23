@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  tooljet:
+    tty: true
+    stdin_open: true
+    container_name: Tooljet-app
+    image: tooljet/tooljet-ce:ce-lts-latest
+    platform: linux/amd64
+    restart: always
+    env_file: .env
+    ports:
+      - 80:80
+    environment:
+      SERVE_CLIENT: "true"
+      PORT: "80"
+    command: npm run start:prod
