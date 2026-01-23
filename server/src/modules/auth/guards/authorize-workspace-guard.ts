@@ -17,6 +17,8 @@ export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
     const hasJwtCookie = !!request.cookies['tj_auth_token'];
     const hasPatHeader = !!request.headers['tj_auth_token'];
 
+    console.log('here--- hasPatHeader--- ', hasPatHeader)
+    console.log('here--- request.headers--- ', request.headers)
     if (!hasJwtCookie && !hasPatHeader) {
       throw new UnauthorizedException('Missing authentication token');
     }
