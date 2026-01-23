@@ -262,11 +262,13 @@
           .react-select__value-container {
             display: flex;
             align-items: center;
+            padding: 0px 8px;
           }
 
           .react-select__value-container--is-multi {
             gap: 4px;
             max-height: 100%;
+            flex-flow: wrap;
           }
         }
 
