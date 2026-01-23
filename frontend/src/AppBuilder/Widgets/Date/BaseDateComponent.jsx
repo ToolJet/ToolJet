@@ -34,7 +34,7 @@ export const BaseDateComponent = ({
 }) => {
   const { i18n } = useTranslation();
   const currentLocale = getDateLocale(i18n.language);
-
+  // Test
   const {
     selectedTextColor,
     fieldBorderRadius,
