@@ -266,6 +266,10 @@ Cypress.Commands.add(
       .and(assertion, value, ...arg);
   }
 );
+Cypress.Commands.add("scrollToElement", (selector) => {
+  cy.get(selector).scrollIntoView()
+    .should("be.visible");
+});
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
   cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });

@@ -264,7 +264,7 @@ export default class LicenseBase {
   }
   public get plan(): string {
     if (this.IsBasicPlan) {
-      return;
+      return LICENSE_TYPE.BASIC;
     }
     return this._plan;
   }

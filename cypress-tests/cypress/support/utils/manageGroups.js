@@ -194,15 +194,19 @@ export const setupWorkspaceAndInviteUser = (
 
 export const verifyUserPrivileges = (
   expectedButtonState,
+  userRole = "End-user",
   shouldHaveWorkspaceSettings
 ) => {
   cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
   cy.get(commonSelectors.settingsIcon).click();
-
-  if (shouldHaveWorkspaceSettings) {
-    cy.get(commonSelectors.workspaceSettings).should("exist");
-  } else {
+  if (!shouldHaveWorkspaceSettings) {
     cy.get(commonSelectors.workspaceSettings).should("not.exist");
+    return;
+  }
+  cy.get(commonSelectors.workspaceSettings).should("exist");
+  if (userRole === "Builder") {
+    cy.get(commonSelectors.workspaceSettings).click();
+    cy.get(commonSelectors.manageSSOOption).should("not.exist");
   }
 };
 

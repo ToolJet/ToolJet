@@ -1,5 +1,4 @@
-import { dsCommonSelector } from "Selectors/marketplace/common";
-import { cyParamName } from "Selectors/common";
+import { dsCommonSelector, cyParamName } from "Selectors/marketplace/common";
 
 export const verifyConnectionFormHeader = (data) => {
     cy.waitForElement('[data-cy="data-source-name-input-field"]')
@@ -193,6 +192,18 @@ export const verifyKeyValueFieldUI = (field) => {
         }
     });
 };
+export const verifyCheckboxFieldUI = (field) => {
+    const { fieldName, validations = {} } = field;
+
+    cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
+        cy.get(dsCommonSelector.labelFieldName(fieldName)).should('be.visible');
+
+        const checkboxSelector = dsCommonSelector.checkboxInput(fieldName);
+        validateCheckedState(checkboxSelector, validations.value);
+        validateCheckedState(checkboxSelector, validations.defaultValue);
+        validateDisabledState(checkboxSelector, validations.disabled);
+    });
+};
 
 export const verifyConnectionFormUI = (fields) => {
     fields.forEach((field) => {
@@ -215,6 +226,9 @@ export const verifyConnectionFormUI = (fields) => {
                 break;
             case 'keyValue':
                 verifyKeyValueFieldUI(field);
+                break;
+            case 'checkbox':
+                verifyCheckboxFieldUI(field);
                 break;
             default:
                 throw new Error(`Unsupported field type: ${field.type}`);

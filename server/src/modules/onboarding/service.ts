@@ -32,6 +32,7 @@ import {
   isValidDomain,
   generateWorkspaceSlug,
   validatePasswordServer,
+  validatePasswordDomain,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
@@ -80,7 +81,7 @@ export class OnboardingService implements IOnboardingService {
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
-  async signup(appSignUpDto: AppSignupDto) {
+  async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
     validatePasswordServer(password);
 
@@ -99,12 +100,21 @@ export class OnboardingService implements IOnboardingService {
           throw new NotFoundException('Could not found organization details. Please verify the orgnization id');
         }
         /* Check if the workspace allows user signup or not */
-        const { enableSignUp, domain } = signingUpOrganization;
+        const { enableSignUp, passwordAllowedDomains, passwordRestrictedDomains } = signingUpOrganization;
         if (!enableSignUp) {
           throw new ForbiddenException('Workspace signup has been disabled. Please contact the workspace admin.');
         }
-        if (!isValidDomain(email, domain)) {
-          throw new ForbiddenException('You cannot sign up using the email address - Domain verification failed.');
+        if (
+          !(await validatePasswordDomain(email, passwordAllowedDomains, passwordRestrictedDomains, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
+        }
+      } else {
+        // No organization provided - validate against instance-level settings
+        if (
+          !(await validatePasswordDomain(email, undefined, undefined, this.instanceSettingsUtilService))
+        ) {
+          throw new ForbiddenException('This login method is not available for your domain. Please contact admin or try another method.');
         }
       }
 
@@ -139,7 +149,8 @@ export class OnboardingService implements IOnboardingService {
             userParams,
             defaultWorkspace,
             redirectTo,
-            manager
+            manager,
+            response
           );
         }
         return await this.onboardingUtilService.createUserInWorkspace(
@@ -147,7 +158,8 @@ export class OnboardingService implements IOnboardingService {
           existingUser,
           signingUpOrganization,
           redirectTo,
-          manager
+          manager,
+          response
         );
       }
     });
