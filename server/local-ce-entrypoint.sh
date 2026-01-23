@@ -5,11 +5,7 @@ if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi
 
-if [ -d "./server/dist" ]; then
-  SETUP_CMD='npm run db:setup:prod'
-else
-  SETUP_CMD='npm run db:setup'
-fi
+SETUP_CMD='npm run db:setup'
 
 if [ -f "./.env" ]; then
   declare $(grep -v '^#' ./.env | xargs)
