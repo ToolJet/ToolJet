@@ -15,8 +15,11 @@ import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { validateMongoDBConnectionString, parseMongoDBConnectionString, detectConnectionStringChange } from '../_helpers/mongoDbHelpers.js'
-
+import {
+  validateMongoDBConnectionString,
+  parseMongoDBConnectionString,
+  detectConnectionStringChange,
+} from '../_helpers/mongoDbHelpers.js';
 
 const DynamicFormV2 = ({
   schema,
@@ -58,9 +61,7 @@ const DynamicFormV2 = ({
   const manuallyEditedFieldsRef = React.useRef(new Set());
   const skipNextAutoFillRef = React.useRef(false);
   React.useEffect(() => {
-    const isMongoDBDataSource =
-      schema['tj:source']?.kind === 'mongodb' ||
-      schema['tj:source']?.name === 'MongoDB';
+    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
     if (!isMongoDBDataSource) {
       return;
@@ -179,12 +180,16 @@ const DynamicFormV2 = ({
         clearTimeout(autoFillTimeoutRef.current);
       }
     };
-  }, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id, schema]);
+  }, [
+    options?.connection_string?.value,
+    options?.connection_type?.value,
+    optionchanged,
+    selectedDataSource?.id,
+    schema,
+  ]);
 
   React.useEffect(() => {
-    const isMongoDBDataSource =
-      schema['tj:source']?.kind === 'mongodb' ||
-      schema['tj:source']?.name === 'MongoDB';
+    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
     if (!isMongoDBDataSource) {
       return;
@@ -245,23 +250,23 @@ const DynamicFormV2 = ({
       const conditionallyRequiredFields = processAllOfConditions(schema, options);
       setConditionallyRequiredProperties(conditionallyRequiredFields);
 
-      const isMongoDBDataSource =
-        schema['tj:source']?.kind === 'mongodb' ||
-        schema['tj:source']?.name === 'MongoDB';
+      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
       let finalErrors = [...errors];
 
       if (isMongoDBDataSource) {
         const connectionType = options?.connection_type?.value;
 
-        finalErrors = finalErrors.filter(err => {
+        finalErrors = finalErrors.filter((err) => {
           if (connectionType === 'string' && err.keyword === 'if') {
             return false;
           }
-          if (connectionType === 'string' &&
+          if (
+            connectionType === 'string' &&
             err.dataPath === '.connection_string' &&
             err.keyword === 'required' &&
-            err.schemaPath.includes('allOf')) {
+            err.schemaPath.includes('allOf')
+          ) {
             return false;
           }
 
@@ -274,18 +279,15 @@ const DynamicFormV2 = ({
 
         if (connectionType === 'string' && options.connection_string?.value) {
           const selectedFormat = options.connection_format?.value;
-          const validation = validateMongoDBConnectionString(
-            options.connection_string.value,
-            selectedFormat
-          );
+          const validation = validateMongoDBConnectionString(options.connection_string.value, selectedFormat);
 
           if (!validation.valid) {
             finalErrors.push({
-              dataPath: ".connection_string",
-              keyword: "custom",
+              dataPath: '.connection_string',
+              keyword: 'custom',
               message: validation.error,
               params: {},
-              schemaPath: "#/properties/connection_string"
+              schemaPath: '#/properties/connection_string',
             });
           }
         }
@@ -310,7 +312,6 @@ const DynamicFormV2 = ({
     setValidationMessages,
     interactedFields,
   ]);
-
 
   const processAllOfConditions = React.useCallback((schema, options, path = []) => {
     let requiredFields = [];
@@ -521,12 +522,19 @@ const DynamicFormV2 = ({
       }
       setInteractedFields((prev) => new Set(prev).add(key));
 
-      const isMongoDBDataSource =
-        schema['tj:source']?.kind === 'mongodb' ||
-        schema['tj:source']?.name === 'MongoDB';
+      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
       if (isMongoDBDataSource) {
-        const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl', 'query_params'];
+        const autoFilledFields = [
+          'host',
+          'port',
+          'username',
+          'password',
+          'database',
+          'connection_format',
+          'use_ssl',
+          'query_params',
+        ];
 
         if (autoFilledFields.includes(key)) {
           if (key === 'connection_format') {
@@ -542,8 +550,10 @@ const DynamicFormV2 = ({
             lastAutoFilledConnRef.current = '';
           } else {
             const currentConnString = lastAutoFilledConnRef.current;
-            if (!currentConnString ||
-              (currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://'))) {
+            if (
+              !currentConnString ||
+              currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://')
+            ) {
               manuallyEditedFieldsRef.current.delete('connection_format');
             } else {
               const connectionFormatWasEdited = manuallyEditedFieldsRef.current.has('connection_format');
@@ -584,9 +594,7 @@ const DynamicFormV2 = ({
       case 'password-v3':
       case 'password-v3-textarea':
       case 'text-v3': {
-        const isMongoDBDataSource =
-          schema['tj:source']?.kind === 'mongodb' ||
-          schema['tj:source']?.name === 'MongoDB';
+        const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
         let customValidation = { valid: null, message: '' };
 
@@ -600,15 +608,15 @@ const DynamicFormV2 = ({
           }
         }
         const validationStatus =
-          (isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null)
+          isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null
             ? customValidation
             : skipValidation
-              ? { valid: null, message: '' }
-              : validationMessages[key]
-                ? { valid: false, message: validationMessages[key] }
-                : isRequired
-                  ? { valid: true, message: '' }
-                  : { valid: null, message: '' };
+            ? { valid: null, message: '' }
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' };
         return {
           propertyKey: key,
           widget,
@@ -741,7 +749,11 @@ const DynamicFormV2 = ({
       const labelElement = (
         <label
           className="form-label"
-          data-cy={fieldType === 'dropdown' ? `${generateCypressDataCy(label)}-dropdown-label` : `label-${generateCypressDataCy(label)}`}
+          data-cy={
+            fieldType === 'dropdown'
+              ? `${generateCypressDataCy(label)}-dropdown-label`
+              : `label-${generateCypressDataCy(label)}`
+          }
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
           {label}
@@ -796,7 +808,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
-                    renderLabel(label, uiProperties[key].tooltip, type)}
+                    renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
               <div
@@ -808,7 +820,11 @@ const DynamicFormV2 = ({
                   'dynamic-form-element'
                 )}
                 style={{ width: '100%' }}
-                data-cy={type === 'dropdown' || type === 'dropdown-component-flip' ? `${generateCypressDataCy(label ?? key)}-select-dropdown` : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`}
+                data-cy={
+                  widget === 'dropdown' || widget === 'dropdown-component-flip'
+                    ? `${generateCypressDataCy(label ?? key)}-select-dropdown`
+                    : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(widget ?? key)}-element`
+                }
               >
                 <Element
                   {...getElementProps(uiProperties[key])}
@@ -860,8 +876,12 @@ const DynamicFormV2 = ({
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
-                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false}
-                  dataCy={generateCypressDataCy(flipComponentDropdown.label)} />
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={{}}
+                  useCustomStyles={false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
