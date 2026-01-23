@@ -21,6 +21,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => { },
   versionId,
   onVersionCreated,
+  isBranchingEnabled
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -28,6 +29,8 @@ const CreateVersionModal = ({
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const { current_organization_id } = authenticationService.currentSessionValue;
+
   const {
     changeEditorVersionAction,
     environmentChangedAction,
@@ -137,6 +140,10 @@ const CreateVersionModal = ({
       toast.error('Version name should not be empty');
       return;
     }
+    if (versionDescription.trim() == '') {
+      toast.error('Version description should not be empty');
+      return;
+    }
 
     if (!selectedVersionForCreation) {
       toast.error('Please wait while versions are loading...');
@@ -146,6 +153,11 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      if (isGitSyncEnabled) {
+        const gitData = await gitSyncService.getAppConfig(current_organization_id, selectedVersionForCreation?.id);
+        const appGit = gitData?.app_git;
+        await handleCommitOnVersionCreation(appGit);
+      }
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
         description: versionDescription,
@@ -333,6 +345,7 @@ const CreateVersionModal = ({
                     checked={canCommit}
                     type="checkbox"
                     onChange={handleCommitEnableChange}
+                    disabled={isBranchingEnabled}
                     data-cy="git-commit-input"
                   />
                 </div>

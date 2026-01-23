@@ -44,6 +44,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -61,7 +62,8 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -406,8 +408,13 @@ export class AppsService implements IAppsService {
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = shouldFreezeEditor;
+      // Check if editing version is a draft
+      const editingVersion = response['editing_version'];
+      const isDraft = editingVersion?.status === 'DRAFT';
+
       const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
       response['editorEnvironment'] = {

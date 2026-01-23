@@ -41,6 +41,18 @@ export const FEATURES: FeaturesConfig = {
     },
     // Used for fetching app configs
     [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: {},
+
+    // Used for fetching all branches from remote repo
+    [FEATURE_KEY.GET_ALL_BRANCHES]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
+
+    [FEATURE_KEY.CREATE_BRANCH]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
+    [FEATURE_KEY.FETCH_PULL_REQUESTS]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
   },
 };
 

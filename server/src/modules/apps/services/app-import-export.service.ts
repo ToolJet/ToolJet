@@ -298,21 +298,26 @@ export class AppImportExportService {
         };
       });
 
+      // Remove updatedAt to avoid unnecessary conflicts during merge in Git Sync
+      for (const query of queriesWithPermissionGroups) {
+        delete query.updatedAt;
+      }
+      // Added orderBy for layouts as well to maintain consistency -> in the exported file and avoid merge conflicts
       const components =
         pages.length > 0
           ? await manager
-            .createQueryBuilder(Component, 'components')
-            .leftJoinAndSelect('components.layouts', 'layouts')
-            .leftJoinAndSelect('components.permissions', 'permission')
-            .leftJoinAndSelect('permission.users', 'componentUser')
-            .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
-            .where('components.pageId IN(:...pageId)', {
-              pageId: pages.map((v) => v.id),
-            })
-            .orderBy('components.created_at', 'ASC')
-            .getMany()
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .leftJoinAndSelect('components.permissions', 'permission')
+              .leftJoinAndSelect('permission.users', 'componentUser')
+              .leftJoinAndSelect('componentUser.permissionGroup', 'permissionGroup')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .addOrderBy('layouts.type', 'ASC')
+              .getMany()
           : [];
-
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
@@ -335,6 +340,7 @@ export class AppImportExportService {
 
         return {
           ...component,
+          // updatedAt: query?.updatedAt,
           permissions: groupPermission
             ? {
               permissionGroup: groupPermission.users
@@ -370,6 +376,33 @@ export class AppImportExportService {
         appToExport['modules'] = moduleApps; //Sending all app related modules
       }
 
+      const files = {
+        'app.json': {
+          id: appToExport.id,
+          name: appToExport.name,
+          type: appToExport.type,
+          // other app metadata
+        },
+        'components.json': componentsWithPermissionGroups,
+        'pages.json': pagesWithPermissionGroups,
+        'events.json': events,
+        'queries.json': queriesWithPermissionGroups,
+        'dataSources.json': dataSources,
+        'versions.json': appVersions,
+        'environments.json': appEnvironments,
+        'dataSourceOptions.json': dataSourceOptions,
+        'schema.json': {
+          multiPages: true,
+          multiEnv: true,
+          globalDataSources: true,
+        },
+        ...(appToExport?.type === APP_TYPES.FRONT_END && {
+          'modules.json': moduleApps,
+        }),
+      };
+      // this.writeFilesToLocalFolder(files, appToExport?.name, appToExport.id);
+      delete (appToExport as any).updatedAt;
+      console.log('files testing', files);
       return { appV2: appToExport };
     });
   }
@@ -810,9 +843,12 @@ export class AppImportExportService {
 
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
+              const sortedLayoutTypes = Object.keys(componentLayout).sort((a, b) => {
+                return componentLayout[a].id.localeCompare(componentLayout[b].id);
+              });
 
               if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-                for (const type in componentLayout) {
+                for (const type of sortedLayoutTypes) {
                   const layout = componentLayout[type];
                   const newLayout = new Layout();
                   newLayout.type = type;
