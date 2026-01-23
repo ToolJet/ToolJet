@@ -1,6 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
-import { SslConfigurationRepository } from './repository';
+import { InstanceSettingsModule } from '@modules/instance-settings/module';
 
 export class SslConfigurationModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -28,27 +28,36 @@ export class SslConfigurationModule extends SubModule {
       ]
     );
 
+    // Conditionally exclude lifecycle services during migrations
+    const providers = [
+      SslConfigurationService,
+      NginxProcessService,
+      NginxConfigurationService,
+      CertificateAcquisitionService,
+      SslBootstrapService,
+    ];
+
+    const exports = [
+      SslConfigurationService,
+      NginxProcessService,
+      NginxConfigurationService,
+      CertificateAcquisitionService,
+      SslBootstrapService,
+    ];
+
+    // Only include lifecycle services during normal runtime (not migrations)
+    if (!configs?.IS_GET_CONTEXT) {
+      providers.push(SslCertificateLifecycleService);
+      providers.push(SslCertificateRenewalScheduler);
+      exports.push(SslCertificateLifecycleService);
+    }
+
     return {
       module: SslConfigurationModule,
-      providers: [
-        SslConfigurationService,
-        SslConfigurationRepository,
-        SslCertificateLifecycleService,
-        SslCertificateRenewalScheduler,
-        NginxProcessService,
-        NginxConfigurationService,
-        CertificateAcquisitionService,
-        SslBootstrapService,
-      ],
+      imports: [await InstanceSettingsModule.register(configs)],
+      providers,
       controllers: isMainImport ? [SslConfigurationController] : [],
-      exports: [
-        SslConfigurationService,
-        SslCertificateLifecycleService,
-        NginxProcessService,
-        NginxConfigurationService,
-        CertificateAcquisitionService,
-        SslBootstrapService,
-      ],
+      exports,
     };
   }
 }
