@@ -17,13 +17,14 @@ export const formConfig = {
       },
       properties: ['text'],
       accessorKey: 'text',
-      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow'],
+      styles: ['fontWeight', 'textSize', 'textColor', 'boxShadow', 'verticalAlignment'],
       defaultValue: {
         text: 'Form title',
         textSize: 16,
         textColor: 'var(--cc-primary-text)',
         fontWeight: 'bold',
         boxShadow: '0px 0px 0px 0px #00000090',
+        verticalAlignment: 'center',
       },
     },
     {
@@ -73,6 +74,7 @@ export const formConfig = {
       section: 'data',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'object' }] } },
       newLine: true,
+      disableCreateQuery: true,
     },
     JSONData: {
       type: 'code',
@@ -133,15 +135,15 @@ export const formConfig = {
         defaultValue: false,
       },
     },
-    // dynamicHeight: {
-    //   type: 'toggle',
-    //   displayName: 'Dynamic height',
-    //   validation: {
-    //     schema: { type: 'boolean' },
-    //     defaultValue: false,
-    //   },
-    //   section: 'additionalActions',
-    // },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
@@ -207,26 +209,56 @@ export const formConfig = {
   styles: {
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'header',
     },
-    footerBackgroundColor: {
+    headerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
+      accordian: 'header',
     },
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
       },
+      accordian: 'container',
+    },
+    footerBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'footer',
+    },
+    footerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'footer',
+    },
+    borderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-weak-border)',
+      },
+      accordian: 'container',
     },
     borderRadius: {
       type: 'code',
@@ -238,14 +270,7 @@ export const formConfig = {
         },
         defaultValue: 6,
       },
-    },
-    borderColor: {
-      type: 'colorSwatches',
-      displayName: 'Border color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#fff',
-      },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -287,7 +312,7 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
-      // dynamicHeight: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:
@@ -318,7 +343,9 @@ export const formConfig = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderRadius: { value: '6' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
+      footerDividerColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

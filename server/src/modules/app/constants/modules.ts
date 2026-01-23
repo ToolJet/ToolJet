@@ -1,5 +1,6 @@
 export enum MODULES {
   APP = 'APP',
+  METRICS = 'METRICS',
   SESSION = 'SESSION',
   ROOT = 'ROOT',
   VERSION = 'VERSION',
@@ -42,4 +43,7 @@ export enum MODULES {
   MODULES = 'Modules',
   APP_GIT = 'AppGit',
   GIT_SYNC = 'GitSync',
+  APP_HISTORY = 'AppHistory',
+  CRM = 'CRM',
+  SCIM = 'SCIM',
 }

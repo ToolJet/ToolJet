@@ -7,12 +7,13 @@ import PageOptions from './PageOptions';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export function AddNewPageMenu({ darkMode, isLicensed }) {
+export function AddNewPageMenu({ darkMode }) {
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const setEditingPage = useStore((state) => state.setEditingPage);
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
+  const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
 
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
@@ -70,20 +71,22 @@ export function AddNewPageMenu({ darkMode, isLicensed }) {
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
             />
-            <div className={`${!isLicensed && 'd-flex disabled licensed-page-option'}`}>
+            <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
                 text="Add nav group"
                 icon="folder"
                 darkMode={darkMode}
-                onClick={() => handleOpenPopup('group')}
+                onClick={() => hasAppPagesAddNavGroupEnabled && handleOpenPopup('group')}
               />
               <LicenseTooltip
-                message={"Nav group can't be created on free plans"}
+                message={"You don't have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
-                show={!isLicensed}
+                show={!hasAppPagesAddNavGroupEnabled}
               >
-                <div className="d-flex align-items-center">{!isLicensed && <SolidIcon name="enterprisecrown" />}</div>
+                <div className="d-flex align-items-center">
+                  {!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
               </LicenseTooltip>
             </div>
           </div>

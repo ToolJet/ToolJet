@@ -103,6 +103,7 @@ export const filepickerConfig = {
       options: [
         { name: 'Autodetect from extension', value: 'auto-detect' },
         { name: 'CSV', value: 'csv' },
+        { name: 'TSV', value: 'tsv' },
         { name: 'Microsoft Excel - xls', value: 'vnd.ms-excel' },
         {
           name: 'Microsoft Excel - xlsx',
@@ -114,6 +115,14 @@ export const filepickerConfig = {
           type: 'string',
         },
         defaultValue: 'auto-detect',
+      },
+    },
+    delimiter: {
+      type: 'code',
+      displayName: 'Delimiter',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: ',',
       },
     },
     loadingState: {
@@ -311,6 +320,7 @@ export const filepickerConfig = {
       enableMultiple: { value: '{{false}}', fxActive: false },
       parseContent: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
+      delimiter: { value: ',' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -325,7 +335,7 @@ export const filepickerConfig = {
       // containerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       // containerBorder: { value: 'var(--cc-default-border)' },
       padding: { value: 'default' },
-      boxShadow: { value: '0px 1px 3px rgba(0,0,0,0.1)' },
+      boxShadow: { value: '0px 1px 3px #0000001A' },
     },
     validation: {
       enableValidation: { value: '{{false}}' },

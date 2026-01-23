@@ -4,8 +4,10 @@ import Params from './TabParams';
 import Body from './TabBody';
 import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import { Button } from '@/components/ui/Button/Button';
+import { CustomToggleSwitch } from '@/AppBuilder/QueryManager/Components/CustomToggleSwitch';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 function ControlledTabs({
   options,
@@ -29,7 +31,11 @@ function ControlledTabs({
         <div className="keys d-flex justify-content-between query-pane-tabs-header">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
-              <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
+              <ListGroup.Item
+                key={tab}
+                eventKey={tab.toLowerCase()}
+                data-cy={generateCypressDataCy(`restapi-tab-${tab}-button`)}
+              >
                 <span>{tab}</span>
               </ListGroup.Item>
             ))}
@@ -46,17 +52,17 @@ function ControlledTabs({
                 />
               </>
             )}
-            <ButtonSolid
-              onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
+
+            <Button
+              isLucid
+              iconOnly
+              size="medium"
+              variant="ghost"
+              leadingIcon="plus"
               id="runjs-param-add-btn"
               data-cy={`runjs-add-param-button`}
-              variant="ghostBlack"
-              size="sm"
-              leftIcon="plus"
-              fill={darkMode ? 'var(--icons-default)' : bodyToggle && key === 'body' ? '#E4E7EB' : '#6A727C'}
-              iconWidth="18"
               disabled={bodyToggle && key === 'body'}
-              className="tw-px-[6px]"
+              onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
             />
           </div>
         </div>
@@ -91,6 +97,7 @@ function ControlledTabs({
               eventKey="body"
               bsPrefix={`rest-api-tabpanes ${bodyToggle && 'rest-api-tabpanes-body'}`}
               transition={false}
+              data-cy="restapi-tab-body-pane"
             >
               <Body
                 removeKeyValuePair={removeKeyValuePair}

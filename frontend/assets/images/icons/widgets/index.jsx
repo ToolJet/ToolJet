@@ -61,6 +61,11 @@ import HorizontalDivider from './horizontalDivider.jsx';
 import PhoneInput from './phoneinput.jsx';
 import EmailInput from './emailinput.jsx';
 import Chat from './chat.jsx';
+import CurrencyInput from './currencyinput.jsx';
+import PopoverMenu from './popovermenu.jsx';
+import AudioRecorder from './audiorecorder.jsx';
+import Camera from './camera.jsx';
+import TagsInput from './tagsinput.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -89,9 +94,8 @@ const WidgetIcon = (props) => {
       return <Customcomponent {...props} />;
     case 'datetimepickerlegacy':
       return <Datepicker {...props} />;
+    case 'datepickerlegacy':
     case 'datepicker':
-      return <Datepicker {...props} />;
-    case 'datepickerv2':
       return <DatepickerV2 {...props} />;
     case 'timepicker':
       return <TimePicker {...props} />;
@@ -157,14 +161,16 @@ const WidgetIcon = (props) => {
       return <Passwordinput {...props} />;
     case 'pdf':
       return <Pdf {...props} />;
+    case 'popovermenu':
+      return <PopoverMenu {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':
     case 'radiobuttonlegacy':
     case 'radiobuttonv2':
       return <RadioButton {...props} />;
+    case 'rangesliderlegacy':
     case 'rangeslider':
-    case 'rangesliderv2':
       return <Rangeslider {...props} />;
     case 'rating':
       return <Rating {...props} />;
@@ -186,6 +192,8 @@ const WidgetIcon = (props) => {
       return <Tabs {...props} />;
     case 'tags':
       return <Tags {...props} />;
+    case 'tagsinput':
+      return <TagsInput {...props} />;
     case 'text':
       return <Text {...props} />;
     case 'textarea':
@@ -210,6 +218,13 @@ const WidgetIcon = (props) => {
       return <Verticaldivider {...props} />;
     case 'chat':
       return <Chat {...props} />;
+    case 'currencyinput':
+    case 'currencyinputlegacy':
+      return <CurrencyInput {...props} />;
+    case 'audiorecorder':
+      return <AudioRecorder {...props} />;
+    case 'camera':
+      return <Camera {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

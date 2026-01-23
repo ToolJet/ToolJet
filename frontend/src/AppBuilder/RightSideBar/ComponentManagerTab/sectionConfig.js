@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup']),
+    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
   },
   data: {
     title: 'Data',
@@ -25,7 +25,7 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),
+    valueSet: new Set(['TagsInput', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),  
   },
   dateTimeInputs: {
     title: 'Date and time inputs',
@@ -37,7 +37,7 @@ const sectionConfig = {
   },
   media: {
     title: 'Media',
-    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map']),
+    valueSet: new Set(['Icon', 'Image', 'SvgImage', 'PDF', 'Map', 'AudioRecorder', 'Camera']),
   },
   presentation: {
     title: 'Presentation',

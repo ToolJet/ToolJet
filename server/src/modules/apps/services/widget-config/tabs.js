@@ -3,8 +3,8 @@ export const tabsConfig = {
   displayName: 'Tabs',
   description: 'Organize content in tabs',
   defaultSize: {
-    width: 30,
-    height: 300,
+    width: 15,
+    height: 450,
   },
   component: 'Tabs',
   others: {
@@ -221,12 +221,21 @@ export const tabsConfig = {
       ],
       accordian: 'Tabs',
     },
+    commonBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Common background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'Container',
+    },
     border: {
       type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#375FCF',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'Container',
     },
@@ -346,6 +355,7 @@ export const tabsConfig = {
   ],
   exposedVariables: {
     currentTab: '',
+    currentTabTitle: '',
     isVisible: true,
     isDisabled: false,
     isLoading: false,
@@ -418,7 +428,8 @@ export const tabsConfig = {
       tabWidth: { value: 'auto' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
-      border: { value: 'var(--cc-default-border)' },
+      commonBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      border: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },
     },

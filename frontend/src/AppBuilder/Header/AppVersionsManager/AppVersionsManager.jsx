@@ -7,6 +7,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './style.scss';
 
 const appVersionLoadingStatus = Object.freeze({
@@ -15,8 +16,10 @@ const appVersionLoadingStatus = Object.freeze({
   error: 'error',
 });
 
-export const AppVersionsManager = function ({ darkMode }) {
+export const AppVersionsManager = ({ darkMode }) => {
   const { moduleId } = useModuleContext();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
 
   const [deleteVersion, setDeleteVersion] = useState({
@@ -70,7 +73,7 @@ export const AppVersionsManager = function ({ darkMode }) {
     shallow
   );
 
-  let appCreationMode = creationMode;
+  const appCreationMode = creationMode;
   const isEditable = currentMode === 'edit';
 
   // useEffect(() => {
@@ -98,11 +101,29 @@ export const AppVersionsManager = function ({ darkMode }) {
       });
     }
 
+    // Close menu when selecting a version
+    setForceMenuOpen(false);
+
     changeEditorVersionAction(
       appId,
       id,
       (newDeff) => {
         setCurrentVersionId(id);
+
+        if (isViewer) {
+          const selectedVersionObj = versionsPromotedToEnvironment.find((v) => v.id === id);
+          if (selectedVersionObj) {
+            const searchParams = new URLSearchParams(location.search);
+            searchParams.set('version', selectedVersionObj.name);
+            navigate(
+              {
+                pathname: location.pathname,
+                search: searchParams.toString(),
+              },
+              { replace: true }
+            );
+          }
+        }
       },
       (error) => {
         toast.error(error.message);
@@ -194,7 +215,17 @@ export const AppVersionsManager = function ({ darkMode }) {
       await lazyLoadAppVersions(appId);
       setGetAppVersionStatus(appVersionLoadingStatus.loaded);
     }
-    setForceMenuOpen(!forceMenuOpen);
+  };
+
+  const handleToggleMenu = async () => {
+    if (!forceMenuOpen && !appVersionsLazyLoaded) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+      await lazyLoadAppVersions(appId);
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+    setForceMenuOpen((prev) => {
+      return !prev;
+    });
   };
 
   const customSelectProps = {
@@ -212,7 +243,7 @@ export const AppVersionsManager = function ({ darkMode }) {
   useEffect(() => {
     function handleClickOutside(event) {
       if (clickedOutsideRef.current && !clickedOutsideRef.current.contains(event.target)) {
-        if (!forceMenuOpen) {
+        if (forceMenuOpen) {
           setForceMenuOpen(false);
         }
       }
@@ -221,14 +252,9 @@ export const AppVersionsManager = function ({ darkMode }) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clickedOutsideRef]);
+  }, [forceMenuOpen]);
   return (
-    <div
-      className="d-flex align-items-center p-0"
-      style={{ margin: isViewer && currentLayout === 'mobile' ? '0px' : '0 24px' }}
-      ref={clickedOutsideRef}
-    >
+    <div className="d-flex align-items-center p-0" ref={clickedOutsideRef}>
       <div
         className={cx('d-flex version-manager-container p-0', {
           'w-100': isViewer && currentLayout === 'mobile',
@@ -247,7 +273,7 @@ export const AppVersionsManager = function ({ darkMode }) {
             onChange={(id) => selectVersion(id)}
             {...customSelectProps}
             onMenuOpen={onMenuOpen}
-            onMenuClose={() => setForceMenuOpen(false)}
+            onToggleMenu={handleToggleMenu}
             menuIsOpen={forceMenuOpen}
             currentEnvironment={selectedEnvironment}
             isEditable={isEditable}

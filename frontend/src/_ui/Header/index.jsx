@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 function Header({
   featureAccess,
@@ -12,7 +13,6 @@ function Header({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
-  const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const routes = (pathEnd, path) => {
@@ -145,7 +145,10 @@ function Header({
                 </div>
               </ToolTip>
             )}
-            <div className="app-header-label tw-flex tw-items-center " data-cy="app-header-label">
+            <div
+              className="app-header-label tw-flex tw-items-center "
+              data-cy={generateCypressDataCy(`breadcrumb-header-${pathname}`)}
+            >
               <Breadcrumbs darkMode={darkMode} />
             </div>
             <div
@@ -153,12 +156,10 @@ function Header({
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
-              data-cy="version-label"
             >
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />
               )}
-              Version {currentVersion}
             </div>
           </div>
         </div>

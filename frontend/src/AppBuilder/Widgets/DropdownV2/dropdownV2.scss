@@ -1,0 +1,15 @@
+.dropdown-multiselect-widget-custom-menu-list-body {
+    overflow-y: auto;
+    position: relative;
+    padding: 0 0 5px;
+    background-color: var(--cc-surface1-surface) !important;
+    border-radius: 0 0 8px 8px;
+}
+
+ 
+.dropdown-multiselect-widget-search-box-wrapper {
+    //Apply css to input placeholder
+    input::placeholder {
+        color: var(--cc-placeholder-text);
+    }
+}

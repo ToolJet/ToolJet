@@ -469,12 +469,18 @@ export function replaceQueryOptionsEntityReferencesWithIds(
   return options;
 }
 
-export function createReferencesLookup(currentState, forQueryParams = false, initalLoad = false) {
+export function createReferencesLookup(
+  currentState,
+  forQueryParams = false,
+  initalLoad = false,
+  forWorkflowsSuggestions = false
+) {
   if (forQueryParams && _.isEmpty(currentState['parameters'])) {
     return { suggestionList: [] };
   }
   const actions = [
     'runQuery',
+    'resetQuery',
     'setVariable',
     'unsetAllVariables',
     'unSetVariable',
@@ -514,6 +520,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
       } else {
         if (path === 'queries') {
           map.set(`${path}.${key}.run()`, { type: 'Function' });
+          map.set(`${path}.${key}.reset()`, { type: 'Function' });
         }
         newPath = `${path}.${key}`;
       }
@@ -540,7 +547,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   map.forEach((__, key) => {
     return suggestionList.push({ hint: key, type: __.type });
   });
-  if (!forQueryParams) {
+  if (!forQueryParams && !forWorkflowsSuggestions) {
     actions.forEach((action) => {
       suggestionList.push({ hint: `actions.${action}()`, type: 'method' });
     });
@@ -778,7 +785,7 @@ export const baseTheme = {
         },
         weak: {
           light: '#E4E7EB',
-          dark: '#EEF0F1',
+          dark: '#2B3036',
         }
       },
     },
@@ -819,4 +826,28 @@ export const baseTheme = {
       },
     },
   },
+};
+
+export const blobToDataURL = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const blobToBinary = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsBinaryString(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const formatSecondsToHHMMSS = (totalSeconds) => {
+  const seconds = Number.isFinite(totalSeconds) ? Math.max(0, Math.floor(totalSeconds)) : 0;
+  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
 };

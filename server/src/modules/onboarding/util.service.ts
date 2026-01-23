@@ -9,7 +9,7 @@ import { LicenseCountsService } from '../licensing/services/count.service';
 import { LICENSE_TRIAL_API, ORGANIZATION_INSTANCE_KEY } from '../licensing/constants';
 import got from 'got/dist/source';
 import { HttpException } from '@nestjs/common';
-import { fullName, generateNextNameAndSlug, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { fullName, generateNextNameAndSlug, generateOrgInviteURL, getTooljetEdition } from 'src/helpers/utils.helper';
 import { NotAcceptableException } from '@nestjs/common';
 import { Organization } from '../../entities/organization.entity';
 import { EntityManager } from 'typeorm';
@@ -17,6 +17,7 @@ import {
   getUserStatusAndSource,
   lifecycleEvents,
   SOURCE,
+  USER_STATUS,
   WORKSPACE_USER_STATUS,
   WORKSPACE_USER_SOURCE,
 } from '@modules/users/constants/lifecycle';
@@ -316,7 +317,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           return {};
         }
         case isUserAlreadyExisted: {
-          const errorMessage = organizationId ? 'User already exists in the workspace.' : 'Email already exists.';
+          const errorMessage = organizationId
+            ? 'User with this email already exists in one or more workspaces.'
+            : 'Email already exists.';
           throw new NotAcceptableException(errorMessage);
         }
         default:
@@ -398,12 +401,13 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
   };
 
-  createUserOrPersonalWorkspace = async (
+  createUserInWorkspace = async (
     userParams: { email: string; password: string; firstName: string; lastName: string },
     existingUser: User,
     signingUpOrganization: Organization,
     redirectTo?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: any
   ) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
@@ -412,14 +416,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) ===
         'true';
 
-      let personalWorkspace: Organization;
-      if (isPersonalWorkspaceEnabled) {
-        const { name, slug } = generateNextNameAndSlug('My workspace');
-        personalWorkspace = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
-      }
-      const organizationRole = personalWorkspace ? USER_ROLE.ADMIN : USER_ROLE.END_USER;
-
-      const organizationId = personalWorkspace ? personalWorkspace.id : signingUpOrganization.id;
+      const organizationRole = USER_ROLE.END_USER;
+      const organizationId = signingUpOrganization.id;
       /* Create the user or attach user groups to the user */
       const lifeCycleParms = signingUpOrganization
         ? getUserStatusAndSource(lifecycleEvents.USER_WORKSPACE_SIGN_UP)
@@ -446,11 +444,23 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         lastName: user.lastName,
         role: user.role,
       });
-
-      if (personalWorkspace) {
-        await this.organizationUserRepository.createOne(user, personalWorkspace, true, manager);
+      
+      // Auto-activate users for non-cloud editions (skip email verification)
+      const edition = getTooljetEdition();
+      const isCloudEdition = edition === 'cloud';
+      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+        await this.userRepository.updateOne(
+          user.id,
+          {
+            status: USER_STATUS.ACTIVE,
+            invitationToken: null,
+          },
+          manager
+        );
+        user.status = USER_STATUS.ACTIVE;
+        user.invitationToken = null;
       }
-
+      
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -460,33 +470,43 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-
-        if (personalWorkspace) {
-          /* if the personal workspace is enabled for newly created users -> 
-          attach a role in the signing up workspace 
-          *This part will only run for user who is new to the instance and workspace at the same time
-          */
-          await this.rolesUtilService.addUserRole(
-            signingUpOrganization.id,
-            { role: USER_ROLE.END_USER, userId: user.id },
+        
+        // Auto-activate organization user for non-cloud editions
+        if (!isCloudEdition && organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
+        }
+        
+        await this.licenseUserService.validateUser(manager, organizationId);
+        
+        // For non-cloud editions, return login payload to auto-login user
+        if (!isCloudEdition && response) {
+          return await this.sessionUtilService.generateLoginResultPayload(
+            response,
+            user,
+            signingUpOrganization,
+            false,
+            true,
+            null,
             manager
           );
         }
-
-        await this.licenseUserService.validateUser(manager, organizationId);
-        this.eventEmitter.emit('emailEvent', {
-          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-          payload: {
-            to: user.email,
-            name: user.firstName,
-            invitationtoken: user.invitationToken,
-            organizationInvitationToken: organizationUser.invitationToken,
-            organizationId: signingUpOrganization.id,
-            organizationName: signingUpOrganization.name,
-            sender: null,
-            redirectTo: redirectTo,
-          },
-        });
+        
+        // Only send verification email for cloud edition
+        if (isCloudEdition) {
+          this.eventEmitter.emit('emailEvent', {
+            type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+            payload: {
+              to: user.email,
+              name: user.firstName,
+              invitationtoken: user.invitationToken,
+              organizationInvitationToken: organizationUser.invitationToken,
+              organizationId: signingUpOrganization.id,
+              organizationName: signingUpOrganization.name,
+              sender: null,
+              redirectTo: redirectTo,
+            },
+          });
+        }
         // this.eventEmitter.emit(
         //   'auditLogEntry',
         //   {
@@ -501,15 +521,57 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // );
         return {};
       } else {
-        await this.licenseUserService.validateUser(manager, organizationId);
-        this.eventEmitter.emit('emailEvent', {
-          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-          payload: {
-            to: user.email,
-            name: user.firstName,
-            invitationtoken: user.invitationToken,
-          },
-        });
+        // Auto-activate users for non-cloud editions (skip email verification)
+        const edition = getTooljetEdition();
+        const isCloudEdition = edition === 'cloud';
+        if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+          await this.userRepository.updateOne(
+            user.id,
+            {
+              status: USER_STATUS.ACTIVE,
+              invitationToken: null,
+            },
+            manager
+          );
+          user.status = USER_STATUS.ACTIVE;
+          user.invitationToken = null;
+        }
+        
+        // Use user's default organization ID if signingUpOrganization is null
+        const orgIdForValidation = user.defaultOrganizationId || organizationId;
+        if (orgIdForValidation) {
+          await this.licenseUserService.validateUser(manager, orgIdForValidation);
+        }
+
+        // For non-cloud editions, return login payload to auto-login user
+        if (!isCloudEdition && response) {
+          console.log('Attempting auto-login session generation for default org');
+          const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
+          if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
+          
+          return await this.sessionUtilService.generateLoginResultPayload(
+            response,
+            user,
+            userOrg,
+            false,
+            true,
+            null,
+            manager
+          );
+        }
+
+        
+        // Only send verification email for cloud edition
+        if (isCloudEdition) {
+          this.eventEmitter.emit('emailEvent', {
+            type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+            payload: {
+              to: user.email,
+              name: user.firstName,
+              invitationtoken: user.invitationToken,
+            },
+          });
+        }
 
         // this.eventEmitter.emit(
         //   'auditLogEntry',
@@ -632,7 +694,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     userParams: { email: string; password: string; firstName: string; lastName: string },
     defaultWorkspace: Organization,
     redirectTo?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: any
   ) => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const { email, password, firstName, lastName } = userParams;
@@ -662,7 +725,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       );
 
       // Create organization user entry
-      await this.organizationUserRepository.createOne(
+      const organizationUser = await this.organizationUserRepository.createOne(
         user,
         defaultWorkspace,
         true,
@@ -670,18 +733,54 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         WORKSPACE_USER_SOURCE.SIGNUP
       );
 
+      // Auto-activate users for non-cloud editions (skip email verification)
+      const edition = getTooljetEdition();
+      const isCloudEdition = edition === 'cloud';
+      if (!isCloudEdition && user.status === USER_STATUS.INVITED) {
+        await this.userRepository.updateOne(
+          user.id,
+          {
+            status: USER_STATUS.ACTIVE,
+            invitationToken: null,
+          },
+          manager
+        );
+        user.status = USER_STATUS.ACTIVE;
+        user.invitationToken = null;
+        
+        // Also activate the organization user for non-cloud editions
+        if (organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
+        }
+      }
+
       // Validate license
       await this.licenseUserService.validateUser(manager, user?.defaultOrganizationId);
 
-      // Send welcome email
-      this.eventEmitter.emit('emailEvent', {
-        type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
-        payload: {
-          to: user.email,
-          name: user.firstName,
-          invitationtoken: user.invitationToken,
-        },
-      });
+      // For non-cloud editions, return login payload to auto-login user
+      if (!isCloudEdition && response) {
+        return await this.sessionUtilService.generateLoginResultPayload(
+          response,
+          user,
+          defaultWorkspace,
+          false,
+          true,
+          null,
+          manager
+        );
+      }
+
+      // Only send verification email for cloud edition
+      if (isCloudEdition) {
+        this.eventEmitter.emit('emailEvent', {
+          type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+          payload: {
+            to: user.email,
+            name: user.firstName,
+            invitationtoken: user.invitationToken,
+          },
+        });
+      }
 
       return {};
     }, manager);
