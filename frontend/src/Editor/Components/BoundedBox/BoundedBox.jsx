@@ -10,6 +10,7 @@ import { v4 as uuid } from 'uuid';
 import { getSafeRenderableValue } from '../utils';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
+  const { visibility, disabledState, boxShadow, backgroundColor, borderColor, borderRadius } = styles;
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
@@ -18,10 +19,10 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
     ? [
-        ...properties.labels.map((label) => {
-          return { name: getSafeRenderableValue(label), value: label };
-        }),
-      ]
+      ...properties.labels.map((label) => {
+        return { name: getSafeRenderableValue(label), value: label };
+      }),
+    ]
     : [];
   const annotateRef = useRef(null);
 
@@ -183,7 +184,16 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{
+        display: visibility ? 'block' : 'none',
+        height: height,
+        boxShadow,
+        backgroundColor,
+        borderColor,
+        borderRadius: Number(borderRadius),
+        borderWidth: borderColor ? '1px' : '0px',
+        borderStyle: borderColor ? 'solid' : 'none',
+      }}
       className="bounded-box relative"
     >
       <Annotation
@@ -224,7 +234,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
           />
         )}
         renderContent={() => null}
-        disableAnnotation={styles.disabledState}
+        disableAnnotation={disabledState}
       />
     </div>
   );

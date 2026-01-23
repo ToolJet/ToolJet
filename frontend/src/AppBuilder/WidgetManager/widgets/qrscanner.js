@@ -32,6 +32,9 @@ export const qrscannerConfig = {
         defaultValue: false,
       },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
+    borderColor: { type: 'color', displayName: 'Border color' },
+    borderRadius: { type: 'number', displayName: 'Border radius' },
   },
   exposedVariables: {
     lastDetectedValue: '',
@@ -46,6 +49,9 @@ export const qrscannerConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      backgroundColor: { value: '' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{0}}' },
     },
   },
 };

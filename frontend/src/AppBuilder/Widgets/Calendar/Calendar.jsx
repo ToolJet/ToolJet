@@ -65,7 +65,7 @@ export const Calendar = function ({
         : {};
     const color = event.textColor ?? 'white';
     const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
-    
+
     return { style };
   };
 
@@ -129,7 +129,7 @@ export const Calendar = function ({
   return (
     <div
       id={id}
-      style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
+      style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow, backgroundColor: styles.backgroundColor }}
       data-cy={dataCy}
       className="scrollbar-container"
     >

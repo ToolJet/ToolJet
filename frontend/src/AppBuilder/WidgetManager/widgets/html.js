@@ -27,10 +27,12 @@ export const htmlConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: {
-        schema: { type: 'boolean' },
         defaultValue: true,
       },
     },
+    backgroundColor: { type: 'color', displayName: 'Background color' },
+    borderColor: { type: 'color', displayName: 'Border color' },
+    borderRadius: { type: 'number', displayName: 'Border radius' },
   },
   exposedVariables: {},
   definition: {
@@ -47,6 +49,9 @@ export const htmlConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      backgroundColor: { value: '' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{0}}' },
     },
   },
 };
