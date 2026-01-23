@@ -1,9 +1,6 @@
 import zipcelx from 'zipcelx';
 import Papa from 'papaparse';
 import generateFile from '@/_lib/generate-file';
-import * as JsPDFNamespace from 'jspdf';
-// eslint-disable-next-line import/no-unresolved
-import 'jspdf-autotable';
 import moment from 'moment';
 
 // Helper function to get table data
@@ -75,10 +72,16 @@ export const exportToExcel = (table, componentName) => {
 
 // Export to PDF
 export const exportToPDF = async (table, componentName) => {
+  // Lazy load jspdf and jspdf-autotable to reduce initial bundle size (~600kb)
+  const [JsPDFNamespace] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+
   const { headers, data } = getData(table);
   const pdfData = data.map((obj) => Object.values(obj));
   const fileName = getExportFileName(componentName);
-  const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace;
+  const JsPDF = JsPDFNamespace.jsPDF || JsPDFNamespace.default;
   const doc = new JsPDF();
   doc.autoTable({
     head: [headers],

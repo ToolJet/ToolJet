@@ -13,6 +13,7 @@ import { createDataSourceSlice } from './slices/dataSourceSlice';
 import { createUndoRedoSlice } from './slices/undoRedoSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
+import { enableMapSet } from 'immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
 import { createAppVersionSlice } from './slices/appVersionSlice';
@@ -31,6 +32,7 @@ import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+enableMapSet();
 
 export default create(
   zustandDevTools(

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo, Suspense, lazy } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -42,8 +42,10 @@ import {
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
-import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const MentionComponentInChat = lazy(() => import('../ConfigHandle/MentionComponentInChat'));
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -257,8 +259,30 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       >
         <span id={id}>
           <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
-          <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          <Suspense fallback={null}>
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          </Suspense>
         </span>
+        {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
+              src="assets/images/icons/settings.svg"
+              width="12"
+              height="12"
+              draggable="false"
+            />
+            <span>components</span>
+
+            <hr
+              className={cn(
+                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
+              )}
+            />
+
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          </div> */}
+        {/* </span> */}
       </div>
     );
   };
@@ -547,9 +571,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _top = originalBox.top;
 
             // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
-              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
           }
         });
 
@@ -755,9 +778,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
-            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
-              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
