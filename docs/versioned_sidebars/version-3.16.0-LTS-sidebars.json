@@ -462,7 +462,8 @@
                 "data-sources/restapi/configuration",
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
-                "data-sources/restapi/metadata-and-cookies"
+                "data-sources/restapi/metadata-and-cookies",
+                "data-sources/restapi/multipart-form-data-rest-api"
               ]
             },
             "data-sources/soap-api",
