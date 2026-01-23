@@ -6,7 +6,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/_helpers/utils';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
-import { ColorSwatches } from '@/modules/Appbuilder/components';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { getCssVarValue } from '@/AppBuilder/Widgets/utils';

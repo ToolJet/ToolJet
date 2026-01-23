@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
@@ -34,10 +34,6 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
   } = styles;
 
   // ===== COMPUTED STYLES =====
-  const iconName = icon;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] === undefined ? Icons['IconAlignBoxBottomLeft'] : Icons[iconName];
-
   const computedIconColor =
     '#FFFFFF' === iconColor ? (buttonType === 'primary' ? iconColor : 'var(--icons-strong)') : iconColor;
 
@@ -64,8 +60,8 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : buttonType === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -187,7 +183,9 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
             {icon && (
               <div data-cy="popover-menu-button-icon-container" className="d-flex" aria-hidden="true">
                 {!exposedVariablesTemporaryState.isLoading && iconVisibility && (
-                  <IconElement
+                  <TablerIcon
+                    iconName={icon}
+                    fallbackIcon="IconAlignBoxBottomLeft"
                     style={{
                       width: '16px',
                       height: '16px',

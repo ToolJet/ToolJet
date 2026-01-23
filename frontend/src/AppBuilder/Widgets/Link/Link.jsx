@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './link.scss';
@@ -28,8 +28,6 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     fontWeight: '500',
     '--link-hover-color': tinycolor(textColor).darken(8).toString(),
   };
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
   const iconSize = textSize + 2;
   // Update the state when the linkTarget or linkText changes
   useEffect(() => {
@@ -142,7 +140,8 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
           }}
         >
           {iconVisibility && (
-            <IconElement
+            <TablerIcon
+              iconName={icon}
               style={{
                 width: `${iconSize}px`,
                 height: `${iconSize}px`,

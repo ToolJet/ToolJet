@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
-import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
@@ -31,8 +31,6 @@ export const Button = function Button(props) {
   const [loading, setLoading] = useState(loadingState);
   const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
   useEffect(() => {
     if (typeof properties.text === 'string') {
@@ -234,7 +232,8 @@ export const Button = function Button(props) {
             {iconVisibility && (
               <div className="d-flex">
                 {!props.isResizing && !loading && (
-                  <IconElement
+                  <TablerIcon
+                    iconName={iconName}
                     style={{
                       width: '16px',
                       height: '16px',
