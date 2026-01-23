@@ -1,4 +1,5 @@
 import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
 import { FEATURE_KEY, GROUP_PERMISSIONS_TYPE, USER_ROLE } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
@@ -33,6 +34,16 @@ export interface GetUsersResponse {
   length: number;
 }
 
+export interface PaginatedGroupUsersResponse {
+  users: GroupUsers[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export interface UpdateGroupObject {
   id: string;
   organizationId: string;
@@ -45,9 +56,11 @@ export interface AddUserRoleObject {
 
 interface Features {
   [FEATURE_KEY.ADD_GROUP_USER]: FeatureConfig;
+  [FEATURE_KEY.ADD_SINGLE_USER]: FeatureConfig;
   [FEATURE_KEY.CREATE]: FeatureConfig;
   [FEATURE_KEY.DELETE]: FeatureConfig;
   [FEATURE_KEY.DELETE_GROUP_USER]: FeatureConfig;
+  [FEATURE_KEY.DELETE_USER_FROM_GROUP]: FeatureConfig;
   [FEATURE_KEY.DUPLICATE]: FeatureConfig;
   [FEATURE_KEY.GET_ADDABLE_USERS]: FeatureConfig;
   [FEATURE_KEY.GET_ONE]: FeatureConfig;

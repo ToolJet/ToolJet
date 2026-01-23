@@ -977,6 +977,206 @@ describe('group permissions controller', () => {
         expect(user.last_name).toBe('test');
       }
     });
+
+    it('should return paginated response when pagination params provided', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const manager = getManager();
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
+      });
+
+      // Add more users to the admin group
+      for (let i = 0; i < 15; i++) {
+        const newUser = await createUser(nestApp, {
+          email: `user${i}@tooljet.io`,
+          groups: ['admin'],
+          organization: organization,
+        });
+      }
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?page=1&limit=5`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveProperty('users');
+      expect(response.body).toHaveProperty('pagination');
+      expect(response.body.users.length).toBe(5);
+      expect(response.body.pagination).toMatchObject({
+        page: 1,
+        limit: 5,
+        total: 16,
+        totalPages: 4,
+      });
+    });
+
+    it('should return all users without pagination params (backward compatibility)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const manager = getManager();
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
+      });
+
+      // The group should already have the admin user
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return correct page 2 of results', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const manager = getManager();
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
+      });
+
+      // Add more users
+      for (let i = 0; i < 20; i++) {
+        await createUser(nestApp, {
+          email: `page2user${i}@tooljet.io`,
+          groups: ['admin'],
+          organization: organization,
+        });
+      }
+
+      const page2Response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?page=2&limit=10`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(page2Response.statusCode).toBe(200);
+      expect(page2Response.body.users.length).toBe(10);
+      expect(page2Response.body.pagination.page).toBe(2);
+    });
+
+    it('should return 400 for invalid pagination params', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const manager = getManager();
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
+      });
+
+      // Test invalid page (0)
+      let response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?page=0&limit=10`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+      expect(response.statusCode).toBe(400);
+
+      // Test invalid limit (negative)
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?page=1&limit=-5`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+      expect(response.statusCode).toBe(400);
+
+      // Test limit exceeding max (100)
+      response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?page=1&limit=150`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('should work with search parameter and pagination', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const manager = getManager();
+      const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
+        where: {
+          group: 'admin',
+          organizationId: organization.id,
+        },
+      });
+
+      // Add users with searchable names
+      for (let i = 0; i < 10; i++) {
+        await createUser(nestApp, {
+          email: `john${i}@tooljet.io`,
+          firstName: 'John',
+          groups: ['admin'],
+          organization: organization,
+        });
+      }
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${adminGroupPermission.id}/users?input=john&page=1&limit=5`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.users.length).toBeLessThanOrEqual(5);
+      response.body.users.forEach(user => {
+        expect(user.first_name.toLowerCase()).toContain('john');
+      });
+    });
+
+    it('should return empty paginated response for empty group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Create a new empty group
+      const emptyGroup = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Empty Test Group' });
+
+      const response = await request(nestApp.getHttpServer())
+        .get(`/api/group_permissions/${emptyGroup.body.id}/users?page=1&limit=10`)
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.users.length).toBe(0);
+      expect(response.body.pagination.total).toBe(0);
+      expect(response.body.pagination.totalPages).toBe(0);
+    });
   });
 
   describe('GET /group_permissions/:id/addable_users', () => {
@@ -1234,6 +1434,412 @@ describe('group permissions controller', () => {
         expect(auditLog.actionType).toEqual('GROUP_PERMISSION_DELETE');
         expect(auditLog.createdAt).toBeDefined();
       }
+    });
+  });
+
+  describe('POST /v2/group-permissions/:groupId/users/:userId - Add Single User to Group', () => {
+    it('should successfully add user to group via v2 API (authenticated request)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Create a custom group
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group' });
+
+      const groupId = createResponse.body.id;
+
+      // Create a test user
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Add user to group via new endpoint
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toHaveProperty('message', 'User added to group successfully');
+      expect(response.body).toHaveProperty('userId', testUserData.user.id);
+      expect(response.body).toHaveProperty('groupId', groupId);
+      expect(response.body).toHaveProperty('groupUserId');
+    });
+
+    it('should return 200 OK when user already exists in group (idempotent)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group' });
+
+      const groupId = createResponse.body.id;
+
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser2@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Add user first time
+      const firstResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      expect(firstResponse.statusCode).toBe(201);
+
+      // Add user second time (idempotent)
+      const secondResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      expect(secondResponse.statusCode).toBe(200);
+      expect(secondResponse.body).toHaveProperty('message', 'User already exists in group');
+    });
+
+    it('should return 401 for unauthenticated request', async () => {
+      const {
+        organization: { organization },
+      } = await setupOrganizations(nestApp);
+
+      const groupId = '00000000-0000-0000-0000-000000000001';
+      const userId = '00000000-0000-0000-0000-000000000002';
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${userId}`)
+        .set('tj-workspace-id', organization.id)
+        .send();
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('should return 404 for non-existent group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const nonExistentGroupId = '00000000-0000-0000-0000-000000000001';
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser3@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${nonExistentGroupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      expect(response.statusCode).toBe(404);
+    });
+
+    it('should return 404 for non-existent user', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group' });
+
+      const groupId = createResponse.body.id;
+      const nonExistentUserId = '00000000-0000-0000-0000-000000000999';
+
+      const response = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${nonExistentUserId}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe('DELETE /v2/group-permissions/:groupId/users/:userId - Remove Single User from Group', () => {
+    it('should successfully remove user from group (authenticated request, returns 204)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Create a custom group
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group' });
+
+      const groupId = createResponse.body.id;
+
+      // Create a test user
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser_delete@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Add user to group first
+      await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      // Remove user from group
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(204);
+      expect(response.body).toEqual({});
+    });
+
+    it('should return 204 when user not in group (idempotent behavior)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group 2' });
+
+      const groupId = createResponse.body.id;
+
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser_delete2@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Try to remove user that was never added (should succeed - idempotent)
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(204);
+      expect(response.body).toEqual({});
+    });
+
+    it('should return 401 for unauthenticated request', async () => {
+      const {
+        organization: { organization },
+      } = await setupOrganizations(nestApp);
+
+      const groupId = '00000000-0000-0000-0000-000000000001';
+      const userId = '00000000-0000-0000-0000-000000000002';
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${groupId}/users/${userId}`)
+        .set('tj-workspace-id', organization.id);
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('should return 404 for non-existent group', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const nonExistentGroupId = '00000000-0000-0000-0000-000000000001';
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser_delete3@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${nonExistentGroupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(404);
+    });
+
+    it('should return 400 for invalid UUID format', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      const invalidGroupId = 'not-a-uuid';
+      const invalidUserId = 'also-not-a-uuid';
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${invalidGroupId}/users/${invalidUserId}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('should return 405 when trying to remove user from default group', async () => {
+      const {
+        organization: { adminUser, defaultUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Get the default "all_users" group ID
+      const manager = getManager();
+      const defaultGroup = await manager
+        .createQueryBuilder()
+        .select('gp')
+        .from('group_permissions', 'gp')
+        .where('gp.organization_id = :organizationId', { organizationId: organization.id })
+        .andWhere('gp.group = :groupName', { groupName: 'all_users' })
+        .getRawOne();
+
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${defaultGroup.gp_id}/users/${defaultUser.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(405);
+    });
+
+    it('should verify user removed no longer appears in group users list', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Create group
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group Verify' });
+
+      const groupId = createResponse.body.id;
+
+      // Create user
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser_verify@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Add user to group
+      await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      // Verify user is in group
+      const beforeResponse = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${groupId}/users`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(beforeResponse.statusCode).toBe(200);
+      const userInGroupBefore = beforeResponse.body.some(gu => gu.userId === testUserData.user.id);
+      expect(userInGroupBefore).toBe(true);
+
+      // Remove user from group
+      await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      // Verify user is no longer in group
+      const afterResponse = await request(nestApp.getHttpServer())
+        .get(`/api/v2/group-permissions/${groupId}/users`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(afterResponse.statusCode).toBe(200);
+      const userInGroupAfter = afterResponse.body.some(gu => gu.userId === testUserData.user.id);
+      expect(userInGroupAfter).toBe(false);
+    });
+
+    it('should verify existing DELETE /v2/group-permissions/users/:id still works (backward compatibility)', async () => {
+      const {
+        organization: { adminUser, organization },
+      } = await setupOrganizations(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      // Create group
+      const createResponse = await request(nestApp.getHttpServer())
+        .post('/api/v2/group-permissions')
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ name: 'Test Group Backward' });
+
+      const groupId = createResponse.body.id;
+
+      // Create user
+      const testUserData = await createUser(nestApp, {
+        email: 'testuser_backward@tooljet.io',
+        groups: ['all_users'],
+        organization,
+      });
+
+      // Add user to group and get groupUserId
+      const addResponse = await request(nestApp.getHttpServer())
+        .post(`/api/v2/group-permissions/${groupId}/users/${testUserData.user.id}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send();
+
+      const groupUserId = addResponse.body.groupUserId;
+
+      // Test old DELETE endpoint still works
+      const response = await request(nestApp.getHttpServer())
+        .delete(`/api/v2/group-permissions/users/${groupUserId}`)
+        .set('tj-workspace-id', organization.id)
+        .set('Cookie', adminUser['tokenCookie']);
+
+      expect(response.statusCode).toBe(200);
     });
   });
 

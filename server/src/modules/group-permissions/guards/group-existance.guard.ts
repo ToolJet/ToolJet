@@ -8,7 +8,8 @@ export class GroupExistenceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const id = request.params.id;
+    // Support both :id and :groupId parameter names
+    const id = request.params.id || request.params.groupId;
 
     // If there's no id parameter, throw error
     if (!id) {

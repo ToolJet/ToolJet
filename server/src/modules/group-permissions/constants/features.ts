@@ -9,6 +9,10 @@ export const FEATURES_EE: FeaturesConfig = {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'USER_ADD_TO_GROUP',
     },
+    [FEATURE_KEY.ADD_SINGLE_USER]: {
+      license: LICENSE_FIELD.VALID,
+      auditLogsKey: 'USER_ADD_TO_GROUP',
+    },
     [FEATURE_KEY.CREATE]: {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'GROUP_PERMISSION_CREATE',
@@ -18,6 +22,10 @@ export const FEATURES_EE: FeaturesConfig = {
       auditLogsKey: 'GROUP_PERMISSION_DELETE',
     },
     [FEATURE_KEY.DELETE_GROUP_USER]: {
+      license: LICENSE_FIELD.VALID,
+      auditLogsKey: 'USER_REMOVE_FROM_GROUP',
+    },
+    [FEATURE_KEY.DELETE_USER_FROM_GROUP]: {
       license: LICENSE_FIELD.VALID,
       auditLogsKey: 'USER_REMOVE_FROM_GROUP',
     },
@@ -73,9 +81,11 @@ export const FEATURES_EE: FeaturesConfig = {
 export const FEATURES: FeaturesConfig = {
   [MODULES.GROUP_PERMISSIONS]: {
     [FEATURE_KEY.ADD_GROUP_USER]: {},
+    [FEATURE_KEY.ADD_SINGLE_USER]: {},
     [FEATURE_KEY.CREATE]: {},
     [FEATURE_KEY.DELETE]: {},
     [FEATURE_KEY.DELETE_GROUP_USER]: {},
+    [FEATURE_KEY.DELETE_USER_FROM_GROUP]: {},
     [FEATURE_KEY.DUPLICATE]: {},
     [FEATURE_KEY.GET_ADDABLE_USERS]: {},
     [FEATURE_KEY.GET_ONE]: {},

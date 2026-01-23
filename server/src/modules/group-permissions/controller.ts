@@ -1,5 +1,7 @@
-import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto } from './dto';
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { AddGroupUserDto, CreateGroupPermissionDto, DuplicateGroupDtoBase, UpdateGroupPermissionDto, PaginationQueryDto } from './dto';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, Res, HttpStatus, HttpCode, ParseUUIDPipe } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiOperation, ApiTags, ApiParam, ApiSecurity } from '@nestjs/swagger';
+import { Response } from 'express';
 import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { GroupPermissionsService } from './service';
 import { GroupExistenceGuard } from './guards/group-existance.guard';
@@ -11,7 +13,7 @@ import { FeatureAbilityGuard } from './ability/guard';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { IGroupPermissionsControllerV2 } from './interfaces/IController';
 import { GroupPermissions } from '@entities/group_permissions.entity';
-import { GetUsersResponse } from './types';
+import { GetUsersResponse, PaginatedGroupUsersResponse } from './types';
 import { GroupUsers } from '@entities/group_users.entity';
 import { Group } from './decorators/group.decorator';
 
@@ -19,6 +21,7 @@ import { Group } from './decorators/group.decorator';
   path: 'group-permissions',
   version: '2',
 })
+@ApiTags('Group Permissions')
 @InitModule(MODULES.GROUP_PERMISSIONS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class GroupPermissionsControllerV2 implements IGroupPermissionsControllerV2 {
@@ -96,16 +99,210 @@ export class GroupPermissionsControllerV2 implements IGroupPermissionsController
     return;
   }
 
+  @InitFeature(FEATURE_KEY.ADD_SINGLE_USER)
+  @UseGuards(GroupExistenceGuard)
+  @Post(':groupId/users/:userId')
+  @ApiOperation({
+    summary: 'Add single user to group',
+    description: 'Adds a single user to a group. This operation is idempotent - if the user is already a member, returns success without error. Use this endpoint for individual user assignments. For bulk operations, use POST /v2/group-permissions/:id/users with userIds array.'
+  })
+  @ApiParam({
+    name: 'groupId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the group to add the user to',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the user to add to the group',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User added to group successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'User added to group successfully' },
+        userId: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
+        groupId: { type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000' },
+        groupUserId: { type: 'string', format: 'uuid', example: '7c9e6679-7425-40de-944b-e07fc1f90ae7' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User already exists in group (idempotent operation)',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'User already exists in group' },
+        userId: { type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' },
+        groupId: { type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000' },
+        groupUserId: { type: 'string', format: 'uuid', example: '7c9e6679-7425-40de-944b-e07fc1f90ae7' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format for groupId or userId'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required - provide valid JWT token in Authorization header'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User lacks permissions to add users to this group OR group does not belong to your organization'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Group or user not found in organization'
+  })
+  @ApiSecurity('bearer')
+  async addSingleUserToGroup(
+    @User() user: UserEntity,
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+    @Res() res: Response
+  ) {
+    const result = await this.groupPermissionsService.addSingleUserToGroup(groupId, userId, user.organizationId, user);
+    const statusCode = result.message === 'User already exists in group' ? HttpStatus.OK : HttpStatus.CREATED;
+    return res.status(statusCode).json(result);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE_USER_FROM_GROUP)
+  @UseGuards(GroupExistenceGuard)
+  @Delete(':groupId/users/:userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove user from group',
+    description: 'Removes a user from a group. This operation is idempotent - if the user is not a member, returns success (204 No Content) without error. Use this for automated offboarding workflows.'
+  })
+  @ApiParam({
+    name: 'groupId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the group to remove the user from',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    format: 'uuid',
+    description: 'UUID of the user to remove from the group',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'User successfully removed from group (or was not a member)'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format for groupId or userId'
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required - provide valid JWT token in Authorization header'
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User lacks permissions to remove users from this group OR group does not belong to your organization'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Group not found in organization'
+  })
+  @ApiSecurity('bearer')
+  async removeSingleUserFromGroup(
+    @User() user: UserEntity,
+    @Param('groupId', ParseUUIDPipe) groupId: string,
+    @Param('userId', ParseUUIDPipe) userId: string
+  ): Promise<void> {
+    await this.groupPermissionsService.removeSingleUserFromGroup(groupId, userId, user.organizationId, user);
+  }
+
   // Used for Roles and Groups
   @InitFeature(FEATURE_KEY.GET_ALL_GROUP_USER)
   @UseGuards(GroupExistenceGuard)
   @Get(':id/users')
+  @ApiOperation({
+    summary: 'Get all users in a group',
+    description: 'Returns all users in a group. Supports optional pagination via query parameters. Without pagination params, returns full user array for backward compatibility.'
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (minimum 1, default: returns all users if omitted)',
+    example: 1
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of users per page (1-100, default: 50 when page is provided)',
+    example: 50
+  })
+  @ApiQuery({
+    name: 'input',
+    required: false,
+    type: String,
+    description: 'Search filter for user email, firstName, or lastName (case-insensitive)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns either an array of users (no pagination) or paginated response object',
+    schema: {
+      oneOf: [
+        {
+          type: 'array',
+          description: 'User array (when pagination params not provided - backward compatibility)',
+          items: { type: 'object' }
+        },
+        {
+          type: 'object',
+          description: 'Paginated response (when pagination params provided)',
+          properties: {
+            users: {
+              type: 'array',
+              items: { type: 'object' }
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number', example: 1 },
+                limit: { type: 'number', example: 50 },
+                total: { type: 'number', example: 120 },
+                totalPages: { type: 'number', example: 3 }
+              }
+            }
+          }
+        }
+      ]
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Invalid pagination parameters (page < 1, limit < 1 or > 100)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized - JWT token required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - User lacks required permissions' })
+  @ApiResponse({ status: 404, description: 'Group not found or does not belong to organization' })
+  @ApiSecurity('bearer')
   async getAllGroupUser(
     @User() user: UserEntity,
     @Query('input') searchInput: string,
-    @Group() group: GroupPermissions
-  ): Promise<GroupUsers[]> {
-    return await this.groupPermissionsService.getAllGroupUsers(group, user.organizationId, searchInput);
+    @Group() group: GroupPermissions,
+    @Query() paginationQuery: PaginationQueryDto
+  ): Promise<GroupUsers[] | PaginatedGroupUsersResponse> {
+    return await this.groupPermissionsService.getAllGroupUsers(
+      group,
+      user.organizationId,
+      searchInput,
+      paginationQuery.page,
+      paginationQuery.limit
+    );
   }
 
   @InitFeature(FEATURE_KEY.DELETE_GROUP_USER)

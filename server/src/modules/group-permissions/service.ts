@@ -7,7 +7,7 @@ import { GroupUsers } from 'src/entities/group_users.entity';
 import * as _ from 'lodash';
 import { GroupPermissionsRepository } from './repository';
 import { GroupPermissionsUtilService } from './util.service';
-import { CreateDefaultGroupObject, GetUsersResponse } from './types';
+import { CreateDefaultGroupObject, GetUsersResponse, PaginatedGroupUsersResponse } from './types';
 import { RolesUtilService } from '@modules/roles/util.service';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GroupPermissionsDuplicateService } from './services/duplicate.service';
@@ -252,8 +252,123 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     }, manager);
   }
 
-  async getAllGroupUsers(group: GroupPermissions, organizationId: string, searchInput?: string): Promise<GroupUsers[]> {
-    return await this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput);
+  async addSingleUserToGroup(
+    groupId: string,
+    userId: string,
+    organizationId: string,
+    currentUser: User,
+    manager?: EntityManager
+  ) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Check if user already exists in group (idempotency)
+      const existingRelation = await manager.findOne(GroupUsers, {
+        where: { groupId, userId },
+      });
+
+      const userAlreadyExists = !!existingRelation;
+
+      if (!userAlreadyExists) {
+        // User doesn't exist, proceed with adding
+        const addGroupUserDto: AddGroupUserDto = {
+          userIds: [userId],
+          groupId,
+          allowRoleChange: false,
+        };
+        await this.groupPermissionsUtilService.addUsersToGroup(addGroupUserDto, organizationId, manager);
+      }
+
+      // Fetch the relation (either existing or newly created)
+      const relation = existingRelation || (await manager.findOne(GroupUsers, {
+        where: { groupId, userId },
+      }));
+
+      if (!relation) {
+        throw new BadRequestException('Failed to add user to group');
+      }
+
+      await this.licenseUserService.validateUser(manager, organizationId);
+      const group = await this.groupPermissionsRepository.getGroup({ id: groupId, organizationId }, manager);
+
+      //USER_ADD_TO_GROUP audit
+      const auditLogsData = {
+        userId: currentUser.id,
+        organizationId: organizationId,
+        resourceId: group.id,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+
+      return {
+        message: userAlreadyExists ? 'User already exists in group' : 'User added to group successfully',
+        userId,
+        groupId,
+        groupUserId: relation.id,
+      };
+    }, manager);
+  }
+
+  async removeSingleUserFromGroup(
+    groupId: string,
+    userId: string,
+    organizationId: string,
+    currentUser: User,
+    manager?: EntityManager
+  ): Promise<void> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      // Fetch group entity to validate existence and get group details for audit logging
+      const group = await this.groupPermissionsRepository.getGroup({ id: groupId }, manager);
+
+      // Validate deletion is allowed (prevents deleting from default groups)
+      this.groupPermissionsUtilService.validateDeleteGroupUserOperation(group, organizationId);
+
+      // Delete user-group association (idempotent - succeeds even if no rows affected)
+      await this.groupPermissionsRepository.removeUserFromGroup(undefined, userId, groupId, manager);
+
+      // Set audit logging context
+      const auditLogsData = {
+        userId: currentUser.id,
+        organizationId: organizationId,
+        resourceId: groupId,
+        resourceName: group.name,
+      };
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
+    }, manager);
+  }
+
+  async getAllGroupUsers(
+    group: GroupPermissions,
+    organizationId: string,
+    searchInput?: string,
+    page?: number,
+    limit?: number
+  ): Promise<GroupUsers[] | PaginatedGroupUsersResponse> {
+    // If pagination params provided, use paginated function
+    if (page !== undefined && limit !== undefined) {
+      const result = await this.groupPermissionsRepository.getUsersInGroupPaginated(
+        group.id,
+        organizationId,
+        searchInput,
+        page,
+        limit
+      );
+      const totalPages = Math.ceil(result.total / limit);
+      return {
+        users: result.users,
+        pagination: {
+          page,
+          limit,
+          total: result.total,
+          totalPages,
+        },
+      };
+    }
+
+    // No pagination - return array (backward compatibility)
+    return await this.groupPermissionsRepository.getUsersInGroup(
+      group.id,
+      organizationId,
+      searchInput
+    );
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
@@ -261,7 +376,6 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const groupUser = await this.groupPermissionsRepository.getGroupUser(id, manager);
       this.groupPermissionsUtilService.validateDeleteGroupUserOperation(groupUser?.group, organizationId);
-      console.log('group user group', groupUser?.group);
       await this.groupPermissionsRepository.removeUserFromGroup(id);
       //USER_REMOVE_FROM_GROUP audit
       const auditLogsData = {

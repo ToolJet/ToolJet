@@ -256,6 +256,57 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     }, manager || this.manager);
   }
 
+  async getUsersInGroupPaginated(
+    id: string,
+    organizationId: string,
+    searchInput?: string,
+    page?: number,
+    limit?: number,
+    manager?: EntityManager
+  ): Promise<{ users: GroupUsers[]; total: number }> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const queryBuilder = manager
+        .createQueryBuilder(GroupUsers, 'groupUsers')
+        .leftJoinAndSelect('groupUsers.group', 'group')
+        .leftJoinAndSelect('groupUsers.user', 'user')
+        .leftJoinAndSelect('user.organizationUsers', 'organizationUsers')
+        .where('groupUsers.groupId = :id', { id })
+        .andWhere('group.organizationId = :organizationId', { organizationId })
+        .andWhere('user.status != :archivedStatus', { archivedStatus: USER_STATUS.ARCHIVED })
+        .andWhere('organizationUsers.organizationId = :organizationId', { organizationId })
+        .andWhere('organizationUsers.status != :workspaceArchivedStatus', {
+          workspaceArchivedStatus: WORKSPACE_USER_STATUS.ARCHIVED,
+        });
+
+      // Add search filter if provided
+      if (searchInput) {
+        const searchLower = searchInput.toLowerCase();
+        queryBuilder.andWhere(
+          new Brackets((qb) => {
+            qb.where('LOWER(user.email) LIKE :search', { search: `%${searchLower}%` })
+              .orWhere('LOWER(user.firstName) LIKE :search', { search: `%${searchLower}%` })
+              .orWhere('LOWER(user.lastName) LIKE :search', { search: `%${searchLower}%` });
+          })
+        );
+      }
+
+      // If pagination params provided, get count and apply pagination
+      if (page !== undefined && limit !== undefined) {
+        const total = await queryBuilder.getCount();
+        const users = await queryBuilder
+          .skip((page - 1) * limit)
+          .take(limit)
+          .getMany();
+        return { users, total };
+      }
+
+      // No pagination params - still return paginated format with all results
+      const total = await queryBuilder.getCount();
+      const users = await queryBuilder.getMany();
+      return { users, total };
+    }, manager || this.manager);
+  }
+
   async getGroupUser(id: string, manager?: EntityManager): Promise<GroupUsers> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.findOne(GroupUsers, {

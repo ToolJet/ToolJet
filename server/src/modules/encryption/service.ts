@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as hkdf from 'futoin-hkdf';
 import { IEncryptionService } from './interfaces/IService';
-
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 
 @Injectable()
 export class EncryptionService implements IEncryptionService {
@@ -37,7 +36,7 @@ export class EncryptionService implements IEncryptionService {
 
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);
-    const plainText = aesgcm.update(ciphertext) + aesgcm.final();
+    const plainText = Buffer.concat([aesgcm.update(ciphertext), aesgcm.final()]).toString();
 
     return plainText;
   }
