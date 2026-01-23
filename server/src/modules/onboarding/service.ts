@@ -33,6 +33,7 @@ import {
   generateWorkspaceSlug,
   validatePasswordServer,
   validatePasswordDomain,
+  getDefaultOrOldestWorkspaceOfInstance,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
@@ -131,7 +132,8 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      const defaultWorkspace = await getDefaultOrOldestWorkspaceOfInstance(manager);
+
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
