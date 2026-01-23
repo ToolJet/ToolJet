@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { onInvitedUserSignUpSuccess, onLoginSuccess, getPostSignupRedirectPath } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
@@ -40,43 +40,7 @@ const SignupPage = ({ configs, organizationId }) => {
     }
   }, []);
 
-  const getPostSignupRedirectPath = ({
-    redirectTo,
-    organizationSlug,
-  }) => {
-    const hasRedirect = Boolean(redirectTo);
-    const hasSlug = Boolean(organizationSlug);
 
-    // Routes that should NOT have workspace slug when ID is present
-    const noSlugRoutesWithId = [
-      /^\/applications\/[^/]+$/,
-      /^\/workflows\/[^/]+$/,
-    ];
-
-    const isNoSlugRouteWithId =
-      hasRedirect && noSlugRoutesWithId.some((regex) => regex.test(redirectTo));
-
-    if (hasRedirect) {
-      // Case 1: /applications/:id OR /workflows/:id → NO workspace slug
-      if (isNoSlugRouteWithId) {
-        return redirectTo;
-      }
-
-      // Case 2 & 3: prepend workspace slug
-      if (hasSlug) {
-        return `/${organizationSlug}${redirectTo.startsWith('/') ? '' : '/'}${redirectTo}`;
-      }
-
-      return redirectTo;
-    }
-
-    // Case 4: no redirectTo
-    if (hasSlug) {
-      return `/${organizationSlug}`;
-    }
-
-    return '/home';
-  };
 
   const handleSignup = (formData, onSuccess = () => { }, onFaluire = () => { }) => {
     const { email, name, password } = formData;
