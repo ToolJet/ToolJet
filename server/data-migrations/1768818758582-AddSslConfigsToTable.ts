@@ -1,6 +1,8 @@
+import { InstanceSettings } from '@entities/instance_settings.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import {
   INSTANCE_SETTINGS_ENCRYPTION_KEY,
+  INSTANCE_SETTINGS_TYPE,
   INSTANCE_SYSTEM_SETTINGS,
 } from '@modules/instance-settings/constants';
 import { NestFactory } from '@nestjs/core';
@@ -8,7 +10,7 @@ import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { AppModule } from '@modules/app/module';
 
-export class CreateSslConfigurationTable1768818758582 implements MigrationInterface {
+export class AddSslConfigsToTable1768818758582 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     const nestApp = await NestFactory.createApplicationContext(
@@ -16,53 +18,99 @@ export class CreateSslConfigurationTable1768818758582 implements MigrationInterf
     );
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const encryptionService = nestApp.get(EncryptionService);
+    const entityManager = queryRunner.manager;
 
-    const sslConfigKeys = [
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_ENABLED, value: 'false' },
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_EMAIL, value: '' },
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_STAGING, value: 'false' },
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_DOMAIN, value: '' },
+    const sslConfigSettings = [
       {
-        key: INSTANCE_SYSTEM_SETTINGS.SSL_FULLCHAIN_PEM,
+        value: 'false',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_ENABLED,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'boolean',
+        label: 'SSL Enabled',
+      },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_EMAIL,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL Email',
+      },
+      {
+        value: 'false',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_STAGING,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'boolean',
+        label: 'SSL Staging',
+      },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_DOMAIN,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL Domain',
+      },
+      {
         value: await encryptionService.encryptColumnValue(
           INSTANCE_SETTINGS_ENCRYPTION_KEY,
           INSTANCE_SYSTEM_SETTINGS.SSL_FULLCHAIN_PEM,
           ''
         ),
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_FULLCHAIN_PEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'password',
+        label: 'SSL Fullchain PEM',
       },
       {
-        key: INSTANCE_SYSTEM_SETTINGS.SSL_PRIVKEY_PEM,
         value: await encryptionService.encryptColumnValue(
           INSTANCE_SETTINGS_ENCRYPTION_KEY,
           INSTANCE_SYSTEM_SETTINGS.SSL_PRIVKEY_PEM,
           ''
         ),
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_PRIVKEY_PEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'password',
+        label: 'SSL Private Key PEM',
       },
       {
-        key: INSTANCE_SYSTEM_SETTINGS.SSL_CERT_PEM,
         value: await encryptionService.encryptColumnValue(
           INSTANCE_SETTINGS_ENCRYPTION_KEY,
           INSTANCE_SYSTEM_SETTINGS.SSL_CERT_PEM,
           ''
         ),
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_CERT_PEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'password',
+        label: 'SSL Certificate PEM',
       },
       {
-        key: INSTANCE_SYSTEM_SETTINGS.SSL_CHAIN_PEM,
         value: await encryptionService.encryptColumnValue(
           INSTANCE_SETTINGS_ENCRYPTION_KEY,
           INSTANCE_SYSTEM_SETTINGS.SSL_CHAIN_PEM,
           ''
         ),
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_CHAIN_PEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'password',
+        label: 'SSL Chain PEM',
       },
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_ACQUIRED_AT, value: '' },
-      { key: INSTANCE_SYSTEM_SETTINGS.SSL_EXPIRES_AT, value: '' },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_ACQUIRED_AT,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL Acquired At',
+      },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_EXPIRES_AT,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL Expires At',
+      },
     ];
 
-    for (const setting of sslConfigKeys) {
-      await queryRunner.query(
-        `INSERT INTO instance_settings (key, value) VALUES ($1, $2)`,
-        [setting.key, setting.value]
-      );
+    for (const setting of sslConfigSettings) {
+      await entityManager.insert(InstanceSettings, setting);
     }
 
     await nestApp.close();
