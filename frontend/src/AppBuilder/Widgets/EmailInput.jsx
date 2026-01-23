@@ -8,5 +8,19 @@ export const EmailInput = (props) => {
     autocomplete: 'email',
     name: 'email',
   };
-  return <BaseInput {...props} {...inputLogic} inputType="email" additionalInputProps={additionalInputProps} />;
+  const showClearBtn = props.properties?.showClearBtn;
+  const handleClear = () => {
+    inputLogic.setInputValue('');
+    props.fireEvent('onChange');
+  };
+  return (
+    <BaseInput
+      {...props}
+      {...inputLogic}
+      inputType="email"
+      additionalInputProps={additionalInputProps}
+      showClearBtn={showClearBtn}
+      onClear={handleClear}
+    />
+  );
 };

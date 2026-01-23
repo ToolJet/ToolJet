@@ -14889,6 +14889,21 @@ textarea.tj-text-input-widget {
   }
 }
 
+.tj-input-clear-btn {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 2px;
+}
+
+.tj-input-clear-btn:hover {
+  background-color: var(--interactive-overlays-fill-hover);
+}
+
 .icon-style-container {
   width: 142px;
   height: 32px;
