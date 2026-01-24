@@ -12,8 +12,6 @@ ToolJet can establish connections with any available REST API endpoint, allowing
 
 To establish a connection with the REST API data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
-
 ToolJet requires the following to connect to a REST API data source:
 
 - **[Credentials](#credentials)**
