@@ -47,6 +47,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Kanban',
   'Html',
   'TagsInput',
+  'IFrame',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -181,6 +182,7 @@ export const baseComponentProperties = (
       'Kanban',
       'AudioRecorder',
       'Camera',
+      'IFrame',
     ],
     Layout: [],
   };
