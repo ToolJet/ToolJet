@@ -26,7 +26,7 @@ export class FolderAppsService implements IFolderAppsService {
       });
 
       if (existingFolderApp) {
-        throw new BadRequestException('App has already been added to the folder');
+        throw new BadRequestException('App has already been added to a folder');
       }
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
