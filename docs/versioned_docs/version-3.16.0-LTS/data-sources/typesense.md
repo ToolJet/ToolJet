@@ -22,7 +22,7 @@ ToolJet requires the following to connect to TypeSense deployment:
 - **API Key**
 - **Protocol**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/connect-v2.png" alt="typesense connect" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/connect-v2.png" alt="typesense connect" />
 
 </div>
 
@@ -45,6 +45,8 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Supported Operations
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/listops.png" alt="typesense supported operations" style={{marginBottom:'15px'}}/>
+
 ### Create a Collection
 
 With this operation you can easily create `Collections` in your TypeSense cluster. In the schema field, you'll need to define the schema for creating a new collection. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/0.22.2/api/collections.html#create-a-collection)**
@@ -53,7 +55,7 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 
 - **Schema**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/collection-v2.png" alt="typesense collection" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/create-query.png" alt="typesense collection" style={{marginBottom:'15px'}}/>
 
 #### Example
 
@@ -65,6 +67,19 @@ With this operation you can easily create `Collections` in your TypeSense cluste
 ]
 ```
 
+### Search
+
+Use this operation to perform a search within the specified collection. Know more about the search parameters in the TypeSense doc **[here](https://typesense.org/docs/0.22.2/api/documents.html#search)**.
+
+#### Required Parameter
+
+- **Collection**
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/search-query.png" alt="typesense search" style={{marginBottom:'15px'}}/>
+
+```yaml
+{ "filter_by": "price:<1000", "sort_by": "price:desc", "per_page": 10 }
+```
 ### Index a Document
 
 Use this operation to index a document to your collection. You'll need to specify the **Collection Name** where you want your document to be indexed and also provide the document data according the schema defined in the collection. Read more about Indexing a document in TypeSense **[here](https://typesense.org/docs/0.22.2/api/documents.html#index-a-single-document)**.
@@ -74,24 +89,10 @@ Use this operation to index a document to your collection. You'll need to specif
 - **Collection**
 - **Document**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/index-v2.png" alt="typesense index" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/index-query.png" alt="typesense index" style={{marginBottom:'15px'}}/>
 
 ```yaml
 { "id": "1", "name": "Laptop", "price": 999.99 }
-```
-
-### Search
-
-Use this operation to perform a search within the specified collection. Know more about the search parameters in the TypeSense doc **[here](https://typesense.org/docs/0.22.2/api/documents.html#search)**.
-
-#### Required Parameter
-
-- **Collection**
-
-<img className="screenshot-full" src="/img/datasource-reference/typesense/search-v2.png" alt="typesense search" style={{marginBottom:'15px'}}/>
-
-```yaml
-{ "filter_by": "price:<1000", "sort_by": "price:desc", "per_page": 10 }
 ```
 
 ### Get a Document
@@ -103,7 +104,7 @@ Use this operation to fetch an individual document in a collection by providing 
 - **Collection**
 - **Id**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/get-v2.png" alt="typesense get" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/get-query.png" alt="typesense get" style={{marginBottom:'15px'}}/>
 
 ### Update a Document
 
@@ -115,7 +116,7 @@ Use this operation to update an individual document by providing the **Collectio
 - **Id**
 - **Document**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/update-v2.png" alt="typesense update" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/update-query.png" alt="typesense update" style={{marginBottom:'15px'}}/>
 
 ```yaml
 { "name": "Gaming Laptop", "price": 1199.99 }
@@ -130,7 +131,7 @@ Delete a document from collection by providing the `Id` of the document. Check o
 - **Collection**
 - **Id**
 
-<img className="screenshot-full" src="/img/datasource-reference/typesense/delete-v2.png" alt="typesense delete" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/typesense/delete-query.png" alt="typesense delete" style={{marginBottom:'15px'}}/>
 
 <br/><br/>
 
