@@ -5,7 +5,7 @@ title: Run Python Code
 
 In ToolJet, custom **Run Python Code** can be used to interact with components and queries, making it possible to customize actions and data handling.
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-python/data-source.png" alt="Run Python code" />
 
 <div style={{paddingTop:'24px'}}>
 
