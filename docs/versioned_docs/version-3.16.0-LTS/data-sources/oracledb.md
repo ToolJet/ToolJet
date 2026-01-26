@@ -22,7 +22,7 @@ ToolJet requires the following to connect to a OracleDB datasource:
 - **Password**
 - **Client Library Path**
 
-<img className="screenshot-full" src="/img/datasource-reference/oracledb/oracleauth-v3.png" alt="ToolJet - Data source - OracleDB" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/oracleauth-v3.png" alt="Data source-OracleDB-Connection" />
 
 :::info
 ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to use a different client library version:
@@ -69,20 +69,20 @@ The instant client version affects which Oracle Database versions you can connec
 - **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
 - **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
 
-<img className="screenshot-full" src="/img/datasource-reference/oracledb/operations.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="OracleDB supported operations" style={{marginBottom:'15px'}}/>
 
 ### SQL mode
 
 SQL mode can be used to write raw SQL queries.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/sql-query.png" alt="sql mode querying" style={{marginBottom:'15px'}}/>
+
 ```sql
 SELECT first_name, last_name, email
 FROM employees
-WHERE department_id = 10
+WHERE department_id = 15
 ORDER BY last_name;
 ```
-
-<img className="screenshot-full" src="/img/datasource-reference/oracledb/sql.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 ### GUI mode
 
@@ -93,20 +93,20 @@ GUI mode can be used to query Oracle database without writing queries.
 3. Enter the **Table** name and **Primary key** column name.
 4. In the editor, enter the records in the form of an array of objects.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/gui-query.png" alt="gui mode querying" style={{marginBottom:'15px'}}/>
+
 ```json
 [
   {
     "id": 1,
-    "channel": 33
+    "channel": 10
   },
   {
     "id": 2,
-    "channel": 24
+    "channel": 27
   }
 ]
 ```
-
-<img className="screenshot-full" src="/img/datasource-reference/oracledb/gui.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
