@@ -16,15 +16,15 @@ ToolJet requires the following to connect to Twilio:
 - **Account SID**
 - **Messaging Service SID**
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/twilio/connect-v2.png" alt="ToolJet - Data source - Twilio" style={{ marginBottom:'15px' }} />
+
 You can get the **Auth Token and Account SID** on the dashboard of your Twilio account.
 
-<img className="screenshot-full" src="/img/datasource-reference/twilio/auth.png" alt="ToolJet - Data source - Twilio" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/twilio/dashboard-twilio.png" alt="ToolJet - Data source - Twilio" style={{ marginBottom:'15px' }} />
 
 For **Messaging Service SID**, you'll need to create a messaging service first from the Services under Messaging in the left-sidebar.
 
-<img className="screenshot-full" src="/img/datasource-reference/twilio/sid.png" alt="ToolJet - Data source - Twilio" />
-
-<img className="screenshot-full" src="/img/datasource-reference/twilio/connect-v2.png" alt="ToolJet - Data source - Twilio" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/twilio/dashboard-services.png" alt="ToolJet - Data source - Twilio" style={{ marginBottom:'15px' }} />
 
 </div>
 
@@ -51,7 +51,7 @@ This operation will send the specified message to specified mobile number.
 - **To Number**
 - **Body**
 
-<img className="screenshot-full" src="/img/datasource-reference/twilio/sms-v2.png" alt="ToolJet - Data source - Twilio" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/twilio/querying-v3.png" alt="ToolJet - Data source - Twilio" />
 
 </div>
 
