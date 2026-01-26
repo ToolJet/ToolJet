@@ -26,7 +26,7 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="MSsql data soruce connection"/>
 
 ### Connection Options
 
@@ -70,13 +70,13 @@ SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL quer
 3. Enter the SQL query in the editor.
 4. Click on the **Run** button to run the query.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/query.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
+
 #### Example
 
 ```sql
 SELECT * FROM users
 ```
-
-<img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
 
 ### Parameterized Queries
 
@@ -88,7 +88,7 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
 <div style={{textAlign: 'center'}}>
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mssql/param-query.png" alt="parameterized SQL queries"/>
 </div>
 
 ##### Example:
@@ -139,13 +139,13 @@ GUI mode can be used to query MS SQL Server / Azure SQL Databases without writin
 5. In the editor, enter the records in the form of an array of objects.
 6. Click on the **Run** button to run the query.
 
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-gui-query.png" alt="ToolJet mssql gui mode"/>
+
 #### Example
 
 ```json
 {{ [ {id: 1, channel: 33}, {id: 2, channel: 24} ] }}
 ```
-
-<img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
