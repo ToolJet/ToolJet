@@ -13,7 +13,9 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -32,6 +34,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     component?.component?.definition?.properties?.useDynamicOptions?.value,
     currentState
   );
+  const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
@@ -92,7 +96,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         disable: { value: '{{false}}' },
         iconVisibility: { value: '{{false}}' },
         icon: { value: 'IconHome2' },
-        fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+        fieldBackgroundColor: { value: commonBackgroundColor },
       };
     };
 
@@ -218,6 +222,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
+    const iconVisibility =
+      item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
+
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
         <Popover.Body onClick={(e) => e.stopPropagation()}>
@@ -271,6 +278,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onVisibilityChange={(value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
               fieldMeta={{ type: 'icon', displayName: 'Icon' }}
               paramType={'icon'}
+              iconVisibility={iconVisibility}
             />
           </div>
 

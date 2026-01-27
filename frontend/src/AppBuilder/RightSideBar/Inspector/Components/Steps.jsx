@@ -14,9 +14,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
-import Switch from '@/Editor/CodeBuilder/Elements/Switch';
+import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
 import { usePrevious } from '@dnd-kit/utilities';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 export function Steps({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -34,9 +34,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const variant = component?.component?.definition?.properties?.variant?.value;
-  const prevVariant = usePrevious(variant)
-  console.log("variant", component?.component?.definition);
-
+  const prevVariant = usePrevious(variant);
 
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
@@ -59,14 +57,13 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
   useEffect(() => {
     const completedLabelColor = component?.component?.definition?.styles?.completedLabel?.value;
     if (variant !== prevVariant) {
-      if (variant === "numbers" && completedLabelColor === "#1B1F24") {
-        paramUpdated({ name: 'completedLabel' }, 'value', "#FFFFFF", 'styles', false, {});
-      } else if (variant === "titles" && completedLabelColor === "#FFFFFF") {
-        paramUpdated({ name: 'completedLabel' }, 'value', "#1B1F24", 'styles', false, {});
+      if (variant === 'numbers' && completedLabelColor === '#1B1F24') {
+        paramUpdated({ name: 'completedLabel' }, 'value', '#FFFFFF', 'styles', false, {});
+      } else if (variant === 'titles' && completedLabelColor === '#FFFFFF') {
+        paramUpdated({ name: 'completedLabel' }, 'value', '#1B1F24', 'styles', false, {});
       }
     }
-
-  }, [variant])
+  }, [variant]);
 
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
@@ -157,7 +154,10 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'} inspector-steps-options-popover`}
+        style={{ minWidth: '248px' }}
+      >
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">
@@ -394,15 +394,15 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
                   )}
                   {isDynamicStepsEnabled
                     ? renderElement(
-                      component,
-                      componentMeta,
-                      paramUpdated,
-                      dataQueries,
-                      'schema',
-                      'properties',
-                      currentState,
-                      allComponents
-                    )
+                        component,
+                        componentMeta,
+                        paramUpdated,
+                        dataQueries,
+                        'schema',
+                        'properties',
+                        currentState,
+                        allComponents
+                      )
                     : _renderOptions()}
                 </>
               );

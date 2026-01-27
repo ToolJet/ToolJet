@@ -17,9 +17,10 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { AppHistoryModule } from '@modules/app-history/module';
 @Module({})
 export class ModulesModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const importPath = await getImportPath(configs.IS_GET_CONTEXT);
     const { ModulesController } = await import(`${importPath}/modules/modules.controller`);
     const { AppsService } = await import(`${importPath}/apps/service`);
@@ -41,8 +42,9 @@ export class ModulesModule {
         await AiModule.register(configs),
         await AppPermissionsModule.register(configs),
         await ImportExportResourcesModule.register(configs),
+        await AppHistoryModule.register(configs),
       ],
-      controllers: [ModulesController],
+      controllers: isMainImport ? [ModulesController] : [],
       providers: [
         AppsService,
         VersionRepository,
@@ -57,7 +59,7 @@ export class ModulesModule {
         FeatureAbilityFactory,
         RolesRepository,
         AppGitRepository,
-        GroupPermissionsRepository
+        GroupPermissionsRepository,
       ],
     };
   }

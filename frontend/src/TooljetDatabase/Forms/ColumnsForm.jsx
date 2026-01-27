@@ -80,19 +80,21 @@ const ColumnsForm = ({
           })}
         >
           <div className="row">
-            <div className="m-0 d-flex align-items-center  column-name-description">
+            <div className="m-0 d-flex align-items-center column-name-description">
               <ColumnName />
               <span style={{ marginLeft: '6px' }} data-cy="name-input-field-label">
                 Column name
               </span>
             </div>
-            <div className="m-0 dataType-description">
-              <span data-cy="type-input-field-label">Type</span>
+            <div className="dataType-description">
+              <span style={{ marginLeft: '6px' }} data-cy="type-input-field-label">
+                Type
+              </span>
             </div>
-            <div className="m-0 defaultValue-description">
+            <div className="defaultValue-description">
               <span data-cy="default-input-field-label">Default value</span>
             </div>
-            <div className="m-0 primaryKey-description">
+            <div className="primaryKey-description">
               <span data-cy="default-input-field-label">Primary</span>
             </div>
           </div>

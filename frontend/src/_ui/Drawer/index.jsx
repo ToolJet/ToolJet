@@ -4,9 +4,8 @@ import FocusTrap from 'focus-trap-react';
 import cx from 'classnames';
 import useMountTransition from '@/_hooks/useMountTransition';
 import { useEventListener } from '@/_hooks/use-event-listener';
-import ErrorBoundary from '@/Editor/ErrorBoundary';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import '@/_styles/drawer.scss';
-import Toast from '@/_ui/Toast';
 
 function createPortalRoot() {
   const drawerRoot = document.createElement('div');
@@ -53,23 +52,6 @@ const Drawer = ({
   }
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  let toastOptions = {
-    style: {
-      wordBreak: 'break-all',
-    },
-  };
-
-  if (darkMode) {
-    toastOptions = {
-      className: 'toast-dark-mode',
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-        wordBreak: 'break-all',
-      },
-    };
-  }
 
   const isForeignKeyDrawer = isForeignKeyRelation ? 'foreignKeyDrawerRight' : '';
   const isForeignKeyBackdrop = isForeignKeyRelation ? 'foreignKeyBackdrop' : '';
@@ -90,7 +72,6 @@ const Drawer = ({
             'theme-dark dark-theme': darkMode,
           })}
         >
-          <Toast toastOptions={toastOptions} />
           <div className={cx('drawer', position, isForeignKeyDrawer)} role="dialog" style={drawerStyle}>
             {children}
           </div>

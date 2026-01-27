@@ -14,6 +14,7 @@ import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
+import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import { findDefault } from '../_utils/component-properties-validation';
@@ -336,6 +337,16 @@ const RenderResolvedValue = ({
   );
 };
 
+function FixIssueTooltipContent() {
+  return (
+    <>
+      <h5 className="tw-font-medium">Auto-fix</h5>
+
+      <p className="tw-text-base tw-mb-0">Diagnose and resolve errors instantly to keep your apps running smoothly</p>
+    </>
+  );
+}
+
 const PreviewContainer = ({
   children,
   isFocused,
@@ -459,7 +470,7 @@ const PreviewContainer = ({
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
-      id="popover-basic"
+      id="codehinter-preview-box-popover"
       className={`${darkMode && 'dark-theme'}`}
       style={{
         zIndex: 1400,
@@ -492,15 +503,21 @@ const PreviewContainer = ({
                 </div>
 
                 {aiFeaturesEnabled && (
-                  <Button
-                    size="medium"
-                    variant="outline"
-                    leadingIcon="tooljetai"
-                    className="mt-2"
-                    onClick={handleFixErrorWithAI}
+                  <ToolTip
+                    placement="left"
+                    message={<FixIssueTooltipContent />}
+                    tooltipClassName="[&_.tooltip-inner]:tw-text-left [&_.tooltip-inner]:tw-p-3"
                   >
-                    Fix with AI
-                  </Button>
+                    <Button
+                      size="medium"
+                      variant="outline"
+                      leadingIcon="tooljetai"
+                      className="mt-2"
+                      onClick={handleFixErrorWithAI}
+                    >
+                      Auto-fix
+                    </Button>
+                  </ToolTip>
                 )}
               </Alert>
             </div>
@@ -619,6 +636,48 @@ const PreviewContainer = ({
                 name: 'offset',
                 options: {
                   offset: [0, 3],
+                },
+              },
+              {
+                name: 'detectViewportOverflowObserver',
+                enabled: true,
+                phase: 'write',
+                effect: ({ state, instance }) => {
+                  const popperEl = state?.elements?.popper;
+
+                  if (!popperEl || typeof IntersectionObserver === 'undefined') return;
+
+                  let rafId = null;
+
+                  const io = new IntersectionObserver(
+                    (entries) => {
+                      const ent = entries[0];
+                      if (!ent) return;
+
+                      // intersectionRatio < 1 => partially/fully out of viewport
+                      if (ent.intersectionRatio < 1) {
+                        if (rafId) return;
+
+                        rafId = requestAnimationFrame(() => {
+                          try {
+                            instance.update();
+                          } catch (e) {
+                            /* error */
+                          } finally {
+                            rafId = null;
+                          }
+                        });
+                      }
+                    },
+                    { threshold: [0, 0.01, 0.5, 1] }
+                  );
+
+                  io.observe(popperEl);
+
+                  return () => {
+                    io.disconnect();
+                    if (rafId) cancelAnimationFrame(rafId);
+                  };
                 },
               },
             ],

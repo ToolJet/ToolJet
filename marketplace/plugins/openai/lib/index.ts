@@ -52,7 +52,6 @@ export default class Openai implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const openai: OpenAI = await this.getConnection(sourceOptions);
-    console.log();
     try {
       const response = await openai.models.list(); // The response doesn't have a 'status'
 

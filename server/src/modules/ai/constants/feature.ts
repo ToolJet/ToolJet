@@ -20,6 +20,9 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.APPROVE_PRD]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.REWIND_STEP]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
     [FEATURE_KEY.REGENERATE_MESSAGE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },

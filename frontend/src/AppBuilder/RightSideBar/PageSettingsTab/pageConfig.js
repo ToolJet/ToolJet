@@ -3,7 +3,7 @@ export const pageConfig = {
     collapsable: true,
     style: 'texticon',
     hideHeader: false,
-    position: 'top',
+    position: 'side',
     name: '',
     hideLogo: false,
     disableMenu: {
@@ -65,7 +65,7 @@ export const pageConfig = {
       collapsable: true,
       style: 'texticon',
       hideHeader: false,
-      position: 'top',
+      position: 'side',
       name: '',
       hideLogo: false,
       disableMenu: {
@@ -89,7 +89,7 @@ export const pageConfig = {
         isDefault: false,
       },
       selectedIconColor: {
-        value: 'var(--cc-primary-brand)',
+        value: 'var(--cc-default-icon)',
         isDefault: false,
       },
       pillHoverBackgroundColor: {
@@ -97,7 +97,7 @@ export const pageConfig = {
         isDefault: false,
       },
       pillSelectedBackgroundColor: {
-        value: 'var(--cc-surface3-surface)',
+        value: 'var(--cc-appBackground-surface)',
         isDefault: false,
       },
       pillRadius: {
@@ -108,7 +108,7 @@ export const pageConfig = {
         isDefault: false,
       },
       borderColor: {
-        value: 'var(--cc-default-border)',
+        value: 'var(--cc-weak-border)',
         isDefault: false,
       },
     },

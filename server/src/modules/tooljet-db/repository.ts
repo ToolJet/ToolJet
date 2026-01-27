@@ -15,7 +15,7 @@ export class InternalTableRepository extends Repository<InternalTable> {
       .getRepository('data_queries')
       .createQueryBuilder('data_queries')
       .innerJoin('data_sources', 'data_sources', 'data_queries.data_source_id = data_sources.id')
-      .innerJoin('app_versions', 'app_versions', 'app_versions.id = data_sources.app_version_id')
+      .innerJoin('app_versions', 'app_versions', 'app_versions.id = data_queries.app_version_id')
       .where('app_versions.app_id = :appId', { appId })
       .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
       .getMany();

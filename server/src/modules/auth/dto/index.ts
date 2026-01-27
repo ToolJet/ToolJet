@@ -10,7 +10,6 @@ export class AppAuthenticationDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(5, { message: 'Password should contain more than 5 characters' })
   @MaxLength(100, { message: 'Password should be Max 100 characters' })
   password: string;
 
@@ -90,4 +89,11 @@ export class CreateAiUserDto {
   @IsString()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsOptional()
+  utmParams?: Record<string, any>;
+
+  @IsString()
+  @IsNotEmpty()
+  otp: string;
 }
