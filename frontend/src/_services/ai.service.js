@@ -23,6 +23,7 @@ export const aiService = {
   getCreditBalance,
   fixWithAI,
   fixLayout,
+  updateMessageData,
 };
 
 async function fixLayout(body) {
@@ -279,4 +280,10 @@ async function getCreditBalance() {
 async function fixWithAI(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
+}
+
+async function updateMessageData(messageId, body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+
+  return fetch(`${config.apiUrl}/ai/conversation/message/${messageId}`, requestOptions).then(handleResponse);
 }
