@@ -11,6 +11,7 @@ import {
   EventUpdateContext,
   EventDeleteContext,
 } from '../interfaces/services/IEventService';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class EventsService implements IEventsService {
@@ -31,7 +32,9 @@ export class EventsService implements IEventsService {
     context: EventCreateContext | null,
     createdEvent: EventHandler,
     versionId: string,
-    skipHistoryCapture: boolean
+    skipHistoryCapture: boolean,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -52,7 +55,9 @@ export class EventsService implements IEventsService {
   protected async afterBulkEventCreate(
     context: EventBulkCreateContext | null,
     createdEvents: EventHandler[],
-    versionId: string
+    versionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -75,7 +80,9 @@ export class EventsService implements IEventsService {
     context: EventUpdateContext | null,
     updatedEvents: EventHandler[],
     updateType: 'update' | 'reorder',
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -96,7 +103,9 @@ export class EventsService implements IEventsService {
   protected async afterEventDelete(
     context: EventDeleteContext | null,
     eventId: string,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -150,6 +159,7 @@ export class EventsService implements IEventsService {
       throw new BadRequestException('No event found');
     }
 
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = skipHistoryCapture ? null : await this.beforeEventCreate(eventHandler, versionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -205,7 +215,9 @@ export class EventsService implements IEventsService {
       return event;
     }, versionId);
 
-    await this.afterEventCreate(context, result, versionId, skipHistoryCapture);
+    const operationTimestamp = Date.now();
+    this.afterEventCreate(context, result, versionId, skipHistoryCapture, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventCreate failed:', err.message));
 
     return result;
   }
@@ -297,18 +309,22 @@ export class EventsService implements IEventsService {
       return [];
     }
 
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeBulkEventCreate(eventHandlers, versionId);
 
     const results = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return this.createEventsInTransaction(eventHandlers, versionId, manager);
     }, versionId);
 
-    await this.afterBulkEventCreate(context, results, versionId);
+    const operationTimestamp = Date.now();
+    this.afterBulkEventCreate(context, results, versionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterBulkEventCreate failed:', err.message));
 
     return results;
   }
 
   async updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventUpdate(events, updateType, appVersionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -343,7 +359,9 @@ export class EventsService implements IEventsService {
       );
     }, appVersionId);
 
-    await this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterEventUpdate(context, result as EventHandler[], updateType, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventUpdate failed:', err.message));
 
     return result;
   }
@@ -363,6 +381,7 @@ export class EventsService implements IEventsService {
   }
 
   async deleteEvent(eventId: string, appVersionId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeEventDelete(eventId, appVersionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -386,7 +405,9 @@ export class EventsService implements IEventsService {
       return deleteResponse;
     }, appVersionId);
 
-    await this.afterEventDelete(context, eventId, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterEventDelete(context, eventId, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterEventDelete failed:', err.message));
 
     return result;
   }

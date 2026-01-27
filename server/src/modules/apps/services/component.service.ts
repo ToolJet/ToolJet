@@ -16,11 +16,12 @@ import {
   ComponentDeleteContext,
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
+import { RequestContext } from '@modules/request-context/service';
 const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) {}
+  constructor(protected eventHandlerService: EventsService) { }
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -46,6 +47,7 @@ export class ComponentsService implements IComponentsService {
 
   async create(componentDiff: object, pageId: string, appVersionId: string, skipHistoryCapture: boolean = false) {
     const componentIds = Object.keys(componentDiff);
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const context = skipHistoryCapture
       ? null
@@ -56,8 +58,10 @@ export class ComponentsService implements IComponentsService {
       return {};
     }, appVersionId);
 
+    const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
-      await this.afterComponentCreate(context, componentDiff, pageId, appVersionId);
+      this.afterComponentCreate(context, componentDiff, pageId, appVersionId, historyUserId, operationTimestamp)
+        .catch((err) => console.error('[AppHistory] Fire-and-forget afterComponentCreate failed:', err.message));
     }
 
     return result;
@@ -65,6 +69,7 @@ export class ComponentsService implements IComponentsService {
 
   async update(componentDiff: object, appVersionId: string) {
     const componentIds = Object.keys(componentDiff);
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const context = await this.beforeComponentUpdate(componentIds, appVersionId, componentDiff);
 
@@ -75,12 +80,15 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
-    await this.afterComponentUpdate(context, componentDiff, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterComponentUpdate failed:', err.message));
 
     return result;
   }
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeComponentDelete(componentIds, appVersionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -90,7 +98,9 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
-    await this.afterComponentDelete(context, componentIds, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterComponentDelete failed:', err.message));
 
     return result;
   }
@@ -100,11 +110,7 @@ export class ComponentsService implements IComponentsService {
     appVersionId: string,
     skipHistoryCapture: boolean = false
   ) {
-    const componentIds = Object.keys(componenstLayoutDiff);
-
-    const context = skipHistoryCapture
-      ? null
-      : await this.beforeComponentLayoutChange(componentIds, appVersionId, componenstLayoutDiff);
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
@@ -138,8 +144,10 @@ export class ComponentsService implements IComponentsService {
       }
     }, appVersionId);
 
+    const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
-      await this.afterComponentLayoutChange(context, componenstLayoutDiff, appVersionId);
+      this.afterComponentLayoutChange(null, componenstLayoutDiff, appVersionId, historyUserId, operationTimestamp)
+        .catch((err) => console.error('[AppHistory] Fire-and-forget afterComponentLayoutChange failed:', err.message));
     }
 
     return result;
@@ -520,7 +528,9 @@ export class ComponentsService implements IComponentsService {
     context: ComponentCreateContext | null,
     componentDiff: object,
     pageId: string,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE
   }
@@ -542,7 +552,9 @@ export class ComponentsService implements IComponentsService {
   protected async afterComponentUpdate(
     context: ComponentUpdateContext | null,
     componentDiff: object,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE
   }
@@ -563,7 +575,9 @@ export class ComponentsService implements IComponentsService {
   protected async afterComponentDelete(
     context: ComponentDeleteContext | null,
     componentIds: string[],
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE
   }
@@ -585,7 +599,9 @@ export class ComponentsService implements IComponentsService {
   protected async afterComponentLayoutChange(
     context: ComponentLayoutContext | null,
     layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE
   }

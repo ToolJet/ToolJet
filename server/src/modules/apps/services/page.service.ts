@@ -20,6 +20,7 @@ import {
   PageDeleteContext,
   PageReorderContext,
 } from '../interfaces/services/IPageService';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -46,7 +47,9 @@ export class PageService implements IPageService {
   protected async afterPageCreate(
     context: PageCreateContext | null,
     createdPage: Page,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -68,7 +71,9 @@ export class PageService implements IPageService {
   protected async afterPageUpdate(
     context: PageUpdateContext | null,
     diff: any,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -89,7 +94,9 @@ export class PageService implements IPageService {
   protected async afterPageDelete(
     context: PageDeleteContext | null,
     pageId: string,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -111,7 +118,9 @@ export class PageService implements IPageService {
   protected async afterPageReorder(
     context: PageReorderContext | null,
     diff: any,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -133,7 +142,9 @@ export class PageService implements IPageService {
   protected async afterPageClone(
     context: PageCreateContext | null,
     clonedPages: Page[],
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -157,6 +168,7 @@ export class PageService implements IPageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page> {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageCreate(page, appVersionId, organizationId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
@@ -164,12 +176,15 @@ export class PageService implements IPageService {
       return await manager.save(Page, newPage);
     }, appVersionId);
 
-    await this.afterPageCreate(context, result, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message));
 
     return result;
   }
 
   async clonePage(pageId: string, appVersionId: string, organizationId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageClone(pageId, appVersionId, organizationId);
 
     let clonedPage: Page | null = null;
@@ -221,8 +236,10 @@ export class PageService implements IPageService {
       return { pages, events };
     }, appVersionId);
 
+    const operationTimestamp = Date.now();
     if (clonedPage) {
-      await this.afterPageClone(context, [clonedPage], appVersionId);
+      this.afterPageClone(context, [clonedPage], appVersionId, historyUserId, operationTimestamp)
+        .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message));
     }
 
     // Fetch pages and events after transaction completes
@@ -428,11 +445,14 @@ export class PageService implements IPageService {
   }
 
   async reorderPages(diff: any, appVersionId: string, organizationId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageReorder(diff, appVersionId, organizationId);
 
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
-    await this.afterPageReorder(context, diff, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterPageReorder(context, diff, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message));
 
     return result;
   }
@@ -442,6 +462,7 @@ export class PageService implements IPageService {
       throw new Error('Can not update multiple pages');
     }
 
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageUpdate(pageUpdates.pageId, pageUpdates.diff, appVersionId);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
@@ -455,7 +476,9 @@ export class PageService implements IPageService {
       return manager.update(Page, pageUpdates.pageId, pageUpdates.diff);
     });
 
-    await this.afterPageUpdate(context, pageUpdates.diff, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterPageUpdate(context, pageUpdates.diff, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message));
 
     return result;
   }
@@ -467,6 +490,7 @@ export class PageService implements IPageService {
     deleteAssociatedPages: boolean = false,
     organizationId: string
   ) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforePageDelete(pageId, appVersionId);
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
@@ -499,7 +523,9 @@ export class PageService implements IPageService {
       return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
     }, appVersionId);
 
-    await this.afterPageDelete(context, pageId, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message));
 
     return result;
   }

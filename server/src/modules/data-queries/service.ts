@@ -21,6 +21,7 @@ import {
   QueryDeleteContext,
 } from './interfaces/IService';
 import { App } from '@entities/app.entity';
+import { RequestContext } from '@modules/request-context/service';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -48,7 +49,9 @@ export class DataQueriesService implements IDataQueriesService {
     context: QueryCreateContext | null,
     createdQuery: any,
     user: User,
-    appVersionId: string
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -72,7 +75,9 @@ export class DataQueriesService implements IDataQueriesService {
     context: QueryUpdateContext | null,
     user: User,
     versionId: string,
-    updateDataQueryDto: UpdateDataQueryDto
+    updateDataQueryDto: UpdateDataQueryDto,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -90,7 +95,9 @@ export class DataQueriesService implements IDataQueriesService {
   protected async afterQueryDelete(
     context: QueryDeleteContext | null,
     dataQueryId: string,
-    appVersionId: string | null
+    appVersionId: string | null,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -151,7 +158,9 @@ export class DataQueriesService implements IDataQueriesService {
       return decamelizedQuery;
     });
 
-    await this.afterQueryCreate(context, result, user, appVersionId);
+    const operationTimestamp = Date.now();
+    this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message));
 
     return result;
   }
@@ -171,28 +180,24 @@ export class DataQueriesService implements IDataQueriesService {
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
-    await this.afterQueryUpdate(context, user, versionId, updateDataQueryDto);
+    const operationTimestamp = Date.now();
+    this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message));
   }
 
   async delete(dataQueryId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeQueryDelete(dataQueryId);
-
-    let appVersionId: string | null = null;
-    try {
-      const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { apps: true });
-      if (dataQuery) {
-        appVersionId = dataQuery.appVersionId;
-      }
-    } catch {
-      // Query may not exist, continue with deletion
-    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
       await this.dataQueryRepository.deleteOne(dataQueryId);
     });
 
-    await this.afterQueryDelete(context, dataQueryId, appVersionId);
+    const operationTimestamp = Date.now();
+    const appVersionId = (context as any)?.appVersionId || null;
+    this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message));
   }
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {

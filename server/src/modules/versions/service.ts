@@ -86,7 +86,9 @@ export class VersionService implements IVersionService {
     context: VersionUpdateContext | null,
     app: App,
     user: User,
-    appVersionUpdateDto: AppVersionUpdateDto
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -109,7 +111,9 @@ export class VersionService implements IVersionService {
     context: VersionSettingsUpdateContext | null,
     app: App,
     user: User,
-    appVersionUpdateDto: AppVersionUpdateDto
+    appVersionUpdateDto: AppVersionUpdateDto,
+    userId?: string,
+    operationTimestamp?: number
   ): Promise<void> {
     // No-op in CE, EE overrides to capture history
   }
@@ -287,7 +291,9 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
-    await this.afterVersionUpdate(context, app, user, appVersionUpdateDto);
+    const operationTimestamp = Date.now();
+    this.afterVersionUpdate(context, app, user, appVersionUpdateDto, user.id, operationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterVersionUpdate failed:', err.message));
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
@@ -306,7 +312,9 @@ export class VersionService implements IVersionService {
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
-    await this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto);
+    const settingsOperationTimestamp = Date.now();
+    this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto, user.id, settingsOperationTimestamp)
+      .catch((err) => console.error('[AppHistory] Fire-and-forget afterVersionSettingsUpdate failed:', err.message));
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
