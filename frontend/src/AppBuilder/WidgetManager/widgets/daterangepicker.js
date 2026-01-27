@@ -110,6 +110,12 @@ export const daterangepickerConfig = {
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onSelect: { displayName: 'On select' },
@@ -384,6 +390,7 @@ export const daterangepickerConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      showClearBtn: { value: '{{false}}' },
     },
     validation: {
       minDate: { value: '' },

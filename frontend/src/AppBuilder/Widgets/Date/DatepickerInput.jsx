@@ -36,14 +36,14 @@ export const DatepickerInput = forwardRef(
     onClear,
     clearButtonRightOffset = 0,
   }) => {
-    const placeholderValues = new Set(['Select date', 'Select time', 'Select date and time']);
+    const placeholderValues = new Set(['Select date', 'Select time', 'Select date and time', 'Select Date Range']);
     const hasValue = value !== null && value !== undefined && value !== '' && !placeholderValues.has(value);
     const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
     const clearButtonBaseRight = loaderStyles?.right ?? '11px';
     const clearButtonRight =
       clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
-    const clearButtonTop = loaderStyles?.top ?? '50%';
-    const clearButtonTransform = loaderStyles?.transform ?? 'translateY(-50%)';
+    const clearButtonTop = '50%';
+    const clearButtonTransform = 'translateY(-50%)';
     return (
       <>
         <input
