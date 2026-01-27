@@ -83,7 +83,7 @@ SERVE_CLIENT=true
 
 ### 3. Install and build dependencies
 
-Make sure node version is set to 18.18.2 before running the below command:
+Make sure node version is set to 22.15.1 before running the below command:
 
 ```
 npm install
