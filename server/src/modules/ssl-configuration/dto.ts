@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, MinLength, MaxLength, Matches } from 'class-validator';
 import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
 
 export class ListSslConfigurationDto {
@@ -40,8 +40,13 @@ export class UpdateSslConfigurationDto {
   @IsOptional()
   staging?: boolean;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(255)
+  @Matches(/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/, {
+    message: 'Domain must be a valid subdomain (e.g., tooljet.company.com)',
+  })
   domain?: string;
 }
 
