@@ -574,12 +574,16 @@ const DynamicForm = ({
       });
     };
 
-    const renderLabel = (label, tooltip) => {
+    const renderLabel = (label, tooltip, fieldType) => {
       const labelElement = (
         <label
           className="form-label"
-          data-cy={`label-${generateCypressDataCy(label)}`}
-          style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
+          data-cy={fieldType === 'dropdown' ? `${generateCypressDataCy(label)}-dropdown-label` : `label-${generateCypressDataCy(label)}`}
+          style={{
+            textDecoration: tooltip ? 'underline 2px dashed' : 'none',
+            textDecorationColor: 'var(--slate8)',
+            marginBottom: '2px'
+          }}
         >
           {label}
         </label>
@@ -627,7 +631,7 @@ const DynamicForm = ({
                   'd-flex': isHorizontalLayout,
                   'dynamic-form-row': isHorizontalLayout,
                 })}
-                data-cy={`${generateCypressDataCy(key)}-section`}
+                data-cy={`${generateCypressDataCy(label ?? key)}-section`}
                 key={key}
               >
                 {!isSpecificComponent && (
@@ -636,9 +640,9 @@ const DynamicForm = ({
                       'form-label': isHorizontalLayout,
                       'align-items-center': !isHorizontalLayout,
                     })}
-                    style={{ minWidth: '100px' }}
+                    style={{ minWidth: '100px', marginBottom: '0' }}
                   >
-                    {label && renderLabel(label, obj[key].tooltip)}
+                    {label && renderLabel(label, obj[key].tooltip, type)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
                       <div className="mx-1 col">
@@ -650,6 +654,7 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                          data-cy={`button-${generateCypressDataCy(computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel')}`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
@@ -657,7 +662,7 @@ const DynamicForm = ({
                     )}
                     {(type === 'password' || encrypted) && (
                       <div className="col-auto mb-2">
-                        <small className="text-green">
+                        <small className="text-green" data-cy="encrypted-text">
                           <img
                             className="mx-2 encrypted-icon"
                             src="assets/images/icons/padlock.svg"
@@ -676,16 +681,18 @@ const DynamicForm = ({
                       'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                       'w-100': isHorizontalLayout && type !== 'codehinter',
                     },
-                    'dynamic-form-element'
+                    'dynamic-form-element',
+
                   )}
                   style={{ width: '100%' }}
+                  data-cy={type === 'dropdown' || type === 'dropdown-component-flip' ? `${generateCypressDataCy(label ?? key)}-select-dropdown` : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`}
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
                     {...getElementProps(obj[key])}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
-                    dataCy={obj[key].key.replace(/_/g, '-')}
+                    dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}
                     //to be removed after whole ui is same
                     isHorizontalLayout={isHorizontalLayout}
                   />
@@ -694,7 +701,7 @@ const DynamicForm = ({
             )
           );
         })}
-      </div>
+      </div >
     );
   };
 
@@ -706,7 +713,7 @@ const DynamicForm = ({
 
       return (
         <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'}>
+          <div className={isHorizontalLayout ? '' : 'row'} >
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
             <div
@@ -716,11 +723,13 @@ const DynamicForm = ({
                 'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
+              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
             >
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
                   className={cx('form-label')}
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                  style={{ marginBottom: '2px' }}
                 >
                   {flipComponentDropdown.label}
                 </label>
@@ -734,6 +743,7 @@ const DynamicForm = ({
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
                 />
               </div>
               {flipComponentDropdown.helpText && (

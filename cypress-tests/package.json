@@ -10,11 +10,11 @@
     "@cypress/code-coverage": "^3.12.12",
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^7.3.0",
-    "cypress": "^15.0.0",
+    "cypress": "^15.4.0",
     "cypress-mailhog": "^2.5.0"
   },
   "dependencies": {
-    "cypress-real-events": "^1.7.6",
+    "cypress-real-events": "^1.15.0",
     "moment": "^2.29.4",
     "node-xlsx": "^0.4.0",
     "pdf-parse": "^1.1.1",

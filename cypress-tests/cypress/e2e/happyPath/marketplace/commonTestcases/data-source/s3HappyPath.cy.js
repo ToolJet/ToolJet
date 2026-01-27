@@ -51,7 +51,7 @@ describe("Data sources AWS S3", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-aws-s3`,
       "s3",

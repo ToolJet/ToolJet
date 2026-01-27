@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
+
+import { Button as RadixButton } from '@/components/ui/Button/Button';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
@@ -93,18 +95,17 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             onRemove={onRemove}
           />
         ) : (
-          <button
-            onClick={() => setShowModal((show) => !show)}
-            className="add-params-btn query-manager-add-params-btn"
+          <RadixButton
+            isLucid
+            size="medium"
+            variant="outline"
+            leadingIcon="plus"
             id="runjs-param-add-btn"
             data-cy={`runjs-add-param-button`}
-            style={{ background: 'none', border: 'none' }}
+            onClick={() => setShowModal((show) => !show)}
           >
-            <p className="m-0 text-default">
-              <PlusRectangle fill={'var(--icons-default)'} width={15} />
-              <span style={{ marginLeft: '6px' }}>Add</span>
-            </p>
-          </button>
+            Add
+          </RadixButton>
         )}
       </span>
     </OverlayTrigger>

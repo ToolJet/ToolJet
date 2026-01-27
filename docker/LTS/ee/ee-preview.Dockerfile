@@ -114,7 +114,10 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+# Install Redis 7.x from official Redis repository for BullMQ compatibility
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -173,7 +176,18 @@ RUN rm -rf /var/lib/postgresql/13/main && \
 # Initialize PostgreSQL
 RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+# Configure Redis for BullMQ
+RUN mkdir -p /etc/redis /var/lib/redis /var/log/redis && \
+    chown -R redis:redis /var/lib/redis /var/log/redis && \
+    chmod 755 /var/lib/redis /var/log/redis
+
+# Copy Redis configuration
+COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
+RUN chown redis:redis /etc/redis/redis.conf && \
+    chmod 644 /etc/redis/redis.conf
+
+# Configure Supervisor to manage PostgREST and ToolJet
+# Note: PostgreSQL and Redis are started directly in preview.sh
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
@@ -182,6 +196,10 @@ RUN echo "[supervisord] \n" \
     "command=/bin/postgrest \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
     "\n" \
     "[program:tooljet] \n" \
     "user=root \n" \
@@ -212,6 +230,10 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_DB=0 \
+    REDIS_TLS_ENABLED=false \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \

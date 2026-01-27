@@ -5,7 +5,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './popoverMenu.scss';
 import { CustomOptions, CustomButton } from './components';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const PopoverMenu = function PopoverMenu(props) {
   // ===== PROPS DESTRUCTURING =====

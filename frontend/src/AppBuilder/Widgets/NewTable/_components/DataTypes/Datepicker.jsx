@@ -335,6 +335,7 @@ export const DatepickerColumn = ({
               onInputFocus={() => setInputValue(computeDateString(date))}
             />
           }
+          portalId="component-portal"
           showTimeSelect={isTimeChecked}
           showTimeSelectOnly={!isDateSelectionEnabled && isTimeChecked}
           showMonthDropdown

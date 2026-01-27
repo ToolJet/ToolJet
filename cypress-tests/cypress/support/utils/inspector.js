@@ -83,39 +83,59 @@ export const verifyInspectorValue = (node, expectedValue) => {
     .should("be.visible")
     .and("have.text", expectedValue);
 };
+
+export const verifyInspectorKeyValue = (key, value) => {
+  const normalizeKey = (key) =>
+    key.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-");
+
+  const expectedLabelText = (key) => {
+    if (/^[a-z]+[A-Z]/.test(key)) {
+      return key;
+    }
+    return key;
+  };
+
+  const selectorKey = normalizeKey(key);
+  const expectedLabel = expectedLabelText(key);
+
+  cy.get(`${inspectorSelectors.inspectorNodeLabel(selectorKey)} > div`).should(
+    "have.text",
+    expectedLabel
+  );
+
+  const valueSelector = `${inspectorSelectors.inspectorNodeValue(selectorKey)} > .json-viewer-node-value > div`;
+
+  let finalValue = value;
+  if (value && /[`]/.test(value)) {
+    finalValue = value.replace(/`/g, "");
+  }
+  if (
+    finalValue != null &&
+    finalValue !== "null" &&
+    !finalValue.startsWith('"') &&
+    !finalValue.startsWith("[") &&
+    !finalValue.startsWith("{")
+  ) {
+    finalValue = `"${finalValue}"`;
+  }
+  cy.get(valueSelector).should("have.text", finalValue);
+};
+
 export const navigateAndVerifyInspector = (
   nodePath = [],
   keyValueDataList = [],
   expectedValue
 ) => {
-  navigateToInspectorNodes(nodePath); //
+  navigateToInspectorNodes(nodePath);
+
   if (expectedValue) {
     const lastNode = nodePath[nodePath.length - 1];
     verifyInspectorValue(lastNode, expectedValue);
   }
-  if (keyValueDataList.length) {
-    keyValueDataList.forEach(([key, value]) => {
-      cy.get(
-        `${inspectorSelectors.inspectorNodeLabel(
-          key
-            .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-            .replace(/[^a-zA-Z0-9]/g, "-")
-            .replace(/-+/g, "-")
-            .replace(/^-|-$/g, "")
-        )} > div`
-      ).should(
-        "have.text",
-        key.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase()
-      );
-      cy.get(
-        `${inspectorSelectors.inspectorNodeValue(
-          key
-            .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-            .replace(/[^a-zA-Z0-9]/g, "-")
-            .replace(/-+/g, "-")
-            .replace(/^-|-$/g, "")
-        )} > .json-viewer-node-value > div`
-      ).should("have.text", `"${value}"`);
-    });
-  }
+  // const toSnakeCase = (key) =>
+  //   key.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+
+  keyValueDataList.forEach(([key, value]) => {
+    verifyInspectorKeyValue(key, value);
+  });
 };

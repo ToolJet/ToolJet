@@ -6,6 +6,9 @@ const initialState = {
   loadingDataSources: true,
   globalDataSources: [],
   sampleDataSource: null,
+  isFetchingGlobalDataSource: false,
+  globalDataSourceList: null,
+  sampleDataSourceList: null,
 };
 
 export const createDataSourceSlice = (set) => ({
@@ -39,5 +42,24 @@ export const createDataSourceSlice = (set) => ({
 
       options?.onSuccess?.(data);
     });
+  },
+  getAllGlobalDataSourceList: (organizationId, options) => {
+    set({ isFetchingGlobalDataSource: true });
+
+    globalDatasourceService
+      .getAll(organizationId)
+      .then((data) => {
+        set({
+          globalDataSourceList: data.data_sources?.filter((source) => source?.type !== DATA_SOURCE_TYPE.SAMPLE) ?? [],
+          sampleDataSourceList: data.data_sources?.filter((source) => source?.type === DATA_SOURCE_TYPE.SAMPLE) ?? [],
+        });
+
+        options?.onSuccess?.(data);
+      })
+      .finally(() => {
+        set({
+          isFetchingGlobalDataSource: false,
+        });
+      });
   },
 });

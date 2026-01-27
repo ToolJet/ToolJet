@@ -19,7 +19,7 @@ import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperti
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
-import { ColorSwatches } from '@/modules/Appbuilder/components';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 
 import {
   TextTypeIcon,
@@ -39,7 +39,7 @@ import {
   RadioTypeIcon,
 } from './_assets';
 import { getColumnIcon } from './utils';
-import { getSafeRenderableValue } from '@/Editor/Components/utils';
+import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
 const NON_EDITABLE_COLUMNS = ['link', 'image'];
 class TableComponent extends React.Component {
@@ -247,9 +247,9 @@ class TableComponent extends React.Component {
     const actionRef = { ref: `${action?.name}` };
 
     return (
-      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'} tw-max-w-80`}>
         <Popover.Body
-          className="table-action-popover d-flex flex-column custom-gap-16"
+          className="table-action-popover d-flex flex-column custom-gap-16 tw-w-[19rem]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="field tj-app-input">
@@ -597,7 +597,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value) ||
-        resolveReferences(component.component.definition.properties.showBulkSelector.value);
+      resolveReferences(component.component.definition.properties.showBulkSelector.value);
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType);
@@ -757,9 +757,8 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility)}
-                                      className={`${
-                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
-                                      }`}
+                                      className={`${this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                        }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                       Icon={getColumnIcon(item?.columnType)}

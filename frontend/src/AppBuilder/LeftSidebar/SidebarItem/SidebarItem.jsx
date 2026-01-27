@@ -35,9 +35,8 @@ export const SidebarItem = forwardRef(
     const content = (
       <Button
         {...rest}
-        className={`${className} ${
-          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-        } ${icon}-icon`}
+        className={`${className} ${selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
+          } ${icon}-icon`}
         onClick={onClick && onClick}
         ref={ref}
         type="button"
@@ -45,6 +44,7 @@ export const SidebarItem = forwardRef(
         variant="ghost"
         size="default"
         iconOnly
+        data-cy={`left-sidebar-${icon?.toLowerCase() || 'unknown'}-button`}
       >
         {children && (
           <div className={'sidebar-svg-icon  position-relative'}>

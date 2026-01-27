@@ -3,16 +3,23 @@ import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
+import { CreateEventHandlerDto } from '../dto/event';
 import { LayoutDimensionUnits } from '../constants';
 import { IComponentsService } from '../interfaces/services/IComponentService';
+import { ACTION_TYPE } from '@modules/app-history/constants';
+import { AppHistoryUtilService } from '@modules/app-history/util.service';
 const _ = require('lodash');
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
-  constructor(protected eventHandlerService: EventsService) { }
+  constructor(
+    protected eventHandlerService: EventsService,
+    protected appHistoryUtilService: AppHistoryUtilService
+  ) {}
 
   findOne(id: string): Promise<Component> {
     return dbTransactionWrap((manager: EntityManager) => {
@@ -36,36 +43,93 @@ export class ComponentsService implements IComponentsService {
     });
   }
 
-  async create(componentDiff: object, pageId: string, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+  async create(componentDiff: object, pageId: string, appVersionId: string, skipHistoryCapture: boolean = false) {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
     }, appVersionId);
+
+    if (skipHistoryCapture) {
+      return result;
+    }
+
+    // Queue history capture after successful component creation
+    try {
+      // Extract component IDs - let the queue processor resolve names from componentData
+      const componentData = componentDiff as Record<string, any>;
+      const componentIds = Object.keys(componentData);
+
+      // The queue processor will resolve names from componentData and previous state
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_ADD, {
+        pageId,
+        componentIds,
+        operation: 'create',
+        componentData: componentDiff,
+      });
+    } catch (error) {
+      // Log the error but don't throw - component creation already succeeded
+      console.error('Failed to queue history capture for component creation:', error);
+      // History capture failure doesn't affect the component creation success
+    }
+
+    return result;
   }
 
   async update(componentDiff: object, appVersionId: string) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
         return result;
       }
     }, appVersionId);
+
+    // Queue history capture after successful component update
+    try {
+      // Extract component IDs - let the queue processor resolve names from componentData and previous state
+      const componentIds = Object.keys(componentDiff);
+      if (componentIds.length > 0) {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
+          componentIds,
+          operation: 'update',
+          componentData: componentDiff,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to queue history capture for component update:', error);
+    }
+
+    return result;
   }
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
         return result;
       }
     }, appVersionId);
+
+    // Queue history capture
+    try {
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_DELETE, {
+        componentIds,
+        operation: 'delete',
+        isComponentCut,
+        // No need to pre-fetch componentNames or pageName - queue processor will resolve from history
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for component deletion:', error);
+    }
+
+    return result;
   }
 
   async componentLayoutChange(
     componenstLayoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
-    appVersionId: string
+    appVersionId: string,
+    skipHistoryCapture: boolean = false
   ) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
 
@@ -96,6 +160,28 @@ export class ComponentsService implements IComponentsService {
         }
       }
     }, appVersionId);
+
+    // Skip history capture if requested (e.g., when called from AI service)
+    if (skipHistoryCapture) {
+      return result;
+    }
+
+    // Queue history capture after successful layout change
+    try {
+      // Extract component IDs - let the queue processor resolve names from layoutData and previous state
+      const componentIds = Object.keys(componenstLayoutDiff);
+      if (componentIds.length > 0) {
+        await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.COMPONENT_UPDATE, {
+          componentIds,
+          operation: 'layout_change',
+          layoutData: componenstLayoutDiff,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to queue history capture for component layout change:', error);
+    }
+
+    return result;
   }
 
   async getAllComponents(pageId: string, externalManager?: EntityManager) {
@@ -225,11 +311,22 @@ export class ComponentsService implements IComponentsService {
       create?: { diff: object; pageId: string };
       update?: { diff: object };
       delete?: { diff: string[]; is_component_cut?: boolean };
+      layout?: { diff: Record<string, { layouts: LayoutData; component?: { parent: string } }> };
+      events?: CreateEventHandlerDto[];
     },
     appVersionId: string
   ) {
-    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const results: { created?: number; updated?: number; deleted?: number } = {};
+    // TODO: Consider moving batchOperations to a dedicated BatchOperationsService
+    // to support batching across all entity types (components, events, queries, etc.)
+    // This would make it reusable across the application and keep services focused
+    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      const results: {
+        created?: number;
+        updated?: number;
+        deleted?: number;
+        layout?: number;
+        events?: EventHandler[];
+      } = {};
 
       // Handle create operation if present
       if (batchOperations.create) {
@@ -252,8 +349,49 @@ export class ComponentsService implements IComponentsService {
         results.deleted = componentIds.length;
       }
 
+      // Handle layout operation if present
+      if (batchOperations.layout) {
+        const { diff } = batchOperations.layout;
+        await this.updateComponentLayouts(diff, manager);
+        results.layout = Object.keys(diff).length;
+      }
+
+      // Handle events creation if present
+      // skipValidation: true because components are created in the same transaction
+      if (batchOperations.events && batchOperations.events.length > 0) {
+        results.events = await this.eventHandlerService.createEventsInTransaction(
+          batchOperations.events,
+          appVersionId,
+          manager,
+          { skipValidation: true }
+        );
+      }
+
       return results;
     }, appVersionId);
+
+    // Queue history capture after successful batch operations
+    try {
+      // For batch operations, let the queue processor resolve names from batchData
+      // Extract all component IDs from all operations
+      const allComponentIds = [
+        ...(batchOperations.create ? Object.keys(batchOperations.create.diff) : []),
+        ...(batchOperations.update ? Object.keys(batchOperations.update.diff) : []),
+        ...(batchOperations.delete ? batchOperations.delete.diff : []),
+        ...(batchOperations.layout ? Object.keys(batchOperations.layout.diff) : []),
+      ];
+
+      await this.appHistoryUtilService.queueHistoryCapture(appVersionId, ACTION_TYPE.BATCH_UPDATE, {
+        componentIds: allComponentIds,
+        changeCount: allComponentIds.length,
+        operation: 'batch_operations',
+        batchData: batchOperations,
+      });
+    } catch (error) {
+      console.error('Failed to queue history capture for batch operations:', error);
+    }
+
+    return result;
   }
 
   // Common methods used by both the original methods and batch operations
@@ -329,9 +467,17 @@ export class ComponentsService implements IComponentsService {
                 // Handle Form component with object srcValue like JSONData & JSONSchema
                 return srcValue;
               } else if (
-                ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'ModuleContainer', 'Tabs', 'Steps', 'RadioButtonV2', 'Tags'].includes(
-                  componentData.type
-                ) &&
+                [
+                  'DropdownV2',
+                  'MultiselectV2',
+                  'PopoverMenu',
+                  'ModuleContainer',
+                  'Tabs',
+                  'Steps',
+                  'RadioButtonV2',
+                  'Tags',
+                  'TagsInput',
+                ].includes(componentData.type) &&
                 _.isArray(objValue)
               ) {
                 return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -381,4 +527,40 @@ export class ComponentsService implements IComponentsService {
 
     await manager.delete(Component, { id: In(componentIds) });
   }
+
+  private async updateComponentLayouts(
+    layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    manager: EntityManager
+  ) {
+    for (const componentId in layoutDiff) {
+      const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+
+      if (doesComponentExist[1] === 0) {
+        return {
+          error: {
+            message: `Component with id ${componentId} does not exist`,
+          },
+        };
+      }
+
+      const { layouts, component } = layoutDiff[componentId];
+
+      for (const type in layouts) {
+        const componentLayout = await manager.findOne(Layout, { where: { componentId, type } });
+
+        if (componentLayout) {
+          const layout = {
+            ...layouts[type],
+          } as Partial<Layout>;
+
+          await manager.update(Layout, { id: componentLayout.id }, layout);
+        }
+        // Handle parent change cases. component.parent can be undefined if the element is moved from container to canvas
+        if (component) {
+          await manager.update(Component, { id: componentId }, { parent: component.parent });
+        }
+      }
+    }
+  }
+
 }

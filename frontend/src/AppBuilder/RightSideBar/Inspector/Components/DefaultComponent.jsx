@@ -25,6 +25,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'DropdownV2',
   'MultiselectV2',
   'Button',
+  'AudioRecorder',
+  'Camera',
   'RichTextEditor',
   'Image',
   'CodeEditor',
@@ -44,6 +46,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'CircularProgressBar',
   'Kanban',
   'Html',
+  'TagsInput',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -67,6 +70,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   StarRating: 'Data',
   CircularProgressBar: 'Data',
   Kanban: 'Board configuration',
+  AudioRecorder: 'Content',
+  Camera: 'Content',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -174,6 +179,8 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'AudioRecorder',
+      'Camera',
     ],
     Layout: [],
   };

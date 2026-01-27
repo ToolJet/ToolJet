@@ -13,9 +13,9 @@ import { createDataSourceSlice } from './slices/dataSourceSlice';
 import { createUndoRedoSlice } from './slices/undoRedoSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
+import { enableMapSet } from 'immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
-import { createEditorLicenseSlice } from './slices/editorLicenseSlice';
 import { createAppVersionSlice } from './slices/appVersionSlice';
 import { createPageMenuSlice } from './slices/pageMenuSlice';
 import { createLicenseSlice } from './slices/licenseSlice';
@@ -32,6 +32,7 @@ import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+enableMapSet();
 
 export default create(
   zustandDevTools(
@@ -51,7 +52,6 @@ export default create(
       ...createResolvedSlice(...state),
       ...createLayoutSlice(...state),
       ...createEnvironmentsAndVersionsSlice(...state),
-      // ...createEditorLicenseSlice(...state),
       ...createAppVersionSlice(...state),
       ...createPageMenuSlice(...state),
       ...createLicenseSlice(...state),

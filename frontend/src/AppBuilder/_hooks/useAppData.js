@@ -22,7 +22,7 @@ import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useLocation, useMatch, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
@@ -85,6 +85,7 @@ const useAppData = (
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
+  const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
   const setResolvedConstants = useStore((state) => state.setResolvedConstants);
   const setSecrets = useStore((state) => state.setSecrets);
   const setQueryMapping = useStore((state) => state.setQueryMapping);
@@ -126,7 +127,7 @@ const useAppData = (
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
   const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
-  const slug = moduleMode ? '' : pathParams?.slug;
+  let slug = pathParams?.slug;
 
   const previousVersion = usePrevious(currentVersionId);
   const events = useStore((state) => state.eventsSlice.module[moduleId]?.events || []);
@@ -142,6 +143,10 @@ const useAppData = (
   const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
     (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
   );
+
+  // Used to trigger app refresh flow after restoring app history
+  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
+  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
 
   const location = useRouter().location;
 
@@ -231,17 +236,13 @@ const useAppData = (
     }
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
-    const isPublicAccess = moduleMode
-      ? false
-      : (currentSession?.load_app && currentSession?.authentication_failed) ||
-        (!queryParams.version && mode !== 'edit');
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        // clean up the module definition from the store
-        deleteModuleDefinition(appId);
         appDataPromise = Promise.resolve(moduleDefinition);
       } else {
         appDataPromise = appService.fetchApp(appId);
@@ -265,6 +266,7 @@ const useAppData = (
       .then(async (result) => {
         let appData = { ...result };
         let editorEnvironment = result.editorEnvironment;
+        let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -285,7 +287,12 @@ const useAppData = (
         if (mode !== 'edit') {
           try {
             const queryParams = { slug: slug };
-            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
+            const viewerEnvironment =
+              moduleMode && isPublicAccess
+                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
+                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
               name: viewerEnvironment?.environment?.name,
@@ -365,6 +372,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
 
           // If the app builder mode is AI
           // - Do not show zero state - if there is some conversation already done or if route state has prompt
@@ -484,7 +492,12 @@ const useAppData = (
         }
         setQueryMapping(moduleId);
 
-        setResolvedGlobals('environment', editorEnvironment, moduleId);
+        setResolvedGlobals(
+          'environment',
+          selectedEnvironment ? { id: selectedEnvironment.id, name: selectedEnvironment.name } : editorEnvironment,
+          moduleId
+        );
+        setResolvedGlobals('appVersion', { name: editingVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode }, moduleId);
         setResolvedGlobals(
           'currentUser',
@@ -514,12 +527,10 @@ const useAppData = (
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
           const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
-          useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
-          fetchGlobalDataSources(
-            appData.organization_id,
-            appData.editing_version?.id || appData.current_version_id,
-            editorEnvironment.id
-          );
+          // Use versionId from URL if available (preview mode), otherwise use editing version
+          const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
+          useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
@@ -595,8 +606,9 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
+    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
 
-    if (isEnvChanged || isVersionChanged) {
+    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -639,6 +651,9 @@ const useAppData = (
         );
 
         setPages(pages, moduleId);
+        setPageSettings(
+          computePageSettings(deepCamelCase(appData?.editing_version?.pageSettings ?? appData?.pageSettings))
+        );
         let startingPage = appData.pages.find(
           (page) => page.id === appData.editing_version.home_page_id || appData.editing_version.homePageId
         );
@@ -685,7 +700,9 @@ const useAppData = (
         }
 
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
+
         setResolvedGlobals('environment', { id: selectedEnvironment?.id, name: selectedEnvironment?.name });
+        setResolvedGlobals('appVersion', { name: selectedVersion?.name }, moduleId);
         setResolvedGlobals('mode', { value: mode });
         setResolvedGlobals('currentUser', {
           ...user,
@@ -702,7 +719,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
 
   useEffect(() => {
     if (moduleMode) return;

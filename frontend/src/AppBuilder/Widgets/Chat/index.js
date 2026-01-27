@@ -10,9 +10,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { validateMessageHistory, validateSingleMessageObject } from './utils/helpers';
 
 import toast from 'react-hot-toast';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
-export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
+const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
     const darkTheme = localStorage.getItem('darkMode') === 'true';
     const chatMessagesRef = useRef(null);
 
@@ -383,3 +383,5 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         </div>
     );
 };
+
+export default Chat;

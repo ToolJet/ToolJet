@@ -21,10 +21,13 @@ module.exports = (on, config) => {
   // `config` is the resolved Cypress config
 };
 const webpack = require("@cypress/webpack-preprocessor");
-module.exports = (on) => {
+
+module.exports = (on, config) => {
   const options = {
     webpackOptions: require("../webpack.config"),
     watchOptions: {},
   };
   on("file:preprocessor", webpack(options));
+
+  return config;
 };

@@ -1,0 +1,774 @@
+{
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
+          "type": "workflow",
+          "name": "env-constants-workflow",
+          "slug": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
+          "isPublic": false,
+          "isMaintenanceOn": true,
+          "icon": "grid",
+          "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+          "currentVersionId": null,
+          "userId": "e8c37758-52d4-41d7-9d9f-436b6e811888",
+          "workflowApiToken": "f509ce47-9bfc-4224-b167-4a1566522dc3",
+          "workflowEnabled": false,
+          "isInitialisedFromPrompt": false,
+          "appGeneratedFromPrompt": false,
+          "appBuilderMode": "visual",
+          "aiGenerationMetadata": null,
+          "createdAt": "2025-10-06T16:14:01.251Z",
+          "creationMode": "DEFAULT",
+          "updatedAt": "2025-10-06T16:15:28.652Z",
+          "__loaded": true,
+          "editingVersion": {
+            "id": "99141974-7382-49ce-84f4-2b395b7076fe",
+            "name": "v1",
+            "definition": {
+              "nodes": [
+                {
+                  "id": "1b72db81-93f6-446d-9eee-b1bf33df2a42",
+                  "data": {
+                    "nodeType": "start",
+                    "label": "Start trigger"
+                  },
+                  "position": {
+                    "x": 100,
+                    "y": 250
+                  },
+                  "type": "input",
+                  "sourcePosition": "right",
+                  "deletable": false,
+                  "width": 206,
+                  "height": 42,
+                  "positionAbsolute": {
+                    "x": 100,
+                    "y": 250
+                  },
+                  "selected": false
+                },
+                {
+                  "id": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                  "type": "query",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "draggable": true,
+                  "data": {
+                    "idOnDefinition": "84b51e15-77e1-4ab7-9c07-17909630cd64",
+                    "kind": "restapi",
+                    "options": {}
+                  },
+                  "position": {
+                    "x": 500.0028419494629,
+                    "y": 249.64376602172842
+                  },
+                  "deletable": false,
+                  "positionAbsolute": {
+                    "x": 500.0028419494629,
+                    "y": 249.64376602172842
+                  },
+                  "selected": true,
+                  "width": 206,
+                  "height": 40,
+                  "dragging": false
+                },
+                {
+                  "id": "e2b246e7-44db-4ce8-8502-81f98c5b5d0d",
+                  "data": {
+                    "nodeType": "response",
+                    "label": "Response",
+                    "code": "return restapi1.data.message",
+                    "statusCode": {
+                      "fxActive": false,
+                      "value": "200"
+                    },
+                    "nodeName": "response1"
+                  },
+                  "position": {
+                    "x": 882.4573867439238,
+                    "y": 250.7301100659963
+                  },
+                  "type": "output",
+                  "sourcePosition": "right",
+                  "targetPosition": "left",
+                  "deletable": false,
+                  "positionAbsolute": {
+                    "x": 882.4573867439238,
+                    "y": 250.7301100659963
+                  },
+                  "selected": false,
+                  "width": 206,
+                  "height": 40,
+                  "dragging": true
+                }
+              ],
+              "edges": [
+                {
+                  "id": "9b98d3d1-44ae-447c-9927-0b3b800920f8",
+                  "source": "1b72db81-93f6-446d-9eee-b1bf33df2a42",
+                  "target": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                  "sourceHandle": null,
+                  "type": "custom"
+                },
+                {
+                  "id": "e13eebe1-f63c-4483-9be5-c6ac0ab6ce23",
+                  "source": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                  "target": "e2b246e7-44db-4ce8-8502-81f98c5b5d0d",
+                  "sourceHandle": "success",
+                  "type": "custom"
+                }
+              ],
+              "queries": [
+                {
+                  "idOnDefinition": "84b51e15-77e1-4ab7-9c07-17909630cd64",
+                  "id": "590c6844-6f37-41dc-952b-eb5f2a319a91"
+                }
+              ],
+              "webhookParams": [],
+              "defaultParams": "{}",
+              "dependencies": {
+                "javascript": {
+                  "dependencies": {}
+                }
+              },
+              "setupScript": {
+                "javascript": "// lodash\n// const _ = require('lodash');\n"
+              }
+            },
+            "globalSettings": {
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "pageSettings": {
+              "properties": {
+                "disableMenu": {
+                  "value": "{{false}}",
+                  "fxActive": false
+                }
+              }
+            },
+            "showViewerNavigation": true,
+            "homePageId": "697701db-997b-4ec3-ac3d-0f8854ed193b",
+            "appId": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
+            "currentEnvironmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+            "promotedFrom": null,
+            "createdAt": "2025-10-06T16:14:01.332Z",
+            "updatedAt": "2025-10-06T16:14:13.601Z"
+          },
+          "components": [],
+          "pages": [
+            {
+              "id": "697701db-997b-4ec3-ac3d-0f8854ed193b",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": false,
+              "hidden": false,
+              "icon": null,
+              "createdAt": "2025-10-06T16:14:01.216Z",
+              "updatedAt": "2025-10-06T16:14:01.442Z",
+              "autoComputeLayout": true,
+              "appVersionId": "99141974-7382-49ce-84f4-2b395b7076fe",
+              "pageGroupIndex": 1,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "appId": ""
+            }
+          ],
+          "events": [],
+          "dataQueries": [
+            {
+              "id": "590c6844-6f37-41dc-952b-eb5f2a319a91",
+              "name": "restapi1",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false
+              },
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "appVersionId": "99141974-7382-49ce-84f4-2b395b7076fe",
+              "createdAt": "2025-10-06T16:14:01.216Z",
+              "updatedAt": "2025-10-06T16:14:09.641Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "name": "env_constants",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "scope": "global",
+              "createdAt": "2025-10-06T16:12:34.229Z",
+              "updatedAt": "2025-10-06T16:12:34.229Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "99141974-7382-49ce-84f4-2b395b7076fe",
+              "name": "v1",
+              "definition": {
+                "nodes": [
+                  {
+                    "id": "1b72db81-93f6-446d-9eee-b1bf33df2a42",
+                    "data": {
+                      "nodeType": "start",
+                      "label": "Start trigger"
+                    },
+                    "position": {
+                      "x": 100,
+                      "y": 250
+                    },
+                    "type": "input",
+                    "sourcePosition": "right",
+                    "deletable": false,
+                    "width": 206,
+                    "height": 42,
+                    "positionAbsolute": {
+                      "x": 100,
+                      "y": 250
+                    },
+                    "selected": false
+                  },
+                  {
+                    "id": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                    "type": "query",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "draggable": true,
+                    "data": {
+                      "idOnDefinition": "84b51e15-77e1-4ab7-9c07-17909630cd64",
+                      "kind": "restapi",
+                      "options": {}
+                    },
+                    "position": {
+                      "x": 500.0028419494629,
+                      "y": 249.64376602172842
+                    },
+                    "deletable": false,
+                    "positionAbsolute": {
+                      "x": 500.0028419494629,
+                      "y": 249.64376602172842
+                    },
+                    "selected": true,
+                    "width": 206,
+                    "height": 40,
+                    "dragging": false
+                  },
+                  {
+                    "id": "e2b246e7-44db-4ce8-8502-81f98c5b5d0d",
+                    "data": {
+                      "nodeType": "response",
+                      "label": "Response",
+                      "code": "return restapi1.data.message",
+                      "statusCode": {
+                        "fxActive": false,
+                        "value": "200"
+                      },
+                      "nodeName": "response1"
+                    },
+                    "position": {
+                      "x": 882.4573867439238,
+                      "y": 250.7301100659963
+                    },
+                    "type": "output",
+                    "sourcePosition": "right",
+                    "targetPosition": "left",
+                    "deletable": false,
+                    "positionAbsolute": {
+                      "x": 882.4573867439238,
+                      "y": 250.7301100659963
+                    },
+                    "selected": false,
+                    "width": 206,
+                    "height": 40,
+                    "dragging": true
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "9b98d3d1-44ae-447c-9927-0b3b800920f8",
+                    "source": "1b72db81-93f6-446d-9eee-b1bf33df2a42",
+                    "target": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                    "sourceHandle": null,
+                    "type": "custom"
+                  },
+                  {
+                    "id": "e13eebe1-f63c-4483-9be5-c6ac0ab6ce23",
+                    "source": "5ab38525-835c-45ff-8cc2-055db160bf00",
+                    "target": "e2b246e7-44db-4ce8-8502-81f98c5b5d0d",
+                    "sourceHandle": "success",
+                    "type": "custom"
+                  }
+                ],
+                "queries": [
+                  {
+                    "idOnDefinition": "84b51e15-77e1-4ab7-9c07-17909630cd64",
+                    "id": "590c6844-6f37-41dc-952b-eb5f2a319a91"
+                  }
+                ],
+                "webhookParams": [],
+                "defaultParams": "{}",
+                "dependencies": {
+                  "javascript": {
+                    "dependencies": {}
+                  }
+                },
+                "setupScript": {
+                  "javascript": "// lodash\n// const _ = require('lodash');\n"
+                }
+              },
+              "globalSettings": {
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "pageSettings": {
+                "properties": {
+                  "disableMenu": {
+                    "value": "{{false}}",
+                    "fxActive": false
+                  }
+                }
+              },
+              "showViewerNavigation": true,
+              "homePageId": "697701db-997b-4ec3-ac3d-0f8854ed193b",
+              "appId": "9a47d6c7-c625-4b6d-9ab8-0db3e32427c1",
+              "currentEnvironmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "promotedFrom": null,
+              "createdAt": "2025-10-06T16:14:01.332Z",
+              "updatedAt": "2025-10-06T16:14:13.601Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.812Z",
+              "updatedAt": "2025-10-06T16:04:55.812Z"
+            },
+            {
+              "id": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.818Z",
+              "updatedAt": "2025-10-06T16:04:55.818Z"
+            },
+            {
+              "id": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "organizationId": "f679b4fc-d5a9-4959-9c52-14645dc42752",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2025-10-06T16:04:55.820Z",
+              "updatedAt": "2025-10-06T16:04:55.820Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "dcf2df73-89da-4e47-a817-7054b7eb39e7",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "ff13b51c-94dc-46b0-802b-17d3dbe05040",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "76eae272-6e34-4dde-9fe6-59dc6c1b1e57",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "625b0280-af2a-4ead-82dc-c12cf0f52b16",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "bc8cc5da-8dc0-4504-a9ba-8a0a81caecf9",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.320Z",
+              "updatedAt": "2025-10-06T16:12:34.320Z"
+            },
+            {
+              "id": "100581b2-f680-40d2-af44-e5e40589e2ce",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "1545b967-e926-4a9e-be19-9f142bbb2517",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "99d00319-a2ac-4e86-837c-5237e4e8b8c1",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "aa9468e5-4613-4fbf-bc54-948d76f2ae39",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "4e21ae93-1ea7-4ee1-94eb-13e3f059a116",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.322Z",
+              "updatedAt": "2025-10-06T16:12:34.322Z"
+            },
+            {
+              "id": "1ea4bc10-623a-4c19-985c-175bf8fd51d2",
+              "dataSourceId": "12fe2002-4271-4ae3-926f-752f8c30fd0a",
+              "environmentId": "b9ac4132-1050-4a75-9789-66b9f3e4d4a6",
+              "options": {
+                "url": {
+                  "value": "{{constants.ui_url}}",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_secret": {
+                  "credential_id": "f36efffa-83a6-485f-b8ef-c1ce4883724b",
+                  "encrypted": true
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "credential_id": "7e4d23ab-77f3-4e80-87f8-b283fd8502ab",
+                  "encrypted": true
+                },
+                "bearer_token": {
+                  "credential_id": "1c0ed314-f466-4475-8aaf-faf97f793827",
+                  "encrypted": true
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "{{constants.headerKey}}",
+                      "{{constants.headerValue}}"
+                    ],
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                }
+              },
+              "createdAt": "2025-10-06T16:12:34.324Z",
+              "updatedAt": "2025-10-06T16:12:34.324Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          }
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.20.13-ee-lts"
+}

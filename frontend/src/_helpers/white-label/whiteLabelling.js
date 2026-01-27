@@ -74,6 +74,7 @@ export async function setFaviconAndTitle(location) {
     'reset-password': '',
     'workspace-constants': 'Workspace constants',
     setup: '',
+    'home': 'Home',
     '/': 'Dashboard',
   };
 

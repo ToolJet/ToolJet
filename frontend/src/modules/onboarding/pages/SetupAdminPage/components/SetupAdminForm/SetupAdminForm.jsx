@@ -13,6 +13,8 @@ import { shallow } from 'zustand/shallow';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
 import './resources/styles/setup-admin-form.styles.scss';
 import { useEnterKeyPress } from '@/modules/common/hooks';
+import config from 'config';
+import toast from 'react-hot-toast';
 
 const SetupAdminForm = () => {
   const { setAdminDetails, nextStep, adminDetails, accountCreated } = useOnboardingStore(
@@ -78,6 +80,20 @@ const SetupAdminForm = () => {
   }, [formData]);
   const handleSubmit = (e) => {
     e?.preventDefault();
+    const passwordRulesEnabled = config.ENABLE_PASSWORD_COMPLEXITY_RULES === 'true';
+    const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+    if (passwordRulesEnabled) {
+      if (!PASSWORD_REGEX.test(formData.password)) {
+        toast.error('Password must be 12-24 characters long and can include letters, numbers, and special characters.');
+        return;
+      }
+    } else if (formData.password?.length < 5) {
+      toast.error('Password must be at least 5 characters long');
+      return;
+    } else if (formData.password?.length > 100) {
+      toast.error('Password can be at max 100 characters long');
+      return;
+    }
     if (isFormValid) {
       setAdminDetails(formData);
       nextStep();

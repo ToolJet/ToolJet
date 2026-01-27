@@ -5,6 +5,7 @@ import { workflowSelector } from "Selectors/workflows";
 import {
   enterJsonInputInStartNode,
   revealWorkflowToken,
+  navigateBackToWorkflowsDashboard
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -13,14 +14,14 @@ describe("Workflows with Webhooks", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("Creating workflows with runjs, triggering via webhook, and validating execution", () => {
-    cy.createWorkflowApp(data.wfName);
+    cy.createWorkflowApp(data.workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -64,6 +65,6 @@ describe("Workflows with Webhooks", () => {
             });
           });
       });
-    cy.deleteWorkflow(data.wfName);
+    cy.apiDeleteWorkflow(data.workflowName);
   });
 });

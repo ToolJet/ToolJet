@@ -7,10 +7,8 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
-import queryString from 'query-string';
-import { getRedirectTo, getRedirectToWithParams } from '@/_helpers/routes';
+import { getRedirectTo } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,

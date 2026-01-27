@@ -77,6 +77,7 @@ export function useTable({
       const value = String(row.getValue(columnId) || '').toLowerCase();
       return value.includes(String(filterValue).toLowerCase());
     },
+    getColumnCanGlobalFilter: (column) => column.getIsVisible(),
     manualPagination: serverSidePagination,
     manualSorting: serverSideSort,
     manualFiltering: serverSideFilter,

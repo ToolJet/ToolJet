@@ -137,6 +137,7 @@
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 padding: 30px 40px;
+                padding-left: 20px;
 
                 .title {
                     color: var(--slate11);
@@ -1162,6 +1163,7 @@
     gap: 68px;
     align-self: stretch;
     padding: 40px;
+    padding-left: 20px;
 
     .inner-container{
         display: flex;
@@ -1186,7 +1188,7 @@
         font-size: 12px;
         box-shadow: 0 0 1px 0 var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)), 0 1px 1px 0 var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.10));
     }
-    .top-up-button-container.disabled {
+    .top-up-button-container.disabledBtn {
         border-color: var(--disabled-border, #D3D3D3); /* Light gray fallback */
         cursor: not-allowed;
     }

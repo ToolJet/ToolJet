@@ -1,0 +1,320 @@
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import Label from '@/_ui/Label';
+import cx from 'classnames';
+import './radioButtonV2.scss';
+import Loader from '@/ToolJetUI/Loader/Loader';
+import { has, isObject } from 'lodash';
+import { getSafeRenderableValue } from '../utils';
+import {
+  getWidthTypeOfComponentStyles,
+  getLabelWidthOfInput,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+
+export const RadioButtonV2 = ({
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  setExposedVariables,
+  darkMode,
+  componentName,
+  validate,
+  validation,
+  id,
+  subContainerIndex,
+}) => {
+  const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
+
+  const {
+    activeColor,
+    direction,
+    auto: labelAutoWidth,
+    labelWidth,
+    optionsTextColor,
+    borderColor,
+    switchOffBackgroundColor,
+    handleColor,
+    switchOnBackgroundColor,
+    labelColor,
+    alignment,
+    widthType,
+  } = styles;
+
+  const isInitialRender = useRef(true);
+
+  const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [isLoading, setIsLoading] = useState(loadingState);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+
+  const isMandatory = validation?.mandatory ?? false;
+  const [validationStatus, setValidationStatus] = useState(validate(checkedValue));
+  const { isValid, validationError } = validationStatus;
+
+  const labelRef = useRef();
+  const radioBtnRef = useRef();
+
+  const selectOptions = useMemo(() => {
+    let _options = advanced ? schema : options;
+    if (Array.isArray(_options)) {
+      let _selectOptions = _options
+        .filter((data) => data?.visible ?? true)
+        .map((data) => ({
+          ...data,
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
+        }));
+      return _selectOptions;
+    } else {
+      return [];
+    }
+  }, [advanced, schema, options]);
+
+  function findDefaultItem(optionSchema) {
+    if (!Array.isArray(optionSchema)) {
+      return undefined;
+    }
+    const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
+    return foundItem?.value;
+  }
+
+  function onSelect(value) {
+    const _value = isObject(value) && has(value, 'value') ? value?.value : value;
+    setCheckedValue(_value);
+    setExposedVariable('value', _value);
+    const validationStatus = validate(_value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }
+
+  useEffect(() => {
+    onSelect(findDefaultItem(advanced ? schema : options));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+
+  useEffect(() => {
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (isLoading !== loadingState) setIsLoading(loadingState);
+    if (isDisabled !== disabledState) setIsDisabled(disabledState);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, loadingState, disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    setExposedVariable('options', _options);
+
+    setExposedVariable('selectOption', async function (value) {
+      onSelect(value);
+      fireEvent('onSelectionChange');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(selectOptions)]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(checkedValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const exposedVariables = {
+      value: checkedValue,
+      label: label,
+      options: _options,
+      isValid: isValid,
+      isMandatory: isMandatory,
+      isLoading: loadingState,
+      isVisible: properties.visibility,
+      isDisabled: disabledState,
+      selectOption: async function (value) {
+        onSelect(value);
+        fireEvent('onSelectionChange');
+      },
+      deselectOption: async function () {
+        onSelect(null);
+        fireEvent('onSelectionChange');
+      },
+      setVisibility: async function (value) {
+        setVisibility(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+      setLoading: async function (value) {
+        setIsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const _width = getLabelWidthOfInput(widthType, labelWidth);
+
+  return (
+    <>
+      <div
+        data-cy={`label-${String(componentName).toLowerCase()} `}
+        data-disabled={isDisabled}
+        className={cx('radio-button', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : '']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !visibility,
+          visibility: visibility,
+        })}
+        style={{
+          position: 'relative',
+          width: '100%',
+          paddingLeft: '0px',
+        }}
+        role="radiogroup"
+        id={`component-${id}`}
+        aria-hidden={!visibility}
+        aria-busy={isLoading}
+        aria-disabled={isDisabled}
+        aria-required={isMandatory}
+        aria-invalid={!isValid}
+        aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
+      >
+        <Label
+          label={label}
+          width={labelWidth}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={labelAutoWidth}
+          isMandatory={isMandatory}
+          _width={_width}
+          top={alignment !== 'top' && '2px'}
+          widthType={widthType}
+          inputId={`component-${id}`}
+        />
+
+        <div
+          className="px-0 h-100"
+          ref={radioBtnRef}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          }}
+        >
+          {isLoading || optionsLoadingState ? (
+            <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
+          ) : (
+            <div className="">
+              {selectOptions.map((option, index) => {
+                const isChecked = checkedValue == option.value;
+                const inputId = `${id}${
+                  subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
+                }-option-${index}`;
+
+                return (
+                  <label key={index} className="radio-button-container" htmlFor={inputId}>
+                    <span
+                      style={{
+                        color:
+                          optionsTextColor !== '#1B1F24'
+                            ? optionsTextColor
+                            : isDisabled || isLoading
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
+                      }}
+                    >
+                      {getSafeRenderableValue(option.label)}
+                    </span>
+                    <input
+                      style={{
+                        marginTop: '1px',
+                        backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                      }}
+                      checked={checkedValue == option.value}
+                      type="radio"
+                      value={option.value}
+                      onChange={() => {
+                        onSelect(option.value);
+                        fireEvent('onSelectionChange');
+                      }}
+                      disabled={option.isDisabled}
+                      id={inputId}
+                    />
+                    <span
+                      className="checkmark"
+                      style={{
+                        backgroundColor:
+                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
+                        '--selected-background-color': option.isDisabled
+                          ? 'var(--surfaces-surface-03)'
+                          : switchOnBackgroundColor,
+                        '--selected-border-color': borderColor,
+                        '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
+                        border:
+                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
+                      }}
+                    ></span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+      <div
+        className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}
+        style={{
+          color: 'var(--cc-error-systemStatus)',
+          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+          fontSize: '11px',
+          fontWeight: '400',
+          lineHeight: '16px',
+        }}
+      >
+        {!isValid && validationError}
+      </div>
+    </>
+  );
+};

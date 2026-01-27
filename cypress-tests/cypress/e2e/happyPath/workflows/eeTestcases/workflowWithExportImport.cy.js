@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
@@ -11,6 +11,7 @@ import {
   enterJsonInputInStartNode,
   importWorkflowApp,
   verifyTextInResponseOutputLimited,
+  navigateBackToWorkflowsDashboard
 } from "Support/utils/workFlows";
 
 const data = {};
@@ -19,16 +20,16 @@ describe("Workflows Export/Import Sanity", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/");
-    data.wfName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workflowName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
 
   it("RunJS workflow - execute, export/import, re-execute", () => {
-    const wfName = `${data.wfName}-runjs`;
+    const workflowName = `${data.workflowName}-runjs`;
 
-    cy.createWorkflowApp(wfName);
+    cy.createWorkflowApp(workflowName);
     enterJsonInputInStartNode();
     cy.connectDataSourceNode(workflowsText.runjsNodeLabel);
 
@@ -49,23 +50,22 @@ describe("Workflows Export/Import Sanity", () => {
     );
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
 
-    cy.exportWorkflowApp(wfName);
-
-    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    cy.exportWorkflowApp(workflowName);
+    cy.apiDeleteWorkflow(workflowName);
+    importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     cy.verifyTextInResponseOutput(workflowsText.responseNodeExpectedValueText);
-
-    cy.deleteWorkflow(wfName);
+    cy.apiDeleteWorkflow(workflowName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 
   it("Postgres workflow - execute, export/import, re-execute", () => {
-    const wfName = `${data.wfName}-pg`;
-    const dsName = `cypress-${data.dataSourceName}-manual-pgsql`;
+    const workflowName = `${data.workflowName}-pg`;
+    const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
-      dsName,
+      dataSourceName,
       "postgresql",
       [
         { key: "connection_type", value: "manual", encrypted: false },
@@ -87,7 +87,7 @@ describe("Workflows Export/Import Sanity", () => {
       ]
     );
 
-    cy.get(dataSourceSelector.dataSourceNameButton(dsName))
+    cy.get(dataSourceSelector.dataSourceNameButton(dataSourceName))
       .should("be.visible")
       .click();
 
@@ -98,9 +98,10 @@ describe("Workflows Export/Import Sanity", () => {
 
     cy.reload();
 
-    cy.createWorkflowApp(wfName);
+    cy.apiCreateWorkflow(data.workflowName)
+    cy.openWorkflow();
     enterJsonInputInStartNode();
-    cy.connectDataSourceNode(dsName);
+    cy.connectDataSourceNode(dataSourceName);
 
     cy.get(workflowSelector.nodeName(workflowsText.postgresqlNodeName)).click({
       force: true,
@@ -120,12 +121,14 @@ describe("Workflows Export/Import Sanity", () => {
     );
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    cy.exportWorkflowApp(wfName);
-
-    importWorkflowApp(wfName, workflowsText.exportFixturePath);
+    cy.exportWorkflowApp(workflowName);
+    cy.apiDeleteWorkflow(workflowName);
+    importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
 
-    deleteWorkflowAndDS(wfName, dsName);
+    cy.apiDeleteWorkflow(workflowName);
+
+    cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

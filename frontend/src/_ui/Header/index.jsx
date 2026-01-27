@@ -156,7 +156,6 @@ function Header({
                 'color-muted-darkmode': darkMode,
                 'color-disabled': !darkMode,
               })}
-              data-cy="version-label"
             >
               {Object.keys(featureAccess).length > 0 && (
                 <LicenseBanner limits={featureAccess} showNavBarActions={true} />

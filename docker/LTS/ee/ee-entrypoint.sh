@@ -42,20 +42,12 @@ else
   echo "Using external PostgREST at $PGRST_HOST."
 fi
 
-
-# Check WORKLOW_WORKER and skip SETUP_CMD if true
-if [ "${WORKFLOW_WORKER}" == "true" ]; then
-  echo "WORKFLOW_WORKER is set to true. Running worker process."
-  npm run worker:prod
+# Determine setup command based on the presence of ./server/dist
+if [ -d "./server/dist" ]; then
+  SETUP_CMD='npm run db:setup:prod'
 else
-  # Determine setup command based on the presence of ./server/dist
-  if [ -d "./server/dist" ]; then
-    SETUP_CMD='npm run db:setup:prod'
-  else
-    SETUP_CMD='npm run db:setup'
-  fi
+  SETUP_CMD='npm run db:setup'
 fi
-
 
 # Wait for PostgreSQL connection
 if [ -z "$DATABASE_URL" ]; then

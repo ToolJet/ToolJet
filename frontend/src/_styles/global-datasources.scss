@@ -144,6 +144,16 @@
             background-color: revert !important;
         }
     }
+
+    &.ai-builder .table-content-wrapper {
+        .tj-app-input {
+            flex: 1;
+        }
+
+        .input-control {
+            width: 100% !important;
+        }
+    }
 }
 
 .datasource-inner-sidebar-wrap {

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
@@ -9,12 +9,15 @@ import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from '
 import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
-import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
-import { useCanvasDropHandler } from './useCanvasDropHandler';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const ModuleContainerBlank = lazy(() =>
+  import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainerBlank }))
+);
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -38,6 +41,7 @@ const Container = React.memo(
     canvasMaxWidth,
     componentType,
     appType,
+    hasNoScroll = false,
   }) => {
     const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -50,6 +54,10 @@ const Container = React.memo(
     const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+    const isWidgetInSubContainerDragging = useStore(
+      (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
+      shallow
+    );
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
@@ -70,10 +78,6 @@ const Container = React.memo(
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
-
-    const { handleDrop } = useCanvasDropHandler({
-      appType,
-    });
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -128,8 +132,10 @@ const Container = React.memo(
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
+          const scrollLeft = realCanvas.scrollLeft || 0;
+          const scrollTop = realCanvas.scrollTop || 0;
+          const x = e.clientX - rect.left + scrollLeft;
+          const y = e.clientY - rect.top + scrollTop;
           setLastCanvasClickPosition({ x, y });
         }
       },
@@ -149,7 +155,13 @@ const Container = React.memo(
 
       return (
         <div style={styles}>
-          {componentType === 'ModuleContainer' ? <ModuleContainerBlank /> : <NoComponentCanvasContainer />}
+          {componentType === 'ModuleContainer' ? (
+            <Suspense fallback={null}>
+              <ModuleContainerBlank />
+            </Suspense>
+          ) : (
+            <NoComponentCanvasContainer />
+          )}
         </div>
       );
     };
@@ -168,8 +180,8 @@ const Container = React.memo(
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-              ? canvasBgColor
-              : '#f0f0f0',
+                ? canvasBgColor
+                : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
@@ -188,6 +200,8 @@ const Container = React.memo(
           })(),
           transform: 'translateZ(0)', //Very very imp --> Hack to make modal position respect canvas container, else it positions w.r.t window.
           ...styles,
+          // Prevent the scroll when dragging a widget inside the container or moving out of the container
+          overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
         }}
         className={cx('real-canvas', {
@@ -195,6 +209,8 @@ const Container = React.memo(
           'show-grid': isDragging && (index === 0 || index === null) && currentMode === 'edit' && appType !== 'module',
           'module-container': appType === 'module',
           'is-module-editor': isModuleEditor,
+          'has-no-scroll': hasNoScroll,
+          'is-child-being-dragged': !hasNoScroll && isWidgetInSubContainerDragging,
         })}
         id={id === 'canvas' ? 'real-canvas' : `canvas-${id}`}
         data-cy="real-canvas"

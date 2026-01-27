@@ -32,3 +32,21 @@ export const profilePageElements = () => {
     .should("be.visible")
     .should("be.visible");
 };
+
+
+export const extApiUpdateUser = (userEmail = '', userIdCached = Cypress.env('userIdDev')) => {
+  cy.request({
+    method: 'PATCH',
+    url: `${Cypress.env("server_host")}/api/ext/user/:${userIdCached}`,
+    headers: {
+      'Authorization': `Basic ${Cypress.env('AUTH_TOKEN')}`,
+      'Content-Type': 'application/json'
+    },
+    body: {
+      name: 'The Developer',
+      email: 'dev@tooljet.io',
+      password: 'password',
+      status: 'active'
+    }
+  });
+}

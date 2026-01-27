@@ -55,7 +55,7 @@
       "description": "Enter port"
     },
     "api_key": {
-      "label": "API Key",
+      "label": "API key",
       "key": "api_key",
       "type": "text",
       "description": "Enter API key",

@@ -164,6 +164,12 @@ RUN mkdir -p /home/appuser \
     && chmod -R g=u /home/appuser \
     && npm cache clean --force
 
+# Create rsyslog directory for audit logs with proper permissions
+RUN mkdir -p /home/appuser/rsyslog \
+    && chown -R appuser:0 /home/appuser/rsyslog \
+    && chmod g+s /home/appuser/rsyslog \
+    && chmod -R g=u /home/appuser/rsyslog
+
 # Create directory /tmp/.npm/npm-cache/ and set ownership to appuser
 RUN mkdir -p /tmp/.npm/npm-cache/ \
     && chown -R appuser:0 /tmp/.npm/npm-cache/ \

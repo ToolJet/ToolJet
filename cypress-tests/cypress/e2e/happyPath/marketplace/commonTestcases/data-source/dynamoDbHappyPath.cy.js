@@ -51,7 +51,7 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-dynamodb`,
       "dynamodb",

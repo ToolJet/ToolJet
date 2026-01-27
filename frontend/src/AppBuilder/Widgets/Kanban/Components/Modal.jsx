@@ -9,7 +9,7 @@ import { diff } from 'deep-object-diff';
 import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { onShowSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
+import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanProps, lastSelectedCard }) {
   const isInitialRender = useRef(true);
@@ -63,17 +63,11 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
       isInitialRender.current = false;
       return;
     }
-    const canvasContent = document.getElementsByClassName('canvas-content')?.[0];
-    // Scroll to top of canvas content when modal is opened and disbale page overflow
+
     if (showModal) {
-      if (canvasContent) {
-        canvasContent.scrollTo({ top: 0, behavior: 'instant' });
-        canvasContent.style.setProperty('overflow', 'hidden', 'important');
-      }
+      onShowSideEffects();
     } else {
-      if (canvasContent) {
-        canvasContent.style.setProperty('overflow', 'auto', 'important');
-      }
+      onHideSideEffects();
     }
 
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];

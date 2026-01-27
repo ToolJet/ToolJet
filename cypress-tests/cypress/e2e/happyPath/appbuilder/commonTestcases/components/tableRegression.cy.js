@@ -827,8 +827,7 @@ describe("Table", () => {
       .should(
         "have.css",
         "color",
-        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
-          data.color[3] / 100
+        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${data.color[3] / 100
         })`
       );
   });
@@ -1303,7 +1302,7 @@ describe("Table", () => {
 
   it("should verify server-side paginaion", () => {
     let dsName = fake.companyName;
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       "http://localhost:3000/api/v2/data_sources",
       `cypress-${dsName}-postgresql`,
       "postgresql",

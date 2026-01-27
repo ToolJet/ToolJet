@@ -77,6 +77,7 @@ export const HorizontalSlot = React.memo(
               overflow: 'hidden',
             }}
             componentType={componentType}
+            hasNoScroll={true}
           />
           {isEditing && <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />}
         </div>

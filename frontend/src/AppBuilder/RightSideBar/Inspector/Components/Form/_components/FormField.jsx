@@ -8,7 +8,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { isTrueValue, isPropertyFxControlled, getComponentIcon } from '../utils/utils';
 
-export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, darkMode = false }) => {
+export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave}) => {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const [showPopover, setShowPopover] = useState(false);
   const [fieldData, setFieldData] = useState(field);
@@ -33,8 +33,10 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
 
   const isCurrentlyMandatory = isTrueValue(fieldData.mandatory?.value);
 
+  const darkMode = localStorage.getItem('darkMode') === 'true' ?? false;
+
   const mainPopover = (
-    <Popover id="popover-basic" className="shadow form-fields-column-popover">
+    <Popover id="popover-basic" className={`shadow form-fields-column-popover ${darkMode ? 'dark-theme' : ''}`}>
       <FieldPopoverContent
         field={fieldData}
         mode="edit"
@@ -49,7 +51,7 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
   );
 
   const menuPopover = (
-    <Popover id="menu-popover" className="shadow">
+    <Popover id="menu-popover" className={`shadow ${darkMode ? 'dark-theme' : ''}`}>
       <Popover.Body className="tw-p-2">
         <div className="tw-flex tw-flex-col">
           <Button
@@ -124,9 +126,8 @@ export const FormField = ({ field, onDelete, activeMenu, onMenuToggle, onSave, d
         overlay={mainPopover}
       >
         <div
-          className={`field-item tw-flex tw-items-center tw-justify-between tw-gap-2 hover:tw-cursor-pointer ${
-            (fieldData.name === activeMenu || showPopover) && 'selected'
-          }`}
+          className={`field-item tw-flex tw-items-center tw-justify-between tw-gap-2 hover:tw-cursor-pointer ${(fieldData.name === activeMenu || showPopover) && 'selected'
+            }`}
         >
           <div className="tw-flex tw-items-center tw-gap-[6px] tw-flex-1" style={{ width: 'calc(100% - 100px)' }}>
             <div className="field-icon tw-w-6 tw-h-6 tw-flex tw-items-center tw-justify-center tw-rounded tw-bg-gray-100">

@@ -84,11 +84,11 @@ function DrawerFooter({
   ]);
 
   const drawerDocumentationsLinks = {
-    CreateTableForm: 'https://docs.tooljet.ai/docs/tooljet-db/database-editor/#create-new-table',
-    EditTableForm: 'https://docs.tooljet.ai/docs/tooljet-db/database-editor/#rename-table',
-    CreateColumnForm: 'https://docs.tooljet.ai/docs/tooljet-db/database-editor/#add-new-column',
-    EditColumnForm: 'https://docs.tooljet.ai/docs/tooljet-db/database-editor/#edit-column',
-    ForeignKeyTableForm: 'https://docs.tooljet.ai/docs/tooljet-db/database-editor/#foreign-key',
+    CreateTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#create-new-table',
+    EditTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#rename-table',
+    CreateColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#add-new-column',
+    EditColumnForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#edit-column',
+    ForeignKeyTableForm: 'https://docs.tooljet.com/docs/tooljet-db/database-editor/#foreign-key',
   };
   const drawerNames = Object.keys(drawerDocumentationsLinks);
   const isDrawerWithDocumentation = drawerNames.some((drawerName) => drawerName === initiator);
@@ -131,8 +131,8 @@ function DrawerFooter({
         )}
         <div className="d-flex action-btns">
           {(isForeignKeyDraweOpen && (isEditMode || (isEditColumn && !createForeignKeyInEdit))) ||
-          (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
-          (isCreateColumn && foreignKeyDetails?.length > 0) ? (
+            (isForeignKeyDraweOpen && editForeignKeyInCreateTable) ||
+            (isCreateColumn && foreignKeyDetails?.length > 0) ? (
             <ButtonSolid variant="dangerTertiary" onClick={onDeletePopup}>
               <DeleteIcon />
               &nbsp; Delete

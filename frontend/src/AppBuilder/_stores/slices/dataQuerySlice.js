@@ -271,7 +271,7 @@ export const createDataQuerySlice = (set, get) => ({
         state.dataQuery.creatingQueryInProcessId = uuidv4();
       });
       const { eventsSlice } = get();
-      const { getEventsByComponentsId, createAppVersionEventHandlers } = eventsSlice;
+      const { getEventsByComponentsId, bulkCreateAppVersionEventHandlers } = eventsSlice;
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const queryToClone = { ...dataQueries.find((query) => query.id === id) };
       let newName = queryToClone.name + '_copy';
@@ -323,19 +323,30 @@ export const createDataQuerySlice = (set, get) => ({
             moduleId
           );
 
-          const events = getEventsByComponentsId(queryToClone.id);
+          const events = getEventsByComponentsId(queryToClone.id) || [];
 
-          events.forEach((event) => {
-            const newEvent = {
-              event: {
-                ...event.event,
-              },
-              eventType: event.target,
-              attachedTo: data.id,
-              index: event.index,
-            };
-            createAppVersionEventHandlers(newEvent, moduleId);
-          });
+          // Collect all events for bulk creation, filtering out invalid events
+          // Ensure data.id (new query ID) is valid before creating events
+          if (data?.id && events.length > 0) {
+            const newQueryId = data.id;
+            const eventsToCreate = events
+              .filter((event) => event?.event && event?.target && event?.index != null)
+              .map((event) => ({
+                event: {
+                  ...event.event,
+                },
+                eventType: event.target,
+                attachedTo: newQueryId,
+                index: event.index,
+              }))
+              .filter((event) => event.attachedTo && event.eventType && event.event);
+
+            // Create all events in a single bulk request
+            // TODO: Extend query creation API to include events for single history entry
+            if (eventsToCreate.length > 0) {
+              bulkCreateAppVersionEventHandlers(eventsToCreate, moduleId);
+            }
+          }
 
           if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
             const body = {

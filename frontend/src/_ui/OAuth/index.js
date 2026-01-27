@@ -61,7 +61,7 @@ const OAuth = ({
     <>
       {authOptions(isGrpc).length > 1 && (
         <>
-          <label className="form-label">Authentication type</label>
+          <label className="form-label" data-cy="authentication-type-dropdown-label">Authentication type</label>
           <Select
             options={authOptions(isGrpc)}
             value={auth_type}
@@ -69,6 +69,7 @@ const OAuth = ({
             width={'100%'}
             useMenuPortal={false}
             isDisabled={isDisabled}
+            dataCy="authentication-type"
           />
         </>
       )}

@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from '@entities/user.entity';
-import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
-import { isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
+import {
+  isSuperAdmin,
+  generateNextNameAndSlug,
+  validatePasswordDomain,
+} from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
@@ -22,6 +25,8 @@ import { IAuthService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
+import { validatePasswordServer } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -95,6 +100,20 @@ export class AuthService implements IAuthService {
         if (organization) user.organizationId = organization.id;
         /* CASE: No active workspace. But one workspace with invited status. waiting for activation */
         if (isInviteRedirect && !organization) user.organizationId = invitingOrganizationId ?? '';
+
+        // Validate password domain for global login (org overrides instance)
+        if (organization && !isSuperAdmin(user)) {
+          if (
+            !(await validatePasswordDomain(
+              email,
+              organization.passwordAllowedDomains,
+              organization.passwordRestrictedDomains,
+              this.instanceSettingsUtilService
+            ))
+          ) {
+            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+          }
+        }
       } else {
         // organization specific login
         // No need to validate user status, validateUser() already covers it
@@ -107,6 +126,20 @@ export class AuthService implements IAuthService {
         if (!formConfigs?.enabled) {
           // no configurations in organization side or Form login disabled for the organization
           throw new UnauthorizedException('Password login is disabled for the organization');
+        }
+
+        // Validate password domain with org/instance hierarchy (org overrides instance)
+        if (!isSuperAdmin(user)) {
+          if (
+            !(await validatePasswordDomain(
+              email,
+              organization.passwordAllowedDomains,
+              organization.passwordRestrictedDomains,
+              this.instanceSettingsUtilService
+            ))
+          ) {
+            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+          }
         }
       }
 
@@ -144,7 +177,6 @@ export class AuthService implements IAuthService {
     });
   }
 
-  //TODO:this function is not used now
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (user.defaultOrganizationId !== user.organizationId)
@@ -154,22 +186,25 @@ export class AuthService implements IAuthService {
 
       const permissionData = await this.sessionUtilService.getPermissionDataToAuthorize(user, manager);
 
-      return decamelizeKeys({
-        currentOrganizationId: user.organizationId,
-        currentOrganizationSlug: organization.slug,
-        currentOrganizationName: organization.name,
-        currentUser: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatarId: user.avatarId,
-          ssoUserInfo: permissionData.ssoUserInfo,
-          metadata: permissionData.metadata,
-          createdAt: user.createdAt,
+      return decamelizeKeysExcept(
+        {
+          currentOrganizationId: user.organizationId,
+          currentOrganizationSlug: organization.slug,
+          currentOrganizationName: organization.name,
+          currentUser: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatarId: user.avatarId,
+            ssoUserInfo: permissionData.ssoUserInfo,
+            metadata: permissionData.metadata,
+            createdAt: user.createdAt,
+          },
+          ...permissionData,
         },
-        ...permissionData,
-      });
+        ['metadata']
+      );
     });
   }
 
@@ -178,6 +213,7 @@ export class AuthService implements IAuthService {
   }
 
   async resetPassword(token: string, password: string) {
+    validatePasswordServer(password);
     const user = await this.userRepository.getUser({ forgotPasswordToken: token });
     if (!user) {
       throw new NotFoundException(

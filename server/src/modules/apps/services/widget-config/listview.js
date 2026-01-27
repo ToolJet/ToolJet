@@ -3,17 +3,17 @@ export const listviewConfig = {
   displayName: 'List View',
   description: 'List multiple items',
   defaultSize: {
-    width: 30,
-    height: 320,
+    width: 15,
+    height: 450,
   },
   defaultChildren: [
     {
       componentName: 'Image',
       layout: {
-        top: 0,
+        top: 10,
         left: 3,
-        height: 100,
-        width: 7,
+        height: 80,
+        width: 6,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
@@ -24,7 +24,7 @@ export const listviewConfig = {
         top: 30,
         left: 11,
         height: 30,
-        width: 14,
+        width: 12,
       },
       properties: ['text'],
       accessorKey: 'text',
@@ -33,9 +33,9 @@ export const listviewConfig = {
       componentName: 'Button',
       layout: {
         top: 30,
-        left: 26,
+        left: 25,
         height: 30,
-        width: 18,
+        width: 17,
       },
       // incrementWidth: 2,
       properties: ['text'],
@@ -161,7 +161,7 @@ export const listviewConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
     visibility: {
@@ -220,7 +220,7 @@ export const listviewConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },

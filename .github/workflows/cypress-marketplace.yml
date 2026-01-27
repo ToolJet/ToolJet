@@ -23,11 +23,10 @@ jobs:
       matrix:
         edition: >-
           ${{ 
-            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && fromJson('["ee"]') ||
-            fromJson('[]')
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ce')) && 'ce' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee') && 'ee' || ''
           }}
 
     steps:
@@ -36,20 +35,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64
-          docker buildx use mybuilder
-
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
-      - name: use mybuilder buildx
-        run: docker buildx use mybuilder
 
       - name: Docker Login
         uses: docker/login-action@v2
@@ -60,34 +47,58 @@ jobs:
       - name: Set SAFE_BRANCH_NAME
         run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
-      - name: Build CE Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ce-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log the matrix edition
+        run: |
+          echo "Matrix edition: ${{ matrix.edition }}"
 
+      - name: Build CE Docker image
+        if: matrix.edition == 'ce'
+        run: |
+          echo "Building CE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f docker/ce-production.Dockerfile \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing CE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
+
+      # EE dockerfile build below
       - name: Build EE Docker image
         if: matrix.edition == 'ee'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/ee/ee-production.Dockerfile
-          push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
+
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
+
+          echo "Cleaning up build cache..."
+          docker builder prune -af
+
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'EE' || 'CE' }}" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
@@ -110,20 +121,25 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: clean up old docker containers
+        run: |
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-      - name: Update docker-compose file for CE
+      - name: Update docker-compose file
         run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
-
-      - name: Update docker-compose file for CE
-        if: matrix.edition == 'ee'
-        run: |
-          # Update docker-compose.yaml with the new image
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
 
       - name: Install Docker Compose
         run: |
@@ -136,11 +152,11 @@ jobs:
       - name: Checking containers
         run: docker ps -a
 
-      - name: Checking containers
-        run: docker ps -a
+      - name: sleep
+        run: sleep 80
 
       - name: docker logs
-        run: sudo docker logs Tooljet-app
+        run: docker-compose logs tooljet
 
       - name: Wait for the server to be ready
         run: |
@@ -156,7 +172,7 @@ jobs:
             --data-raw '{
               "companyName": "ToolJet",
               "name": "The Developer",
-              "workspaceName": "Tooljet'\''s workspace",
+              "workspaceName": "My workspace",
               "email": "dev@tooljet.io",
               "password": "password"
             }'
@@ -170,8 +186,9 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Marketplace
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
+          browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
           config-file: cypress-marketplace.config.js
@@ -180,7 +197,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
   Cypress-Marketplace-Subpath:
@@ -238,6 +255,7 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data

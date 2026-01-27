@@ -47,7 +47,7 @@ describe("Data sources MySql connection and query", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-mysql`,
       "mysql",
@@ -167,13 +167,13 @@ describe("Data sources MySql connection and query", () => {
       .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
       .and("be.disabled");
     // verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-mysql`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-mysql`);
   });
   it("Should verify the functionality of MySQL connection form", () => {
     const dsName = `cypress-${data.dataSourceName}-mysql`;
     cy.get(commonSelectors.globalDataSourceIcon).click();
     //invalid database
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       "mysql",
@@ -212,7 +212,7 @@ describe("Data sources MySql connection and query", () => {
     verifyCouldnotConnectWithAlert(mySqlText.errorUnknownDb);
     //invalid username
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "connection_type", value: "hostname", encrypted: false },
@@ -245,7 +245,7 @@ describe("Data sources MySql connection and query", () => {
     verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin1);
     //invalid password
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "connection_type", value: "hostname", encrypted: false },
@@ -278,7 +278,7 @@ describe("Data sources MySql connection and query", () => {
     verifyCouldnotConnectWithAlert(mySqlText.errorAccessDeniedAdmin);
     //valid data
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: dsName,
       options: [
         { key: "connection_type", value: "hostname", encrypted: false },
@@ -311,10 +311,10 @@ describe("Data sources MySql connection and query", () => {
     cy.get(postgreSqlSelector.textConnectionVerified, {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
   it("Should verify elements of the Query section", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-mysql`,
       "mysql",
@@ -459,12 +459,12 @@ describe("Data sources MySql connection and query", () => {
     performQueryAction("updated-table-creation", "duplicate");
     performQueryAction("updated-table-creation_copy", "delete");
     cy.apiDeleteApp(`${fake.companyName}-mysql`);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-mysql`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-mysql`);
   });
   it("Should verify CRUD operations on SQL Query", () => {
     const dsName = `cypress-${data.dataSourceName}-crud-mysql`;
     const dsKind = "postgresql";
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       "mysql",
@@ -664,12 +664,12 @@ WHERE id = LAST_INSERT_ID();`,
     });
 
     cy.apiDeleteApp(`${fake.companyName}-mysql-CURD-App`);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
   it("Should verify bulk update operation", () => {
     const dsName = `cypress-${data.dataSourceName}-bulk-mysql`;
     const dsKind = "mysql";
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       dsKind,
@@ -795,12 +795,12 @@ VALUES
       cy.apiRunQuery();
     });
     cy.apiDeleteApp(`${fake.companyName}-mysql-bulk`);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
   it("Should verify SQL parameters", () => {
     const dsName = `cypress-${data.dataSourceName}-sql-param`;
     const dsKind = "mysql";
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dsName,
       dsKind,
@@ -908,6 +908,6 @@ VALUES
       cy.apiRunQuery();
     });
     cy.apiDeleteApp(`${fake.companyName}-sql-param`);
-    cy.apiDeleteGDS(dsName);
+    cy.apiDeleteDataSource(dsName);
   });
 });

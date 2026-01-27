@@ -1,5 +1,5 @@
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
@@ -31,6 +31,7 @@ export class VersionRepository extends Repository<AppVersion> {
             appId: appId,
             definition: definition,
             currentEnvironmentId: firstPriorityEnvId,
+            status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
           })
@@ -263,6 +264,15 @@ export class VersionRepository extends Repository<AppVersion> {
           updatedAt: new Date(),
         }
       );
+    }, manager || this.manager);
+  }
+
+  async findParentVersionApps(versionId: string, manager?: EntityManager): Promise<AppVersion[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersions = await manager.find(AppVersion, {
+        where: { parentVersionId: versionId },
+      });
+      return appVersions;
     }, manager || this.manager);
   }
 }

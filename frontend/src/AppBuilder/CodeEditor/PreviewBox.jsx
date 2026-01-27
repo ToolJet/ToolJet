@@ -470,7 +470,7 @@ const PreviewContainer = ({
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
-      id="popover-basic"
+      id="codehinter-preview-box-popover"
       className={`${darkMode && 'dark-theme'}`}
       style={{
         zIndex: 1400,
@@ -636,6 +636,48 @@ const PreviewContainer = ({
                 name: 'offset',
                 options: {
                   offset: [0, 3],
+                },
+              },
+              {
+                name: 'detectViewportOverflowObserver',
+                enabled: true,
+                phase: 'write',
+                effect: ({ state, instance }) => {
+                  const popperEl = state?.elements?.popper;
+
+                  if (!popperEl || typeof IntersectionObserver === 'undefined') return;
+
+                  let rafId = null;
+
+                  const io = new IntersectionObserver(
+                    (entries) => {
+                      const ent = entries[0];
+                      if (!ent) return;
+
+                      // intersectionRatio < 1 => partially/fully out of viewport
+                      if (ent.intersectionRatio < 1) {
+                        if (rafId) return;
+
+                        rafId = requestAnimationFrame(() => {
+                          try {
+                            instance.update();
+                          } catch (e) {
+                            /* error */
+                          } finally {
+                            rafId = null;
+                          }
+                        });
+                      }
+                    },
+                    { threshold: [0, 0.01, 0.5, 1] }
+                  );
+
+                  io.observe(popperEl);
+
+                  return () => {
+                    io.disconnect();
+                    if (rafId) cancelAnimationFrame(rafId);
+                  };
                 },
               },
             ],

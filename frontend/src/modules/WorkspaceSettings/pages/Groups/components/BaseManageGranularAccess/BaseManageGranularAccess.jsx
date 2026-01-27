@@ -38,6 +38,7 @@ class BaseManageGranularAccess extends React.Component {
       currentEditingPermissions: null,
       isAll: true,
       isCustom: false,
+      selectedEnvironments: [],
       addableApps: [],
       modalType: 'add',
       modalTitle: 'Add app permissions',
@@ -70,6 +71,7 @@ class BaseManageGranularAccess extends React.Component {
         selectedResources: [],
         isAll: true,
         newPermissionName: null,
+        selectedEnvironments: [],
         showEmptyResourceContainer: false,
       },
     };
@@ -161,14 +163,22 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   createGranularPermissions = () => {
-    const { initialPermissionState, initialPermissionStateDs, isAll, newPermissionName, isCustom, resourceType } =
-      this.state;
+    const {
+      initialPermissionState,
+      initialPermissionStateDs,
+      isAll,
+      newPermissionName,
+      isCustom,
+      resourceType,
+      selectedEnvironments,
+    } = this.state;
     const type = resourceType;
     const selectedResource = this.getSelectedResources();
     if (isCustom && selectedResource.length == 0) {
       toast.error('Please select the resources to continue');
       return;
     }
+
     const resourcesToAdd = selectedResource
       .filter((res) => !res?.isAllField)
       .map((option) => {
@@ -182,13 +192,26 @@ class BaseManageGranularAccess extends React.Component {
           };
         }
       });
+
+    const environmentPermissions = {};
+    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
+      const envKeys = selectedEnvironments.filter((env) => !env.isAllField).map((env) => env.value);
+      environmentPermissions.canAccessDevelopment = envKeys.includes('canAccessDevelopment');
+      environmentPermissions.canAccessStaging = envKeys.includes('canAccessStaging');
+      environmentPermissions.canAccessProduction = envKeys.includes('canAccessProduction');
+      environmentPermissions.canAccessReleased = envKeys.includes('canAccessReleased');
+    }
+
     const body = {
       name: newPermissionName,
       type,
       groupId: this.props.groupPermissionId,
       isAll: isAll,
       createResourcePermissionObject: {
-        ...((type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) && initialPermissionState),
+        ...((type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) && {
+          ...initialPermissionState,
+          ...environmentPermissions,
+        }),
         ...(type == RESOURCE_TYPE.DATA_SOURCES && { action: initialPermissionStateDs }),
         resourcesToAdd: resourcesToAdd,
       },
@@ -292,6 +315,20 @@ class BaseManageGranularAccess extends React.Component {
             })
           : [];
 
+      const selectedEnvironments = [];
+      const ENVIRONMENT_OPTIONS = [
+        { label: 'Development', value: 'canAccessDevelopment', key: 'canAccessDevelopment' },
+        { label: 'Staging', value: 'canAccessStaging', key: 'canAccessStaging' },
+        { label: 'Production', value: 'canAccessProduction', key: 'canAccessProduction' },
+        { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
+      ];
+
+      ENVIRONMENT_OPTIONS.forEach((env) => {
+        if (appsGroupPermission[env.key]) {
+          selectedEnvironments.push(env);
+        }
+      });
+
       this.setState({
         ...fixedState,
         modalTitle: `Edit ${granularPermission.type} permissions`,
@@ -302,6 +339,7 @@ class BaseManageGranularAccess extends React.Component {
           hideFromDashboard: appsGroupPermission.hideFromDashboard,
         },
         selectedResources: selectedResources,
+        selectedEnvironments: selectedEnvironments,
         initialState: {
           type: granularPermission.type,
           initialPermissionState: {
@@ -312,6 +350,7 @@ class BaseManageGranularAccess extends React.Component {
           isAll: !!granularPermission.isAll,
           newPermissionName: granularPermission?.name,
           selectedResources: selectedResources,
+          selectedEnvironments: selectedEnvironments,
         },
       });
     }
@@ -412,8 +451,14 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   updateGranularPermissions = (allowRoleChange) => {
-    const { currentEditingPermissions, newPermissionName, isAll, initialPermissionState, initialPermissionStateDs } =
-      this.state;
+    const {
+      currentEditingPermissions,
+      newPermissionName,
+      isAll,
+      initialPermissionState,
+      initialPermissionStateDs,
+      selectedEnvironments,
+    } = this.state;
     const type = currentEditingPermissions.type;
     const currentResource =
       type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
@@ -454,12 +499,22 @@ class BaseManageGranularAccess extends React.Component {
         id,
       };
     });
+
+    const environmentPermissions = {};
+    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
+      const envKeys = selectedEnvironments.filter((env) => !env.isAllField).map((env) => env.value);
+      environmentPermissions.canAccessDevelopment = envKeys.includes('canAccessDevelopment');
+      environmentPermissions.canAccessStaging = envKeys.includes('canAccessStaging');
+      environmentPermissions.canAccessProduction = envKeys.includes('canAccessProduction');
+      environmentPermissions.canAccessReleased = envKeys.includes('canAccessReleased');
+    }
+
     const body = {
       name: newPermissionName,
       isAll: isAll,
       actions:
         type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
-          ? initialPermissionState
+          ? { ...initialPermissionState, ...environmentPermissions }
           : initialPermissionStateDs,
       resourcesToAdd,
       resourcesToDelete,
@@ -511,7 +566,7 @@ class BaseManageGranularAccess extends React.Component {
           <SolidIcon name="informationcircle" fill="var(--slate8)" /> {text}
           <a
             style={{ margin: '0', padding: '0', textDecoration: 'underline', color: '#3E63DD' }}
-            href="https://docs.tooljet.ai/docs/tutorial/manage-users-groups/"
+            href="https://docs.tooljet.com/docs/tutorial/manage-users-groups/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -524,6 +579,16 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   openAddPermissionModal = (resourceType) => {
+    // Don't pre-select builder-only environments if group has end-users
+    const hasEndUsers = this.props.hasEndUsers;
+    const defaultEnvironments = hasEndUsers
+      ? [{ label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' }]
+      : [
+          { label: 'Development', value: 'canAccessDevelopment', key: 'canAccessDevelopment' },
+          { label: 'Staging', value: 'canAccessStaging', key: 'canAccessStaging' },
+          { label: 'Released app', value: 'canAccessReleased', key: 'canAccessReleased' },
+        ];
+
     this.setState((prevState) => ({
       modalTitle: `Add ${RESOURCE_NAME_MAPPING[resourceType].toLowerCase()} permissions`,
       resourceType,
@@ -531,6 +596,7 @@ class BaseManageGranularAccess extends React.Component {
       initialPermissionState: { ...prevState.initialPermissionState, canView: true },
       initialPermissionStateDs: { ...prevState.initialPermissionStateDs, canUse: true },
       isAll: true,
+      selectedEnvironments: defaultEnvironments,
     }));
   };
 
@@ -553,6 +619,7 @@ class BaseManageGranularAccess extends React.Component {
         canConfigure: false,
       },
       selectedResources: [],
+      selectedEnvironments: [],
       resourceType: '',
       hasChanges: false,
     });
@@ -600,6 +667,8 @@ class BaseManageGranularAccess extends React.Component {
 
     const selectedItemsChanged = JSON.stringify(selectedItems) !== JSON.stringify(newSelectedItems);
     const isAllChanged = this.state.initialState.isAll !== newState.isAll;
+    const selectedEnvironmentsChanged =
+      JSON.stringify(this.state.initialState?.selectedEnvironments) !== JSON.stringify(newState.selectedEnvironments);
 
     if (newState.isAll === false && newSelectedItems?.length === 0) {
       return false;
@@ -607,7 +676,13 @@ class BaseManageGranularAccess extends React.Component {
 
     const permissionNameChanged = this.state.initialState?.newPermissionName !== newState?.newPermissionName;
 
-    return permissionStateChanged || selectedItemsChanged || isAllChanged || permissionNameChanged;
+    return (
+      permissionStateChanged ||
+      selectedItemsChanged ||
+      isAllChanged ||
+      permissionNameChanged ||
+      selectedEnvironmentsChanged
+    );
   };
 
   updateState = (stateUpdater) => {
@@ -647,11 +722,11 @@ class BaseManageGranularAccess extends React.Component {
       resourceType,
       hasChanges,
     } = this.state;
-    console.log(granularPermissions, 'granularPermissions');
 
     const { addableDs = [], resourcesOptions } = this.props;
 
     const currentGroupPermission = this.props?.groupPermission;
+
     const isRoleGroup = currentGroupPermission.name == 'admin';
     const showPermissionInfo = currentGroupPermission.name == 'admin' || currentGroupPermission.name == 'end-user';
     const addPermissionTooltipMessage = !newPermissionName
@@ -750,8 +825,17 @@ class BaseManageGranularAccess extends React.Component {
             selectedApps={this.getSelectedResources()}
             setSelectedApps={(values) => this.setSelectedResources(values)}
             addableApps={this.getAddableResources(resourceType)}
+            selectedEnvironments={this.state.selectedEnvironments}
+            setSelectedEnvironments={(values) => {
+              this.setState({ selectedEnvironments: values }, () => {
+                const hasChanges = this.hasStateChanged(this.state);
+                this.setState({ hasChanges });
+              });
+            }}
             darkMode={this.props.darkMode}
             groupName={currentGroupPermission.name}
+            isBuilderLevel={currentGroupPermission.isBuilderLevel}
+            hasEndUsers={this.props.hasEndUsers}
           />
         )}
         {this.state.showEmptyResourceContainer && !isLoading ? (
@@ -785,6 +869,9 @@ class BaseManageGranularAccess extends React.Component {
               <p data-cy="permissions-header" className="tj-text-xsm">
                 {'Permission'}
               </p>
+              <p data-cy="environment-header" className="tj-text-xsm">
+                {'Environment'}
+              </p>
               <p data-cy="resource-header" className="tj-text-xsm">
                 {'Resource'}
               </p>
@@ -799,14 +886,20 @@ class BaseManageGranularAccess extends React.Component {
                 </div>
               ) : (
                 <>
-                  {granularPermissions.map((permissions, index) => {
-                    return this.renderResourcePermissions({
-                      permissions,
-                      currentGroupPermission,
-                      isBasicPlan,
-                      index,
-                    });
-                  })}
+                  {[...granularPermissions]
+                    .sort((a, b) => {
+                      // Define the desired order: Apps, Data Sources, Workflows
+                      const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+                      return order.indexOf(a.type) - order.indexOf(b.type);
+                    })
+                    .map((permissions, index) => {
+                      return this.renderResourcePermissions({
+                        permissions,
+                        currentGroupPermission,
+                        isBasicPlan,
+                        index,
+                      });
+                    })}
                 </>
               )}
             </div>

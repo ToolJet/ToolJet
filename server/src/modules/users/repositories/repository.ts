@@ -233,7 +233,7 @@ export class UserRepository extends Repository<User> {
             organizationUsers: {
               organizationId: organizationId,
               status: In(statusList),
-              organization: { status: WORKSPACE_STATUS.ACTIVE },
+              organization: { status: In([WORKSPACE_STATUS.ACTIVE, WORKSPACE_STATUS.ARCHIVE]) },
             },
           },
           relations: ['organizationUsers', 'organizationUsers.organization'],

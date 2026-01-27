@@ -1,17 +1,15 @@
 import React from 'react';
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { SortableItem } from './components';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
 export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { 
+      activationConstraint: {
         delay: 250,
-        distance: 10
+        distance: 10,
       },
     })
     // useSensor(KeyboardSensor, {

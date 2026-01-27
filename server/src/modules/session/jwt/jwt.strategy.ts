@@ -10,6 +10,7 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
+import { trackUserActivity } from '@otel/tracing';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -112,6 +113,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         user.sessionId = payload.sessionId;
         user.tjApiSource = payload.tj_api_source;
         if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
+
+        // Track user activity for metrics (every authenticated request)
+        if (user.organizationId && user.id) {
+          try {
+            trackUserActivity({
+              workspaceId: user.organizationId,
+              userId: user.id,
+              sessionId: payload.sessionId,
+            });
+          } catch (error) {
+            // Don't let metrics tracking failures affect authentication
+            console.error('Error tracking user activity:', error);
+          }
+        }
       }
 
       return user;

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 export const useDynamicHeight = ({
-  dynamicHeight,
+  isDynamicHeightEnabled,
   id,
   height,
   value,
@@ -12,33 +12,32 @@ export const useDynamicHeight = ({
   componentCount = 0,
   visibility,
   skipAdjustment = false,
+  subContainerIndex,
 }) => {
-  const prevDynamicHeight = useRef(dynamicHeight);
+  const prevDynamicHeight = useRef(isDynamicHeightEnabled);
   const prevHeight = useRef(height);
-  const initialRender = useRef(true);
 
   useEffect(() => {
     const element = document.querySelector(`.ele-${id}`);
     if (!element) return;
-    if (skipAdjustment && dynamicHeight) {
+    if (skipAdjustment && isDynamicHeightEnabled) {
       element.style.height = `${prevHeight.current}px`;
-    } else if (dynamicHeight) {
+    } else if (isDynamicHeightEnabled) {
       element.style.height = 'auto';
       // Wait for the next frame to ensure the height has updated
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+        adjustComponentPositions(id, currentLayout, isContainer, subContainerIndex);
       });
-    } else if (!dynamicHeight && prevDynamicHeight.current) {
+    } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       element.style.height = `${height}px`;
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, false, isContainer, initialRender.current);
+        adjustComponentPositions(id, currentLayout, isContainer, subContainerIndex);
       });
     }
     prevHeight.current = element.offsetHeight;
-    prevDynamicHeight.current = dynamicHeight;
-    initialRender.current = false;
+    prevDynamicHeight.current = isDynamicHeightEnabled;
   }, [
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     value,
     adjustComponentPositions,
@@ -49,6 +48,7 @@ export const useDynamicHeight = ({
     componentCount,
     visibility,
     skipAdjustment,
+    subContainerIndex,
   ]);
 
   return;
