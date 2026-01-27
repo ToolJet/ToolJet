@@ -111,7 +111,7 @@ const ParameterForm = ({
                     style={{ height: '32px', width: '177px', marginBotto: '16px' }}
                     initialValue={defaultValue}
                     delayOnChange={false}
-                    cyLabel="parameter-value-input"
+                    cyLabel="parameter-value"
                   />
                 </div>
               </div>
