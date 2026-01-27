@@ -295,7 +295,7 @@ export const commonSelectors = {
   workspaceConstantsIcon: '[data-cy="icon-workspace-constants"]',
   confirmationButton: '[data-cy="confirmation-button"]',
   modalConfirmButton: '[data-cy="modal-confirm-button"]',
-  rightSidebarPlusButton: '[data-cy="right-sidebar-plus-button"]',
+  rightSidebarPlusButton: '[data-cy="right-sidebar-components-button"]',
 
   textField: (fieldName) => {
     return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -374,7 +374,7 @@ export const commonWidgetSelector = {
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
-  inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
+  inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
   homePageLogo: '[data-cy="home-page-logo"]',
@@ -407,10 +407,10 @@ export const commonWidgetSelector = {
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
-  previewButton: `[data-cy="preview-link-button"]`,
+  previewButton: `[data-cy="editor-preview-button"]`,
   defaultValueInputField: '[data-cy="default-value-input-field"]',
   alertInfoText: '[data-cy="alert-info-text"]',
-  shareAppButton: '[data-cy="share-button-link"]',
+  shareAppButton: '[data-cy="editor-app-share-button"]',
   shareModalElements: {
     modalHeader: '[data-cy="modal-header"]',
     makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',

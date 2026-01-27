@@ -18,7 +18,7 @@ export const instanceWorkspaceSelectors = {
     selectOption: '.react-select__option',
     noResultFoundText: '[data-cy="text-no-result-found"]',
     acceptInviteButton: '[data-cy="accept-invite-button"]',
-    shareButtonLink: '[data-cy="share-button-link"]',
+    shareButtonLink: '[data-cy="editor-app-share-button"]',
     appSlugInput: '[data-cy="app-name-slug-input"]',
     makePublicToggle: '[data-cy="make-public-app-toggle"]',
     modalCloseButton: '[data-cy="modal-close-button"]',

@@ -24,7 +24,7 @@ export const appEditorSelector = {
         components: {
             widgetSearchInput: '[data-cy="widget-search-box-search-bar"]',
             draggableBox: '.draggable-box',
-            componentsPlusButton: '[data-cy="right-sidebar-plus-button"]',
+            componentsPlusButton: '[data-cy="right-sidebar-components-button"]',
             addEventHandlerButton: '[data-cy="add-event-handler"]',
             popupButton: '.popup-btn',
         },

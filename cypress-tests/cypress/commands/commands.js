@@ -96,7 +96,7 @@ Cypress.Commands.add(
     const dataTransfer = new DataTransfer();
 
     // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -597,7 +597,7 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
       .is(":visible");
 
     if (!isSearchVisible) {
-      cy.get('[data-cy="right-sidebar-plus-button"]').click();
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
     }
   });
 });
