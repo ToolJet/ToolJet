@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _ from 'lodash';
+import '@/_ui/FolderList/FolderList.scss'
 import cx from 'classnames';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
@@ -637,8 +638,8 @@ export const PagesSidebarNavigation = ({
         }),
         ...(currentMode !== 'view' &&
           (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
+          width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
+        }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >

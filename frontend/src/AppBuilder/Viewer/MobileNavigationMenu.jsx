@@ -5,7 +5,8 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from '../RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
-import * as Icons from '@tabler/icons-react';
+
+import { IconX } from '@tabler/icons-react';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -169,7 +170,7 @@ const MobileNavigationMenu = ({
         <Header className={'mobile-header'}>
           <div onClick={toggleSidebar} className="cursor-pointer">
             <div className="icon-btn">
-              <Icons.IconX size={16} color="var(--icon-strong)" />
+              <IconX size={16} color="var(--icon-strong)" />
             </div>
           </div>
           <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">

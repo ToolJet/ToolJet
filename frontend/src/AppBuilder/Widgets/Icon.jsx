@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
-export const Icon = ({
+const Icon = ({
   properties,
   styles,
   fireEvent,
@@ -18,8 +17,6 @@ export const Icon = ({
   const isInitialRender = useRef(true);
   const { icon, loadingState, disabledState } = properties;
   const { iconAlign, iconColor, boxShadow } = styles;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon];
 
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
 
@@ -93,7 +90,8 @@ export const Icon = ({
         fireEvent('onHover');
       }}
     >
-      <IconElement
+      <TablerIcon
+        iconName={icon}
         color={color}
         style={{
           width: height < width ? 'auto' : width,
@@ -109,3 +107,5 @@ export const Icon = ({
     </div>
   );
 };
+
+export default Icon;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
 import { hexToRgba, hexToRgb } from '@/_helpers/appUtils';
 
-export const ColorPicker = function ({
+const ColorPicker = function ({
   width,
   properties,
   styles,
@@ -163,3 +163,5 @@ export const ColorPicker = function ({
     </div>
   );
 };
+
+export default ColorPicker;
