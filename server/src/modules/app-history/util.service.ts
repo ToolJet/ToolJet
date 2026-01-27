@@ -13,7 +13,7 @@ export class AppHistoryUtilService {
     @Optional() @InjectQueue('app-history') protected readonly historyQueue: Queue,
     protected readonly logger: TransactionLogger,
     protected readonly nameResolverRepository: NameResolverRepository
-  ) {}
+  ) { }
 
   async resolveComponentNames(componentIds: string[]): Promise<Record<string, string>> {
     return this.nameResolverRepository.getComponentNames(componentIds);
