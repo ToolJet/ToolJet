@@ -169,7 +169,7 @@ const DynamicForm = ({
         if (isGoogleSheetsV2) {
           const fieldsWithDependencies = Object.keys(fields).filter((key) => {
             const field = fields[key];
-            return field.dependsOn || field.depends_on;
+            return field?.dependsOn || field?.depends_on;
           });
           
           if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
