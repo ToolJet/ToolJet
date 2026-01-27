@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Container } from './Container';
-import Grid from './Grid';
-import { EditorSelecto } from './Selecto';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
+import { debounce } from 'lodash';
+import { shallow } from 'zustand/shallow';
+import './appCanvas.scss';
+
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
-import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from './appCanvasConstants';
 import cx from 'classnames';
@@ -19,8 +18,14 @@ import useSidebarMargin from './useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
 import { DragResizeGhostWidget } from './GhostWidgets';
-import AppCanvasBanner from '../../AppBuilder/Header/AppCanvasBanner';
-import { debounce } from 'lodash';
+
+import { Container } from './Container';
+import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
+const EditorSelecto = React.lazy(() => import('./Selecto'));
+const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './useCanvasMinWidth';
 import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
 
@@ -28,7 +33,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-  const isScrolling = useEnableMainCanvasScroll({ canvasContentRef });
+  useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -76,10 +81,16 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   });
   const [isCurrentVersionLocked, setIsCurrentVersionLocked] = useState(false);
 
-  useEffect(() => {
+  // This is added to notify when all Suspense components have resolved
+  // If everything is ready, we set the isComponentLayoutReady to true which runs the onLoadQueries
+  const handleAllSuspenseResolved = useCallback(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
     setIsComponentLayoutReady(true, moduleId);
+  }, [setIsComponentLayoutReady, moduleId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, [moduleId, setIsComponentLayoutReady]);
 
@@ -190,12 +201,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             style={canvasContainerStyles}
           >
             {currentMode === 'edit' && (
-              <AppCanvasBanner
-                appId={appId}
-                onVersionLockStatusChange={(isLocked) => {
-                  setIsCurrentVersionLocked(isLocked);
-                }}
-              />
+              <Suspense fallback={null}>
+                <AppCanvasBanner
+                  appId={appId}
+                  onVersionLockStatusChange={(isLocked) => {
+                    setIsCurrentVersionLocked(isLocked);
+                  }}
+                />
+              </Suspense>
             )}
             {currentMode === 'edit' && (
               <AutoComputeMobileLayoutAlert
@@ -241,9 +254,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     width: '100%',
                     ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
                   }}
-                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`, {
-                    'scrollbar-hidden': !isScrolling,
-                  })}
+                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
                 >
                   <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
                   <HotkeyProvider
@@ -253,31 +264,41 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                     isModuleMode={isModuleMode}
                   >
                     {environmentLoadingState !== 'loading' && (
-                      <div className={cx({ 'h-100': isModuleMode })}>
-                        <Container
-                          id={moduleId}
-                          gridWidth={gridWidth}
-                          canvasWidth={canvasWidth}
-                          canvasHeight={canvasHeight}
-                          darkMode={isAppDarkMode}
-                          canvasMaxWidth={canvasMaxWidth}
-                          isViewerSidebarPinned={isViewerSidebarPinned}
-                          pageSidebarStyle={pageSidebarStyle}
-                          pagePositionType={position}
-                          appType={appType}
-                        />
-                        {currentMode === 'edit' && (
-                          <>
-                            <DragResizeGhostWidget />
-                          </>
-                        )}
-                        <div id="component-portal" />
-                        {appType !== 'module' && <div id="component-portal" />}
-                      </div>
+                      <SuspenseCountProvider
+                        onAllResolved={handleAllSuspenseResolved}
+                        deferCheck={isModuleMode || appType === 'module'}
+                      >
+                        <div key={pageKey} className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
+                          {currentMode === 'view' && appType !== 'module' && (
+                            <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
+                          )}
+                          <Container
+                            id={moduleId}
+                            gridWidth={gridWidth}
+                            canvasWidth={canvasWidth}
+                            canvasHeight={canvasHeight}
+                            darkMode={isAppDarkMode}
+                            canvasMaxWidth={canvasMaxWidth}
+                            isViewerSidebarPinned={isViewerSidebarPinned}
+                            pageSidebarStyle={pageSidebarStyle}
+                            pagePositionType={position}
+                            appType={appType}
+                          />
+                          {currentMode === 'edit' && (
+                            <>
+                              <DragResizeGhostWidget />
+                            </>
+                          )}
+                          <div id="component-portal" />
+                          {appType !== 'module' && <div id="component-portal" />}
+                        </div>
+                      </SuspenseCountProvider>
                     )}
 
                     {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                      <Suspense fallback={null}>
+                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                      </Suspense>
                     )}
                   </HotkeyProvider>
                 </div>
@@ -285,7 +306,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             </div>
           </div>
         </div>
-        {currentMode === 'edit' && <EditorSelecto />}
+        {currentMode === 'edit' && (
+          <Suspense fallback={null}>
+            <EditorSelecto />
+          </Suspense>
+        )}
       </div>
     </div>
   );

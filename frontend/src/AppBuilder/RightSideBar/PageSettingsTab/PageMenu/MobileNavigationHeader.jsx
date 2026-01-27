@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import classNames from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import MobileNavigationMenu from './MobileNavigationMenu';
 import Header from '@/AppBuilder/Viewer/Header';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
 import PageMenuConfigHandle from './PageMenuConfigHandle';
+
+// Lazy load MobileNavigationMenu to reduce initial bundle size
+const MobileNavigationMenu = React.lazy(() => import('./MobileNavigationMenu'));
 
 const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canvasMaxWidth, switchDarkMode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -123,14 +125,16 @@ const MobileNavigationHeader = ({ isMobileDevice, currentPageId, darkMode, canva
         {currentMode === 'edit' && <PageMenuConfigHandle position="top" isMobile />}
       </div>
       {!isPagesSidebarHidden && (
-        <MobileNavigationMenu
-          currentPageId={currentPageId}
-          darkMode={darkMode}
-          switchDarkMode={switchDarkMode}
-          bgStyles={bgStyles}
-          headerHidden={headerHidden}
-          logoHidden={logoHidden}
-        />
+        <Suspense fallback={null}>
+          <MobileNavigationMenu
+            currentPageId={currentPageId}
+            darkMode={darkMode}
+            switchDarkMode={switchDarkMode}
+            bgStyles={bgStyles}
+            headerHidden={headerHidden}
+            logoHidden={logoHidden}
+          />
+        </Suspense>
       )}
     </SidebarProvider>
   );

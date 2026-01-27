@@ -91,7 +91,6 @@
     overflow: hidden;
 }
 
-
 .scrollbar-hidden {
     scrollbar-width: none;
     /* Firefox */
@@ -101,5 +100,22 @@
     &::-webkit-scrollbar {
         width: 0;
         height: 0;
+    }
+}
+
+.suspense-loading-overlay {
+
+    z-index: 10;
+    background-color: #fff;
+
+    &.dark-theme {
+        background-color: #1e2226;
+    }
+
+    .suspense-loader-wrapper {
+        .spin-loader {
+            position: relative;
+            width: auto;
+        }
     }
 }

@@ -179,8 +179,8 @@ export const Viewer = ({
                                 isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
-                                  ? '0px'
-                                  : '256px',
+                                    ? '0px'
+                                    : '256px',
                             }}
                           >
                             <div
