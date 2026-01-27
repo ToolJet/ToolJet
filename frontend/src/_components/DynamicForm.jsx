@@ -165,17 +165,20 @@ const DynamicForm = ({
 
       if (prevDataSourceId !== selectedDataSource?.id) {
         setComputedProps({ ...encryptedFieldsProps });
-        const fieldsWithDependencies = Object.keys(fields).filter((key) => {
-          const field = fields[key];
-          return field.dependsOn || field.depends_on;
-        });
-        
-        if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
-          const clearedOptions = { ...options };
-          fieldsWithDependencies.forEach((fieldKey) => {
-            delete clearedOptions[fieldKey];
+        const isGoogleSheetsV2 = selectedDataSource?.kind === 'googlesheetsv2';
+        if (isGoogleSheetsV2) {
+          const fieldsWithDependencies = Object.keys(fields).filter((key) => {
+            const field = fields[key];
+            return field.dependsOn || field.depends_on;
           });
-          optionsChanged(clearedOptions);
+          
+          if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
+            const clearedOptions = { ...options };
+            fieldsWithDependencies.forEach((fieldKey) => {
+              delete clearedOptions[fieldKey];
+            });
+            optionsChanged(clearedOptions);
+          }
         }
       } else {
         setComputedProps({ ...computedProps, ...encryptedFieldsProps });
