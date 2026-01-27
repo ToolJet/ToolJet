@@ -74,3 +74,45 @@ export const extractErrorObj = (errorResponse) => {
     errorDetails?.message?.message || errorDetails?.error || errorResponse?.error || 'something went wrong';
   return { ...errorDetails, message };
 };
+
+export const getPostSignupRedirectPath = ({
+  redirectTo,
+  organizationSlug,
+}) => {
+  const hasRedirect = Boolean(redirectTo);
+  const hasSlug = Boolean(organizationSlug);
+
+  // ✅ EXACT allowed route
+  const isApplicationsRootWithId =
+    /^\/applications\/[^/]+$/.test(redirectTo || '');
+
+  // ❌ Any deeper application route is restricted
+  const isRestrictedApplicationRoute =
+    /^\/applications\/[^/]+\/.+/.test(redirectTo || '');
+
+  if (hasRedirect) {
+    // 🚫 Restricted routes
+    if (isRestrictedApplicationRoute && !isApplicationsRootWithId) {
+      return '/error/restricted';
+    }
+
+    // ✅ Allowed: /applications/:id (NO workspace slug)
+    if (isApplicationsRootWithId) {
+      return redirectTo;
+    }
+
+    // Default: prepend workspace slug
+    if (hasSlug) {
+      return `/${organizationSlug}${redirectTo.startsWith('/') ? '' : '/'}${redirectTo}`;
+    }
+
+    return redirectTo;
+  }
+
+  // No redirectTo
+  if (hasSlug) {
+    return `/${organizationSlug}`;
+  }
+
+  return '/home';
+};

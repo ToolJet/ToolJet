@@ -19,7 +19,7 @@ const langSupport = Object.freeze({
   css: sass(),
 });
 
-export const CodeEditor = ({
+const CodeEditor = ({
   id,
   height,
   darkMode,
@@ -129,3 +129,5 @@ export const CodeEditor = ({
     </div>
   );
 };
+
+export default CodeEditor;

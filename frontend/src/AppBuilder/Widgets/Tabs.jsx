@@ -5,7 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -318,11 +318,10 @@ export const Tabs = function Tabs({
 
   function getTabIcon(tab) {
     const iconName = tab?.icon;
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
     return tab?.iconVisibility ? (
-      <IconElement
+      <TablerIcon
+        iconName={iconName}
         color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         style={{
           width: '20px',
@@ -696,4 +695,4 @@ const TabContent = memo(function TabContent({
     </div>
   );
 },
-areEqual);
+  areEqual);

@@ -6,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const EditorSelecto = () => {
+const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
@@ -154,3 +154,5 @@ export const EditorSelecto = () => {
     </>
   );
 };
+
+export default EditorSelecto;

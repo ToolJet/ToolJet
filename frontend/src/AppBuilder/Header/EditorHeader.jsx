@@ -2,7 +2,7 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown } from '@/modules/Appbuilder/components';
+import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';

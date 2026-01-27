@@ -15,8 +15,11 @@ import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { validateMongoDBConnectionString , parseMongoDBConnectionString , detectConnectionStringChange } from '../_helpers/mongoDbHelpers.js'
-
+import {
+  validateMongoDBConnectionString,
+  parseMongoDBConnectionString,
+  detectConnectionStringChange,
+} from '../_helpers/mongoDbHelpers.js';
 
 const DynamicFormV2 = ({
   schema,
@@ -53,155 +56,157 @@ const DynamicFormV2 = ({
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
 
-const lastAutoFilledConnRef = React.useRef('');
-const autoFillTimeoutRef = React.useRef(null);
-const manuallyEditedFieldsRef = React.useRef(new Set());
-const skipNextAutoFillRef = React.useRef(false);
-React.useEffect(() => {
-  const isMongoDBDataSource = 
-    schema['tj:source']?.kind === 'mongodb' || 
-    schema['tj:source']?.name === 'MongoDB';
-  
-  if (!isMongoDBDataSource) {
-    return;
-  }
+  const lastAutoFilledConnRef = React.useRef('');
+  const autoFillTimeoutRef = React.useRef(null);
+  const manuallyEditedFieldsRef = React.useRef(new Set());
+  const skipNextAutoFillRef = React.useRef(false);
+  React.useEffect(() => {
+    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
-  const connectionType = options?.connection_type?.value;
-  if (connectionType !== 'string') {
-    return;
-  }
+    if (!isMongoDBDataSource) {
+      return;
+    }
 
-  const connString = options?.connection_string?.value;
+    const connectionType = options?.connection_type?.value;
+    if (connectionType !== 'string') {
+      return;
+    }
 
-  if (autoFillTimeoutRef.current) {
-    clearTimeout(autoFillTimeoutRef.current);
-    autoFillTimeoutRef.current = null;
-  }
+    const connString = options?.connection_string?.value;
 
-  if (!connString) {
-    lastAutoFilledConnRef.current = '';
-    manuallyEditedFieldsRef.current.clear();
-    return;
-  }
+    if (autoFillTimeoutRef.current) {
+      clearTimeout(autoFillTimeoutRef.current);
+      autoFillTimeoutRef.current = null;
+    }
 
-  if (skipNextAutoFillRef.current) {
-    skipNextAutoFillRef.current = false;
-    lastAutoFilledConnRef.current = connString;
-    return;
-  }
+    if (!connString) {
+      lastAutoFilledConnRef.current = '';
+      manuallyEditedFieldsRef.current.clear();
+      return;
+    }
 
-  const isNewConnectionString = connString !== lastAutoFilledConnRef.current;
-  
-  if (!isNewConnectionString) {
-    return;
-  }
-
-  const isLoadingExistingDataSource = 
-    !lastAutoFilledConnRef.current && 
-    selectedDataSource?.id && 
-    selectedDataSource?.options?.connection_string?.value === connString;
-    
-  if (isLoadingExistingDataSource) {
-    lastAutoFilledConnRef.current = connString;
-    return;
-  }
-  autoFillTimeoutRef.current = setTimeout(() => {
-    const changeDetection = detectConnectionStringChange(lastAutoFilledConnRef.current, connString);
-    
-    if (!changeDetection) {
-      const parsed = parseMongoDBConnectionString(connString);
-      if (!parsed) return;
-      
-      const updatedOptions = { ...options };
-      if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
-        updatedOptions.connection_format = { value: parsed.connection_format };
-      }
-      if (parsed.host !== undefined) {
-        updatedOptions.host = { value: parsed.host };
-      }
-      if (parsed.port !== undefined) {
-        updatedOptions.port = { value: parsed.port };
-      }
-      if (parsed.username !== undefined) {
-        updatedOptions.username = { value: parsed.username };
-      }
-      if (parsed.password !== undefined) {
-        updatedOptions.password = { value: parsed.password };
-      }
-      if (parsed.database !== undefined) {
-        updatedOptions.database = { value: parsed.database };
-      }
-      if (parsed.use_ssl !== undefined) {
-        updatedOptions.use_ssl = { value: parsed.use_ssl };
-      }
-      if (parsed.query_params !== undefined) {
-        updatedOptions.query_params = { value: parsed.query_params };
-      }
-      optionsChanged(updatedOptions);
+    if (skipNextAutoFillRef.current) {
+      skipNextAutoFillRef.current = false;
       lastAutoFilledConnRef.current = connString;
       return;
     }
 
-    const { changes, newParsed } = changeDetection;
-    const updatedOptions = { ...options };
+    const isNewConnectionString = connString !== lastAutoFilledConnRef.current;
 
-    if (changes.protocol && !manuallyEditedFieldsRef.current.has('connection_format')) {
-      updatedOptions.connection_format = { value: newParsed.connection_format };
-    }
-    if (changes.host && !manuallyEditedFieldsRef.current.has('host')) {
-      updatedOptions.host = { value: newParsed.host };
-    }
-    if (changes.port && !manuallyEditedFieldsRef.current.has('port')) {
-      updatedOptions.port = { value: newParsed.port };
-    }
-    if (changes.username && !manuallyEditedFieldsRef.current.has('username')) {
-      updatedOptions.username = { value: newParsed.username };
-    }
-    if (changes.password && !manuallyEditedFieldsRef.current.has('password')) {
-      updatedOptions.password = { value: newParsed.password };
-    }
-    if (changes.database && !manuallyEditedFieldsRef.current.has('database')) {
-      updatedOptions.database = { value: newParsed.database };
-    }
-    if (changes.ssl && !manuallyEditedFieldsRef.current.has('use_ssl')) {
-      updatedOptions.use_ssl = { value: newParsed.use_ssl };
-    }
-    if (changes.query && !manuallyEditedFieldsRef.current.has('query_params')) {
-      updatedOptions.query_params = { value: newParsed.query_params };
+    if (!isNewConnectionString) {
+      return;
     }
 
-    optionsChanged(updatedOptions);
-    lastAutoFilledConnRef.current = connString;
-  }, 100);
+    const isLoadingExistingDataSource =
+      !lastAutoFilledConnRef.current &&
+      selectedDataSource?.id &&
+      selectedDataSource?.options?.connection_string?.value === connString;
 
-  return () => {
-    if (autoFillTimeoutRef.current) {
-      clearTimeout(autoFillTimeoutRef.current);
-    }
-  };
-}, [options?.connection_string?.value, options?.connection_type?.value, optionchanged, selectedDataSource?.id, schema]);
-
-React.useEffect(() => {
-  const isMongoDBDataSource = 
-    schema['tj:source']?.kind === 'mongodb' || 
-    schema['tj:source']?.name === 'MongoDB';
-  
-  if (!isMongoDBDataSource) {
-    return;
-  }
-  const prevDataSourceId = prevDataSourceIdRef.current;
-  
-  if (prevDataSourceId !== selectedDataSource?.id) {
-    manuallyEditedFieldsRef.current.clear();
-    lastAutoFilledConnRef.current = '';
-    skipNextAutoFillRef.current = false;
-    
-    const connString = options?.connection_string?.value;
-    if (connString) {
+    if (isLoadingExistingDataSource) {
       lastAutoFilledConnRef.current = connString;
+      return;
     }
-  }
-}, [selectedDataSource?.id, options?.connection_string?.value,schema]);
+    autoFillTimeoutRef.current = setTimeout(() => {
+      const changeDetection = detectConnectionStringChange(lastAutoFilledConnRef.current, connString);
+
+      if (!changeDetection) {
+        const parsed = parseMongoDBConnectionString(connString);
+        if (!parsed) return;
+
+        const updatedOptions = { ...options };
+        if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
+          updatedOptions.connection_format = { value: parsed.connection_format };
+        }
+        if (parsed.host !== undefined) {
+          updatedOptions.host = { value: parsed.host };
+        }
+        if (parsed.port !== undefined) {
+          updatedOptions.port = { value: parsed.port };
+        }
+        if (parsed.username !== undefined) {
+          updatedOptions.username = { value: parsed.username };
+        }
+        if (parsed.password !== undefined) {
+          updatedOptions.password = { value: parsed.password };
+        }
+        if (parsed.database !== undefined) {
+          updatedOptions.database = { value: parsed.database };
+        }
+        if (parsed.use_ssl !== undefined) {
+          updatedOptions.use_ssl = { value: parsed.use_ssl };
+        }
+        if (parsed.query_params !== undefined) {
+          updatedOptions.query_params = { value: parsed.query_params };
+        }
+        optionsChanged(updatedOptions);
+        lastAutoFilledConnRef.current = connString;
+        return;
+      }
+
+      const { changes, newParsed } = changeDetection;
+      const updatedOptions = { ...options };
+
+      if (changes.protocol && !manuallyEditedFieldsRef.current.has('connection_format')) {
+        updatedOptions.connection_format = { value: newParsed.connection_format };
+      }
+      if (changes.host && !manuallyEditedFieldsRef.current.has('host')) {
+        updatedOptions.host = { value: newParsed.host };
+      }
+      if (changes.port && !manuallyEditedFieldsRef.current.has('port')) {
+        updatedOptions.port = { value: newParsed.port };
+      }
+      if (changes.username && !manuallyEditedFieldsRef.current.has('username')) {
+        updatedOptions.username = { value: newParsed.username };
+      }
+      if (changes.password && !manuallyEditedFieldsRef.current.has('password')) {
+        updatedOptions.password = { value: newParsed.password };
+      }
+      if (changes.database && !manuallyEditedFieldsRef.current.has('database')) {
+        updatedOptions.database = { value: newParsed.database };
+      }
+      if (changes.ssl && !manuallyEditedFieldsRef.current.has('use_ssl')) {
+        updatedOptions.use_ssl = { value: newParsed.use_ssl };
+      }
+      if (changes.query && !manuallyEditedFieldsRef.current.has('query_params')) {
+        updatedOptions.query_params = { value: newParsed.query_params };
+      }
+
+      optionsChanged(updatedOptions);
+      lastAutoFilledConnRef.current = connString;
+    }, 100);
+
+    return () => {
+      if (autoFillTimeoutRef.current) {
+        clearTimeout(autoFillTimeoutRef.current);
+      }
+    };
+  }, [
+    options?.connection_string?.value,
+    options?.connection_type?.value,
+    optionchanged,
+    selectedDataSource?.id,
+    schema,
+  ]);
+
+  React.useEffect(() => {
+    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
+
+    if (!isMongoDBDataSource) {
+      return;
+    }
+    const prevDataSourceId = prevDataSourceIdRef.current;
+
+    if (prevDataSourceId !== selectedDataSource?.id) {
+      manuallyEditedFieldsRef.current.clear();
+      lastAutoFilledConnRef.current = '';
+      skipNextAutoFillRef.current = false;
+
+      const connString = options?.connection_string?.value;
+      if (connString) {
+        lastAutoFilledConnRef.current = connString;
+      }
+    }
+  }, [selectedDataSource?.id, options?.connection_string?.value, schema]);
 
   React.useEffect(() => {
     if (isGDS) {
@@ -238,79 +243,75 @@ React.useEffect(() => {
     return () => clearTimeout(timeout);
   }, [options, hasUserInteracted, validateOptions]);
 
-const validateOptions = React.useCallback(async () => {
-  try {
-    const { valid, errors } = await dsm.validateData(options);
+  const validateOptions = React.useCallback(async () => {
+    try {
+      const { valid, errors } = await dsm.validateData(options);
 
-    const conditionallyRequiredFields = processAllOfConditions(schema, options);
-    setConditionallyRequiredProperties(conditionallyRequiredFields);
+      const conditionallyRequiredFields = processAllOfConditions(schema, options);
+      setConditionallyRequiredProperties(conditionallyRequiredFields);
 
-    const isMongoDBDataSource = 
-      schema['tj:source']?.kind === 'mongodb' ||  
-      schema['tj:source']?.name === 'MongoDB';
-    
-    let finalErrors = [...errors];
-    
-    if (isMongoDBDataSource) {
-      const connectionType = options?.connection_type?.value;
-      
-      finalErrors = finalErrors.filter(err => {
-        if (connectionType === 'string' && err.keyword === 'if') {
-          return false;
-        }
-        if (connectionType === 'string' && 
-            err.dataPath === '.connection_string' && 
-            err.keyword === 'required' && 
-            err.schemaPath.includes('allOf')) {
-          return false;
-        }
-        
-        if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
-          return false;
-        }
-        
-        return true;
-      });
-      
-      if (connectionType === 'string' && options.connection_string?.value) {
-        const selectedFormat = options.connection_format?.value;
-        const validation = validateMongoDBConnectionString(
-          options.connection_string.value, 
-          selectedFormat
-        );
-        
-        if (!validation.valid) {
-          finalErrors.push({
-            dataPath: ".connection_string",
-            keyword: "custom",
-            message: validation.error,
-            params: {},
-            schemaPath: "#/properties/connection_string"
-          });
+      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
+
+      let finalErrors = [...errors];
+
+      if (isMongoDBDataSource) {
+        const connectionType = options?.connection_type?.value;
+
+        finalErrors = finalErrors.filter((err) => {
+          if (connectionType === 'string' && err.keyword === 'if') {
+            return false;
+          }
+          if (
+            connectionType === 'string' &&
+            err.dataPath === '.connection_string' &&
+            err.keyword === 'required' &&
+            err.schemaPath.includes('allOf')
+          ) {
+            return false;
+          }
+
+          if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
+            return false;
+          }
+
+          return true;
+        });
+
+        if (connectionType === 'string' && options.connection_string?.value) {
+          const selectedFormat = options.connection_format?.value;
+          const validation = validateMongoDBConnectionString(options.connection_string.value, selectedFormat);
+
+          if (!validation.valid) {
+            finalErrors.push({
+              dataPath: '.connection_string',
+              keyword: 'custom',
+              message: validation.error,
+              params: {},
+              schemaPath: '#/properties/connection_string',
+            });
+          }
         }
       }
-    }
 
-    if (finalErrors.length === 0) {  
-      clearValidationMessages();
-      clearValidationErrorBanner();
-    } else {
-      setValidationMessages(finalErrors, schema, interactedFields);  
+      if (finalErrors.length === 0) {
+        clearValidationMessages();
+        clearValidationErrorBanner();
+      } else {
+        setValidationMessages(finalErrors, schema, interactedFields);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
     }
-  } catch (error) {
-    console.error('Validation error:', error);
-  }
-}, [
-  dsm,
-  options,
-  processAllOfConditions,
-  schema,
-  clearValidationMessages,
-  clearValidationErrorBanner,
-  setValidationMessages,
-  interactedFields,
-]);
-
+  }, [
+    dsm,
+    options,
+    processAllOfConditions,
+    schema,
+    clearValidationMessages,
+    clearValidationErrorBanner,
+    setValidationMessages,
+    interactedFields,
+  ]);
 
   const processAllOfConditions = React.useCallback((schema, options, path = []) => {
     let requiredFields = [];
@@ -491,10 +492,10 @@ const validateOptions = React.useCallback(async () => {
         return Textarea;
       case 'toggle':
         return Toggle;
-      case 'checkbox':                    
-        return Checkbox;                  
-      case 'checkbox-group':              
-        return CheckboxGroup;            
+      case 'checkbox':
+        return Checkbox;
+      case 'checkbox-group':
+        return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
       // TODO: Move dropdown component flip logic to be handled here
@@ -515,49 +516,58 @@ const validateOptions = React.useCallback(async () => {
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
-const handleOptionChange = (key, value, flag = true) => {
-  if (!hasUserInteracted) {
-    setHasUserInteracted(true);
-  }
-  setInteractedFields((prev) => new Set(prev).add(key));
-  
-  const isMongoDBDataSource = 
-    schema['tj:source']?.kind === 'mongodb' || 
-    schema['tj:source']?.name === 'MongoDB';
-  
-  if (isMongoDBDataSource) {
-    const autoFilledFields = ['host', 'port', 'username', 'password', 'database', 'connection_format', 'use_ssl', 'query_params'];
-    
-    if (autoFilledFields.includes(key)) {
-      if (key === 'connection_format') {
-        manuallyEditedFieldsRef.current.add(key);
+    const handleOptionChange = (key, value, flag = true) => {
+      if (!hasUserInteracted) {
+        setHasUserInteracted(true);
       }
-      optionchanged(key, value, flag);
-      return;
-    }
-    
-    if (key === 'connection_string') {
-      if (!value || value.trim() === '') {
-        manuallyEditedFieldsRef.current.clear();
-        lastAutoFilledConnRef.current = '';
-      } else {
-        const currentConnString = lastAutoFilledConnRef.current;
-        if (!currentConnString || 
-            (currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://'))) {
-          manuallyEditedFieldsRef.current.delete('connection_format');
-        } else {
-          const connectionFormatWasEdited = manuallyEditedFieldsRef.current.has('connection_format');
-          manuallyEditedFieldsRef.current.clear();
-          if (connectionFormatWasEdited) {
-            manuallyEditedFieldsRef.current.add('connection_format');
+      setInteractedFields((prev) => new Set(prev).add(key));
+
+      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
+
+      if (isMongoDBDataSource) {
+        const autoFilledFields = [
+          'host',
+          'port',
+          'username',
+          'password',
+          'database',
+          'connection_format',
+          'use_ssl',
+          'query_params',
+        ];
+
+        if (autoFilledFields.includes(key)) {
+          if (key === 'connection_format') {
+            manuallyEditedFieldsRef.current.add(key);
+          }
+          optionchanged(key, value, flag);
+          return;
+        }
+
+        if (key === 'connection_string') {
+          if (!value || value.trim() === '') {
+            manuallyEditedFieldsRef.current.clear();
+            lastAutoFilledConnRef.current = '';
+          } else {
+            const currentConnString = lastAutoFilledConnRef.current;
+            if (
+              !currentConnString ||
+              currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://')
+            ) {
+              manuallyEditedFieldsRef.current.delete('connection_format');
+            } else {
+              const connectionFormatWasEdited = manuallyEditedFieldsRef.current.has('connection_format');
+              manuallyEditedFieldsRef.current.clear();
+              if (connectionFormatWasEdited) {
+                manuallyEditedFieldsRef.current.add('connection_format');
+              }
+            }
           }
         }
       }
-    }
-  }
-  
-  optionchanged(key, value, flag);
-};
+
+      optionchanged(key, value, flag);
+    };
     switch (widget) {
       case 'password':
       case 'text':
@@ -584,31 +594,29 @@ const handleOptionChange = (key, value, flag = true) => {
       case 'password-v3':
       case 'password-v3-textarea':
       case 'text-v3': {
-        const isMongoDBDataSource = 
-          schema['tj:source']?.kind === 'mongodb' || 
-          schema['tj:source']?.name === 'MongoDB';
-  
-          let customValidation = { valid: null, message: '' };
-          
-          if (isMongoDBDataSource && key === 'connection_string' && currentValue && !skipValidation) {
-              const selectedFormat = options.connection_format?.value;
-              const validation = validateMongoDBConnectionString(currentValue, selectedFormat);
-              if (!validation.valid) {
-                customValidation = { valid: false, message: validation.error };
-              } else {
-                customValidation = { valid: true, message: '' };
-              }
-            }
-        const validationStatus = 
-          (isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null)
-            ? customValidation  
+        const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
+
+        let customValidation = { valid: null, message: '' };
+
+        if (isMongoDBDataSource && key === 'connection_string' && currentValue && !skipValidation) {
+          const selectedFormat = options.connection_format?.value;
+          const validation = validateMongoDBConnectionString(currentValue, selectedFormat);
+          if (!validation.valid) {
+            customValidation = { valid: false, message: validation.error };
+          } else {
+            customValidation = { valid: true, message: '' };
+          }
+        }
+        const validationStatus =
+          isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null
+            ? customValidation
             : skipValidation
-              ? { valid: null, message: '' } 
+              ? { valid: null, message: '' }
               : validationMessages[key]
-              ? { valid: false, message: validationMessages[key] }
-              : isRequired
-              ? { valid: true, message: '' }
-              : { valid: null, message: '' }; 
+                ? { valid: false, message: validationMessages[key] }
+                : isRequired
+                  ? { valid: true, message: '' }
+                  : { valid: null, message: '' };
         return {
           propertyKey: key,
           widget,
@@ -670,25 +678,25 @@ const handleOptionChange = (key, value, flag = true) => {
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
         };
-      case 'checkbox':                                          
-      return {
-        propertyKey: key,
-        widget,
-        label,
-        isChecked: currentValue || false,
-        onChange: (e) => handleOptionChange(key, e.target.checked, true),
-        helpText: helpText,
-        isRequired: isRequired,
-        isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
-      };
-    case 'checkbox-group':  
+      case 'checkbox':
+        return {
+          propertyKey: key,
+          widget,
+          label,
+          isChecked: currentValue || false,
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
+          helpText: helpText,
+          isRequired: isRequired,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+        };
+      case 'checkbox-group':
         return {
           options: list,
           values: options?.[key] ?? [],
           onChange: (value) => {
             optionchanged(key, [...value]);
           },
-        };                                 
+        };
       default:
         return {};
     }
@@ -737,11 +745,15 @@ const handleOptionChange = (key, value, flag = true) => {
       });
     };
 
-    const renderLabel = (label, tooltip) => {
+    const renderLabel = (label, tooltip, fieldType) => {
       const labelElement = (
         <label
           className="form-label"
-          data-cy={`label-${generateCypressDataCy(label)}`}
+          data-cy={
+            fieldType === 'dropdown'
+              ? `${generateCypressDataCy(label)}-dropdown-label`
+              : `label-${generateCypressDataCy(label)}`
+          }
           style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
         >
           {label}
@@ -794,9 +806,9 @@ const handleOptionChange = (key, value, flag = true) => {
                     widget !== 'text-v3' &&
                     widget !== 'password-v3' &&
                     widget !== 'password-v3-textarea' &&
-                    widget !== 'checkbox' &&          
-                    widget !== 'checkbox-group' &&  
-                    renderLabel(label, uiProperties[key].tooltip)}
+                    widget !== 'checkbox' &&
+                    widget !== 'checkbox-group' &&
+                    renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
               <div
@@ -808,7 +820,11 @@ const handleOptionChange = (key, value, flag = true) => {
                   'dynamic-form-element'
                 )}
                 style={{ width: '100%' }}
-                data-cy={`${generateCypressDataCy(label ?? key)}-input-wrapper`}
+                data-cy={
+                  widget === 'dropdown' || widget === 'dropdown-component-flip'
+                    ? `${generateCypressDataCy(label ?? key)}-select-dropdown`
+                    : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(widget ?? key)}-element`
+                }
               >
                 <Element
                   {...getElementProps(uiProperties[key])}
@@ -860,8 +876,12 @@ const handleOptionChange = (key, value, flag = true) => {
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                 className={cx({ 'flex-grow-1': isHorizontalLayout })}
               >
-                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false}
-                  dataCy={generateCypressDataCy(flipComponentDropdown.label)} />
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={{}}
+                  useCustomStyles={false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                />
               </div>
               {flipComponentDropdown.helpText && (
                 <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
