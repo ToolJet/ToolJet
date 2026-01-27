@@ -27,19 +27,30 @@ import {
 import got, { Headers, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions, QueryOptions, ConvertedFormat } from './types';
 import { google } from 'googleapis';
+
 export default class Googlesheetsv2QueryService implements QueryService {
   authUrl(source_options: SourceOptions): string {
+    const getSourceOptionValue = (key: string) => {
+      const option = Array.isArray(source_options)
+        ? source_options.find((item) => item.key === key)
+        : source_options[key];
+
+      if (Array.isArray(source_options)) {
+        return option?.value || '';
+      } else {
+        return option?.value || option || '';
+      }
+    };
     const host = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const oauth_type = source_options?.oauth_type?.value;
-
+    const oauth_type = getSourceOptionValue('oauth_type');
     const userScopes =
-      source_options?.access_type?.value === 'write'
+      getSourceOptionValue('access_type') === 'write'
         ? 'https://www.googleapis.com/auth/spreadsheets'
         : 'https://www.googleapis.com/auth/spreadsheets.readonly';
 
-    const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : source_options?.client_id?.value;
+    const clientId = oauth_type === 'tooljet_app' ? process.env.GOOGLE_CLIENT_ID : getSourceOptionValue('client_id');
 
     const alwaysScope = 'https://www.googleapis.com/auth/drive.metadata.readonly';
 
@@ -288,7 +299,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'read':
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('Sheet is required for read operation');
           }
 
@@ -355,8 +366,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
           );
           break;
         case 'delete_by_range':
-
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('Sheet is required for delete_by_range operation');
           }
 
@@ -369,8 +379,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
           );
           break;
         case 'update_spreadsheet':
-
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('Sheet is required for update_spreadsheet operation');
           }
           result = await updateSpreadsheet(
@@ -384,14 +393,14 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'append':
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('Sheet is required for append operation');
           }
           result = await appendData(spreadsheetId, queryOptions.sheet, queryOptions.rows, this.authHeader(accessToken));
           break;
 
         case 'update':
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('Sheet is required for update operation');
           }
           result = await batchUpdateToSheet(
@@ -406,7 +415,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
           break;
 
         case 'delete_row':
-          if(!queryOptions.sheet){
+          if (!queryOptions.sheet) {
             throw new Error('GID is required for delete_row operation');
           }
           result = await deleteData(
