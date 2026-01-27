@@ -33,7 +33,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
-        <div className="container-xl header-container">
+        <div className="container-xl header-container" data-cy="editor-header-section">
           <div className="d-flex w-100 tw-h-9  tw-justify-between">
             <div
               className="header-inner-wrapper d-flex"

@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Share2 } from 'lucide-react';
 
 class ManageAppUsersComponent extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.isUserAdmin = authenticationService.currentSessionValue?.admin;
     this.whiteLabelText = retrieveWhiteLabelText();
@@ -54,7 +54,7 @@ class ManageAppUsersComponent extends React.Component {
     });
   };
 
-  componentDidMount() {
+  componentDidMount () {
     const appId = this.props.appId;
     this.setState({ appId });
   }
@@ -180,7 +180,7 @@ class ManageAppUsersComponent extends React.Component {
   handleMouseLeave = () => {
     this.setState({ isHovered: false });
   };
-  render() {
+  render () {
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
     const appLink = `${getHostURL()}/applications/`;
@@ -190,9 +190,10 @@ class ManageAppUsersComponent extends React.Component {
     const { isHovered } = this.state.isHovered;
 
     return (
-      <div className="manage-app-users" data-cy="share-button-link">
+      <div className="manage-app-users">
         <ToolTip message="Share" placement="bottom">
           <Button
+            data-cy="editor-app-share-button"
             variant="ghost"
             iconOnly
             onClick={() => {
@@ -234,9 +235,9 @@ class ManageAppUsersComponent extends React.Component {
                           onClick={this.toggleAppVisibility}
                           checked={this?.props?.isPublic}
                           disabled={this.state.ischangingVisibility}
-                          data-cy="make-public-app-toggle"
+                          data-cy="make-application-public-toggle"
                         />
-                        <span className="form-check-label field-name" data-cy="make-public-app-label">
+                        <span className="form-check-label field-name" data-cy="make-application-public-label">
                           {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
                         </span>
                       </div>
@@ -266,13 +267,14 @@ class ManageAppUsersComponent extends React.Component {
                                 margin: 0,
                                 padding: 0,
                               }}
+                              data-cy="make-application-public-toggle"
                             />
                           </div>
                         </ToolTip>
 
                         <span
                           className="form-check-label field-name"
-                          data-cy="make-public-app-label"
+                          data-cy="make-application-public-label"
                           style={{ opacity: 0.6 }}
                         >
                           {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
@@ -395,7 +397,7 @@ class ManageAppUsersComponent extends React.Component {
                     <label data-cy="shareable-app-link-label" className="field-name">
                       {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
                     </label>
-                    <div className="empty-version">
+                    <div className="empty-version" data-cy="empty-version-text">
                       <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
                       <span>This version has not been released yet</span>
                     </div>
