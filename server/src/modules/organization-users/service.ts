@@ -27,6 +27,7 @@ import { UpdateOrgUserDto } from './dto';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { Organization } from '@entities/organization.entity';
+import { decamelizeKeys } from 'humps';
 @Injectable()
 export class OrganizationUsersService implements IOrganizationUsersService {
   constructor(
@@ -446,6 +447,35 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       current_page: parseInt(page || 1),
     };
 
-    return { meta, users };
+    return this.decamelizeUsersResponse(meta, users);
+  }
+
+  async decamelizeUsersResponse(
+    meta: {
+      total_pages: number;
+      total_count: number;
+      current_page: number;
+    },
+    users: any[]
+  ): Promise<{
+    meta: {
+      total_pages: number;
+      total_count: number;
+      current_page: number;
+    };
+    users: any[];
+  }> {
+    const decamelizedUsers = users.map((user) => {
+      const { userMetadata, ...restUser } = user;
+      return {
+        ...decamelizeKeys(restUser),
+        user_metadata: userMetadata, // keep nested metadata untouched
+      };
+    });
+
+    return {
+      meta,
+      users: decamelizedUsers,
+    };
   }
 }

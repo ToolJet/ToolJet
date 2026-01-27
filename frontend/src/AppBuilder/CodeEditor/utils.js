@@ -33,7 +33,6 @@ function traverseAST(node, callback) {
 export const isInsideParent = (element, className) => {
   while (element) {
     if (element.classList?.contains(className)) {
-      console.log('element.classList', element.classList);
       return true;
     }
     element = element.parentElement;

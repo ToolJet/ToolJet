@@ -58,6 +58,39 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
 }
 ```
 
+### Example Schema for Group Options
+
+Enter the schema in the following syntax to use the Group Options
+
+```js
+{{[
+  {
+    label: 'Fruits',
+    options: [
+      { value: 'apple', label: 'Apple', disable:true },
+      { value: 'orange', label: 'Orange' },
+      { value: 'banana', label: 'Banana' },
+    ],
+  },
+  {
+    label: 'Vegetables',
+    options: [
+      { value: 'carrot', label: 'Carrot' },
+      { value: 'broccoli', label: 'Broccoli' },
+      { value: 'spinach', label: 'Spinach' },
+    ],
+  },
+  {
+    label: 'Dairy',
+    options: [
+      { value: 'milk', label: 'Milk' },
+      { value: 'cheese', label: 'Cheese' },
+      { value: 'butter', label: 'Butter' },
+    ],
+  },
+]}}
+```
+
 ### Options Loading State
 
 Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.

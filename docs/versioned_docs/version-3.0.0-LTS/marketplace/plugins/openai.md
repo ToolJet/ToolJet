@@ -6,7 +6,7 @@ title: OpenAI
 ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, and create images tailored to specific inputs.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -33,13 +33,13 @@ The function of this query is to examine the user's input and generate a suitabl
 #### Required parameters:
 
 - **Model**: The model to use for generating the chat response. The available models are:
-    - GPT-4.0
-    - GPT-4.0 mini
-    - GPT-4 Turbo
-    - GPT-3.5 Turbo
+  - GPT-4.0
+  - GPT-4.0 mini
+  - GPT-4 Turbo
+  - GPT-3.5 Turbo
 - **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
 
-#### Optional parameters: 
+#### Optional parameters:
 
 - **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 2, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -77,13 +77,13 @@ Suffix: \n
 
 The purpose of this query is to generate text completions based on a given prompt.
 
-#### Required parameters: 
+#### Required parameters:
 
 - **Model**: The model to use for generating the text completion. The available models are:
-    - GPT-3.5 Turbo
+  - GPT-3.5 Turbo
 - **Prompt**: OpenAI uses the prompt as a starting point to generate a continuation or completion of the text, which can be in the form of a sentence, paragraph, or even an entire article. The quality and relevance of the generated text output can depend on the quality and specificity of the prompt provided.
 
-#### Optional parameters: 
+#### Optional parameters:
 
 - **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
 - **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 1, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
@@ -111,7 +111,7 @@ Suffix: \n
 <details>
 <summary>**Response Example**</summary>
 
-``` json
+```json
 ":1. Increased Speed and Efficiency: Low code platforms allow developers to quickly build and deploy applications without having to write extensive lines of code. This significantly reduces development time and increases efficiency.nn2. Cost Savings: With low code platforms, businesses can save on development costs by reducing the need for a large team of developers. This also leads to lower maintenance costs as the applications are easier to maintain and update.nn3. User-Friendly Interface: Low code platforms are designed to be user-friendly and require minimal"
 ```
 
@@ -124,15 +124,15 @@ This query generates AI images based on the given prompt.
 #### Required parameters:
 
 - **Model**: The model to use for generating the image. The available models are:
-    - DALL-E 3
-    - DALL-E 2
+  - DALL-E 3
+  - DALL-E 2
 - **Prompt**: The prompt is the initial message or question that is provided as input to the AI model to generate an image.
 
 #### Optional parameters:
 
 - **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
-    - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
-    - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
+  - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
+  - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images.png" alt="Generate AI Images Operation" />

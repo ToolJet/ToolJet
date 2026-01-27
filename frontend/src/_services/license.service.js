@@ -15,6 +15,9 @@ export const licenseService = {
   updateSubscription,
   getPortalLink,
   updateOrganization,
+  addTopUpCredits,
+  getAiCreditsBalance,
+  getSelfhostCustomer,
 };
 
 function get() {
@@ -146,4 +149,32 @@ async function updateOrganization(body) {
     handleResponse
   );
   return updatedData;
+}
+
+function addTopUpCredits(topUpPaymentDto) {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(topUpPaymentDto),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/top-up`, requestOptions).then(handleResponse);
+}
+
+function getAiCreditsBalance() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization/payment/${organizationId}/ai-credits-balance`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getSelfhostCustomer() {
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/selfhost-customer`, requestOptions).then(handleResponse);
 }

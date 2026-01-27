@@ -72,7 +72,7 @@ export class AddGroupUserDto {
 
   @IsBoolean()
   @IsOptional()
-  allowRoleChange: boolean;
+  allowRoleChange?: boolean;
 
   @IsOptional()
   @IsArray()
@@ -93,4 +93,8 @@ export class DuplicateGroupDtoBase {
 export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   addDataSource: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addWorkflows: boolean;
 }

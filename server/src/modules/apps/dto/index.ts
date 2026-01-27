@@ -70,6 +70,10 @@ export class AppUpdateDto {
 export class ValidateAppAccessDto {
   @IsString()
   @IsOptional()
+  accessType?: string;
+
+  @IsString()
+  @IsOptional()
   versionName: string;
 
   @IsString()

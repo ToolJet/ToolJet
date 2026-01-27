@@ -5,7 +5,7 @@ import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 
 export class ProfileModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const { ProfileService, ProfileController, ProfileUtilService } = await this.getProviders(configs, 'profile', [
       'service',
       'controller',
@@ -15,7 +15,7 @@ export class ProfileModule extends SubModule {
     return {
       module: ProfileModule,
       providers: [FilesRepository, UserRepository, ProfileService, ProfileUtilService, FeatureAbilityFactory],
-      controllers: [ProfileController],
+      controllers: isMainImport ? [ProfileController] : [],
       exports: [ProfileUtilService],
     };
   }

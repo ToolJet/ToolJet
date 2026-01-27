@@ -17,6 +17,7 @@ This component ensures consistent formatting of monetary values, prevents invali
 | Decimal places | Number of decimal places to show after the decimal point. | Integer (e.g. `2`). |
 | Default Currency | Sets the currency format to use by default. | Select the default currency from the dropdown or update it dynamically using **fx**. |
 | Enable currency change | Allows the user to select a different currency from a dropdown. If disabled, the user can enter only the default currency. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
+| Show currency flag | Decide whether the currency flag should be visible along with the currency symbol. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
 
 ## Events
 

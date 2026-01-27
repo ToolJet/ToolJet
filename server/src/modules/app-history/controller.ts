@@ -1,0 +1,46 @@
+import { Controller, Get, Post, Patch, Param, Query, Body, ParseUUIDPipe, Res } from '@nestjs/common';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from './constants';
+
+@Controller('app-history')
+export class AppHistoryController {
+  constructor() { }
+
+  @InitFeature(FEATURE_KEY.LIST_HISTORY)
+  @Get('apps/versions/:versionId')
+  async getHistory(
+    @Param('versionId', ParseUUIDPipe) versionId: string,
+    @Query('page') page: number = 0,
+    @Query('limit') limit: number = 20,
+    @Query('userId') userId?: string,
+    @Query('actionType') actionType?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.RESTORE_HISTORY)
+  @Post(':historyId/restore')
+  async restoreHistory(@Param('historyId', ParseUUIDPipe) historyId: string): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_DESCRIPTION)
+  @Patch(':historyId')
+  async updateHistoryDescription(
+    @Param('historyId', ParseUUIDPipe) historyId: string,
+    @Body() updateDto: any
+  ): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  @InitFeature(FEATURE_KEY.STREAM_HISTORY)
+  @Get('apps/versions/:versionId/stream')
+  async streamHistoryUpdates(
+    @Param('versionId', ParseUUIDPipe) versionId: string,
+    @Res() res: Response
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+}

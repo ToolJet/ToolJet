@@ -56,6 +56,10 @@ To configure the instance-level authentication configuration
 - Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
         
 - Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
+
+    :::info
+    You can enforce stronger password validation by setting the environment variable `ENABLE_PASSWORD_COMPLEXITY_RULES = true`. Refer to [this guide](/docs/setup/env-vars#configure-stronger-password-validation-rules) to learn more.
+    :::
         
 ###   Enable Workspace Login Configuration
     

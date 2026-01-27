@@ -1,5 +1,6 @@
 export type SourceOptions = {
   private_key: string;
+  scope?: string;
 };
 export type QueryOptions = {
   operation: string;

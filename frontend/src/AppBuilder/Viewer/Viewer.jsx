@@ -16,7 +16,6 @@ import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { getPatToken, setPatToken } from '@/AppBuilder/EmbedApp';
 import Spinner from '@/_ui/Spinner';
-import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import TooljetBanner from './TooljetBanner';
 
 export const Viewer = ({
@@ -31,9 +30,10 @@ export const Viewer = ({
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
   const { t } = useTranslation();
-  const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
   const appType = useAppData(appId, moduleId, darkMode, 'view', { environmentId, versionId }, moduleMode, appSlug);
   const temporaryLayouts = useStore((state) => state.temporaryLayouts, shallow);
+  const checkIfLicenseNotValid = useStore((state) => state.checkIfLicenseNotValid, shallow);
+  const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
 
   const {
     isEditorLoading,
@@ -95,18 +95,12 @@ export const Viewer = ({
     return DEFAULT_CANVAS_WIDTH;
   }, [globalSettings, hideSidebar]);
 
-  const toggleSidebarPinned = useCallback(() => {
-    const newValue = !isSidebarPinned;
-    setIsSidebarPinned(newValue);
-    localStorage.setItem('isPagesSidebarPinned', JSON.stringify(newValue));
-  }, [isSidebarPinned]);
-
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
 
   const canvasRef = useRef(null);
   const viewerWrapperRef = useRef(null);
-  const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
+  const isMobilePreviewMode = !moduleMode && selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
   const switchPage = useStore((state) => state.switchPage);
 
@@ -132,12 +126,13 @@ export const Viewer = ({
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents, moduleId);
-  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts]);
+  }, [currentPageComponents, moduleId, updateCanvasHeight, temporaryLayouts, triggerCanvasUpdater]);
 
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
   };
   useEffect(() => {
+    if (moduleMode) return;
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true, moduleId);
@@ -159,7 +154,6 @@ export const Viewer = ({
           appName={appName}
           darkMode={darkMode}
           currentPageId={currentPageId ?? homePageId}
-          showViewerNavigation={!hideSidebar}
           handleAppEnvironmentChanged={handleAppEnvironmentChanged}
           changeToDarkMode={changeToDarkMode}
         />
@@ -174,7 +168,6 @@ export const Viewer = ({
             appName={appName}
             darkMode={darkMode}
             currentPageId={currentPageId ?? homePageId}
-            showViewerNavigation={!hideSidebar}
             handleAppEnvironmentChanged={handleAppEnvironmentChanged}
             changeToDarkMode={changeToDarkMode}
             switchPage={switchPage}
@@ -229,8 +222,7 @@ export const Viewer = ({
                         <div className={`areas d-flex flex-rows app-${appId}`}>
                           <div
                             className={cx('flex-grow-1 d-flex justify-content-center canvas-box', {
-                              close: !isSidebarPinned,
-                              'w-100': moduleMode || appType === 'module',
+                              'w-100': moduleMode || appType === 'module' || currentLayout === 'mobile',
                             })}
                             style={{
                               backgroundColor: isMobilePreviewMode ? '#ACB2B9' : 'unset',
@@ -239,7 +231,7 @@ export const Viewer = ({
                                   ? 'auto'
                                   : position === 'top'
                                   ? '0px'
-                                  : '226px',
+                                  : '256px',
                             }}
                           >
                             <div
@@ -259,7 +251,6 @@ export const Viewer = ({
                                   appName={appName}
                                   darkMode={darkMode}
                                   currentPageId={currentPageId ?? homePageId}
-                                  showViewerNavigation={!hideSidebar}
                                   handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
@@ -269,8 +260,6 @@ export const Viewer = ({
                               )}
                               <AppCanvas
                                 moduleId={moduleId}
-                                isViewerSidebarPinned={isSidebarPinned}
-                                toggleSidebarPinned={toggleSidebarPinned}
                                 appId={appId}
                                 appType={appType}
                                 isViewer={true}
@@ -278,7 +267,7 @@ export const Viewer = ({
                                 darkMode={darkMode}
                               />
                             </div>
-                            {isLicenseNotValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
+                            {isLicenseNotValid && isAppLoaded && !moduleMode && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

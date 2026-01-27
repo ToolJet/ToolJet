@@ -14,28 +14,33 @@
       "type": "string",
       "title": "Connection type",
       "description": "Single select dropdown for connection_type",
-      "enum": [
-        "manual",
-        "string"
-      ],
+      "enum": ["manual", "string"],
       "default": "manual"
+    },
+    "connection_string": {
+      "type": "string",
+      "title": "Connection string",
+      "description": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
+      "encrypted" : true
+    },
+    "connection_format": {
+      "type": "string",
+      "title": "Connection format",
+      "description": "Select the connection protocol format",
+      "enum": ["mongodb", "mongodb+srv"],
+      "default": "mongodb"
     },
     "host": {
       "type": "string",
-      "title": "Host",
-      "description": "Enter host",
-      "default": "localhost"
+      "title": "Host"
     },
     "port": {
       "type": "number",
-      "title": "Port",
-      "description": "Enter port",
-      "default": 27017
+      "title": "Port"
     },
     "database": {
       "type": "string",
-      "title": "Database name",
-      "description": "Name of the database"
+      "title": "Database name"
     },
     "username": {
       "type": "string",
@@ -44,51 +49,39 @@
     },
     "password": {
       "type": "string",
-      "title": "Password",
-      "description": "Enter password"
+      "title": "Password"
     },
     "tls_certificate": {
       "type": "string",
-      "title": "TLS/SSL Certificate",
+      "title": "TLS/SSL certificate",
       "description": "Single select dropdown for choosing certificates",
-      "enum": [
-        "ca_certificate",
-        "client_certificate",
-        "none"
-      ],
+      "enum": ["ca_certificate", "client_certificate", "none"],
       "default": "none"
-    },
-    "connection_string": {
-      "type": "string",
-      "title": "Connection string",
-      "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority"
     },
     "ca_cert": {
       "type": "string",
-      "title": "CA Cert",
+      "title": "CA cert",
       "description": "Enter CA certificate"
     },
     "client_key": {
       "type": "string",
-      "title": "Client Key",
+      "title": "Client key",
       "description": "Enter client key"
     },
     "client_cert": {
       "type": "string",
-      "title": "Client Cert",
+      "title": "Client cert",
       "description": "Enter client certificate"
+    },
+    "use_ssl": {
+      "type": "boolean",
+      "title": "",
+      "description": "Enable SSL connection",
+      "default": false
     }
   },
-  "tj:encrypted": [
-    "password",
-    "ca_cert",
-    "client_key",
-    "client_cert",
-    "connection_string"
-  ],
-  "required": [
-    "connection_type"
-  ],
+  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert","connection_string"],
+  "required": ["connection_type","host"],
   "allOf": [
     {
       "if": {
@@ -99,11 +92,7 @@
         }
       },
       "then": {
-        "required": [
-          "host",
-          "port",
-          "tls_certificate"
-        ],
+        "required": ["host", "tls_certificate"],
         "allOf": [
           {
             "if": {
@@ -114,9 +103,7 @@
               }
             },
             "then": {
-              "required": [
-                "ca_cert"
-              ]
+              "required": ["ca_cert"]
             }
           },
           {
@@ -128,11 +115,7 @@
               }
             },
             "then": {
-              "required": [
-                "client_key",
-                "client_cert",
-                "ca_cert"
-              ]
+              "required": ["client_key", "client_cert", "ca_cert"]
             }
           }
         ]
@@ -147,9 +130,7 @@
         }
       },
       "then": {
-        "required": [
-          "connection_string"
-        ]
+        "required": ["connection_string"]
       }
     }
   ],
@@ -172,10 +153,37 @@
       ]
     },
     "manual": {
+      "connection_format": {
+        "$ref": "#/properties/connection_format",
+        "key": "connection_format",
+        "label": "Connection format",
+        "description": "Select the connection protocol format",
+        "widget": "dropdown-component-flip",
+        "list": [
+          {
+            "name": "Standard (mongodb)",
+            "value": "mongodb"
+          },
+          {
+            "name": "DNS Seed list (mongodb+srv)",
+            "value": "mongodb+srv"
+          }
+        ]
+      },
+      "mongodb": {
+        "port": {
+          "$ref": "#/properties/port",
+          "key": "port",
+          "label": "Port",
+          "description": "Enter port",
+          "widget": "text-v3",
+          "required": true
+        }
+      },
       "tls_certificate": {
+        "label": "TLS/SSL certificate",
         "$ref": "#/properties/tls_certificate",
         "key": "tls_certificate",
-        "label": "TLS/SSL Certificate",
         "description": "Single select dropdown for choosing certificates",
         "widget": "dropdown-component-flip",
         "list": [
@@ -201,18 +209,10 @@
             "widget": "text-v3",
             "required": true
           },
-          "port": {
-            "$ref": "#/properties/port",
-            "key": "port",
-            "label": "Port",
-            "description": "Enter port",
-            "widget": "text-v3",
-            "required": true
-          },
           "database": {
+            "label": "Database name",
             "$ref": "#/properties/database",
             "key": "database",
-            "label": "Database name",
             "description": "Name of the database",
             "widget": "text-v3"
           },
@@ -235,45 +235,151 @@
       },
       "ca_certificate": {
         "ca_cert": {
+          "label": "CA cert",
           "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "label": "CA Cert",
           "description": "Enter CA certificate",
           "widget": "password-v3-textarea"
         }
       },
       "client_certificate": {
         "client_key": {
+          "label": "Client key",
           "$ref": "#/properties/client_key",
           "key": "client_key",
-          "label": "Client Key",
           "description": "Enter client key",
           "widget": "password-v3-textarea"
         },
         "client_cert": {
+          "label": "Client cert",
           "$ref": "#/properties/client_cert",
           "key": "client_cert",
-          "label": "Client Cert",
           "description": "Enter client certificate",
           "widget": "password-v3-textarea"
         },
         "ca_cert": {
+          "label": "CA cert",
           "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
-          "label": "CA Cert",
           "description": "Enter CA certificate",
           "widget": "password-v3-textarea"
         }
       }
     },
     "string": {
-      "connection_string": {
-        "$ref": "#/properties/connection_string",
-        "key": "connection_string",
-        "label": "Connection string",
-        "description": "mongodb+srv://tooljet:<password>@cluster0.i1vq4.mongodb.net/mydb?retryWrites=true&w=majority",
-        "widget": "password-v3-textarea",
-        "required": true
+      "connection_format": {
+        "$ref": "#/properties/connection_format",
+        "key": "connection_format",
+        "label": "Connection format",
+        "description": "Select the connection protocol format",
+        "widget": "dropdown-component-flip",
+        "list": [
+          {
+            "name": "Standard (mongodb)",
+            "value": "mongodb"
+          },
+          {
+            "name": "DNS Seed list (mongodb+srv)",
+            "value": "mongodb+srv"
+          }
+        ],
+        "commonFields": {
+          "connection_string": {
+            "$ref": "#/properties/connection_string",
+            "key": "connection_string",
+            "label": "Connection string",
+            "placeholder": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
+            "description": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
+            "widget": "password-v3-textarea",
+            "required": true
+          }
+        }
+      },
+      "mongodb": {
+        "host": {
+          "$ref": "#/properties/host",
+          "key": "host",
+          "label": "Host",
+          "description": "prod-db-1.company.com",
+          "widget": "text-v3",
+          "required": true
+        },
+        "port": {
+          "$ref": "#/properties/port",
+          "key": "port",
+          "label": "Port",
+          "description": "27017",
+          "widget": "text-v3",
+          "required": true
+        },
+        "database": {
+          "label": "Database name",
+          "$ref": "#/properties/database",
+          "key": "database",
+          "description": "customer_data",
+          "widget": "text-v3"
+        },
+        "username": {
+          "$ref": "#/properties/username",
+          "key": "username",
+          "label": "Username",
+          "description": "admin",
+          "widget": "text-v3"
+        },
+        "password": {
+          "$ref": "#/properties/password",
+          "key": "password",
+          "label": "Password",
+          "description": "Enter password",
+          "widget": "password-v3",
+          "required": false
+        },
+        "use_ssl": {
+          "$ref": "#/properties/use_ssl",
+          "key": "use_ssl",
+          "label": "Use SSL/TLS",
+          "description": "Enable SSL connection",
+          "widget": "checkbox"
+        }
+      },
+      "mongodb+srv": {
+        "host": {
+          "$ref": "#/properties/host",
+          "key": "host",
+          "label": "Host",
+          "description": "prod-db-1.company.com",
+          "widget": "text-v3",
+          "required": true
+        },
+        "database": {
+          "label": "Database name",
+          "$ref": "#/properties/database",
+          "key": "database",
+          "description": "customer_data",
+          "widget": "text-v3"
+        },
+        "username": {
+          "$ref": "#/properties/username",
+          "key": "username",
+          "label": "Username",
+          "description": "admin",
+          "widget": "text-v3"
+        },
+        "password": {
+          "$ref": "#/properties/password",
+          "key": "password",
+          "label": "Password",
+          "description": "Enter password",
+          "widget": "password-v3",
+          "required": false
+        },
+        "use_ssl": {
+          "$ref": "#/properties/use_ssl",
+          "key": "use_ssl",
+          "label": "Use SSL/TLS",
+          "description": "Enable SSL connection",
+          "widget": "checkbox"
+        }
       }
     }
   }

@@ -1,0 +1,248 @@
+.tags-input-widget {
+  width: 100%;
+
+  .tags-input-values-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.tags-input-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background-color: var(--surfaces-surface-03);
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  max-width: 100%;
+  min-width: 0; // Allow shrinking for ellipsis
+
+  &-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &-remove {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    flex-shrink: 0; // Prevent X icon from shrinking
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.tags-input-menu-list {
+  background-color: var(--surfaces-surface-01);
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.theme-dark {
+    background-color: var(--surfaces-surface-01);
+  }
+
+  .tags-input-menu-list-body {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0px !important;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--interactive-hover, rgba(136, 144, 153, 0.12)) transparent;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+      border-radius: 1000px;
+      // Simulate padding: 8px top, 1.5px left/right, 4px bottom
+      border: 1.5px solid transparent;
+      border-top-width: 8px;
+      border-bottom-width: 4px;
+      background-clip: padding-box;
+    }
+  }
+
+  .tags-input-no-options {
+    padding: 8px 12px !important;
+    color: var(--text-placeholder) !important;
+    font-size: 14px;
+    text-align: left !important;
+  }
+
+  .tags-input-create-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border-weak);
+    cursor: pointer;
+    background-color: var(--surfaces-surface-01);
+    gap: 8px;
+    user-select: none;
+    padding: 4px;
+  }
+  .tags-input-new-tag-preview-wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px 12px;
+    gap: 8px;
+    border-radius: 6px;
+    &:hover {
+      background-color: var(--interactive-overlays-fill-hover);
+    }
+    &:active {
+      background-color: var(--interactive-overlays-fill-pressed);
+    }
+    // Ensure child elements don't block click events
+    > * {
+      pointer-events: none;
+    }
+  
+  }
+  .tags-input-new-tag-preview{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    .add-text{
+      font-size: 14px;
+      color: var(--text-placeholder);
+      flex-shrink: 0;
+    }
+
+  }
+
+  .tags-input-new-tag-preview-text {
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 14px;
+    line-height: 20px;
+    word-break: break-all;
+    min-width: 0;
+    // background-color: var(--surfaces-surface-03);
+    color: var(--text-primary);
+  }
+}
+
+.tags-input-option-chip {
+  display: flex;
+  align-items: center;
+  background-color: var(--surfaces-surface-03);
+  color: var(--text-primary);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  word-break: break-all;
+
+}
+
+.tags-input-create-option-wrapper {
+  display: block !important;
+  border-top: 1px solid var(--border-weak) !important;
+  margin: 0 !important;
+  margin-left: -4px !important;
+  margin-right: -4px !important;
+  padding: 4px !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  width: calc(100% + 8px) !important;
+
+  &:has(.tags-input-create-option-inner) {
+    margin-top: 4px !important;
+    padding-bottom: 0px !important;
+  }
+}
+
+.tags-input-create-option-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover);
+  }
+
+  &:active {
+    background-color: var(--interactive-overlays-fill-pressed);
+  }
+}
+
+.tags-input-create-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+// Override react-select default styles for tags input
+.tags-input-widget {
+  .css-1dimb5e-singleValue,
+  .css-qbdosj-Input {
+    margin: 0;
+    padding: 0;
+  }
+
+  // Ensure proper wrapping in value container
+  .css-1p3m7a8-multiValue {
+    margin: 0;
+  }
+
+  // Remove default focus ring
+  .css-t3ipsp-control:hover,
+  .css-t3ipsp-control {
+    box-shadow: none;
+  }
+
+  // Scrollbar styling for control/field
+  [class*='-control'] {
+    scrollbar-width: thin;
+    scrollbar-color: var(--interactive-hover, rgba(136, 144, 153, 0.12)) transparent;
+
+    &::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
+      border-radius: 1000px;
+      // Simulate padding: 2px top, 1.5px left/right, 8px bottom
+      border: 1.5px solid transparent;
+      border-top-width: 2px;
+      border-bottom-width: 8px;
+      background-clip: padding-box;
+    }
+  }
+}

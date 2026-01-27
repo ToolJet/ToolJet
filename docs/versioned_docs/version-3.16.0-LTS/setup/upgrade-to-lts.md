@@ -11,7 +11,17 @@ ToolJet will be releasing new LTS versions every 3-5 months with an end-of-life 
 
 ### Prerequisites
 
-- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+:::warning Critical: Backup Your PostgreSQL Instance
+
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
+
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
+
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
@@ -30,3 +40,12 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 - [Upgrade ToolJet on Kubernetes(AKS)](/docs/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Azure Container Apps](/docs/setup/azure-container#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Google Cloud Run](/docs/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

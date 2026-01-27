@@ -4,7 +4,6 @@ import { LICENSE_FIELD, LICENSE_LIMIT, ORGANIZATION_INSTANCE_KEY } from '@module
 import { DataSource } from 'typeorm';
 import { LicenseTermsService } from '../interfaces/IService';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
-import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
@@ -25,9 +24,12 @@ export class EditorUserCountGuard implements CanActivate {
       // Not needed for cloud edition, as it is not used in the cloud
       return true;
     }
-    const isPersonalWorkspaceEnabled =
-      (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
-    if (isWorkspaceSignup && !isPersonalWorkspaceEnabled) return true;
+
+    if (!isWorkspaceSignup) {
+      return true; //Instance level personal ws not being created so not counted as builder
+    }
+
+    //ToDo : Can remove this guard from signup if personal ws is not being created on signup
 
     const editorsCount = await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.EDITORS);
     if (editorsCount === LICENSE_LIMIT.UNLIMITED) {

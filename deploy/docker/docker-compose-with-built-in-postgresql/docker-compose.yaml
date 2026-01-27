@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  tooljet:
+    tty: true
+    stdin_open: true
+    container_name: Tooljet-app
+    image: tooljet/tooljet-ce:ce-lts-latest
+    platform: linux/amd64
+    restart: always
+    env_file: .env
+    ports:
+      - 80:80
+    depends_on:
+      - postgres
+    environment:
+      SERVE_CLIENT: "true"
+      PORT: "80"
+    command: npm run start:prod
+
+  postgres:
+    container_name: ${PG_HOST}
+    image: postgres:16
+    restart: always
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+
+volumes:
+  postgres:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${PWD}/postgres_data
+  certs:
+  logs:
+  fallbackcerts:

@@ -6,7 +6,7 @@ title: Azure container apps
 # Deploying ToolJet on Azure container apps
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.com.
 :::
 
 :::info

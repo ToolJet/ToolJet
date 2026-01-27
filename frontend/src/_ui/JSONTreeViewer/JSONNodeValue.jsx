@@ -1,7 +1,7 @@
 import React from 'react';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 
-const JSONTreeValueNode = ({ data, type }) => {
+const JSONTreeValueNode = ({ data, type, showFullNodeValue = false }) => {
   const { appMode } = useAppDarkMode();
   if (type === 'Function') {
     return;
@@ -19,7 +19,7 @@ const JSONTreeValueNode = ({ data, type }) => {
   }
 
   let value = type === 'String' ? `"${data}"` : String(data);
-  if (value.length > 65) {
+  if (value.length > 65 && !showFullNodeValue) {
     value = `${value.substring(0, 65)} ... "`;
   }
 

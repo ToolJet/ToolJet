@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import moment from 'moment';
 import { range } from 'lodash';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const CustomDatePickerHeader = (props) => {
   const {
@@ -27,19 +28,22 @@ const CustomDatePickerHeader = (props) => {
     setDatePickerMode,
     darkMode,
   } = props;
+
+  const { t } = useTranslation();
+
   const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    t('datepicker.months.january', 'January'),
+    t('datepicker.months.february', 'February'),
+    t('datepicker.months.march', 'March'),
+    t('datepicker.months.april', 'April'),
+    t('datepicker.months.may', 'May'),
+    t('datepicker.months.june', 'June'),
+    t('datepicker.months.july', 'July'),
+    t('datepicker.months.august', 'August'),
+    t('datepicker.months.september', 'September'),
+    t('datepicker.months.october', 'October'),
+    t('datepicker.months.november', 'November'),
+    t('datepicker.months.december', 'December'),
   ];
 
   const years = range(1900, 2101);

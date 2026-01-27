@@ -1,0 +1,53 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "HubSpot datasource",
+  "description": "A schema defining HubSpot datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "hubspot_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "WebHooks": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-webhooks.json",
+        "Subscriptions": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-subscriptions.json",
+        "Oauth Service": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-oauth-service.json",
+        "Domains": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-domains.json",
+        "Blog Posts": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-blog-posts.json",
+        "Blog Authors": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-blog-authors.json",
+        "Url Redirects": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-url-redirects.json",
+        "Performance": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-performance.json",
+        "HubDB": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-hubdb.json",
+        "Blog Tags": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-blog-tags.json",
+        "Audit Logs": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-audit-logs.json",
+        "Site Search": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-site-search.json",
+        "Transactional Email": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-transactional-email.json",
+        "Custom Workflow Actions": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-custom-workflow-actions.json",
+        "Files": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-files.json",
+        "Visitor Identification": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-visitor-identification.json",
+        "Cards": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-cards.json",
+        "Products": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-products.json",
+        "Pipelines": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-pipelines.json",
+        "Companies": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-companies.json",
+        "Calling": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-calling.json",
+        "Quotes": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-quotes.json",
+        "Deals": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-deals.json",
+        "Imports": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-imports.json",
+        "Schemas": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-schemas.json",
+        "Properties": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-properties.json",
+        "Associations": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-associations.json",
+        "Owners": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-owners.json",
+        "Timeline": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-timeline.json",
+        "Contacts": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-contacts.json",
+        "Feedback Submissions": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-feedback-submissions.json",
+        "Objects": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-objects.json",
+        "Video Conference": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-video-conference.json",
+        "Tickets": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-tickets.json",
+        "Line Items": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/hubspot-line-items.json"
+      }
+    }
+  }
+}

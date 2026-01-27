@@ -1,0 +1,68 @@
+
+// Screen reader only class for accessibility
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Legacy rating
+.star-rating {
+  display: flex;
+  padding: 3px;
+
+  .label {
+    flex: 1;
+  }
+  .rating-icon-widget {
+    margin-bottom: 1px;
+  }
+}
+
+.rating-icon-widget {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  transform-origin: center center;
+  display: inline-block;
+  
+  &:hover {
+    transform: scale(1.2) !important; // 20px * 1.2 = 24px
+    z-index: 10;
+    position: relative;
+    
+    .show-opacity-on-hover {
+      opacity: 0.5 !important;
+    }
+  }
+
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    
+    &:hover {
+      transform: none !important; // Prevent scaling when disabled
+    }
+  }
+
+  svg {
+    transition: transform 0.2s ease;
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+}
+
+// Ensure parent containers don't clip the scaled icons
+.rating-widget-group {
+  overflow: visible !important;
+}
+
+.star-rating-container {
+  overflow: visible !important;
+}

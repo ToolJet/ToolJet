@@ -1,4 +1,5 @@
-import { IsArray, IsIn, IsNumber, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsNumber, IsObject, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { Target } from 'src/entities/event_handler.entity';
 
 export class CreateEventHandlerDto {
@@ -41,4 +42,11 @@ export class UpdateEventHandlerDto {
 
   @IsIn(['update', 'reorder'])
   updateType: 'update' | 'reorder';
+}
+
+export class BulkCreateEventHandlerDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateEventHandlerDto)
+  events: CreateEventHandlerDto[];
 }

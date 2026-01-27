@@ -1,6 +1,7 @@
 import { OrganizationSubscriptionInvoice } from '@entities/organization_subscription_invoice.entity';
 import { PaymentRedirectDto, PortalDto, ProrationDto } from '../dto';
 import { OrganizationSubscription } from '@entities/organization_subscription.entity';
+import Stripe from 'stripe';
 
 export interface IOrganizationPaymentService {
   getUpcomingInvoice(organizationId: string): Promise<OrganizationSubscriptionInvoice>;
@@ -17,7 +18,11 @@ export interface IOrganizationPaymentService {
 
   licenseUpgradeValidation(organizationId: string, checkParam: any, manager?: any): Promise<void>;
 
-  UpdateOrInsertCloudLicense(organizationSubscription: OrganizationSubscription, manager?: any): Promise<void>;
+  UpdateOrInsertCloudLicense(
+    organizationSubscription: OrganizationSubscription,
+    invoiceObject: Stripe.Response<Stripe.Invoice>,
+    manager?: any
+  ): Promise<void>;
 
   paymentFailedHandler(invoiceObject: any): Promise<void>;
 

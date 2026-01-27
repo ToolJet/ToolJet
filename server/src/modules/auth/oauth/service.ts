@@ -87,8 +87,14 @@ export class OauthService implements IOAuthService {
       organization = ssoConfigs?.organization;
     } else if (isInstanceSSOOrganizationLogin) {
       // Instance SSO login from organization login page
-      organization = await this.loginConfigsUtilService.fetchOrganizationDetails(organizationId, [true], false, true);
-      ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
+      organization = await this.loginConfigsUtilService.fetchOrganizationDetails(
+        organizationId,
+        [true, false],
+        false,
+        true
+      );
+      organization.ssoConfigs = this.loginConfigsUtilService.removeDisabledSsoConfigs(organization?.ssoConfigs);
+      ssoConfigs = organization?.ssoConfigs?.find((conf) => conf?.sso === ssoType);
     } else if (isInstanceSSOLogin) {
       // Instance SSO login from common login page
       ssoConfigs = await this.authUtilService.getInstanceSSOConfigsOfType(ssoType);

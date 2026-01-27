@@ -8,7 +8,7 @@ import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useIconList from './useIconList';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
-import { formatInspectorDataMisc, formatInspectorQueryData } from './utils';
+import { formatInspectorDataMisc, formatInspectorQueryData, noDataFoundChildDataFormat } from './utils';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 
 import './styles.scss';
@@ -126,12 +126,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned, moduleId, appType }
       const types = data.children;
       types.forEach((type) => {
         if (type.children.length === 0) {
-          type.children.push({
-            id: `empty-${type.metadata.type}`,
-            name: `No ${type.metadata.type} found`,
-            children: [],
-            metadata: { noData: true },
-          });
+          type.children.push(noDataFoundChildDataFormat(type.metadata.type));
         }
       });
     };
