@@ -186,11 +186,7 @@ describe("Private and Public apps", () => {
 
     setSignupStatus(true);
     setupAppWithSlug(data.appPublicName, data.appPublicSlug, "public", true);
-    // const publicAppId = Cypress.env("appId");
 
-    // cy.log(`Public App ID: ${publicAppId}`);
-
-    // cy.apiMakeAppPublic(publicAppId);
     setupAppWithSlug(data.appPrivateName, data.appPrivateSlug);
     cy.visitSlug({ actualUrl: getAppUrl(data.slug) });
     cy.visitSlug({ actualUrl: getAppUrl(data.appPublicSlug) });
@@ -216,17 +212,7 @@ describe("Private and Public apps", () => {
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
     cy.get(commonSelectors.signUpButton).click();
     cy.wait("@signup");
-    cy.get(`[data-cy="resend-verification-email-button"]`).should("be.visible");
-    cy.wait(15000); // Waiting for mailhog to receive the email
-    fetchAndVisitInviteLinkViaMH(data.email);
     verifyWidget("private");
-
-    // cy.apiLogout();
-
-    // cy.visitSlug({ actualUrl: getAppUrl(data.appPrivateSlug) })
-    // cy.get(onboardingSelectors.loginPasswordInput).should("be.visible").click({ force: true });
-    // cy.clearAndType('[data-cy="email-input"]', `invited_${data.email}`);
-    // cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   });
 
   it("should verify restricted app access", () => {

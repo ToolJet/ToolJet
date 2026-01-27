@@ -214,7 +214,6 @@
     "jest-runner-groups": "^2.2.0",
     "prettier": "^3.5.3",
     "preview-email": "^3.0.20",
-    "rimraf": "^3.0.2",
     "setup-polly-jest": "^0.11.0",
     "supertest": "^7.1.1",
     "ts-jest": "^29.4.1",

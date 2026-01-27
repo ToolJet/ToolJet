@@ -1,20 +1,20 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense, lazy } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
-import SolidIcon from '@/_ui/Icon/solidIcons/index';
-import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
-import MentionComponentInChat from './MentionComponentInChat';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
 import Popover from '@/_ui/Popover';
 import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
 
 const CONFIG_HANDLE_HEIGHT = 20;
 const BUFFER_HEIGHT = 1;
@@ -259,7 +259,6 @@ export const ConfigHandle = ({
         )}
         <span>{componentName}</span>
       </ConfigHandleButton>
-
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => setComponentToInspect(componentName)}
@@ -283,17 +282,24 @@ export const ConfigHandle = ({
         <PencilRuler size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
 
-      {licenseValid && isRestricted && (
-        <ConfigHandleButton
-          customStyles={iconOnlyButtonStyle}
-          message={getTooltip()}
-          show={licenseValid && isRestricted && !draggingComponentId}
-          dataCy={`${componentName.toLowerCase()}-permissions-button`}
-        >
-          <Lock size={14} color="var(--icon-strong)" />
-        </ConfigHandleButton>
-      )}
-      {!isMultipleComponentsSelected && !shouldFreeze && <MentionComponentInChat componentName={componentName} />}
+      {
+        licenseValid && isRestricted && (
+          <ConfigHandleButton
+            customStyles={iconOnlyButtonStyle}
+            message={getTooltip()}
+            show={licenseValid && isRestricted && !draggingComponentId}
+            dataCy={`${componentName.toLowerCase()}-permissions-button`}
+          >
+            <Lock size={14} color="var(--icon-strong)" />
+          </ConfigHandleButton>
+        )
+      }
+      {
+        !isMultipleComponentsSelected && !shouldFreeze && (
+          <Suspense fallback={null}>
+            <MentionComponentInChat componentName={componentName} />
+          </Suspense >
+        )}
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
@@ -307,15 +313,17 @@ export const ConfigHandle = ({
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-        <Tooltip
-          delay={{ show: 500, hide: 50 }}
-          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-          className="tooltip"
-          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-          style={{ textAlign: 'center' }}
-        />
-      )}
-    </div>
+      {
+        (componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
+          <Tooltip
+            delay={{ show: 500, hide: 50 }}
+            id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+            className="tooltip"
+            isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
+            style={{ textAlign: 'center' }}
+          />
+        )
+      }
+    </div >
   );
 };

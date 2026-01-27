@@ -58,3 +58,5 @@ export const MODAL_CANVAS_PADDING = 5;
 export const LISTVIEW_CANVAS_PADDING = 7;
 
 export const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
+
+export const TOP_ALIGNMENT_HEIGHT_INCREMENT = 20;

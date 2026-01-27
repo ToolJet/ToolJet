@@ -81,7 +81,25 @@ export class OnboardingService implements IOnboardingService {
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
-  async signup(appSignUpDto: AppSignupDto) {
+  private async getDefaultOrOldestWorkspaceOfInstance(
+    manager: EntityManager
+  ): Promise<Organization | null> {
+    const defaultWorkspace = await manager.findOne(Organization, {
+      where: { isDefault: true },
+    });
+
+    if (defaultWorkspace) {
+      return defaultWorkspace;
+    }
+    const [oldestWorkspace] = await manager.find(Organization, {
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+
+    return oldestWorkspace || null;
+  }
+
+  async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
     validatePasswordServer(password);
 
@@ -131,7 +149,8 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
+
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
@@ -145,11 +164,15 @@ export class OnboardingService implements IOnboardingService {
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
+          if (!defaultWorkspace.enableSignUp) {
+            throw new ForbiddenException('Signup is disabled for the default workspace. Please contact the workspace admin.');
+          }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
             redirectTo,
-            manager
+            manager,
+            response
           );
         }
         return await this.onboardingUtilService.createUserInWorkspace(
@@ -157,7 +180,8 @@ export class OnboardingService implements IOnboardingService {
           existingUser,
           signingUpOrganization,
           redirectTo,
-          manager
+          manager,
+          response
         );
       }
     });
@@ -746,7 +770,7 @@ export class OnboardingService implements IOnboardingService {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        { name: workspaceName || 'My workspace', slug: workspaceSlug },
+        { name: workspaceName || 'My workspace', slug: workspaceSlug, isDefault: true },
         null,
         manager
       );
