@@ -54,7 +54,7 @@ const RenderPage = ({
         data-id={page.id}
         className={`tj-list-item ${isActive && 'tj-list-item-selected'}`}
         onClick={() => {
-          switchPageWrapper(page);
+          switchPageWrapper(page, currentPageId);
         }}
         aria-label={page.name}
       >
