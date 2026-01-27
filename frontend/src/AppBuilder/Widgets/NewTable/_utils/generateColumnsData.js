@@ -409,6 +409,7 @@ export default function generateColumnsData({
                   cell={cell}
                   row={row}
                   id={id}
+                  isNewRow={columnForAddNewRow}
                 />
               );
             }

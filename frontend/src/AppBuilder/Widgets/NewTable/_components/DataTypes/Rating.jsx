@@ -16,6 +16,7 @@ export const RatingColumn = ({
   column,
   row,
   id,
+  isNewRow = false,
 }) => {
   const getResolvedValue = useStore.getState().getResolvedValue;
   const cellTextColor = useTextColor(id, textColor);
@@ -27,7 +28,7 @@ export const RatingColumn = ({
   const tooltips = getResolvedValue(column.tooltips) || [];
   const selectedBgColorStars = getResolvedValue(column.selectedBgColorStars) || '#EFB82D';
   const selectedBgColorHearts = getResolvedValue(column.selectedBgColorHearts) || '#EE5B67';
-  const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--icon-weak)';
+  const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--cc-surface3-surface)';
   const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
 
   const [announceValue, setAnnounceValue] = React.useState('');
@@ -36,10 +37,14 @@ export const RatingColumn = ({
   const defaultRating = getResolvedValue(column.defaultRating) || 3;
   const currentRatingIndex = React.useMemo(() => {
     const numValue = Number(cellValue);
-    // If cellValue is empty/null, use defaultRating, otherwise use cellValue
-    const ratingValue = cellValue === null || cellValue === undefined || cellValue === '' ? defaultRating : numValue;
-    return isNaN(ratingValue) ? defaultRating - 1 : ratingValue - 1;
-  }, [cellValue, defaultRating]);
+    const isEmpty = cellValue === null || cellValue === undefined || cellValue === '';
+    // For new rows with empty value, show no stars (index -1)
+    // For existing rows with empty value, use defaultRating
+    if (isEmpty) {
+      return isNewRow ? -1 : defaultRating - 1;
+    }
+    return isNaN(numValue) ? defaultRating - 1 : numValue - 1;
+  }, [cellValue, defaultRating, isNewRow]);
 
   const [hoverIndex, setHoverIndex] = React.useState(null);
 
@@ -116,7 +121,6 @@ export const RatingColumn = ({
                 isHalfIcon={isHalfIcon(index)}
                 maxRating={maxRating}
                 onClick={(e, idx) => {
-                  e.stopPropagation();
                   handleClick(idx);
                 }}
                 allowHalfStar={allowHalfStar}

@@ -24,7 +24,7 @@ export const StylesTabElements = ({
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' && column.columnType !== 'image'
+          {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
             ? t('widget.Table.textAlignment', 'Text Alignment')
             : 'Alignment'}
         </label>

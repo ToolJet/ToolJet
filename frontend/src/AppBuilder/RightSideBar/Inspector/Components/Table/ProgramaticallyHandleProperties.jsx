@@ -112,7 +112,7 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   const value = getValueBasedOnProperty(property, props);
-  console.log('value', value);
+
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;
