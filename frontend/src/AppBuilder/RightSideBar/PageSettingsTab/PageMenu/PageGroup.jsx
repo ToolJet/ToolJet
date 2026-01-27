@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
+import * as Icons from '@tabler/icons-react';
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
