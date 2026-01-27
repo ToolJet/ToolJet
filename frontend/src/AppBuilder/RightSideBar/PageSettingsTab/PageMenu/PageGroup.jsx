@@ -1,7 +1,7 @@
 /* eslint-disable import/namespace */
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -28,23 +28,21 @@ const RenderPage = ({
 }) => {
   const isPageHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id)); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
   const isHomePage = page.id === homePageId;
-  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon ?? 'IconFile';
   const isActive = page?.id === currentPageId;
 
   if (isPageHidden || page.disabled || (page?.restricted && currentMode !== 'edit')) return null;
 
   const IconElement = (props) => {
-    const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
-
     if (!isSidebarPinned || labelStyle?.label?.hidden) {
       return (
         <ToolTip message={page?.name} placement={'right'}>
-          <Icon {...props} />
+          <TablerIcon iconName={iconName} {...props} />
         </ToolTip>
       );
     }
 
-    return <Icon {...props} />;
+    return <TablerIcon iconName={iconName} {...props} />;
   };
 
   const iconColor = isActive ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
@@ -111,18 +109,17 @@ const RenderPageGroup = ({
   const groupItemRootRef = useRef(null);
   const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
+  const pageGroupIconName = pageGroup.icon || 'IconHome2';
   const IconElement = (props) => {
-    const Icon = Icons?.[pageGroup.icon] ?? Icons?.['IconHome2'];
-
     if ((!isSidebarPinned && currentMode === 'view') || labelStyle?.label?.hidden) {
       return (
         <ToolTip message={pageGroup?.name} placement={'right'}>
-          <Icon {...props} />
+          <TablerIcon iconName={pageGroupIconName} {...props} />
         </ToolTip>
       );
     }
 
-    return <Icon {...props} />;
+    return <TablerIcon iconName={pageGroupIconName} {...props} />;
   };
 
   if (isPageGroupHidden) {

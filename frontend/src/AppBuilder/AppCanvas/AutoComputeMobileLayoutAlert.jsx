@@ -5,7 +5,7 @@ import { compact, correctBounds } from './Grid/gridUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import useConfirm from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/Confirm';
+import useConfirm from '@/_hooks/useConfirm';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { isEmpty } from 'lodash';

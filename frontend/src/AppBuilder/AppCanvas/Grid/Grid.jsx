@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo, Suspense, lazy } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
@@ -33,12 +33,19 @@ import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
-import { DROPPABLE_PARENTS, NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
+import {
+  DROPPABLE_PARENTS,
+  NO_OF_GRIDS,
+  SUBCONTAINER_WIDGETS,
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+} from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
-import MentionComponentInChat from '../ConfigHandle/MentionComponentInChat';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const MentionComponentInChat = lazy(() => import('../ConfigHandle/MentionComponentInChat'));
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -54,6 +61,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
+  const getComponentAlignment = useStore((state) => state.getComponentAlignment, shallow);
   const [boxList, setBoxList] = useState([]);
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(moduleId), shallow);
   const selectedComponents = useStore((state) => state.selectedComponents, shallow);
@@ -64,6 +72,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
   const virtualTarget = useGridStore((state) => state.virtualTarget, shallow);
+  const getComponentLabel = useStore((state) => state.getComponentLabel, shallow);
 
   const { startAutoScroll, stopAutoScroll, updateMousePosition, getScrollDelta } = useCanvasAutoScroll(
     {},
@@ -250,8 +259,30 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       >
         <span id={id}>
           <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
-          <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          <Suspense fallback={null}>
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          </Suspense>
         </span>
+        {/* <span className="badge handle-content" id={id} style={{ background: '#4d72fa' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
+              src="assets/images/icons/settings.svg"
+              width="12"
+              height="12"
+              draggable="false"
+            />
+            <span>components</span>
+
+            <hr
+              className={cn(
+                'tw-mx-1 !tw-h-3 tw-w-0.5 tw-bg-white tw-opacity-50 tw-shrink-0 tw-hidden has-[+*]:tw-block'
+              )}
+            />
+
+            <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
+          </div> */}
+        {/* </span> */}
       </div>
     );
   };
@@ -540,9 +571,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _top = originalBox.top;
 
             // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
-              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
           }
         });
 
@@ -713,10 +743,18 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               return;
             }
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
-            const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
+            const alignment = getComponentAlignment(currentWidget.id, moduleId);
+            const label = getComponentLabel(currentWidget.id, moduleId);
+            let topAlignmentAddedHeight =
+              alignment === 'top' && directions[1] !== 0 && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
+
+            const height = Math.max(
+              GRID_HEIGHT,
+              Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
+            );
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
-            const diffHeight = e.lastEvent?.height - currentWidget?.height;
+            const diffHeight = height - currentWidget?.height;
             const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
             const isTopChanged = e.lastEvent?.direction?.[1] === -1;
 
@@ -740,14 +778,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
-            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
-              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+              }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }
-            if (!maxHeightHit || e.height < e.target.clientHeight) {
-              e.target.style.height = `${Math.round(e.lastEvent.height / GRID_HEIGHT) * GRID_HEIGHT}px`;
+
+            // Added diffHeight !== 0 to prevent the height from being changed and messing up the top alignment.
+            if ((!maxHeightHit || e.height < e.target.clientHeight) && diffHeight !== 0) {
+              e.target.style.height = `${height}px`;
             }
             const resizeData = {
               id: e.target.id,
@@ -823,13 +862,20 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
               let width = Math.round(ev.width / _gridWidth) * _gridWidth;
               width = width < _gridWidth ? _gridWidth : width;
+              const alignment = getComponentAlignment(currentWidget.id, moduleId);
               let posX = Math.round(ev.drag.translate[0] / _gridWidth) * _gridWidth;
               let posY = Math.round(ev.drag.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-              let height = Math.round(ev.height / GRID_HEIGHT) * GRID_HEIGHT;
+              const label = getComponentLabel(currentWidget.id, moduleId);
+              const topAlignmentAddedHeight =
+                alignment === 'top' && label?.length > 0 ? TOP_ALIGNMENT_HEIGHT_INCREMENT : 0;
+              let height = Math.round((ev.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT;
+              const heightDiff = height - currentWidget?.height;
               height = height < GRID_HEIGHT ? GRID_HEIGHT : height;
 
               ev.target.style.width = `${width}px`;
-              ev.target.style.height = `${height}px`;
+              if (heightDiff !== 0) {
+                ev.target.style.height = `${height}px`;
+              }
               ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
               newBoxs.push({
                 id: ev.target.id,

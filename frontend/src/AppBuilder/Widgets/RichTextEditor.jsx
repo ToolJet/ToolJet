@@ -4,7 +4,7 @@ import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
-export const RichTextEditor = function RichTextEditor({
+export default function RichTextEditor({
   id,
   width,
   height,
@@ -103,4 +103,4 @@ export const RichTextEditor = function RichTextEditor({
       ></DraftEditor>
     </div>
   );
-};
+}

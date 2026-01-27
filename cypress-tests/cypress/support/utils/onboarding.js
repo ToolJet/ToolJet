@@ -63,7 +63,6 @@ export const verifyInvalidInvitationLink = () => {
 };
 
 export const userSignUp = (fullName, email, workspaceName = "test") => {
-  let invitationLink;
   cy.intercept("GET", "/api/login-configs/public").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
@@ -80,20 +79,11 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.get(commonSelectors.signUpButton).click();
 
   cy.wait(2500);
-  cy.task("dbConnection", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-    cy.visit(invitationLink);
-    cy.wait(2500);
-  });
   if (Cypress.env("environment") == "Cloud") {
     cy.clearAndType(
       '[data-cy="onboarding-workspace-name-input"]',
       workspaceName
     );
-    cy.get('[data-cy="onboarding-submit-button"]').click();
   }
 };
 

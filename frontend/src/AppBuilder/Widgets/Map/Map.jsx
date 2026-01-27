@@ -6,7 +6,7 @@ import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
 import './styles.scss';
 
-export const Map = function Map({
+export default function Map({
   id,
   width,
   height,
@@ -228,4 +228,4 @@ export const Map = function Map({
       </LoadScript>
     </div>
   );
-};
+}

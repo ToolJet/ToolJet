@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import _, { isEmpty } from 'lodash';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
 import classNames from 'classnames';
 import PreviewSettings from './PreviewSettings';
-import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -12,6 +11,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { useLocation } from 'react-router-dom';
+
+// Lazy load MobileNavigationMenu to reduce initial bundle size
+const MobileNavigationMenu = React.lazy(() => import('./MobileNavigationMenu'));
 
 const MobileHeader = ({
   showHeader,
@@ -101,18 +103,20 @@ const MobileHeader = ({
   };
 
   const _renderMobileNavigationMenu = () => (
-    <MobileNavigationMenu
-      currentPageId={currentPageId}
-      switchPage={switchPage}
-      switchToHomePage={switchToHomePage}
-      darkMode={darkMode}
-      changeToDarkMode={changeToDarkMode}
-      showDarkModeToggle={showDarkModeToggle}
-      appName={appName}
-      pages={pages}
-      viewerWrapperRef={viewerWrapperRef}
-      bgStyles={bgStyles}
-    />
+    <Suspense fallback={null}>
+      <MobileNavigationMenu
+        currentPageId={currentPageId}
+        switchPage={switchPage}
+        switchToHomePage={switchToHomePage}
+        darkMode={darkMode}
+        changeToDarkMode={changeToDarkMode}
+        showDarkModeToggle={showDarkModeToggle}
+        appName={appName}
+        pages={pages}
+        viewerWrapperRef={viewerWrapperRef}
+        bgStyles={bgStyles}
+      />
+    </Suspense>
   );
 
   const _renderPreviewSettings = () => (
