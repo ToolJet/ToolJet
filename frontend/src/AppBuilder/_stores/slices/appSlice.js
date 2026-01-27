@@ -331,6 +331,7 @@ export const createAppSlice = (set, get) => ({
       moduleId
     );
     setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(queryParamsString))));
+    // Always do initial resolution on main thread for immediate rendering
     initDependencyGraph('canvas');
     setPageSwitchInProgress(true);
   },

@@ -18,6 +18,7 @@ import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
+import { isWorkerArchitectureEnabled } from '@/AppBuilder/_helpers/featureFlags';
 import { toast } from 'react-hot-toast';
 import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
@@ -120,8 +121,16 @@ export const createComponentsSlice = (set, get) => ({
 
     // const dependencyGraph = { ...modules[moduleId].dependencyGraph };
 
+    // Always do initial resolution so component can render immediately
+    // When worker architecture is enabled, the worker will also resolve and send updates
+    // which will be synced back via WorkerBridge
     const resolvedComponentValues = addToDependencyGraph(moduleId, newComponent.id, newComponent.component);
     setResolvedComponent(newComponent.id, resolvedComponentValues, moduleId);
+
+    // Skip updating dependency graph state if worker architecture handles dependencies
+    if (isWorkerArchitectureEnabled()) {
+      return;
+    }
 
     set(
       (state) => {

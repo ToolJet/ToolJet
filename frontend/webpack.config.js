@@ -368,6 +368,8 @@ module.exports = {
     path: path.resolve(__dirname, 'build'),
     // chunkFilename: '[name].[contenthash].js',
     clean: true,
+    // Worker chunk loading configuration for web workers
+    workerChunkLoading: 'import-scripts',
   },
   externals: {
     // global app config object

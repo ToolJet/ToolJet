@@ -8,6 +8,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { useWorkerExposedValueSetter } from '@/AppBuilder/_workers/integration/WorkerBridge';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -93,7 +94,12 @@ const RenderWidget = ({
   // const others = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.others, shallow);
   const updateDependencyValues = useStore((state) => state.updateDependencyValues, shallow);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
-  const setExposedValue = useStore((state) => state.setExposedValue, shallow);
+
+  // Use worker-aware setExposedValue when worker architecture is enabled
+  const { setExposedValue: workerSetExposedValue, isWorkerEnabled } = useWorkerExposedValueSetter();
+  const storeSetExposedValue = useStore((state) => state.setExposedValue, shallow);
+  const setExposedValue = isWorkerEnabled ? workerSetExposedValue : storeSetExposedValue;
+
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
   const resolvedValidation = useStore(
@@ -159,15 +165,19 @@ const RenderWidget = ({
   const setExposedVariable = useCallback(
     (key, value) => {
       setExposedValue(id, key, value, moduleId);
-      // Trigger an update when the child components is directly linked to any component
-      updateDependencyValues(`components.${id}.${key}`, moduleId);
+
+      // When worker is enabled, it handles dependency resolution automatically
+      // Otherwise, trigger an update when the child components is directly linked to any component
+      if (!isWorkerEnabled) {
+        updateDependencyValues(`components.${id}.${key}`, moduleId);
+      }
 
       // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
       if (onOptionChange !== null) {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
-    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange, moduleId]
+    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange, moduleId, isWorkerEnabled]
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {

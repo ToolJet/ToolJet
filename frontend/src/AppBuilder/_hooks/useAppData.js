@@ -513,6 +513,8 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
+        // Always do initial resolution on main thread for immediate rendering
+        // When worker architecture is enabled, the worker will also resolve and handle subsequent updates
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
@@ -715,6 +717,7 @@ const useAppData = (
         });
 
         setQueryMapping(moduleId);
+        // Always do initial resolution on main thread for immediate rendering
         initDependencyGraph(moduleId);
         setEditorLoading(false, moduleId);
       });
