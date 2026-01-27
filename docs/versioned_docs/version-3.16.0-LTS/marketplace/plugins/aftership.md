@@ -9,49 +9,20 @@ Integrating AfterShip with ToolJet enables teams to build custom internal tools 
 
 To connect AfterShip with ToolJet you will need the API Key, which you can generate from [Aftership Tracking API](https://www.aftership.com/tracking-api).
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/connection.png" alt="Aftership Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/connection-v2.png" alt="Aftership Configuration" style={{ marginBottom:'15px' }} />
 
-## Supported Operations
+## Supported Entities
+- Shipping
+- Tracking
+- Retruns
 
-### Tracking
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/list-entities.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
+
+### Shipping
 
 #### Basic Tracking Operations
 
-| Method | Endpoint     | Description                 |
-| ------ | ------------ | --------------------------- |
-| GET    | `/trackings` | Retrieve list of trackings. |
-| POST   | `/trackings` | Create a new tracking.      |
-| GET	 | `/couriers` 	| Get supported courier list. |
-
-#### ID
-
-| Method | Endpoint                            | Description                  |
-| ------ | ----------------------------------- | ---------------------------- |
-| GET    | `/trackings/{id}`                   | Get tracking by ID.          |
-| PUT    | `/trackings/{id}`                   | Update tracking by ID.       |
-| DELETE | `/trackings/{id}`                   | Delete tracking by ID.       |
-| POST   | `/trackings/{id}/retrack`           | Retrack an expired tracking. |
-| POST   | `/trackings/{id}/mark-as-completed` | Mark tracking as completed.  |
-
-#### Detect
-
-| Method | Endpoint           | Description                        |
-| ------ | ------------------ | ---------------------------------- |
-| POST   | `/couriers/detect` | Detect courier by tracking number. |
-
-#### All
-
-| Method | Endpoint           | Description                        |
-| ------ | ------------------ | ---------------------------------- |
-| GET    | `/couriers/all`    | Get all available couriers.        |
-
-#### Predict Batch
-
-| Method | Endpoint                                 | Description                           |
-| ------ | ---------------------------------------- | ------------------------------------- |
-| POST   | `/estimated-delivery-date/predict-batch` | Predict estimated delivery for batch. |
-
-### Shipping
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/shipping-ops.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
 
 #### Labels
 
@@ -131,7 +102,53 @@ To connect AfterShip with ToolJet you will need the API Key, which you can gener
 | PUT    | `/shipper-accounts/{id}/credentials` | Update shipper account's credentials      |
 | PUT    | `/shipper-accounts/{id}/settings`    | Update shipper account's settings (FedEx) |
 
+### Tracking
+
+#### Basic Tracking Operations
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/tracking-ops.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
+
+
+| Method | Endpoint     | Description                 |
+| ------ | ------------ | --------------------------- |
+| GET    | `/trackings` | Retrieve list of trackings. |
+| POST   | `/trackings` | Create a new tracking.      |
+| GET	 | `/couriers` 	| Get supported courier list. |
+
+#### ID
+
+| Method | Endpoint                            | Description                  |
+| ------ | ----------------------------------- | ---------------------------- |
+| GET    | `/trackings/{id}`                   | Get tracking by ID.          |
+| PUT    | `/trackings/{id}`                   | Update tracking by ID.       |
+| DELETE | `/trackings/{id}`                   | Delete tracking by ID.       |
+| POST   | `/trackings/{id}/retrack`           | Retrack an expired tracking. |
+| POST   | `/trackings/{id}/mark-as-completed` | Mark tracking as completed.  |
+
+#### Detect
+
+| Method | Endpoint           | Description                        |
+| ------ | ------------------ | ---------------------------------- |
+| POST   | `/couriers/detect` | Detect courier by tracking number. |
+
+#### All
+
+| Method | Endpoint           | Description                        |
+| ------ | ------------------ | ---------------------------------- |
+| GET    | `/couriers/all`    | Get all available couriers.        |
+
+#### Predict Batch
+
+| Method | Endpoint                                 | Description                           |
+| ------ | ---------------------------------------- | ------------------------------------- |
+| POST   | `/estimated-delivery-date/predict-batch` | Predict estimated delivery for batch. |
+
+
 ### Return
+
+#### Basic Tracking Operations
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/aftership/returns-ops.png" alt="Aftership supported entities" style={{ marginBottom:'15px'}} />
 
 #### Returns Management
 
