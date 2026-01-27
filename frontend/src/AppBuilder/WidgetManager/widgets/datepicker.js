@@ -55,6 +55,11 @@ export const datepickerConfig = {
         defaultValue: "['01/01/2022']",
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+    },
   },
   events: {
     onSelect: { displayName: 'On select' },
@@ -102,6 +107,7 @@ export const datepickerConfig = {
       enableTime: { value: '{{false}}' },
       enableDate: { value: '{{true}}' },
       disabledDates: { value: '{{[]}}' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {

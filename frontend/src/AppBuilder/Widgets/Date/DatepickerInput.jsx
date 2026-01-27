@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
 import moment from 'moment-timezone';
 
 export const DatepickerInput = forwardRef(
@@ -31,7 +32,18 @@ export const DatepickerInput = forwardRef(
     auto,
     labelWidth,
     label,
+    showClearBtn,
+    onClear,
+    clearButtonRightOffset = 0,
   }) => {
+    const placeholderValues = new Set(['Select date', 'Select time', 'Select date and time']);
+    const hasValue = value !== null && value !== undefined && value !== '' && !placeholderValues.has(value);
+    const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+    const clearButtonBaseRight = loaderStyles?.right ?? '11px';
+    const clearButtonRight =
+      clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+    const clearButtonTop = loaderStyles?.top ?? '50%';
+    const clearButtonTransform = loaderStyles?.transform ?? 'translateY(-50%)';
     return (
       <>
         <input
@@ -92,6 +104,30 @@ export const DatepickerInput = forwardRef(
             </div>
           )}
         </span>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onClear?.();
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={{ ...loaderStyles }} width="16" />}
       </>
     );

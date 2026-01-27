@@ -3773,6 +3773,12 @@ input[type="text"] {
   }
 }
 
+.daterange-picker-widget.has-clear-btn {
+  .DateRangePickerInput {
+    padding-right: 32px;
+  }
+}
+
 .form-ele {
   .DateRangePicker_picker {
     top: 40px !important;
