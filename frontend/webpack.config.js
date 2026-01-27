@@ -88,6 +88,7 @@ if (isDevEnv) {
 if (isProductionMode) {
   plugins.push(
     new MiniCssExtractPlugin({
+      ignoreOrder: true,
       filename: '[name].[contenthash].css',
       chunkFilename: '[name].[contenthash].chunk.css',
     })
