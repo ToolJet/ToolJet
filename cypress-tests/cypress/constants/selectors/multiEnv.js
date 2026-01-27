@@ -30,7 +30,7 @@ export const appEditorSelector = {
         },
 
         pages: {
-            pagesTabButton: '[data-cy="right-sidebar-file01-button"]',
+            pagesTabButton: '[data-cy="right-sidebar-page-settings-button"]',
             addNewPageButton: '#add-new-page',
             pageToggleInput: 'input.form-check-input',
             pageTextInput: 'input.form-control',
