@@ -187,7 +187,10 @@ export default class Googlesheetsv2QueryService implements QueryService {
         ['', ''],
         ['tj-x-forwarded-for', '::1'],
       ],
-      custom_query_params: [['', '']],
+      custom_query_params: [
+        ['access_type', 'offline'],
+        ['prompt', 'consent'],
+      ],
       custom_auth_params: [['', '']],
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
