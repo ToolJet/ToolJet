@@ -15,9 +15,9 @@ To connect AWS Bedrock with ToolJet, following credentials are required:
 
 You can generate the required credentials from the AWS IAM Console, refer to [Generate Amazon Bedrock API keys](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html) guide for more information.
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/bedrock/connection.png" alt="AWS Bedrock Connection"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/connection-v2.png" alt="AWS Bedrock Connection"/>
 
-## Supported Operation
+## Supported Operations
 
 ### Generate Content
 
@@ -30,7 +30,7 @@ Sends input to the selected foundation model and returns the generated output ba
 **Optional Parameters**
 - **Content-Type**: Specifies the format of the request body, typically `application/json`.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/generate-content.png" alt="AWS Bedrock Connection"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/generate-v2.png" alt="AWS Bedrock query"/>
 
 ### List Foundation Models
 
@@ -42,4 +42,4 @@ Fetches all available foundation models from your AWS Bedrock account, including
 - **Inference Type**: Filter models based on the inference mode, like on-demand or provisioned.
 - **Output Modality**: Filter by the type of output the model supports, such as text, embeddings or images.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/foundation-models.png" alt="AWS Bedrock Connection"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/list-foundation-v2.png" alt="AWS Bedrock query"/>
