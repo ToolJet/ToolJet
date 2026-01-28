@@ -160,7 +160,8 @@ export class OnboardingService implements IOnboardingService {
           userParams,
           redirectTo,
           defaultWorkspace,
-          manager
+          manager,
+          response
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
