@@ -8,6 +8,22 @@ import { CurrencyMap } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
+// Parse value to number based on the number format
+export const parseValueToNumber = (val, numberFormat) => {
+  if (val === undefined || val === null || val === '') return 0;
+  // The value from react-currency-input-field is already a normalized string
+  // but if it contains the European decimal separator, we need to convert it
+  const strVal = String(val);
+  if (numberFormat === 'eu') {
+    // European format: remove group separator (.), replace decimal separator (,) with (.)
+    const normalized = strVal.replace(/\./g, '').replace(',', '.');
+    return parseFloat(normalized) || 0;
+  }
+  // US/UK format: remove group separator (,), decimal is already (.)
+  const normalized = strVal.replace(/,/g, '');
+  return parseFloat(normalized) || 0;
+};
+
 export const CurrencyInput = (props) => {
   const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
@@ -35,7 +51,24 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US', showFlag = true } = properties;
+  const {
+    label,
+    placeholder,
+    decimalPlaces,
+    isCountryChangeEnabled,
+    defaultCountry = 'US',
+    showFlag = true,
+    numberFormat = 'us',
+  } = properties;
+
+  // Get separators based on number format
+  const separators = useMemo(() => {
+    if (numberFormat === 'eu') {
+      return { groupSeparator: '.', decimalSeparator: ',' };
+    }
+    // Default: US/UK style
+    return { groupSeparator: ',', decimalSeparator: '.' };
+  }, [numberFormat]);
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -131,8 +164,8 @@ export const CurrencyInput = (props) => {
   const formattedValue = (value) => {
     return formatValue({
       value: `${value}`,
-      groupSeparator: ',',
-      decimalSeparator: '.',
+      groupSeparator: separators.groupSeparator,
+      decimalSeparator: separators.decimalSeparator,
     });
   };
 
@@ -149,23 +182,23 @@ export const CurrencyInput = (props) => {
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
-  }, [country]);
+  }, [country, formattedValue]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
       setExposedVariables({
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
+        value: parseValueToNumber(value, numberFormat),
       });
     }
-  }, [value]);
+  }, [value, formattedValue]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
+        value: parseValueToNumber(value, numberFormat),
         setCountryCode: (code) => {
           setCountry(code);
         },
@@ -261,6 +294,8 @@ export const CurrencyInput = (props) => {
             } validation-without-icon`}
             value={value}
             decimalsLimit={decimalPlaces}
+            groupSeparator={separators.groupSeparator}
+            decimalSeparator={separators.decimalSeparator}
             style={computedStyles}
             data-ignore-hover={true}
             onValueChange={(newVal) => {
