@@ -386,7 +386,8 @@
                         "widgets/table/serverside-operations/pagination"
                       ]
                     },
-                    "widgets/table/dynamic-column"
+                    "widgets/table/dynamic-column",
+                    "widgets/table/conditional-formatting"
                   ]
                 },
                 "widgets/tabs",
