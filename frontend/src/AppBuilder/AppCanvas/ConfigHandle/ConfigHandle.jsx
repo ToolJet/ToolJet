@@ -6,6 +6,7 @@ import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
 import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components/ToolTip';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '../../../_components/ConfigHandleButton';
 import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, Trash } from 'lucide-react';
