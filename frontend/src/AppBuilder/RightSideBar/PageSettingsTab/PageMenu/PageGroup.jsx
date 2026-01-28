@@ -2,6 +2,7 @@
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -228,7 +229,7 @@ const RenderPageGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <TablerIcon name='IconChevronUp'
+        <TablerIcon iconName='IconChevronUp'
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
@@ -340,7 +341,7 @@ export const RenderPageAndPageGroup = ({
         {overflowLinks.length > 0 && position === 'top' && (
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
-              <TablerIcon name="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
+              <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
               More
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>

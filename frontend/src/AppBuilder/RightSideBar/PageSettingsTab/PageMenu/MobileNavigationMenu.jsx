@@ -95,7 +95,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       <Header className={'mobile-header'}>
         <div onClick={toggleSidebar} className="cursor-pointer">
           <div className="icon-btn">
-            <TablerIcon name="IconX" size={16} color="var(--icon-strong)" />
+            <TablerIcon iconName="IconX" size={16} color="var(--icon-strong)" />
           </div>
         </div>
         <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
@@ -163,10 +163,10 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
         container: document.getElementsByClassName('canvas-wrapper')[0],
         overlayClassName: 'tw-absolute tw-h-dvh',
         className: `tw-absolute tw-p-0 mobile-page-menu-popup ${isMobilePreviewMode && !isPreviewInEditor
-            ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
-            : currentMode === 'view' && !isMobilePreviewMode
-              ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
-              : 'tw-h-full'
+          ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
+          : currentMode === 'view' && !isMobilePreviewMode
+            ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
+            : 'tw-h-full'
           }`,
         style: bgStyles,
       }}
