@@ -574,11 +574,11 @@ const DynamicForm = ({
       });
     };
 
-    const renderLabel = (label, tooltip) => {
+    const renderLabel = (label, tooltip, fieldType) => {
       const labelElement = (
         <label
           className="form-label"
-          data-cy={`label-${generateCypressDataCy(label)}`}
+          data-cy={fieldType === 'dropdown' ? `${generateCypressDataCy(label)}-dropdown-label` : `label-${generateCypressDataCy(label)}`}
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
             textDecorationColor: 'var(--slate8)',
@@ -642,7 +642,7 @@ const DynamicForm = ({
                     })}
                     style={{ minWidth: '100px', marginBottom: '0' }}
                   >
-                    {label && renderLabel(label, obj[key].tooltip)}
+                    {label && renderLabel(label, obj[key].tooltip, type)}
 
                     {(type === 'password' || encrypted) && selectedDataSource?.id && (
                       <div className="mx-1 col">
@@ -681,9 +681,11 @@ const DynamicForm = ({
                       'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                       'w-100': isHorizontalLayout && type !== 'codehinter',
                     },
-                    'dynamic-form-element'
+                    'dynamic-form-element',
+
                   )}
                   style={{ width: '100%' }}
+                  data-cy={type === 'dropdown' || type === 'dropdown-component-flip' ? `${generateCypressDataCy(label ?? key)}-select-dropdown` : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`}
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
@@ -699,7 +701,7 @@ const DynamicForm = ({
             )
           );
         })}
-      </div>
+      </div >
     );
   };
 

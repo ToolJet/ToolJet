@@ -5,7 +5,7 @@ import CanvasSettings from './CanvasSettings';
 import AppExport from './AppExport';
 import useStore from '@/AppBuilder/_stores/store';
 import AppModeToggle from './AppModeToggle';
-import { ThemeSelect } from '@/modules/Appbuilder/components';
+import ThemeSelect from '@/modules/Appbuilder/components/ThemeSelect';
 import MaintenanceMode from './MaintenanceMode';
 import GlobalSettingsHeader from './GlobalSettingsHeader';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';

@@ -69,15 +69,15 @@ export default class Supabase implements QueryService {
     }
 
     if (error) {
-			const errorMessage = error?.message || "An unknown error occurred.";
-      let errorDetails: any = {};
+      const errorMessage = error?.message || 'An unknown error occurred.';
+      const errorDetails: any = {};
 
       const supabaseError = error as any;
       const { code, hint } = supabaseError;
 
       errorDetails.code = code;
       errorDetails.hint = hint;
-		
+
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
@@ -173,36 +173,47 @@ export default class Supabase implements QueryService {
     return res;
   }
 
-  addQueryFilters(query: PostgrestFilterBuilder<any, any, any[], string, unknown>, filters: Filter[]) {
-    filters.forEach((filter: Filter) => {
-      const { operator, column, value } = filter;
-      if (operator === '==') {
-        query = query.eq(column, value);
-      } else if (operator === '!=') {
-        query = query.neq(column, value);
-      } else if (operator === '<') {
-        query = query.lt(column, value);
-      } else if (operator === '>') {
-        query = query.gt(column, value);
-      } else if (operator === '<=') {
-        query = query.lte(column, value);
-      } else if (operator === '>=') {
-        query = query.gte(column, value);
-      } else if (operator === 'is') {
-        query = query.is(column, value);
-      } else if (operator === 'in') {
-        query = query.in(column, JSON.parse(value));
-      } else if (operator === 'is not') {
-        query = query.not(column, 'is', value);
+  addQueryFilters<Q extends PostgrestFilterBuilder<any, any, any, any, any, any, any>>(query: Q, filters: Filter[]): Q {
+    filters.forEach(({ operator, column, value }) => {
+      switch (operator) {
+        case '==':
+          query.eq(column, value);
+          break;
+        case '!=':
+          query.neq(column, value);
+          break;
+        case '<':
+          query.lt(column, value);
+          break;
+        case '>':
+          query.gt(column, value);
+          break;
+        case '<=':
+          query.lte(column, value);
+          break;
+        case '>=':
+          query.gte(column, value);
+          break;
+        case 'is':
+          query.is(column, value);
+          break;
+        case 'in':
+          query.in(column, JSON.parse(value));
+          break;
+        case 'is not':
+          query.not(column, 'is', value);
+          break;
       }
     });
+    return query;
   }
 
-  addQuerySort(query: PostgrestFilterBuilder<any, any, any[], string, unknown>, sorts: Sort[]) {
-    sorts.forEach((sort: Sort) => {
-      const { column, order } = sort;
-      query = query.order(column, { ascending: order === 'ascend' });
+  addQuerySort<Q extends PostgrestFilterBuilder<any, any, any, any, any, any, any>>(query: Q, sorts: Sort[]): Q {
+    sorts.forEach(({ column, order }) => {
+      query.order(column, { ascending: order === 'ascend' });
     });
+
+    return query;
   }
 
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<SupabaseClientType> {

@@ -76,7 +76,7 @@ export const Folders = function Folders({
   };
 
   function saveFolder() {
-    const newName = newFolderName?.trim();
+    const newName = newFolderName?.trim().replace(/\s+/g, ' ');
     if (!newName) {
       setErrorText("Folder name can't be empty");
       return;
@@ -84,7 +84,7 @@ export const Folders = function Folders({
     if (!errorText) {
       setCreationStatus(true);
       folderService
-        .create(newFolderName, appType)
+        .create(newName, appType)
         .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
@@ -170,7 +170,7 @@ export const Folders = function Folders({
   }
 
   function executeEditFolder() {
-    const folderName = newFolderName?.trim();
+    const folderName = newFolderName?.trim().replace(/\s+/g, ' ');
     if (folderName === updatingFolder?.name) {
       setUpdationStatus(false);
       setShowUpdateForm(false);
@@ -411,6 +411,9 @@ export const Folders = function Folders({
               onClick={showUpdateForm ? executeEditFolder : saveFolder}
               data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               isLoading={isCreating || isUpdating}
+              disabled={!!errorText || // Disabled if there's a validation error
+              (showUpdateForm && newFolderName.trim() === updatingFolder?.name) ||
+              (!showUpdateForm && newFolderName.trim() === '')}
             >
               {showUpdateForm
                 ? t('homePage.foldersSection.editFolder', 'Edit Folder')

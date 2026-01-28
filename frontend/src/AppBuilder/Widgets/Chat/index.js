@@ -12,7 +12,7 @@ import { validateMessageHistory, validateSingleMessageObject } from './utils/hel
 import toast from 'react-hot-toast';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
-export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
+const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
     const darkTheme = localStorage.getItem('darkMode') === 'true';
     const chatMessagesRef = useRef(null);
 
@@ -383,3 +383,5 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         </div>
     );
 };
+
+export default Chat;
