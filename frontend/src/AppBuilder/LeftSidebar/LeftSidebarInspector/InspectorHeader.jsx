@@ -2,7 +2,7 @@ import React from 'react';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import InputComponent from '@/components/ui/Input/Index';
 
-const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSearchClear }) => {
+const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSearchClear, hideSearch = false }) => {
   return (
     <div className={`inspector-header ${darkMode ? 'dark-theme' : ''}`}>
       <div className="inspector-header-top">
@@ -17,18 +17,20 @@ const InspectorHeader = ({ darkMode, onClose, searchValue, onSearchChange, onSea
           data-cy="inspector-close-button"
         />
       </div>
-      <div className="inspector-header-search">
-        <InputComponent
-          leadingIcon="search01"
-          onChange={(e) => onSearchChange(e.target.value)}
-          onClear={onSearchClear}
-          size="medium"
-          placeholder="Search"
-          value={searchValue}
-          {...(searchValue && { trailingAction: 'clear' })}
-          data-cy="inspector-search-input"
-        />
-      </div>
+      {!hideSearch && (
+        <div className="inspector-header-search">
+          <InputComponent
+            leadingIcon="search01"
+            onChange={(e) => onSearchChange(e.target.value)}
+            onClear={onSearchClear}
+            size="medium"
+            placeholder="Search"
+            value={searchValue}
+            {...(searchValue && { trailingAction: 'clear' })}
+            data-cy="inspector-search-input"
+          />
+        </div>
+      )}
     </div>
   );
 };

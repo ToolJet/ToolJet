@@ -26,6 +26,9 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
   const searchValue = useStore((state) => state.inspectorSearchValue, shallow);
   const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
 
+  // Hide search only when the detail view (JSONViewer) is actually displayed
+  const isDetailViewOpen = useStore((state) => state.isInspectorDetailViewOpen(), shallow);
+
   const iconsList = useIconList({
     exposedComponentsVariables,
     componentIdNameMapping,
@@ -155,6 +158,7 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
         searchValue={searchValue}
         onSearchChange={setSearchValue}
         onSearchClear={() => setSearchValue('')}
+        hideSearch={isDetailViewOpen}
       />
 
       <div className="card-body p-1 pb-5">
