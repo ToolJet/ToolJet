@@ -69,6 +69,7 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  navigationConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -120,6 +121,7 @@ export const widgets = [
   daterangepickerConfig,
 
   //Navigation
+  navigationConfig,
   linkConfig,
   stepsConfig,
   paginationConfig,

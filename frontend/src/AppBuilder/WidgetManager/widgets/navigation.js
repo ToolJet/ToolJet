@@ -109,7 +109,7 @@ export const navigationConfig = {
     borderColor: {
       type: 'colorSwatches',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-border-default)' },
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-weak-border)' },
       accordian: 'Container',
     },
     borderRadius: {
@@ -226,7 +226,7 @@ export const navigationConfig = {
       selectedPillBackgroundColor: { value: 'var(--cc-surface2-surface)' },
       pillBorderRadius: { value: '6' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-border-default)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '8' },
       padding: { value: '8' },
     },
