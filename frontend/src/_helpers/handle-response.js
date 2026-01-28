@@ -34,7 +34,10 @@ export function handleResponse(
         </div>
       </>
     );
-    const data = text && JSON.parse(text);
+    // Trim whitespace before parsing to avoid JSON.parse errors on whitespace-only responses
+    // This can happen during nginx reloads or when backend returns empty responses
+    const trimmedText = text?.trim();
+    const data = trimmedText && JSON.parse(trimmedText);
     if (!response.ok) {
       // Custom friendly error messages
       if (response.status === 422 && typeof data?.message === 'string') {
@@ -118,7 +121,9 @@ export function handleResponse(
 }
 export function handleResponseWithoutValidation(response) {
   return response.text().then((text) => {
-    const data = text && JSON.parse(text);
+    // Trim whitespace before parsing to avoid JSON.parse errors on whitespace-only responses
+    const trimmedText = text?.trim();
+    const data = trimmedText && JSON.parse(trimmedText);
     if (!response.ok) {
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data });
