@@ -419,7 +419,7 @@ export const commonWidgetSelector = {
     // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
   copyAppLinkButton: '[data-cy="copy-app-link-button"]',
-  makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
+  makePublicAppToggle: '[data-cy="make-application-public-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
   iframeLink: '[data-cy="iframe-link"]',
