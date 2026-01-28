@@ -178,7 +178,7 @@ export const containerConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
-      headerDividerColor: { value: 'var(--cc-default-border)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
