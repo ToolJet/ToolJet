@@ -300,9 +300,9 @@ const useAppData = (
             constantsResp =
               isPublicAccess && appData.is_public
                 ? await orgEnvironmentConstantService.getConstantsFromPublicApp(
-                    slug,
-                    viewerEnvironment?.environment?.id
-                  )
+                  slug,
+                  viewerEnvironment?.environment?.id
+                )
                 : await orgEnvironmentConstantService.getConstantsFromEnvironment(viewerEnvironment?.environment?.id);
           } catch (error) {
             console.error('Error fetching viewer environment:', error);
@@ -354,8 +354,8 @@ const useAppData = (
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
                 : 'isMaintenanceOn' in result
-                ? result.isMaintenanceOn
-                : false,
+                  ? result.isMaintenanceOn
+                  : false,
             organizationId: appData.organizationId || appData.organization_id,
             homePageId: homePageId,
             isPublic: appData.is_public,
@@ -391,11 +391,13 @@ const useAppData = (
             global_settings.theme = baseTheme;
           }
           setGlobalSettings(global_settings);
+        }
+        setPages(pages, moduleId);
+        if (!moduleMode) {
           setPageSettings(
             computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
           );
         }
-        setPages(pages, moduleId);
 
         // set starting page as homepage initially
         let startingPage = appData.pages.find((page) => page.id === homePageId);
@@ -634,8 +636,8 @@ const useAppData = (
             'is_maintenance_on' in appData
               ? appData.is_maintenance_on
               : 'isMaintenanceOn' in appData
-              ? appData.isMaintenanceOn
-              : false,
+                ? appData.isMaintenanceOn
+                : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
