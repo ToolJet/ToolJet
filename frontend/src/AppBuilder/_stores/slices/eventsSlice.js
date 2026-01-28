@@ -397,6 +397,9 @@ export const createEventsSlice = (set, get) => ({
           'onMessageSent',
           'onClearHistory',
           'onTableDataDownload',
+          'onRecordingStart',
+          'onRecordingSave',
+          'onImageSave',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -689,8 +692,7 @@ export const createEventsSlice = (set, get) => ({
               plaintext: (plaintext) => plaintext,
               pdf: (pdfData) => pdfData,
             }[fileType](data);
-            generateFile(fileName, fileData, fileType);
-            return Promise.resolve();
+            return generateFile(fileName, fileData, fileType);
           }
 
           case 'set-table-page': {

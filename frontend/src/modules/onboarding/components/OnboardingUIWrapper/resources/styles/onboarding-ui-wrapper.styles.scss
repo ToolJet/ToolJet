@@ -31,3 +31,10 @@
         margin-top: 240px !important;
     }
 }
+
+/* Media query for small screens */
+@media screen and (max-width: 767px) {
+   .onboarding-setup-wrapper {
+       margin-top: -50px !important;
+   }
+}

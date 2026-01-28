@@ -81,7 +81,7 @@ export class OnboardingService implements IOnboardingService {
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
-  async signup(appSignUpDto: AppSignupDto) {
+  async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
     validatePasswordServer(password);
 
@@ -149,7 +149,8 @@ export class OnboardingService implements IOnboardingService {
             userParams,
             defaultWorkspace,
             redirectTo,
-            manager
+            manager,
+            response
           );
         }
         return await this.onboardingUtilService.createUserInWorkspace(
@@ -157,7 +158,8 @@ export class OnboardingService implements IOnboardingService {
           existingUser,
           signingUpOrganization,
           redirectTo,
-          manager
+          manager,
+          response
         );
       }
     });
