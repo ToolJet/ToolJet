@@ -6,21 +6,30 @@ import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-const tinycolor = require('tinycolor2');
 
 // Parse value to number based on the number format
+// Always returns a number for consistent exposed value
 export const parseValueToNumber = (val, numberFormat) => {
   if (val === undefined || val === null || val === '') return 0;
-  // The value from react-currency-input-field is already a normalized string
-  // but if it contains the European decimal separator, we need to convert it
+
   const strVal = String(val);
-  if (numberFormat === 'eu') {
-    // European format: remove group separator (.), replace decimal separator (,) with (.)
-    const normalized = strVal.replace(/\./g, '').replace(',', '.');
-    return parseFloat(normalized) || 0;
+
+  // Check if value is a raw number (no commas, just digits and optionally one decimal point)
+  // This handles the case after format switch when we store "1234.56"
+  if (/^-?\d+\.?\d*$/.test(strVal)) {
+    return parseFloat(strVal) || 0;
   }
-  // US/UK format: remove group separator (,), decimal is already (.)
-  const normalized = strVal.replace(/,/g, '');
+
+  let normalized;
+  if (numberFormat === 'eu') {
+    // European format: dot is group separator, comma is decimal
+    // e.g., "1.234,56" → "1234.56"
+    normalized = strVal.replace(/\./g, '').replace(',', '.');
+  } else {
+    // US/UK format: comma is group separator, dot is decimal
+    // e.g., "1,234.56" → "1234.56"
+    normalized = strVal.replace(/,/g, '');
+  }
   return parseFloat(normalized) || 0;
 };
 
@@ -61,6 +70,8 @@ export const CurrencyInput = (props) => {
     numberFormat = 'us',
   } = properties;
 
+  // Track previous number format to detect format changes
+  const previousNumberFormat = useRef(numberFormat);
   // Get separators based on number format
   const separators = useMemo(() => {
     if (numberFormat === 'eu') {
@@ -173,7 +184,22 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setCountry(defaultCountry);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
+
+  // Normalize value when number format changes
+  useEffect(() => {
+    if (!isInitialRender.current && previousNumberFormat.current !== numberFormat && value) {
+      // Convert value from old format to raw number, then the component will re-render with new format
+      const rawNumber = parseValueToNumber(value, previousNumberFormat.current);
+      if (!isNaN(rawNumber) && rawNumber !== 0) {
+        // Store as raw number string - the component will format it with new separators
+        handlePhoneCurrencyInputChange(String(rawNumber));
+      }
+    }
+    previousNumberFormat.current = numberFormat;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numberFormat]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
@@ -182,16 +208,17 @@ export const CurrencyInput = (props) => {
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
-  }, [country, formattedValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value, numberFormat]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
       setExposedVariables({
-        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
         value: parseValueToNumber(value, numberFormat),
       });
     }
-  }, [value, formattedValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, numberFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -205,6 +232,7 @@ export const CurrencyInput = (props) => {
       });
       isInitialRender.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
@@ -278,10 +306,6 @@ export const CurrencyInput = (props) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
                 fireEvent('onChange');
-                setExposedVariables({
-                  country: selectedOption.value,
-                  formattedValue: `${CurrencyMap[selectedOption.value]?.prefix} ${selectedOption.value}`,
-                });
               }
             }}
             componentId={id}
@@ -302,7 +326,6 @@ export const CurrencyInput = (props) => {
               if (newVal === value) return;
               onInputValueChange(newVal);
             }}
-            // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             prefix={''}
             onBlur={handleBlur}
             onFocus={handleFocus}
