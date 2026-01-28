@@ -1,4 +1,4 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, MinLength, MaxLength, Matches, ValidateIf } from 'class-validator';
 import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
 
 export class ListSslConfigurationDto {
@@ -47,6 +47,7 @@ export class UpdateSslConfigurationDto {
   staging?: boolean;
 
   @IsOptional()
+  @ValidateIf((o) => o.domain !== undefined && o.domain !== null && o.domain !== '')
   @IsString()
   @MinLength(3)
   @MaxLength(255)
