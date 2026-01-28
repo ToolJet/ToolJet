@@ -248,6 +248,76 @@ const TagsInput = ({
     setUserInteracted(true);
   };
 
+  // Parse delimited input (comma or semicolon separated)
+  const parseDelimitedInput = (value) => {
+    if (!value) return null;
+    const hasDelimiters = value.includes(',') || value.includes(';');
+    if (!hasDelimiters) return null;
+
+    const parts = value.split(/[,;]/).map((part) => part.trim()).filter(Boolean);
+    return parts.length > 1 ? parts : null;
+  };
+
+  // Find existing option by label or value
+  const findMatchingOption = (tagText) => {
+    return allOptions.find((opt) => opt.label === tagText || opt.value === tagText);
+  };
+
+  // Check if tag is already selected
+  const isAlreadySelected = (tagText, currentSelection) => {
+    return currentSelection.some((s) => s.label === tagText || s.value === tagText);
+  };
+
+  // Create a new tag object and update newTagsAdded state
+  const createNewTag = (tagText) => {
+    const newTag = { label: tagText, value: tagText };
+    setNewTagsAdded((prev) => {
+      const updated = [...prev, newTag];
+      setExposedVariable('newTagsAdded', updated.map(({ label, value }) => ({ label, value })));
+      return updated;
+    });
+    return newTag;
+  };
+
+  // Process pasted/delimited input and select matching tags
+  const handleDelimitedInput = (parts) => {
+    let newSelected = [...selected];
+
+    parts.forEach((tagText) => {
+      if (isAlreadySelected(tagText, newSelected)) return;
+
+      const matchingOption = findMatchingOption(tagText);
+      if (matchingOption) {
+        newSelected.push(matchingOption);
+      } else if (allowNewTags && tagText) {
+        newSelected.push(createNewTag(tagText));
+      }
+    });
+
+    if (newSelected.length > selected.length) {
+      setInputValues(newSelected);
+      fireEvent('onTagAdded');
+      setUserInteracted(true);
+    }
+
+    setInputValue('');
+    setFocusedOptionIndex(-1);
+  };
+
+  // Handle input change with delimiter support for paste
+  const handleInputChange = (value, action) => {
+    if (action.action !== 'input-change') return;
+
+    const parts = parseDelimitedInput(value);
+    if (parts) {
+      handleDelimitedInput(parts);
+      return;
+    }
+
+    setInputValue(value);
+    setFocusedOptionIndex(-1);
+  };
+
   // Handle keyboard events
   const handleKeyDown = (e) => {
     // Escape closes the menu
@@ -774,13 +844,7 @@ const TagsInput = ({
               aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
               isLoading={isTagsLoading}
               inputValue={inputValue}
-              onInputChange={(value, action) => {
-                if (action.action === 'input-change') {
-                  setInputValue(value);
-                  // Reset focused option when user types - they're now searching, not navigating
-                  setFocusedOptionIndex(-1);
-                }
-              }}
+              onInputChange={handleInputChange}
               menuIsOpen={enableSearch && isMenuOpen}
               placeholder={placeholder}
               formatCreateLabel={(input) => `add "${input}"`}
