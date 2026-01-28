@@ -12,6 +12,9 @@ export class ListSslConfigurationDto {
   chainPem: string;
   acquiredAt: string; // ISO 8601 string or empty
   expiresAt: string; // ISO 8601 string or empty
+  previousDomain: string;
+  domainChangeRequested: boolean;
+  newDomain: string;
 
   constructor(settings: Record<string, any>) {
     this.enabled = settings[INSTANCE_SYSTEM_SETTINGS.SSL_ENABLED] === 'true';
@@ -24,6 +27,9 @@ export class ListSslConfigurationDto {
     this.chainPem = settings[INSTANCE_SYSTEM_SETTINGS.SSL_CHAIN_PEM] || '';
     this.acquiredAt = settings[INSTANCE_SYSTEM_SETTINGS.SSL_ACQUIRED_AT] || '';
     this.expiresAt = settings[INSTANCE_SYSTEM_SETTINGS.SSL_EXPIRES_AT] || '';
+    this.previousDomain = settings[INSTANCE_SYSTEM_SETTINGS.SSL_PREVIOUS_DOMAIN] || '';
+    this.domainChangeRequested = settings[INSTANCE_SYSTEM_SETTINGS.SSL_DOMAIN_CHANGE_REQUESTED] === 'true';
+    this.newDomain = settings[INSTANCE_SYSTEM_SETTINGS.SSL_NEW_DOMAIN] || '';
   }
 }
 
@@ -68,4 +74,14 @@ export class UpdateSslCertificateDto {
 
   @IsString()
   expiresAt: string; // ISO 8601
+}
+
+export class RequestDomainChangeDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(255)
+  @Matches(/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/, {
+    message: 'Domain must be a valid subdomain (e.g., tooljet.company.com)',
+  })
+  newDomain: string;
 }

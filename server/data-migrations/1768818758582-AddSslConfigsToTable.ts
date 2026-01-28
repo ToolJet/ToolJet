@@ -107,6 +107,27 @@ export class AddSslConfigsToTable1768818758582 implements MigrationInterface {
         dataType: 'text',
         label: 'SSL Expires At',
       },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_PREVIOUS_DOMAIN,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL Previous Domain',
+      },
+      {
+        value: 'false',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_DOMAIN_CHANGE_REQUESTED,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'boolean',
+        label: 'SSL Domain Change Requested',
+      },
+      {
+        value: '',
+        key: INSTANCE_SYSTEM_SETTINGS.SSL_NEW_DOMAIN,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
+        dataType: 'text',
+        label: 'SSL New Domain',
+      },
     ];
 
     for (const setting of sslConfigSettings) {
@@ -118,7 +139,7 @@ export class AddSslConfigsToTable1768818758582 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DELETE FROM instance_settings WHERE key IN ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `DELETE FROM instance_settings WHERE key IN ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         INSTANCE_SYSTEM_SETTINGS.SSL_ENABLED,
         INSTANCE_SYSTEM_SETTINGS.SSL_EMAIL,
@@ -130,6 +151,9 @@ export class AddSslConfigsToTable1768818758582 implements MigrationInterface {
         INSTANCE_SYSTEM_SETTINGS.SSL_CHAIN_PEM,
         INSTANCE_SYSTEM_SETTINGS.SSL_ACQUIRED_AT,
         INSTANCE_SYSTEM_SETTINGS.SSL_EXPIRES_AT,
+        INSTANCE_SYSTEM_SETTINGS.SSL_PREVIOUS_DOMAIN,
+        INSTANCE_SYSTEM_SETTINGS.SSL_DOMAIN_CHANGE_REQUESTED,
+        INSTANCE_SYSTEM_SETTINGS.SSL_NEW_DOMAIN,
       ]
     );
   }

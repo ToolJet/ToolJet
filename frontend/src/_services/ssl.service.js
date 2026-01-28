@@ -7,6 +7,8 @@ export const sslService = {
   validatePrerequisites,
   getCertificateStatus,
   acquireCertificate,
+  requestDomainChange,
+  cancelDomainChange,
 };
 
 function getConfig() {
@@ -49,4 +51,23 @@ function acquireCertificate() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/ssl/certificate/acquire`, requestOptions).then(handleResponse);
+}
+
+function requestDomainChange(newDomain) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ newDomain }),
+  };
+  return fetch(`${config.apiUrl}/ssl/domain/change`, requestOptions).then(handleResponse);
+}
+
+function cancelDomainChange() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/ssl/domain/cancel-change`, requestOptions).then(handleResponse);
 }
