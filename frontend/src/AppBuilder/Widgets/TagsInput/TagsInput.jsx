@@ -19,7 +19,7 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
-export const TagsInput = ({
+const TagsInput = ({
   id,
   height,
   width,
@@ -119,13 +119,13 @@ export const TagsInput = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible ?? true)
-          .map((data) => ({
-            ...data,
-            label: getSafeRenderableValue(data?.label),
-            value: data?.value,
-            isDisabled: data?.disable ?? false,
-          }))
+        .filter((data) => data?.visible ?? true)
+        .map((data) => ({
+          ...data,
+          label: getSafeRenderableValue(data?.label),
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
+        }))
       : [];
     return sortArray(_selectOptions, sort);
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
@@ -180,7 +180,7 @@ export const TagsInput = ({
   };
 
   // Find default items based on options
-  function findDefaultItem(values, isAdvanced=false, isDefault=false) {
+  function findDefaultItem(values, isAdvanced = false, isDefault = false) {
     if (isAdvanced) {
       const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
@@ -356,7 +356,7 @@ export const TagsInput = ({
     }
 
     // Comma - select existing option or create new tag
-    if (e.key === ',' && inputValue.trim()) {
+    if ((e.key === ',' || e.key === ';') && inputValue.trim()) {
       e.preventDefault();
       const trimmedInput = inputValue.trim();
       const matchingOption = filteredOptions.find((opt) => opt.label === trimmedInput);
@@ -681,7 +681,7 @@ export const TagsInput = ({
       flexDirection: 'column',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
-      padding:"4px",
+      padding: "4px",
     }),
     menu: (provided) => ({
       ...provided,
@@ -710,7 +710,7 @@ export const TagsInput = ({
           data-cy={`label-${String(componentName).toLowerCase()}`}
           className={cx('tags-input-widget', 'd-flex', {
             [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+              ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
               ? 'flex-column'
               : 'align-items-start']: true,
             'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -848,5 +848,7 @@ export const TagsInput = ({
         </div>
       )}
     </>
-);
+  );
 };
+
+export default TagsInput;

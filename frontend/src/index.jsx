@@ -4,13 +4,14 @@ import { render } from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
-import { App } from './App';
+// RootRouter now handles route splitting for viewer isolation
+import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
 
-const AppWithProfiler = Sentry.withProfiler(App);
+const AppWithProfiler = Sentry.withProfiler(RootRouter);
 
 appService
   .getConfig()

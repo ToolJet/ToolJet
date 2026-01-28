@@ -125,11 +125,12 @@ export function AppModal({
     }
   };
 
-  const createBtnDisableState =
-    isLoading ||
-    errorText ||
-    (actionButton.includes('Rename') && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
-    (actionButton.includes('Rename') && (newAppName.length > 50 || newAppName.trim().length === 0));
+  const isNameEmpty = newAppName?.trim().length === 0;
+  const isNameTooLong = newAppName?.length > 50;
+  const isNameInvalid = isNameEmpty || isNameTooLong || !!errorText;
+  const renameRequiresChange = actionButton.includes('Rename') && !isNameChanged;
+  const createBtnDisableState = isLoading || isNameInvalid || renameRequiresChange;
+
   return (
     <Modal
       show={show}
