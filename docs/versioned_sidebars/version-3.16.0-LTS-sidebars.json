@@ -14,31 +14,12 @@
           "type": "category",
           "label": "How To",
           "items": [
-            "how-to/pass-query-params-in-custom-components",
-            "how-to/use-custom-parameters",
-            "how-to/pass-values-in-rest-api",
             "how-to/build-dynamic-forms",
-            "how-to/setup-rsyslog",
             "how-to/use-form-component",
-            "how-to/access-cellvalue-rowdata",
-            "how-to/conditionally-format-table",
             "how-to/bulk-update-multiple-rows",
             "how-to/delete-multiple-rows",
-            "how-to/access-currentuser",
-            "how-to/use-axios-in-runjs",
-            "how-to/run-actions-from-runjs",
-            "how-to/intentionally-fail-js-query",
-            "how-to/run-query-at-specified-intervals",
-            "how-to/use-to-py-function-in-runpy",
-            "how-to/access-users-location",
-            "how-to/use-s3-signed-url-to-upload-docs",
-            "how-to/s3-custom-endpoints",
-            "how-to/upload-files-aws",
-            "how-to/upload-files-gcs",
             "how-to/loading-image-pdf-from-db",
-            "how-to/use-events-on-chart",
-            "how-to/print-multi-tabs-report",
-            "how-to/display-listview-record-on-new-page"
+            "how-to/use-events-on-chart"
           ]
         },
         {
@@ -230,7 +211,8 @@
                     "app-builder/import-libraries/runpy"
                   ]
                 },
-                "app-builder/custom-code/constants-secrets"
+                "app-builder/custom-code/constants-secrets",
+                "app-builder/custom-code/access-currentuser"
               ]
             },
             {
@@ -325,7 +307,18 @@
                 "widgets/color-picker",
                 "widgets/container",
                 "widgets/currency-input",
-                "widgets/custom-component",
+                {
+                  "type": "category",
+                  "label": "Custom Component",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/custom-component/custom-component"
+                  },
+                  "items": [
+                    "widgets/custom-component/custom-component",
+                    "widgets/custom-component/pass-query-params-in-custom-components"
+                  ]
+                },
                 "widgets/date-range-picker",
                 "widgets/date-picker-v2",
                 "widgets/datetime-picker-v2",
@@ -350,7 +343,18 @@
                 "widgets/image",
                 "widgets/kanban",
                 "widgets/link",
-                "widgets/listview",
+                {
+                  "type": "category",
+                  "label": "List View",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/listview/listview"
+                  },
+                  "items": [
+                    "widgets/listview/listview",
+                    "widgets/listview/display-listview-record-on-new-page"
+                  ]
+                },
                 "widgets/map",
                 "widgets/modal-v2",
                 "widgets/multiselect",
@@ -390,7 +394,18 @@
                     "widgets/table/conditional-formatting"
                   ]
                 },
-                "widgets/tabs",
+                {
+                  "type": "category",
+                  "label": "Tabs",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/tabs/tabs"
+                  },
+                  "items": [
+                    "widgets/tabs/tabs",
+                    "widgets/tabs/print-multi-tabs-report"
+                  ]
+                },
                 "widgets/tags",
                 "widgets/tags-input",
                 "widgets/text-input",
@@ -409,6 +424,7 @@
               "type": "category",
               "label": "Actions Reference",
               "items": [
+                "actions/run-actions-from-runjs",
                 "actions/run-query",
                 "actions/reset-query",
                 "actions/show-alert",
@@ -449,7 +465,20 @@
           "label": "Data Sources Library",
           "items": [
             "data-sources/airtable",
-            "data-sources/s3",
+            {
+                  "type": "category",
+                  "label": "Amazon S3",
+                  "link": {
+                    "type": "doc",
+                    "id": "data-sources/s3/s3"
+                  },
+                  "items": [
+                    "data-sources/s3/s3",
+                    "data-sources/s3/use-s3-signed-url-to-upload-docs",
+                    "data-sources/s3/s3-custom-endpoints",
+                    "data-sources/s3/upload-files-aws"
+                  ]
+            },
             "data-sources/amazonses",
             "data-sources/appwrite",
             "data-sources/athena",
@@ -463,7 +492,18 @@
             "data-sources/databricks",
             "data-sources/dynamodb",
             "data-sources/elasticsearch",
-            "data-sources/gcs",
+            {
+                  "type": "category",
+                  "label": "Google Cloud Storage",
+                  "link": {
+                    "type": "doc",
+                    "id": "data-sources/gcs/gcs"
+                  },
+                  "items": [
+                    "data-sources/gcs/gcs",
+                    "data-sources/gcs/upload-files-gcs"
+                  ]
+            },
             "data-sources/googlesheets",
             "data-sources/graphql",
             "data-sources/grpc",
@@ -490,13 +530,38 @@
                 "data-sources/restapi/configuration",
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
-                "data-sources/restapi/metadata-and-cookies"
+                "data-sources/restapi/metadata-and-cookies",
+                "data-sources/restapi/pass-values-in-rest-api"
               ]
             },
             "data-sources/soap-api",
             "data-sources/rethinkdb",
-            "data-sources/run-js",
-            "data-sources/run-py",
+            {
+                  "type": "category",
+                  "label": "Run JavaScript Code",
+                  "link": {
+                    "type": "doc",
+                    "id": "data-sources/runjs/run-js"
+                  },
+                  "items": [
+                    "data-sources/runjs/run-js",
+                    "data-sources/runjs/access-users-location",
+                    "data-sources/runjs/use-axios-in-runjs",
+                    "data-sources/runjs/intentionally-fail-js-query"
+                  ]
+            },
+            {
+                  "type": "category",
+                  "label": "Run Python Code",
+                  "link": {
+                    "type": "doc",
+                    "id": "data-sources/runpy/run-py"
+                  },
+                  "items": [
+                    "data-sources/runpy/run-py",
+                    "data-sources/runpy/use-to-py-function-in-runpy"
+                  ]
+            },
             "data-sources/saphana",
             "data-sources/sendgrid",
             "data-sources/slack",
@@ -565,7 +630,9 @@
           ]
         },
         "data-sources/permissions",
-        "data-sources/sample-data-sources"
+        "data-sources/sample-data-sources",
+        "data-sources/use-custom-parameters",
+        "data-sources/run-query-at-specified-intervals"
       ]
     },
     {
@@ -965,7 +1032,8 @@
           },
           "items": [
             "security/audit-logs/audit-logs",
-            "security/audit-logs/stream-audit-to-datadog"
+            "security/audit-logs/stream-audit-to-datadog",
+            "security/audit-logs/setup-rsyslog"
           ]
         },
         "security/compliance"

@@ -1,6 +1,7 @@
 ---
 id: tabs
 title: Tabs
+slug: /widgets/tabs/
 ---
 
 The **Tabs** component allows you to organize content into multiple tabs, making it easy to manage and display different sections of information within a compact space. Each tab can contain other components and widgets, providing a clean way to structure your application's interface.

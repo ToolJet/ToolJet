@@ -1,6 +1,7 @@
 ---
 id: run-py
 title: Run Python Code
+slug: /data-sources/run-py
 ---
 
 In ToolJet, custom **Run Python Code** can be used to interact with components and queries, making it possible to customize actions and data handling.

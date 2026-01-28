@@ -1,6 +1,7 @@
 ---
 id: listview
 title: List View
+slug: /widgets/listview/
 ---
 
 # List View

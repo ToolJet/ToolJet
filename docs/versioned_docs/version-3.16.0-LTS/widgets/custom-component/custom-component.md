@@ -1,6 +1,7 @@
 ---
 id: custom-component
 title: Custom Component
+slug: /widgets/custom-component/
 ---
 
 ToolJet allows you to create your own React component using the **Custom Component**, providing greater flexibility and customization for your application. The **Custom Component** has two main properties:

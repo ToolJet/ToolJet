@@ -2,14 +2,8 @@
 id: print-multi-tabs-report
 title: Print Data from Multiple Tabs
 ---
-<div style={{paddingBottom:'24px'}}>
 
 In this guide, we will implement printing data from multiple tabs in ToolJet. This will be useful when printing an invoice or a report from your ToolJet application. For example, a ToolJet app that has a set of tabs for each invoice, and you want to print all the tabs in one go.
-
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## UI of the App
 
@@ -21,13 +15,7 @@ In the example below, we have the **Tabs** component and each tab has a set of f
 
 - **Button**: The **Create Lead** button is the deafult button. For this guide, we will also add another button named **Download PDF**, that will print the data from all the tabs. The button will have two events, the details for which we will share later in this guide.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/appui-v2.png" alt="Print data from multiple tabs" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/appui-v2.png" alt="Print data from multiple tabs" />
 
 ## Load Data from Database
 
@@ -36,15 +24,9 @@ In the example below, we have the **Tabs** component and each tab has a set of f
 - Choose `List rows` in the `Operations` parameter.
 - Click on the **Run** button in the query panel to load the data.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/data-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/data-v2.png" alt="Print data from multiple tabs" />
 
 Once the data is successfully loaded on the tabs and the app is working as expected, we can move to the next step.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Printing Data from Multiple Tabs
 
@@ -59,17 +41,9 @@ Before we start creating the JavaScript queries, we need to add a few events to 
 
 **Note**: We will create the *viewTabs* query later in this guide, so you will need to add the event to the button after you've created the query.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/buttonevents-v2.png" alt="Print data from multiple tabs" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/buttonevents-v2.png" alt="Print data from multiple tabs" />
 
 ## Creating Queries
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### viewTabs Query
 
@@ -93,9 +67,7 @@ if ((variables?.tabIndex ?? undefined) == undefined) {
 - Under the **ACTION OPTIONS** of the event, choose **Action** as `Set current tab`.
 - Copy the code: `{{variables.tabIndex}}` in the Id parameter. This sets the current tab to the tab with id stored in the tabIndex variable, i.e. it sets the current tab to the tab whose id got recently stored in the `tabIndex` variable via the *viewTabs* query.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/q1-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/q1-v2.png" alt="Print data from multiple tabs" />
 
 #### Event 2:
 
@@ -107,9 +79,7 @@ if ((variables?.tabIndex ?? undefined) == undefined) {
 
 **Note:** We will create the *getTabsHTML* query later in this guide, so you will need to add the event to the button after you've created the query.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/q2-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/q2-v2.png" alt="Print data from multiple tabs" />
 
 #### Event 3:
 
@@ -120,15 +90,9 @@ if ((variables?.tabIndex ?? undefined) == undefined) {
 
 **Note:** We will create the *printPDF* query later in this guide, so you will need to add the event to the button after you've created the query.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/q3-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/q3-v2.png" alt="Print data from multiple tabs" />
 
 Now that we have created the *viewTabs* query, we can go to the **[Download PDF](/docs/how-to/print-multi-tabs-report#printing-data-from-multiple-tabs)** button and add the *viewTabs* query to the `On click` event handler.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### getTabsHTML Query
 
@@ -158,15 +122,9 @@ actions.setVariable( // set tabsHtml variable
 - This event will have an **Action** of `Run Query`.
 - In the **Query** Parameter, choose *viewTabs* as the query. This will run the *viewTabs* query after the *getTabsHTML* query is successfully executed.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/gettabshtml-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/gettabshtml-v2.png" alt="Print data from multiple tabs" />
 
 Now that we have created the *getTabsHTML* query, we can go to the *viewTabs* query and in the **Event 2** of that query, add the *getTabsHTML* query to the event handler.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### printPDF Query
 
@@ -210,9 +168,7 @@ winPrint.close();
 - Choose `Unset variable` as the **Action** for the event.
 - Under the **ACTION OPTIONS** of the event, set `tabsIndex` as the **Key**. This will unset the tabsIndex variable after the *printPDF* query is successfully executed.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar1-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar1-v2.png" alt="Print data from multiple tabs" />
 
 #### Event 2:
 
@@ -220,9 +176,7 @@ winPrint.close();
 - Choose `Unset variable` as the **Action** for the event.
 - Under the **ACTION OPTIONS** of the event, set `tabsHtml` as the **Key**. This will unset the `tabsHtml` variable after the *printPDF* query is successfully executed.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar2-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar2-v2.png" alt="Print data from multiple tabs" />
 
 #### Event 3:
 
@@ -232,14 +186,8 @@ winPrint.close();
 - Choose `Set current tab` as the **Action**.
 - For the Id parameter, copy the code: `{{variables.lastSelectedTab}}`. This will set the current tab to the tab that was selected before the **Download PDF** button was clicked.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/controlcomp2-v2.png" alt="Print data from multiple tabs" />
-</div>
+<img className="screenshot-full" src="/img/how-to/print-multitabs/controlcomp2-v2.png" alt="Print data from multiple tabs" />
 
 Now that we have created the *printPDF* query, we can go to the *viewTabs* query, and in the **Event 3** of that query, add the *printPDF* query to the **Query Success** event handler.
 
-Finally, we can test the app by clicking on the **Download PDF** button. This will redirect us to the new tab of the browser, and  download a PDF document with the data from all the tabs.
-
-</div>
-
-</div>
+Finally, we can test the app by clicking on the **Download PDF** button. This will redirect us to the new tab of the browser, and download a PDF document with the data from all the tabs.

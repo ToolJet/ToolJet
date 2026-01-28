@@ -2,13 +2,8 @@
 id: setup-rsyslog
 title: Setup Log File Generation (Rsyslog)
 ---
-<div style={{paddingBottom:'24px'}}>
 
 The **log file** serves as a comprehensive record of audit logs, capturing crucial information about various activities within the ToolJet. Follow the guide below to set up and utilize the log file feature effectively.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Activation and Configuration
 
@@ -20,9 +15,7 @@ The **log file** serves as a comprehensive record of audit logs, capturing cruci
   LOG_FILE_PATH='rsyslog'
   ```
 
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/setup-rsyslog/envfile.png" alt="Setup log file generation" />
-  </div>
+  <img className="screenshot-full" src="/img/how-to/setup-rsyslog/envfile.png" alt="Setup log file generation" />
 
 - The log file path is relative to the home directory of the machine. For instance, if the home directory is `/home/tooljet`, the log file path will be `/home/tooljet/rsyslog`.
 
@@ -31,10 +24,6 @@ The **log file** serves as a comprehensive record of audit logs, capturing cruci
 - After configuring the log file environment variable, it's essential to **restart the server** to initiate the log file generation process.
 
 - This step ensures that the server recognizes the new configuration and begins recording audit logs.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Log Rotation and Organization
 
@@ -55,9 +44,7 @@ The **log file** serves as a comprehensive record of audit logs, capturing cruci
   
   This structured path ensures that audit logs are organized by both process and date, simplifying traceability and analysis.
 
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/setup-rsyslog/timestamp.png" alt="Setup log file generation" />
-  </div>
+  <img className="screenshot-full" src="/img/how-to/setup-rsyslog/timestamp.png" alt="Setup log file generation" />
 
 ### Example Log Data
    
@@ -94,8 +81,4 @@ The log data captures essential details, such as user ID, organization ID, resou
 
 The log file feature automatically creates a folder in the home path with the specified name (e.g., `rsyslog`). This folder serves as the root directory for the organized storage of audit logs.
 
-<div style={{textAlign: 'center'}}>
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/setup-rsyslog/folder.png" alt="Setup log file generation" />
-</div>
-
-</div>
+<img className="screenshot-full" src="/img/how-to/setup-rsyslog/folder.png" alt="Setup log file generation" />

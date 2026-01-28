@@ -1,14 +1,9 @@
 ---
 id: use-custom-parameters
-title: Use Custom Parameters
+title: Use Query Parameters
 ---
-<div style={{paddingBottom:'24px'}}>
 
 Custom parameters in your queries offer a flexible way to introduce variables without directly modifying query parameters. This guide will walk you through creating, utilizing, and calling queries with custom parameters.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Adding Custom Parameters
 
@@ -19,25 +14,13 @@ Custom parameters in your queries offer a flexible way to introduce variables wi
     - **Name:** Identifier for the parameter.
     - **Default value:** A constant string, number, or object.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/params.png" alt="How to: use custom parameters" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/how-to/custom-parameters/params.png" alt="How to: use custom parameters" />
 
 ### Syntax for Utilizing Parameters
 
 Use `parameters.<identifier>` in your query to employ custom parameters. Note that parameters can only be used within the query where they are defined.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/syntax.png" alt="How to: use custom parameters" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img  className="screenshot-full" src="/img/how-to/custom-parameters/syntax.png" alt="How to: use custom parameters" />
 
 ### Example: Create Row in ToolJetDB with Custom Parameters
 
@@ -50,9 +33,7 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
   2. **name:** `email` and **value:** `shubh@email.com`
   3. **name:** `contact` and **value:** `4638563845`
 
-  <div style={{textAlign: 'center'}}>
-   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/params1.png" alt="How to: use custom parameters" />
-  </div>
+  <img className="screenshot-full" src="/img/how-to/custom-parameters/params1.png" alt="How to: use custom parameters" />
 
 - Add the columns to the query and use the custom parameters to set the values.
 
@@ -62,15 +43,9 @@ Let's assume we have a ToolJetDB table with the following columns: `name`, `emai
   | email  | `{{parameters.email}}` |
   | contact| `{{parameters.contact}}` |
 
-  <div style={{textAlign: 'center'}}>
-   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/params2.png" alt="How to: use custom parameters" />
-  </div>
+  <img className="screenshot-full" src="/img/how-to/custom-parameters/params2.png" alt="How to: use custom parameters" />
 
 - Finally, execute the query to create a new row in the ToolJetDB table with the values provided in the custom parameters.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Example: Providing Custom Parameters Using Events
 
@@ -93,8 +68,4 @@ In this example, we will demonstrate how to use custom parameters in a query by 
 
 **Note:** You can also use parameters in JavaScript queries. Learn more about [JS Query Parameter](/docs/data-sources/run-js/#parameters-in-run-javascript-code). 
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/custom-parameters/custompara.gif" alt="How to: use custom parameters" />
-</div>
-
-</div>
+<img className="screenshot-full" src="/img/how-to/custom-parameters/custompara.gif" alt="How to: use custom parameters" />

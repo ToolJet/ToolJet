@@ -1,11 +1,10 @@
 ---
 id: run-js
 title: Run JavaScript Code
+slug: /data-sources/run-js
 ---
 
 The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to be executed to enhance application interactivity. This feature is useful for performing calculations, generating values, or interacting with queries and components.
-
-<div style={{paddingTop:'24px'}}>
 
 ## Creating a Run JavaScript Query
 
@@ -15,10 +14,6 @@ The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to 
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/create-query.png" alt="Run JavaScript code" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Parameters in Run JavaScript Code
 
@@ -37,11 +32,7 @@ Each parameter requires:
 
 Once added, the **parameter can be referenced in the code using the syntax**: `parameters.<name>`.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/js-param.png" alt="Run JavaScript code" />
-
-</div>
 
 ### Displaying a Parameter Value in an Alert Box
 
@@ -89,10 +80,6 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
    <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/call-multiply-v2.png" alt="Run JavaScript code" />
 
 With this setup, the _multiply_ query can be called from other queries, such as _callMultiply_, by providing custom parameter values. This allows you to reuse the _multiply_ query with different inputs and display the results accordingly.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## RunJS Example Queries
 
@@ -155,10 +142,6 @@ This ID will be longer than the one generated earlier, and it could look like "2
 - [Trigger query at specified intervals](/docs/how-to/run-query-at-specified-intervals) using RunJS.
   :::
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Libraries
 
 ToolJet allows you to internally utilize these libraries:
@@ -172,5 +155,3 @@ ToolJet allows you to internally utilize these libraries:
 :::info
 Issues with writing custom JavaScript code? Ask in our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 :::
-
-</div>
