@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import useStore from '@/AppBuilder/_stores/store';
 import { buildTree } from './Tree/utilities';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -95,7 +95,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       <Header className={'mobile-header'}>
         <div onClick={toggleSidebar} className="cursor-pointer">
           <div className="icon-btn">
-            <Icons.IconX size={16} color="var(--icon-strong)" />
+            <TablerIcon name="IconX" size={16} color="var(--icon-strong)" />
           </div>
         </div>
         <div className="w-100 tw-min-w-0 tw-shrink tw-px-[7px]">
@@ -162,13 +162,12 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       sheetProps={{
         container: document.getElementsByClassName('canvas-wrapper')[0],
         overlayClassName: 'tw-absolute tw-h-dvh',
-        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${
-          isMobilePreviewMode && !isPreviewInEditor
+        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${isMobilePreviewMode && !isPreviewInEditor
             ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
             : currentMode === 'view' && !isMobilePreviewMode
-            ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
-            : 'tw-h-full'
-        }`,
+              ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
+              : 'tw-h-full'
+          }`,
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"
