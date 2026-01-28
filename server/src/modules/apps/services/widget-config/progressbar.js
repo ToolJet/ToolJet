@@ -245,7 +245,6 @@ export const progressbarConfig = {
             progressTrackColor: { value: 'var(--cc-primary-brand)' },
             completionColor: { value: 'var(--cc-success-systemStatus)' },
             progressBarWidth: { value: '{{20}}' },
-            progressBarAlignment: { value: 'center' },
             boxShadow: { value: '0px 0px 0px 0px #00000040' },
             padding: { value: 'default' },
         },
