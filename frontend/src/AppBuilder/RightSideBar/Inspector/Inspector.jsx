@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -132,6 +133,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Camera',
   'CodeEditor',
   'Form',
+  'Navigation',
 ];
 
 export const Inspector = ({
@@ -894,6 +896,9 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
+
+      case 'Navigation':
+        return <Navigation {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
