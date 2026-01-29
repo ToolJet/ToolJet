@@ -190,7 +190,7 @@
       border: 1px solid var(--border-default, #ccd1d5);
       border-right: none;
       border-radius: 6px 0 0 6px;
-      background: var(--bg-surface-layer-01, white);
+      background: var(--background-surface-layer-01);
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 12px;
       font-weight: 400;
@@ -210,7 +210,7 @@
       padding: 7px;
       border: 1px solid var(--border-default, #ccd1d5);
       border-radius: 0 6px 6px 0;
-      background: var(--bg-surface-layer-01, white);
+      background: var(--background-surface-layer-01);
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 12px;
       font-weight: 400;

@@ -447,7 +447,7 @@
 
 .debugger-content {
   padding: 0px 16px;
-  background-color: var(--base);
+  background-color: var(--background-surface-layer-01);
   cursor: pointer;
 
   hr {
@@ -456,7 +456,7 @@
   }
 
   &:hover {
-    background-color: var(--slate3);
+    background-color: var(--interactive-overlays-fill-hover);
   }
 
   .error-target,
