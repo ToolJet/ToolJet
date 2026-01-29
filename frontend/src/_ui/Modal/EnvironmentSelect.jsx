@@ -170,8 +170,9 @@ export function EnvironmentSelect(props) {
           if (props.value.find((env) => env?.isAllField)?.isAllField)
             props.onChange(selected.filter((env) => !env?.isAllField));
 
-          // For end-user groups, only select released environment when "All environments" is clicked
-          if (isEndUserGroup) {
+          // For end-user groups in basic/starter plans, only select released environment when "All environments" is clicked
+          // In paid plans, end-users can select all environments
+          if (isEndUserGroup && props.isBasicPlan) {
             const releasedEnvironmentOnly = props.options.filter((env) => env.value === 'canAccessReleased');
             return props.onChange([...releasedEnvironmentOnly, props.allOption]);
           }

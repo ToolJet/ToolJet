@@ -26,9 +26,10 @@ const MobileHeader = ({
 }) => {
   const location = useLocation();
   const { moduleId } = useModuleContext();
-  const { isReleasedVersionId } = useStore(
+  const { isReleasedVersionId, isPublicAccess } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
+      isPublicAccess: state.isPublicAccess,
     }),
     shallow
   );
@@ -37,8 +38,8 @@ const MobileHeader = ({
   const searchParams = new URLSearchParams(location.search);
   const isPreviewMode = searchParams.has('env') || searchParams.has('version');
 
-  // Don't render header at all if not in preview mode
-  if (!isPreviewMode) {
+  // Don't render header at all if not in preview mode or if accessing as public (not logged in)
+  if (!isPreviewMode || isPublicAccess) {
     return null;
   }
 

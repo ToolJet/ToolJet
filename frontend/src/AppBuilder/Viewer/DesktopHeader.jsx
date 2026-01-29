@@ -21,10 +21,11 @@ const DesktopHeader = ({
   changeToDarkMode,
 }) => {
   const location = useLocation();
-  const { showDarkModeToggle, isReleasedVersionId } = useStore(
+  const { showDarkModeToggle, isReleasedVersionId, isPublicAccess } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
       showDarkModeToggle: state.globalSettings.appMode === 'auto' || !state.globalSettings.appMode,
+      isPublicAccess: state.isPublicAccess,
     }),
     shallow
   );
@@ -33,8 +34,8 @@ const DesktopHeader = ({
   const searchParams = new URLSearchParams(location.search);
   const isPreviewMode = searchParams.has('env') || searchParams.has('version');
 
-  // Don't render header at all if not in preview mode
-  if (!isPreviewMode) {
+  // Don't render header at all if not in preview mode or if accessing as public (not logged in)
+  if (!isPreviewMode || isPublicAccess) {
     return null;
   }
 
