@@ -5,7 +5,7 @@ export const navigationConfig = {
   component: 'Navigation',
   defaultSize: {
     width: 25,
-    height: 40,
+    height: 60,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
