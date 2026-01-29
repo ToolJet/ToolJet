@@ -1,4 +1,4 @@
-name: Render Preview Deploy V2 (DockerHub-based)
+name: Render Preview Deploy (DockerHub-based)
 
 on:
   pull_request:
@@ -74,7 +74,6 @@ jobs:
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
           
-          # Extract the first Docker Hub credential ID (direct path, not nested)
           REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
           
           if [ -z "$REGISTRY_CRED_ID" ]; then
@@ -96,9 +95,9 @@ jobs:
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
             --data '{
               "autoDeploy": "no",
-              "name": "ToolJet CE V2 PR #${{ env.PR_NUMBER }}",
+              "name": "ToolJet CE PR #${{ env.PR_NUMBER }}",
               "ownerId": "${{ env.RENDER_OWNER_ID }}",
-              "slug": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}",
+              "slug": "tooljet-ce-pr-${{ env.PR_NUMBER }}",
               "suspended": "not_suspended",
               "type": "web_service",
               "envVars": [
@@ -106,19 +105,19 @@ jobs:
                 {"key": "PG_PORT", "value": "5432"},
                 {"key": "PG_USER", "value": "postgres"},
                 {"key": "PG_PASS", "value": "postgres"},
-                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ce-v2"},
-                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ce-v2-tjdb"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ce"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ce-tjdb"},
                 {"key": "TOOLJET_DB_HOST", "value": "localhost"},
                 {"key": "TOOLJET_DB_USER", "value": "postgres"},
                 {"key": "TOOLJET_DB_PASS", "value": "postgres"},
                 {"key": "TOOLJET_DB_PORT", "value": "5432"},
                 {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
-                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-v2-tjdb"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ce-tjdb"},
                 {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
                 {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
                 {"key": "PGRST_LOG_LEVEL", "value": "info"},
                 {"key": "PORT", "value": "80"},
-                {"key": "TOOLJET_HOST", "value": "https://tooljet-ce-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ce-pr-${{ env.PR_NUMBER }}.onrender.com"},
                 {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
                 {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
                 {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
@@ -135,7 +134,7 @@ jobs:
               "serviceDetails": {
                 "runtime": "image",
                 "disk": {
-                  "name": "tooljet-ce-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
                 },
@@ -196,13 +195,13 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 CE Review App V2 Deployed!\n\n` +
+              body: `## 🚀 CE Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
-                    `| **App URL** | https://tooljet-ce-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **App URL** | https://tooljet-ce-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
                     `| **Docker Image** | \`tooljet/tooljet-render:ce-pr-${prNumber}\` |\n\n` +
-                    `_Deployed using DockerHub-based pipeline (V2)_`
+                    `_Deployed using DockerHub-based pipeline_`
             });
 
       - name: Update Labels
@@ -210,7 +209,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Remove trigger label
             try {
               await github.rest.issues.removeLabel({
                 issue_number: context.issue.number,
@@ -220,7 +218,6 @@ jobs:
               });
             } catch (e) { console.log('Label not found:', e.message); }
             
-            // Add active label
             await github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -239,7 +236,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if CE V2 is active
+      - name: Check if CE is active
         id: check-active
         uses: actions/github-script@v6
         with:
@@ -301,9 +298,8 @@ jobs:
       - name: Trigger Render Redeploy
         if: steps.check-active.outputs.is_active == 'true'
         run: |
-          # Get service ID
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -314,7 +310,6 @@ jobs:
           
           echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
           
-          # Trigger deploy
           DEPLOY_RESPONSE=$(curl --silent --request POST \
             --url "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
             --header 'accept: application/json' \
@@ -335,7 +330,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔄 CE Review App V2 Rebuilding\n\n` +
+              body: `## 🔄 CE Review App Rebuilding\n\n` +
                     `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
                     `_Using cached layers for faster build_`
             });
@@ -354,7 +349,7 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -398,7 +393,7 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -437,11 +432,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if CE V2 exists
+      - name: Check if CE exists
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -490,7 +485,7 @@ jobs:
   # ENTERPRISE EDITION (EE) - LTS
   # ═══════════════════════════════════════════════════════════════════════════
 
-  build-and-deploy-ee:
+  build-and-deploy-ee-lts:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'labeled' &&
@@ -526,7 +521,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push EE Image
+      - name: Build and Push EE LTS Image
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -548,7 +543,6 @@ jobs:
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
           
-          # Extract the first Docker Hub credential ID (direct path, not nested)
           REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
           
           if [ -z "$REGISTRY_CRED_ID" ]; then
@@ -570,9 +564,9 @@ jobs:
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
             --data '{
               "autoDeploy": "no",
-              "name": "ToolJet EE V2 PR #${{ env.PR_NUMBER }}",
+              "name": "ToolJet EE LTS PR #${{ env.PR_NUMBER }}",
               "ownerId": "${{ env.RENDER_OWNER_ID }}",
-              "slug": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}",
+              "slug": "tooljet-ee-lts-pr-${{ env.PR_NUMBER }}",
               "suspended": "not_suspended",
               "type": "web_service",
               "envVars": [
@@ -580,19 +574,19 @@ jobs:
                 {"key": "PG_PORT", "value": "5432"},
                 {"key": "PG_USER", "value": "postgres"},
                 {"key": "PG_PASS", "value": "postgres"},
-                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-v2"},
-                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-v2-tjdb"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-lts"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-lts-tjdb"},
                 {"key": "TOOLJET_DB_HOST", "value": "localhost"},
                 {"key": "TOOLJET_DB_USER", "value": "postgres"},
                 {"key": "TOOLJET_DB_PASS", "value": "postgres"},
                 {"key": "TOOLJET_DB_PORT", "value": "5432"},
                 {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
-                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-v2-tjdb"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-lts-tjdb"},
                 {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
                 {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
                 {"key": "PGRST_LOG_LEVEL", "value": "info"},
                 {"key": "PORT", "value": "80"},
-                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-lts-pr-${{ env.PR_NUMBER }}.onrender.com"},
                 {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
                 {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
                 {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
@@ -617,7 +611,7 @@ jobs:
               "serviceDetails": {
                 "runtime": "image",
                 "disk": {
-                  "name": "tooljet-ee-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "name": "tooljet-ee-lts-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
                 },
@@ -678,13 +672,13 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 EE Review App V2 Deployed!\n\n` +
+              body: `## 🚀 EE LTS Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
-                    `| **App URL** | https://tooljet-ee-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
                     `| **Docker Image** | \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\` |\n\n` +
-                    `_Deployed using DockerHub-based pipeline (V2)_`
+                    `_Deployed using DockerHub-based pipeline - LTS Edition_`
             });
 
       - name: Update Labels
@@ -709,17 +703,17 @@ jobs:
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # EE: Rebuild and Redeploy on new commits
+  # EE LTS: Rebuild and Redeploy on new commits
   # ─────────────────────────────────────────────────────────────────────────────
 
-  rebuild-ee:
+  rebuild-ee-lts:
     if: |
       github.event.pull_request.head.repo.fork == false &&
       github.event.action == 'synchronize'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if EE V2 is active
+      - name: Check if EE LTS is active
         id: check-active
         uses: actions/github-script@v6
         with:
@@ -766,7 +760,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push EE Image
+      - name: Build and Push EE LTS Image
         if: steps.check-active.outputs.is_active == 'true'
         uses: docker/build-push-action@v4
         with:
@@ -785,7 +779,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -816,16 +810,16 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔄 EE Review App V2 Rebuilding\n\n` +
+              body: `## 🔄 EE LTS Review App Rebuilding\n\n` +
                     `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
                     `_Using cached layers for faster build_`
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # EE: Suspend
+  # EE LTS: Suspend
   # ─────────────────────────────────────────────────────────────────────────────
 
-  suspend-ee:
+  suspend-ee-lts:
     if: |
       github.event.action == 'labeled' &&
       github.event.label.name == 'suspend-ee-lts-review-app'
@@ -835,7 +829,7 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -866,10 +860,10 @@ jobs:
             } catch (e) { console.log('Label not found:', e.message); }
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # EE: Resume
+  # EE LTS: Resume
   # ─────────────────────────────────────────────────────────────────────────────
 
-  resume-ee:
+  resume-ee-lts:
     if: |
       github.event.action == 'unlabeled' &&
       github.event.label.name == 'suspend-ee-lts-review-app'
@@ -879,7 +873,7 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -908,21 +902,21 @@ jobs:
             });
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # EE: Destroy
+  # EE LTS: Destroy
   # ─────────────────────────────────────────────────────────────────────────────
 
-  destroy-ee:
+  destroy-ee-lts:
     if: |
       (github.event.action == 'labeled' && github.event.label.name == 'destroy-ee-lts-review-app') ||
       github.event.action == 'closed'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if EE V2 exists
+      - name: Check if EE LTS exists
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20LTS%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -1029,7 +1023,6 @@ jobs:
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}')
           
-          # Extract the first Docker Hub credential ID (direct path, not nested)
           REGISTRY_CRED_ID=$(echo $CRED_RESPONSE | jq -r '.[0].id // empty')
           
           if [ -z "$REGISTRY_CRED_ID" ]; then
@@ -1051,9 +1044,9 @@ jobs:
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
             --data '{
               "autoDeploy": "no",
-              "name": "ToolJet EE Pre-release V2 PR #${{ env.PR_NUMBER }}",
+              "name": "ToolJet EE Pre-release PR #${{ env.PR_NUMBER }}",
               "ownerId": "${{ env.RENDER_OWNER_ID }}",
-              "slug": "tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}",
+              "slug": "tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}",
               "suspended": "not_suspended",
               "type": "web_service",
               "envVars": [
@@ -1061,19 +1054,19 @@ jobs:
                 {"key": "PG_PORT", "value": "5432"},
                 {"key": "PG_USER", "value": "postgres"},
                 {"key": "PG_PASS", "value": "postgres"},
-                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release-v2"},
-                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release-v2-tjdb"},
+                {"key": "PG_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release"},
+                {"key": "TOOLJET_DB", "value": "${{ env.PR_NUMBER }}-ee-pre-release-tjdb"},
                 {"key": "TOOLJET_DB_HOST", "value": "localhost"},
                 {"key": "TOOLJET_DB_USER", "value": "postgres"},
                 {"key": "TOOLJET_DB_PASS", "value": "postgres"},
                 {"key": "TOOLJET_DB_PORT", "value": "5432"},
                 {"key": "PGRST_DB_PRE_CONFIG", "value": "postgrest.pre_config"},
-                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-pre-release-v2-tjdb"},
+                {"key": "PGRST_DB_URI", "value": "postgres://postgres:postgres@localhost/${{ env.PR_NUMBER }}-ee-pre-release-tjdb"},
                 {"key": "PGRST_HOST", "value": "127.0.0.1:3000"},
                 {"key": "PGRST_JWT_SECRET", "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"},
                 {"key": "PGRST_LOG_LEVEL", "value": "info"},
                 {"key": "PORT", "value": "80"},
-                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}.onrender.com"},
+                {"key": "TOOLJET_HOST", "value": "https://tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}.onrender.com"},
                 {"key": "DISABLE_TOOLJET_TELEMETRY", "value": "true"},
                 {"key": "SMTP_ADDRESS", "value": "smtp.mailtrap.io"},
                 {"key": "SMTP_DOMAIN", "value": "smtp.mailtrap.io"},
@@ -1098,7 +1091,7 @@ jobs:
               "serviceDetails": {
                 "runtime": "image",
                 "disk": {
-                  "name": "tooljet-ee-pre-release-v2-pr-${{ env.PR_NUMBER }}-postgresql",
+                  "name": "tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
                   "sizeGB": 10
                 },
@@ -1159,13 +1152,13 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🚀 EE Pre-release Review App V2 Deployed!\n\n` +
+              body: `## 🚀 EE Pre-release Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
-                    `| **App URL** | https://tooljet-ee-pre-release-v2-pr-${prNumber}.onrender.com |\n` +
+                    `| **App URL** | https://tooljet-ee-pre-release-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
                     `| **Docker Image** | \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\` |\n\n` +
-                    `_Deployed using DockerHub-based pipeline (V2) - Pre-release Edition_`
+                    `_Deployed using DockerHub-based pipeline - Pre-release Edition_`
             });
 
       - name: Update Labels
@@ -1200,7 +1193,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if EE Pre-release V2 is active
+      - name: Check if EE Pre-release is active
         id: check-active
         uses: actions/github-script@v6
         with:
@@ -1266,7 +1259,7 @@ jobs:
         if: steps.check-active.outputs.is_active == 'true'
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -1297,7 +1290,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔄 EE Pre-release Review App V2 Rebuilding\n\n` +
+              body: `## 🔄 EE Pre-release Review App Rebuilding\n\n` +
                     `New commit \`${sha}\` pushed. Image updated and deployment triggered.\n\n` +
                     `_Using cached layers for faster build_`
             });
@@ -1316,7 +1309,7 @@ jobs:
       - name: Suspend Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -1360,7 +1353,7 @@ jobs:
       - name: Resume Render Service
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           
@@ -1399,11 +1392,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if EE Pre-release V2 exists
+      - name: Check if EE Pre-release exists
         id: check-exists
         run: |
           SERVICE_ID=$(curl --silent --request GET \
-            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20V2%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+            --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20Pre-release%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
             --header 'accept: application/json' \
             --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | jq -r '.[0].service.id // empty')
           

@@ -5,7 +5,7 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import { pageConfig } from './pageConfig';
 import Accordion from '@/_ui/Accordion';
-import { ColorSwatches } from '@/modules/Appbuilder/components';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 import { NumberInput } from '@/AppBuilder/CodeBuilder/Elements/NumberInput';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { onInvitedUserSignUpSuccess, onLoginSuccess, getPostSignupRedirectPath } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
@@ -39,6 +39,8 @@ const SignupPage = ({ configs, organizationId }) => {
       toast.error(errorMessage);
     }
   }, []);
+
+
 
   const handleSignup = (formData, onSuccess = () => { }, onFaluire = () => { }) => {
     const { email, name, password } = formData;
@@ -87,8 +89,11 @@ const SignupPage = ({ configs, organizationId }) => {
                 isUserLoggingIn: false,
               });
               
-              // Redirect to home/dashboard
-              const redirectPath = redirectTo || '/home';
+              const redirectPath = getPostSignupRedirectPath({
+                redirectTo,
+                organizationSlug: current_organization_slug,
+              });
+              navigate(redirectPath, { replace: true });
               navigate(redirectPath, { replace: true });
             } catch (error) {
               // Fallback: redirect to home/dashboard
