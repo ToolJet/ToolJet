@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
@@ -315,7 +315,7 @@ export const CurrencyInput = (props) => {
               zIndex: 3,
             }}
           >
-            <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
           </button>
         )}
         {loading && <Loader style={loaderStyle} width="16" />}

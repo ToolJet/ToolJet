@@ -13,6 +13,12 @@ export const EmailInput = (props) => {
     inputLogic.setInputValue('');
     props.fireEvent('onChange');
   };
+  const getCustomStyles = (baseStyles) => {
+    return {
+      ...baseStyles,
+      paddingRight: showClearBtn ? '25px' : '0px', 
+    };
+  };
   return (
     <BaseInput
       {...props}
@@ -21,6 +27,7 @@ export const EmailInput = (props) => {
       additionalInputProps={additionalInputProps}
       showClearBtn={showClearBtn}
       onClear={handleClear}
+      getCustomStyles={getCustomStyles}
     />
   );
 };

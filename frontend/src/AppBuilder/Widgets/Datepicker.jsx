@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
 import cx from 'classnames';
-import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
+import { IconX } from '@tabler/icons-react';
 
 export const Datepicker = function Datepicker({
   height,
@@ -127,7 +127,7 @@ export const Datepicker = function Datepicker({
         zIndex: 3,
       }}
     >
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </button>
   ) : null;
 

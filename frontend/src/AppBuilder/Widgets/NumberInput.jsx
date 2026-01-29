@@ -51,11 +51,10 @@ export const NumberInput = (props) => {
     }
   };
 
-  // Override the base input styles to account for number controls
   const getCustomStyles = (baseStyles) => {
     return {
       ...baseStyles,
-      paddingRight: showClearBtn ? '44px' : '20px', // Make room for clear button and number controls
+      paddingRight: showClearBtn ? '30px' : '0px', 
     };
   };
 
@@ -106,6 +105,7 @@ export const NumberInput = (props) => {
       showClearBtn={showClearBtn}
       onClear={handleClear}
       clearButtonRightOffset={20}
+      getCustomStyles={getCustomStyles}
     />
   );
 };

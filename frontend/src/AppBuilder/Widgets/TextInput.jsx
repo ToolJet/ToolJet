@@ -13,6 +13,12 @@ export const TextInput = (props) => {
     inputLogic.setInputValue('');
     props.fireEvent('onChange');
   };
+  const getCustomStyles = (baseStyles) => {
+    return {
+      ...baseStyles,
+      paddingRight: showClearBtn ? '25px' : '0px', 
+    };
+  };
   return (
     <BaseInput
       {...props}
@@ -20,6 +26,7 @@ export const TextInput = (props) => {
       inputType="text"
       showClearBtn={showClearBtn}
       onClear={handleClear}
+      getCustomStyles={getCustomStyles}
     />
   );
 };

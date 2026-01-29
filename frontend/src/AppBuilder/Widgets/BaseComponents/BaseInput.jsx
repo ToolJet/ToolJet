@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
+import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
@@ -138,7 +138,7 @@ export const BaseInput = ({
         zIndex: 3,
       }}
     >
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </button>
   ) : null;
 
@@ -252,7 +252,7 @@ export const BaseInput = ({
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             placeholder={placeholder}
-            style={inputStyles}
+            style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
             aria-disabled={disable || loading}
