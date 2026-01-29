@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
 import cx from 'classnames';
+import { IconX } from '@tabler/icons-react';
 
 export const Datepicker = function Datepicker({
   height,
@@ -19,7 +20,7 @@ export const Datepicker = function Datepicker({
   dataCy,
 }) {
   const isInitialRender = useRef(true);
-  const { enableTime, enableDate, defaultValue, disabledDates } = properties;
+  const { enableTime, enableDate, defaultValue, disabledDates, showClearBtn } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
@@ -42,6 +43,8 @@ export const Datepicker = function Datepicker({
 
   const [validationStatus, setValidationStatus] = useState(validate(computeDateString(date)));
   const { isValid, validationError } = validationStatus;
+  const hasValue = date !== null && date !== undefined && date !== '';
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState;
 
   const onDateChange = (date) => {
     setShowValidationError(true);
@@ -103,6 +106,31 @@ export const Datepicker = function Datepicker({
     setExposedVariable('isValid', validationStatus?.isValid);
   };
 
+  const clearButton = shouldShowClearBtn ? (
+    <button
+      type="button"
+      className="tj-input-clear-btn datepicker-clear-btn"
+      aria-label="Clear"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        setInputValue(null);
+      }}
+      style={{
+        position: 'absolute',
+        right: '11px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 3,
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    </button>
+  ) : null;
+
   return (
     <div
       data-disabled={disabledState}
@@ -121,7 +149,9 @@ export const Datepicker = function Datepicker({
         open={isCalendarOpen}
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
-        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${
+          shouldShowClearBtn ? 'has-clear-btn' : ''
+        }`}
         popperClassName={cx('legacy-datepicker-poppper tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
@@ -150,6 +180,7 @@ export const Datepicker = function Datepicker({
         onSelect={() => setIsCalendarOpen(false)}
         onClickOutside={() => setIsCalendarOpen(false)}
       />
+      {clearButton}
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
         {showValidationError && validationError}
