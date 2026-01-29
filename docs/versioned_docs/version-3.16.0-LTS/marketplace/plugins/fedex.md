@@ -21,7 +21,21 @@ Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.h
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/connection.png" alt="Marketplace: FedEx" />
 
-## Supported Operation
+## Supported Entities
+
+  1. **[Address Validation](#address-validation)**
+  2. **[Ground End of Day Close](#ground-end-of-day-close)**
+  3. **[Ship Consolidation ](#ship-consolidation)**
+  4. **[Open Ship](#open-ship)**
+  5. **[Pickup](#pickup)**
+  6. **[Postal Code Validation](#postal-code-validation)**
+  7. **[Rates and Transit Times](#rates-and-transit-times)**
+  8. **[Ship](#ship)**
+  9. **[Tracking (Basic Integrated Visibility)](#tracking-basic-integrated-visibility)**
+  10. **[Trade Documents Upload](#trade-documents-upload)**
+  11. **[FedEx Locations Search](#fedex-locations-search)**
+  12. **[LTL Freight](#ltl-freight)**
+  13. **[Service Availability](#service-availability)**
 
 ### Address Validation
 
@@ -170,6 +184,7 @@ Operation: POST `/address/v1/addresses/resolve`
     }
   ]}}
 ```
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/address-query.png" alt="Marketplace: FedEx" />
 
 <details id="tj-dropdown">
 <summary>**Query Response Example**</summary>
@@ -310,9 +325,6 @@ Operation: POST `/address/v1/addresses/resolve`
 }
 ```
 </details>
-
-
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/add-validation.png" alt="Marketplace: FedEx" />
 
 ### Creating a Rate Quote
 
@@ -357,6 +369,7 @@ Operation: POST `/rate/v1/rates/quotes`
     ]
 }}}
 ```
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/rate-query.png" alt="Marketplace: FedEx" />
 
 <details id="tj-dropdown">
 <summary>**Query Response Example**</summary>
@@ -373,7 +386,3 @@ Operation: POST `/rate/v1/rates/quotes`
 }
 ```
 </details>
-
-
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/rate-quote.png" alt="Marketplace: FedEx" />
-
