@@ -294,33 +294,63 @@ export const createResolvedSlice = (set, get) => ({
         if (index !== null) {
           const indices = Array.isArray(index) ? index : [index];
 
-          // Ensure root is an array
+          // Helper function to recursively unwrap nested arrays to get the component object
+          const unwrapToObject = (val) => {
+            let result = val;
+            while (result && Array.isArray(result)) {
+              result = result[0];
+            }
+            return result && typeof result === 'object' ? result : null;
+          };
+
+          // Ensure root is an array (modify state directly, not a local variable)
           if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
-            state.resolvedStore.modules[moduleId].components[componentId] = [];
+            const existing = state.resolvedStore.modules[moduleId].components[componentId];
+            const unwrapped = unwrapToObject(existing);
+            state.resolvedStore.modules[moduleId].components[componentId] = unwrapped ? [unwrapped] : [];
           }
 
           // Navigate/create nested arrays for all but the last index
+          // We keep track of parent references to ensure we can fix the state structure
           let current = state.resolvedStore.modules[moduleId].components[componentId];
           for (let i = 0; i < indices.length - 1; i++) {
-            if (!current[indices[i]]) {
-              current[indices[i]] = [];
-            } else if (!Array.isArray(current[indices[i]])) {
+            const idx = indices[i];
+            if (!current[idx]) {
+              current[idx] = [];
+            } else if (!Array.isArray(current[idx])) {
               // Transition from flat to nested: wrap existing resolved component in array
-              current[indices[i]] = [current[indices[i]]];
+              const unwrapped = unwrapToObject(current[idx]);
+              current[idx] = unwrapped ? [unwrapped] : [];
             }
-            current = current[indices[i]];
+            current = current[idx];
           }
 
           const lastIdx = indices[indices.length - 1];
-          if (!current[lastIdx]) {
-            // Try to copy from index 0 at this level as fallback
-            const source = current[0];
-            current[lastIdx] = source ? { ...source } : { ...DEFAULT_COMPONENT_STRUCTURE };
+
+          // Get or create the component object at lastIdx
+          let componentObj = unwrapToObject(current[lastIdx]);
+          if (!componentObj) {
+            // Try to copy structure from index 0 as fallback
+            const source = unwrapToObject(current[0]);
+            componentObj = source ? { ...source } : { ...DEFAULT_COMPONENT_STRUCTURE };
+          } else {
+            // Make a shallow copy to avoid mutating the original directly
+            // This ensures Immer properly tracks the changes
+            componentObj = { ...componentObj };
           }
-          current[lastIdx][type] = {
-            ...current[lastIdx][type],
-            [property]: value,
-          };
+
+          // Ensure we have the type object
+          if (!componentObj[type]) {
+            componentObj[type] = {};
+          } else {
+            componentObj[type] = { ...componentObj[type] };
+          }
+
+          // Set the property
+          componentObj[type][property] = value;
+
+          // Write back to state (this replaces any stale array structure)
+          current[lastIdx] = componentObj;
         } else {
           // index is null — component is not inside a ListView/Kanban
           // If the stored data is still an array (stale from a previous parent), reset it

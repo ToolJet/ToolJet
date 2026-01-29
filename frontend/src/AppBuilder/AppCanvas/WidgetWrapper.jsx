@@ -80,7 +80,7 @@ const WidgetWrapper = memo(
       const component = state.getResolvedComponent(id, resolveIndex, moduleId);
       const componentExposedVisibility = getExposedPropertyForAdditionalActions(
         id,
-        subContainerIndex,
+        resolveIndex,
         'isVisible',
         moduleId
       );
@@ -180,6 +180,7 @@ const WidgetWrapper = memo(
             widgetWidth={width}
             inCanvas={inCanvas}
             subContainerIndex={subContainerIndex}
+            resolveIndex={resolveIndex}
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}

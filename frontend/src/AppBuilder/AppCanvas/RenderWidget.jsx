@@ -8,7 +8,6 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
-import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -55,6 +54,7 @@ const RenderWidget = ({
   widgetHeight,
   componentType,
   subContainerIndex,
+  resolveIndex,
   onOptionChange,
   onOptionsChange,
   widgetWidth,
@@ -63,14 +63,6 @@ const RenderWidget = ({
   moduleId,
   currentMode,
 }) => {
-  const { contextPath } = useSubcontainerContext();
-  const indices = useMemo(() => {
-    const result = contextPath.map((s) => s.index);
-    return result.length > 0 ? result : null;
-  }, [contextPath]);
-  // Use full indices array for resolved component lookups
-  const resolveIndex = indices ?? subContainerIndex;
-
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
@@ -109,14 +101,12 @@ const RenderWidget = ({
   );
   const parentId = component?.parent;
   // Compute outer indices for this component's parent's custom resolvables
-  // If contextPath is [{ containerId: 'outerLV', index: 2 }, { containerId: 'innerLV', index: 1 }]
-  // and parentId is 'innerLV', then outerIndices for parent = [2] (indices before the parent segment)
+  // resolveIndex = [outerIdx, middleIdx, innerIdx] → parentOuterIndices = [outerIdx, middleIdx]
+  // The last index is the immediate parent's row index (subContainerIndex)
   const parentOuterIndices = useMemo(() => {
-    if (!parentId || contextPath.length === 0) return [];
-    const parentSegmentIdx = contextPath.findIndex((s) => s.containerId === parentId);
-    if (parentSegmentIdx <= 0) return [];
-    return contextPath.slice(0, parentSegmentIdx).map((s) => s.index);
-  }, [parentId, contextPath]);
+    if (!resolveIndex || resolveIndex.length <= 1) return [];
+    return resolveIndex.slice(0, -1);
+  }, [resolveIndex]);
 
   const customResolvables = useStore((state) => {
     let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId];
@@ -133,24 +123,14 @@ const RenderWidget = ({
 
   const isDisabled = useStore((state) => {
     const component = state.getResolvedComponent(id, resolveIndex, moduleId);
-    const componentExposedDisabled = getExposedPropertyForAdditionalActions(
-      id,
-      subContainerIndex,
-      'isDisabled',
-      moduleId
-    );
+    const componentExposedDisabled = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isDisabled', moduleId);
     if (componentExposedDisabled !== undefined) return componentExposedDisabled;
     return component?.properties?.disabledState || component?.styles?.disabledState;
   });
 
   const isLoading = useStore((state) => {
     const component = state.getResolvedComponent(id, resolveIndex, moduleId);
-    const componentExposedLoading = getExposedPropertyForAdditionalActions(
-      id,
-      subContainerIndex,
-      'isLoading',
-      moduleId
-    );
+    const componentExposedLoading = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isLoading', moduleId);
     if (componentExposedLoading !== undefined) return componentExposedLoading;
     return component?.properties?.loadingState || component?.styles?.loadingState;
   });
@@ -228,17 +208,18 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+              ? `${
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -248,11 +229,13 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-            } ${!['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${
+            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
               ? 'disabled'
               : ''
-            }`} //required for custom CSS
+          }`} //required for custom CSS
         >
           <TrackedSuspense fallback={null}>
             <ComponentToRender

@@ -436,14 +436,12 @@ export const createComponentsSlice = (set, get) => ({
       getAllExposedValues,
       getCustomResolvables,
       checkIfParentIsListviewOrKanban,
+      getComponentDefinition,
+      getBaseParentId,
     } = get();
 
-    let customResolvables = {},
-      shouldResolve = false;
-    let index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
-    if (index !== null) {
-      customResolvables = getCustomResolvables(parentId, null);
-    }
+    let shouldResolve = false;
+    const isInListviewOrKanban = checkIfParentIsListviewOrKanban(parentId, moduleId);
 
     if (
       typeof unResolvedValue === 'string' &&
@@ -454,21 +452,81 @@ export const createComponentsSlice = (set, get) => ({
       shouldResolve = true;
     }
 
-    const length = Object.keys(customResolvables).length;
-    if (length === 0) {
+    if (!isInListviewOrKanban) {
+      // Not in a ListView/Kanban - simple case
       const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables, false, [])
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
         : value;
-      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, index, moduleId);
-    } else {
-      // Loop all the index and set the resolved value
-      for (let i = 0; i < length; i++) {
-        const resolvedValue = shouldResolve
-          ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables[i], false, [])
-          : value;
-        setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, i, moduleId);
-      }
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
     }
+
+    // Component is inside a ListView/Kanban - need to handle N-level nesting
+    // Build the parent hierarchy to find all ListView ancestors
+    const listviewAncestors = [];
+    let currentParentId = parentId;
+    while (currentParentId) {
+      const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+      const parentDef = getComponentDefinition(baseId, moduleId);
+      const parentType = parentDef?.component?.component;
+      if (parentType === 'Listview' || parentType === 'Kanban') {
+        listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
+      }
+      currentParentId = parentDef?.component?.parent;
+    }
+
+    if (listviewAncestors.length === 0) {
+      // Fallback - shouldn't happen but handle gracefully
+      const resolvedValue = shouldResolve
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
+        : value;
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
+    }
+
+    // Get the innermost (immediate parent) ListView's customResolvables
+    const innermostListview = listviewAncestors[listviewAncestors.length - 1];
+    const baseCustomResolvables = getCustomResolvables(innermostListview, null, moduleId, []);
+
+    // Helper function to recursively iterate through all index combinations
+    const iterateNestedIndices = (resolvables, currentIndices, depth) => {
+      if (!resolvables || typeof resolvables !== 'object') return;
+
+      // Check if this is the leaf level (array of listItem objects)
+      const isLeafLevel =
+        Array.isArray(resolvables) &&
+        resolvables.length > 0 &&
+        resolvables[0] &&
+        typeof resolvables[0] === 'object' &&
+        'listItem' in resolvables[0];
+
+      if (isLeafLevel) {
+        // At leaf level - iterate through row indices
+        for (let i = 0; i < resolvables.length; i++) {
+          const fullIndices = [...currentIndices, i];
+          const resolvedValue = shouldResolve
+            ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), resolvables[i], false, [])
+            : value;
+          setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, fullIndices, moduleId);
+        }
+      } else if (Array.isArray(resolvables)) {
+        // Array but not leaf level - iterate through
+        for (let i = 0; i < resolvables.length; i++) {
+          iterateNestedIndices(resolvables[i], [...currentIndices, i], depth + 1);
+        }
+      } else {
+        // Object keyed by parent indices - iterate through keys
+        const keys = Object.keys(resolvables);
+        for (const key of keys) {
+          const idx = parseInt(key, 10);
+          if (!isNaN(idx)) {
+            iterateNestedIndices(resolvables[key], [...currentIndices, idx], depth + 1);
+          }
+        }
+      }
+    };
+
+    iterateNestedIndices(baseCustomResolvables, [], 0);
   },
 
   validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
@@ -1394,10 +1452,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -2538,18 +2596,28 @@ export const createComponentsSlice = (set, get) => ({
         }
       });
   },
-  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
-    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+  getExposedPropertyForAdditionalActions: (componentId, indices, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition, getBaseParentId } = get();
     const component = getComponentDefinition(componentId, moduleId)?.component;
     const componentName = component?.name;
     const parentId = component?.parent;
-    const parentType = getComponentTypeFromId(parentId);
+    // Strip row suffix to get the actual ListView ID (e.g., 'listview-abc-0' → 'listview-abc')
+    const baseParentId = getBaseParentId?.(parentId) || parentId;
+    const parentType = getComponentTypeFromId(baseParentId);
+
+    // Normalize indices: accept both scalar (legacy) and array (N-level) formats
+    // For ListView, we use the last index (immediate parent's row index)
+    const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
+
     if (parentType === 'Listview') {
-      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
-      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
+      if (lastIndex == null) {
+        return undefined;
+      }
+      const subcontainerParentComponent = parentComponent?.children?.[lastIndex];
       return subcontainerParentComponent?.[componentName]?.[property];
     } else if (parentType === 'Form') {
-      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       const subcontainerParentComponent = parentComponent?.children?.[componentName];
       return subcontainerParentComponent?.[property];
     } else {
