@@ -66,8 +66,10 @@ Allowed Domains can be set separately for **SSO login** and **Password login** a
   If one or more allowed domains are added for password login, only those domains are permitted to authenticate using a password. All other domains will not be able to log in with a password.  
   If the allowed domains list is empty, all domains are allowed to use password login unless a domain is explicitly restricted.
 
-You can add multiple domain names by separating them with commas.  
-**Example:** `corp.com`, `corp.io`, `corp.ai`
+You can add multiple domain names by separating them with commas. For example:
+```js 
+corp.com, example.com, corp.ai
+```
 
 ### Restricted Domains (Password Login Only)
 
