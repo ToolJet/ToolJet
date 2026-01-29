@@ -5,7 +5,28 @@ title: Google Sheets 2.0
 
 ToolJet has the capability to establish a connection with Google Sheets 2.0 for both reading and writing data. By utilizing OAuth 2.0, ToolJet can establish a secure connection with Google Sheets 2.0, ensuring that the application's access to a user's account is restricted and limited appropriately.
 
-## Self-Hosted Configuration
+## Connection
+
+To establish a connection with the Google Sheets 2.0 data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+### Authorization Scopes
+
+When connecting to a Google Sheets 2.0 data source, you can choose between two permission scopes:
+
+1. **Read Only**: This scope allows you to access and retrieve data from the Google Sheets 2.0.
+2. **Read and Write**: This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets 2.0.
+
+### Authentication Types
+
+ToolJet supports two authentication methods for connecting Google Sheets 2.0 to your application: **OAuth 2.0** and **Service Account**. Each method provides a secure way to authorize access based on your integration requirements.
+
+#### OAuth 2.0
+
+Authenticates via a Google user account using OAuth consent, allowing ToolJet to access Google Sheets 2.0 based on the granted permissions.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/connection-v2.png" alt="GS2.0 oauth auth type connection" style={{ marginBottom:'15px' }} />
+
+**Self-Hosted Configuration**
 
 If you decide to self-host ToolJet, there are a few additional steps you need to take:
 
@@ -16,24 +37,17 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
    - **REDIRECT_URI (TOOLJET_HOST)**
 3. Activate the Google Sheets API within the Google Cloud Platform (GCP) console.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/connection-v2.png" alt="GS2.0 data source connection" style={{ marginBottom:'15px' }} />
+ **Multi-Factor Authentication**
 
-## Connection
+You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth 2.0 consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Sheets 2.0 account securely.
 
-To establish a connection with the Google Sheets 2.0 data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/multi-auth-connection.png" alt="GS2.0 service account auth type connection" style={{ marginBottom:'15px' }} />
 
-### Authentication Types
+#### Service Account
 
-ToolJet supports two authentication methods for connecting Google Sheets 2.0 to your application: **OAuth 2.0** and **Service Account**. Each method provides a secure way to authorize access based on your integration requirements.
+Authenticates using a Google Cloud service account, enabling server-to-server access to Google Sheets 2.0 without user interaction.
 
-### Authorization Scopes
-
-When connecting to a Google Sheets 2.0 data source, you can choose between two permission scopes:
-
-1. **Read Only**: This scope allows you to access and retrieve data from the Google Sheets 2.0.
-2. **Read and Write**: This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets 2.0.
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/service-connection-v2.png" alt="GS2.0 data source connection" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/service-connection-v2.png" alt="GS2.0 service account auth type connection" style={{ marginBottom:'15px' }} />
 
 ## Selecting Spreadsheet
 
@@ -80,7 +94,7 @@ Using Google sheets 2.0 data source you can perform several operations from your
 **Spreadsheet ID** can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4reCqOpPdm_mDEqmLmzj7zNaPk9vqv6_Ve7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLNb9WMmzjVe7` represents the spreadsheet ID.
 :::
 
-### Create a Spreadsheet
+### Create A Spreadsheet
 This operation creates a new Google Sheets spreadsheet in the authenticated account.
 
 #### Required Parameter
@@ -88,7 +102,7 @@ This operation creates a new Google Sheets spreadsheet in the authenticated acco
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/create-query.png" alt="create a spreadsheet" style={{marginBottom:'15px'}} />
 
-### List all sheets of a Spreadsheet
+### List All Sheets Of A Spreadsheet
 This operation retrieves all individual sheets (tabs) within a specified spreadsheet.
 
 #### Required Parameter
@@ -96,7 +110,7 @@ This operation retrieves all individual sheets (tabs) within a specified spreads
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-spreadsheets-query.png" alt="list operation" style={{marginBottom:'15px'}} />
 
-### List all Spreadsheets
+### List All Spreadsheets
 This operation fetches all accessible spreadsheets associated with the authenticated Google account.
 
 #### Optional Parameter
@@ -106,7 +120,7 @@ This operation fetches all accessible spreadsheets associated with the authentic
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-query.png" alt="list operation" style={{marginBottom:'15px'}} />
 
-### Delete data from a spreadsheet by data filter
+### Delete Data From A Spreadsheet By Data Filter
 This Operation removes rows that match the specified filter conditions.
 
 #### Required Parameter
@@ -118,7 +132,7 @@ This Operation removes rows that match the specified filter conditions.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byfilter-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
 
-### Bulk update using primary key
+### Bulk Update Using Primary Key
 This operation updates multiple rows at once by matching records using a primary key column.
 
 #### Required Parameter
@@ -147,7 +161,7 @@ This operation copies selected data from one spreadsheet to another.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/copy-query.png" alt="copy data operation" style={{marginBottom:'15px'}} />
 
-### Read Data From a Spreadsheet
+### Read Data From A Spreadsheet
 This operation retrieves data from a specified sheet or range within a spreadsheet in the form of a JSON object.
 
 #### Required Parameter
@@ -162,7 +176,7 @@ This operation retrieves data from a specified sheet or range within a spreadshe
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/read-query.png" alt="read data operation" style={{marginBottom:'15px'}} />
 
-### Append data to a spreadsheet
+### Append Data To A Spreadsheet
 This operation adds additional rows of data to the end of a sheet without modifying existing data.
 
 #### Required Parameter
@@ -178,7 +192,7 @@ This operation adds additional rows of data to the end of a sheet without modify
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/append-query.png" alt="append data operation" style={{marginBottom:'15px'}} />
 
-### Get Spreadsheet info
+### Get Spreadsheet Info
 This operation retrieves metadata and structural details of a spreadsheet.
 
 #### Required Parameter
@@ -186,7 +200,7 @@ This operation retrieves metadata and structural details of a spreadsheet.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/get-query.png" alt="get spreadsheet operation" style={{marginBottom:'15px'}} />
 
-### Update data to a spreadsheet
+### Update Data To A Spreadsheet
 This operation modifies existing data in specified cells or ranges.
 
 #### Required Parameter
@@ -202,7 +216,7 @@ This operation modifies existing data in specified cells or ranges.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-to-query.png" alt="update operation" style={{marginBottom:'15px'}} />
 
-### Delete row from a spreadsheet
+### Delete Row From A Spreadsheet
 This operation deletes one or more specific rows from a sheet.
 
 #### Required Parameter
@@ -212,7 +226,7 @@ This operation deletes one or more specific rows from a sheet.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-row-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
 
-### Delete data from a spreadsheet by range
+### Delete Data From A Spreadsheet By Range
 This operation clears data from a defined cell range within a sheet.
 
 #### Required Parameter
@@ -225,7 +239,7 @@ This operation clears data from a defined cell range within a sheet.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byrange-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
 
-### Update spreadsheet
+### Update Spreadsheet
 This operation updates spreadsheet properties such as title or configuration settings.
 
 #### Required Parameter
