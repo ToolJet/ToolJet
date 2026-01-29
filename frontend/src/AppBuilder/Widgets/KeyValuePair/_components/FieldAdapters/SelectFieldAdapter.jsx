@@ -82,6 +82,7 @@ export const SelectField = ({
       autoAssignColors={field?.autoAssignColors}
       isValid={isValid}
       validationError={validationError}
+      menuIsOpen={isEditing}
     />
   );
 };

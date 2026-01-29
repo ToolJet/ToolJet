@@ -37,7 +37,6 @@ export const CustomSelectColumn = ({
   // Table-specific hooks
   const validateWidget = useStore((state) => state.validateWidget, shallow);
   const cellTextColor = useTextColor(id, textColor);
-  console.log(column, 'column');
   // Validation
   const validationData = validateWidget({
     validationObject: {
@@ -67,11 +66,12 @@ export const CustomSelectColumn = ({
       isEditable={isEditable}
       isNewRow={isNewRow}
       autoAssignColors={autoAssignColors}
-      // isFocused={isFocused}
-      // setIsFocused={setIsFocused}
+      isFocused={isFocused}
+      setIsFocused={setIsFocused}
       widgetType={widgetType}
       isValid={isValid}
       validationError={validationError}
+      menuIsOpen={isFocused || undefined}
     />
   );
 };

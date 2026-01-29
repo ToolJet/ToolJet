@@ -3,13 +3,13 @@
   height: 100%;
   overflow: auto;
   position: relative; // For popover positioning
-
+  
   &.kv-padding-default {
-    padding: 2px;
+    padding: 4px;
   }
 
   &.kv-padding-none {
-    padding: 0;
+    padding: 2px;
   }
 
   &.invisible {
@@ -112,6 +112,7 @@
   &.kv-row-top {
     flex-direction: column;
   }
+
 }
 
 .kv-row-container {
@@ -134,13 +135,20 @@
   margin-left: 8px;
 }
 
+.kv-row-top {
+  .key-value-render-value:not(.kv-value-editing) {
+    margin-left: -8px;
+    width: calc(100% + 8px) !important
+  }
+}
+
 // Value styling
 .key-value-render-value {
   font-size: 14px;
   line-height: 20px;
   color: var(--text-primary);
   word-break: break-word;
-  min-height: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -148,10 +156,7 @@
   padding: 8px !important;
   position: relative;
 
-  .kv-row-top & {
-    margin-left: -8px;
-    width: calc(100% + 8px);
-  }
+
 
   &.kv-select,
   &.kv-newMultiSelect {
@@ -182,7 +187,7 @@
   }
   // Input element styles
   .kv-value-editing:not(.kv-boolean) {
-    outline: 2px solid var(--primary-brand);
+    border: 2px solid var(--primary-brand);
     background-color: var(--cc-surface1-surface);
     border-radius: 6px;
 
@@ -263,6 +268,9 @@
             display: flex;
             align-items: center;
             padding: 0px 8px;
+            .react-select__single-value {
+              margin: 0px;
+            }
           }
 
           .react-select__value-container--is-multi {
@@ -341,5 +349,12 @@
         }
       }
      }
+     .kv-datepicker {
+      .table-column-datepicker-input {
+        padding: 0px;
+        border: 0px;
+      }
+     }
     }
+    
 

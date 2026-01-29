@@ -245,6 +245,7 @@ export const SelectRenderer = ({
   // Validation props (passed from adapters)
   isValid = true,
   validationError,
+  menuIsOpen,
 }) => {
   const optionColors = useMemo(() => {
     return options.reduce((acc, option, index) => {
@@ -426,7 +427,7 @@ export const SelectRenderer = ({
             isClearable={false}
             clearIndicator={false}
             darkMode={darkMode}
-            menuIsOpen={isFocused}
+            menuIsOpen={menuIsOpen}
             isFocused={isFocused}
             optionColors={optionColors}
           />

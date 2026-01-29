@@ -94,7 +94,7 @@ const KeyValueRow = ({
     'key-value-row',
     isTopAlignment ? 'kv-row-top' : 'kv-row-side',
     isRightDirection && !isTopAlignment ? 'kv-row-reverse' : '',
-    isEditable ? 'kv-row-editing' : '',
+    isEditing ? 'kv-row-editing' : '',
   ]
     .filter(Boolean)
     .join(' ');

@@ -7,12 +7,11 @@ export { LinkColumn } from './adapters/LinkColumnAdapter';
 export { ImageColumn } from './adapters/ImageColumnAdapter';
 export { DatepickerColumn } from './adapters/Datepicker';
 
-// export { CustomSelectColumn } from './adapters/SelectColumnAdapter'; // Select & MultiSelect
-export { CustomSelectColumn } from './CustomSelect';
-// Original components - not yet migrated to shared renderers
-export { JsonColumn } from './JSON';
-export { MarkdownColumn } from './Markdown';
-export { HTMLColumn } from './HTML';
+export { CustomSelectColumn } from './adapters/SelectColumnAdapter'; // Select & MultiSelect
+// export { CustomSelectColumn } from './CustomSelect';
+export { JsonColumn } from './adapters/JsonColumnAdapter';
+export { MarkdownColumn } from './adapters/MarkdownColumnAdapter';
+export { HTMLColumn } from './adapters/HtmlColumnAdapter';
 // Deprecated columns
 export { ToggleColumn } from './Toggle';
 export { TagsColumn } from './Tags';

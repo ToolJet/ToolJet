@@ -55,7 +55,6 @@ import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
-import { KeyValuePair } from '@/AppBuilder/Widgets/KeyValuePair';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
@@ -83,6 +82,7 @@ const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'))
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
+const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
