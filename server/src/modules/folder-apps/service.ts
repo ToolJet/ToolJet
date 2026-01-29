@@ -26,7 +26,7 @@ export class FolderAppsService implements IFolderAppsService {
       });
 
       if (existingFolderApp) {
-        throw new BadRequestException('App has already been added to a folder');
+        throw new BadRequestException('Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.');
       }
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
