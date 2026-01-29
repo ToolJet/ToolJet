@@ -17,6 +17,7 @@ const NEW_WIDGETS = [
   'AudioRecorder',
   'Camera',
   'TagsInput',
+  'ReorderableList',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

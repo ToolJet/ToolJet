@@ -48,6 +48,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Html',
   'TagsInput',
   'IFrame',
+  'ReorderableList',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
