@@ -776,7 +776,6 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    console.log('here--- initDependencyGraph--- ');
     const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
     const components = getCurrentPageComponents(moduleId);
 
@@ -1256,6 +1255,8 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageIndex,
       performBatchComponentOperations,
       updateContainerAutoHeight,
+      addToDependencyGraph,
+      removeNode,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
@@ -1354,6 +1355,38 @@ export const createComponentsSlice = (set, get) => ({
           }
         });
         setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
+
+        // // Clean up old dependency graph edges, rebuild deps, and re-resolve for the moved component
+        // const rebuildComponentDeps = (cId, comp) => {
+        //   // Remove all old dependency edges for this component
+        //   removeNode(`components.${cId}`, moduleId);
+        //   // Rebuild dependency graph and get fresh resolved values
+        //   const resolvedValues = addToDependencyGraph(moduleId, cId, comp);
+        //   // Set the resolved store to the flat result (replaces any stale array format)
+        //   setResolvedComponent(cId, resolvedValues, moduleId);
+        // };
+
+        // rebuildComponentDeps(componentId, component);
+
+        // // Also rebuild all descendant components so their resolved store entries
+        // // and dependency graph edges match the new nesting depth
+        // const allComponents = get().getCurrentPageComponents(moduleId);
+        // const descendants = getAllChildComponents(allComponents, componentId);
+        // descendants.forEach((child) => {
+        //   const childComp = child.component;
+        //   if (childComp?.definition) {
+        //     rebuildComponentDeps(child.id, childComp);
+        //   }
+        // });
+
+        // // After rebuilding deps, trigger the new parent ListView/Kanban's listItem/cardData
+        // // dependency update so moved children get re-resolved with correct custom resolvables
+        // if (newParentComponentType === 'Listview' || newParentComponentType === 'Kanban') {
+        //   const customResolvableKey = newParentComponentType === 'Listview' ? 'listItem' : 'cardData';
+        //   // Get the base parent ID (strip any row suffix like -0)
+        //   const baseNewParentId = get().getBaseParentId(newParentId);
+        //   get().updateDependencyValues(`components.${baseNewParentId}.${customResolvableKey}`, moduleId);
+        // }
       }
     });
 
@@ -1361,10 +1394,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-              component: {
-                parent: newParentId,
-              },
-            }
+            component: {
+              parent: newParentId,
+            },
+          }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1877,7 +1910,7 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
     return childComponents;
   },
-  updateDependencyValues: (path, moduleId = 'canvas') => {
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
     const {
       getAllExposedValues,
       getDependencies,
@@ -1890,10 +1923,10 @@ export const createComponentsSlice = (set, get) => ({
     const dependecies = getDependencies(path, moduleId);
     if (dependecies?.length) {
       dependecies.forEach((dependency) => {
-        const itemsLength = getEntityResolvedValueLength(dependency, moduleId);
+        const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
         if (itemsLength) {
-          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId);
+          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
         } else {
           const [entityType, entityId, type, ...keys] = dependency.split('.');
           const key = keys.join('.');
@@ -1924,8 +1957,13 @@ export const createComponentsSlice = (set, get) => ({
               if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
                 set(
                   (state) => {
+                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                    if (Array.isArray(entity)) {
+                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                    }
                     lodashSet(
-                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      entity,
                       ['properties', 'shouldRender'],
                       (getResolvedComponent(entityId, null, moduleId)?.['properties']?.['shouldRender'] ?? 0) + 1
                     );
@@ -1936,8 +1974,13 @@ export const createComponentsSlice = (set, get) => ({
               } else {
                 set(
                   (state) => {
+                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                    if (Array.isArray(entity)) {
+                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                    }
                     lodashSet(
-                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      entity,
                       [type, ...keys],
                       getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
                     );
@@ -1949,7 +1992,16 @@ export const createComponentsSlice = (set, get) => ({
             } else {
               set(
                 (state) => {
-                  state.resolvedStore.modules[moduleId][entityType][entityId][type][key] = validatedValue;
+                  let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                  // Guard: stale array format from previous ListView/Kanban parent
+                  if (Array.isArray(entity)) {
+                    entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                    state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                  }
+                  if (!entity[type]) {
+                    entity[type] = {};
+                  }
+                  entity[type][key] = validatedValue;
                 },
                 false,
                 'updateDependencyValues'
@@ -1983,43 +2035,105 @@ export const createComponentsSlice = (set, get) => ({
     return component?.component?.parent;
   },
 
-  updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas') => {
+  updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
     const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     const parentId = getParentIdFromDependency(dependency, moduleId);
     const unResolvedValue = getNodeData(dependency, moduleId);
+    const shouldValidate = entityType === 'components' && entityId;
 
-    // Loop through the customResolvables and update the resolved value
+    // Collect all resolved values first, then apply in a single batched store update
+    const updates = [];
     for (let i = 0; i < length; i++) {
       const resolvedValue = resolveDynamicValues(
         unResolvedValue,
         getAllExposedValues(moduleId),
-        getCustomResolvables(parentId, i, moduleId), // passing the parent ID and index to get the custom resolvables of the child
+        getCustomResolvables(parentId, i, moduleId, parentIndices), // passing the parent ID and index to get the custom resolvables of the child
         false,
         []
       );
-      // If the index is not in the resolved store then add it with first index data
-      const shouldValidate = entityType === 'components' && entityId;
       const validatedValue = shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
 
-      set(
-        (state) => {
-          if (!state.resolvedStore.modules[moduleId][entityType][entityId][i])
-            state.resolvedStore.modules[moduleId][entityType][entityId][i] = {
-              ...state.resolvedStore.modules[moduleId][entityType][entityId][0],
-              [type]: {
-                ...(state.resolvedStore.modules[moduleId][entityType][entityId]?.[0]?.[type] || {}),
-                [key]: validatedValue,
-              },
-            };
-          else state.resolvedStore.modules[moduleId][entityType][entityId][i][type][key] = validatedValue;
-        },
-        false,
-        'updateChildComponentResolvedValues'
-      );
+      updates.push({ index: i, value: validatedValue });
     }
+
+    const p1 = performance.now();
+
+    // Single batched update instead of N individual set() calls
+    set(
+      (state) => {
+        const entityStore = state.resolvedStore.modules[moduleId][entityType][entityId];
+        if (parentIndices.length === 0) {
+          updates.forEach(({ index, value }) => {
+            // Guard: if entityStore[index] is a stale nested array, unwrap to first element
+            if (entityStore[index] && Array.isArray(entityStore[index])) {
+              entityStore[index] = entityStore[index][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            }
+            // Also guard entityStore[0] used as template
+            const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
+            if (!entityStore[index]) {
+              entityStore[index] = {
+                ...template,
+                [type]: {
+                  ...(template?.[type] || {}),
+                  [key]: value,
+                },
+              };
+            } else {
+              if (!entityStore[index][type]) {
+                entityStore[index][type] = {};
+              }
+              entityStore[index][type][key] = value;
+            }
+          });
+        } else {
+          // Navigate to the correct nested level using parentIndices
+          updates.forEach(({ index, value }) => {
+            const indices = [...parentIndices, index];
+            // Ensure root is an array
+            if (!Array.isArray(state.resolvedStore.modules[moduleId][entityType][entityId])) {
+              state.resolvedStore.modules[moduleId][entityType][entityId] = [];
+            }
+            let current = state.resolvedStore.modules[moduleId][entityType][entityId];
+            for (let j = 0; j < indices.length - 1; j++) {
+              if (!current[indices[j]]) {
+                current[indices[j]] = [];
+              } else if (!Array.isArray(current[indices[j]])) {
+                // Transition flat→nested: wrap existing resolved component in array
+                current[indices[j]] = [current[indices[j]]];
+              }
+              current = current[indices[j]];
+            }
+            const lastIdx = indices[indices.length - 1];
+            // Guard: if current[lastIdx] is a stale nested array, unwrap to first element
+            if (current[lastIdx] && Array.isArray(current[lastIdx])) {
+              current[lastIdx] = current[lastIdx][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            }
+            if (!current[lastIdx]) {
+              // Also guard source (current[0]) if it's an array
+              let source = current[0];
+              if (source && Array.isArray(source)) {
+                source = source[0];
+              }
+              current[lastIdx] = source
+                ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
+                : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
+            } else {
+              if (!current[lastIdx][type]) {
+                current[lastIdx][type] = {};
+              }
+              current[lastIdx][type][key] = value;
+            }
+          });
+        }
+      },
+      false,
+      'batchUpdateChildComponents'
+    );
+    const p2 = performance.now();
+    console.log(`here--- Time taken to update ${length} child components: ${p2 - p1} ms`);
   },
 
   getParentComponentType: (parentId, moduleId) => {
@@ -2035,29 +2149,37 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   // Return the length of the resolved value of the component
-  getEntityResolvedValueLength: (dependency, moduleId = 'canvas') => {
+  getEntityResolvedValueLength: (dependency, moduleId = 'canvas', parentIndices = []) => {
     const { resolvedStore } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
-    const data = resolvedStore.modules[moduleId]?.[entityType]?.[entityId];
+    let data = resolvedStore.modules[moduleId]?.[entityType]?.[entityId];
     if (typeof data === 'string') return undefined;
+    // Navigate to nested level if parentIndices are provided
+    for (let i = 0; i < parentIndices.length; i++) {
+      if (!Array.isArray(data)) return undefined; // Not yet nested, treat as flat
+      data = data?.[parentIndices[i]];
+      if (!data) return undefined;
+    }
     return data?.length;
   },
 
   // Check if the value contains any customResolvables like listItem or cardData and return the entityType, entityNameOrId, entityKey
   getCustomResolvableReference: (value, parentId, moduleId) => {
-    const { getParentComponentType } = get();
+    const { getParentComponentType, getBaseParentId } = get();
     const parentComponentType = getParentComponentType(parentId, moduleId);
+    // Use base parent ID (strip row suffix) for the dependency path
+    const baseParentId = getBaseParentId(parentId);
     if (
       (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
       value === '{{listItem}}'
     ) {
-      return { entityType: 'components', entityNameOrId: parentId, entityKey: 'listItem' };
+      return { entityType: 'components', entityNameOrId: baseParentId, entityKey: 'listItem' };
     } else if (
       parentComponentType === 'Kanban' &&
       value.includes('cardData') &&
       checkSubstringRegex(value, 'cardData')
     ) {
-      return { entityType: 'components', entityNameOrId: parentId, entityKey: 'cardData' };
+      return { entityType: 'components', entityNameOrId: baseParentId, entityKey: 'cardData' };
     }
     return null;
   },

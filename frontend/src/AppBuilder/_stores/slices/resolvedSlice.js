@@ -292,19 +292,41 @@ export const createResolvedSlice = (set, get) => ({
         }
 
         if (index !== null) {
+          const indices = Array.isArray(index) ? index : [index];
+
+          // Ensure root is an array
           if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
             state.resolvedStore.modules[moduleId].components[componentId] = [];
           }
-          if (!state.resolvedStore.modules[moduleId].components[componentId][index]) {
-            state.resolvedStore.modules[moduleId].components[componentId][index] = {
-              ...state.resolvedStore.modules[moduleId].components[componentId][0],
-            };
+
+          // Navigate/create nested arrays for all but the last index
+          let current = state.resolvedStore.modules[moduleId].components[componentId];
+          for (let i = 0; i < indices.length - 1; i++) {
+            if (!current[indices[i]]) {
+              current[indices[i]] = [];
+            } else if (!Array.isArray(current[indices[i]])) {
+              // Transition from flat to nested: wrap existing resolved component in array
+              current[indices[i]] = [current[indices[i]]];
+            }
+            current = current[indices[i]];
           }
-          state.resolvedStore.modules[moduleId].components[componentId][index][type] = {
-            ...state.resolvedStore.modules[moduleId].components[componentId][index][type],
+
+          const lastIdx = indices[indices.length - 1];
+          if (!current[lastIdx]) {
+            // Try to copy from index 0 at this level as fallback
+            const source = current[0];
+            current[lastIdx] = source ? { ...source } : { ...DEFAULT_COMPONENT_STRUCTURE };
+          }
+          current[lastIdx][type] = {
+            ...current[lastIdx][type],
             [property]: value,
           };
         } else {
+          // index is null — component is not inside a ListView/Kanban
+          // If the stored data is still an array (stale from a previous parent), reset it
+          if (Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
+            state.resolvedStore.modules[moduleId].components[componentId] = { ...DEFAULT_COMPONENT_STRUCTURE };
+          }
           state.resolvedStore.modules[moduleId].components[componentId][type] = {
             ...state.resolvedStore.modules[moduleId].components[componentId][type],
             [property]: value,
@@ -384,28 +406,90 @@ export const createResolvedSlice = (set, get) => ({
     get().setExposedValues(id, 'components', exposedVariables, moduleId);
   },
 
-  updateCustomResolvables: (componentId, data, key, moduleId = 'canvas') => {
+  updateCustomResolvables: (componentId, data, key, moduleId = 'canvas', parentIndices = []) => {
     const { updateDependencyValues, updateChildComponentsLength } = get();
     set((state) => {
-      state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
+      if (parentIndices.length === 0) {
+        state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
+      } else {
+        // Store as nested structure indexed by outer indices
+        if (!state.resolvedStore.modules[moduleId].customResolvables[componentId]) {
+          state.resolvedStore.modules[moduleId].customResolvables[componentId] = {};
+        }
+        let current = state.resolvedStore.modules[moduleId].customResolvables[componentId];
+        for (let i = 0; i < parentIndices.length - 1; i++) {
+          if (!current[parentIndices[i]]) {
+            current[parentIndices[i]] = {};
+          }
+          current = current[parentIndices[i]];
+        }
+        current[parentIndices[parentIndices.length - 1]] = data;
+      }
     });
-    updateChildComponentsLength(componentId, data.length, data, moduleId);
-    updateDependencyValues(`components.${componentId}.${key}`, moduleId);
+    updateChildComponentsLength(componentId, data.length, data, moduleId, parentIndices);
+    updateDependencyValues(`components.${componentId}.${key}`, moduleId, parentIndices);
   },
 
-  updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas') => {
+  updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
     const { getContainerChildrenMapping, copyResolvedDataFromFirstIndex } = get();
     const childComponents = getContainerChildrenMapping(parentId, moduleId);
-    set((state) => {
-      childComponents.forEach((componentId) => {
-        state.resolvedStore.modules[moduleId].components[componentId].length = length;
-        copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId);
+    if (parentIndices.length === 0) {
+      // Flat case: set length and copy (existing behavior — kept as single set to preserve
+      // the length-check optimization inside copyResolvedDataFromFirstIndex)
+      set((state) => {
+        childComponents.forEach((componentId) => {
+          // Ensure component is an array (might be object if transitioning from non-ListView parent)
+          if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
+            state.resolvedStore.modules[moduleId].components[componentId] = [];
+          }
+          state.resolvedStore.modules[moduleId].components[componentId].length = length;
+          copyResolvedDataFromFirstIndex(componentId, parentId, data, moduleId);
+        });
       });
-    });
+    } else {
+      // Nested case: do everything in ONE set() to avoid nested set() overwrite issues
+      set((state) => {
+        childComponents.forEach((componentId) => {
+          if (!Array.isArray(state.resolvedStore.modules[moduleId].components[componentId])) {
+            state.resolvedStore.modules[moduleId].components[componentId] = [];
+          }
+          let current = state.resolvedStore.modules[moduleId].components[componentId];
+          for (let i = 0; i < parentIndices.length - 1; i++) {
+            if (!current[parentIndices[i]]) {
+              current[parentIndices[i]] = [];
+            } else if (!Array.isArray(current[parentIndices[i]])) {
+              current[parentIndices[i]] = [current[parentIndices[i]]];
+            }
+            current = current[parentIndices[i]];
+          }
+          const lastIdx = parentIndices[parentIndices.length - 1];
+          if (!current[lastIdx]) {
+            current[lastIdx] = [];
+          } else if (!Array.isArray(current[lastIdx])) {
+            current[lastIdx] = [current[lastIdx]];
+          }
+          const nested = current[lastIdx];
+          nested.length = length;
+
+          // Populate entries: use nested[0] as template, or fall back to sibling[0]
+          let template = nested[0];
+          if (!template) {
+            // Look for a template from a sibling index that was already set up
+            const sibling = current[0];
+            template = Array.isArray(sibling) ? sibling[0] : sibling;
+          }
+          for (let i = 0; i < length; i++) {
+            if (!nested[i]) {
+              nested[i] = template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE };
+            }
+          }
+        });
+      });
+    }
   },
 
   copyResolvedDataFromFirstIndex: (componentId, parentId, data = [], moduleId = 'canvas') => {
-    const dataLength = get().getCustomResolvables(parentId, moduleId).length ?? data.length;
+    const dataLength = get().getCustomResolvables(parentId, null, moduleId).length ?? data.length;
     if (get().resolvedStore.modules[moduleId]['components'][componentId].length === dataLength) return;
     set((state) => {
       for (let i = 0; i < dataLength; i++) {
@@ -417,20 +501,45 @@ export const createResolvedSlice = (set, get) => ({
     });
   },
 
-  getCustomResolvables: (componentId, index = null, moduleId = 'canvas') => {
-    if (index !== null) {
-      return get().resolvedStore.modules[moduleId].customResolvables?.[componentId]?.[index] || {};
+  getCustomResolvables: (componentId, index = null, moduleId = 'canvas', parentIndices = []) => {
+    // Strip any row suffix (e.g., 'listview-0' -> 'listview') to get the actual ListView/Kanban ID
+    const baseComponentId = get().getBaseParentId?.(componentId) || componentId;
+    let base = get().resolvedStore.modules[moduleId].customResolvables?.[baseComponentId] || {};
+    // Navigate through parentIndices to reach the correct nested level
+    for (let i = 0; i < parentIndices.length; i++) {
+      base = base?.[parentIndices[i]];
+      if (!base) return index !== null ? {} : {};
     }
-    return get().resolvedStore.modules[moduleId].customResolvables?.[componentId] || {};
+    if (index !== null) {
+      return base?.[index] || {};
+    }
+    return base || {};
   },
 
   getResolvedComponent: (componentId, subContainerIndex = null, moduleId = 'canvas') => {
     if (subContainerIndex !== null) {
-      const value = get().resolvedStore?.modules?.[moduleId]?.components?.[componentId]?.[subContainerIndex];
-      if (value) return value;
-      return get().resolvedStore?.modules?.[moduleId]?.components?.[componentId]?.[0]; // This is a fallback value for listView & Kanban
+      const indices = Array.isArray(subContainerIndex) ? subContainerIndex : [subContainerIndex];
+      let current = get().resolvedStore?.modules?.[moduleId]?.components?.[componentId];
+      for (let i = 0; i < indices.length; i++) {
+        // If current is not an array, it's a resolved component leaf — stop navigating
+        if (!Array.isArray(current)) break;
+        const value = current?.[indices[i]];
+        if (value !== undefined) {
+          current = value;
+        } else {
+          // Fallback: use index 0 at this level and continue
+          current = current?.[0];
+          if (current === undefined) break;
+        }
+      }
+      return current;
     }
-    return get().resolvedStore?.modules?.[moduleId]?.components?.[componentId];
+    const data = get().resolvedStore?.modules?.[moduleId]?.components?.[componentId];
+    // If index is null but data is still an array (stale from a previous ListView parent), return [0] as fallback
+    if (Array.isArray(data)) {
+      return data[0];
+    }
+    return data;
   },
   getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
     try {

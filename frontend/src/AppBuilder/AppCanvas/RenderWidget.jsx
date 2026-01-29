@@ -7,6 +7,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -60,6 +61,14 @@ const RenderWidget = ({
   moduleId,
   currentMode,
 }) => {
+  const { contextPath } = useSubcontainerContext();
+  const indices = useMemo(() => {
+    const result = contextPath.map((s) => s.index);
+    return result.length > 0 ? result : null;
+  }, [contextPath]);
+  // Use full indices array for resolved component lookups
+  const resolveIndex = indices ?? subContainerIndex;
+
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
   const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
@@ -71,21 +80,18 @@ const RenderWidget = ({
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties,
     shallow
   );
 
-  const resolvedStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
-    shallow
-  );
+  const resolvedStyles = useStore((state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles, shallow);
   const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
   const resolvedGeneralProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.general,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.general,
     shallow
   );
   const resolvedGeneralStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.generalStyles,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.generalStyles,
     shallow
   );
   const unResolvedValidation = component?.definition?.validation || {};
@@ -96,19 +102,35 @@ const RenderWidget = ({
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
   const resolvedValidation = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.validation,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
   );
   const parentId = component?.parent;
-  const customResolvables = useStore(
-    (state) => state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId],
-    shallow
-  );
+  // Compute outer indices for this component's parent's custom resolvables
+  // If contextPath is [{ containerId: 'outerLV', index: 2 }, { containerId: 'innerLV', index: 1 }]
+  // and parentId is 'innerLV', then outerIndices for parent = [2] (indices before the parent segment)
+  const parentOuterIndices = useMemo(() => {
+    if (!parentId || contextPath.length === 0) return [];
+    const parentSegmentIdx = contextPath.findIndex((s) => s.containerId === parentId);
+    if (parentSegmentIdx <= 0) return [];
+    return contextPath.slice(0, parentSegmentIdx).map((s) => s.index);
+  }, [parentId, contextPath]);
+
+  const customResolvables = useStore((state) => {
+    let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId];
+    if (!base) return base;
+    // Navigate through outer indices to reach the correct nested level
+    for (let i = 0; i < parentOuterIndices.length; i++) {
+      base = base?.[parentOuterIndices[i]];
+      if (!base) return undefined;
+    }
+    return base;
+  }, shallow);
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
 
   const isDisabled = useStore((state) => {
-    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
     const componentExposedDisabled = getExposedPropertyForAdditionalActions(
       id,
       subContainerIndex,
@@ -120,7 +142,7 @@ const RenderWidget = ({
   });
 
   const isLoading = useStore((state) => {
-    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
     const componentExposedLoading = getExposedPropertyForAdditionalActions(
       id,
       subContainerIndex,
