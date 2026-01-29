@@ -24,7 +24,7 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -2266,7 +2266,7 @@ export const createComponentsSlice = (set, get) => ({
 
     if (alignment.value && resolvedAlignment === 'top') {
       if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
+        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
       }
     }
     return newHeight;
@@ -2575,5 +2575,15 @@ export const createComponentsSlice = (set, get) => ({
     );
     if (componentExposedProperty !== undefined) return componentExposedProperty;
     return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
+  },
+  getComponentAlignment: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.styles?.alignment;
+  },
+  getComponentLabel: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.properties?.label;
   },
 });
