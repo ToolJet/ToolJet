@@ -82,33 +82,38 @@ export const Footer = memo(
             backgroundColor: containerBackgroundColor,
           }}
         >
-          <div className={`table-footer d-flex justify-content-between align-items-center h-100`}>
-            {enablePagination && (
-              <Pagination
+          <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
+            <div className="col d-flex align-items-center justify-content-start custom-gap-4">
+              {enablePagination && (
+                <Pagination
+                  id={id}
+                  tableWidth={width}
+                  pageIndex={pageIndex}
+                  table={table}
+                  pageCount={pageCount}
+                  paginationBtnClicked={paginationBtnClicked}
+                  darkMode={darkMode}
+                  height={height}
+                />
+              )}
+              {editedRows.size > 0 && showBulkUpdateActions && (
+                <div className="d-flex custom-gap-4">{renderChangeSetUI()}</div>
+              )}
+            </div>
+            <div className="col d-flex align-items-center justify-content-center">{renderRowCount()}</div>
+            <div className="col d-flex align-items-center justify-content-end">
+              <ControlButtons
                 id={id}
-                tableWidth={width}
-                pageIndex={pageIndex}
                 table={table}
-                pageCount={pageCount}
-                paginationBtnClicked={paginationBtnClicked}
                 darkMode={darkMode}
                 height={height}
+                componentName={componentName}
+                showAddNewRowPopup={showAddNewRowPopup}
+                setShowAddNewRowPopup={setShowAddNewRowPopup}
+                fireEvent={fireEvent}
+                columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
               />
-            )}
-            {editedRows.size > 0 && showBulkUpdateActions && (
-              <div className="d-flex custom-gap-4">{renderChangeSetUI()}</div>
-            )}
-            <ControlButtons
-              id={id}
-              table={table}
-              darkMode={darkMode}
-              height={height}
-              componentName={componentName}
-              showAddNewRowPopup={showAddNewRowPopup}
-              setShowAddNewRowPopup={setShowAddNewRowPopup}
-              fireEvent={fireEvent}
-              columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
-            />
+            </div>
           </div>
         </div>
         {showAddNewRowPopup && (
