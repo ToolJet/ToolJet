@@ -35,7 +35,6 @@ export const LinkRenderer = ({
       case 'hover':
         return 'table-link-hover';
       case 'always':
-      case 'never':
       default:
         return 'table-link';
     }
@@ -51,7 +50,7 @@ export const LinkRenderer = ({
           onClick={(e) => e.stopPropagation()}
           style={{
             color: linkTextColor,
-            textDecoration: underline === 'always' ? 'underline' : 'none',
+            textDecoration: underline === 'always' && 'underline',
             textDecorationColor: underlineColor,
           }}
           rel="noopener noreferrer"
