@@ -880,6 +880,7 @@ jobs:
             return labels.data.map(l => l.name);
 
       - name: Fetch CE service and deploy ID
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         run: |
           response=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -907,6 +908,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment CE deployment details
+        if: contains(steps.get_labels.outputs.result, 'active-ce-review-app')
         uses: actions/github-script@v6
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
@@ -938,7 +940,48 @@ jobs:
               const deploy = deployData[0]?.deploy || {};
               const ceCommit = deploy.commit || {};
               const status = deploy.status || 'unknown';
+              const deployId = deploy.id || '';
+              
               ceInfo = `### Community Edition\n- App: https://tooljet-ce-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${ceServiceId}\n- Commit: ${ceCommit.id || ''}\n- Message: ${ceCommit.message || ''}\n- Status: ${status}`;
+              
+              // If deployment failed, fetch and include error logs
+              if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
+                try {
+                  const logsRes = await fetch(`https://api.render.com/v1/logs?direction=backward&limit=200`, {
+                    headers: {
+                      'accept': 'application/json',
+                      'authorization': `Bearer ${apiKey}`
+                    }
+                  });
+                  
+                  if (!logsRes.ok) {
+                    throw new Error(`HTTP error! status: ${logsRes.status}`);
+                  }
+                  
+                  const logsData = await logsRes.json();
+                  
+                  if (logsData && logsData.logs && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
+                    // Filter logs for this specific service
+                    const serviceLogs = logsData.logs.filter(log => {
+                      const resourceLabel = log.labels?.find(l => l.name === 'resource');
+                      return resourceLabel && resourceLabel.value === ceServiceId;
+                    });
+                    
+                    if (serviceLogs.length > 0) {
+                      // Get last 20 log messages
+                      const errorLogs = serviceLogs.slice(-20).map(log => log.message || '').filter(msg => msg.trim() !== '').join('\n');
+                      if (errorLogs) {
+                        ceInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                      }
+                    } else {
+                      ceInfo += `\n\n**Error Logs:** No logs found for this service`;
+                    }
+                  }
+                } catch (error) {
+                  console.log('Failed to fetch CE error logs:', error);
+                  ceInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                }
+              }
             }
 
             await github.rest.issues.createComment({
@@ -949,6 +992,7 @@ jobs:
             });
 
       - name: Fetch EE service and deploy ID
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         run: |
           response=$(curl --silent --request GET \
             --url "https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${PR_NUMBER}&limit=1" \
@@ -976,6 +1020,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
       - name: Comment EE deployment details
+        if: contains(steps.get_labels.outputs.result, 'active-ee-review-app')
         uses: actions/github-script@v6
         env:
           PR_NUMBER: ${{ env.PR_NUMBER }}
@@ -1007,7 +1052,48 @@ jobs:
               const deploy = deployData[0]?.deploy || {};
               const eeCommit = deploy.commit || {};
               const status = deploy.status || 'unknown';
+              const deployId = deploy.id || '';
+              
               eeInfo = `### Enterprise Edition\n- App: https://tooljet-ee-pr-${prNumber}.onrender.com\n- Dashboard: https://dashboard.render.com/web/${eeServiceId}\n- Commit: ${eeCommit.id || ''}\n- Message: ${eeCommit.message || ''}\n- Status: ${status}`;
+              
+              // If deployment failed, fetch and include error logs
+              if (status === 'build_failed' || status === 'deploy_failed' || status === 'failed') {
+                try {
+                  const logsRes = await fetch(`https://api.render.com/v1/logs?direction=backward&limit=200`, {
+                    headers: {
+                      'accept': 'application/json',
+                      'authorization': `Bearer ${apiKey}`
+                    }
+                  });
+                  
+                  if (!logsRes.ok) {
+                    throw new Error(`HTTP error! status: ${logsRes.status}`);
+                  }
+                  
+                  const logsData = await logsRes.json();
+                  
+                  if (logsData && logsData.logs && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
+                    // Filter logs for this specific service
+                    const serviceLogs = logsData.logs.filter(log => {
+                      const resourceLabel = log.labels?.find(l => l.name === 'resource');
+                      return resourceLabel && resourceLabel.value === eeServiceId;
+                    });
+                    
+                    if (serviceLogs.length > 0) {
+                      // Get last 20 log messages
+                      const errorLogs = serviceLogs.slice(-20).map(log => log.message || '').filter(msg => msg.trim() !== '').join('\n');
+                      if (errorLogs) {
+                        eeInfo += `\n\n**Error Logs (last 20 lines):**\n\`\`\`\n${errorLogs}\n\`\`\``;
+                      }
+                    } else {
+                      eeInfo += `\n\n**Error Logs:** No logs found for this service`;
+                    }
+                  }
+                } catch (error) {
+                  console.log('Failed to fetch EE error logs:', error);
+                  eeInfo += `\n\n**Error Logs:** Failed to retrieve error logs`;
+                }
+              }
             }
 
             await github.rest.issues.createComment({
