@@ -134,11 +134,6 @@ export const createBranchSlice = (set, get) => ({
     try {
       const state = get();
 
-      // Debug: Log available data
-      console.log('switchBranch - branchName:', branchName);
-      console.log('switchBranch - currentEnvironment:', state.selectedEnvironment);
-      console.log('switchBranch - allBranches:', state.allBranches);
-
       // Get Development environment - branches ALWAYS work in Development
       const developmentEnv = state.environments?.find((env) => env.name === 'Development' || env.priority === 1);
       if (!developmentEnv) {
@@ -151,9 +146,6 @@ export const createBranchSlice = (set, get) => ({
         (version) =>
           (version.versionType === 'branch' || version.version_type === 'branch') && version.name === branchName
       );
-
-      console.log('switchBranch - developmentVersions:', developmentVersions);
-      console.log('switchBranch - found branchVersion:', branchVersion);
 
       if (!branchVersion) {
         // Check if branch exists in allBranches but not as a version
@@ -178,7 +170,6 @@ export const createBranchSlice = (set, get) => ({
       const alreadyInDevelopment = state.selectedEnvironment?.id === developmentEnv.id;
 
       if (alreadyOnVersion && alreadyInDevelopment) {
-        console.log('switchBranch - already on target branch in Development');
         return { success: true, data: state.selectedVersion };
       }
 
@@ -197,14 +188,12 @@ export const createBranchSlice = (set, get) => ({
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first
         if (!alreadyInDevelopment) {
-          console.log('switchBranch - switching to Development environment first');
           state.environmentChangedAction(developmentEnv, () => {
             // After environment switch, change to the branch version
             state.changeEditorVersionAction(
               appId,
               branchVersion.id,
               (data) => {
-                console.log('switchBranch - version switched after environment change');
                 state.setCurrentVersionId(branchVersion.id);
                 state.setSelectedVersion(branchVersion);
                 resolve({ success: true, data });
@@ -222,12 +211,10 @@ export const createBranchSlice = (set, get) => ({
           });
         } else {
           // Already in Development, just switch to branch version
-          console.log('switchBranch - already in Development, switching to branch version');
           state.changeEditorVersionAction(
             appId,
             branchVersion.id,
             (data) => {
-              console.log('switchBranch - version switched');
               state.setCurrentVersionId(branchVersion.id);
               state.setSelectedVersion(branchVersion);
               resolve({ success: true, data });
@@ -277,19 +264,12 @@ export const createBranchSlice = (set, get) => ({
     try {
       const state = get();
 
-      console.log('switchToDefaultBranch - defaultBranchName:', defaultBranchName);
-      console.log('switchToDefaultBranch - currentEnvironment:', state.selectedEnvironment);
-      console.log('switchToDefaultBranch - selectedVersion:', state.selectedVersion);
-
       // Get feature branch names (exclude default branch) to help with filtering
       const featureBranchNames = state.allBranches.filter((b) => b.name !== defaultBranchName).map((b) => b.name);
-      console.log('switchToDefaultBranch - allBranches:', state.allBranches);
-      console.log('switchToDefaultBranch - featureBranchNames:', featureBranchNames);
 
       // Branches always work in Development environment - ALWAYS use developmentVersions
       // This matches the PRD scenarios where all branch work happens in Development
       const developmentVersions = state.developmentVersions || [];
-      console.log('switchToDefaultBranch - developmentVersions:', developmentVersions);
 
       // Filter to get ONLY default branch versions (exclude branch-type versions)
       // A version is a default branch version if it does NOT have versionType === 'branch'
@@ -297,18 +277,9 @@ export const createBranchSlice = (set, get) => ({
       const defaultBranchVersions = developmentVersions.filter((v) => {
         const hasBranchType = v.versionType === 'branch' || v.version_type === 'branch';
 
-        console.log(`switchToDefaultBranch - filtering version "${v.name}":`, {
-          hasBranchType,
-          versionType: v.versionType || v.version_type,
-          status: v.status,
-          shouldInclude: !hasBranchType,
-        });
-
         // Only exclude if it has branch type - keep all versions with versionType === 'version'
         return !hasBranchType;
       });
-
-      console.log('switchToDefaultBranch - defaultBranchVersions:', defaultBranchVersions);
 
       // Version selection priority (PRD Scenarios 1-4)
       let targetVersion = null;
@@ -324,11 +295,9 @@ export const createBranchSlice = (set, get) => ({
         });
 
       targetVersion = draftVersions[0];
-      console.log('switchToDefaultBranch - found draftVersion:', targetVersion);
 
       // PRIORITY 2: RELEASED version (Scenario 2 - when no draft exists after v1 released)
       if (!targetVersion) {
-        console.log('switchToDefaultBranch - no draft found, looking for released versions');
         const releasedVersions = defaultBranchVersions
           .filter((v) => v.status === 'RELEASED' || v.isReleased || v.is_released)
           .sort((a, b) => {
@@ -338,12 +307,10 @@ export const createBranchSlice = (set, get) => ({
           });
 
         targetVersion = releasedVersions[0];
-        console.log('switchToDefaultBranch - found releasedVersion:', targetVersion);
       }
 
       // PRIORITY 3: PUBLISHED version (fallback)
       if (!targetVersion) {
-        console.log('switchToDefaultBranch - no released found, looking for published versions');
         const publishedVersions = defaultBranchVersions
           .filter((v) => v.status === 'PUBLISHED' || v.isPublished || v.is_published)
           .sort((a, b) => {
@@ -353,7 +320,6 @@ export const createBranchSlice = (set, get) => ({
           });
 
         targetVersion = publishedVersions[0];
-        console.log('switchToDefaultBranch - found publishedVersion:', targetVersion);
       }
 
       // If no version found, error
@@ -363,8 +329,6 @@ export const createBranchSlice = (set, get) => ({
         console.error('switchToDefaultBranch - defaultBranchVersions:', defaultBranchVersions);
         throw new Error('No versions found for the default branch. Please create a version first.');
       }
-
-      console.log('switchToDefaultBranch - targetVersion to switch to:', targetVersion);
 
       // Get Development environment
       const developmentEnv = state.environments?.find((env) => env.name === 'Development' || env.priority === 1);
@@ -377,8 +341,6 @@ export const createBranchSlice = (set, get) => ({
       const alreadyInDevelopment = state.selectedEnvironment?.id === developmentEnv.id;
 
       if (alreadyOnVersion && alreadyInDevelopment) {
-        console.log('switchToDefaultBranch - already on target version in Development, just updating branch');
-
         const defaultBranch = state.allBranches.find((b) => b.name === defaultBranchName) || {
           name: defaultBranchName,
         };
@@ -413,14 +375,12 @@ export const createBranchSlice = (set, get) => ({
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first (like handleVersionSelect does)
         if (!alreadyInDevelopment) {
-          console.log('switchToDefaultBranch - switching to Development environment first');
           state.environmentChangedAction(developmentEnv, () => {
             // After environment switch, change the version
             state.changeEditorVersionAction(
               appId,
               targetVersion.id,
               (data) => {
-                console.log('switchToDefaultBranch - version switched after environment change');
                 state.setCurrentVersionId(targetVersion.id);
                 resolve({ success: true, data, version: targetVersion });
               },
@@ -437,12 +397,10 @@ export const createBranchSlice = (set, get) => ({
           });
         } else {
           // Already in Development, just switch version (like handleVersionSelect does)
-          console.log('switchToDefaultBranch - already in Development, switching version');
           state.changeEditorVersionAction(
             appId,
             targetVersion.id,
             (data) => {
-              console.log('switchToDefaultBranch - version switched');
               state.setCurrentVersionId(targetVersion.id);
               state.setSelectedVersion(targetVersion);
               resolve({ success: true, data, version: targetVersion });

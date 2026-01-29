@@ -108,6 +108,8 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      latestCommitData: null,
+      fetchingLatestCommitData: false,
       featuresLoaded: false,
       showCreateAppModal: false,
       showCreateAppFromTemplateModal: false,
@@ -831,6 +833,7 @@ class HomePageComponent extends React.Component {
       .gitPull()
       .then((data) => {
         this.setState({ appsFromRepos: data?.meta_data });
+        console.log('testing something rohan', data?.meta_data);
       })
       .catch((error) => {
         toast.error(error?.error);
@@ -852,12 +855,12 @@ class HomePageComponent extends React.Component {
       gitAppName: git_app_name,
       gitVersionName: git_version_name,
       gitVersionId: git_version_id,
-      lastCommitMessage: last_commit_message,
-      lastCommitUser: last_commit_user,
-      lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
+      ...(last_commit_message && { lastCommitMessage: last_commit_message }),
+      ...(last_commit_user && { lastCommitUser: last_commit_user }),
+      ...(lastpush_date && { lastPushDate: new Date(lastpush_date) }),
     };
     gitSyncService
       .importGitApp(body)
@@ -1008,7 +1011,13 @@ class HomePageComponent extends React.Component {
 
   generateOptionsForRepository = () => {
     const { appsFromRepos } = this.state;
-    return Object.keys(appsFromRepos).map((gitAppId) => ({
+
+    // Filter out non-app keys like 'has_latest_changes' and 'tags'
+    const appIds = Object.keys(appsFromRepos).filter(
+      (key) => key !== 'has_latest_changes' && key !== 'tags' && appsFromRepos[key]?.git_app_name
+    );
+
+    return appIds.map((gitAppId) => ({
       name: appsFromRepos[gitAppId].git_app_name,
       value: gitAppId,
     }));
@@ -1154,12 +1163,40 @@ class HomePageComponent extends React.Component {
       this.setState({
         importingGitAppOperations: validationMessage,
       });
-      return; 
+      return;
     }
     this.setState({
       importedAppName: newAppName,
       importingGitAppOperations: validationMessage,
     });
+  };
+
+  handleAppRepoChange = async (newVal) => {
+    const { appsFromRepos, orgGit } = this.state;
+    const selectedApp = appsFromRepos[newVal];
+    this.setState({
+      selectedAppRepo: newVal,
+      importedAppName: selectedApp?.git_app_name,
+    });
+    if (selectedApp?.app_name_exist === 'EXIST') {
+      this.setState({
+        importingGitAppOperations: { message: 'App name already exists' },
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+      });
+    } else {
+      this.setState({ importingGitAppOperations: {}, fetchingLatestCommitData: true, latestCommitData: null });
+    }
+    const selectedBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.git_branch || orgGit?.git_lab_branch;
+
+    try {
+      const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedBranch);
+      this.setState({ latestCommitData: data?.metaData, fetchingLatestCommitData: false });
+      // TODO: Handle the response data
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+      this.setState({ fetchingLatestCommitData: false });
+    }
   };
 
   // Helper functions for workflow limit checks
@@ -1242,6 +1279,8 @@ class HomePageComponent extends React.Component {
       fetchingAppsFromRepos,
       selectedAppRepo,
       appsFromRepos,
+      latestCommitData,
+      fetchingLatestCommitData,
       importingApp,
       importingGitAppOperations,
       featuresLoaded,
@@ -1351,7 +1390,6 @@ class HomePageComponent extends React.Component {
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
     const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
-
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -1536,18 +1574,7 @@ class HomePageComponent extends React.Component {
                     <Select
                       options={this.generateOptionsForRepository()}
                       disabled={importingApp}
-                      onChange={(newVal) => {
-                        this.setState(
-                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
-                          () => {
-                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                            } else {
-                              this.setState({ importingGitAppOperations: {} });
-                            }
-                          }
-                        );
-                      }}
+                      onChange={this.handleAppRepoChange}
                       width={'100%'}
                       value={selectedAppRepo}
                       placeholder={'Select app from git repository...'}
@@ -1606,17 +1633,26 @@ class HomePageComponent extends React.Component {
                         Last commit
                       </label>
                       <div className="last-commit-info form-control">
-                        <div className="message-info">
-                          <div data-cy="las-commit-message">
-                            {appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}
-                          </div>
-                          <div data-cy="last-commit-version">{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
-                        </div>
-                        <div className="author-info" data-cy="auther-info">
-                          {`Done by ${appsFromRepos[selectedAppRepo]?.last_commit_user} at ${moment(
-                            new Date(appsFromRepos[selectedAppRepo]?.lastpush_date)
-                          ).format('DD MMM YYYY, h:mm a')}`}
-                        </div>
+                        {fetchingLatestCommitData ? (
+                          // need to add UI for loading state here -> Pending
+                          <div className="message-info">Loading...</div>
+                        ) : (
+                          <>
+                            <div className="message-info">
+                              <div data-cy="last-commit-message">
+                                {latestCommitData?.latestCommit[0]?.message || 'No commits yet'}
+                              </div>
+                              <div data-cy="last-commit-version">{latestCommitData?.gitVersionName}</div>
+                            </div>
+                            {latestCommitData?.latestCommit[0]?.author && latestCommitData?.latestCommit[0]?.date && (
+                              <div className="author-info" data-cy="auther-info">
+                                {`Done by ${latestCommitData?.latestCommit[0]?.author} at ${moment(
+                                  new Date(latestCommitData?.latestCommit[0]?.date)
+                                ).format('DD MMM YYYY, h:mm a')}`}
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2051,3 +2087,7 @@ const withStore = (Component) => (props) => {
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));
+
+// Need to fix latest commit thing ->
+// Call the same api with latest commit flag as true once the user selects a specific app from the list,
+// It should make that call once the endpoint is selected

@@ -81,7 +81,6 @@
 
 .create-branch-modal-body {
   flex: 1;
-  overflow-y: auto;
   max-height: calc(80vh - 140px);
 
   &::-webkit-scrollbar {
@@ -304,7 +303,7 @@
 }
 
 .create-branch-info {
-  background-color: var(--indigo2);
+  background-color: var(--background-accent-weak);
   border: none;
   border-radius: 6px;
   padding: 12px;
@@ -312,8 +311,9 @@
   line-height: 18px;
   color: var(--slate12);
 
-  svg {
-    color: var(--indigo9);
+  img {
+    width: 18px;
+    height: 18px;
   }
 }
 
