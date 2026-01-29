@@ -946,15 +946,37 @@ export const createComponentsSlice = (set, get) => ({
     setResolvedValueForOthers(resolvedValues, moduleId);
   },
   canAddToParent: (parentId, currentWidget, moduleId = 'canvas') => {
-    const { getComponentTypeFromId } = get();
+    const { getComponentTypeFromId, getComponentDefinition, getBaseParentId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = getParentWidgetFromId(parentType, parentId);
     const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-    if (!isParentChangeAllowed)
+    if (!isParentChangeAllowed) {
       toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
-    return isParentChangeAllowed;
+      return false;
+    }
+
+    // Check ListView nesting restriction:
+    // If adding a ListView into a slot inside a nested ListView (2+ levels), block it
+    if (currentWidget === 'Listview') {
+      let currentParentId = parentId;
+      let listviewCount = 0;
+      while (currentParentId) {
+        const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+        const parentDef = getComponentDefinition(baseId, moduleId);
+        if (parentDef?.component?.component === 'Listview') {
+          listviewCount++;
+          if (listviewCount >= 2) {
+            toast.error('ListView nesting is limited to 2 levels');
+            return false;
+          }
+        }
+        currentParentId = parentDef?.component?.parent;
+      }
+    }
+
+    return true;
   },
   addComponentToCurrentPage: (
     componentDefinitions,
