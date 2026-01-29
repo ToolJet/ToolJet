@@ -161,7 +161,13 @@ const CreateVersionModal = ({
         status: 'PUBLISHED',
       });
       if (isGitSyncEnabled) {
-        handleCommitOnVersionCreation(selectedVersionForCreation, selectedVersion)
+        // Create updated version data with the new name for commit comparison
+        const updatedVersionData = {
+          ...selectedVersionForCreation,
+          name: versionName,
+          description: versionDescription,
+        };
+        handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
           .then((commitDone) => {
             if (!commitDone) return;
             if (isBranchingEnabled) {
