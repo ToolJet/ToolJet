@@ -216,7 +216,26 @@ This operation updates multiple rows at once by matching records using a primary
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+{
+  "status": "success",
+  "message": "Bulk update completed successfully",
+  "spreadsheetId": "2vRiGOGPnzSvBJU5g2F3elPxD_KiU8npLSoox-crmPg",
+  "sheet": "DigiDB_movelist",
+  "primaryKey": "ID",
+  "updatedRows": 2,
+  "result": [
+    {
+      "ID": 1,
+      "Status": "Done",
+      "updateStatus": "Row updated successfully"
+    },
+    {
+      "ID": 2,
+      "Status": "In Progress",
+      "updateStatus": "Row updated successfully"
+    }
+  ]
+}
 ```
 </details>
 
@@ -236,7 +255,21 @@ This operation copies selected data from one spreadsheet to another.
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+{
+  "status": "success",
+  "message": "Spreadsheet data copied",
+  "destinationSheet": "DevRel - Support - Solutions",
+  "copiedRows": 8,
+  "result": {
+    "spreadsheetId": "1iGOCzN5U2F3elPxgGPnzSnpLSovBJD_KxiU8o-crPmg",
+    "updates": {
+      "updatedRange": "Sheet1!A1:B8",
+      "updatedRows": 8,
+      "updatedColumns": 2,
+      "updatedCells": 16
+    }
+  }
+}
 ```
 </details>
 
@@ -257,8 +290,20 @@ This operation retrieves data from a specified sheet or range within a spreadshe
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
+
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+0: {} 2 keys
+  Name: "Alice"
+  College: "SJEC"
+
+1: {} 2 keys
+  Name: "Pari"
+  College: "CI"
+
+2: {} 2 keys 
+3: {} 2 keys
+4: {} 2 keys
+5: {} 2 keys
 ```
 </details>
 
@@ -280,8 +325,13 @@ This operation adds additional rows of data to the end of a sheet without modify
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
+
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+spreadsheetId: "1CzNiGBJU2F3elO5gGPnzSnpLSovPxD_iUk8ox-rcmPg"
+tableRange: "Sheet1!A1:B8"
+
+updates: {} 2 keys
+  updatedRange: "Sheet1!A9"
 ```
 </details>
 
@@ -296,7 +346,19 @@ This operation retrieves metadata and structural details of a spreadsheet.
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+{
+  "spreadsheetId": "1CzNiGO5gGPnzSnpLSovBJU2F3elPxD_KiU",
+  "properties": {
+    "title": "DevRel - Support - Solutions",
+    "locale": "en_GB",
+    "autoRecalc": "ON_CHANGE",
+    "timeZone": "Etc/GMT",
+    "defaultFormat": {},
+    "spreadsheetTheme": {}
+  },
+  "sheets": [],
+  "spreadsheetUrl": "https://docs.google.com/spreadsheets/f/1hgbjfjc5fvsgbhn/456axcv7"
+}
 ```
 </details>
 
@@ -319,7 +381,8 @@ This operation modifies existing data in specified cells or ranges.
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+status : "success"
+spreadsheetId:"2npLSovBJU2FCzNiGO5gGPnzS3elPxD_crmPg-KiU8ox"
 ```
 </details>
 
@@ -336,7 +399,8 @@ This operation deletes one or more specific rows from a sheet.
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+spreadsheetId:"2npLSovBJU2FCzNiGO5gGPnzS3elPxD_crmPg-KiU8ox"
+replies : [] 1 item
 ```
 </details>
 
@@ -356,7 +420,13 @@ This operation clears data from a defined cell range within a sheet.
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+status : "success"
+message : "Range deleted successfully"
+sheet:"Sheet1"
+spreadsheetRange:"A1:A05"
+shiftDimension:"ROWS"
+result : []2keys
+spreadsheetId:"2npLSovBJU2FCzNiGO5gGPnzS3elPxD_crmPg-KiU8ox"
 ```
 </details>
 
@@ -386,6 +456,12 @@ This operation updates spreadsheet properties such as title or configuration set
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
-"id": "5320b5cf-0ac0-4d90-b407-8d6f32018fc2"
+{
+  "spreadsheetId": "1CzNiGO5gGPnzSn2F3elPxD_KiU8pLSovBJUox-crmPg",
+  "updatedRange": "DigiDB_movelist!A1:Z500",
+  "updatedRows": 2,
+  "updatedColumns": 4,
+  "updatedCells": 2
+}
 ```
 </details>
