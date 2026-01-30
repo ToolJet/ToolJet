@@ -68,17 +68,17 @@ const CanvasSettings = ({ darkMode }) => {
 
   return (
     <>
-      <div className="d-flex mb-3">
-        <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
-          {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
+      {/* Max canvas width row */}
+      <div className="canvas-settings-row">
+        <span className="canvas-settings-label" data-cy={`label-max-canvas-width`}>
+          {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max canvas width')}
         </span>
-        <div className="position-relative">
-          <div className="global-settings-width-input-container">
+        <div className="canvas-settings-input-wrapper">
+          <div className="canvas-width-input-container">
             <input
-              style={{ width: '103px', borderRight: 'none' }}
               data-cy="maximum-canvas-width-input-field"
               type="text"
-              className={`form-control`}
+              className="canvas-width-input"
               placeholder={'0'}
               onChange={(e) => {
                 const width = e.target.value;
@@ -88,7 +88,7 @@ const CanvasSettings = ({ darkMode }) => {
             />
             <select
               data-cy={`dropdown-max-canvas-width-type`}
-              className="dropdown-max-canvas-width-type"
+              className="canvas-width-type-select"
               aria-label="Select canvas width type"
               onChange={(event) => {
                 const newCanvasMaxWidthType = event.currentTarget.value;
@@ -115,45 +115,46 @@ const CanvasSettings = ({ darkMode }) => {
         </div>
       </div>
 
-      <div className="d-flex mb-3" style={{ height: '42px', gap: '20px' }}>
-        <span className="pt-2" data-cy={`label-bg-canvas`}>
-          {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
+      {/* Canvas background row */}
+      <div className="canvas-settings-row">
+        <span className="canvas-settings-label" data-cy={`label-bg-canvas`}>
+          {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas background')}
         </span>
-        <div className="canvas-codehinter-container">
-          <div className={`fx-canvas `}>
-            <FxButton
-              dataCy={`canvas-bg-color`}
-              active={!forceCodeBox ? true : false}
-              onPress={async () => {
-                if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
-                  const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
+        <div className="canvas-settings-input-wrapper">
+          <div className="canvas-color-input-container">
+            <div className={`fx-canvas`}>
+              <FxButton
+                dataCy={`canvas-bg-color`}
+                active={!forceCodeBox ? true : false}
+                onPress={async () => {
+                  if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                    const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
+                    const options = {
+                      canvasBackgroundColor: value,
+                      backgroundFxQuery: value,
+                    };
+                    await Promise.resolve(globalSettingsChanged(options));
+                    await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                  }
+                  setForceCodeBox(!forceCodeBox);
+                }}
+              />
+            </div>
+            {forceCodeBox && (
+              <ColorSwatches
+                data-cy={`color-picker-canvas`}
+                outerWidth="120px"
+                value={canvasBackgroundColor}
+                onChange={(color) => {
                   const options = {
-                    canvasBackgroundColor: value,
-                    backgroundFxQuery: value,
+                    canvasBackgroundColor: resolveReferences(color),
+                    backgroundFxQuery: color,
                   };
-                  await Promise.resolve(globalSettingsChanged(options));
-                  await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
-                }
-                setForceCodeBox(!forceCodeBox);
-              }}
-            />
-          </div>
-          {forceCodeBox && (
-            <ColorSwatches
-              data-cy={`color-picker-canvas`}
-              outerWidth="155px"
-              value={canvasBackgroundColor}
-              onChange={(color) => {
-                const options = {
-                  canvasBackgroundColor: resolveReferences(color),
-                  backgroundFxQuery: color,
-                };
-                globalSettingsChanged(options);
-                resolveOthers('canvas', true, { canvasBackgroundColor: color });
-              }}
-            />
-          )}
-          <div className={`${!forceCodeBox && 'hinter-canvas-input'} `}>
+                  globalSettingsChanged(options);
+                  resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                }}
+              />
+            )}
             {!forceCodeBox && (
               <div className="canvas-hinter-wrap-container">
                 <CodeHinter

@@ -10,6 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';
 import sectionConfig from './sectionConfig';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Button } from '@/components/ui/Button/Button';
 import { ModuleManager } from '@/modules/Modules/components';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { useLicenseStore } from '@/_stores/licenseStore';
@@ -235,59 +236,72 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
     );
   };
 
-  const closeIcon = () => {
-    return (
-      <div
-        className="icon-btn cursor-pointer flex-shrink-0 me-3 p-1 h-4 w-4 component-manager-close-icon"
-        onClick={handleToggle}
-      >
-        <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="14" viewBox="0 0 14 14" />
-      </div>
-    );
-  };
-
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
       {isModuleEditor || edition === 'ce' ? (
         <>
-          <div className="d-flex align-items-center">
-            <p className="widgets-manager-header tw-w-full tw-pl-[16px]">Components</p>
+          <div className="panel-header">
+            <span className="panel-header-title">Components</span>
+            <div className="panel-header-actions">
+              <Button
+                iconOnly
+                leadingIcon="x"
+                onClick={handleToggle}
+                variant="ghost"
+                size="medium"
+                isLucid={true}
+                data-cy="components-close-button"
+              />
+            </div>
           </div>
-          {closeIcon()}
           {searchBox()}
           <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
         </>
       ) : (
-        <Tabs
-          activeKey={activeTab}
-          onSelect={(key) => {
-            setActiveTab(key);
-          }}
-          id="components-manager-tabs"
-          className="mt-2"
-          darkMode={darkMode}
-          closeIcon={closeIcon}
-        >
-          <Tab
-            eventKey="components"
-            title={(() => {
-              const str = t('globals.components', 'Components');
-              return str.charAt(0).toUpperCase() + str.slice(1);
-            })()}
+        <>
+          <div className="panel-header">
+            <span className="panel-header-title">Add new component</span>
+            <div className="panel-header-actions">
+              <Button
+                iconOnly
+                leadingIcon="x"
+                onClick={handleToggle}
+                variant="ghost"
+                size="medium"
+                isLucid={true}
+                data-cy="components-close-button"
+              />
+            </div>
+          </div>
+          <Tabs
+            activeKey={activeTab}
+            onSelect={(key) => {
+              setActiveTab(key);
+            }}
+            id="components-manager-tabs"
             darkMode={darkMode}
           >
-            {searchBox()}
-            <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
-          </Tab>
-          {hasModuleAccess && (
-            <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
-              <ModuleErrorBoundary onError={() => setModuleError(true)}>
-                {searchBox()}
-                <ModuleManager searchQuery={searchQuery} />
-              </ModuleErrorBoundary>
+            <Tab
+              eventKey="components"
+              title={(() => {
+                const str = t('globals.components', 'Components');
+                return str.charAt(0).toUpperCase() + str.slice(1);
+              })()}
+              darkMode={darkMode}
+            >
+              {searchBox()}
+              <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
             </Tab>
-          )}
-        </Tabs>
+            {hasModuleAccess && (
+              <Tab eventKey="modules" title={t('globals.modules', 'Modules')} darkMode={darkMode}>
+                <ModuleErrorBoundary onError={() => setModuleError(true)}>
+                  {searchBox()}
+                  <ModuleManager searchQuery={searchQuery} />
+                </ModuleErrorBoundary>
+              </Tab>
+            )}
+          </Tabs>
+        </>
       )}
     </div>
   );
