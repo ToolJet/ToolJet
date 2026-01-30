@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponseForSSL as handleResponse } from '@/_helpers';
+import { authHeader, handleResponseForSSL as handleResponse, getApiUrl } from '@/_helpers';
 
 export const sslService = {
   getConfig,
@@ -13,7 +13,7 @@ export const sslService = {
 
 function getConfig() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/ssl`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl`, requestOptions).then(handleResponse);
 }
 
 function updateConfig(settings) {
@@ -23,7 +23,7 @@ function updateConfig(settings) {
     credentials: 'include',
     body: JSON.stringify(settings),
   };
-  return fetch(`${config.apiUrl}/ssl`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl`, requestOptions).then(handleResponse);
 }
 
 function validatePrerequisites() {
@@ -32,7 +32,7 @@ function validatePrerequisites() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/ssl/validate`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl/validate`, requestOptions).then(handleResponse);
 }
 
 function getCertificateStatus() {
@@ -41,7 +41,7 @@ function getCertificateStatus() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/ssl/certificate/status`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl/certificate/status`, requestOptions).then(handleResponse);
 }
 
 function acquireCertificate() {
@@ -50,7 +50,7 @@ function acquireCertificate() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/ssl/certificate/acquire`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl/certificate/acquire`, requestOptions).then(handleResponse);
 }
 
 function requestDomainChange(newDomain) {
@@ -60,7 +60,7 @@ function requestDomainChange(newDomain) {
     credentials: 'include',
     body: JSON.stringify({ newDomain }),
   };
-  return fetch(`${config.apiUrl}/ssl/domain/change`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl/domain/change`, requestOptions).then(handleResponse);
 }
 
 function cancelDomainChange() {
@@ -69,5 +69,5 @@ function cancelDomainChange() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/ssl/domain/cancel-change`, requestOptions).then(handleResponse);
+  return fetch(`${getApiUrl()}/ssl/domain/cancel-change`, requestOptions).then(handleResponse);
 }
