@@ -8,7 +8,7 @@ import { User } from '@entities/user.entity';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { Organization } from '@entities/organization.entity';
 import { WORKSPACE_STATUS, USER_STATUS, WORKSPACE_USER_STATUS, USER_TYPE } from '@modules/users/constants/lifecycle';
-import { isHttpsEnabled, isSuperAdmin } from '@helpers/utils.helper';
+import { isHttpsEnabled, isRequestSecure, isSuperAdmin } from '@helpers/utils.helper';
 import { CookieOptions } from 'express';
 import { decamelizeKeys } from 'humps';
 import { JWTPayload } from '@modules/session/interfaces/IService';
@@ -104,7 +104,7 @@ export class SessionUtilService {
       if (organization) user.organizationId = organization.id;
 
       const cookieOptions: CookieOptions = {
-        secure: isHttpsEnabled(),
+        secure: isRequestSecure(request),
         httpOnly: true,
         sameSite: 'strict',
         maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
@@ -333,7 +333,7 @@ export class SessionUtilService {
 
     const cookieOptions: CookieOptions = {
       httpOnly: true,
-      secure: isHttpsEnabled(),
+      secure: isRequestSecure(request),
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
     };

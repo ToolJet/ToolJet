@@ -204,6 +204,51 @@ export function initSentry(logger: any, configService: ConfigService) {
 }
 
 /**
+ * Validates SSL configuration environment variables on startup
+ */
+export function validateSslEnvironmentVariables(logger: any) {
+  const tooljetHost = process.env.TOOLJET_HOST;
+  const subPath = process.env.SUB_PATH;
+
+  if (!tooljetHost) {
+    return; // SSL not configured, skip validation
+  }
+
+  logger.log('Validating SSL environment variable configuration...');
+
+  // Check if TOOLJET_HOST incorrectly includes a path component
+  const urlWithoutProtocol = tooljetHost.replace(/^https?:\/\//, '');
+  const urlWithoutPort = urlWithoutProtocol.split(':')[0];
+
+  if (urlWithoutPort.includes('/')) {
+    logger.warn('='.repeat(80));
+    logger.warn('⚠️  SSL CONFIGURATION WARNING');
+    logger.warn('='.repeat(80));
+    logger.warn('TOOLJET_HOST contains a path component, which may cause SSL certificate');
+    logger.warn('acquisition issues. TOOLJET_HOST should be a root domain only.');
+    logger.warn('');
+    logger.warn(`Current TOOLJET_HOST: ${tooljetHost}`);
+    logger.warn(`Extracted domain: ${urlWithoutPort}`);
+    logger.warn('');
+    logger.warn('CORRECT FORMAT:   TOOLJET_HOST=https://example.com');
+    logger.warn('INCORRECT FORMAT: TOOLJET_HOST=https://example.com/apps/tooljet/');
+    logger.warn('');
+    if (subPath) {
+      logger.warn(`Your SUB_PATH (${subPath}) should be configured separately,`);
+      logger.warn('not included in TOOLJET_HOST.');
+    } else {
+      logger.warn('If you need a subpath, configure it using the SUB_PATH environment variable.');
+    }
+    logger.warn('='.repeat(80));
+  } else if (subPath) {
+    logger.log(`✅ SSL configuration looks correct:`);
+    logger.log(`   TOOLJET_HOST: ${tooljetHost} (root domain)`);
+    logger.log(`   SUB_PATH: ${subPath} (application routing)`);
+    logger.log(`   SSL certificates will be acquired for: ${urlWithoutPort}`);
+  }
+}
+
+/**
  * Sets up security headers including CORS and CSP
  */
 export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService, logger: any) {
