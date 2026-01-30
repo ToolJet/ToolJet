@@ -16,7 +16,6 @@ export const RatingColumn = ({
   column,
   row,
   id,
-  isNewRow = false,
 }) => {
   const getResolvedValue = useStore.getState().getResolvedValue;
   const cellTextColor = useTextColor(id, textColor);
@@ -34,17 +33,17 @@ export const RatingColumn = ({
   const [announceValue, setAnnounceValue] = React.useState('');
 
   // Get default rating and convert cell value to rating index (0-based)
-  const defaultRating = getResolvedValue(column.defaultRating) || 3;
+  // Default to 0 if no default rating is configured
+  const defaultRating = getResolvedValue(column.defaultRating) ?? 0;
   const currentRatingIndex = React.useMemo(() => {
     const numValue = Number(cellValue);
     const isEmpty = cellValue === null || cellValue === undefined || cellValue === '';
-    // For new rows with empty value, show no stars (index -1)
-    // For existing rows with empty value, use defaultRating
+    // For empty values (both new and existing rows), use defaultRating
     if (isEmpty) {
-      return isNewRow ? -1 : defaultRating - 1;
+      return defaultRating - 1;
     }
     return isNaN(numValue) ? defaultRating - 1 : numValue - 1;
-  }, [cellValue, defaultRating, isNewRow]);
+  }, [cellValue, defaultRating]);
 
   const [hoverIndex, setHoverIndex] = React.useState(null);
 

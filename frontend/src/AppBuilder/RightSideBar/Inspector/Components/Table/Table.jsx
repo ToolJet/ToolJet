@@ -450,8 +450,8 @@ class TableComponent extends React.Component {
     if (item === 'columnType' && value === 'rating') {
       column = {
         ...column,
-        maxRating: 5,
-        defaultRating: 3,
+        maxRating: '5',
+        defaultRating: '3',
         iconType: 'stars',
         selectedBgColorStars: '#EFB82D',
         selectedBgColorHearts: '#EE5B67',

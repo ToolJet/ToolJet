@@ -23,11 +23,11 @@ const RatingColumnProperties = ({
         <label className="">{t('widget.Table.maxRating', 'Max rating')}</label>
         <CodeHinter
           currentState={currentState}
-          initialValue={column?.maxRating || '{{5}}'}
+          initialValue={column?.maxRating}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
-          placeholder={'{{5}}'}
+          placeholder={'5'}
           onChange={(value) => onColumnItemChange(index, 'maxRating', value)}
           componentName={getPopoverFieldSource(column.columnType, 'maxRating')}
           popOverCallback={(showing) => {
@@ -39,11 +39,11 @@ const RatingColumnProperties = ({
         <label className="form-label">{t('widget.Table.defaultRating', 'Default rating')}</label>
         <CodeHinter
           currentState={currentState}
-          initialValue={column?.defaultRating || '{{3}}'}
+          initialValue={column?.defaultRating}
           theme={darkMode ? 'monokai' : 'default'}
           mode="javascript"
           lineNumbers={false}
-          placeholder={'{{3}}'}
+          placeholder={'3'}
           onChange={(value) => onColumnItemChange(index, 'defaultRating', value)}
           componentName={getPopoverFieldSource(column.columnType, 'defaultRating')}
           popOverCallback={(showing) => {
