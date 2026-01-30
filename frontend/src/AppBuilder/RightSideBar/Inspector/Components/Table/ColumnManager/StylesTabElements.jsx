@@ -24,7 +24,7 @@ export const StylesTabElements = ({
     <>
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' && column.columnType !== 'image'
+          {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
             ? t('widget.Table.textAlignment', 'Text Alignment')
             : 'Alignment'}
         </label>
@@ -219,6 +219,39 @@ export const StylesTabElements = ({
             </div>
           </div>
         </>
+      )}
+
+      {column.columnType === 'rating' && (
+        <div className="d-flex flex-column custom-gap-16">
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Selected color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property={column.iconType === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Selected color' }}
+              paramType="properties"
+            />
+          </div>
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Unselected color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="unselectedBgColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Unselected color' }}
+              paramType="properties"
+            />
+          </div>
+        </div>
       )}
     </>
   );

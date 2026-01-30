@@ -58,6 +58,14 @@ export const ProgramaticallyHandleProperties = ({
         return props?.labelColor;
       case 'optionColor':
         return props?.optionColor;
+      case 'allowHalfStar':
+        return props?.allowHalfStar;
+      case 'selectedBgColorStars':
+        return props?.selectedBgColorStars;
+      case 'selectedBgColorHearts':
+        return props?.selectedBgColorHearts;
+      case 'unselectedBgColor':
+        return props?.unselectedBgColor;
       default:
         return;
     }
@@ -104,6 +112,7 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   const value = getValueBasedOnProperty(property, props);
+
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;

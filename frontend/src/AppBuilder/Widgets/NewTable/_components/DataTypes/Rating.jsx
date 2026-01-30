@@ -1,0 +1,148 @@
+import React from 'react';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { determineJustifyContentValue } from '@/_helpers/utils';
+import { useTrail } from 'react-spring';
+import RatingIcon from '@/AppBuilder/Widgets/Rating/RatingIcon';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+
+export const RatingColumn = ({
+  isEditable,
+  handleCellValueChange,
+  textColor,
+  horizontalAlignment,
+  cellValue,
+  column,
+  row,
+  id,
+}) => {
+  const getResolvedValue = useStore.getState().getResolvedValue;
+  const cellTextColor = useTextColor(id, textColor);
+
+  // Rating-specific properties with defaults
+  const maxRating = getResolvedValue(column.maxRating) || 5;
+  const allowHalfStar = getResolvedValue(column.allowHalfStar) || false;
+  const iconType = getResolvedValue(column.iconType) || 'stars';
+  const tooltips = getResolvedValue(column.tooltips) || [];
+  const selectedBgColorStars = getResolvedValue(column.selectedBgColorStars) || '#EFB82D';
+  const selectedBgColorHearts = getResolvedValue(column.selectedBgColorHearts) || '#EE5B67';
+  const unselectedBgColor = getResolvedValue(column.unselectedBgColor) || 'var(--cc-surface3-surface)';
+  const contentWrap = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
+
+  const [announceValue, setAnnounceValue] = React.useState('');
+
+  // Get default rating and convert cell value to rating index (0-based)
+  // Default to 0 if no default rating is configured
+  const defaultRating = getResolvedValue(column.defaultRating) ?? 0;
+  const currentRatingIndex = React.useMemo(() => {
+    const numValue = Number(cellValue);
+    const isEmpty = cellValue === null || cellValue === undefined || cellValue === '';
+    // For empty values (both new and existing rows), use defaultRating
+    if (isEmpty) {
+      return defaultRating - 1;
+    }
+    return isNaN(numValue) ? defaultRating - 1 : numValue - 1;
+  }, [cellValue, defaultRating]);
+
+  const [hoverIndex, setHoverIndex] = React.useState(null);
+
+  const animatedStars = useTrail(maxRating, {
+    config: {
+      friction: 22,
+      tension: 500,
+    },
+    from: {
+      opacity: 0,
+      transform: 'scale(0.8)',
+    },
+    opacity: 1,
+    transform: 'scale(1)',
+  });
+
+  function handleClick(idx) {
+    if (!isEditable) return;
+
+    // +1 because we store rating as 1-based value
+    const newValue = idx + 1;
+    handleCellValueChange(row.index, column.key || column.name, newValue, row.original);
+
+    // Announce the new rating value for screen readers
+    const ratingText = `${newValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}`;
+    setAnnounceValue(ratingText);
+  }
+
+  const getActive = (index) => {
+    if (hoverIndex !== null) return index <= hoverIndex;
+    return index <= currentRatingIndex;
+  };
+
+  const isHalfIcon = (index) => {
+    if (hoverIndex !== null) return false;
+    return index - 0.5 === currentRatingIndex;
+  };
+
+  const getTooltip = (index) => {
+    if (tooltips && Array.isArray(tooltips) && tooltips.length > 0) return tooltips[index];
+    return '';
+  };
+
+  const renderRatingWidget = () => {
+    return (
+      <div className="d-flex align-items-center h-100">
+        {/* Accessibility: Live region for announcing rating changes */}
+        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          {announceValue}
+        </div>
+
+        <div
+          role="radiogroup"
+          aria-label={`Rating widget, ${iconType === 'stars' ? 'stars' : 'hearts'} from 1 to ${maxRating}`}
+          aria-required="false"
+          aria-disabled={!isEditable}
+          className={`rating-widget-group d-flex w-100 justify-content-${determineJustifyContentValue(
+            horizontalAlignment
+          )}`}
+          style={{ color: cellTextColor || 'inherit', flexWrap: contentWrap ? 'wrap' : 'nowrap' }}
+          onMouseLeave={() => setHoverIndex(null)}
+        >
+          {animatedStars.map((props, index) => {
+            const ratingValue = index + 1;
+            const isSelected = index <= currentRatingIndex;
+            const ariaLabel = `${ratingValue} out of ${maxRating} ${iconType === 'stars' ? 'stars' : 'hearts'}${
+              getTooltip(index) ? `, ${getTooltip(index)}` : ''
+            }`;
+
+            return (
+              <RatingIcon
+                tooltip={getTooltip(index)}
+                active={getActive(index)}
+                isHalfIcon={isHalfIcon(index)}
+                maxRating={maxRating}
+                onClick={(e, idx) => {
+                  handleClick(idx);
+                }}
+                allowHalfStar={allowHalfStar}
+                key={index}
+                index={index}
+                color={iconType === 'stars' ? selectedBgColorStars : selectedBgColorHearts}
+                style={{ ...props }}
+                setHoverIndex={setHoverIndex}
+                unselectedBackground={unselectedBgColor}
+                iconType={iconType}
+                allowEditing={isEditable}
+                currentRatingIndex={currentRatingIndex}
+                ariaLabel={ariaLabel}
+                isSelected={isSelected}
+                ratingValue={ratingValue}
+                isDisabled={!isEditable}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return <div className={`h-100 d-flex flex-column justify-content-center`}>{renderRatingWidget()}</div>;
+};
