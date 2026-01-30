@@ -1,5 +1,5 @@
 ---
-id: googlesheets2.0
+id: googlesheetsv2
 title: Google Sheets 2.0
 ---
 
