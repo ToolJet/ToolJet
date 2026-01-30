@@ -233,14 +233,14 @@ export const Navigation = function Navigation(props) {
   } = properties;
 
   const {
-    backgroundColor,
-    borderColor,
-    borderRadius,
-    padding,
+    backgroundColor = 'var(--cc-surface1-surface)',
+    borderColor = 'var(--cc-weak-border)',
+    borderRadius = 8,
+    padding = 8,
     unselectedTextColor,
     hoverPillBackgroundColor,
-    pillBorderRadius,
-  } = styles;
+    pillBorderRadius = 6,
+  } = styles || {};
 
   // Get menu items from component definition
   const menuItems = properties.menuItems || [];
@@ -309,7 +309,7 @@ export const Navigation = function Navigation(props) {
 
     const FLEX_GAP = 4;
     const MORE_BUTTON_WIDTH = 80; // Width reserved for "More" button
-    const CONTAINER_PADDING = parseInt(padding) * 2 || 16;
+    const CONTAINER_PADDING = parseInt(padding) || 8;
 
     let currentWidth = CONTAINER_PADDING;
     const finalVisible = [];
@@ -494,19 +494,28 @@ export const Navigation = function Navigation(props) {
   }), [unselectedTextColor, styles, hoverPillBackgroundColor, pillBorderRadius]);
 
   // Container styles
-  const containerStyle = useMemo(() => ({
-    display: visibility ? 'flex' : 'none',
-    flexDirection: orientation === 'horizontal' ? 'row' : 'column',
-    width: '100%',
-    height: '100%',
-    backgroundColor,
-    border: `1px solid ${borderColor}`,
-    borderRadius: `${borderRadius}px`,
-    padding: `${padding}px`,
-    overflow: orientation === 'horizontal' ? 'visible' : 'auto',
-    '--nav-container-bg': backgroundColor,
-    '--nav-container-border': borderColor,
-  }), [visibility, orientation, backgroundColor, borderColor, borderRadius, padding]);
+  const containerStyle = useMemo(() => {
+    const parsedPadding = parseInt(padding, 10) || 8;
+    const parsedBorderRadius = parseInt(borderRadius, 10) || 8;
+    const bgColor = backgroundColor || 'var(--cc-surface1-surface)';
+    const bdrColor = borderColor || 'var(--cc-weak-border)';
+
+    return {
+      display: visibility ? 'flex' : 'none',
+      flexDirection: orientation === 'horizontal' ? 'row' : 'column',
+      alignItems: orientation === 'horizontal' ? 'center' : 'stretch',
+      width: '100%',
+      height: '100%',
+      backgroundColor: bgColor,
+      border: `1px solid ${bdrColor}`,
+      borderRadius: `${parsedBorderRadius}px`,
+      padding: `${parsedPadding}px`,
+      boxSizing: 'border-box',
+      overflow: orientation === 'horizontal' ? 'visible' : 'auto',
+      '--nav-container-bg': bgColor,
+      '--nav-container-border': bdrColor,
+    };
+  }, [visibility, orientation, backgroundColor, borderColor, borderRadius, padding]);
 
   // Loading state
   if (loadingState) {
@@ -529,8 +538,8 @@ export const Navigation = function Navigation(props) {
   const renderContent = () => {
     if (orientation === 'horizontal') {
       return (
-        <NavigationMenu viewport={false} className="navigation-horizontal-menu">
-          <NavigationMenuList className="navigation-horizontal-list" style={navItemStyles}>
+        <NavigationMenu viewport={false} className="navigation-horizontal-menu" style={{ flex: 'none' }}>
+          <NavigationMenuList className="navigation-horizontal-list" style={{ ...navItemStyles, flex: 'none' }}>
             {links.visible.map((item) => {
               if (item.isGroup) {
                 return (

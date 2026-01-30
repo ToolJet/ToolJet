@@ -4,7 +4,7 @@ export const navigationConfig = {
   description: 'Create custom navigation menus',
   component: 'Navigation',
   defaultSize: {
-    width: 25,
+    width: 20,
     height: 60,
   },
   others: {
