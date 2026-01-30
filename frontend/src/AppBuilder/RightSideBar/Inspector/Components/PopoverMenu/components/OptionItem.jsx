@@ -19,6 +19,10 @@ const OptionItem = ({
   onOptionChange,
   getResolvedValue,
   getItemStyle,
+  // Configurable props for reuse
+  dataCyPrefix = 'inspector-popover-menu',
+  popoverFields,
+  popoverClassName,
   ...restProps
 }) => {
   return (
@@ -27,7 +31,7 @@ const OptionItem = ({
         return (
           <div
             key={index}
-            data-cy={`inspector-popover-menu-option-${index}`}
+            data-cy={`${dataCyPrefix}-option-${index}`}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -45,6 +49,9 @@ const OptionItem = ({
                   onOptionChange={onOptionChange}
                   onDeleteOption={onDeleteOption}
                   getResolvedValue={getResolvedValue}
+                  fields={popoverFields}
+                  dataCyPrefix={dataCyPrefix}
+                  popoverClassName={popoverClassName}
                 />
               }
               onToggle={(isOpen) => {
@@ -55,29 +62,29 @@ const OptionItem = ({
             >
               <div key={item?.value}>
                 <ListGroup.Item
-                  style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
+                  style={{
+                    marginBottom: '8px',
+                    backgroundColor: 'var(--slate3)',
+                  }}
                   onMouseEnter={() => onMouseEnter(index)}
                   onMouseLeave={() => onMouseLeave()}
                   {...restProps}
                 >
-                  <div data-cy="inspector-popover-menu-option-row" className="row">
-                    <div
-                      data-cy="inspector-popover-menu-option-drag-handle"
-                      className="col-auto d-flex align-items-center"
-                    >
+                  <div data-cy={`${dataCyPrefix}-option-row`} className="row">
+                    <div data-cy={`${dataCyPrefix}-option-drag-handle`} className="col-auto d-flex align-items-center">
                       <SortableList.DragHandle show />
                     </div>
                     <div
-                      data-cy="inspector-popover-menu-option-label"
+                      data-cy={`${dataCyPrefix}-option-label`}
                       className="col text-truncate cursor-pointer"
                       style={{ padding: '0px' }}
                     >
                       {getSafeRenderableValue(getResolvedValue(item?.label))}
                     </div>
-                    <div data-cy="inspector-popover-menu-option-actions" className="col-auto">
+                    <div data-cy={`${dataCyPrefix}-option-actions`} className="col-auto">
                       {index === hoveredOptionIndex && (
                         <ButtonSolid
-                          data-cy="inspector-popover-menu-option-delete-button"
+                          data-cy={`${dataCyPrefix}-option-delete-button`}
                           variant="danger"
                           size="xs"
                           className={'delete-icon-btn'}

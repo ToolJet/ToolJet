@@ -69,6 +69,7 @@ import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
+import { reorderableListConfig } from './reorderableList';
 
 export {
   buttonConfig,
@@ -142,4 +143,5 @@ export {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  reorderableListConfig,
 };
