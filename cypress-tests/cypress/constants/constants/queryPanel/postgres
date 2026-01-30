@@ -1,0 +1,44 @@
+export const postgresQueryConfig = {
+    defaultFields: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            validations: {
+                defaultValue: "SQL mode",
+                disabled: false,
+            },
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Query",
+            assertion: "contain.text",
+            data: "SELECT * FROM users",
+        },
+        {
+            type: "label",
+            fieldName: "SQL Parameters",
+        },
+        {
+            type: "keyValue",
+            fieldName: null,
+            validations: {
+                rows: [
+                    {
+                        key: "Key",
+                        keyAssertion: "contain.text",
+                        value: "Value",
+                        valueAssertion: "contain.text",
+                        hasDeleteButton: true,
+                    },
+                ],
+            },
+        },
+        {
+            type: "button",
+            fieldName: "Add SQL parameter",
+            validations: {
+                disabled: false,
+            },
+        },
+    ],
+};

@@ -140,6 +140,11 @@ export const fillDSConnectionEncryptedField = (field) => {
   cy.clearAndType(fieldSelector, field.text);
 };
 
+export const fillDataOnCodeMirrorInput = (selector, data) => {
+  cy.get(selector).clearAndTypeOnCodeMirror(data);
+}
+
+
 const processFields = (fields) => {
   fields.forEach((field) => {
     switch (field.type) {
@@ -164,13 +169,16 @@ const processFields = (fields) => {
       case 'checkbox':
         selectDSConnectionCheckbox(field);
         break;
+      case 'codeMirror':
+        fillDataOnCodeMirrorInput(field.selector, field.data);
+        break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);
     }
   });
 };
 
-export function fillDSConnectionForm (formConfig, invalidFields = []) {
+export function fillDSConnectionForm(formConfig, invalidFields = []) {
   if (Array.isArray(formConfig) && formConfig.length > 0 && typeof formConfig[0] === 'object' && formConfig[0].type) {
     processFields(formConfig);
     return;
@@ -188,4 +196,5 @@ export function fillDSConnectionForm (formConfig, invalidFields = []) {
     processFields(invalidFields);
   }
 }
+
 
