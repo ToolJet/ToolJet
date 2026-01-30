@@ -293,7 +293,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         appGroupPermissions.appType = APP_TYPES.FRONT_END;
         appGroupPermissions.canAccessDevelopment = true;
         appGroupPermissions.canAccessStaging = true;
-        appGroupPermissions.canAccessProduction = true;
+        appGroupPermissions.canAccessProduction = false;
         appGroupPermissions.canAccessReleased = true;
 
         return [appGranularPermission];
