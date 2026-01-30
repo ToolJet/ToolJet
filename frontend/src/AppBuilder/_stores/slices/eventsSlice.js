@@ -592,7 +592,7 @@ export const createEventsSlice = (set, get) => ({
               const resolvedParams = {};
               if (params) {
                 Object.keys(params).map(
-                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined, moduleId))
+                  (param) => (resolvedParams[param] = getResolvedValue(params[param], customVariables, moduleId))
                 );
               }
               // !Todo tackle confirm query part once done

@@ -64,7 +64,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ce-pr-${{ env.PR_NUMBER }}
 
       - name: Get Registry Credential ID
         id: get-registry-cred
@@ -293,7 +293,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ce-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ce-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ce-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ce-pr-${{ env.PR_NUMBER }}
 
       - name: Trigger Render Redeploy
         if: steps.check-active.outputs.is_active == 'true'
@@ -530,7 +530,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ee-lts-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -770,7 +770,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ee-lts-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-lts-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ee-lts-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-lts-pr-${{ env.PR_NUMBER }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -1010,7 +1010,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ee-pre-release-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
@@ -1250,7 +1250,7 @@ jobs:
           tags: ${{ env.DOCKERHUB_REPO }}:ee-pre-release-pr-${{ env.PR_NUMBER }}
           platforms: linux/amd64
           cache-from: type=gha,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
-          cache-to: type=gha,mode=max,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
+          cache-to: type=gha,mode=min,scope=ee-pre-release-pr-${{ env.PR_NUMBER }}
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ env.BRANCH_NAME }}
