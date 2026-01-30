@@ -23,7 +23,7 @@ const RenderNavItem = ({
   isNested = false,
   isInOverflow = false,
 }) => {
-  const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{false}}' : item.visible !== false;
+  const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
   const isDisabled = typeof item.disable === 'object'
     ? item.disable.value === '{{true}}' || item.disable.value === true
     : item.disable === true;
@@ -82,7 +82,7 @@ const RenderNavGroup = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{false}}' : group.visible !== false;
+  const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
   const isDisabled = typeof group.disable === 'object'
     ? group.disable.value === '{{true}}' || group.disable.value === true
     : group.disable === true;
@@ -280,7 +280,7 @@ export const Navigation = function Navigation(props) {
 
     // Then filter by visibility
     return deduplicatedItems.filter((item) => {
-      const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{false}}' : item.visible !== false;
+      const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
       return isVisible;
     });
   }, [menuItems]);

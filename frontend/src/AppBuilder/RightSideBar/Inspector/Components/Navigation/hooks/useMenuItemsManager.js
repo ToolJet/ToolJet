@@ -86,7 +86,7 @@ export const useMenuItemsManager = (component, paramUpdated) => {
       label: isGroup ? `Group ${id.replace('group', '')}` : `Item ${id.replace('item', '')}`,
       icon: { value: randomIcon },
       iconVisibility: true,
-      visible: { value: '{{true}}' },
+      visible: { value: '{{false}}' },
       disable: { value: '{{false}}' },
       isGroup,
     };
