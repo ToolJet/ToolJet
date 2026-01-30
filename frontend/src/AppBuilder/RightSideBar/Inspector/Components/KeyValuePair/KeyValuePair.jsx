@@ -138,18 +138,6 @@ export const KeyValuePair = (props) => {
               darkMode,
               false
             )}
-            {/* {renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'fieldDynamicData',
-              'properties',
-              currentState,
-              components,
-              darkMode,
-              false
-            )} */}
             {renderElement(
               component,
               componentMeta,

@@ -170,7 +170,8 @@ export function renderElement(
     componentConfig.component == 'RangeSliderV2' ||
     componentConfig.component == 'Statistics' ||
     componentConfig.component == 'Table' ||
-    componentConfig.component == 'CircularProgressBar'
+    componentConfig.component == 'CircularProgressBar' ||
+    componentConfig.component == 'KeyValuePair'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

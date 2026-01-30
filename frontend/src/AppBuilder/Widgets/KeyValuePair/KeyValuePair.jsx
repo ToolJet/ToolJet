@@ -22,7 +22,15 @@ export const KeyValuePair = ({
   dataCy,
   id,
 }) => {
-  const { data = {}, fields = [], loadingState = false, visibility = true, disabledState = false } = properties;
+  const {
+    dataSourceSelector,
+    fields = [],
+    loadingState = false,
+    visibility = true,
+    disabledState = false,
+  } = properties;
+
+  const data = dataSourceSelector === 'rawJson' ? properties?.data : dataSourceSelector;
 
   const {
     // Label styles
