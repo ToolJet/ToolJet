@@ -459,8 +459,9 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
-            }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
+            event.actionId ? `[Action ${event.actionId}]` : ''
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -590,7 +591,7 @@ export const createEventsSlice = (set, get) => ({
               const resolvedParams = {};
               if (params) {
                 Object.keys(params).map(
-                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined, moduleId))
+                  (param) => (resolvedParams[param] = getResolvedValue(params[param], customVariables, moduleId))
                 );
               }
               // !Todo tackle confirm query part once done
