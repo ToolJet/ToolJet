@@ -602,7 +602,7 @@ export const createQueryPanelSlice = (set, get) => ({
             moduleId,
             query,
             query.options?.workflowId,
-            query.options?.blocking,
+            query.options?.syncExecution,
             query.options?.params,
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
@@ -642,6 +642,30 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
+              // Handle sync execution response — no SSE needed
+              if (data?.data?.syncExecution) {
+                const executionStatus = data.data.executionStatus;
+                if (executionStatus === 'completed') {
+                  // Reshape to match the structure processQueryResults expects:
+                  // processQueryResults reads data?.data as the final result and data?.metadata
+                  const syncResult = {
+                    data: data.data.data,
+                    metadata: data.data.metadata,
+                  };
+                  const result = await processQueryResults(syncResult);
+                  resolve(result);
+                } else {
+                  const result = handleFailure({
+                    status: executionStatus,
+                    message: `Workflow execution ${executionStatus}`,
+                    data: data.data,
+                  });
+                  resolve({ status: 'failed', data: result });
+                }
+                return;
+              }
+
+              // Async execution — use SSE handler
               const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
                 data,
                 queryId,
@@ -797,7 +821,7 @@ export const createQueryPanelSlice = (set, get) => ({
             moduleId,
             query,
             query.options.workflowId,
-            query.options.blocking,
+            query.options.syncExecution,
             query.options?.params,
             (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
           );
@@ -812,6 +836,47 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows') {
+              // Handle sync execution response — no SSE needed
+              if (data?.data?.syncExecution) {
+                const executionStatus = data.data.executionStatus;
+                if (executionStatus === 'completed') {
+                  // Extract actual workflow result from the sync response envelope
+                  let finalData = data.data.data;
+                  if (query.options.enableTransformation) {
+                    finalData = await runTransformation(
+                      finalData,
+                      query.options.transformation,
+                      query.options.transformationLanguage,
+                      query,
+                      'edit',
+                      moduleId
+                    );
+                    if (finalData.status === 'failed') {
+                      setPreviewLoading(false);
+                      setIsPreviewQueryLoading(false);
+                      if (!calledFromQuery) setPreviewData(finalData);
+                      resolve({ status: 'failed', data: finalData });
+                      return;
+                    }
+                  }
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  if (!calledFromQuery) setPreviewData(finalData);
+                  resolve({ status: 'ok', data: finalData });
+                } else {
+                  const errorData = {
+                    status: executionStatus,
+                    message: `Workflow execution ${executionStatus}`,
+                    data: data.data,
+                  };
+                  setPreviewLoading(false);
+                  setIsPreviewQueryLoading(false);
+                  if (!calledFromQuery) setPreviewData(errorData);
+                  resolve({ status: 'failed', data: errorData });
+                }
+                return;
+              }
+
               const processQueryResultsPreview = async (result) => {
                 let finalData = result?.data;
                 if (query.options.enableTransformation) {
@@ -1258,7 +1323,7 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: undefined, status: 'failed' };
       }
     },
-    triggerWorkflow: async (moduleId, query, workflowAppId, _blocking = false, params = {}, appEnvId) => {
+    triggerWorkflow: async (moduleId, query, workflowAppId, syncExecution = true, params = {}, appEnvId) => {
       const { getAllExposedValues } = get();
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
@@ -1289,7 +1354,8 @@ export const createQueryPanelSlice = (set, get) => ({
           workflowAppId,
           resolvedParams,
           appEnvId,
-          query.id
+          query.id,
+          syncExecution
         );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
