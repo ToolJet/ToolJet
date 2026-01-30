@@ -391,7 +391,8 @@
                       ]
                     },
                     "widgets/table/dynamic-column",
-                    "widgets/table/conditional-formatting"
+                    "widgets/table/conditional-formatting",
+                    "widgets/table/bulk-row-operations"
                   ]
                 },
                 {
