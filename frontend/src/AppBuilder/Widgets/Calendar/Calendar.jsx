@@ -27,7 +27,7 @@ const parseDate = (date, dateFormat) => {
 
 const allowedCalendarViews = ['month', 'week', 'day'];
 
-export const Calendar = function ({
+export default function Calendar({
   id,
   component,
   height,
@@ -205,4 +205,4 @@ export const Calendar = function ({
       />
     </div>
   );
-};
+}

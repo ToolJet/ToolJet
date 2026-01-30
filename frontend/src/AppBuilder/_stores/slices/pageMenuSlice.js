@@ -484,28 +484,96 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.editingPage = page;
       }),
-    // openPageEditPopover: (type, page, ref) => {
-    //   // Assuming ref is passed for targeting
-    //   set((state) => ({
-    //     editingPage: page,
-    //     showEditingPopover: true, // Make sure this is explicitly set to true
-    //     newPagePopupConfig: {
-    //       // Set default values or infer from page
-    //       show: true, // This might be redundant if showEditingPopover is the primary flag
-    //       mode: type,
-    //       type: page?.type || 'default',
-    //     },
-    //   }));
-    //   // You might store the target ref in the state if overlays need to dynamically pick it up
-    //   // For react-bootstrap Overlay, the target is passed as a prop, not globally
-    // },
-    // And when closing:
-    // closePageEditPopover: () => {
-    //   set((state) => ({
-    //     editingPage: null,
-    //     showEditingPopover: false,
-    //     newPagePopupConfig: { show: false, mode: null, type: null },
-    //   }));
-    // },
+
+    switchToHomePage: (currentPageId, moduleId = 'canvas') => {
+      const { appStore, modules, selectedVersion, selectedEnvironment, switchPage, modeStore, isPreviewInEditor } =
+        get();
+
+      const homePageId = appStore.modules[moduleId].app.homePageId;
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+
+      if (currentPageId === homePageId) return;
+
+      const page = pages.find((p) => p.id === homePageId);
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+    },
+
+    switchPageWrapper: (page, currentPageId, moduleId = 'canvas') => {
+      const {
+        modules,
+        selectedVersion,
+        selectedEnvironment,
+        switchPage,
+        modeStore,
+        isPreviewInEditor,
+        setCurrentPageHandle,
+      } = get();
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+
+      if (page?.type === 'url') {
+        if (page?.url) {
+          const finalUrl =
+            page.url.startsWith('http://') || page.url.startsWith('https://') ? page.url : `https://${page.url}`;
+          if (finalUrl) {
+            if (page.openIn === 'new_tab') {
+              window.open(finalUrl, '_blank');
+            } else {
+              window.location.href = finalUrl;
+            }
+          }
+        } else {
+          toast.error('No URL provided');
+          return;
+        }
+        return;
+      }
+
+      if (page?.type === 'app') {
+        if (page?.appId) {
+          const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+          if (page.openIn === 'new_tab') {
+            window.open(baseUrl, '_blank');
+          } else {
+            window.location.href = baseUrl;
+          }
+        } else {
+          toast.error('No app selected');
+          return;
+        }
+        return;
+      }
+
+      if (currentPageId === page?.id) {
+        return;
+      }
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+      currentMode !== 'view' && setCurrentPageHandle(page.handle);
+    },
   };
 };

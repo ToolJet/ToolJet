@@ -47,11 +47,7 @@ describe("App creation", () => {
             "have.text",
             "+ Create app"
         );
-        cy.get(commonSelectors.createAppButton).should("be.enabled").click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "name should not be empty"
-        );
+        cy.get(commonSelectors.createAppButton).should("be.disabled");
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
         cy.clearAndType(commonSelectors.appNameInput, data.appName);

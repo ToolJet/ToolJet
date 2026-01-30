@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -210,7 +212,9 @@ export const Text = function Text({
           )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>
+              <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                {typeof text === 'object' ? JSON.stringify(text) : text}
+              </Markdown>
             </div>
           )}
           {(textFormat === 'html' || !textFormat) && (

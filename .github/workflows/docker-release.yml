@@ -50,8 +50,8 @@ jobs:
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-latest
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=ce
+          cache-to: type=gha,scope=ce,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -65,8 +65,8 @@ jobs:
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-lts-latest
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=ce
+          cache-to: type=gha,scope=ce,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -141,8 +141,8 @@ jobs:
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-latest,tooljet/tooljet:ee-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=ee
+          cache-to: type=gha,scope=ee,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -159,8 +159,8 @@ jobs:
           push: true
           tags: tooljet/tooljet-ee:${{ github.event.release.tag_name }},tooljet/tooljet-ee:ee-lts-latest,tooljet/tooljet:ee-lts-latest,tooljet/tooljet:${{ github.event.release.tag_name }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=ee
+          cache-to: type=gha,scope=ee,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -229,8 +229,8 @@ jobs:
           push: true
           tags: tooljet/saas:${{ github.event.release.tag_name }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=cloud
+          cache-to: type=gha,scope=cloud,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -313,8 +313,8 @@ jobs:
           push: true
           tags: tooljet/try:${{ github.event.release.tag_name }},tooljet/try:ee-latest
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=try
+          cache-to: type=gha,scope=try,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -328,8 +328,8 @@ jobs:
           push: true
           tags: tooljet/try:${{ github.event.release.tag_name }},tooljet/try:ee-lts-latest
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=try
+          cache-to: type=gha,scope=try,mode=min
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

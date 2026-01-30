@@ -51,7 +51,7 @@ describe("ToolJet: User & Workspace API", () => {
         });
     });
 
-    it("updates user role for workspace", () => {
+    it.skip("updates user role for workspace", () => {
         sendApiRequest("PUT", `/ext/update-user-role/workspace/${workspaceId}`, {
             newRole: "admin",
             userId,

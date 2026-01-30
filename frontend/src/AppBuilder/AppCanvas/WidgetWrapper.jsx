@@ -55,6 +55,10 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
+    // Dont remove this is being used to re-render the height calculations
+    const label = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
+    );
 
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {

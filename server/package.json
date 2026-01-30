@@ -48,9 +48,9 @@
     "worker:prod": "WORKER=true NODE_ENV=production node dist/src/main"
   },
   "dependencies": {
-    "@bull-board/api": "^6.13.0",
-    "@bull-board/express": "^6.13.0",
-    "@bull-board/nestjs": "^6.13.0",
+    "@bull-board/api": "^6.16.2",
+    "@bull-board/express": "^6.16.2",
+    "@bull-board/nestjs": "^6.16.2",
     "@casl/ability": "^6.7.3",
     "@css-inline/css-inline": "^0.14.3",
     "@dagrejs/graphlib": "^2.2.4",
@@ -129,7 +129,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "nest-winston": "^1.9.4",
-    "nestjs-otel": "^7.0.1",
+    "nestjs-otel": "^8.0.1",
     "nestjs-pino": "^4.4.0",
     "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.9.14",
@@ -150,7 +150,7 @@
     "semver": "^7.5.4",
     "simple-git": "^3.27.0",
     "sshpk": "^1.17.0",
-    "stripe": "^14.3.0",
+    "stripe": "^20.1.2",
     "typeorm": "^0.3.24",
     "undici": "^7.11.0",
     "uuid": "^8.3.2",
@@ -165,7 +165,8 @@
   "overrides": {
     "@nestjs/platform-ws": {
       "ws": "$ws"
-    }
+    },
+    "systeminformation": "5.27.14"
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",

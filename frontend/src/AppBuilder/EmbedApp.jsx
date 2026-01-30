@@ -12,6 +12,12 @@ export function setPatToken(patToken) {
 
 export function getPatToken() {
   if (inMemoryPatToken) return inMemoryPatToken;
+  // Fallback to window.name (persists across same-tab navigations)
+  if (window.name && window.name.length > 0) {
+    inMemoryPatToken = window.name;
+    return inMemoryPatToken;
+  }
+  return undefined;
 }
 
 export default function EmbedAppRedirect() {

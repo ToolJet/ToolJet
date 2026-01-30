@@ -221,6 +221,15 @@ export const tabsConfig = {
       ],
       accordian: 'Tabs',
     },
+    commonBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Common background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'Container',
+    },
     border: {
       type: 'colorSwatches',
       displayName: 'Border',
@@ -346,6 +355,7 @@ export const tabsConfig = {
   ],
   exposedVariables: {
     currentTab: '',
+    currentTabTitle: '',
     isVisible: true,
     isDisabled: false,
     isLoading: false,
@@ -418,6 +428,7 @@ export const tabsConfig = {
       tabWidth: { value: 'auto' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
+      commonBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       border: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
       padding: { value: 'default' },

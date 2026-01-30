@@ -1,7 +1,7 @@
 import React from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
@@ -148,8 +148,6 @@ export const CustomOptions = (props) => {
       {transformedOptions.map((option, index) => {
         if (option.visible?.value === false) return null;
         const iconName = option.icon;
-        // eslint-disable-next-line import/namespace
-        const IconElement = Icons[iconName] == undefined ? null : Icons[iconName];
         const format = option.format ?? 'plain';
         const iconVisibility = option.iconVisibility ?? true;
         const disable = option.disable ?? false;
@@ -157,7 +155,7 @@ export const CustomOptions = (props) => {
         if (!visible) return null;
 
         const optionId = `popover-option-${id}-${index}`;
-        const isIconVisible = iconVisibility && IconElement;
+        const isIconVisible = iconVisibility && iconName;
         return (
           <div
             className={cx('popover-option', {
@@ -193,7 +191,7 @@ export const CustomOptions = (props) => {
               <div data-cy="popover-menu-option-header" className="popover-option-header">
                 {isIconVisible && (
                   <div data-cy="popover-menu-option-icon" className="popover-option-icon" aria-hidden="true">
-                    <IconElement name={option.icon} size={16} color={optionsIconColor || '#000000'} />
+                    <TablerIcon iconName={iconName} size={16} color={optionsIconColor || '#000000'} />
                   </div>
                 )}
                 <div

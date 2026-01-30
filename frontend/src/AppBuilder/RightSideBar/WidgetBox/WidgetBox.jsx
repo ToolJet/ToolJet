@@ -14,6 +14,8 @@ const NEW_WIDGETS = [
   'CurrencyInput',
   'RangeSliderV2',
   'PopoverMenu',
+  'AudioRecorder',
+  'Camera',
   'TagsInput',
 ];
 

@@ -27,6 +27,7 @@ import {
 
 describe("Multi-Environment Behavior", () => {
   let testData = {};
+  let names = {};     
 
   beforeEach(() => {
     const uniqueId = `${fake.firstName.toLowerCase().replace(/[^a-z]/g, "")}_${Date.now()}`;
@@ -39,7 +40,7 @@ describe("Multi-Environment Behavior", () => {
     cy.apiLogin();
     cy.skipWalkthrough();
 
-    const names = {
+     names = {
       appName: testData.appName,
       globalConstantName: `${testData.baseId}_global`,
       secretConstantName: `${testData.baseId}_host`,

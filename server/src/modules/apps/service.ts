@@ -157,7 +157,7 @@ export class AppsService implements IAppsService {
 
       // Validate environment access for all users (both builders and viewers)
       // Skip validation only for released environment (everyone with view access can see released)
-      if (environment) {
+      if (environment && app.type !== APP_TYPES.MODULE) {
         const envName = environment.name.toLowerCase();
 
         // Always allow access to released environment for all users who can view the app

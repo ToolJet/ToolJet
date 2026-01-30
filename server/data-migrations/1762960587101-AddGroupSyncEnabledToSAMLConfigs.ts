@@ -21,7 +21,7 @@ export class AddGroupSyncEnabledToSAMLConfigs1762960587101 implements MigrationI
     // Rule:
     // DISABLE_SAML_GROUP_SYNC = "false" --> desiredBool = true
     // otherwise → false
-    const desiredBool = rawValue === 'false';
+    const desiredBool = rawValue !== 'true';
     const sqlBool = String(desiredBool);
 
     // Update SAML

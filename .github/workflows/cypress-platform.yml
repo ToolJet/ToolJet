@@ -386,7 +386,6 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests
-        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests
@@ -779,7 +778,6 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-subpath
-        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests
@@ -1187,7 +1185,6 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-proxy
-        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests
@@ -1597,7 +1594,6 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         id: cypress-tests-proxy-subpath
-        continue-on-error: true
         with:
           browser: chrome
           working-directory: ./cypress-tests

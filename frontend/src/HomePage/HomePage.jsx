@@ -323,6 +323,7 @@ class HomePageComponent extends React.Component {
   };
 
   createApp = async (appName, type, prompt) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
@@ -363,6 +364,7 @@ class HomePageComponent extends React.Component {
   };
 
   renameApp = async (newAppName, appId) => {
+    newAppName = newAppName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
@@ -386,6 +388,7 @@ class HomePageComponent extends React.Component {
   };
 
   cloneApp = async (appName, appId) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     const { appsLimit } = this.state;
     const current = appsLimit?.current ?? 0;
     const total = appsLimit?.total ?? 0;
@@ -539,6 +542,7 @@ class HomePageComponent extends React.Component {
   };
 
   importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+    appName = appName?.trim().replace(/\s+/g, ' ');
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = this.state.currentUser?.organization_id;
@@ -837,7 +841,7 @@ class HomePageComponent extends React.Component {
   };
 
   importGitApp = () => {
-    const { appsFromRepos, selectedAppRepo, orgGit } = this.state;
+    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
     const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
       appToImport;
@@ -852,7 +856,7 @@ class HomePageComponent extends React.Component {
       lastCommitUser: last_commit_user,
       lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
-      appName: this.state.importedAppName,
+      appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
     };
     gitSyncService
@@ -1134,6 +1138,7 @@ class HomePageComponent extends React.Component {
   handleAppNameChange = (e) => {
     const newAppName = e.target.value;
     const { appsFromRepos } = this.state;
+    const MAX_LENGTH = 50;
     let validationMessage = {};
     if (!newAppName.trim()) {
       validationMessage = { message: 'App name cannot be empty' };
@@ -1144,6 +1149,12 @@ class HomePageComponent extends React.Component {
       if (matchingApp?.app_name_exist === 'EXIST') {
         validationMessage = { message: 'App name already exists' };
       }
+    }
+    if (newAppName.length > MAX_LENGTH) {
+      this.setState({
+        importingGitAppOperations: validationMessage,
+      });
+      return; 
     }
     this.setState({
       importedAppName: newAppName,

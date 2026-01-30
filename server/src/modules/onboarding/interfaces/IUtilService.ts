@@ -19,7 +19,15 @@ export interface IOnboardingUtilService {
     existingUser: User,
     signingUpOrganization: Organization,
     redirectTo?: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: any
+  ): Promise<void>;
+  createUserInDefaultWorkspace(
+    userParams: { email: string; password: string; firstName: string; lastName: string },
+    defaultWorkspace: Organization,
+    redirectTo?: string,
+    manager?: EntityManager,
+    response?: any
   ): Promise<void>;
   whatIfTheSignUpIsAtTheWorkspaceLevel(
     existingUser: User,

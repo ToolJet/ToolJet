@@ -182,6 +182,7 @@ describe("Workspace", () => {
             .should("be.enabled")
             .click();
         cy.wait('@libraryApps');
+        cy.wait(2000);
         cy.get(commonSelectors.workspaceName).verifyVisibleElement(
             "have.text",
             data.workspaceName

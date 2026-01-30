@@ -25,9 +25,9 @@
         "type": "dropdown-component-flip",
         "description": "Select Gemini Model",
         "list": [
-          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash" },
-          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B" },
-          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro" },
+          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash (Deprecated)" },
+          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B (Deprecated)" },
+          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro (Deprecated)" },
           { "value": "models/gemini-2.0-flash-exp", "name": "Gemini 2.0 Flash" }
         ]
       },
@@ -187,9 +187,9 @@
         "type": "dropdown-component-flip",
         "description": "Select Gemini Model",
         "list": [
-          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash" },
-          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B" },
-          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro" },
+          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash (Deprecated)" },
+          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B (Deprecated)" },
+          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro (Deprecated)" },
           { "value": "models/gemini-2.0-flash-exp", "name": "Gemini 2.0 Flash" }
         ]
       },

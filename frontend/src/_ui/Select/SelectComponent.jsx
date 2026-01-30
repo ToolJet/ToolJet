@@ -38,13 +38,25 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     Array.isArray(options) && options.length === 0
       ? options
       : options?.map((option) => {
-          if (!option.hasOwnProperty('label')) {
-            return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
-          }
-          return option;
-        });
+        if (!option.hasOwnProperty('label')) {
+          return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
+        }
+        return option;
+      });
 
-  const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
+  // When value is provided but not found in options, create a fallback option object
+  const currentValue = React.useMemo(() => {
+    if (!value) return defaultValue;
+
+    const foundOption = selectOptions.find((option) => option.value === value);
+    if (foundOption) return foundOption;
+
+    if (typeof value === 'object' && value.label) {
+      return value;
+    }
+
+    return { value, label: value };
+  }, [value, selectOptions, defaultValue]);
 
   const handleOnChange = (data) => {
     if (isMulti) {
