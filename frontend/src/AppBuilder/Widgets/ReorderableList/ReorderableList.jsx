@@ -162,7 +162,7 @@ export const ReorderableList = (props) => {
     height: '100%',
     width: '100%',
     overflow: 'auto',
-    border: `1px solid ${borderColor}`,
+    border: `1px solid ${borderColor || 'transparent'}`,
     borderRadius: `${borderRadius}px`,
   };
 
