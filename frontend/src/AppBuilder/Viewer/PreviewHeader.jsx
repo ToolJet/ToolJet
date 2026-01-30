@@ -12,10 +12,11 @@ const PreviewHeader = ({ showHeader, currentLayout, darkMode, setAppDefinitionFr
   const isPreviewMode = searchParams.has('env') || searchParams.has('version');
 
   const editingVersion = useStore((state) => state.editingVersion);
+  const isPublicAccess = useStore((state) => state.isPublicAccess);
   const isMobileDevice = currentLayout === 'mobile';
 
-  // Don't render header at all if not in preview mode
-  if (!isPreviewMode) {
+  // Don't render header at all if not in preview mode or if accessing as public (not logged in)
+  if (!isPreviewMode || isPublicAccess) {
     return null;
   }
 
