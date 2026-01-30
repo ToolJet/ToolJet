@@ -5,7 +5,7 @@ import './progressbar.scss';
 
 export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
   // ===== PROPS DESTRUCTURING =====
-  const { labelType, text, progress, visibility, loadingState } = properties;
+  const { labelType, label, progress, visibility, loadingState } = properties;
 
   const {
     textColor,
@@ -16,7 +16,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     trackColor,
     progressTrackColor,
     completionColor,
-    progressBarWidth,
+    progressBarThickness,
     boxShadow,
     textSize,
   } = styles;
@@ -26,9 +26,10 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   const validTextSize = textSize >= 1 && textSize <= 100 ? textSize : 26;
   const fontSize = `${(height * validTextSize) / 100}px`;
 
-  // Calculate progress bar height as percentage of component height (progressBarWidth: 1-100, default 20)
-  const validProgressBarWidth = progressBarWidth >= 1 && progressBarWidth <= 100 ? progressBarWidth : 20;
-  const barHeight = (height * validProgressBarWidth) / 100;
+  // Calculate progress bar height as percentage of component height (progressBarThickness: 1-100, default 20)
+  const validProgressBarThickness =
+    progressBarThickness >= 1 && progressBarThickness <= 100 ? progressBarThickness : 20;
+  const barHeight = (height * validProgressBarThickness) / 100;
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
@@ -42,7 +43,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   const isCompleted = clampedProgress >= 100;
 
   // Determine label text
-  const labelText = labelType === 'custom' ? text : `${Math.round(clampedProgress)}%`;
+  const labelText = labelType === 'custom' ? label : `${Math.round(clampedProgress)}%`;
 
   // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
@@ -111,13 +112,25 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   // Determine progress bar color
   const progressColor = isCompleted ? completionColor : progressTrackColor;
 
+  // Label styles for top alignment
+  const labelContainerStyles =
+    alignment === 'top'
+      ? {
+          width: '100%',
+          display: 'flex',
+          justifyContent: direction === 'right' ? 'flex-end' : 'flex-start',
+          alignItems: 'center',
+          flexShrink: 0,
+        }
+      : {};
+
   // Container styles
   const containerStyles = {
     height: '100%',
     width: '100%',
     display: 'flex',
     flexDirection: alignment === 'top' ? 'column' : 'row',
-    alignItems: alignment === 'top' ? 'stretch' : 'center',
+    alignItems: alignment === 'top' ? 'flex-start' : 'center',
     ...(alignment === 'side' && direction === 'right' && { flexDirection: 'row-reverse' }),
     boxShadow,
   };
@@ -126,8 +139,8 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   const progressBarContainerStyles = {
     display: 'flex',
     alignItems: 'center',
-    flex: alignment === 'side' ? 1 : 'none',
-    width: alignment === 'top' ? '100%' : 'auto',
+    flex: 1,
+    width: '100%',
   };
 
   // Progress bar wrapper styles
@@ -140,20 +153,24 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   };
 
   // ===== MAIN RENDER =====
+  const labelElement = (
+    <Label
+      label={labelText}
+      width={labelWidth}
+      color={textColor}
+      defaultAlignment={alignment === 'top' ? 'side' : alignment}
+      direction={direction}
+      auto={auto}
+      _width={labelWidth}
+      inputId={`component-${id}`}
+      id={`${id}-label`}
+      fontSize={fontSize}
+    />
+  );
+
   return (
     <div style={containerStyles} data-cy={dataCy} id={id}>
-      <Label
-        label={labelText}
-        width={labelWidth}
-        color={textColor}
-        defaultAlignment={alignment}
-        direction={direction}
-        auto={auto}
-        _width={labelWidth}
-        inputId={`component-${id}`}
-        id={`${id}-label`}
-        fontSize={fontSize}
-      />
+      {alignment === 'top' ? <div style={labelContainerStyles}>{labelElement}</div> : labelElement}
       <div style={progressBarContainerStyles}>
         <div style={progressBarWrapperStyles}>
           {exposedVariablesTemporaryState.isLoading ? (

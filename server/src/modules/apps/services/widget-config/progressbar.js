@@ -24,7 +24,7 @@ export const progressbarConfig = {
             accordian: 'Data',
             isFxNotRequired: true,
         },
-        text: {
+        label: {
             type: 'code',
             displayName: ' ',
             validation: {
@@ -163,7 +163,7 @@ export const progressbarConfig = {
             },
             accordian: 'progress bar',
         },
-        progressBarWidth: {
+        progressBarThickness: {
             type: 'slider',
             displayName: 'Progress bar width',
             validation: {
@@ -223,7 +223,7 @@ export const progressbarConfig = {
         },
         properties: {
             labelType: { value: 'auto' },
-            text: {
+            label: {
                 value: '',
             },
             progress: {
@@ -244,7 +244,7 @@ export const progressbarConfig = {
             trackColor: { value: 'var(--cc-surface3-surface)' },
             progressTrackColor: { value: 'var(--cc-primary-brand)' },
             completionColor: { value: 'var(--cc-success-systemStatus)' },
-            progressBarWidth: { value: '{{20}}' },
+            progressBarThickness: { value: '{{20}}' },
             boxShadow: { value: '0px 0px 0px 0px #00000040' },
             padding: { value: 'default' },
         },
