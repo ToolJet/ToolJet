@@ -5,7 +5,7 @@ import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 
-export const TreeSelect = ({
+const TreeSelect = ({
   height,
   properties,
   styles,
@@ -136,3 +136,5 @@ export const TreeSelect = ({
     </div>
   );
 };
+
+export default TreeSelect;

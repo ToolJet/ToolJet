@@ -1,5 +1,4 @@
 import React from 'react';
-import Feat from './feat-image.svg';
 import GradientTop from './gradient-top.svg';
 
 const GradientTopImage = () => {

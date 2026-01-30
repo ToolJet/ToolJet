@@ -143,6 +143,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
+        FEATURE_KEY.GET_ONE
       ],
       App
     );

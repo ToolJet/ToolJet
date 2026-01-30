@@ -24,7 +24,7 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -1466,7 +1466,12 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
-    const { component } = getComponentDefinition(componentId, moduleId);
+    const componentDef = getComponentDefinition(componentId, moduleId);
+    // Safety check: return early if component doesn't exist
+    if (!componentDef?.component) {
+      return;
+    }
+    const { component } = componentDef;
     const oldValue = component.definition[paramType][property];
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
@@ -2139,7 +2144,7 @@ export const createComponentsSlice = (set, get) => ({
 
     if (alignment.value && resolvedAlignment === 'top') {
       if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
+        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
       }
     }
     return newHeight;
@@ -2192,8 +2197,12 @@ export const createComponentsSlice = (set, get) => ({
       return Math.max(max, sum);
     }, 0);
 
-    const currentCanvasHeight =
-      getCurrentPageComponents(moduleId)[componentId]?.component?.definition?.properties?.canvasHeight?.value;
+    const componentDef = getCurrentPageComponents(moduleId)[componentId];
+    // If the component doesn't exist, return early (can happen during cross-container moves)
+    if (!componentDef?.component) {
+      return returnDiff ? null : undefined;
+    }
+    const currentCanvasHeight = componentDef?.component?.definition?.properties?.canvasHeight?.value;
     if (currentCanvasHeight === maxHeight) {
       return returnDiff ? null : undefined;
     }
@@ -2444,5 +2453,15 @@ export const createComponentsSlice = (set, get) => ({
     );
     if (componentExposedProperty !== undefined) return componentExposedProperty;
     return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
+  },
+  getComponentAlignment: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.styles?.alignment;
+  },
+  getComponentLabel: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.properties?.label;
   },
 });

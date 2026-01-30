@@ -31,7 +31,7 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
-  ) { }
+  ) {}
 
   async getForApp(
     query: GetQueryVariables,
@@ -333,17 +333,21 @@ export class DataSourcesService implements IDataSourcesService {
     );
 
     try {
-      const result = await service.invokeMethod(methodName, sourceOptions, args, user?.id);
+      const result = await service.invokeMethod(
+        methodName,
+        {
+          user: { id: user?.id },
+          app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+        },
+        sourceOptions,
+        args
+      );
       return { status: 'ok', data: result };
     } catch (error) {
       if (error.constructor.name === 'OAuthUnauthorizedClientError') {
         const currentUserToken = sourceOptions['refresh_token']
           ? sourceOptions
-          : this.getCurrentUserToken(
-            sourceOptions['multiple_auth_enabled'],
-            sourceOptions['tokenData'],
-            user?.id,
-          );
+          : this.getCurrentUserToken(sourceOptions['multiple_auth_enabled'], sourceOptions['tokenData'], user?.id);
 
         if (currentUserToken && currentUserToken['refresh_token']) {
           try {
@@ -373,7 +377,15 @@ export class DataSourcesService implements IDataSourcesService {
             );
 
             // Retry invoke
-            const result = await service.invokeMethod(methodName, updatedSourceOptions, args, user?.id);
+            const result = await service.invokeMethod(
+              methodName,
+              {
+                user: { id: user?.id },
+                app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+              },
+              updatedSourceOptions,
+              args
+            );
             return { status: 'ok', data: result };
           } catch (refreshError) {
             // If refresh fails or retry fails, return original or new error data
@@ -382,7 +394,7 @@ export class DataSourcesService implements IDataSourcesService {
                 status: 'failed',
                 data: refreshError.data,
                 errorMessage: refreshError.message,
-                metadata: refreshError.metadata
+                metadata: refreshError.metadata,
               };
             }
 
@@ -390,7 +402,7 @@ export class DataSourcesService implements IDataSourcesService {
               status: 'failed',
               data: error.data,
               errorMessage: error.message,
-              metadata: error.metadata
+              metadata: error.metadata,
             };
           }
         }
@@ -408,16 +420,10 @@ export class DataSourcesService implements IDataSourcesService {
     }
   }
 
-  protected getCurrentUserToken = (
-    isMultiAuthEnabled: boolean,
-    tokenData: any,
-    userId: string,
-  ) => {
+  protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {
     if (isMultiAuthEnabled) {
       if (!tokenData || !Array.isArray(tokenData)) return null;
-      return userId
-        ? tokenData.find((token: any) => token.user_id === userId)
-        : tokenData[0];
+      return userId ? tokenData.find((token: any) => token.user_id === userId) : tokenData[0];
     } else {
       return tokenData;
     }
