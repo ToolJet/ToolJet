@@ -206,7 +206,10 @@ const KeyValueRow = ({
             'kv-field-has-changes': hasChanges,
           })}
           ref={valueRef}
-          style={getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment)}
+          style={{
+            ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment),
+            ...(isEditing && fieldType !== 'boolean' ? { border: `2px solid ${accentColor}` } : {}),
+          }}
           onClick={handleEditClick}
         >
           {renderValue()}
