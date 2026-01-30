@@ -2,6 +2,7 @@
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons-react';
 import useStore from '@/AppBuilder/_stores/store';
@@ -55,7 +56,7 @@ const RenderPage = ({
         data-id={page.id}
         className={`tj-list-item ${isActive && 'tj-list-item-selected'}`}
         onClick={() => {
-          switchPageWrapper(page);
+          switchPageWrapper(page, currentPageId);
         }}
         aria-label={page.name}
       >
@@ -154,9 +155,8 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
-                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
-              }`}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+                }`}
             />
           </div>
         )}
@@ -187,7 +187,8 @@ const RenderPageGroup = ({
         aria-label={pageGroup.name}
       >
         <TriggerBody />
-        <Icons.IconChevronUp
+        <TablerIcon
+          iconName="IconChevronUp"
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
@@ -229,7 +230,7 @@ const RenderPageGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <Icons.IconChevronUp
+        <TablerIcon iconName='IconChevronUp'
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
@@ -341,7 +342,7 @@ export const RenderPageAndPageGroup = ({
         {overflowLinks.length > 0 && position === 'top' && (
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
-              <Icons.IconDotsVertical size={16} color="var(--nav-item-icon-color)" />
+              <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
               More
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
