@@ -177,7 +177,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
       if (!isPasswordCorrect) {
-        throw new NotAcceptableException('User already exists with this email and the password entered is incorrect.');
+        throw new NotAcceptableException('You already have an account with this email. Please use your existing password to join this workspace.');
       }
 
       const edition = getTooljetEdition();
