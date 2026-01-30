@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import useRouter from '@/_hooks/use-router';
 import config from 'config';
 import toast from 'react-hot-toast';
+import './embed-loader.scss'
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 // In-memory PAT token store
 let inMemoryPatToken = null;
@@ -75,5 +77,14 @@ export default function EmbedAppRedirect() {
     initiateSession();
   }, [appId]);
 
-  return <div>Loading embedded app...</div>;
+  return (
+  <div className="embed-loader">
+    <div className="embed-loader__content">
+      <Loader width={30} absolute={false} />
+      <div className="embed-loader__text">
+        Loading embedded app
+      </div>
+    </div>
+  </div>
+);
 }

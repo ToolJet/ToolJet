@@ -1,0 +1,20 @@
+.embed-loader {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.embed-loader__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.embed-loader__text {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 1.2;
+}
