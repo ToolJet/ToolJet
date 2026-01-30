@@ -132,6 +132,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Camera',
   'CodeEditor',
   'Form',
+  'IFrame',
 ];
 
 export const Inspector = ({
