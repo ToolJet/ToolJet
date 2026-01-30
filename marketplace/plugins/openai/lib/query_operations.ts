@@ -44,62 +44,81 @@ const getSizeEnum = (
   return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
 };*/
 
-export async function getCompletion(
-  openai: OpenAI,
-  options: QueryOptions
-): Promise<string | { error: string; statusCode: number }> {
-  const { model, prompt, max_tokens, temperature, stop_sequence, suffix } = options;
-
-  const response = await openai.completions.create({
-    model: model || 'gpt-3.5-turbo-instruct',
-    prompt: prompt,
-    temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-    stop: stop_sequence || null,
-    suffix: suffix || null,
-  });
-
-  return response.choices[0].text; // Access the response correctly
-}
 
 export async function getChatCompletion(
   openai: OpenAI,
   options: QueryOptions
-): Promise<string | { error: string; statusCode: number }> {
+): Promise<string | any> {
   const { model, prompt, max_tokens, temperature, stop_sequence } = options;
 
-  const response = await openai.chat.completions.create({
-    model: model || 'gpt-4-turbo',
-    temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
-    stop: stop_sequence || null,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-  });
+  const tokenLimit = typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens;
+  const modelName = model?.toLowerCase() || '';
 
-  return response.choices[0].message.content; // Ensure to access the correct part of the response
+  // Identify "Existing" models that MUST use max_tokens
+  const isExistingModel = 
+    modelName.includes('gpt-4o') || 
+    modelName.includes('gpt-4.0') || 
+    modelName.includes('gpt-4-turbo') || 
+    modelName.includes('gpt-3.5-turbo');
+
+  const requestPayload: any = {
+    model: model || 'gpt-4o',
+    messages: [{ role: 'user', content: prompt }],
+    stop: stop_sequence || null,
+  };
+
+  if (tokenLimit) {
+    if (isExistingModel) {
+      requestPayload.max_tokens = tokenLimit;
+    } else {
+      requestPayload.max_completion_tokens = tokenLimit;
+    }
+  }
+
+  // 2. Temperature Guard: Reasoning models (o-series, gpt-5) do not support temperature.
+  // GPT-4.1 (non-reasoning) DOES support it.
+  const isReasoning = modelName.startsWith('o') || modelName.startsWith('gpt-5');
+  if (!isReasoning) {
+    requestPayload.temperature = typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0;
+  }
+
+  const response = await openai.chat.completions.create(requestPayload);
+  return response.choices[0].message.content;
 }
 
 export async function generateImage(
   openai: OpenAI,
   options: QueryOptions
 ): Promise<{ status: string; message: string; description?: string; data?: any }> {
-  const { model, prompt, size /* , n */ } = options;
+  const { model, prompt, size } = options;
+
+  // Normalize model once
+  const finalModel = model || 'dall-e-3';
 
   const response = await openai.images.generate({
-    model: model || 'dall-e-3',
+    model: finalModel,
     prompt: prompt || '',
-    size: getSizeEnum(model, size), // Convert and validate image size based on the model
-    //n: getNumberOfImages(num_images),  Convert and validate number of images
+    size: getSizeEnum(finalModel, size),
   });
 
-  // Return the URL of the first image as a JSON object
+  // gpt-image-1 → base64
+  if (finalModel === 'gpt-image-1') {
+    return {
+      status: 'success',
+      message: 'Image generated successfully',
+      data: {
+        b64_json: response.data[0].b64_json,
+      },
+    };
+  }
+
+  // ✅ DALL·E → URL
   return {
     status: 'success',
     message: 'Image generated successfully',
-    data: { url: response.data[0].url },
+    data: {
+      url: response.data[0].url,
+    },
   };
 }
 
