@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
+import { authHeader, handleResponseForSSL as handleResponse } from '@/_helpers';
 
 export const sslService = {
   getConfig,
