@@ -451,7 +451,7 @@ class TableComponent extends React.Component {
       column = {
         ...column,
         maxRating: '5',
-        defaultRating: '3',
+        defaultRating: '0',
         iconType: 'stars',
         selectedBgColorStars: '#EFB82D',
         selectedBgColorHearts: '#EE5B67',
