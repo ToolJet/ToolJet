@@ -60,7 +60,7 @@ export default class GeminiService implements QueryService {
 
     const options: QueryOptions = {
       operation: Operation.TextGeneration,
-      model: 'models/gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       system_prompt: 'Test system prompt',
       prompt: 'This is a test prompt to generate some text.',
       max_tokens: 100,
