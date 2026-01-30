@@ -339,6 +339,7 @@ class Restapi extends React.Component {
                     onMenuClose={() => {
                       this.isMenuOpenRef.current = false;
                     }}
+                    dataCy="method"
                   />
                 </div>
                 <div

@@ -4,6 +4,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, buttonText }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -43,21 +44,25 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               </div>
             </div>
             <button
-              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${
-                darkMode ? 'delete-field-option-dark' : ''
-              }`}
+              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${darkMode ? 'delete-field-option-dark' : ''
+                }`}
               role="button"
               onClick={() => {
                 removeKeyValuePair(index);
               }}
-              data-cy={`delete-key-value-pair-${index}`}
+              data-cy={`delete-button-${index}`}
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />
             </button>
           </div>
         );
       })}
-      <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)} data-cy="add-more-button">
+      <ButtonSolid
+        variant="ghostBlue"
+        size="sm"
+        onClick={() => addNewKeyValuePair(options)}
+        data-cy={`button-${generateCypressDataCy(buttonText)}`}
+      >
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; {buttonText}
       </ButtonSolid>
