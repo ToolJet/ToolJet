@@ -1,4 +1,9 @@
-import { cyParamName } from "Selectors/common";
+export const cyParamName = (paramName = "") => {
+    return String(paramName)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+};
 
 export const dsCommonSelector = {
     deleteDSButton: (datasourceName) => {
@@ -55,5 +60,8 @@ export const dsCommonSelector = {
     },
     text: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-text"]`;
+    },
+    checkboxInput: (checkboxName) => {
+        return `[data-cy="${cyParamName(checkboxName)}-checkbox-input"]`;
     }
 };

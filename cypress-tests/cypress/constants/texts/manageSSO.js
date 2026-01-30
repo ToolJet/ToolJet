@@ -3,9 +3,9 @@ export const ssoText = {
 
   instanceLoginPage: {
     cardTitle: "Instance login",
-    allowedDomainLabel: "Allowed domains",
-    allowedDomainInput: "",
-    allowedDomainHelperText: "Support multiple domains. Enter allowed domains names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+    configurationLabel: "CONFIGURATION",
+    domainConstraintsLabel: "Domain constraints",
+    domainConstraintsHelperText: "Support multiple domains. Enter domain names separated by comma. Example: tooljet.com, tooljet.io",
     superAdminUrlLabel: "Super admin login URL",
     superAdminUrl: Cypress.env('proxy') === true
       ? `${Cypress.config("server_host")}/login/super-admin`
@@ -13,8 +13,6 @@ export const ssoText = {
     superAdminUrlHelperText: "Use this URL for super admin to login via password",
     enableSignupLabel: "Enable Signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
-    passwordLoginLabel: "Password login",
-    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
     workspaceConfigurationLabel: "Enable workspace configuration",
     workspaceConfigurationHelperText: "Allow workspace admin to configure their workspace’s login differently",
     autoSSOLabel: "Automatic SSO login",
@@ -23,6 +21,9 @@ export const ssoText = {
     customLogoutUrlLabel: "Custom logout URL",
     customLogoutUrlPlaceholder: "",
     customLogoutUrlHelperText: "Set a personalized logout URL for users logging out of this instance.",
+    loginMethodsLabel: "LOGIN METHODS",
+    passwordLoginLabel: "Password login",
+    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
     ssoHeader: "SSO",
     googleLabel: "Google",
     githubLabel: "GitHub",
@@ -30,9 +31,9 @@ export const ssoText = {
   },
   workspaceLoginPage: {
     cardTitle: "Workspace login",
-    allowedDomainLabel: "Allowed domains",
-    allowedDomainInput: "",
-    allowedDomainHelperText: "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+    configurationLabel: "CONFIGURATION",
+    domainConstraintsLabel: "Domain constraints",
+    domainConstraintsHelperText: "Support multiple domains. Enter domain names separated by comma. Example: tooljet.com, tooljet.io",
     workspaceLoginUrlLabel: "Login URL",
     workspaceLoginUrl: Cypress.env('proxy') === true
       ? `${Cypress.config("server_host")}/login/workspace`
@@ -40,10 +41,11 @@ export const ssoText = {
     workspaceLoginUrlHelperText: "Use this URL to login directly to this workspace",
     enableSignupLabel: "Enable signup",
     enableSignupHelperText: "Users will be able to sign up without being invited",
-    passwordLoginLabel: "Password login",
-    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
     autoSSOLabel: "Automatic SSO login",
     autoSSOHelperText: "This will simulate the configured SSO login, bypassing the login screen in ToolJet",
+    loginMethodsLabel: "LOGIN METHODS",
+    passwordLoginLabel: "Password login",
+    passwordDisableHelperText: 'Disable password login only if your SSO is configured otherwise you will get locked out',
     ssoHeader: "SSO",
     instanceSsoCard: "Instance SSO (3)",
     instanceSsoHelperText: "Display instance SSO for workspace URL login",
@@ -105,6 +107,11 @@ export const ssoText = {
   cancelButton: "Cancel",
   saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
+  passwordLoginDropdownLabel: "Password login",
+  passwordAllowedDomainsLabel: "Allowed domains",
+  passwordRestrictedDomainsLabel: "Restricted domains",
+  ssoLoginDropdownLabel: "SSO login",
+  ssoAllowedDomainsLabel: "Allowed domains",
   passwordDisableWarning: "Please ensure SSO is configured successfully before disabling password login or else you will get locked out. Are you sure you want to continue?",
   superAdminInfoText: `Super admin can still access their account via ${
     Cypress.env('proxy') === true

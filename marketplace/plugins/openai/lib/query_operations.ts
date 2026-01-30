@@ -44,7 +44,6 @@ const getSizeEnum = (
   return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
 };*/
 
-
 export async function getChatCompletion(
   openai: OpenAI,
   options: QueryOptions

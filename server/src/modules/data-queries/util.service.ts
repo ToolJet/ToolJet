@@ -286,7 +286,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'
+            dataSource.kind === 'zendesk'||
+            dataSource.kind === 'googlesheetsv2'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({
@@ -360,6 +361,36 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
+  async listTables(user: User, dataSource: DataSource, environmentId: string): Promise<object> {
+    if (!dataSource) {
+      throw new UnauthorizedException();
+    }
+
+    const organizationId = user?.organizationId;
+    const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+      dataSource.id,
+      organizationId,
+      environmentId
+    );
+
+    dataSource.options = dataSourceOptions.options;
+
+    const { sourceOptions, service } = await this.fetchServiceAndParsedParams(
+      dataSource,
+      {},
+      {},
+      organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    return await service.listTables(
+      sourceOptions,
+      `${dataSource.id}-${dataSourceOptions.environmentId}`,
+      dataSourceOptions.updatedAt
+    );
+  }
+
   async fetchServiceAndParsedParams(
     dataSource,
     dataQuery,
@@ -384,7 +415,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       user,
       opts
     );
-
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };

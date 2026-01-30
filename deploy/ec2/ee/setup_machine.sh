@@ -58,7 +58,15 @@ retry_apt_update() {
 
 # Setup prerequisite dependencies
 retry_apt_update
-sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
+sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl
+
+# Add PostgreSQL official APT repository
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+retry_apt_update
+
+# Install PostgreSQL client
+sudo apt-get -y install --no-install-recommends postgresql-client-14
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

@@ -69,9 +69,13 @@ describe("LDAP SSO", () => {
         cy.visit(`/${workspaceSlug}`);
 
         navigateToManageSSO();
-        cy.waitForElement('[data-cy="ldap-sso-card"]');
+        cy.waitForElement(ssoEeSelector.ldapCard);
 
-        cy.get('[data-cy="ldap-sso-card"]').should("have.text", "LDAP").click();
+        cy.get(ssoEeSelector.ldapCard).should("be.visible");
+        cy.get(ssoEeSelector.ldapLabel).should("have.text", "LDAP");
+        cy.get(`${ssoEeSelector.ldapCard} > .switch > .slider`).should("be.visible");
+        cy.wait(1000);
+        cy.get(ssoEeSelector.ldapCard).click();
         cy.get(ssoEeSelector.ldapToggle).should("be.visible");
 
         // Verify form fields using forEach

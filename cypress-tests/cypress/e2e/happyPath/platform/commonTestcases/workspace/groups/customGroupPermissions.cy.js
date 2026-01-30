@@ -1,17 +1,19 @@
 import { fake } from "Fixtures/fake";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { groupsSelector } from "Selectors/manageGroups";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
   createGroupsAndAddUserInGroup,
   setupWorkspaceAndInviteUser,
+  updateRole
 } from "Support/utils/manageGroups";
 import {
   getGroupPermissionInput,
   verifyBuilderPermissions,
 } from "Support/utils/userPermissions";
 import { groupsText } from "Texts/manageGroups";
+import { verifyUserInGroups } from 'Support/utils/externalApi';
 
 describe("Custom Group Permissions", () => {
   let data = {};
@@ -74,18 +76,22 @@ describe("Custom Group Permissions", () => {
 
     // App creation permission
     cy.get(groupsSelector.appsCreateCheck).check();
-    cy.get(commonSelectors.defaultModalTitle).contains(
-      groupsText.changeUserRoleHeader
-    );
-    cy.get(groupsSelector.changeRoleModalMessage).contains(
-      groupsText.changeUserRoleMessage
-    );
-    cy.get(".item-list").contains(data.email);
-    cy.get(groupsSelector.confimButton).should(
+    cy.get(commonSelectors.modalIcon).should("be.visible");
+    cy.get(groupsSelector.addEditPermissionModalTitle).should(
       "have.text",
-      groupsText.continueButtonText
+      groupsText.cantCreatePermissionModalTitle
     );
-    cy.get(commonSelectors.cancelButton).click();
+    cy.get(commonSelectors.modalDescription).contains(
+      groupsText.cantCreatePermissionModalDescription
+    );
+    cy.get(`${commonSelectors.modalDescription} a`)
+      .should("have.text", "Learn more")
+      .and("have.attr", "href");
+    cy.get(groupsSelector.changeRoleModalDescription2).contains(
+      groupsText.cantCreatePermissionModalDescription2
+    );
+    cy.get("[data-cy='item-list']").contains(data.email);
+    cy.get(commonWidgetSelector.modalCloseButton).click();
 
     // Other permissions
     const permissions =
@@ -111,8 +117,7 @@ describe("Custom Group Permissions", () => {
       cy.get(permission).check();
       cy.wait(1000);
       cy.get(".modal-content").should("be.visible");
-      cy.wait(1000);
-      cy.get(commonSelectors.cancelButton).click();
+      cy.get(commonWidgetSelector.modalCloseButton).click();
       //Note:Please add assertions instead hardcode wait
     });
 
@@ -135,28 +140,31 @@ describe("Custom Group Permissions", () => {
     cy.get(".modal-content").should("be.visible");
     cy.get(groupsSelector.modalHeader).should(
       "have.text",
-      groupsText.cantCreatePermissionModalHeader
+      groupsText.cantCreatePermissionModalTitle
     );
     cy.get(groupsSelector.modalMessage).should(
       "have.text",
-      groupsText.cantCreatePermissionModalMessage
+      groupsText.cantCreatePermissionModalDescription3
     );
 
     cy.get(".item-list").contains(data.email);
     cy.get(commonSelectors.closeButton).click();
 
     // Role transition
+    verifyUserInGroups(data.email, ["builder"], false, data.workspaceSlug);
+
+    updateRole("End-user", "Builder", data.email);
+    verifyUserInGroups(data.email, ["builder"], true, data.workspaceSlug);
+
+    cy.get(groupsSelector.groupLink(groupName)).click();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).check();
-    cy.get(groupsSelector.confimButton).click();
+
     permissions.forEach((permission) => {
       cy.get(permission).check();
-      cy.wait(1000);
+      cy.wait(500);
       //Note:Please add assertions instead hardcode wait
     });
-    cy.get(groupsSelector.groupLink("Builder")).click();
-    cy.get(groupsSelector.usersLink).click();
-    cy.get(`[data-cy="${data.email}-user-row"]`).should("be.visible");
     cy.apiLogout();
     cy.apiLogin(data.email);
     cy.visit(data.workspaceSlug);
@@ -165,7 +173,8 @@ describe("Custom Group Permissions", () => {
       data.appName,
       data.folderName,
       data.firstName,
-      data.appName
+      data.appName,
+      true
     );
 
     cy.apiLogout();

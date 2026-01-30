@@ -9,7 +9,7 @@ import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
 import './image.scss';
 
-export const Image = function Image({
+export default function Image({
   setExposedVariable,
   setExposedVariables,
   componentName,
@@ -342,4 +342,4 @@ export const Image = function Image({
       )}
     </div>
   );
-};
+}

@@ -7,4 +7,7 @@ export class GroupPermissionLicenseUtilService implements IGroupPermissionsLicen
   async isFeatureEnabled(organizationId?: string): Promise<boolean> {
     return true;
   }
+  async isRestrictedPlan(organizationId: string): Promise<boolean> {
+    return false;
+  }
 }

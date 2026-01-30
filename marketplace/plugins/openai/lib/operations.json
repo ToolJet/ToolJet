@@ -761,7 +761,6 @@
 				}
 			}
 		},
-
 		"image_generation": {
   			"model": {
     			"label": "Model",

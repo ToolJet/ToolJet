@@ -114,6 +114,7 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.wait(500);
     cy.get(groupsSelector.groupLink("builder")).click();
     cy.get(groupsSelector.groupLink(groupName)).click();
+    cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.granularLink).click();
     cy.wait(2000);
     cy.get(groupsSelector.granularAccessPermission).realHover();
