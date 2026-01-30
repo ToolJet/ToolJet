@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, openDataSourceConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { elasticsearchUIConfig, elasticsearchFormConfig } from "Constants/constants/marketplace/datasources/elasticsearch";
 
 const data = {};
@@ -20,7 +20,7 @@ describe("Elasticsearch", () => {
         cy.apiDeleteDataSource(elasticsearchDataSourceName);
     });
 
-    it("1. Elasticsearch - Verify connection form UI elements - ALL FIELDS", () => {
+    it("1. Elasticsearch - Verify connection form UI elements", () => {
         cy.apiCreateDataSource(
             `${Cypress.env("server_host")}/api/data-sources`,
             `${elasticsearchDataSourceName}`,
@@ -39,9 +39,9 @@ describe("Elasticsearch", () => {
                 { key: "root_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName)).click();
+
+        openDataSourceConnection(elasticsearchDataSourceName);
+
         verifyConnectionFormUI(elasticsearchUIConfig.defaultFields);
     });
 
@@ -64,9 +64,8 @@ describe("Elasticsearch", () => {
                 { key: "root_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName)).click();
+
+        openDataSourceConnection(elasticsearchDataSourceName);
 
         fillDSConnectionForm(elasticsearchFormConfig, []);
 
@@ -92,12 +91,11 @@ describe("Elasticsearch", () => {
                 { key: "root_cert", value: null, encrypted: false },
             ]
         );
-        cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName));
-        cy.get(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName)).click();
+
+        openDataSourceConnection(elasticsearchDataSourceName);
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidSsl);
-        verifyDSConnection("failed", "ConnectionError: write EPROTO 80A07CEF01000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:\n");
+        verifyDSConnection("failed", "SSL routines:ssl3_get_record:wrong version number");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidHost);
         verifyDSConnection("failed", "ConnectionError: getaddrinfo ENOTFOUND invalid-host");
