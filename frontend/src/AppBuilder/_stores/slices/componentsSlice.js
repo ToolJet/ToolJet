@@ -286,13 +286,34 @@ export const createComponentsSlice = (set, get) => ({
       checkIfParentIsListviewOrKanban,
       getCustomResolvables,
       setAllValueToComponent,
+      getComponentDefinition,
+      getBaseParentId,
     } = get();
     let customResolvables = {};
     const parentId = component?.parent;
     const componentDetails = { componentId, paramType, property };
     let index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
     if (index !== null) {
-      customResolvables = getCustomResolvables(parentId, null);
+      // For nested ListViews, we need to build parentIndices by walking up the ancestor chain.
+      // ListView parent IDs don't contain row indices - the row info is only available at render time.
+      // At drop time, we use index 0 for each ListView ancestor as a default for initial resolution.
+      const parentIndices = [];
+      const baseParentId = getBaseParentId(parentId);
+      const parentDef = getComponentDefinition(baseParentId, moduleId);
+
+      // Walk up the ancestor chain starting from the parent's parent
+      let ancestorId = parentDef?.component?.parent;
+      while (ancestorId) {
+        const baseAncestorId = getBaseParentId(ancestorId);
+        if (checkIfParentIsListviewOrKanban(baseAncestorId, moduleId)) {
+          // Add 0 at the beginning for each ListView ancestor (outer-most first)
+          parentIndices.unshift(0);
+        }
+        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+        ancestorId = ancestorDef?.component?.parent;
+      }
+
+      customResolvables = getCustomResolvables(parentId, null, moduleId, parentIndices);
     }
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
@@ -1027,6 +1048,39 @@ export const createComponentsSlice = (set, get) => ({
           deleteComponentNameIdMapping(oldName, moduleId);
         }
         updateComponentDependencyGraph(moduleId, newComponent);
+
+        // For ListView, initialize customResolvables immediately after processing
+        // so that child components processed later can access them
+        if (newComponent.component.component === 'Listview') {
+          const {
+            getResolvedComponent,
+            updateCustomResolvables,
+            checkIfParentIsListviewOrKanban,
+            getBaseParentId,
+            getComponentDefinition,
+          } = get();
+          const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
+          const data = resolvedComponent?.properties?.data;
+          if (Array.isArray(data) && data.length > 0) {
+            // Build parentIndices for nested ListView case
+            const parentIndices = [];
+            const componentParentId = newComponent.component.parent;
+            if (componentParentId) {
+              let ancestorId = componentParentId;
+              while (ancestorId) {
+                const baseAncestorId = getBaseParentId(ancestorId);
+                if (checkIfParentIsListviewOrKanban(baseAncestorId, moduleId)) {
+                  parentIndices.unshift(0);
+                }
+                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+                ancestorId = ancestorDef?.component?.parent;
+              }
+            }
+            const listItems = data.map((listItem) => ({ listItem }));
+            updateCustomResolvables(newComponent.id, listItems, 'listItem', moduleId, parentIndices);
+          }
+        }
+
         const parentId = newComponent.component.parent || 'canvas';
         // Check if parent is a Form and add the component to form fields if needed
         !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
