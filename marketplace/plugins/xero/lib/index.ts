@@ -376,7 +376,15 @@ export default class Xero implements QueryService {
       };
     } catch (error: any) {
       // Handle OAuth unauthorized errors - triggers token refresh flow
-      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
+      const statusCode =
+        error.response?.statusCode ||
+        error.description?.statusCode ||
+        error.data?.statusCode ||
+        error.statusCode ||
+        error.data?.response?.statusCode ||
+        error.data?.error?.statusCode ||
+        error.data?.error?.response?.statusCode;
+      if (statusCode === 401 ||statusCode === 403) {
         throw new OAuthUnauthorizedClientError('OAuth token expired or invalid', error.message, error);
       }
 
