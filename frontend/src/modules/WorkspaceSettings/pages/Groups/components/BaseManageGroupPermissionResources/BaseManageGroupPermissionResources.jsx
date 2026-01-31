@@ -540,6 +540,11 @@ class BaseManageGroupPermissionResources extends React.Component {
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
       isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
+    
+    const disableNonPromoteReleasePermissions = disablePermissionUpdate || 
+        (groupPermission?.type === 'default' &&
+        groupPermission?.name === 'builder' &&
+        !featureAccess?.customGroups);
 
     // Check if this group contains any end-user role members
     // For default end-user group: always true
