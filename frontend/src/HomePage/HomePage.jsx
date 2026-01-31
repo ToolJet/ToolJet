@@ -883,7 +883,7 @@ class HomePageComponent extends React.Component {
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
-        toast.success('Added to folder.');
+        toast.success('Application added to folder successfully!');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
         posthogHelper.captureEvent('click_add_to_folder_button', {
