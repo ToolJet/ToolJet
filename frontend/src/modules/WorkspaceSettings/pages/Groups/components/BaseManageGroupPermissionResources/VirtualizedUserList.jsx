@@ -1,4 +1,5 @@
 import React, { useRef, memo } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Link } from 'react-router-dom';
 import Avatar from '@/_ui/Avatar';

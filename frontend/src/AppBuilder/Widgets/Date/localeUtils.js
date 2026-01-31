@@ -1,6 +1,7 @@
 import { registerLocale } from 'react-datepicker';
 
 // Import date-fns locales for react-datepicker calendar localization
+// eslint-disable-next-line import/no-unresolved
 import { enUS, zhCN, fr, de, es, ru, uk, it, id as idLocale } from 'date-fns/locale';
 
 // Register all supported locales

@@ -594,8 +594,9 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-              }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
           />
         </div>
         <div className={`flex-grow-1`}>

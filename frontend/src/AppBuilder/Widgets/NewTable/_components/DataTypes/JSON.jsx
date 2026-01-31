@@ -23,7 +23,7 @@ export const JsonColumn = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
-  const ref = React.useRef(null); 
+  const ref = React.useRef(null);
 
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

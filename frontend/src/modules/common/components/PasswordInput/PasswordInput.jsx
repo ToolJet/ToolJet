@@ -76,8 +76,7 @@ const PasswordInput = ({
           {error}
         </p>
       ) : (
-        <p className="password-input__hint" data-cy={`${dataCy}-hint`}>
-        </p>
+        <p className="password-input__hint" data-cy={`${dataCy}-hint`}></p>
       )}
     </div>
   );

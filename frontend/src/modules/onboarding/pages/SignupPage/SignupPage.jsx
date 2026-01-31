@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { onInvitedUserSignUpSuccess, onLoginSuccess, getPostSignupRedirectPath } from '@/_helpers/platform/utils/auth.utils';
+import {
+  onInvitedUserSignUpSuccess,
+  onLoginSuccess,
+  getPostSignupRedirectPath,
+} from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
@@ -40,9 +44,7 @@ const SignupPage = ({ configs, organizationId }) => {
     }
   }, []);
 
-
-
-  const handleSignup = (formData, onSuccess = () => { }, onFaluire = () => { }) => {
+  const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
     const { email, name, password } = formData;
 
     if (organizationToken) {
@@ -52,7 +54,7 @@ const SignupPage = ({ configs, organizationId }) => {
         .catch((errorObj) => {
           let errorMessage;
           if (typeof errorObj?.error === 'string') {
-            errorMessage = errorObj.error; 
+            errorMessage = errorObj.error;
           }
           if (!errorMessage) {
             const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
@@ -73,14 +75,14 @@ const SignupPage = ({ configs, organizationId }) => {
         .signup(email, name, password, inviteOrganizationId, redirectTo)
         .then((response) => {
           const { organizationInviteUrl, current_organization_id, current_organization_slug } = response;
-          
+
           // Check if response contains login data (for non-cloud editions with auto-login)
           if (current_organization_id || current_organization_slug) {
             try {
               // Update the session context with the response data
               const { email, id, first_name, last_name, organization_id, organization, ...restResponse } = response;
               const current_user = { email, id, first_name, last_name, organization_id, organization };
-              
+
               updateCurrentSession({
                 current_user,
                 ...restResponse,
@@ -88,7 +90,7 @@ const SignupPage = ({ configs, organizationId }) => {
                 noWorkspaceAttachedInTheSession: current_organization_id ? false : true,
                 isUserLoggingIn: false,
               });
-              
+
               const redirectPath = getPostSignupRedirectPath({
                 redirectTo,
                 organizationSlug: current_organization_slug,
@@ -105,7 +107,7 @@ const SignupPage = ({ configs, organizationId }) => {
           } else {
             // For cloud editions, show email verification flow
             setSigningUserInfo({ email, name });
-            
+
             if (edition === 'cloud') {
               setSignupSuccess(true);
             } else {
@@ -113,7 +115,7 @@ const SignupPage = ({ configs, organizationId }) => {
               const loginRedirect = redirectTo ? `?redirectTo=${redirectTo}` : '';
               navigate(`/login${loginRedirect}`, { replace: true });
             }
-            
+
             onSuccess();
           }
         })

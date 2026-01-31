@@ -121,7 +121,7 @@ const Authentication = ({
     );
   } else if (auth_type === 'bearer') {
     return (
-      <div >
+      <div>
         <div className="col-md-12" data-cy="token-section">
           <EncryptedFieldWrapper
             options={options}

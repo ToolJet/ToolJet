@@ -35,8 +35,7 @@ function OnboardingPassword({ setFormData, formData, fieldType }) {
           />
         )}
       </div>
-      <span className="tj-input-helper-text" data-cy="password-helper-text">
-      </span>
+      <span className="tj-input-helper-text" data-cy="password-helper-text"></span>
     </div>
   );
 }

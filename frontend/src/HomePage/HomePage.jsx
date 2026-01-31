@@ -1154,7 +1154,7 @@ class HomePageComponent extends React.Component {
       this.setState({
         importingGitAppOperations: validationMessage,
       });
-      return; 
+      return;
     }
     this.setState({
       importedAppName: newAppName,

@@ -34,7 +34,9 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
   const hasScrolledOnOpenRef = useRef(false);
   const menuListRef = useRef(null);
 
-  const firstSelectedIndex = props?.options?.findIndex(opt => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value));
+  const firstSelectedIndex = props?.options?.findIndex(
+    (opt) => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value)
+  );
 
   useEffect(() => {
     if (!selectProps?.menuIsOpen) {
@@ -91,7 +93,12 @@ const CustomMenuList = ({ optionsLoadingState, children, selectProps, inputRef, 
         />
       </div>
       <div style={{ borderTop: '1px solid var(--cc-default-border)' }}>
-        <MenuList {...props} innerRef={menuListRef} selectProps={selectProps} style={{ backgroundColor: 'var(--cc-surface1-surface)' }}>
+        <MenuList
+          {...props}
+          innerRef={menuListRef}
+          selectProps={selectProps}
+          style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
+        >
           {optionsLoadingState ? (
             <div className="text-center py-4">
               <div className="spinner-border text-primary" role="status">
@@ -169,7 +176,7 @@ const DropdownIndicator = ({ selectProps }) => {
           const clickEvent = new MouseEvent('click', {
             bubbles: true,
             cancelable: true,
-            view: window
+            view: window,
           });
           tdElement.dispatchEvent(clickEvent);
         }
@@ -182,7 +189,7 @@ const DropdownIndicator = ({ selectProps }) => {
         fill="#6A727C"
       />
     </div>
-  )
+  );
 };
 
 const getOverlay = (value, containerWidth, darkMode) => {
@@ -340,8 +347,8 @@ export const CustomSelectColumn = ({
           ? defaultOptionsList
           : defaultOptionsList.slice(-1)[0]
         : isMulti
-          ? []
-          : {},
+        ? []
+        : {},
     [isMulti, defaultOptionsList]
   );
 
@@ -350,8 +357,8 @@ export const CustomSelectColumn = ({
     if (isMulti && value?.length) {
       return isArray(value)
         ? options?.filter((option) =>
-          value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
-        )
+            value?.find((val) => (val.hasOwnProperty('value') ? option.value === val.value : option.value === val))
+          )
         : [];
     }
     return options?.find((option) => option.value === value) || [];

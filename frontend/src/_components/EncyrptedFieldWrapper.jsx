@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ButtonSolid } from './AppButton';
 
-export default function EncryptedFieldWrapper ({
+export default function EncryptedFieldWrapper({
   children,
   options,
   selectedDataSource,
@@ -29,7 +29,9 @@ export default function EncryptedFieldWrapper ({
   return (
     <>
       <div className="d-flex align-items-center mt-3">
-        <label className="form-label" data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}>{label}</label>
+        <label className="form-label" data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}>
+          {label}
+        </label>
         <div className="mx-1 col">
           <ButtonSolid
             className="datasource-edit-btn mb-2"

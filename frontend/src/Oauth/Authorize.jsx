@@ -193,17 +193,18 @@ export function Authorize({ navigate }) {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const utm = {
-        utm_source: urlParams.get("utm_source") || '',
-        utm_medium: urlParams.get("utm_medium") || '',
-        utm_campaign: urlParams.get("utm_campaign") || '',
-        utm_term: urlParams.get("utm_term") || '',
-        utm_content: urlParams.get("utm_content") || ''
+        utm_source: urlParams.get('utm_source') || '',
+        utm_medium: urlParams.get('utm_medium') || '',
+        utm_campaign: urlParams.get('utm_campaign') || '',
+        utm_term: urlParams.get('utm_term') || '',
+        utm_content: urlParams.get('utm_content') || '',
       };
 
-      const hutk = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('hubspotutk='))
-        ?.split('=')[1] || '';
+      const hutk =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('hubspotutk='))
+          ?.split('=')[1] || '';
 
       const referrer = document.referrer || '';
       const pageUri = window.location.href;
@@ -214,7 +215,7 @@ export function Authorize({ navigate }) {
         referrer,
         pageUri,
         pageName,
-        utm
+        utm,
       };
       return attribution;
     } catch (err) {
@@ -253,8 +254,10 @@ export function Authorize({ navigate }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
-      }).catch(() => { });
-    } catch { }
+      }).catch(() => {});
+    } catch {
+      /* empty */
+    }
   };
   const signIn = (authParams, configs, utmParams) => {
     const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
@@ -262,8 +265,9 @@ export function Authorize({ navigate }) {
       // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
       hubspotFormSubmissionForSSO(email);
 
-      const event = `${redirect_url ? 'signup' : 'signin'}_${router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
-        }`;
+      const event = `${redirect_url ? 'signup' : 'signin'}_${
+        router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+      }`;
       posthogHelper.initPosthog(restResponse);
       posthogHelper.captureEvent(event, {
         email,
@@ -352,8 +356,9 @@ export function Authorize({ navigate }) {
 
   const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
   const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
-  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${!signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
-    }`;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+  }`;
   return (
     <div>
       <TJLoader />

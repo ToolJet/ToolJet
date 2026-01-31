@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // Lazy load ENTIRE APP ROUTERS (not just pages)
 // This is CRITICAL for bundle isolation - each router imports completely different code
 const ViewerApp = lazy(() => import('./ViewerApp'));
-const MainApp = lazy(() => import('./App').then(module => ({ default: module.App })));
+const MainApp = lazy(() => import('./App').then((module) => ({ default: module.App })));
 
 const LoadingFallback = () => (
   <div class="load" style={{ display: 'flex' }}>

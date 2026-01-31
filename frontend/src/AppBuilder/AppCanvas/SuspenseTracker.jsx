@@ -82,13 +82,8 @@ export const TrackedSuspense = ({ fallback = null, children }) => {
     return <Suspense fallback={fallback}>{children}</Suspense>;
   }
 
-  return (
-    <Suspense fallback={<SuspenseFallbackTracker fallback={fallback} />}>
-      {children}
-    </Suspense>
-  );
+  return <Suspense fallback={<SuspenseFallbackTracker fallback={fallback} />}>{children}</Suspense>;
 };
-
 
 // Loading overlay shown while lazy components are resolving
 export const SuspenseLoadingOverlay = ({ darkMode }) => {
@@ -98,9 +93,11 @@ export const SuspenseLoadingOverlay = ({ darkMode }) => {
 
   return (
     <div
-      className={cx('suspense-loading-overlay tw-absolute tw-inset-0 tw-overflow-hidden', { 'theme-dark dark-theme': darkMode })}
+      className={cx('suspense-loading-overlay tw-absolute tw-inset-0 tw-overflow-hidden', {
+        'theme-dark dark-theme': darkMode,
+      })}
     >
-      <div className='tw-sticky tw-top-0 tw-h-screen tw-flex tw-items-center tw-justify-center'>
+      <div className="tw-sticky tw-top-0 tw-h-screen tw-flex tw-items-center tw-justify-center">
         <div className="suspense-loader-wrapper">
           <TJLoader />
         </div>

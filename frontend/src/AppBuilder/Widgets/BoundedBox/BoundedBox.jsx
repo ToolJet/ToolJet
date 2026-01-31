@@ -18,10 +18,10 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
     ? [
-      ...properties.labels.map((label) => {
-        return { name: getSafeRenderableValue(label), value: label };
-      }),
-    ]
+        ...properties.labels.map((label) => {
+          return { name: getSafeRenderableValue(label), value: label };
+        }),
+      ]
     : [];
   const annotateRef = useRef(null);
 

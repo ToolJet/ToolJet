@@ -81,7 +81,7 @@ const SetupAdminForm = () => {
   const handleSubmit = (e) => {
     e?.preventDefault();
     const passwordRulesEnabled = config.ENABLE_PASSWORD_COMPLEXITY_RULES === 'true';
-    const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+    const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#$%^&*()_+\-={}[\]:;"',.?/\\|]+$/;
     if (passwordRulesEnabled) {
       if (!PASSWORD_REGEX.test(formData.password)) {
         toast.error('Password must be 12-24 characters long and can include letters, numbers, and special characters.');
