@@ -277,6 +277,7 @@ const EditorInput = ({
         selectors={{ className: 'preview-block-portal' }}
         dragResizePortal={true}
         callgpt={null}
+        headerTitle={paramLabel}
       >
         <ErrorBoundary>
           <CodeMirror

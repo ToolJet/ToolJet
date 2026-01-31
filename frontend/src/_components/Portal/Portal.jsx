@@ -4,7 +4,7 @@ import { Rnd } from 'react-rnd';
 import { Button } from '@/_ui/LeftSidebar';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
+  const { isOpen, trigger, styles, className, componentName, headerTitle, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
 
   const [name, setName] = React.useState(componentName);
   const handleClose = (e) => {
@@ -43,6 +43,7 @@ const Portal = ({ children, ...restProps }) => {
           darkMode={darkMode}
           styles={styles}
           componentName={name}
+          headerTitle={headerTitle}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
@@ -64,6 +65,7 @@ const Modal = ({
   portalStyles,
   styles,
   componentName,
+  headerTitle,
   darkMode,
   dragResizePortal,
   callgpt,
@@ -93,7 +95,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {headerTitle || componentName || 'Editor'}
           </span>
         </div>
 
