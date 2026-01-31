@@ -163,7 +163,8 @@ export class RolesUtilService implements IRolesUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editPermissionsPresent =
         Object.values(group).some((value) => typeof value === 'boolean' && value === true) ||
-        (await this.checkIfBuilderLevelResourcesPermissions(group.id, organizationId, manager));
+        (await this.checkIfBuilderLevelResourcesPermissions(group.id, organizationId, manager)) ||
+        (await this.checkIfBuilderLevelEnvironmentPermissions(group.id, organizationId, manager));
       return editPermissionsPresent;
     }, manager);
   }
@@ -192,6 +193,36 @@ export class RolesUtilService implements IRolesUtilService {
         (permissions) => permissions.type === ResourceType.DATA_SOURCE
       ).length;
       return isBuilderLevelAppsPermission || isBuilderLevelDataSourcePermissions;
+    }, manager);
+  }
+
+  async checkIfBuilderLevelEnvironmentPermissions(
+    groupId: string,
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const allPermission = await this.groupPermissionsRepository.getAllGranularPermissions(
+        { groupId },
+        organizationId,
+        manager
+      );
+      if (!allPermission) {
+        return false;
+      }
+
+      const hasBuilderLevelEnvironments = allPermission
+        .filter((permissions) => permissions.type === ResourceType.APP)
+        .some((permissions) => {
+          const appPermission = permissions.appsGroupPermissions;
+          return (
+            appPermission.canAccessProduction === true ||
+            appPermission.canAccessDevelopment === true ||
+            appPermission.canAccessStaging === true
+          );
+        });
+
+      return hasBuilderLevelEnvironments;
     }, manager);
   }
 }

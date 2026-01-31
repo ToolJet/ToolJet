@@ -121,14 +121,6 @@ export class AppModuleLoader {
         OpenTelemetryModule.forRoot({
           metrics: {
             hostMetrics: true,
-            apiMetrics: {
-              enable: true,
-              defaultAttributes: {
-                custom: 'metrics',
-              },
-              ignoreRoutes: ['/favicon.ico', '/api/health'],
-              ignoreUndefinedRoutes: false,
-            },
           },
         })
       );

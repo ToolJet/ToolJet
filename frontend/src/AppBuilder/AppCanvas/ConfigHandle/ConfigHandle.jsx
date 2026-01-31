@@ -21,6 +21,7 @@ const BUFFER_HEIGHT = 1;
 
 export const ConfigHandle = ({
   id,
+  readOnly,
   widgetTop,
   widgetHeight,
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
@@ -186,6 +187,11 @@ export const ConfigHandle = ({
       </div>
     </div>
   );
+
+  if (readOnly) {
+    return null;
+  }
+
 
   return (
     <div

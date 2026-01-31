@@ -43,6 +43,11 @@ export const currencyinputConfig = {
       displayName: 'Enable currency change',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    showFlag: {
+      type: 'toggle',
+      displayName: 'Show currency flag',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -309,6 +314,7 @@ export const currencyinputConfig = {
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       isCountryChangeEnabled: { value: '{{true}}' },
+      showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
     },
     events: [],

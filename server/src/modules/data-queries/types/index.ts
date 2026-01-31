@@ -12,6 +12,7 @@ export interface Features {
   [FEATURE_KEY.RUN_EDITOR]: FeatureConfig;
   [FEATURE_KEY.RUN_VIEWER]: FeatureConfig;
   [FEATURE_KEY.PREVIEW]: FeatureConfig;
+  [FEATURE_KEY.LIST_TABLES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

@@ -4,7 +4,11 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { EntityManager } from 'typeorm';
 import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
-import { isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
+import {
+  isSuperAdmin,
+  generateNextNameAndSlug,
+  validatePasswordDomain,
+} from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Response } from 'express';
@@ -96,6 +100,20 @@ export class AuthService implements IAuthService {
         if (organization) user.organizationId = organization.id;
         /* CASE: No active workspace. But one workspace with invited status. waiting for activation */
         if (isInviteRedirect && !organization) user.organizationId = invitingOrganizationId ?? '';
+
+        // Validate password domain for global login (org overrides instance)
+        if (organization && !isSuperAdmin(user)) {
+          if (
+            !(await validatePasswordDomain(
+              email,
+              organization.passwordAllowedDomains,
+              organization.passwordRestrictedDomains,
+              this.instanceSettingsUtilService
+            ))
+          ) {
+            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+          }
+        }
       } else {
         // organization specific login
         // No need to validate user status, validateUser() already covers it
@@ -108,6 +126,20 @@ export class AuthService implements IAuthService {
         if (!formConfigs?.enabled) {
           // no configurations in organization side or Form login disabled for the organization
           throw new UnauthorizedException('Password login is disabled for the organization');
+        }
+
+        // Validate password domain with org/instance hierarchy (org overrides instance)
+        if (!isSuperAdmin(user)) {
+          if (
+            !(await validatePasswordDomain(
+              email,
+              organization.passwordAllowedDomains,
+              organization.passwordRestrictedDomains,
+              this.instanceSettingsUtilService
+            ))
+          ) {
+            throw new UnauthorizedException(`This login method is not available for your domain. Please contact admin or try another method.`);
+          }
         }
       }
 

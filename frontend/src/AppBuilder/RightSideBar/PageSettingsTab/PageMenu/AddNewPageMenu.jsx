@@ -15,7 +15,6 @@ export function AddNewPageMenu({ darkMode }) {
   const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
 
-
   const handleOpenPopup = (type) => {
     setShowMenuPopover(false);
     setNewPagePopupConfig({ type, show: true, mode: 'add' });
@@ -81,11 +80,13 @@ export function AddNewPageMenu({ darkMode }) {
                 onClick={() => hasAppPagesAddNavGroupEnabled && handleOpenPopup('group')}
               />
               <LicenseTooltip
-                message={"You don\'t have access to nav groups. Upgrade your plan to access this feature."}
+                message={"You don't have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
                 show={!hasAppPagesAddNavGroupEnabled}
               >
-                <div className="d-flex align-items-center">{!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}</div>
+                <div className="d-flex align-items-center">
+                  {!hasAppPagesAddNavGroupEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
               </LicenseTooltip>
             </div>
           </div>

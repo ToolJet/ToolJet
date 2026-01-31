@@ -4,12 +4,7 @@ import Select, { components } from 'react-select';
 import defaultStyles from './styles';
 
 const CustomInput = (props) => {
-  return (
-    <components.Input
-      {...props}
-      data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`}
-    />
-  );
+  return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
 };
 
 export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
@@ -43,11 +38,11 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     Array.isArray(options) && options.length === 0
       ? options
       : options?.map((option) => {
-        if (!option.hasOwnProperty('label')) {
-          return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
-        }
-        return option;
-      });
+          if (!option.hasOwnProperty('label')) {
+            return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
+          }
+          return option;
+        });
 
   const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
 
@@ -88,7 +83,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
       components={{
         Input: CustomInput,
-        ...restProps.components
+        ...restProps.components,
       }}
     />
   );

@@ -304,6 +304,20 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return asyncHandler;
     },
+    resetQuery: (queryId, moduleId = 'canvas') => {
+      const { setResolvedQuery } = get();
+      setResolvedQuery(
+        queryId,
+        {
+          isLoading: false,
+          data: [],
+          rawData: [],
+          id: queryId,
+        },
+        moduleId,
+        true
+      );
+    },
 
     runQuery: (
       queryId,
@@ -516,10 +530,10 @@ export const createQueryPanelSlice = (set, get) => ({
           error:
             query.kind === 'restapi' && errorData?.data?.type !== 'tj-401'
               ? {
-                  substitutedVariables: options,
-                  request: errorData?.data?.requestObject,
-                  response: errorData?.data?.responseObject,
-                }
+                substitutedVariables: options,
+                request: errorData?.data?.requestObject,
+                response: errorData?.data?.responseObject,
+              }
               : errorData,
           isQuerySuccessLog: false,
         });
@@ -530,19 +544,19 @@ export const createQueryPanelSlice = (set, get) => ({
             isLoading: false,
             ...(errorData?.data?.type === 'tj-401'
               ? {
-                  metadata: errorData?.metadata,
-                  response: errorData?.data?.responseObject,
-                }
+                metadata: errorData?.metadata,
+                response: errorData?.data?.responseObject,
+              }
               : query.kind === 'restapi'
-              ? {
+                ? {
                   metadata: errorData?.metadata,
                   request: errorData?.data?.requestObject,
                   response: errorData?.data?.responseObject,
                   responseHeaders: errorData?.data?.responseHeaders,
                 }
-              : query.kind === 'workflows'
-              ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
-              : {}),
+                : query.kind === 'workflows'
+                  ? { metadata: errorData?.metadata, response: errorData?.metadata?.response }
+                  : {}),
           },
           moduleId
         );
@@ -835,7 +849,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 handleFailure: handleFailurePreview,
                 shouldSetPreviewData: true,
                 setPreviewData,
-                setResolvedQuery: () => {}, // No resolvedQuery for preview
+                setResolvedQuery: () => { }, // No resolvedQuery for preview
                 resolve,
               });
 
@@ -867,33 +881,33 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatusCode === 400 ||
                 queryStatusCode === 404 ||
                 queryStatusCode === 422: {
-                let errorData = {};
-                switch (query.kind) {
-                  case 'runpy':
-                    errorData = data.data;
-                    break;
-                  case 'tooljetdb':
-                    if (data?.error) {
-                      errorData = {
-                        message: data?.error?.message || 'Something went wrong',
-                        description: data?.error?.message || 'Something went wrong',
-                        status: data?.statusText || 'Failed',
-                        data: data?.error || {},
-                      };
-                    } else {
+                  let errorData = {};
+                  switch (query.kind) {
+                    case 'runpy':
+                      errorData = data.data;
+                      break;
+                    case 'tooljetdb':
+                      if (data?.error) {
+                        errorData = {
+                          message: data?.error?.message || 'Something went wrong',
+                          description: data?.error?.message || 'Something went wrong',
+                          status: data?.statusText || 'Failed',
+                          data: data?.error || {},
+                        };
+                      } else {
+                        errorData = data;
+                        errorData.description = data.errorMessage || 'Something went wrong';
+                      }
+                      break;
+                    default:
                       errorData = data;
-                      errorData.description = data.errorMessage || 'Something went wrong';
-                    }
-                    break;
-                  default:
-                    errorData = data;
-                    break;
-                }
+                      break;
+                  }
 
-                onEvent('onDataQueryFailure', queryEvents);
-                if (!calledFromQuery) setPreviewData(errorData);
-                break;
-              }
+                  onEvent('onDataQueryFailure', queryEvents);
+                  if (!calledFromQuery) setPreviewData(errorData);
+                  break;
+                }
               case queryStatus === 'needs_oauth': {
                 const url = data.data.auth_url; // Backend generates and return sthe auth url
                 const kind = data.data?.kind;
@@ -910,33 +924,33 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatus === 'Created' ||
                 queryStatus === 'Accepted' ||
                 queryStatus === 'No Content': {
-                toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-                  icon: '🚀',
-                });
-                if (query.options.enableTransformation) {
-                  const language = query.options.transformationLanguage;
-                  finalData = await runTransformation(
-                    finalData,
-                    query.options.transformations?.[language] ?? query.options.transformation,
-                    query.options.transformationLanguage,
-                    query,
-                    'edit',
-                    moduleId
-                  );
-                  if (finalData?.status === 'failed') {
-                    onEvent('onDataQueryFailure', queryEvents);
-                    setPreviewLoading(false);
-                    setIsPreviewQueryLoading(false);
-                    resolve({ status: data.status, data: finalData });
-                    if (!calledFromQuery) setPreviewData(finalData);
-                    return;
+                  toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
+                    icon: '🚀',
+                  });
+                  if (query.options.enableTransformation) {
+                    const language = query.options.transformationLanguage;
+                    finalData = await runTransformation(
+                      finalData,
+                      query.options.transformations?.[language] ?? query.options.transformation,
+                      query.options.transformationLanguage,
+                      query,
+                      'edit',
+                      moduleId
+                    );
+                    if (finalData?.status === 'failed') {
+                      onEvent('onDataQueryFailure', queryEvents);
+                      setPreviewLoading(false);
+                      setIsPreviewQueryLoading(false);
+                      resolve({ status: data.status, data: finalData });
+                      if (!calledFromQuery) setPreviewData(finalData);
+                      return;
+                    }
                   }
-                }
 
-                if (!calledFromQuery) setPreviewData(finalData);
-                onEvent('onDataQuerySuccess', queryEvents, 'edit');
-                break;
-              }
+                  if (!calledFromQuery) setPreviewData(finalData);
+                  onEvent('onDataQuerySuccess', queryEvents, 'edit');
+                  break;
+                }
             }
             setPreviewLoading(false);
             setIsPreviewQueryLoading(false);
@@ -1017,7 +1031,10 @@ export const createQueryPanelSlice = (set, get) => ({
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.runQuery(query.name, undefined, moduleId);
               },
-
+              reset: () => {
+                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+                return actions.resetQuery(query.name);
+              },
               getData: () => {
                 const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].data;
@@ -1390,7 +1407,10 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
             return actions.runQuery(query.name, processedParams, moduleId);
           },
-
+          reset: () => {
+            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            return actions.resetQuery(query.name);
+          },
           getData: () => {
             const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].data;

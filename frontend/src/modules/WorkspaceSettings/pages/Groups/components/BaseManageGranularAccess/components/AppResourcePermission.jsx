@@ -5,7 +5,9 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import OverflowTooltip from '@/_components/OverflowTooltip';
-function AppResourcePermissions ({
+import EnvironmentTags from '../../EnvironmentTags';
+
+function AppResourcePermissions({
   updateOnlyGranularPermissions,
   permissions,
   currentGroupPermission,
@@ -162,6 +164,9 @@ function AppResourcePermissions ({
             </div>
           </OverlayTrigger>
         </div>
+      </div>
+      <div className="environment-column">
+        <EnvironmentTags permissions={permissions} isAll={permissions.isAll} />
       </div>
       <div>
         <GroupChipTD groups={apps} />

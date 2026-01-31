@@ -3,6 +3,7 @@ import config from 'config';
 import queryString from 'query-string';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { getRedirectToWithParams } from '@/_helpers/routes';
+import { getPatToken } from '@/AppBuilder/EmbedApp';
 
 export const sessionService = {
   validateSession,
@@ -10,10 +11,15 @@ export const sessionService = {
 };
 
 function validateSession(appId, workspaceSlug) {
+  // Get PAT token if present (for embedded/PAT flows)
+  const patToken = getPatToken && getPatToken();
+  const headers = patToken ? { tj_auth_token: patToken } : undefined;
   const requestOptions = {
     method: 'GET',
     credentials: 'include',
+    ...(headers && { headers }),
   };
+
   const query = queryString.stringify({ appId, workspaceSlug });
   return fetch(`${config.apiUrl}/session${query ? `?${query}` : ''}`, requestOptions).then(
     handleResponseWithoutValidation

@@ -29,7 +29,9 @@ const OptionDetailsPopover = forwardRef(
         ref={ref}
         {...restProps}
         style={{ ...restProps.style, minWidth: '248px' }}
-        className={`${darkMode && 'dark-theme theme-dark'} pm-option-popover ${restProps.className}`}
+        className={`${darkMode && 'dark-theme theme-dark'} pm-option-popover inspector-options-popover ${
+          restProps.className
+        }`}
       >
         <Popover.Body>
           <div data-cy="inspector-popover-menu-option-details-container">

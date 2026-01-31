@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Icons from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 import { DatepickerInput } from './DatepickerInput';
 import TimepickerInput from './TimepickerInput';
 import cx from 'classnames';
@@ -9,6 +10,7 @@ import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from '../BaseComponents/hooks/useInput';
+import { getDateLocale } from './localeUtils';
 
 const tinycolor = require('tinycolor2');
 
@@ -30,6 +32,9 @@ export const BaseDateComponent = ({
   customDateInputProps,
   id,
 }) => {
+  const { i18n } = useTranslation();
+  const currentLocale = getDateLocale(i18n.language);
+
   const {
     selectedTextColor,
     fieldBorderRadius,
@@ -165,6 +170,7 @@ export const BaseDateComponent = ({
             'theme-dark dark-theme': darkMode,
           })}
           ref={datePickerRef}
+          locale={currentLocale}
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"

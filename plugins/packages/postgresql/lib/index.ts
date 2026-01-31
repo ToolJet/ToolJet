@@ -104,6 +104,33 @@ export default class PostgresqlQueryService implements QueryService {
     return { status: 'ok' };
   }
 
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+
+      const { rows } = await knexInstance.raw(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_type = 'BASE TABLE'
+      ORDER BY table_name;
+    `);
+
+      return {
+        status: 'ok',
+        data: rows,
+      };
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
+  }
+
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
     if (queryOptions.operation !== 'bulk_update_pkey') {
       return { rows: [] };
