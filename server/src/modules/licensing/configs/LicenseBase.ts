@@ -45,7 +45,7 @@ export default class LicenseBase {
   private _isCustomGroups: boolean;
   private _modules: object;
   private _permissions: object;
-  private _app: object;
+  private _app: Terms['app'];
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
@@ -492,6 +492,8 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       workflowsEnabled: this.getWorkflowsEnabled(),
+      promote: this.canPromote, 
+      release: this.canRelease,   
     };
   }
 
@@ -555,4 +557,25 @@ export default class LicenseBase {
     }
     return !!this._workflows?.['enabled'];
   }
+  public get canPromote(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
+    }
+    if (!this._app || !this._app.features || this._app.features.promote === undefined) {
+    return true;
+    }
+     return !!this._app?.features?.promote;
+  }
+
+  public get canRelease(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.release;
+    }
+    if (!this._app || !this._app.features || this._app.features.release === undefined) {
+    return true;
+   }
+    return !!this._app?.features?.release;
+  }
+
+
 }
