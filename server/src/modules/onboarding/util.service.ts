@@ -42,6 +42,7 @@ import { OnboardingStatus } from './constants';
 import { IOnboardingUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import * as uuid from 'uuid';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class OnboardingUtilService implements IOnboardingUtilService {
@@ -156,12 +157,67 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     userParams: { firstName: string; lastName: string; password: string },
     redirectTo?: string,
     defaultWorkspace?: Organization,
-    manager?: EntityManager
+    manager?: EntityManager,
+    response?: Response
   ) => {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { firstName, lastName, password } = userParams;
       const organizationId: string = signingUpOrganization?.id;
-      const organizationUsers = existingUser.organizationUsers;
+      const targetOrg = signingUpOrganization || defaultWorkspace;
+
+      const organizationUsers = existingUser.organizationUsers || [];
+      
+      const isAlreadyActiveInThisOrg = organizationUsers.find(
+        (ou) => ou.organizationId === targetOrg?.id && ou.status === WORKSPACE_USER_STATUS.ACTIVE
+      );
+
+      if (isAlreadyActiveInThisOrg) {
+        throw new NotAcceptableException('Email already exists in this workspace');
+      }
+
+      const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+      if (!isPasswordCorrect) {
+        throw new NotAcceptableException('You already have an account with this email. Please use your existing password to join this workspace.');
+      }
+
+      const edition = getTooljetEdition();
+      const isCloudEdition = edition === 'cloud';
+
+      if (!isCloudEdition && response) {
+        if (!targetOrg) {
+          throw new NotAcceptableException('No valid workspace found to log into.');
+        }
+
+        existingUser.organization = targetOrg;
+        const orgUser = await this.addUserToTheWorkspace(existingUser, targetOrg, manager);
+        await this.organizationUsersUtilService.activateOrganization(orgUser, manager);
+        
+        orgUser.status = WORKSPACE_USER_STATUS.ACTIVE;
+        if (!existingUser.organizationUsers) existingUser.organizationUsers = [];
+        existingUser.organizationUsers.push(orgUser);
+        
+        if (existingUser.status === USER_STATUS.INVITED) {
+          existingUser.status = USER_STATUS.ACTIVE;
+          existingUser.invitationToken = null;
+          await this.userRepository.updateOne(existingUser.id, { 
+              status: USER_STATUS.ACTIVE, 
+              invitationToken: null 
+          }, manager);
+        }
+
+        return await this.sessionUtilService.generateLoginResultPayload(
+          response,
+          existingUser,
+          targetOrg,
+          false,
+          true,
+          null,
+          manager,
+          targetOrg.id
+        );
+      }
+      
+      
       const alreadyInvitedUserByAdmin = organizationUsers.find(
         (organizationUser: OrganizationUser) =>
           organizationUser.organizationId === organizationId &&
@@ -545,7 +601,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
-          console.log('Attempting auto-login session generation for default org');
           const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
           if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
           
