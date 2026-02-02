@@ -9,6 +9,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { useTranslation } from 'react-i18next';
+import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
@@ -17,6 +18,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
+  const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -85,6 +87,19 @@ export function Workflows({ options, optionsChanged, currentState }) {
         onMenuOpen={() => setIsMenuOpen(true)}
         onMenuClose={() => setIsMenuOpen(false)}
       />
+      <div className="my-2">
+        <CustomToggleSwitch
+          isChecked={syncExecution}
+          toggleSwitchFunction={() => {
+            const newVal = !syncExecution;
+            setSyncExecution(newVal);
+            optionsChanged({ ...options, syncExecution: newVal });
+          }}
+          action="syncExecution"
+          label="Run workflows synchronously"
+          dataCy="sync-workflow-execution"
+        />
+      </div>
       <label className="my-2">Params</label>
       <div className="grid"></div>
       {params.map((param, index) => (
