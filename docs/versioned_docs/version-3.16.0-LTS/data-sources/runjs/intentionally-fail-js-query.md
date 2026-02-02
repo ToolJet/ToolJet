@@ -22,6 +22,6 @@ In this step-by-step guide, we'll walk you through the process of creating a Run
 
 Refer to the screencast below:
 
-<img className="screenshot-full" src="/img/how-to/failjs/failjsn.gif" alt="reate a new RunJS query" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/intentional-error.png" alt="RunJS query" />
 
 By following these steps, you can effectively simulate errors in your RunJS queries, aiding in the debugging process and improving the overall robustness of your code.
