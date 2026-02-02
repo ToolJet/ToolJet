@@ -150,6 +150,50 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
     return nameObj;
   }
+  private async activateInvitedUserWithPassword(
+    existingUser: User,
+    params: { password: string; firstName?: string; lastName?: string },
+    targetOrg?: Organization,
+    manager?: EntityManager
+  ): Promise<void> {
+    if (
+      existingUser.status !== USER_STATUS.INVITED ||
+      existingUser.password
+    ) {
+      return; // not an invited-without-password user
+    }
+    await this.userRepository.updateOne(
+      existingUser.id,
+      {
+        password: params.password, 
+        status: USER_STATUS.ACTIVE,
+        invitationToken: null,
+        ...(params.firstName && { firstName: params.firstName }),
+        ...(params.lastName && { lastName: params.lastName }),
+      },
+      manager
+    );
+
+    // Sync the local object state
+    existingUser.status = USER_STATUS.ACTIVE;
+    existingUser.invitationToken = null;
+
+    // Activate workspace invite if exists
+    if (targetOrg && existingUser.organizationUsers?.length) {
+      const invitedOrgUser = existingUser.organizationUsers.find(
+        (ou) =>
+          ou.organizationId === targetOrg.id &&
+          ou.status === WORKSPACE_USER_STATUS.INVITED
+      );
+
+      if (invitedOrgUser) {
+        await this.organizationUsersUtilService.activateOrganization(
+          invitedOrgUser,
+          manager
+        );
+      }
+    }
+  }
 
   whatIfTheSignUpIsAtTheWorkspaceLevel = async (
     existingUser: User,
@@ -175,9 +219,24 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         throw new NotAcceptableException('Email already exists in this workspace');
       }
 
-      const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-      if (!isPasswordCorrect) {
-        throw new NotAcceptableException('You already have an account with this email. Please use your existing password to join this workspace.');
+      // handle invited user first-password onboarding
+      if (
+        existingUser.status === USER_STATUS.INVITED &&
+        !existingUser.password
+      ) {
+        await this.activateInvitedUserWithPassword(
+          existingUser,
+          { password, firstName, lastName },
+          targetOrg,
+          manager
+        );
+      } else {
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordCorrect) {
+          throw new NotAcceptableException(
+            'You already have an account with this email. Please use your existing password to join this workspace.'
+          );
+        }
       }
 
       const edition = getTooljetEdition();
@@ -189,20 +248,20 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         }
 
         existingUser.organization = targetOrg;
-        const orgUser = await this.addUserToTheWorkspace(existingUser, targetOrg, manager);
-        await this.organizationUsersUtilService.activateOrganization(orgUser, manager);
-        
-        orgUser.status = WORKSPACE_USER_STATUS.ACTIVE;
-        if (!existingUser.organizationUsers) existingUser.organizationUsers = [];
-        existingUser.organizationUsers.push(orgUser);
-        
-        if (existingUser.status === USER_STATUS.INVITED) {
-          existingUser.status = USER_STATUS.ACTIVE;
-          existingUser.invitationToken = null;
-          await this.userRepository.updateOne(existingUser.id, { 
-              status: USER_STATUS.ACTIVE, 
-              invitationToken: null 
-          }, manager);
+
+        // DO NOT create org user if already invited
+        let orgUser = organizationUsers.find(
+          ou => ou.organizationId === targetOrg.id
+        );
+
+        // only create if truly not present
+        if (!orgUser) {
+          orgUser = await this.addUserToTheWorkspace(existingUser, targetOrg, manager);
+        }
+
+        // activate if invited
+        if (orgUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(orgUser, manager);
         }
 
         return await this.sessionUtilService.generateLoginResultPayload(
