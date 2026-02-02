@@ -348,6 +348,7 @@
                     "widgets/form/schema"
                   ]
                 },
+                "widgets/horizontal-progress-bar",
                 "widgets/html",
                 "widgets/icon",
                 "widgets/iframe",
