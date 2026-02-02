@@ -85,7 +85,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 
     After selecting `Create new container`, configure the container to run PostgREST using the appropriate image and environment variables.
 
-    Use the official PostgREST image:`postgrest/postgrest:12.2.0`
+    Use the official PostgREST image:`postgrest/postgrest:v12.2.0`
     <img className="screenshot-full img-full" src="/img/setup/azure-container/step10b.png" alt="Deploying ToolJet on Azure container apps" />
 
     Under `Environment variables` section ensure the following variables are set within the PostgREST container:
