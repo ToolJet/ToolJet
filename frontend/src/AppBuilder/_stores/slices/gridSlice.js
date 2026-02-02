@@ -487,11 +487,6 @@ export const createGridSlice = (set, get) => ({
       !isGroupDragging
     ) {
       clearSelectedComponents();
-      if (isRightSidebarOpen) {
-        activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-          ? setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES)
-          : setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-      }
     }
   },
 });
