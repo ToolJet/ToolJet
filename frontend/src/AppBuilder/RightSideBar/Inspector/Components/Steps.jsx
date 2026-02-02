@@ -154,7 +154,10 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOverlay = (item, index) => {
     return (
-      <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
+      <Popover
+        className={`${darkMode && 'dark-theme theme-dark'} inspector-steps-options-popover`}
+        style={{ minWidth: '248px' }}
+      >
         <Popover.Body>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="font-weight-500 mb-1 font-size-12">

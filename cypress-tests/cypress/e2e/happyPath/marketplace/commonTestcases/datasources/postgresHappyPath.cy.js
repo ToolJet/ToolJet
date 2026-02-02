@@ -1,4 +1,5 @@
 import { fake } from "Fixtures/fake";
+import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
 import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { postgresUIConfig, postgresFormConfig } from "Constants/constants/marketplace/datasources/postgres";
@@ -39,8 +40,8 @@ describe("PostgreSQL", () => {
             ]
         );
         cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(`[data-cy="${postgresqlDataSourceName}-button"]`);
-        cy.get(`[data-cy="${postgresqlDataSourceName}-button"]`).click();
+        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
+        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
         verifyConnectionFormUI(postgresUIConfig.defaultFields);
     });
 
@@ -64,8 +65,8 @@ describe("PostgreSQL", () => {
             ]
         );
         cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(`[data-cy="${postgresqlDataSourceName}-button"]`);
-        cy.get(`[data-cy="${postgresqlDataSourceName}-button"]`).click();
+        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
+        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
 
         fillDSConnectionForm(postgresFormConfig, []);
 
@@ -92,8 +93,8 @@ describe("PostgreSQL", () => {
             ]
         );
         cy.visit('/my-workspace/data-sources');
-        cy.waitForElement(`[data-cy="${postgresqlDataSourceName}-button"]`);
-        cy.get(`[data-cy="${postgresqlDataSourceName}-button"]`).click();
+        cy.waitForElement(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName));
+        cy.get(dsCommonSelector.dataSourceNameButton(postgresqlDataSourceName)).click();
 
         verifyConnectionFormUI(postgresUIConfig.defaultFields);
 

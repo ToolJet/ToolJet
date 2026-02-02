@@ -160,6 +160,33 @@ export default class MongodbService implements QueryService {
     };
   }
 
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    const { db, close } = await this.getConnection(sourceOptions);
+
+    try {
+      const collections = await db.listCollections().toArray();
+
+      const result = collections.map((col) => ({
+        collection_name: col.name,
+        type: col.type || 'collection',
+      }));
+
+      return {
+        status: 'ok',
+        data: result,
+      };
+    } catch (error) {
+      const errorMessage = error.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch collections', errorMessage, {});
+    } finally {
+      await close();
+    }
+  }
+
   parseEJSON(maybeEJSON?: string): any {
     if (!maybeEJSON) return {};
 

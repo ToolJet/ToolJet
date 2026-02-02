@@ -23,6 +23,11 @@ function AddEditResourcePermissionsModal({
   addableApps,
   darkMode,
   groupName,
+  isBuilderLevel,
+  hasEndUsers,
+  selectedEnvironments,
+  setSelectedEnvironments,
+  isBasicPlan,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
@@ -95,6 +100,12 @@ function AddEditResourcePermissionsModal({
             }}
             disableBuilderLevelUpdate={disableBuilderLevelUpdate}
             initialPermissionState={initialPermissionState}
+            selectedEnvironments={selectedEnvironments}
+            setSelectedEnvironments={setSelectedEnvironments}
+            groupName={groupName}
+            isBuilderLevel={isBuilderLevel}
+            hasEndUsers={hasEndUsers}
+            isBasicPlan={isBasicPlan}
           />
         );
 

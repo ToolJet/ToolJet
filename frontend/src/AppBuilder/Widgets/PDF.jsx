@@ -12,8 +12,8 @@ const PasswordResponses = {
 // Using new URL keeps this portable across bundlers (Webpack 5, Vite, etc.)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
-export const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
-  const { visibility, boxShadow } = styles;
+const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
+  const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(null);
@@ -184,7 +184,15 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
 
   return (
     <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
-      <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
+      <div
+        className="d-flex position-relative h-100 flex-column"
+        style={{
+          margin: '0 auto',
+          overflow: 'hidden',
+          borderRadius: `${borderRadius}px`,
+          border: `1px solid ${borderColor}`,
+        }}
+      >
         <div
           className="scrollable h-100 col position-relative"
           id="pdf-wrapper"
@@ -195,9 +203,8 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
-            className={`d-flex ${
-              pageControls ? 'justify-content-between' : 'justify-content-end'
-            } py-3 px-3 align-items-baseline border-top border-light`}
+            className={`d-flex ${pageControls ? 'justify-content-between' : 'justify-content-end'
+              } py-3 px-3 align-items-baseline border-top border-light`}
             style={{ backgroundColor: 'var(--cc-surface1-surface)', color: 'var(--cc-primary-text)' }}
           >
             {pageControls && (
@@ -250,3 +257,5 @@ export const PDF = React.memo(({ styles, properties, width, height, componentNam
     </div>
   );
 });
+
+export default PDF;

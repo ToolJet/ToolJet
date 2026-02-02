@@ -1,6 +1,15 @@
-import { QueryError, QueryResult, QueryService, User, App, initializeOAuth } from '@tooljet-marketplace/common';
+import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  User,
+  App,
+  initializeOAuth,
+  OAuthUnauthorizedClientError,
+} from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 import jsforce from 'jsforce';
+import { getCurrentToken } from '@tooljet-marketplace/common';
 
 export default class Salesforce implements QueryService {
   async run(
@@ -19,7 +28,7 @@ export default class Salesforce implements QueryService {
       const authValidationResult = initializeOAuth(sourceOptions, context, this.authUrl.bind(this));
 
       if (authValidationResult.status === 'needs_oauth') return authValidationResult as any;
-
+      // Based on multui-user auth - token will be fetched.
       const conn = await this.getConnectionWithValidatedAuth(sourceOptions, queryOptions, context);
       result = await this.executeOperation(conn, queryOptions);
     } else {
@@ -78,6 +87,22 @@ export default class Salesforce implements QueryService {
         }
       }
     } catch (error) {
+      // Check for 401 status code in various locations where jsforce might set it
+      const statusCode = error?.response?.statusCode || error?.statusCode || error?.response?.status;
+
+      // Check for refresh token errors (jsforce specific)
+      const isRefreshTokenError =
+        error?.message?.includes('No refresh token found') ||
+        error?.message?.includes('refresh token') ||
+        error?.errorCode === 'INVALID_SESSION_ID';
+
+      // Check for session/authentication errors
+      const isAuthError = statusCode === 401 || error?.name === 'INVALID_SESSION_ID' || isRefreshTokenError;
+
+      if (isAuthError) {
+        throw new OAuthUnauthorizedClientError('Unauthorized - Session expired or invalid', error.message, {});
+      }
+
       throw new QueryError('Query could not be completed', error.message, {});
     }
     return result;
@@ -163,8 +188,10 @@ export default class Salesforce implements QueryService {
       redirectUri: redirect_uri,
     });
     let authorizationUrl = oauth2.getAuthorizationUrl({
-      scope: source_options.scopes,
+      // Update the scopes as per your requirement.
+      scope: `${source_options.scopes.value} refresh_token offline_access`,
     });
+
     // Note: Prompt for login each time, even if it's not multi-user auth ( Skip Salesforce session for Oauth flow )
     // if (source_options.multiple_auth_enabled) {
     authorizationUrl += '&prompt=login';
@@ -248,5 +275,58 @@ export default class Salesforce implements QueryService {
     const redirect_uri = `${fullUrl}oauth2/authorize`;
 
     return { client_id, client_secret, redirect_uri };
+  }
+
+  async refreshToken(sourceOptions, dataSourceId, userId, isAppPublic): Promise<any> {
+    let refreshToken: string;
+    // If multi user authentication is enabled, we would need specific users refresh token.
+    if (sourceOptions?.multiple_auth_enabled) {
+      const currentToken = getCurrentToken(
+        sourceOptions['multiple_auth_enabled'],
+        sourceOptions['tokenData'],
+        userId,
+        isAppPublic
+      );
+
+      if (!currentToken?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = currentToken['refresh_token'];
+    } else {
+      if (!sourceOptions?.refresh_token) {
+        throw new QueryError('Refresh token not found', 'Refresh token is required to refresh access token', {});
+      }
+      refreshToken = sourceOptions['refresh_token'];
+    }
+
+    const accessTokenDetails = {};
+    // Refresh logic
+    const { client_id, client_secret, redirect_uri } = this.getOAuthCredentials(sourceOptions);
+    if (!client_id || !client_secret || !redirect_uri) {
+      throw new Error('OAuth2 client credentials are missing from accessDetailsFrom in salesforce');
+    }
+
+    const oauth2 = new jsforce.OAuth2({
+      clientId: client_id,
+      clientSecret: client_secret,
+      redirectUri: redirect_uri,
+    });
+
+    let tokenResponse = {};
+    try {
+      tokenResponse = await oauth2.refreshToken(refreshToken);
+    } catch (error) {
+      if (error.message.includes('invalid_grant') || error.message.includes('token validity expired')) {
+        // Refresh token is invalid - need to re-authenticate
+        throw new Error('Refresh token expired. User needs to re-authorize.');
+      }
+      throw new QueryError('Authorization Error', error.message, {});
+    }
+
+    if (tokenResponse['access_token']) accessTokenDetails['access_token'] = tokenResponse['access_token'];
+    if (tokenResponse['refresh_token']) accessTokenDetails['refresh_token'] = tokenResponse['refresh_token'];
+    if (tokenResponse['instance_url']) accessTokenDetails['instance_url'] = tokenResponse['instance_url'];
+
+    return accessTokenDetails;
   }
 }

@@ -43,7 +43,7 @@ describe("Verify OIDC user onboarding", () => {
         data.workspaceName = `${sanitize(fake.companyName)}-openid`;
         cy.apiLogin();
         cy.apiUpdateSSOConfig(config);
-        cy.intercept("GET", "api/library_apps").as("apps");
+        cy.intercept("GET", "/api/library_apps").as("apps");
         cleanAllUsers();
 
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceName).then(

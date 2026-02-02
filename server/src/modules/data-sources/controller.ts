@@ -176,7 +176,8 @@ export class DataSourcesController implements IDataSourcesController {
       dataSource,
       invokeDto.method,
       user,
-      invokeDto.environmentId
+      invokeDto.environmentId,
+      invokeDto.args
     );
 
     return result;

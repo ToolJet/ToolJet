@@ -36,6 +36,8 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/c
 import { User } from '@entities/user.entity';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RequestContext } from '@modules/request-context/service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -46,8 +48,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     protected readonly rolesRepository: RolesRepository,
     protected readonly userRepository: UserRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService,
-    protected readonly licenseUserService: LicenseUserService
-  ) { }
+    protected readonly licenseUserService: LicenseUserService,
+    protected readonly licenseTermsService: LicenseTermsService
+  ) {}
 
   validateCreateGroupOperation(createGroupPermissionDto: CreateDefaultGroupObject) {
     if (HUMANIZED_USER_LIST.includes(createGroupPermissionDto.name)) {
@@ -98,8 +101,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     organizationId: string,
     manager?: EntityManager
   ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
-    const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
-    const noLicenseFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
+    // Check if plan is restricted (basic/starter have read-only permissions)
+    const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
+    const restrictedPlanFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
 
@@ -107,7 +111,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         {
           id,
           organizationId,
-          ...(!isLicenseValid ? noLicenseFilter : {}),
+          ...(isRestrictedPlan ? restrictedPlanFilter : {}),
         },
         manager
       );
@@ -116,7 +120,8 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
       }
 
-      if (!isLicenseValid) {
+      // For restricted plans (basic/starter), override with hardcoded permissions
+      if (isRestrictedPlan) {
         if (group.name !== USER_ROLE.END_USER) {
           for (const key in group) {
             if (typeof group[key] === 'boolean') {
@@ -153,6 +158,13 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
     const defaultGroups: GroupPermissions[] = [];
+
+    // Check if multi-environment feature is available
+    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
       for (const defaultGroup of Object.keys(USER_ROLE)) {
@@ -173,6 +185,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         for (const resource of Object.keys(groupGranularPermissions)) {
           if (getTooljetEdition() === TOOLJET_EDITIONS.CE && resource == ResourceType.WORKFLOWS) continue;
           const createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
+
+          // End users only have access to released apps by default
+          // For basic/starter plans: keep default (released only) from DEFAULT_RESOURCE_PERMISSIONS
 
           const dtoObject = {
             name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
@@ -237,8 +252,16 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       const endUserRoleUsers = endUsers?.length
         ? endUsers
         : await this.rolesRepository.getRoleUsersList(USER_ROLE.END_USER, organizationId, userIds, manager);
-      if (isBuilderLevel && endUserRoleUsers.length) {
-        // Group is builder level and end users are to be added
+
+      // Check for builder-level environment permissions
+      const hasBuilderEnvironments = await this.roleUtilService.checkIfBuilderLevelEnvironmentPermissions(
+        groupId,
+        organizationId,
+        manager
+      );
+
+      if ((isBuilderLevel || hasBuilderEnvironments) && endUserRoleUsers.length) {
+        // Group has builder-level permissions or environment access and end users are to be added
         if (!allowRoleChange) {
           // Role change not allowed - Throw error
           throw new ConflictException({
@@ -447,7 +470,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async getGroupWithName(name: string, organizationId: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      console.log(name, 'siu');
       const group = await this.groupPermissionsRepository.getGroup(
         {
           name,
@@ -506,8 +528,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
           .where('group_id = :groupId', { groupId })
           .andWhere('user_id IN (:...userIds)', { userIds })
           .execute();
-        console.log(groupId);
-        console.log(userIds, ' sus');
       } else {
         // 🧹 Delete all users from the group
         await groupUsersRepo

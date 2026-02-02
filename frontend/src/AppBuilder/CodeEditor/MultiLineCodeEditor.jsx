@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap } from '@codemirror/view';
+import { keymap, tooltips } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -62,14 +62,14 @@ const MultiLineCodeEditor = (props) => {
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const getServerSideGlobalResolveSuggestions = useStore(
-      (state) => state.getServerSideGlobalResolveSuggestions,
-      shallow
+    (state) => state.getServerSideGlobalResolveSuggestions,
+    shallow
   );
 
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
-      () => isInsideParent(wrapperRef?.current, 'query-manager'),
-      [wrapperRef.current]
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef.current]
   );
 
   const context = useContext(CodeHinterContext);
@@ -93,22 +93,22 @@ const MultiLineCodeEditor = (props) => {
   // Intersection observer to detect when current line goes out of view
   useEffect(() => {
     const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.intersectionRatio < 1) {
-            setShowSuggestions(false);
-            isObserverTriggeredRef.current = true;
-            // Close autocomplete dropdown by dispatching a selection change
-            if (editorView) {
-              editorView.dispatch({
-                selection: editorView.state.selection,
-              });
-            }
-          } else {
-            setShowSuggestions(true);
-            isObserverTriggeredRef.current = false;
+      ([entry]) => {
+        if (entry.intersectionRatio < 1) {
+          setShowSuggestions(false);
+          isObserverTriggeredRef.current = true;
+          // Close autocomplete dropdown by dispatching a selection change
+          if (editorView) {
+            editorView.dispatch({
+              selection: editorView.state.selection,
+            });
           }
-        },
-        { root: null, threshold: [1] }
+        } else {
+          setShowSuggestions(true);
+          isObserverTriggeredRef.current = false;
+        }
+      },
+      { root: null, threshold: [1] }
     );
 
     currentLineObserverRef.current = observer;
@@ -153,7 +153,7 @@ const MultiLineCodeEditor = (props) => {
 
   function autoCompleteExtensionConfig(context) {
     const hasWorkflowSuggestions =
-        workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
+      workflowSuggestions?.appHints?.length > 0 || workflowSuggestions?.jsHints?.length > 0;
     const hints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
@@ -201,8 +201,8 @@ const MultiLineCodeEditor = (props) => {
 
   const initialValueWithReplacedIds = useMemo(() => {
     if (
-        typeof initialValue === 'string' &&
-        (initialValue?.includes('components') || initialValue?.includes('queries'))
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
     ) {
       return replaceIdsWithName(initialValue);
     }
@@ -230,122 +230,125 @@ const MultiLineCodeEditor = (props) => {
   };
 
   return (
-      <div
-          className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
-          style={{ width: '100%' }}
-          ref={wrapperRef}
-      >
-        <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-          <CodeHinterBtns
-              view={editorView}
-              isPanelOpen={isSearchPanelOpen}
-              renderCopilot={() =>
-                  renderCopilot?.({
-                    darkMode,
-                    language: lang,
-                    editorRef,
-                    onAiSuggestionAccept,
-                  })
-              }
-          />
+    <div
+      className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+      style={{ width: '100%' }}
+      ref={wrapperRef}
+    >
+      <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
+        <CodeHinterBtns
+          view={editorView}
+          isPanelOpen={isSearchPanelOpen}
+          renderCopilot={() =>
+            renderCopilot?.({
+              darkMode,
+              language: lang,
+              editorRef,
+              onAiSuggestionAccept,
+            })
+          }
+        />
 
-          <CodeHinter.PopupIcon
-              callback={handleTogglePopupExapand}
-              icon="portal-open"
-              tip="Pop out code editor into a new window"
-              isMultiEditor={true}
-              isQueryManager={isInsideQueryPane}
-              position={{height: height}}
-          />
+        <CodeHinter.PopupIcon
+          callback={handleTogglePopupExapand}
+          icon="portal-open"
+          tip="Pop out code editor into a new window"
+          isMultiEditor={true}
+          isQueryManager={isInsideQueryPane}
+          position={{ height: height }}
+        />
 
-          <CodeHinter.Portal
-              isCopilotEnabled={false}
-              isOpen={isOpen}
-              callback={setIsOpen}
-              componentName={componentName}
-              key={componentName}
-              forceUpdate={forceUpdate}
-              optionalProps={{ styles: { height: 300 }, cls: '' }}
-              darkMode={darkMode}
-              selectors={{ className: 'preview-block-portal' }}
-              dragResizePortal={true}
-              callgpt={null}
-          >
-            <ErrorBoundary>
-              <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
-                <CodeMirror
-                    ref={editorRef}
-                    value={initialValueWithReplacedIds}
-                    placeholder={placeholder}
-                    height={heightInPx}
-                    minHeight={heightInPx}
-                    {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
-                    width="100%"
-                    theme={theme}
-                    extensions={[
-                      langExtention,
-                      search({
-                        createPanel: handleSearchPanel,
-                      }),
-                      javascriptLanguage.data.of({
-                        autocomplete: overRideFunction,
-                      }),
-                      python().language.data.of({
-                        autocomplete: overRideFunction,
-                      }),
-                      sql().language.data.of({
-                        autocomplete: overRideFunction,
-                      }),
-                      sass().language.data.of({
-                        autocomplete: sassCompletionSource,
-                      }),
-                      autocompletion({
-                        override: [overRideFunction],
-                        activateOnTyping: true,
-                        compareCompletions: (a, b) => {
-                          return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
-                        },
-                      }),
-                      customTabKeymap,
-                      keymap.of([...customKeyMaps]),
-                    ]}
-                    onChange={handleChange}
-                    onBlur={handleOnBlur}
-                    basicSetup={setupConfig}
-                    style={{
-                      overflowY: 'auto',
-                    }}
-                    className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
-                    indentWithTab={false}
-                    readOnly={readOnly}
-                    editable={editable} //for transformations in query manager
-                    onCreateEditor={(view) => {
-                      setEditorView(view);
-                      if (setCodeEditorView) {
-                        setCodeEditorView(view);
-                      }
-                    }}
-                    onUpdate={(view) => {
-                      setIsSearchPanelOpen(searchPanelOpen(view.state));
-                      updateCurrentLineObserver(view);
-                    }}
+        <CodeHinter.Portal
+          isCopilotEnabled={false}
+          isOpen={isOpen}
+          callback={setIsOpen}
+          componentName={componentName}
+          key={componentName}
+          forceUpdate={forceUpdate}
+          optionalProps={{ styles: { height: 300 }, cls: '' }}
+          darkMode={darkMode}
+          selectors={{ className: 'preview-block-portal' }}
+          dragResizePortal={true}
+          callgpt={null}
+        >
+          <ErrorBoundary>
+            <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
+              <CodeMirror
+                ref={editorRef}
+                value={initialValueWithReplacedIds}
+                placeholder={placeholder}
+                height={heightInPx}
+                minHeight={heightInPx}
+                {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
+                width="100%"
+                theme={theme}
+                extensions={[
+                  langExtention,
+                  search({
+                    createPanel: handleSearchPanel,
+                  }),
+                  tooltips({
+                    parent: document.body,
+                  }),
+                  javascriptLanguage.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  python().language.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  sql().language.data.of({
+                    autocomplete: overRideFunction,
+                  }),
+                  sass().language.data.of({
+                    autocomplete: sassCompletionSource,
+                  }),
+                  autocompletion({
+                    override: [overRideFunction],
+                    activateOnTyping: true,
+                    compareCompletions: (a, b) => {
+                      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+                    },
+                  }),
+                  customTabKeymap,
+                  keymap.of([...customKeyMaps]),
+                ]}
+                onChange={handleChange}
+                onBlur={handleOnBlur}
+                basicSetup={setupConfig}
+                style={{
+                  overflowY: 'auto',
+                }}
+                className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+                indentWithTab={false}
+                readOnly={readOnly}
+                editable={editable} //for transformations in query manager
+                onCreateEditor={(view) => {
+                  setEditorView(view);
+                  if (setCodeEditorView) {
+                    setCodeEditorView(view);
+                  }
+                }}
+                onUpdate={(view) => {
+                  setIsSearchPanelOpen(searchPanelOpen(view.state));
+                  updateCurrentLineObserver(view);
+                }}
+              />
+            </div>
+            {showPreview && (
+              <div className="multiline-previewbox-wrapper">
+                <PreviewBox
+                  currentValue={currentValueRef.current}
+                  validationSchema={null}
+                  setErrorStateActive={() => null}
+                  componentId={null}
+                  setErrorMessage={() => null}
                 />
               </div>
-              {showPreview && (
-                  <div className="multiline-previewbox-wrapper">
-                    <PreviewBox
-                        currentValue={currentValueRef.current}
-                        validationSchema={null}
-                        setErrorStateActive={() => null}
-                        componentId={null}
-                        setErrorMessage={() => null}
-                    />
-                  </div>
-              )}
-            </ErrorBoundary>
-          </CodeHinter.Portal>
-        </div>
+            )}
+          </ErrorBoundary>
+        </CodeHinter.Portal>
       </div>
+    </div>
   );
 };
 

@@ -52,7 +52,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
 
     promoteAppVersionAction(
       versionIdToPromote,
-      async (_response) => {
+      async (response) => {
         toast.success(`${versionToPromote.name} has been promoted to ${data.target.name}!`);
         if (
           data?.current?.name == 'development' &&

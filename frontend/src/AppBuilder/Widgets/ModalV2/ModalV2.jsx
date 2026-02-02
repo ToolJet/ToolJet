@@ -16,7 +16,7 @@ import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFa
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 export const ModalV2 = function Modal({
   id,
@@ -61,6 +61,8 @@ export const ModalV2 = function Modal({
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
   } = styles;
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
@@ -70,8 +72,6 @@ export const ModalV2 = function Modal({
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
 
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
@@ -187,6 +187,8 @@ export const ModalV2 = function Modal({
     triggerButtonTextColor,
     isVisible,
     boxShadow,
+    headerDividerColor,
+    footerDividerColor,
     direction,
   });
 
@@ -204,7 +206,9 @@ export const ModalV2 = function Modal({
       className="d-flex align-items-center"
       data-disabled={isDisabledTrigger}
       data-cy={dataCy}
-      style={{ height: '100%' }}
+      style={{
+        height: '100%',
+      }}
     >
       {useDefaultButton && isVisible && (
         <button
@@ -229,7 +233,9 @@ export const ModalV2 = function Modal({
             {triggerButtonLabel ?? 'Show Modal'}
           </span>
           {iconVisibility && (
-            <IconElement
+            <TablerIcon
+              iconName={iconName}
+              fallbackIcon="IconHome2"
               style={{
                 width: '16px',
                 height: '16px',

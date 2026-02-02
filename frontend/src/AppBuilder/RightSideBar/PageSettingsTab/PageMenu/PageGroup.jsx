@@ -1,7 +1,8 @@
 /* eslint-disable import/namespace */
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -28,23 +29,21 @@ const RenderPage = ({
 }) => {
   const isPageHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id)); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
   const isHomePage = page.id === homePageId;
-  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+  const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon ?? 'IconFile';
   const isActive = page?.id === currentPageId;
 
   if (isPageHidden || page.disabled || (page?.restricted && currentMode !== 'edit')) return null;
 
   const IconElement = (props) => {
-    const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
-
     if (!isSidebarPinned || labelStyle?.label?.hidden) {
       return (
         <ToolTip message={page?.name} placement={'right'}>
-          <Icon {...props} />
+          <TablerIcon iconName={iconName} {...props} />
         </ToolTip>
       );
     }
 
-    return <Icon {...props} />;
+    return <TablerIcon iconName={iconName} {...props} />;
   };
 
   const iconColor = isActive ? 'var(--selected-nav-item-icon-color)' : 'var(--nav-item-icon-color)';
@@ -56,7 +55,7 @@ const RenderPage = ({
         data-id={page.id}
         className={`tj-list-item ${isActive && 'tj-list-item-selected'}`}
         onClick={() => {
-          switchPageWrapper(page);
+          switchPageWrapper(page, currentPageId);
         }}
         aria-label={page.name}
       >
@@ -111,18 +110,17 @@ const RenderPageGroup = ({
   const groupItemRootRef = useRef(null);
   const isPageGroupHidden = useStore((state) => state.getPagesVisibility('canvas', pageGroup?.id));
 
+  const pageGroupIconName = pageGroup.icon || 'IconHome2';
   const IconElement = (props) => {
-    const Icon = Icons?.[pageGroup.icon] ?? Icons?.['IconHome2'];
-
     if ((!isSidebarPinned && currentMode === 'view') || labelStyle?.label?.hidden) {
       return (
         <ToolTip message={pageGroup?.name} placement={'right'}>
-          <Icon {...props} />
+          <TablerIcon iconName={pageGroupIconName} {...props} />
         </ToolTip>
       );
     }
 
-    return <Icon {...props} />;
+    return <TablerIcon iconName={pageGroupIconName} {...props} />;
   };
 
   if (isPageGroupHidden) {
@@ -188,7 +186,8 @@ const RenderPageGroup = ({
         aria-label={pageGroup.name}
       >
         <TriggerBody />
-        <Icons.IconChevronUp
+        <TablerIcon
+          iconName="IconChevronUp"
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
@@ -230,7 +229,7 @@ const RenderPageGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <Icons.IconChevronUp
+        <TablerIcon iconName='IconChevronUp'
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
@@ -288,9 +287,7 @@ export const RenderPageAndPageGroup = ({
       // check if the page group has at least one visible child
       page.children.some((child) => {
         const isPageHidden = getIsPageHidden('canvas', child?.id);
-        return (
-          isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true)
-        );
+        return isPageHidden === false && !child?.disabled && (currentMode === 'view' ? !child?.restricted : true);
       })
     );
   };
@@ -344,7 +341,7 @@ export const RenderPageAndPageGroup = ({
         {overflowLinks.length > 0 && position === 'top' && (
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
-              <Icons.IconDotsVertical size={16} color="var(--nav-item-icon-color)" />
+              <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
               More
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>

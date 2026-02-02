@@ -9,13 +9,13 @@ import { CurrencyMap } from './constants';
 export const CustomValueContainer = ({ getValue, ...props }) => {
   const selectedValue = getValue()[0];
   const country = selectedValue?.value;
-  const { isCurrencyInput, isCountryChangeEnabled } = props?.selectProps || {};
+  const { isCurrencyInput, isCountryChangeEnabled, showFlag = true } = props?.selectProps || {};
   const FlagIcon = selectedValue ? flags[selectedValue.value] : null;
   const countryCode = getCountryCallingCodeSafe(selectedValue.value);
 
   return (
     <components.ValueContainer {...props}>
-      {FlagIcon ? (
+      {FlagIcon && showFlag ? (
         <div
           style={{
             display: 'flex',
@@ -37,11 +37,18 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
           style={{
             display: 'flex',
             marginLeft: isCurrencyInput ? '6px' : '17px',
-            marginTop: '4px',
             justifyContent: 'center',
           }}
         >
-          <Planet width={24} height={24} />
+          {showFlag ? (
+            <span style={{ marginTop: '4px' }}>
+              <Planet width={24} height={24} />
+            </span>
+          ) : (
+            <span style={{ color: 'var(--cc-primary-text)' }}>
+              {isCurrencyInput && ` ${CurrencyMap?.[country]?.prefix}`}
+            </span>
+          )}
         </div>
       )}
     </components.ValueContainer>
