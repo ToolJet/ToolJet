@@ -19,6 +19,7 @@ A finance team needs to build an expense reimbursement form where employees subm
 | Placeholder | A hint displayed to guide the user on what to enter. | String (e.g. `Enter the amount in USD`). |
 | Default value | The default value that the component will hold when the app is loaded. | Number (e.g. `83.67`). |
 | Decimal places | Number of decimal places to show after the decimal point. | Integer (e.g. `2`). |
+| Number format | Sets the number formatting style for the currency value. | Select `US / UK (eg. 1,234.56)` for comma as thousand separator and dot as decimal, or `European (eg. 1.234,56)` for dot as thousand separator and comma as decimal. Use **fx** to set dynamically (`us` or `eu`). |
 | Default Currency | Sets the currency format to use by default. | Select the default currency from the dropdown or update it dynamically using **fx**. |
 | Enable currency change | Allows the user to select a different currency from a dropdown. If disabled, the user can enter only the default currency. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
 | Show currency flag | Decide whether the currency flag should be visible along with the currency symbol. | Enable or disable it using the toggle button or use **fx** to update it dynamically. |
