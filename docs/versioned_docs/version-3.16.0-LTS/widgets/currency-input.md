@@ -3,9 +3,13 @@ id: currency-input
 title: Currency Input
 ---
 
-The **Currency Input** component allows users to enter currency-formatted values. It’s especially useful for forms and financial applications where numerical values need to be formatted with currency symbols, decimal places, and thousand separators.
+The **Currency Input** component allows users to enter currency-formatted values. It's especially useful for forms and financial applications where numerical values need to be formatted with currency symbols, decimal places, and thousand separators.
 
 This component ensures consistent formatting of monetary values, prevents invalid input, and supports a range of customization options, such as currency type and precision.
+
+## Example Usage
+
+A finance team needs to build an expense reimbursement form where employees submit claims in different currencies. Using the Currency Input component, employees can select their expense currency (USD, EUR, GBP, etc.) from the dropdown, enter the amount with automatic formatting, and the form captures both the raw value and formatted value with the currency symbol for processing.
 
 ## Properties
 
@@ -34,19 +38,18 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 ## Component Specific Actions (CSA)
 
-The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
+The following actions of the component can be controlled using the component-specific actions (CSA). You can trigger these using an event or through a RunJS query.
 
-| <div style={{ width:"150px"}}> Action </div> | <div style={{ width:"170px"}}> Description </div> | <div style={{width: "200px"}}> RunJS Query </div>    |
-| :------------------------------------------- | :------------------------------------------------ | :--------------------------------------------------- |
-| setValue( )                                  | Sets the value of the **Currency Input** field.   | `components.currencyinput1.setValue(value)`          |
-| setText( )                                   | Sets the value of the **Currency Input** field.   | `components.currencyinput1.setText(value)`           |
-| clear( )                                     | Clears the input field.                           | `components.currencyinput1.clear()`                  |
-| setFocus( )                                  | Sets the focus of the cursor on the input field.  | `components.currencyinput1.setFocus()`               |
-| setBlur( )                                   | Removes focus from the input field. .             | `components.currencyinput1.setBlur()`                |
-| setVisibility( )                             | Sets the visibility of the component.             | `components.currencyinput1.setVisibility(false)`     |
-| setLoading( )                                | Sets the loading state of the component.          | `components.currencyinput1.setLoading(true)`         |
-| setDisable( )                                | Disables the component.                           | `components.currencyinput1.setDisable(true)`         |
-| setCountryCode ( )                           | Programmatically sets the country code.           | `{{components.currencyinput1.setCountryCode("US")}}` |
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setValue      | Sets the value and optionally the country of the Currency Input field. | `components.currencyinput1.setValue(value, country)` |
+| clear         | Clears the input field.                           | `components.currencyinput1.clear()`                  |
+| setFocus      | Sets the focus of the cursor on the input field.  | `components.currencyinput1.setFocus()`               |
+| setBlur       | Removes focus from the input field.               | `components.currencyinput1.setBlur()`                |
+| setVisibility | Sets the visibility of the component.             | `components.currencyinput1.setVisibility(false)`     |
+| setLoading    | Sets the loading state of the component.          | `components.currencyinput1.setLoading(true)`         |
+| setDisable    | Disables the component.                           | `components.currencyinput1.setDisable(true)`         |
+| setCountryCode | Programmatically sets the country code.          | `components.currencyinput1.setCountryCode('US')`     |
 
 ## Exposed Variables
 
@@ -110,13 +113,23 @@ To add regex inside `Custom Validation`, you can use the below format:
 | :--------------------------------------------------- | :--------------------------------------------------------------- | :------------------------------------------- |
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a hex color code. |
+| Accent | Sets the accent color of the component, used for focus state highlighting. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the text color of the validation message that is displayed. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Icon | Allows you to select an icon for the component. | Enable the icon visibility, and select the icon and icon color. Alternatively, set it programmatically using **fx**. |
 | Border radius | Modifies the border radius of the component. | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value. |
 | Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 ### Container
 
-**Padding** <br/>
-Allows you to maintain a standard padding by enabling the `Default` option.
+| <div style={{ width:"100px"}}> Container Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Padding | Adds padding between the component and its container boundary. | Select `Default` for standard padding or `None` to remove padding. |
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)
