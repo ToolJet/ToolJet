@@ -1,5 +1,36 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, MinLength, MaxLength, Matches, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, MinLength, MaxLength, ValidateIf, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { INSTANCE_SYSTEM_SETTINGS } from '../instance-settings/constants';
+import { validateDomainFormat } from '@ee/ssl-configuration/utils';
+
+/**
+ * Custom validator decorator that uses the validateDomainFormat utility
+ */
+function IsDomainFormat(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isDomainFormat',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (typeof value !== 'string') {
+            return false;
+          }
+          try {
+            validateDomainFormat(value);
+            return true;
+          } catch (error) {
+            return false;
+          }
+        },
+        defaultMessage(args: ValidationArguments) {
+          return 'Domain must be a valid subdomain (e.g., tooljet.company.com)';
+        },
+      },
+    });
+  };
+}
 
 export class ListSslConfigurationDto {
   enabled: boolean;
@@ -51,9 +82,7 @@ export class UpdateSslConfigurationDto {
   @IsString()
   @MinLength(3)
   @MaxLength(255)
-  @Matches(/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/, {
-    message: 'Domain must be a valid subdomain (e.g., tooljet.company.com)',
-  })
+  @IsDomainFormat()
   domain?: string;
 }
 
@@ -81,8 +110,6 @@ export class RequestDomainChangeDto {
   @IsString()
   @MinLength(3)
   @MaxLength(255)
-  @Matches(/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/, {
-    message: 'Domain must be a valid subdomain (e.g., tooljet.company.com)',
-  })
+  @IsDomainFormat()
   newDomain: string;
 }
