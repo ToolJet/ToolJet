@@ -96,6 +96,10 @@ export const handleError = (componentType, error, redirectPath, editPermission, 
           redirectToErrorPage(ERROR_TYPES.INVALID, {});
           return;
         }
+        case 406: {
+          redirectToErrorPage(ERROR_TYPES.INVALID, {});
+          return;
+        }
         case 422: {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN, {});
           return;
