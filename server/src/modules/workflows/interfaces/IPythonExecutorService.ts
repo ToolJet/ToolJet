@@ -12,10 +12,18 @@ export interface ExecutionResult {
 }
 
 export interface IPythonExecutorService {
+  /**
+   * Execute Python code with optional package bundle.
+   *
+   * @param code - Python code to execute
+   * @param state - Workflow state variables to inject
+   * @param bundleContent - Pre-fetched tar.gz bundle content (symmetrical with JS bundle handling)
+   * @param timeout - Execution timeout in milliseconds
+   */
   execute(
     code: string,
     state: Record<string, any>,
-    bundleId: string | null,
+    bundleContent: Buffer | null,
     timeout: number
   ): Promise<ExecutionResult>;
 }
