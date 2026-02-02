@@ -111,7 +111,7 @@ export async function generateImage(
     };
   }
 
-  // ✅ DALL·E → URL
+  //  DALL·E → URL
   return {
     status: 'success',
     message: 'Image generated successfully',
@@ -122,29 +122,31 @@ export async function generateImage(
 }
 
 export async function generateEmbedding(openai: OpenAI, options: QueryOptions) {
+  const rawOptions = options as any;
   const { model_embedding: model } = options;
   let input, encoding_format, dimensions;
   switch (model) {
     case 'text-embedding-3-small':
-      input = options.input_M1;
-      encoding_format = options.encoding_format_M1;
-      dimensions = options.dimensions_M1;
+      input = rawOptions.input__m1 || options.input_M1;
+      encoding_format = rawOptions.encoding_format__m1 || options.encoding_format_M1;
+      dimensions = rawOptions.dimensions__m1 || options.dimensions_M1;
       break;
     case 'text-embedding-3-large':
-      input = options.input_M2;
-      encoding_format = options.encoding_format_M2;
-      dimensions = options.dimensions_M2;
+      input = rawOptions.input__m2 || options.input_M2;
+      encoding_format = rawOptions.encoding_format__m2 || options.encoding_format_M2;
+      dimensions = rawOptions.dimensions__m2 || options.dimensions_M2;
       break;
     case 'text-embedding-ada-002':
-      input = options.input_M3;
-      encoding_format = options.encoding_format_M3;
+      input = rawOptions.input__m3 || options.input_M3;
+      encoding_format = rawOptions.encoding_format__m3 || options.encoding_format_M3;
       break;
   }
+
   const embedding = await openai.embeddings.create({
     model: model,
     input: input,
-    encoding_format: encoding_format,
-    ...(dimensions !== undefined && { dimensions: Number(dimensions) }),
+    encoding_format: encoding_format as any,
+    ...(dimensions && { dimensions: Number(dimensions) }),
   });
   return embedding.data[0].embedding;
 }
