@@ -108,17 +108,6 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
     }
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      logger.log('🔭 Applying OpenTelemetry middleware...');
-    }
-
-    // Import otelMiddleware from tracing.ts (use relative path for runtime compatibility)
-    const { otelMiddleware } = await import('../otel/tracing');
-
-    // Apply OTEL middleware to Express app
-    const expressApp = app.getHttpAdapter().getInstance();
-    expressApp.use(otelMiddleware);
-
-    if (process.env.OTEL_LOG_LEVEL === 'debug') {
       logger.log('✅ OpenTelemetry middleware applied successfully');
       logger.log('   - SDK: Already started at import time');
       logger.log('   - Tracing: Enabled');

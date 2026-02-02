@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
 class BaseSSOConfigurationList extends React.Component {
-  protectedSSO = ['openid', 'ldap', 'saml'];
+  protectedSSO = ['openid', 'ldap', 'saml', 'google', 'git'];
   constructor(props) {
     super(props);
     this.state = {
@@ -288,14 +288,14 @@ class BaseSSOConfigurationList extends React.Component {
         (obj) =>
           obj.sso !== 'form' &&
           obj.enabled &&
-          (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+          (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso === 'git' ? 'github' : obj.sso])
       ) ||
       (this.state.defaultSSO &&
         this.state.instanceSSO?.some(
           (obj) =>
             obj.sso !== 'form' &&
             obj.enabled &&
-            (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso])
+            (!this.protectedSSO.includes(obj.sso) || this.state.featureAccess?.[obj.sso === 'git' ? 'github' : obj.sso])
         ))
     );
   };
@@ -352,7 +352,7 @@ class BaseSSOConfigurationList extends React.Component {
   renderSSOOption = (key, name) => {
     const isEnabledKey = `${key}Enabled`;
     const isEnabled = this.state[isEnabledKey] || false;
-    const isFeatureAvailable = !this.protectedSSO.includes(key) || this.state.featureAccess?.[key];
+    const isFeatureAvailable = !this.protectedSSO.includes(key) || this.state.featureAccess?.[key === 'git' ? 'github' : key];
 
     // For OIDC, count the number of enabled configs
     const oidcCount =
