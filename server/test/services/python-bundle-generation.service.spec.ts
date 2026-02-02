@@ -504,4 +504,37 @@ describe('PythonBundleGenerationService', () => {
       expect(generateBundleSpy).toHaveBeenCalledWith(mockAppVersionId, mockDependencies);
     });
   });
+
+  describe('rebuildBundle', () => {
+    it('should rebuild existing bundle', async () => {
+      repository.findOne.mockResolvedValue({
+        id: 'test-id',
+        appVersionId: mockAppVersionId,
+        dependencies: mockDependencies,
+        language: 'python',
+        status: 'ready',
+      } as unknown as WorkflowBundle);
+
+      const generateBundleSpy = jest.spyOn(service, 'generateBundle').mockResolvedValue(undefined);
+
+      await service.rebuildBundle(mockAppVersionId);
+
+      expect(generateBundleSpy).toHaveBeenCalledWith(mockAppVersionId, mockDependencies);
+    });
+
+    it('should throw error for non-existent bundle', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      await expect(service.rebuildBundle(mockAppVersionId)).rejects.toThrow('No dependencies to rebuild');
+    });
+
+    it('should throw error for bundle with empty dependencies', async () => {
+      repository.findOne.mockResolvedValue({
+        dependencies: '',
+        language: 'python',
+      } as unknown as WorkflowBundle);
+
+      await expect(service.rebuildBundle(mockAppVersionId)).rejects.toThrow('No dependencies to rebuild');
+    });
+  });
 });

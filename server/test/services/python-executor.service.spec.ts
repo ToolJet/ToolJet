@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { PythonExecutorService } from '../../ee/workflows/services/python-executor.service';
 import { PythonExecutorService as BasePythonExecutorService } from '../../src/modules/workflows/services/python-executor.service';
 import { SecurityModeDetectorService } from '../../ee/workflows/services/security-mode-detector.service';
 import { SandboxMode } from '../../src/modules/workflows/interfaces/IPythonExecutorService';
-import { WorkflowBundle } from '../../src/entities/workflow_bundle.entity';
 import { Logger } from 'nestjs-pino';
 
 /**
@@ -41,10 +39,6 @@ describe('PythonExecutorService', () => {
         error: jest.fn(),
       };
 
-      const mockBundleRepository = {
-        findOne: jest.fn().mockResolvedValue(null),
-      };
-
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           PythonExecutorService,
@@ -52,10 +46,6 @@ describe('PythonExecutorService', () => {
           {
             provide: Logger,
             useValue: mockLogger,
-          },
-          {
-            provide: getRepositoryToken(WorkflowBundle),
-            useValue: mockBundleRepository,
           },
         ],
       }).compile();
@@ -189,6 +179,21 @@ describe('PythonExecutorService', () => {
         expect(result.status).toBe('ok');
         expect(result.data).toBe(11);
       }, 15000);
+
+      it('should handle empty code string', async () => {
+        const result = await service.execute('', {}, null, 10000);
+
+        // Empty code should either succeed with undefined result or error gracefully
+        expect(['ok', 'error']).toContain(result.status);
+        expect(result.executionTimeMs).toBeGreaterThanOrEqual(0);
+      }, 15000);
+
+      it('should handle code with only whitespace', async () => {
+        const result = await service.execute('   \n\t\n   ', {}, null, 10000);
+
+        expect(['ok', 'error']).toContain(result.status);
+        expect(result.executionTimeMs).toBeGreaterThanOrEqual(0);
+      }, 15000);
     });
 
     describe('error handling', () => {
@@ -222,6 +227,21 @@ describe('PythonExecutorService', () => {
         expect(result.status).toBe('error');
         expect(result.error).toContain('concatenate');
         expect(result.trace).toContain('TypeError');
+      }, 15000);
+
+      it('should handle execution timeout', async () => {
+        // Code that runs longer than the timeout (100ms)
+        const result = await service.execute(
+          'import time; time.sleep(5); result = "done"',
+          {},
+          null,
+          100 // Very short timeout
+        );
+
+        expect(result.status).toBe('error');
+        expect(result.error).toBeDefined();
+        // Timeout errors typically mention timeout or killed
+        expect(result.error.toLowerCase()).toMatch(/timeout|killed|timed out/);
       }, 15000);
     });
 

@@ -145,10 +145,10 @@ afterAll(async () => {
   if (app) await app.close();
 });
 
-describe('workflow executions controller', () => {
+describe('WorkflowExecutionsController (e2e)', () => {
 
   describe('POST /api/workflow_executions', () => {
-    describe('Basic workflow execution', () => {
+    describe('basic execution', () => {
       it('should execute a simple workflow with start trigger and response', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
@@ -222,7 +222,7 @@ describe('workflow executions controller', () => {
       });
     });
 
-    describe('Workflow with query nodes', () => {
+    describe('query node execution', () => {
       it('should execute workflow with RunJS query node', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
@@ -490,7 +490,7 @@ describe('workflow executions controller', () => {
       });
     });
 
-    describe('NPM package support', () => {
+    describe('JavaScript bundle execution', () => {
       it('should execute workflow with setup script using lodash', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
@@ -714,7 +714,7 @@ describe('workflow executions controller', () => {
             name: 'restapi1',
             options: {
               method: 'get',
-              url: 'https://reqres.in/api/users?page={{ _.toLower("2") }}',
+              url: 'https://jsonplaceholder.typicode.com/users?_limit={{ _.toLower("2") }}',
               headers: [
                 ['x-custom-header', '{{ _.startCase("hello world") }}'],
                 ['Accept', 'application/json']
@@ -750,7 +750,7 @@ describe('workflow executions controller', () => {
           .filter((req: any) => {
             try {
               const u = new URL(req.url);
-              return u.hostname === 'reqres.in' && u.pathname === '/api/users';
+              return u.hostname === 'jsonplaceholder.typicode.com' && u.pathname === '/users';
             } catch (_) {
               return false;
             }
@@ -821,7 +821,7 @@ describe('workflow executions controller', () => {
         const { url: observedUrl, headers: observedHeaders } = observedRequests[0];
 
         const parsedUrl = new URL(observedUrl);
-        expect(parsedUrl.searchParams.get('page')).toBe('2'); // {{ toLower("2") }} => 2
+        expect(parsedUrl.searchParams.get('_limit')).toBe('2'); // {{ toLower("2") }} => 2
 
         const headerVal = observedHeaders && (
           observedHeaders['x-custom-header'] ||
@@ -830,9 +830,276 @@ describe('workflow executions controller', () => {
         );
         expect(headerVal).toBe('Hello World'); // {{ startCase("hello world") }} => Hello World
       });
+
+      it('should execute workflow with setup script but NO NPM dependencies', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        // Setup script defines helper functions and config WITHOUT requiring any NPM packages
+        const setupScript = {
+          javascript: `
+          const myHelper = (x) => x * 2;
+          const myConfig = { multiplier: 10, enabled: true };
+        `};
+
+        // NO dependencies - this is the key difference from the other test
+        const dependencies = {};
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runjs-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runjs-no-deps',
+              kind: 'runjs',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runjs1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          {
+            id: 'edge-1',
+            source: 'start-1',
+            target: 'runjs-1',
+            type: 'workflow'
+          },
+          {
+            id: 'edge-2',
+            source: 'runjs-1',
+            target: 'response-1',
+            type: 'workflow'
+          }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runjs-no-deps',
+            dataSourceKind: 'runjs',
+            name: 'runjs1',
+            options: {
+              code: `
+              // Use the helper function and config from setup script
+              const doubled = myHelper(5);
+              const result = doubled * myConfig.multiplier;
+              return { doubled, result, configEnabled: myConfig.enabled };
+            `,
+              parameters: []
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'Setup Script No Deps Workflow',
+          setupScript,
+          dependencies,
+          nodes,
+          edges,
+          queries
+        });
+
+        // Note: NOT calling createWorkflowBundle since there are no dependencies
+        // This is the scenario that was previously broken
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        // Get workflow execution details
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        // Verify execution status
+        expect(workflowExecution.executed).toBe(true);
+
+        // Verify nodes executed
+        const executedNodes = executionNodes.filter((n: any) => n.executed);
+        const executedNodeIds = executedNodes.map((n: any) => n.idOnWorkflowDefinition);
+        expect(executedNodeIds).toContain('start-1');
+        expect(executedNodeIds).toContain('runjs-1');
+
+        // Verify RunJS node executed and has result - setup script variables should be accessible
+        const runjsNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runjs-1');
+        expect(runjsNode).toBeDefined();
+        expect(runjsNode.executed).toBe(true);
+
+        // Parse the flatted-encoded result and verify the setup script variables were accessible
+        const parsedResult = parse(runjsNode.result);
+        expect(parsedResult).toMatchObject({
+          data: {
+            doubled: 10,      // myHelper(5) => 5 * 2 = 10
+            result: 100,      // 10 * myConfig.multiplier (10) = 100
+            configEnabled: true
+          },
+          status: "ok"
+        });
+
+        // Verify response node contains the results
+        const responseNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'response-1');
+        expect(responseNode).toBeDefined();
+        expect(responseNode.executed).toBe(true);
+
+        // Parse the response node result
+        const parsedResponseResult = parse(responseNode.result);
+        expect(parsedResponseResult).toMatchObject({
+          data: {
+            result: {
+              doubled: 10,
+              result: 100,
+              configEnabled: true
+            }
+          },
+          status: "ok"
+        });
+      });
+
+      it('should execute workflow with Python setup script using numpy', async () => {
+        const { user } = await setupOrganizationAndUser(app, {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User'
+        });
+
+        // Python setup script that imports numpy and defines helper functions
+        const setupScript = {
+          python: `
+import numpy as np
+
+def calculate_stats(numbers):
+    arr = np.array(numbers)
+    return {
+        "sum": float(np.sum(arr)),
+        "mean": float(np.mean(arr)),
+        "max": float(np.max(arr)),
+        "min": float(np.min(arr))
+    }
+
+CONFIG = {"precision": 2, "enabled": True}
+`
+        };
+
+        const nodes: WorkflowNode[] = [
+          {
+            id: 'start-1',
+            type: 'input',
+            data: { nodeType: 'start', label: 'Start trigger' },
+            position: { x: 100, y: 250 },
+            sourcePosition: 'right'
+          },
+          {
+            id: 'runpy-1',
+            type: 'query',
+            data: {
+              idOnDefinition: 'query-runpy-numpy',
+              kind: 'runpy',
+              options: {}
+            },
+            position: { x: 350, y: 250 },
+            sourcePosition: 'right',
+            targetPosition: 'left'
+          },
+          {
+            id: 'response-1',
+            type: 'output',
+            data: {
+              nodeType: 'response',
+              label: 'Response',
+              code: 'return { result: runpy1.data }',
+              nodeName: 'response1'
+            },
+            position: { x: 600, y: 250 },
+            targetPosition: 'left'
+          }
+        ];
+
+        const edges: WorkflowEdge[] = [
+          { id: 'edge-1', source: 'start-1', target: 'runpy-1', type: 'workflow' },
+          { id: 'edge-2', source: 'runpy-1', target: 'response-1', type: 'workflow' }
+        ];
+
+        const queries: WorkflowQuery[] = [
+          {
+            idOnDefinition: 'query-runpy-numpy',
+            dataSourceKind: 'runpy',
+            name: 'runpy1',
+            options: {
+              code: `
+# Use the helper function and config from setup script
+numbers = [10, 5, 8, 3, 12, 7]
+stats = calculate_stats(numbers)
+result = {"stats": stats, "config_enabled": CONFIG["enabled"]}
+`,
+              parameters: []
+            }
+          }
+        ];
+
+        const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
+          name: 'Python Setup Script Workflow',
+          setupScript,
+          nodes,
+          edges,
+          queries
+        });
+
+        // Create Python bundle with numpy dependency
+        await createBundle(app, appVersion.id, 'numpy==2.0.2', 'python');
+
+        const execution = await executeWorkflow(app, workflow, user, {
+          environmentId: appVersion.currentEnvironmentId
+        });
+
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+
+        expect(workflowExecution.executed).toBe(true);
+
+        const runpyNode = executionNodes.find((n: any) => n.idOnWorkflowDefinition === 'runpy-1');
+        expect(runpyNode).toBeDefined();
+        expect(runpyNode.executed).toBe(true);
+
+        const parsedResult = parse(runpyNode.result);
+        expect(parsedResult).toMatchObject({
+          data: {
+            stats: {
+              sum: 45,
+              mean: 7.5,
+              max: 12,
+              min: 3
+            },
+            config_enabled: true
+          },
+          status: "ok"
+        });
+      });
     });
 
-    describe('Python (runpy) execution', () => {
+    describe('Python execution', () => {
       it('should execute workflow with RunPy query node', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
@@ -1177,7 +1444,7 @@ result = [x * multiplier for x in numbers]
       }, 60000);
     });
 
-    describe('Mixed JavaScript and Python execution', () => {
+    describe('mixed JS/Python execution', () => {
       it('should execute workflow with both RunJS and RunPy nodes using their respective bundles', async () => {
         const { user } = await setupOrganizationAndUser(app, {
           email: 'admin@tooljet.io',
