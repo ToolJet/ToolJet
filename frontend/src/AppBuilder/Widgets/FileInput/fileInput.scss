@@ -1,0 +1,33 @@
+.tj-file-input-field {
+  cursor: pointer;
+  border-width: 1px;
+  border-style: solid;
+  transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out,
+    background-color 0.12s ease-out;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--primary-accent-strong, var(--cc-primary-brand));
+  }
+}
+
+.tj-file-input-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tj-file-input-error {
+  border-color: var(--cc-error-systemStatus) !important;
+}
+
+.tj-file-input-button {
+  background-color: transparent;
+  border: none;
+  padding: 4px 0;
+  color: var(--cc-primary-brand);
+}
+
+.tj-file-input-button:disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
