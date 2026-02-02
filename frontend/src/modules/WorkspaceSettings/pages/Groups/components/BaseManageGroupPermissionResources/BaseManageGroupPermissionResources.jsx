@@ -124,7 +124,7 @@ class BaseManageGroupPermissionResources extends React.Component {
   };
 
   userFullName = (user) => {
-    return `${user?.first_name} ${user?.last_name ?? ''}`;
+     return `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   };
 
   searchUsersNotInGroup = async (query, groupPermissionId) => {
@@ -134,8 +134,9 @@ class BaseManageGroupPermissionResources extends React.Component {
         .then((users) => {
           resolve(
             users.map((user) => {
+              const fullName = `${user.firstName || ''}   ${user.lastName || ''}`.trim();
               return {
-                name: `${this.userFullName(user)} (${user.email})`,
+                name: `${fullName} (${user.email})`,
                 value: user.id,
                 first_name: user.firstName,
                 last_name: user.lastName,
