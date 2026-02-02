@@ -1,6 +1,6 @@
 ---
-id: horizontal-progress-bar
-title: Horizontal Progress Bar
+id: progress-bar
+title: Progress Bar
 ---
 
 The **Horizontal Progress Bar** component displays progress in a linear bar format, ideal for visualizing task completion, file uploads, or any process with a defined start and end point.
@@ -25,7 +25,7 @@ Any property having **fx** button next to its field can be **programmatically co
 
 The following actions of the component can be controlled using the component-specific actions (CSA). You can trigger these using an event or through a RunJS query.
 
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
 | setValue      | Sets the progress value of the component. Values are automatically clamped between 0-100. | `components.progressbar1.setValue(75)` |
 | setVisibility | Sets the visibility of the component. | `components.progressbar1.setVisibility(false)` |
