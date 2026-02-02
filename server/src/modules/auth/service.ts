@@ -59,6 +59,9 @@ export class AuthService implements IAuthService {
       invitingOrganizationId = organizationId;
       /* give access to the default organization */
       user = await this.userRepository.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
+      if (!user || !user.password) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
       const isPasswordMatching = await bcrypt.compare(password, user.password);
       if (!isPasswordMatching) {
         throw new UnauthorizedException('Invalid credentials');
