@@ -7,7 +7,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 const initialState = {
   hoveredComponentForGrid: '',
   hoveredComponentBoundaryId: '',
-  triggerCanvasUpdater: false,
+  triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
@@ -34,17 +34,20 @@ export const createGridSlice = (set, get) => ({
   },
   setHoveredComponentBoundaryId: (id) =>
     set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
-  toggleCanvasUpdater: () =>
-    set((state) => ({ triggerCanvasUpdater: !state.triggerCanvasUpdater }), false, { type: 'toggleCanvasUpdater' }),
-  debouncedToggleCanvasUpdater: debounce(() => {
-    get().toggleCanvasUpdater();
+  incrementCanvasUpdater: () =>
+    set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
+      type: 'incrementCanvasUpdater',
+    }),
+  debouncedIncrementCanvasUpdater: debounce(() => {
+    get().incrementCanvasUpdater();
   }, 200),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
   setIsGroupResizing: (isGroupResizing) => set(() => ({ isGroupResizing: isGroupResizing })),
   moveComponentPosition: (direction) => {
-    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
+    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedIncrementCanvasUpdater } =
+      get();
     let layouts = {};
     const selectedComponents = getSelectedComponentsDefinition();
     selectedComponents.forEach((selectedComponent) => {
@@ -87,7 +90,7 @@ export const createGridSlice = (set, get) => ({
       };
     });
     setComponentLayout(layouts);
-    debouncedToggleCanvasUpdater();
+    debouncedIncrementCanvasUpdater();
   },
   setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
   setLastCanvasClickPosition: (position) => {
@@ -118,7 +121,7 @@ export const createGridSlice = (set, get) => ({
       getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
-      toggleCanvasUpdater,
+      incrementCanvasUpdater,
       temporaryLayouts,
       adjustComponentPositions,
       getResolvedComponent,
@@ -135,11 +138,16 @@ export const createGridSlice = (set, get) => ({
       const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
 
       // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
-      const transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
+      let transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
 
       // If the component is a container, we need to calculate the height of the container
       let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
+
+      // If the component is a modal, change id further to include the body
+      if (componentType === 'ModalV2') {
+        transformedComponentId = `${transformedComponentId}-body`;
+      }
 
       // Determine component visibility by checking multiple sources in priority order
       const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
@@ -406,7 +414,7 @@ export const createGridSlice = (set, get) => ({
       }
 
       if (isContainer) {
-        if (componentType !== 'Listview') {
+        if (componentType !== 'Listview' && componentType !== 'ModalV2') {
           const element = document.querySelector(`.ele-${componentId}`);
           element.style.height = `${newHeight}px`;
         }
@@ -414,7 +422,7 @@ export const createGridSlice = (set, get) => ({
 
       setTemporaryLayouts(updatedLayouts);
 
-      toggleCanvasUpdater();
+      incrementCanvasUpdater();
       if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
         adjustComponentPositions(
           isContainer && isTruthyOrZero(subContainerIndex)
@@ -439,29 +447,50 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, setActiveRightSideBarTab, isRightSidebarOpen, isGroupResizing, isGroupDragging } =
-      get();
+    const {
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      isRightSidebarOpen,
+      isGroupResizing,
+      isGroupDragging,
+      activeRightSideBarTab,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
 
-    // Check if any codehinter preview popover is currently open
-    const isCodehinterPreviewOpen = () => {
-      const popovers = document.querySelectorAll('#codehinter-preview-box-popover');
-      return popovers.length > 0;
+    // Check if any inspector popover is currently open
+    const isInspectorPopoverOpen = () => {
+      const selector = [
+        '#codehinter-preview-box-popover',
+        '.inspector-select-options-popover',
+        '.inspector-event-manager-popover',
+        '.inspector-steps-options-popover',
+        '.table-column-popover',
+        '.table-action-popover',
+        '.codebuilder-color-swatches-popover',
+        '.boxshadow-picker-popover',
+        '.color-picker-popover',
+        '.dropdown-menu-container',
+        '.inspector-select.react-select__menu-list',
+        '.icon-widget-popover',
+        '.inspector-header-actions-menu',
+      ].join(',');
+      return !!document.querySelector(selector);
     };
-
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
       !selectedText &&
-      !isCodehinterPreviewOpen() &&
+      !isInspectorPopoverOpen() &&
       !isGroupResizing &&
       !isGroupDragging
     ) {
       clearSelectedComponents();
       if (isRightSidebarOpen) {
-        setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+        activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+          ? setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES)
+          : setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
       }
     }
   },

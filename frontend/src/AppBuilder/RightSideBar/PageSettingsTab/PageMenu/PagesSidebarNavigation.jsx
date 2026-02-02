@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import _ from 'lodash';
+import '@/_ui/FolderList/FolderList.scss';
 import cx from 'classnames';
 import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
-import { LEFT_SIDEBAR_WIDTH, RIGHT_SIDEBAR_WIDTH } from '../../../AppCanvas/appCanvasConstants';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { buildTree } from './Tree/utilities';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
@@ -22,13 +21,11 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
-import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { PencilRuler } from 'lucide-react';
+import PageMenuConfigHandle from './PageMenuConfigHandle';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
   currentPageId,
-  switchPage,
   darkMode,
   isSidebarPinned,
   setIsSidebarPinned,
@@ -38,14 +35,9 @@ export const PagesSidebarNavigation = ({
 }) => {
   const { moduleId } = useModuleContext();
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
-  const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode);
-  const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
-  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isSidebarOpen = useStore((state) => state.isSidebarOpen);
-  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const activeRightSideBarTab = useStore((state) => state.activeRightSideBarTab);
@@ -60,6 +52,8 @@ export const PagesSidebarNavigation = ({
     shallow
   );
   const { appMode } = useStore((state) => state.globalSettings, shallow);
+  const switchToHomePage = useStore((state) => state.switchToHomePage);
+  const switchPageWrapper = useStore((state) => state.switchPageWrapper);
 
   const navRef = useRef(null);
   const headerRef = useRef(null);
@@ -319,6 +313,12 @@ export const PagesSidebarNavigation = ({
     };
   }, [position]);
 
+  useEffect(() => {
+    // Keep sidebar pin state updated based on style of page menu and whether it is collapsable or not
+    if (style === 'icon') setIsSidebarPinned(false);
+    if (style === 'text' || (style === 'texticon' && !collapsable)) setIsSidebarPinned(true);
+  }, [style, collapsable, setIsSidebarPinned]);
+
   if (isMobileDevice) {
     return null;
   }
@@ -339,80 +339,6 @@ export const PagesSidebarNavigation = ({
       ? styles.pillSelectedBackgroundColor.value
       : 'var(--cc-appBackground-surface, #F6F6F6)',
     '--nav-item-pill-radius': `${styles.pillRadius.value}px`,
-  };
-
-  const getAbsoluteUrl = (url) => {
-    if (!url) return '';
-
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return `https://${url}`;
-  };
-
-  const switchPageWrapper = (page) => {
-    if (page?.type === 'url') {
-      if (page?.url) {
-        const finalUrl = getAbsoluteUrl(page.url);
-        if (finalUrl) {
-          if (page.openIn === 'new_tab') {
-            window.open(finalUrl, '_blank');
-          } else {
-            window.location.href = finalUrl;
-          }
-        }
-      } else {
-        toast.error('No URL provied');
-        return;
-      }
-      return;
-    }
-
-    if (page?.type === 'app') {
-      if (page?.appId) {
-        const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
-        if (page.openIn === 'new_tab') {
-          window.open(baseUrl, '_blank');
-        } else {
-          window.location.href = baseUrl;
-        }
-      } else {
-        toast.error('No app selected');
-        return;
-      }
-      return;
-    }
-
-    if (currentPageId === page?.id) {
-      return;
-    }
-    const queryParams = {
-      version: selectedVersionName,
-      env: selectedEnvironmentName,
-    };
-    switchPage(
-      page?.id,
-      pages.find((p) => page.id === p?.id)?.handle,
-      currentMode === 'view' ? Object.entries(queryParams) : []
-    );
-    currentMode !== 'view' && setCurrentPageHandle(page.handle);
-  };
-
-  const switchToHomePage = () => {
-    if (currentPageId === homePageId) return;
-
-    const page = pages.find((p) => p.id === homePageId);
-
-    const queryParams = {
-      version: selectedVersionName,
-      env: selectedEnvironmentName,
-    };
-
-    switchPage(
-      page?.id,
-      pages.find((p) => page.id === p?.id)?.handle,
-      currentMode === 'view' ? Object.entries(queryParams) : []
-    );
   };
 
   const handleSidebarClick = (e) => {
@@ -443,9 +369,6 @@ export const PagesSidebarNavigation = ({
     return null;
   }
 
-  const rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_WIDTH : 0;
-  const leftSidebarWidth = isSidebarOpen ? LEFT_SIDEBAR_WIDTH[selectedSidebarItem] ?? LEFT_SIDEBAR_WIDTH.default : 0;
-
   const Header = () => {
     if (headerHidden && logoHidden) {
       return null;
@@ -460,7 +383,7 @@ export const PagesSidebarNavigation = ({
         className="app-name"
       >
         {!logoHidden && (
-          <div onClick={switchToHomePage} className="cursor-pointer flex-shrink-0">
+          <div onClick={() => switchToHomePage(currentPageId, moduleId)} className="cursor-pointer">
             <AppLogo height={32} isLoadingFromHeader={false} />
           </div>
         )}
@@ -547,6 +470,8 @@ export const PagesSidebarNavigation = ({
   };
 
   const Sidebar = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const isPreviewMode = searchParams.has('env') || searchParams.has('version');
     return (
       <div
         ref={(el) => {
@@ -560,7 +485,7 @@ export const PagesSidebarNavigation = ({
             (style === 'icon' && position === 'side' && !isPagesSidebarHidden) ||
             (style === 'texticon' && !isSidebarPinned && position === 'side' && !isPagesSidebarHidden),
           'text-only': style === 'text',
-          'no-preview-settings': isReleasedVersionId,
+          'no-preview-settings': !isPreviewMode,
           'not-collapsable': !isPagesSidebarHidden && position === 'side' && (style !== 'texticon' || !collapsable),
           'collapsable-only':
             !isPagesSidebarHidden && position === 'side' && collapsable && appMode !== 'auto' && style === 'texticon',
@@ -627,10 +552,6 @@ export const PagesSidebarNavigation = ({
           justifyContent: 'center',
           width: '100%',
         }),
-        ...(currentMode !== 'view' &&
-          (position === 'top' || isPagesSidebarHidden) && {
-            width: `calc(100% + ${leftSidebarWidth + rightSidebarWidth}px)`,
-          }),
         position: 'relative', // Add relative positioning to the parent
       }}
     >
@@ -671,15 +592,16 @@ export const PagesSidebarNavigation = ({
         {position === 'side' && !isPagesSidebarHidden ? (
           // Using shadcn sidebar component when the page menu is side aligned
           <SidebarProvider
-            open={style === 'icon' ? false : isSidebarPinned}
+            open={isSidebarPinned}
             onOpenChange={setIsSidebarPinned}
             sidebarWidth="256px"
             sidebarWidthIcon="54px"
             className="!tw-min-h-0 tw-h-full"
           >
             <SidebarWrapper
-              collapsible={style === 'text' ? 'none' : 'icon'}
-              className="group-data-[side=left]:!tw-border-r-0"
+              collapsible={style === 'text' || (style === 'texticon' && !collapsable) ? 'none' : 'icon'}
+              className="group-data-[side=left]:!tw-border-r-0 tw-flex"
+              wrapperClassName="tw-block"
             >
               <Sidebar />
             </SidebarWrapper>
@@ -688,83 +610,8 @@ export const PagesSidebarNavigation = ({
           <Sidebar />
         )}
 
-        {/* Show tooltip when tab is active */}
-        {currentMode === 'edit' && activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES && (
-          <div
-            className="navigation-tooltip"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              zIndex: 1000,
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              display: 'flex',
-              gap: '2px',
-            }}
-          >
-            <ConfigHandleButton
-              className="no-hover"
-              customStyles={{
-                alignItems: 'center',
-                gap: '6px',
-                padding: '2px 6px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ cursor: 'default' }}>Page and nav</span>
-            </ConfigHandleButton>
-            <ConfigHandleButton>
-              <PencilRuler
-                size={12}
-                color="var(--icon-inverse)"
-                onClick={() => {
-                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                  setRightSidebarOpen(true);
-                }}
-              />
-            </ConfigHandleButton>
-          </div>
-        )}
-
-        {/* Show tooltip on hover (only in edit mode, controlled by CSS) */}
-        {currentMode === 'edit' && (
-          <div
-            className="navigation-tooltip-hover"
-            style={{
-              position: 'absolute',
-              top: position === 'top' ? 'calc(100% + 0px)' : '7px',
-              left: position === 'top' ? '0px' : isSidebarPinned ? '6px' : '43px',
-              pointerEvents: 'auto', // Enable pointer events so tooltip can be hovered
-              gap: '2px',
-              alignItems: 'center',
-              zIndex: 1000,
-              flexDirection: 'row',
-              display: 'none',
-            }}
-          >
-            <ConfigHandleButton
-              className="no-hover"
-              customStyles={{
-                padding: '2px 6px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ cursor: 'default' }}>Page and nav</span>
-            </ConfigHandleButton>
-            <ConfigHandleButton>
-              <PencilRuler
-                size={12}
-                color="var(--icon-inverse)"
-                onClick={() => {
-                  setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES);
-                  setRightSidebarOpen(true);
-                }}
-              />
-            </ConfigHandleButton>
-          </div>
-        )}
+        {/* Show tooltip on hover or when tab is active (only in edit mode, controlled by CSS) */}
+        {currentMode === 'edit' && <PageMenuConfigHandle position={position} isSidebarPinned={isSidebarPinned} />}
       </div>
       {/* Close navigation-with-tooltip-wrapper */}
     </div>

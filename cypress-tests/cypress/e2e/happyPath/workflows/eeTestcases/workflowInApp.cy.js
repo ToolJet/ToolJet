@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteDatasource} from "Support/utils/dataSource";
+import { deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
@@ -69,7 +69,7 @@ describe("Workflows in apps", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dataSourceName,
       "postgresql",
@@ -140,6 +140,6 @@ describe("Workflows in apps", () => {
     // );
     cy.apiDeleteApp();
     cy.apiDeleteWorkflow(data.workflowName);
-    cy.apiDeleteGDS(`cypress-${data.dataSourceName}-manual-pgsql`);
+    cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-manual-pgsql`);
   });
 });

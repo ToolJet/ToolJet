@@ -461,9 +461,12 @@
       "properties": "Properti",
       "events": "Acara",
       "layout": "Tata letak",
+      "devices": "Perangkat",
       "styles": "Gaya",
       "general": "Umum",
       "validation": "Validasi",
+      "data": "Data",
+      "additionalActions": "Tindakan Tambahan",
       "documentation": "{{componentMeta}} dokumentasi",
       "widgetNameEmptyError": "Nama widget tidak bisa kosong",
       "componentNameExistsError": "Nama komponen sudah ada",
@@ -584,6 +587,14 @@
       "parseContent": "Konten parse",
       "fileType": "Jenis file",
       "dateFormat": "Format tanggal",
+      "timeFormat": "Format waktu",
+      "minTime": "Waktu Minimum",
+      "maxTime": "Waktu Maksimum",
+      "displayIn": "Tampilkan di",
+      "storeIn": "Simpan di",
+      "minDate": "Tanggal Minimum",
+      "maxDate": "Tanggal Maksimum",
+      "makeThisFieldMandatory": "Jadikan bidang ini wajib",
       "defaultDate": "Tanggal default",
       "events": "Acara",
       "resources": "Sumber daya",
@@ -913,6 +924,22 @@
     "Back": {
       "text": "Kembali",
       "tip": "Kembali ke Beranda"
+    }
+  },
+  "datepicker": {
+    "months": {
+      "january": "Januari",
+      "february": "Februari",
+      "march": "Maret",
+      "april": "April",
+      "may": "Mei",
+      "june": "Juni",
+      "july": "Juli",
+      "august": "Agustus",
+      "september": "September",
+      "october": "Oktober",
+      "november": "November",
+      "december": "Desember"
     }
   }
 }

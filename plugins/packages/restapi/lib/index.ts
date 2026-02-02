@@ -349,6 +349,13 @@ export default class RestapiQueryService implements QueryService {
           },
         };
         break;
+      case 'none':
+        httpsParams = {
+          https: {
+            rejectUnauthorized: false,
+          },
+        };
+        break;
       default:
         break;
     }

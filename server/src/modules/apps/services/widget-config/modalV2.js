@@ -21,6 +21,15 @@ export const modalV2Config = {
       },
       section: 'additionalActions',
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Modal trigger visibility',
@@ -201,7 +210,25 @@ export const modalV2Config = {
     },
     headerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Header background color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-surface1-surface)',
+      },
+      accordian: 'header',
+    },
+    headerDividerColor: {
+      type: 'colorSwatches',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-border)',
+      },
+      accordian: 'header',
+    },
+    bodyBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
@@ -210,39 +237,65 @@ export const modalV2Config = {
     },
     footerBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Footer background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
-    bodyBackgroundColor: {
+    footerDividerColor: {
       type: 'colorSwatches',
-      displayName: 'Body background color',
+      displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
+        defaultValue: 'var(--cc-default-border)',
       },
-      accordian: 'container',
+      accordian: 'footer',
     },
     triggerButtonBackgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'trigger button',
     },
     triggerButtonTextColor: {
       type: 'colorSwatches',
-      displayName: 'Trigger button text color',
+      displayName: 'Text',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
       },
-      accordian: 'container',
+      accordian: 'trigger button',
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: 'Icon color',
+      validation: { schema: { type: 'string' } },
+      accordian: 'trigger button',
+      visibility: false,
+    },
+    direction: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'trigger button',
     },
   },
   exposedVariables: {
@@ -289,6 +342,7 @@ export const modalV2Config = {
     },
     properties: {
       loadingState: { value: `{{false}}` },
+      dynamicHeight: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },
@@ -315,6 +369,8 @@ export const modalV2Config = {
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      headerDividerColor: { value: 'var(--cc-default-border)' },
+      footerDividerColor: { value: 'var(--cc-default-border)' },
     },
   },
 };

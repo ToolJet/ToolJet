@@ -135,7 +135,7 @@ describe("Manage Groups", () => {
                         from: "Admin",
                         to: "Builder",
                         buttonEnabled: true,
-                        hasSettings: false,
+                        hasSettings: true,
                     },
                     {
                         from: "Builder",
@@ -177,6 +177,7 @@ describe("Manage Groups", () => {
                 cy.visit(data.workspaceSlug);
                 verifyUserPrivileges(
                     buttonEnabled ? "be.enabled" : "be.disabled",
+                    to,
                     hasSettings
                 );
                 cy.apiLogout();

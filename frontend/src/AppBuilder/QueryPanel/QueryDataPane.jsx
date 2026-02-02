@@ -7,8 +7,8 @@ import Skeleton from 'react-loading-skeleton';
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
-import { Tooltip } from 'react-tooltip';
 import FilterandSortPopup from './FilterandSortPopup';
+import { ToolTip } from '@/_components';
 import { Button } from '@/components/ui/Button/Button';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -113,22 +113,23 @@ export const QueryDataPane = ({ darkMode }) => {
               darkMode={darkMode}
             />
 
-            <Button
-              isLucid
-              iconOnly
-              size="medium"
-              variant="ghost"
-              leadingIcon="search"
-              onClick={() => {
-                showSearchBox && setSearchTermForFilters('');
-                setShowSearchBox((showSearchBox) => !showSearchBox);
-              }}
-              className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
-              data-cy="query-search-button"
-            />
-            <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
+            <ToolTip message="Open quick search" placement="bottom">
+              <Button
+                isLucid
+                iconOnly
+                size="medium"
+                variant="ghost"
+                leadingIcon="search"
+                onClick={() => {
+                  showSearchBox && setSearchTermForFilters('');
+                  setShowSearchBox((showSearchBox) => !showSearchBox);
+                }}
+                className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
+                data-tooltip-id="tooltip-for-query-panel-header-btn"
+                data-tooltip-content="Open quick search"
+                data-cy="query-search-button"
+              />
+            </ToolTip>
           </div>
           <AddDataSourceButton darkMode={darkMode} />
         </div>
@@ -212,19 +213,6 @@ export const QueryDataPane = ({ darkMode }) => {
                 />
               )}
             </div>
-            <Tooltip
-              id="query-card-name-tooltip"
-              className="tooltip query-manager-tooltip"
-              disableTooltip={(anchor) => {
-                const { offsetWidth } = anchor;
-                // enable tooltip if the query name is too long
-                if (anchor?.getAttribute('data-tooltip-dynamic') && offsetWidth <= 150) {
-                  return true;
-                }
-
-                return false;
-              }}
-            />
             {filteredQueries.length === 0 && (
               <div className=" d-flex  flex-column align-items-center justify-content-start">
                 {filteredQueries.length === 0 ? <EmptyDataSource /> : ''}

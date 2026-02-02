@@ -2,7 +2,7 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown } from '@/modules/Appbuilder/components';
+import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
@@ -14,7 +14,6 @@ import './styles/style.scss';
 
 import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
-import { Tooltip } from 'react-tooltip';
 
 export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -57,7 +56,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
-                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
+                      {isModuleEditor && <ModuleEditorBanner />}
                       <EditAppName />
                     </div>
                     <div>
@@ -114,14 +113,6 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
           </div>
         </div>
       </header>
-      <Tooltip
-        id="editor-header-tooltip"
-        className="tw-text-text-default tw-bg-background-inverse tw-p-3 tw-rounded-md tw-text-xs tw-font-medium"
-        style={{ zIndex: 9999 }}
-        place="bottom"
-        delayShow={300}
-        delayHide={100}
-      />
     </div>
   );
 };

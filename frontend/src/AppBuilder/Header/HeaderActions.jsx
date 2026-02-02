@@ -73,12 +73,12 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
           style={{ color: 'var(--text-default)' }}
         >
           <ButtonComponent
+            isLucid
             size="default"
             variant="outline"
-            leadingIcon="play01"
+            leadingIcon="play"
             data-cy="preview-link-button"
             style={{ padding: "7px 12px" }}
-
           >
 
             Preview

@@ -80,9 +80,9 @@ export const DaterangePicker = ({
     setEndDate(end);
     setExposedVariables({
       startDate: moment(start).format(format),
-      startDateInUnix: moment(start).valueOf(),
+      startDateInUnix: start ? moment(start).valueOf() : null,
       endDate: moment(end).format(format),
-      endDateInUnix: moment(end).valueOf(),
+      endDateInUnix: end ? moment(end).valueOf() : null,
       selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
     });
     if (typeof skipFireEvent === 'boolean' && skipFireEvent) return;
@@ -113,6 +113,8 @@ export const DaterangePicker = ({
       } else {
         onChange([startDate, null], true);
       }
+    } else {
+      onChange([startDate, endDate], true); // If any date (start or end) would be invalid then it would pe passed as null
     }
   }, [defaultStartDate, defaultEndDate, format]);
 

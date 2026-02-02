@@ -199,7 +199,7 @@ const ToolJetDbOperations = ({
 
   useEffect(() => {
     if (mounted) {
-      optionchanged('operation', operation);
+      // optionchanged('operation', operation);
       setListRowsOptions({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -528,19 +528,19 @@ const ToolJetDbOperations = ({
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
-  const [prevOperationBetweenModeChange, setPrevOperationBetweenModeChange] = useState(null);
-
   const handleTabClick = (mode) => {
     const optionsToUpdate = {
       activeTab: mode,
     };
     if (mode === 'SQL mode') {
-      // prevOperationBetweenModeChange.current = options?.operation;
-      setPrevOperationBetweenModeChange(options?.operation || '');
+      optionsToUpdate['prev_operation_selected'] = options?.operation || '';
+      setOperation('sql_execution');
       optionsToUpdate['operation'] = 'sql_execution';
       optionsToUpdate['organization_id'] = organizationId;
     } else {
-      optionsToUpdate['operation'] = prevOperationBetweenModeChange ?? '';
+      setOperation(options?.prev_operation_selected || '');
+      optionsToUpdate['operation'] = options?.prev_operation_selected || '';
+      optionsToUpdate['prev_operation_selected'] = 'sql_execution';
     }
     optionsChanged(optionsToUpdate);
     setActiveTab(mode);
@@ -696,7 +696,10 @@ const ToolJetDbOperations = ({
                   options={tooljetDbOperationList}
                   darkMode={darkMode}
                   onChange={(value) => {
-                    value?.value && setOperation(value?.value);
+                    if (value?.value) {
+                      optionsChanged({ prev_operation_selected: operation, operation: value?.value });
+                      setOperation(value?.value);
+                    }
                   }}
                   value={tooljetDbOperationList.find((val) => val?.value === operation)}
                 />

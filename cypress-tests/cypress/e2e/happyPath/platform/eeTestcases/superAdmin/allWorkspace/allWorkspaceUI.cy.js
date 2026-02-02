@@ -27,7 +27,8 @@ describe("Instance Settings - All Workspaces UI", () => {
     const testWorkspace = userName();
 
     cy.apiCreateWorkspace(testWorkspace, testWorkspace);
-    cy.apiLogin();
+    //cy.apiLogin();
+    cy.visit(testWorkspace);
 
     openAllWorkspaces();
     verifyWorkspacePageHeader();

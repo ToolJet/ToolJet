@@ -2,7 +2,7 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { deleteWorkflowAndDS,deleteDatasource } from "Support/utils/dataSource";
+import { deleteWorkflowAndDS, deleteDatasource } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { workflowsText } from "Texts/workflows";
 import { workflowSelector } from "Selectors/workflows";
@@ -63,7 +63,7 @@ describe("Workflows Export/Import Sanity", () => {
     const dataSourceName = `cypress-${data.dataSourceName}-manual-pgsql`;
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       dataSourceName,
       "postgresql",
@@ -125,10 +125,10 @@ describe("Workflows Export/Import Sanity", () => {
     cy.apiDeleteWorkflow(workflowName);
     importWorkflowApp(workflowName, workflowsText.exportFixturePath);
     verifyTextInResponseOutputLimited(workflowsText.postgresExpectedValue);
-    
+
     cy.apiDeleteWorkflow(workflowName);
 
-    cy.apiDeleteGDS(dataSourceName);
+    cy.apiDeleteDataSource(dataSourceName);
     cy.task("deleteFile", workflowsText.exportFixturePath);
   });
 });

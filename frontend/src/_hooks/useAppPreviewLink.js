@@ -33,21 +33,32 @@ export function useAppPreviewLink() {
   const [appPreviewLink, setAppPreviewLink] = useState('');
 
   useEffect(() => {
+    // Only exclude env if license is explicitly expired or invalid
+    // If license status is undefined (not loaded yet), default to including env
+    const isBasicPlan =
+      featureAccess?.licenseStatus?.isExpired === true ||
+      featureAccess?.licenseStatus?.isLicenseValid === false ||
+      featureAccess?.plan === 'starter';
+
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
-      ...(featureAccess?.multiEnvironment ? { env: selectedEnvironment?.name } : {}),
+      // Include env param unless license is invalid/expired or starter plan
+      ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
     });
-    setAppPreviewLink(
-      editingVersion
-        ? `/applications/${slug || appId}/${currentPageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
-        : ''
-    );
+
+    const link = editingVersion
+      ? `/applications/${slug || appId}/${currentPageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      : '';
+
+    setAppPreviewLink(link);
   }, [
     slug,
     appId,
     editingVersion,
     currentPageHandle,
     featureAccess?.multiEnvironment,
+    featureAccess?.licenseStatus?.isExpired,
+    featureAccess?.licenseStatus?.isLicenseValid,
     selectedEnvironment?.name,
     selectedVersion?.name,
   ]);

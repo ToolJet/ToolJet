@@ -57,7 +57,7 @@ describe("Chaining of queries", () => {
       dsKind: "tooljetdb",
     });
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `http://localhost:3000/api/data-sources`,
       `cypress-${dsName}-qc-postgresql`,
       "postgresql",

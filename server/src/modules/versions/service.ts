@@ -41,7 +41,7 @@ export class VersionService implements IVersionService {
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appGitRepository: AppGitRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) { }
+  ) {}
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 

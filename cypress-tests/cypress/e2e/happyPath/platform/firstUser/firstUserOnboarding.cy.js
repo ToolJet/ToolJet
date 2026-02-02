@@ -22,7 +22,7 @@ describe("Self host onboarding", () => {
 
   afterEach(() => {
     // Check if the user exists in the database
-    cy.runSqlQuery(`SELECT id FROM users WHERE email='dev@tooljet.io';`).then(
+    cy.runSqlQueryOnDB(`SELECT id FROM users WHERE email='dev@tooljet.io';`).then(
       (resp) => {
         // If user doesn't exist in DB, create it
         if (!resp.rows || resp.rows.length === 0) {

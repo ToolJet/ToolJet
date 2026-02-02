@@ -6,6 +6,12 @@ export const ActionTypes = [
     group: 'run-action',
   },
   {
+    name: 'Reset query',
+    id: 'reset-query',
+    options: [{ queryId: '' }],
+    group: 'run-action',
+  },
+  {
     name: 'Show Alert',
     id: 'show-alert',
     options: [{ name: 'message', type: 'text', default: 'Message !' }],
@@ -144,5 +150,5 @@ export const ActionTypes = [
     id: 'toggle-app-mode',
     options: [{ name: 'appMode', type: 'text', default: '' }],
     group: 'other',
-  },
+  }
 ];

@@ -9,7 +9,7 @@ import Tick from '@/_ui/Icon/solidIcons/Tick';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
-import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -199,24 +199,23 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       }
     >
       <span>
-        <button
-          id="query-sort-filter-popover-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowMenu((showMenu) => !showMenu);
-          }}
-          className={cx('position-relative  btn-query-panel-header', {
-            active: showMenu,
-          })}
-          style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
-          data-tooltip-id="tooltip-for-open-filter"
-          data-tooltip-content="Show sort/filter"
-          data-cy={`query-filter-button`}
-        >
-          <ListFilter color="var(--icons-strong)" size={14} />
-          {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
-        </button>
-        <Tooltip id="tooltip-for-open-filter" className="tooltip" />
+        <ToolTip message="Show sort/filter" placement="bottom">
+          <button
+            id="query-sort-filter-popover-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu((showMenu) => !showMenu);
+            }}
+            className={cx('position-relative  btn-query-panel-header', {
+              active: showMenu,
+            })}
+            style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
+            data-cy={`query-filter-button`}
+          >
+            <ListFilter color="var(--icons-strong)" size={14} />
+            {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
+          </button>
+        </ToolTip>
       </span>
     </OverlayTrigger>
   );

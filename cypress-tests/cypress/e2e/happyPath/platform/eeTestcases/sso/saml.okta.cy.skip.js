@@ -56,12 +56,12 @@ describe("SAML SSO", () => {
   };
 
   const deleteGroup = (orgId) => {
-    cy.runSqlQuery(
+    cy.runSqlQueryOnDB(
       `SELECT id FROM permission_groups WHERE name = 'SAML' AND organization_id = '${orgId}';`
     ).then(({ rows }) => {
       const existingGroupId = rows?.[0]?.id;
       if (existingGroupId) {
-        cy.runSqlQuery(
+        cy.runSqlQueryOnDB(
           `DELETE FROM permission_groups WHERE id = '${existingGroupId}'::uuid;`
         );
       }

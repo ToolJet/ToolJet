@@ -62,6 +62,10 @@ export class AppModuleLoader {
       LoggerModule.forRoot({
         pinoHttp: {
           level: (() => {
+            // Allow explicit OTEL_LOG_LEVEL override
+            if (process.env.OTEL_LOG_LEVEL) {
+              return process.env.OTEL_LOG_LEVEL;
+            }
             const logLevel = {
               production: 'info',
               development: 'debug',
@@ -121,14 +125,6 @@ export class AppModuleLoader {
         OpenTelemetryModule.forRoot({
           metrics: {
             hostMetrics: true,
-            apiMetrics: {
-              enable: true,
-              defaultAttributes: {
-                custom: 'metrics',
-              },
-              ignoreRoutes: ['/favicon.ico', '/api/health'],
-              ignoreUndefinedRoutes: false,
-            },
           },
         })
       );

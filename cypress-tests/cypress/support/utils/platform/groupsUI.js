@@ -75,9 +75,10 @@ export const verifyDeleteConfirmationModal = () => {
 };
 
 export const verifyGranularEditModal = (role) => {
-    cy.wait(1000)
+    cy.get(groupsSelector.permissionsLink).should("be.visible").click();
+    cy.get(groupsSelector.granularLink).should("be.visible").click();
     cy.get(groupsSelector.granularAccessPermission, { timeout: 15000 }).realHover();
-    cy.get('[data-cy="edit-apps-granular-access"]').click();
+    cy.get('[data-cy="edit-apps-granular-access"]').should("be.visible").click();
 
     cy.get(".modal-base").should("be.visible");
 

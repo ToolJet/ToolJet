@@ -45,7 +45,7 @@ describe("Data source Airtable", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName}-airtable`,
       "airtable",
@@ -109,12 +109,12 @@ describe("Data source Airtable", () => {
       airtableText.invalidAccessToken
     );
 
-    cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
+    cy.apiDeleteDataSource(`cypress-${data.dsName}-airtable`);
   });
 
   it("Should verify the functionality of AirTable connection form.", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName}-airtable`,
       "airtable",
@@ -142,7 +142,7 @@ describe("Data source Airtable", () => {
       airtableText.invalidAccessToken
     );
     cy.reload();
-    cy.apiUpdateGDS({
+    cy.apiUpdateDataSource({
       name: `cypress-${data.dsName}-airtable`,
       options: [
         {
@@ -163,11 +163,11 @@ describe("Data source Airtable", () => {
       timeout: 10000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
 
-    cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
+    cy.apiDeleteDataSource(`cypress-${data.dsName}-airtable`);
   });
 
   it("Should able to run the query with valid conection", () => {
-    cy.apiCreateGDS(
+    cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName}-airtable`,
       "airtable",
@@ -343,7 +343,7 @@ describe("Data source Airtable", () => {
       // );
 
       cy.apiDeleteApp(`${data.dsName}-airtable-app`);
-      cy.apiDeleteGDS(`cypress-${data.dsName}-airtable`);
+      cy.apiDeleteDataSource(`cypress-${data.dsName}-airtable`);
     });
   });
 });

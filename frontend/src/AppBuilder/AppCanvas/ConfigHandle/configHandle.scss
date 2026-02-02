@@ -1,6 +1,5 @@
 .config-handle {
     position: fixed;
-    max-height: 10px;
     z-index: 100;
     min-width: 108px;
     display: block;
@@ -16,7 +15,7 @@
 .multiple-components-config-handle {
   position: absolute;
   left: 54px;
-  top: -22px;
+  top: -26px;
   transform: translate(-50%, 0px);
   width: 110px;
   display: flex;
@@ -74,9 +73,11 @@
   box-shadow: none !important;
   border: 1px solid var(--border-weak, #E4E7EB) !important;
   color: var(--text-default, #1B1F24) !important;
+  box-shadow: var(--elevation-300-box-shadow) !important;
+
 
   .dynamic-height-info-body {
-    // margin-top: 24px;
+    margin-top: 24px;
     margin-bottom: 15px;
 
     .dynamic-height-info-text-title {
@@ -101,3 +102,8 @@
 
 }
 
+.config-handle-button {
+  .badge {  
+    font-size: 11px;
+  }
+}
