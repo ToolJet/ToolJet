@@ -27,6 +27,7 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { decamelizeKeysExcept } from 'src/helpers/utils.helper';
 import { validatePasswordServer } from 'src/helpers/utils.helper';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -58,7 +59,8 @@ export class AuthService implements IAuthService {
       invitingOrganizationId = organizationId;
       /* give access to the default organization */
       user = await this.userRepository.findByEmail(email, organizationId, [WORKSPACE_USER_STATUS.INVITED]);
-      if (!user) {
+      const isPasswordMatching = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatching) {
         throw new UnauthorizedException('Invalid credentials');
       }
       organizationId = undefined;
