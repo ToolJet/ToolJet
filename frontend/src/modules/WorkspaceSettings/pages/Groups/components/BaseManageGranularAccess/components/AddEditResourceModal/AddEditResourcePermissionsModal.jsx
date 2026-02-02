@@ -27,6 +27,7 @@ function AddEditResourcePermissionsModal({
   hasEndUsers,
   selectedEnvironments,
   setSelectedEnvironments,
+  isBasicPlan,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
@@ -104,6 +105,7 @@ function AddEditResourcePermissionsModal({
             groupName={groupName}
             isBuilderLevel={isBuilderLevel}
             hasEndUsers={hasEndUsers}
+            isBasicPlan={isBasicPlan}
           />
         );
 

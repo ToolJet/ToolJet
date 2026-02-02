@@ -184,18 +184,10 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         > = DEFAULT_RESOURCE_PERMISSIONS[group.name];
         for (const resource of Object.keys(groupGranularPermissions)) {
           if (getTooljetEdition() === TOOLJET_EDITIONS.CE && resource == ResourceType.WORKFLOWS) continue;
-          let createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
+          const createResourcePermissionObj: CreateResourcePermissionObject<any> = groupGranularPermissions[resource];
 
-          // For builder role APP permissions: set production access based on license
-          // If multi-environment is NOT available (basic plan/invalid license), enable production
-          // If multi-environment IS available (valid license), disable production (security)
-          if (group.name === USER_ROLE.BUILDER && resource === ResourceType.APP) {
-            const shouldEnableProduction = hasMultiEnvironment !== true;
-            createResourcePermissionObj = {
-              ...createResourcePermissionObj,
-              canAccessProduction: shouldEnableProduction,
-            };
-          }
+          // End users only have access to released apps by default
+          // For basic/starter plans: keep default (released only) from DEFAULT_RESOURCE_PERMISSIONS
 
           const dtoObject = {
             name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
