@@ -62,7 +62,7 @@ export class AuthService implements IAuthService {
       if (!user || !user.password) {
         throw new UnauthorizedException('Invalid credentials');
       }
-      const isPasswordMatching = await bcrypt.compare(password, user.password);
+      const isPasswordMatching = await bcrypt.compare(password, user?.password);
       if (!isPasswordMatching) {
         throw new UnauthorizedException('Invalid credentials');
       }
