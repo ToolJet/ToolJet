@@ -6,6 +6,10 @@ title: Kubernetes (EKS)
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
 :::info
+**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with nginx and Let's Encrypt. Learn more in the [Built-in SSL & nginx documentation](/docs/setup/builtin-ssl-nginx/overview).
+:::
+
+:::info
 You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.

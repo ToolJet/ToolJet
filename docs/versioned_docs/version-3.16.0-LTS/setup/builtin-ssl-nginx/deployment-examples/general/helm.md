@@ -15,10 +15,6 @@ This guide shows how to configure ToolJet with built-in SSL and nginx when deplo
 
 ## Prerequisites
 
-- Kubernetes cluster (1.19+)
-- Helm 3.0 or later
-- kubectl configured to access your cluster
-- Domain name pointing to your load balancer
 - See [requirements](../../requirements.md) for complete prerequisites
 
 ## Configuration
@@ -30,7 +26,7 @@ apps:
   tooljet:
     image:
       repository: tooljet/tooljet
-      tag: latest
+      tag: ee-lts-latest
 
     env:
       - name: ENABLE_BUILTIN_NGINX

@@ -11,7 +11,7 @@ Common questions about built-in SSL and nginx.
 <summary>Can I use built-in SSL without a domain?</summary>
 
 No. Let's Encrypt requires a valid domain name to issue certificates. If you don't have a domain:
-- Use HTTP-only mode (set `ENABLE_BUILTIN_NGINX=true` but don't enable SSL)
+- Use HTTP-only mode (set **ENABLE_BUILTIN_NGINX=true** but don't enable SSL)
 - Use a reverse proxy with self-signed certificates
 - Use a service like ngrok for testing
 
@@ -22,7 +22,7 @@ No. Let's Encrypt requires a valid domain name to issue certificates. If you don
 
 Currently, the built-in SSL only supports Let's Encrypt certificates. To use custom certificates:
 - Use an external reverse proxy (nginx, Caddy, Traefik)
-- Set `ENABLE_BUILTIN_NGINX=false`
+- Set **ENABLE_BUILTIN_NGINX=false**
 
 </details>
 
@@ -31,7 +31,7 @@ Currently, the built-in SSL only supports Let's Encrypt certificates. To use cus
 
 Yes, but consider:
 - If your load balancer handles SSL termination, you may not need built-in SSL
-- Use HTTP-only mode: set `ENABLE_BUILTIN_NGINX=true` but don't enable SSL
+- Use HTTP-only mode: set **ENABLE_BUILTIN_NGINX=true** but don't enable SSL
 - Configure load balancer to forward HTTP traffic to port 80
 
 </details>
@@ -41,7 +41,7 @@ Yes, but consider:
 
 The current implementation is designed for single-instance deployments. For multi-instance setups:
 - Use an external load balancer with SSL termination
-- Set `ENABLE_BUILTIN_NGINX=false` on all instances
+- Set **ENABLE_BUILTIN_NGINX=false** on all instances
 - Let the load balancer handle HTTPS
 
 </details>

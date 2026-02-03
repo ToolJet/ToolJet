@@ -17,7 +17,7 @@ Your deployment must expose the following ports:
 | 443 | HTTPS | HTTPS mode only | Required after SSL certificate is acquired |
 
 :::warning
-Port 3000 should **NOT** be exposed publicly when using built-in nginx. nginx will proxy to port 3000 internally.
+Port 3000 should **NOT** be exposed publicly when using built-in nginx. Nginx will proxy to port 3000 internally.
 :::
 
 ## Domain Requirements
