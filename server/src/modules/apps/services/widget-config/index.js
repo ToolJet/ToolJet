@@ -69,6 +69,7 @@ import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
+import { accordionConfig } from './accordion';
 
 const widgets = {
   buttonConfig,
@@ -142,6 +143,7 @@ const widgets = {
   popoverMenuConfig,
   audioRecorderConfig,
   cameraConfig,
+  accordionConfig,
 };
 
 const universalProps = {
