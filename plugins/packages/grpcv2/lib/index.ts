@@ -2,7 +2,6 @@ import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl
 import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
 import JSON5 from 'json5';
-import { isEmpty } from 'lodash';
 import {
   buildReflectionClient,
   buildProtoFileClient,
@@ -11,12 +10,9 @@ import {
   discoverServicesUsingProtoUrl,
   discoverServicesUsingFilesystem,
   loadProtoFromRemoteUrl,
-  loadProtosFromFilesystem,
   extractServicesFromGrpcPackage,
-  executeGrpcMethod,
-  getDefaultProtoDirectory
+  executeGrpcMethod
 } from './operations';
-import { PackageDefinition } from '@grpc/proto-loader';
 
 export default class Grpcv2QueryService implements QueryService {
 
@@ -52,164 +48,92 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  // FIXME: Figure better approach to do test connection check
-  // for cases where multiple services are present in proto file, reflection and filesystem
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
-      if (sourceOptions.proto_files === 'server_reflection') {
-        const services = await this.discoverServices(sourceOptions);
-        return {
-          status: 'ok',
-          message: `Successfully connected. Found ${services.length} service(s).`
-        };
-      } else if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
-        const directory =
-          isEmpty(sourceOptions.proto_files_directory) ?
-            getDefaultProtoDirectory() :
-            sourceOptions.proto_files_directory;
+      let services: GrpcService[];
 
-        const protoFilePattern =
-          isEmpty(sourceOptions.proto_files_pattern) ?
-            '**/*.proto' :
-            sourceOptions.proto_files_pattern;
+      switch (sourceOptions.proto_files) {
+        case 'server_reflection':
+          services = await discoverServicesUsingReflection(sourceOptions);
+          break;
 
-        let packageDefinition: PackageDefinition;
-        try {
-          packageDefinition = await loadProtosFromFilesystem(
-            directory,
-            protoFilePattern
-          );
-        } catch (filesystemError) {
-          return {
-            status: 'failed',
-            message: `${filesystemError?.message || 'Failed to load proto files from directory'}`
-          };
-        }
-
-        const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-        let services: GrpcService[];
-
-        try {
+        case 'import_proto_file':
+          const packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
+          const grpcObject = grpc.loadPackageDefinition(packageDefinition);
           services = extractServicesFromGrpcPackage(grpcObject);
-        } catch (extractError) {
+          break;
+
+        case 'import_protos_from_filesystem':
+          services = await discoverServicesUsingFilesystem(sourceOptions);
+          break;
+
+        default:
           return {
             status: 'failed',
-            message: 'No services found in proto files',
+            message: `Unsupported proto_files option: ${sourceOptions.proto_files}`
           };
-        }
-
-        if (services.length === 0) {
-          return {
-            status: 'failed',
-            message: 'No services found in proto files',
-          };
-        }
-
-        const firstService = services[0].name;
-        try {
-          const client = await this.createGrpcClient(sourceOptions, firstService);
-
-          const deadline = new Date();
-          deadline.setSeconds(deadline.getSeconds() + 60);
-
-          const waitForReadyAsync = (client: GrpcClient, deadline: Date): Promise<void> => {
-            return new Promise((resolve, reject) => {
-              client.waitForReady(deadline, (error: any) => {
-                if (error) {
-                  reject(error);
-                } else {
-                  resolve();
-                }
-              });
-            });
-          };
-
-          try {
-            await waitForReadyAsync(client, deadline);
-          } catch (error) {
-            throw new Error(`Cannot connect to host: ${error.message}`);
-          }
-
-          return {
-            status: 'ok',
-            message: `Successfully loaded proto files. Found ${services.length} service(s).`
-          };
-        } catch (connectionError) {
-          return {
-            status: 'failed',
-            message: `Connection error: ${connectionError?.message || 'Failed to connect to gRPC server'}`,
-          };
-        }
-      } else {
-        let packageDefinition: PackageDefinition;
-        try {
-          packageDefinition = await loadProtoFromRemoteUrl(sourceOptions.proto_file_url!);
-        } catch (protoError) {
-          return {
-            status: 'failed',
-            message: `Proto file error: ${protoError?.message || 'Failed to load proto file from URL'}`,
-          };
-        }
-
-        const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-        let services: GrpcService[];
-
-        try {
-          services = extractServicesFromGrpcPackage(grpcObject);
-        } catch (extractError) {
-          return {
-            status: 'failed',
-            message: 'No services found in proto file',
-          };
-        }
-
-        if (services.length === 0) {
-          return {
-            status: 'failed',
-            message: 'No services found in proto file',
-          };
-        }
-
-        const firstService = services[0].name;
-        try {
-          const client = await this.createGrpcClient(sourceOptions, firstService);
-
-          const deadline = new Date();
-          deadline.setSeconds(deadline.getSeconds() + 60);
-
-          const waitForReadyAsync = (client: GrpcClient, deadline: Date): Promise<void> => {
-            return new Promise((resolve, reject) => {
-              client.waitForReady(deadline, (error: any) => {
-                if (error) {
-                  reject(error);
-                } else {
-                  resolve();
-                }
-              });
-            });
-          };
-
-          try {
-            await waitForReadyAsync(client, deadline);
-          } catch (error) {
-            throw new Error(`Cannot connect to host: ${error.message}`);
-          }
-
-          return {
-            status: 'ok',
-            message: `Successfully connected. Proto file loaded with ${services.length} service(s).`
-          };
-        } catch (connectionError) {
-          return {
-            status: 'failed',
-            message: `Connection error: ${connectionError?.message || 'Failed to connect to gRPC server'}`,
-          };
-        }
       }
+
+      if (services.length === 0) {
+        return {
+          status: 'failed',
+          message: 'No services found',
+        };
+      }
+
+      return await this.checkFirstServiceConnection(sourceOptions, services);
     } catch (error) {
       return {
         status: 'failed',
         message: error?.description || error.message || 'Connection test failed',
+      };
+    }
+  }
+
+  private async checkFirstServiceConnection(
+    sourceOptions: SourceOptions,
+    services: GrpcService[],
+    failures?: Array<{ file: string; error: string }>
+  ): Promise<ConnectionTestResult> {
+    const firstService = services[0].name;
+    try {
+      const client = await this.createGrpcClient(sourceOptions, firstService);
+
+      const deadline = new Date();
+      deadline.setSeconds(deadline.getSeconds() + 60);
+
+      const waitForReadyAsync = (client: GrpcClient, deadline: Date): Promise<void> => {
+        return new Promise((resolve, reject) => {
+          client.waitForReady(deadline, (error: any) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
+      };
+
+      try {
+        await waitForReadyAsync(client, deadline);
+      } catch (error) {
+        throw new Error(`Cannot connect to host: ${error.message}`);
+      }
+
+      let message = `Successfully connected. Found ${services.length} service(s)`;
+      if (failures && failures.length > 0) {
+        message += `. Note: ${failures.length} proto file(s) skipped due to errors`;
+      }
+      message += '.';
+
+      return {
+        status: 'ok',
+        message: message
+      };
+    } catch (connectionError) {
+      return {
+        status: 'failed',
+        message: `Connection error: ${connectionError?.message || 'Failed to connect to gRPC server'}`,
       };
     }
   }

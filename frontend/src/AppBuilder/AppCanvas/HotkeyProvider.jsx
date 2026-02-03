@@ -134,9 +134,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       }}
       tabIndex={-1}
       style={{
-        width: currentLayout == 'mobile' ? '450px' : '100%',
+        width: '100%',
         maxWidth: canvasMaxWidth,
-        margin: '0 auto',
         transform: 'translateZ(0)',
         ...(isModuleMode && { height: '100%' }),
       }}
