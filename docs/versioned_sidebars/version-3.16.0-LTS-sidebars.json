@@ -78,7 +78,30 @@
                 "setup/builtin-ssl-nginx/requirements",
                 "setup/builtin-ssl-nginx/quickstart",
                 "setup/builtin-ssl-nginx/configuration",
-                "setup/builtin-ssl-nginx/deployment-examples",
+                {
+                  "type": "category",
+                  "label": "Deployment Examples",
+                  "items": [
+                    "setup/builtin-ssl-nginx/deployment-examples/overview",
+                    {
+                      "type": "category",
+                      "label": "AWS",
+                      "items": [
+                        "setup/builtin-ssl-nginx/deployment-examples/aws/ecs",
+                        "setup/builtin-ssl-nginx/deployment-examples/aws/ami"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "General",
+                      "items": [
+                        "setup/builtin-ssl-nginx/deployment-examples/general/docker-compose",
+                        "setup/builtin-ssl-nginx/deployment-examples/general/kubernetes",
+                        "setup/builtin-ssl-nginx/deployment-examples/general/helm"
+                      ]
+                    }
+                  ]
+                },
                 "setup/builtin-ssl-nginx/troubleshooting",
                 "setup/builtin-ssl-nginx/migration",
                 "setup/builtin-ssl-nginx/security",

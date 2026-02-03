@@ -35,11 +35,11 @@ The built-in nginx is recommended for most deployments as it simplifies configur
 
 Before switching to built-in nginx, ensure you:
 
-- [ ] Have reviewed the [requirements](requirements.md) for port and domain access
-- [ ] Have updated your firewall rules to allow ports 80 and 443
-- [ ] Have backed up your current configuration
-- [ ] Have tested the new configuration in a staging environment (if available)
-- [ ] Understand the [configuration options](configuration.md) for built-in nginx
+- Have reviewed the [requirements](requirements.md) for port and domain access
+- Have updated your firewall rules to allow ports 80 and 443
+- Have backed up your current configuration
+- Have tested the new configuration in a staging environment (if available)
+- Understand the [configuration options](configuration.md) for built-in nginx
 
 ## Related Topics
 

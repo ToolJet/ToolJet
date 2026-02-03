@@ -68,4 +68,4 @@ When `ENABLE_BUILTIN_NGINX=true`, the application is **only accessible via nginx
 ## Related Topics
 
 - Having issues? Check the [Troubleshooting Guide](troubleshooting.md)
-- See [Deployment Examples](deployment-examples.md) for complete configuration examples
+- See [Deployment Examples](deployment-examples/overview.md) for complete configuration examples

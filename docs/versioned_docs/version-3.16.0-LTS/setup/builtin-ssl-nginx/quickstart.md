@@ -55,4 +55,4 @@ You can use ToolJet in HTTP-only mode indefinitely if HTTPS is not required (e.g
 ## Next Steps
 
 - Learn about [configuration options](configuration.md) for environment variables and SSL settings
-- See [deployment examples](deployment-examples.md) for Docker Compose and Kubernetes
+- See [deployment examples](deployment-examples/overview.md) for platform-specific configurations
