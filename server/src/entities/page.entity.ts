@@ -90,6 +90,9 @@ export class Page {
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;

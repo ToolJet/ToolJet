@@ -38,9 +38,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
-        (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+      appVersion.showViewerNavigation = versionFrom.showViewerNavigation;
+      appVersion.globalSettings = versionFrom.globalSettings;
+      appVersion.pageSettings = versionFrom.pageSettings;
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -118,6 +118,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             name: dataSource.name,
             kind: dataSource.kind,
             type: dataSource.type,
+            co_relation_id: dataSource?.co_relation_id,
             appVersionId: appVersion.id,
           };
           const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
@@ -131,6 +132,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               options: dataQuery.options,
               dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
+              co_relation_id: dataQuery?.co_relation_id,
             };
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
 
@@ -146,6 +148,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               newEvent.event = event.event;
               newEvent.index = event.index ?? index;
               newEvent.appVersionId = appVersion.id;
+              newEvent.co_relation_id = event?.co_relation_id;
 
               await manager.save(newEvent);
             });
@@ -163,6 +166,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             options: globalQuery.options,
             dataSourceId: globalQuery.dataSourceId,
             appVersionId: appVersion.id,
+            co_relation_id: globalQuery?.co_relation_id,
           };
 
           const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
@@ -178,6 +182,7 @@ export class VersionsCreateService implements IVersionsCreateService {
             newEvent.event = event.event;
             newEvent.index = event.index ?? index;
             newEvent.appVersionId = appVersion.id;
+            newEvent.co_relation_id = event?.co_relation_id;
 
             await manager.save(newEvent);
           });
@@ -211,6 +216,7 @@ export class VersionsCreateService implements IVersionsCreateService {
               options: newOptions,
               dataSourceId: dataSourceMapping[dataSource.id],
               environmentId: appEnvironment.id,
+              // co_relation_id: dataSourceOption?.co_relation_id, need to review if we need this
             })
           );
         }
@@ -401,6 +407,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           disabled: page.disabled,
           hidden: page.hidden,
           appVersionId: appVersion.id,
+          co_relation_id: page.co_relation_id,
         })
       );
       oldPageToNewPageMapping[page.id] = savedPage.id;
@@ -420,6 +427,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         newEvent.event = event.event;
         newEvent.index = event.index ?? index;
         newEvent.appVersionId = appVersion.id;
+        newEvent.co_relation_id = event?.co_relation_id;
 
         await manager.save(newEvent);
       });
@@ -428,6 +436,7 @@ export class VersionsCreateService implements IVersionsCreateService {
       for (const component of page.components) {
         const newComponent = new Component();
         newComponent.id = uuid.v4();
+        newComponent.co_relation_id = component?.co_relation_id;
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
@@ -495,6 +504,7 @@ export class VersionsCreateService implements IVersionsCreateService {
         originalComponent.layouts.forEach((layout) => {
           const newLayout = new Layout();
           newLayout.id = uuid.v4();
+          newLayout.co_relation_id = layout?.co_relation_id;
           newLayout.type = layout.type;
           newLayout.top = layout.top;
           newLayout.left = layout.left;
@@ -511,8 +521,8 @@ export class VersionsCreateService implements IVersionsCreateService {
         const componentEvents = allEvents.filter((event) => event.sourceId === originalComponent.id);
         componentEvents.forEach(async (event, index) => {
           const newEvent = new EventHandler();
-
           newEvent.id = uuid.v4();
+          newEvent.co_relation_id = event?.co_relation_id;
           newEvent.name = event.name;
           newEvent.sourceId = newComponent.id;
           newEvent.target = event.target;
@@ -617,7 +627,6 @@ export class VersionsCreateService implements IVersionsCreateService {
         eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
       }
       event.event = eventDefinition;
-
       await manager.save(event);
     }
   }

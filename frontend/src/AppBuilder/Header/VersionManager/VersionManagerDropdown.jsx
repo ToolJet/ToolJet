@@ -33,6 +33,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    orgGit,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -48,6 +49,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -124,7 +126,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Check if there's only one draft and no other saved versions
   const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
-  const shouldDisableCreateDraft = draftVersions.length > 0 && savedVersions.length === 0;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  // Disable create draft if git sync is enabled and a draft already exists
+  const shouldDisableCreateDraft = draftVersions.length > 0 && isGitSyncEnabled;
+  // Determine tooltip message based on why create draft is disabled
+  const createDraftDisabledTooltip =
+    shouldDisableCreateDraft && savedVersions.length > 0
+      ? 'Draft version already exists.'
+      : 'Draft version can only be created from saved versions.';
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -352,7 +361,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} darkMode={darkMode} />
+        <CreateDraftButton
+          onClick={handleCreateDraft}
+          disabled={shouldDisableCreateDraft}
+          disabledTooltip={createDraftDisabledTooltip}
+          darkMode={darkMode}
+        />
       </Popover.Body>
     </Popover>
   );

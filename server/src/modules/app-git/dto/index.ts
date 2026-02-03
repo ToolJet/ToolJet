@@ -34,6 +34,14 @@ export class AppGitPushDto {
 
   @IsString()
   gitVersionName: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowMasterPush?: boolean;
 }
 
 export class AppGitPullDto {
@@ -44,13 +52,16 @@ export class AppGitPullDto {
   gitVersionId: string;
 
   @IsString()
-  lastCommitMessage: string;
+  @IsOptional()
+  lastCommitMessage?: string;
 
   @IsString()
-  lastCommitUser: string;
+  @IsOptional()
+  lastCommitUser?: string;
 
   @IsString()
-  lastPushDate: string;
+  @IsOptional()
+  lastPushDate?: string;
 
   @IsString()
   organizationGitId: string;
@@ -74,19 +85,40 @@ export class AppGitPullUpdateDto {
   gitVersionId: string;
 
   @IsString()
-  lastCommitMessage: string;
+  @IsOptional()
+  lastCommitMessage?: string;
 
   @IsString()
-  lastCommitUser: string;
+  @IsOptional()
+  lastCommitUser?: string;
 
   @IsString()
-  lastPushDate: string;
+  @IsOptional()
+  lastPushDate?: string;
 
   @IsString()
   gitAppName: string;
 
   @IsString()
   gitVersionName: string;
+
+  @IsOptional()
+  gitBranchName?: string;
+
+  @IsString()
+  @IsOptional()
+  currentVersionId?: string;
+
+  @IsString()
+  @IsOptional()
+  commitHash?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isVersionTag?: boolean;
+
+  @IsOptional()
+  taggedVersionName?: string;
 }
 export class AppGitUpdateDto {
   @IsBoolean()
@@ -108,4 +140,21 @@ export class RenameAppOrVersionDto {
   @IsString()
   @IsOptional()
   remoteName: string;
+}
+export class AppCommitInfoDto {
+  @IsString()
+  @IsNotEmpty()
+  commitId: string;
+
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @IsString()
+  @IsOptional()
+  author?: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
 }
