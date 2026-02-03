@@ -28,8 +28,14 @@ import {
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
 } from './gridUtils';
-import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
+import {
+  dragContextBuilder,
+  getAdjustedDropPosition,
+  getDroppableSlotIdOnScreen,
+  isInsideNestedListview,
+} from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
@@ -85,7 +91,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const canvasWidth = NO_OF_GRIDS * gridWidth;
-  const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
+  const getHoveredComponentForGrid = useTransientStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const updateContainerAutoHeight = useStore((state) => state.updateContainerAutoHeight, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
@@ -474,12 +480,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       if (componentType === 'ModuleContainer') {
         return;
       }
-      useStore.getState().setHoveredComponentBoundaryId(targetId);
+      useTransientStore.getState().setHoveredComponentBoundaryId(targetId);
 
       updateDashedBordersOnHover(targetId);
     };
     const hideConfigHandle = () => {
-      useStore.getState().setHoveredComponentBoundaryId('');
+      useTransientStore.getState().setHoveredComponentBoundaryId('');
     };
     if (moveableBox) {
       moveableBox.addEventListener('mouseover', showConfigHandle);
@@ -554,7 +560,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         restrictedWidgetsTobeDropped = widgetsTypeToBeDropped;
         // useGridStore.getState().actions.setIsGroupHandleHoverd(false);
       }
-      const isParentChangeAllowed = isEmpty(restrictedWidgetsTobeDropped);
+
+      // Check ListView nesting restriction:
+      // If dragging a ListView into a slot inside a nested ListView, block it
+      let listviewDepthExceeded = false;
+      if (widgetsTypeToBeDropped.includes('Listview') && isInsideNestedListview(draggedOverElemId, boxList)) {
+        listviewDepthExceeded = true;
+        restrictedWidgetsTobeDropped = ['Listview'];
+      }
+
+      const isParentChangeAllowed = isEmpty(restrictedWidgetsTobeDropped) && !listviewDepthExceeded;
 
       if (!isParentChangeAllowed) {
         // Get original positions for all dragged components
@@ -571,8 +586,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const _top = originalBox.top;
 
             // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-              }px)`;
+            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
+              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+            }px)`;
           }
         });
 
@@ -778,8 +794,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
             const roundedTransformY = Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT;
             transformY = transformY % GRID_HEIGHT === 5 ? roundedTransformY - GRID_HEIGHT : roundedTransformY;
-            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
-              }px)`;
+            e.target.style.transform = `translate(${Math.round(transformX / _gridWidth) * _gridWidth}px, ${
+              Math.round(transformY / GRID_HEIGHT) * GRID_HEIGHT
+            }px)`;
             if (!maxWidthHit || e.width < e.target.clientWidth) {
               e.target.style.width = `${Math.round(e.lastEvent.width / _gridWidth) * _gridWidth}px`;
             }

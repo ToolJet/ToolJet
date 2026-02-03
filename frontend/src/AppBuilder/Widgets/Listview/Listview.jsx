@@ -10,6 +10,7 @@ import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
 
@@ -29,6 +30,8 @@ export const Listview = function Listview({
   subContainerIndex,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
+  const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
   const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
   const childComponents = useStore((state) => state.getChildComponents(id, moduleId), shallow);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
@@ -40,6 +43,7 @@ export const Listview = function Listview({
   );
   const prevFilteredDataRef = useRef([]);
   const prevChildComponents = useRef({});
+  const prevParentIndicesRef = useRef([]);
   const combinedProperties = { ...fallbackProperties, ...properties };
   const {
     rowHeight,
@@ -216,12 +220,19 @@ export const Listview = function Listview({
       : data
     : [];
 
+  // Check if parentIndices changed (component moved into/out of a ListView)
+  const parentIndicesChanged =
+    parentIndices.length !== prevParentIndicesRef.current.length ||
+    parentIndices.some((val, idx) => val !== prevParentIndicesRef.current[idx]);
+
   // Check if the previous filtered data is different from the current filtered data
   if (
     Object.keys(diff(filteredData, prevFilteredDataRef.current)).length > 0 ||
-    Object.keys(childComponents).length !== Object.keys(prevChildComponents.current).length
+    Object.keys(childComponents).length !== Object.keys(prevChildComponents.current).length ||
+    parentIndicesChanged
   ) {
     prevFilteredDataRef.current = filteredData;
+    prevParentIndicesRef.current = parentIndices;
     const firstPrevElement = Object.keys(prevChildComponents.current) || {};
     const firstCurrentElement = Object.keys(childComponents) || {};
     const elementIdToBeDeleted = firstPrevElement.filter((key) => !firstCurrentElement.includes(key));
@@ -253,7 +264,7 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId);
+    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
   }
   return (
     <div

@@ -1,11 +1,13 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'TagsInput'];
 
@@ -24,6 +26,14 @@ const WidgetWrapper = memo(
     moduleId,
     parentId,
   }) => {
+    const { contextPath } = useSubcontainerContext();
+    const indices = useMemo(() => {
+      const result = contextPath.map((s) => s.index);
+      return result.length > 0 ? result : null;
+    }, [contextPath]);
+    // Use full indices array for resolved component lookups, keep subContainerIndex for DOM/layout
+    const resolveIndex = indices ?? subContainerIndex;
+
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
@@ -51,7 +61,7 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabled = useStore(
-      (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight,
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
@@ -60,17 +70,17 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
     );
 
-    const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
+    const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
-      const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
+      const others = state.getResolvedComponent(id, resolveIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
     });
 
     const visibility = useStore((state) => {
-      const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+      const component = state.getResolvedComponent(id, resolveIndex, moduleId);
       const componentExposedVisibility = getExposedPropertyForAdditionalActions(
         id,
-        subContainerIndex,
+        resolveIndex,
         'isVisible',
         moduleId
       );
@@ -170,6 +180,7 @@ const WidgetWrapper = memo(
             widgetWidth={width}
             inCanvas={inCanvas}
             subContainerIndex={subContainerIndex}
+            resolveIndex={resolveIndex}
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}

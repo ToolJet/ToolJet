@@ -1,5 +1,5 @@
 export const RESTRICTED_WIDGETS_CONFIG = {
-  Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container'],
+  Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Container'],
   Kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'],
   Calendar: ['Calendar', 'Kanban'],
   Container: ['Calendar', 'Kanban'],

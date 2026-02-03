@@ -54,6 +54,7 @@ const RenderWidget = ({
   widgetHeight,
   componentType,
   subContainerIndex,
+  resolveIndex,
   onOptionChange,
   onOptionsChange,
   widgetWidth,
@@ -73,21 +74,18 @@ const RenderWidget = ({
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
   const resolvedProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties,
     shallow
   );
 
-  const resolvedStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.styles,
-    shallow
-  );
+  const resolvedStyles = useStore((state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles, shallow);
   const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
   const resolvedGeneralProperties = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.general,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.general,
     shallow
   );
   const resolvedGeneralStyles = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.generalStyles,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.generalStyles,
     shallow
   );
   const unResolvedValidation = component?.definition?.validation || {};
@@ -98,37 +96,41 @@ const RenderWidget = ({
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
   const resolvedValidation = useStore(
-    (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.validation,
+    (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
     shallow
   );
   const parentId = component?.parent;
-  const customResolvables = useStore(
-    (state) => state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId],
-    shallow
-  );
+  // Compute outer indices for this component's parent's custom resolvables
+  // resolveIndex = [outerIdx, middleIdx, innerIdx] → parentOuterIndices = [outerIdx, middleIdx]
+  // The last index is the immediate parent's row index (subContainerIndex)
+  const parentOuterIndices = useMemo(() => {
+    if (!resolveIndex || resolveIndex.length <= 1) return [];
+    return resolveIndex.slice(0, -1);
+  }, [resolveIndex]);
+
+  const customResolvables = useStore((state) => {
+    let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId];
+    if (!base) return base;
+    // Navigate through outer indices to reach the correct nested level
+    for (let i = 0; i < parentOuterIndices.length; i++) {
+      base = base?.[parentOuterIndices[i]];
+      if (!base) return undefined;
+    }
+    return base;
+  }, shallow);
   const { t } = useTranslation();
   const transformedStyles = getDefaultStyles(resolvedStyles, componentType);
 
   const isDisabled = useStore((state) => {
-    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedDisabled = getExposedPropertyForAdditionalActions(
-      id,
-      subContainerIndex,
-      'isDisabled',
-      moduleId
-    );
+    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
+    const componentExposedDisabled = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isDisabled', moduleId);
     if (componentExposedDisabled !== undefined) return componentExposedDisabled;
     return component?.properties?.disabledState || component?.styles?.disabledState;
   });
 
   const isLoading = useStore((state) => {
-    const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
-    const componentExposedLoading = getExposedPropertyForAdditionalActions(
-      id,
-      subContainerIndex,
-      'isLoading',
-      moduleId
-    );
+    const component = state.getResolvedComponent(id, resolveIndex, moduleId);
+    const componentExposedLoading = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isLoading', moduleId);
     if (componentExposedLoading !== undefined) return componentExposedLoading;
     return component?.properties?.loadingState || component?.styles?.loadingState;
   });
@@ -206,17 +208,18 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props,
             text: inCanvas
-              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+              ? `${
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -226,11 +229,13 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-            } ${!['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${
+            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
               ? 'disabled'
               : ''
-            }`} //required for custom CSS
+          }`} //required for custom CSS
         >
           <TrackedSuspense fallback={null}>
             <ComponentToRender
