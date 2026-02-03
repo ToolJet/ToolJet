@@ -193,7 +193,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
         throw new NotAcceptableException(
-          'You have been invited to this workspace. Please use the activation link in your email.'
+          'The user is already registered. Please check your inbox for the activation link'
         );
       }
 
