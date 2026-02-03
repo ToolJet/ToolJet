@@ -11,10 +11,41 @@ import { commonText } from "Texts/common";
 import { ssoText } from "Texts/manageSSO";
 
 export const verifyLoginSettings = (pageName) => {
-  cy.get(ssoSelector.enableSignUpToggle).should("be.visible");
-  cy.get(ssoSelector.allowedDomainInput).should("be.visible");
-  cy.get(ssoSelector.workspaceLoginUrl).should("be.visible");
-  cy.get(commonSelectors.copyIcon).should("be.visible");
+  //Verify Password and SSO Domain section
+  cy.get(ssoSelector.passwordLoginDropdown).verifyVisibleElement("have.text", ssoText.passwordLoginDropdownLabel).click();
+  cy.get(ssoSelector.passwordAllowedDomainsLabel).should("be.visible");
+  cy.scrollToElement(ssoSelector.passwordAllowedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.passwordAllowedDomainsInput, "allow.com");
+  cy.scrollToElement(ssoSelector.passwordRestrictedDomainsLabel);
+  cy.scrollToElement(ssoSelector.passwordRestrictedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.passwordRestrictedDomainsInput, "restrict.com");
+  cy.get(ssoSelector.ssoLoginDropdown).verifyVisibleElement("have.text", ssoText.ssoLoginDropdownLabel).click();
+  cy.scrollToElement(ssoSelector.ssoAllowedDomainsLabel);
+  cy.scrollToElement(ssoSelector.ssoAllowedDomainsInput).should("be.enabled");
+  cy.clearAndType(ssoSelector.ssoAllowedDomainsInput, "allow.com");
+  cy.get(ssoSelector.saveButton).verifyVisibleElement("have.text", ssoText.saveButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText[`${pageName}SsoToast`]
+  );
+
+  [
+    ssoSelector.passwordAllowedDomainsInput,
+    ssoSelector.passwordRestrictedDomainsInput,
+    ssoSelector.ssoAllowedDomainsInput
+  ].forEach(selector => {
+    cy.clearAndType(selector, `{selectall}{backspace}`);
+  });
+  cy.scrollToElement(ssoSelector.saveButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    ssoText[`${pageName}SsoToast`]
+  );
+
+  cy.scrollToElement(ssoSelector.ssoLoginDropdown).click();
+  cy.scrollToElement(ssoSelector.passwordLoginDropdown).click();
+  cy.scrollToElement(ssoSelector.workspaceLoginUrl);
+  cy.scrollToElement(commonSelectors.copyIcon);
 
   cy.get(ssoSelector.cancelButton).verifyVisibleElement(
     "have.text",
@@ -24,8 +55,7 @@ export const verifyLoginSettings = (pageName) => {
     "have.text",
     ssoText.saveButton
   );
-
-  cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
+  cy.scrollToElement(ssoSelector.passwordEnableToggle);
 
   //Configure sign up toggle
   cy.get(ssoSelector.enableSignUpToggle).check();
@@ -38,13 +68,6 @@ export const verifyLoginSettings = (pageName) => {
   cy.get(ssoSelector.enableSignUpToggle).uncheck();
   cy.get(ssoSelector.saveButton).click();
   cy.get(ssoSelector.enableSignUpToggle).should("not.be.checked");
-
-  cy.clearAndType(ssoSelector.allowedDomainInput, ssoText.allowedDomain);
-  cy.get(ssoSelector.saveButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    ssoText[`${pageName}SsoToast`]
-  );
 
   cy.get(ssoSelector.passwordEnableToggle).uncheck();
   cy.get(commonSelectors.modalComponent).should("be.visible");

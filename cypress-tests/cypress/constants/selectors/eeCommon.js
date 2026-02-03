@@ -55,6 +55,8 @@ export const ssoEeSelector = {
     sslLabel: '[data-cy="ssl-label"]',
   },
   ldapToggle: '[data-cy="ldap-toggle-input"] > .slider',
+  ldapLabel: '[data-cy="ldap-label"]',
+  ldapCard: '[data-cy="ldap-sso-card"]',
   hostInput: '[data-cy="host-input"]',
   portInput: '[data-cy="port-input"]',
   baseDnInput: '[data-cy="base-dn-input"]',

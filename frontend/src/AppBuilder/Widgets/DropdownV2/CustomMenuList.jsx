@@ -15,6 +15,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     selectProps;
 
   const parentRef = useRef(null);
+  const hasScrolledOnOpenRef = useRef(null);
   const virtualizer = useVirtualizer({
     count: props?.children?.length || 0,
     getScrollElement: () => parentRef.current,
@@ -29,12 +30,32 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
   }, []);
 
+  const firstSelectedIndex = props?.options?.findIndex(
+    (opt) => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value)
+  );
+
+  useEffect(() => {
+    if (!selectProps?.menuIsOpen) {
+      hasScrolledOnOpenRef.current = false;
+      return;
+    }
+    if (hasScrolledOnOpenRef.current) return;
+
+    if (firstSelectedIndex >= 0) {
+      virtualizer.scrollToIndex(firstSelectedIndex, { align: 'center' });
+      hasScrolledOnOpenRef.current = true;
+    }
+  }, [selectProps?.menuIsOpen, firstSelectedIndex]);
+
   return (
     <div
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
+      style={{
+        ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
+      }}
     >
       {showSearchInput && (
         <div className="dropdown-multiselect-widget-search-box-wrapper">

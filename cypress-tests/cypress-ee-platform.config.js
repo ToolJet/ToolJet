@@ -1,27 +1,5 @@
 const { defineConfig } = require("cypress");
 
-const environments = {
-  "run-cypress-platform": {
-    baseUrl: "http://localhost:3000",
-    configFile: "cypress-platform.config.js",
-  },
-  "run-cypress-platform-subpath": {
-    baseUrl: "http://localhost:3000/apps",
-    configFile: "cypress-platform.config.js",
-  },
-  "run-cypress-platform-proxy": {
-    baseUrl: "http://localhost:4001",
-    configFile: "cypress-platform.config.js",
-  },
-  "run-cypress-platform-proxy-subpath": {
-    baseUrl: "http://localhost:4001/apps",
-    configFile: "cypress-platform.config.js",
-  },
-};
-
-const githubLabel = process.env.GITHUB_LABEL || "run-cypress-platform";
-const environment = environments[githubLabel];
-
 module.exports = defineConfig({
   execTimeout: 1800000,
   defaultCommandTimeout: 30000,
@@ -35,16 +13,13 @@ module.exports = defineConfig({
 
   e2e: {
     setupNodeEvents (on, config) {
-      config.baseUrl = environment.baseUrl;
-
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
 
       return require("./cypress/plugins/index.js")(on, config);
     },
 
-    baseUrl: environment.baseUrl,
-    configFile: environment.configFile,
+    baseUrl: "http://localhost:3000", // Default for local development (GitHub workflow overrides this)
     specPattern: [
       "cypress/e2e/happyPath/platform/firstUser/firstUserOnboarding.cy.js",
       "cypress/e2e/happyPath/platform/eeTestcases/licensing/basicPlanTestcases/**/*.cy.js",

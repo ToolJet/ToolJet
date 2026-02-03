@@ -4,12 +4,11 @@ import { Tooltip } from 'react-tooltip';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
-import IndeterminateCheckbox from '../../IndeterminateCheckbox';
 import Popover from 'react-bootstrap/Popover';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 
 export const ControlButtons = memo(
-  ({ id, table, darkMode, height, componentName, setShowAddNewRowPopup, fireEvent }) => {
+  ({ id, table, darkMode, height, componentName, showAddNewRowPopup, setShowAddNewRowPopup, fireEvent }) => {
     const showAddNewRowButton = useTableStore((state) => state.getTableProperties(id)?.showAddNewRowButton, shallow);
     const showDownloadButton = useTableStore((state) => state.getTableProperties(id)?.showDownloadButton, shallow);
     const hideColumnSelectorButton = useTableStore(
@@ -19,29 +18,29 @@ export const ControlButtons = memo(
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
 
-    const renderButton = (icon, onClick, tooltipId, tooltipContent) => {
+    const RenderButton = ({ icon, tooltipId, tooltipContent, className, label, fill, ...restProps }) => {
       return (
-        <>
-          <Tooltip id={tooltipId} className="tooltip" />
-          <ButtonSolid
-            variant="ghostBlack"
-            className={`tj-text-xsm `}
-            customStyles={{
-              minWidth: '32px',
-            }}
-            leftIcon={icon}
-            fill={`var(--cc-table-action-icon-color)`}
-            iconWidth="16"
-            size="md"
-            data-tooltip-id={tooltipId}
-            data-tooltip-content={tooltipContent}
-            onClick={onClick}
-          ></ButtonSolid>
-        </>
+        <ButtonSolid
+          variant="tertiary"
+          className={`tj-text-sm !tw-text-[var(--cc-primary-text)] ${className}`}
+          customStyles={{
+            minWidth: '32px',
+          }}
+          leftIcon={icon}
+          fill={fill || 'var(--cc-primary-icon, var(--cc-default-icon))'}
+          iconWidth="16"
+          isTablerIcon={true}
+          size="md"
+          data-tooltip-id={tooltipId}
+          data-tooltip-content={tooltipContent}
+          {...restProps}
+        >
+          {label}
+        </ButtonSolid>
       );
     };
 
-    const renderOverlay = (id, icon, callBack, tooltipId, tooltipContent) => {
+    const renderOverlay = (icon, callBack, tooltipId, tooltipContent) => {
       const onClick = (e) => {
         if (document.activeElement === e.currentTarget) {
           e.currentTarget.blur();
@@ -49,63 +48,61 @@ export const ControlButtons = memo(
       };
 
       return (
-        <>
-          <Tooltip id={tooltipId} className="tooltip" />
-          <OverlayTriggerComponent trigger="click" overlay={callBack()} rootClose={true} placement={'top-end'}>
-            {renderButton(icon, onClick, tooltipId, tooltipContent)}
-          </OverlayTriggerComponent>
-        </>
+        <OverlayTriggerComponent
+          id={id}
+          trigger="click"
+          overlay={callBack()}
+          rootClose={true}
+          placement={'top-end'}
+          tooltipId={tooltipId}
+        >
+          <RenderButton icon={icon} onClick={onClick} tooltipId={tooltipId} tooltipContent={tooltipContent} />
+        </OverlayTriggerComponent>
       );
     };
 
     // Haven't seperated this into a separate component because of UI issues
     const hideColumnsPopover = () => (
       <Popover
-        className={`${darkMode && 'dark-theme'} dropdown-table-column-hide-common-popover`}
-        style={{ maxHeight: `${height - 79}px`, overflowY: 'auto', backgroundColor: 'var(--cc-surface1-surface)' }}
+        data-cy={`dropdown-hide-column`}
+        className={`table-widget-popup hide-column-popup ${darkMode && 'dark-theme'}`}
+        style={{ maxHeight: `${height - 79}px` }}
+        placement="top-end"
       >
-        <div
-          data-cy={`dropdown-hide-column`}
-          className={`dropdown-table-column-hide-common ${
-            darkMode ? 'dropdown-table-column-hide-dark-themed dark-theme' : 'dropdown-table-column-hide'
-          } `}
-          placement="top-end"
-        >
-          <div className="dropdown-item cursor-pointer">
-            <IndeterminateCheckbox
-              checked={table.getIsAllColumnsVisible()}
-              onChange={table.getToggleAllColumnsVisibilityHandler()}
-            />
-            <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
-              Selects All
-            </span>
-          </div>
+        <Popover.Body>
+          <RenderButton
+            label="Selects All"
+            data-cy={`options-select-all-coloumn`}
+            onClick={table.getToggleAllColumnsVisibilityHandler()}
+            icon={table.getIsAllColumnsVisible() ? 'tickv3' : ''}
+            fill="var(--cc-primary-brand)"
+            isTablerIcon={false}
+            variant="ghostBlack"
+            className={`tw-w-full justify-content-start tw-pr-[6px] ${
+              table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+            }`}
+          />
           {table.getAllLeafColumns().map((column) => {
             const header = column?.columnDef?.header;
             return (
               typeof header === 'string' && (
-                <div key={column.id}>
-                  <div>
-                    <label className="dropdown-item d-flex cursor-pointer">
-                      <input
-                        type="checkbox"
-                        data-cy={`checkbox-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
-                        checked={column.getIsVisible()}
-                        onChange={column.getToggleVisibilityHandler()}
-                      />
-                      <span
-                        className="hide-column-name tj-text-xsm"
-                        data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {` ${header}`}
-                      </span>
-                    </label>
-                  </div>
-                </div>
+                <RenderButton
+                  key={column.id}
+                  label={header}
+                  data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
+                  onClick={column.getToggleVisibilityHandler()}
+                  icon={column.getIsVisible() ? 'tickv3' : ''}
+                  fill="var(--cc-primary-brand)"
+                  isTablerIcon={false}
+                  variant="ghostBlack"
+                  className={`tw-w-full justify-content-start tw-pr-[6px] ${
+                    column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+                  }`}
+                />
               )
             );
           })}
-        </div>
+        </Popover.Body>
       </Popover>
     );
 
@@ -114,36 +111,51 @@ export const ControlButtons = memo(
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
+        className={`table-widget-popup download-popup ${darkMode && 'dark-theme'}`}
         placement="top-end"
       >
-        <Popover.Body className="p-0">
-          <div className="table-download-option cursor-pointer">
-            <span
-              data-cy={`option-download-CSV`}
-              className="cursor-pointer"
-              onClick={() => exportToCSV(table, componentName)}
-            >
-              Download as CSV
-            </span>
-            <span
-              data-cy={`option-download-execel`}
-              className="pt-2 cursor-pointer"
-              onClick={() => exportToExcel(table, componentName)}
-            >
-              Download as Excel
-            </span>
-            <span
-              data-cy={`option-download-pdf`}
-              className="pt-2 cursor-pointer"
-              onClick={() => exportToPDF(table, componentName)}
-            >
-              Download as PDF
-            </span>
-          </div>
+        <Popover.Body>
+          <RenderButton
+            label="Download as CSV"
+            data-cy={`option-download-CSV`}
+            onClick={() => exportToCSV(table, componentName)}
+            variant="ghostBlack"
+            className="tw-w-full justify-content-start tw-px-[8px]"
+          />
+          <RenderButton
+            label="Download as Excel"
+            data-cy={`option-download-execel`}
+            onClick={() => exportToExcel(table, componentName)}
+            variant="ghostBlack"
+            className="tw-w-full justify-content-start tw-px-[8px]"
+          />
+          <RenderButton
+            label="Download as PDF"
+            data-cy={`option-download-pdf`}
+            onClick={() => exportToPDF(table, componentName)}
+            variant="ghostBlack"
+            className="tw-w-full justify-content-start tw-px-[8px]"
+          />
         </Popover.Body>
       </Popover>
     );
+
+    const renderAddRowButton = () => {
+      return (
+        <>
+          <span>
+            <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+            <RenderButton
+              icon="IconPlus"
+              onClick={() => setShowAddNewRowPopup(true)}
+              tooltipId="tooltip-for-add-new-row"
+              tooltipContent="Add new row"
+              className={`${showAddNewRowPopup && 'always-active-btn'}`}
+            />
+          </span>
+        </>
+      );
+    };
 
     const renderDownloadButton = () => {
       // if server side pagination is enabled and download event is associated with the table, then directly fire download event without displaying popover
@@ -151,36 +163,41 @@ export const ControlButtons = memo(
         const onClick = () => {
           fireEvent('onTableDataDownload');
         };
-        return renderButton('filedownload', onClick, 'tooltip-for-download-serverside-pagingation', 'Download');
+        return (
+          <>
+            <Tooltip id="tooltip-for-download-serverside-pagingation" className="tooltip" />
+            <RenderButton
+              icon="IconFileDownload"
+              onClick={onClick}
+              tooltipId="tooltip-for-download-serverside-pagingation"
+              tooltipContent="Download"
+            />
+          </>
+        );
       }
 
-      return renderOverlay(id, 'filedownload', downlaodPopover, 'tooltip-for-download', 'Download');
+      return renderOverlay('IconFileDownload', downlaodPopover, 'tooltip-for-download', 'Download');
     };
 
+    const renderColumnSelectorButton = () => {
+      return renderOverlay('IconFreezeColumn', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns');
+    };
+
+    const btns = [];
+
+    if (showAddNewRowButton) btns.push(renderAddRowButton());
+    if (showDownloadButton) btns.push(renderDownloadButton());
+    if (!hideColumnSelectorButton) btns.push(renderColumnSelectorButton());
+
     return (
-      <div className="col d-flex justify-content-end ">
-        {showAddNewRowButton && (
-          <>
-            <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
-            <ButtonSolid
-              variant="ghostBlack"
-              fill={`var(--cc-table-action-icon-color)`}
-              className={'tj-text-xsm'}
-              customStyles={{ minWidth: '32px' }}
-              leftIcon="plus"
-              iconWidth="16"
-              onClick={() => {
-                setShowAddNewRowPopup(true);
-              }}
-              size="md"
-              data-tooltip-id="tooltip-for-add-new-row"
-              data-tooltip-content="Add new row"
-            ></ButtonSolid>
-          </>
-        )}
-        {showDownloadButton && renderDownloadButton()}
-        {!hideColumnSelectorButton &&
-          renderOverlay(id, 'eye1', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns')}
+      <div className="d-flex footer-control-btns">
+        {btns.map((btnEl, index) => {
+          return (
+            <div key={index} data-index={index} data-last={index === btns.length - 1}>
+              {btnEl}
+            </div>
+          );
+        })}
       </div>
     );
   }

@@ -19,7 +19,7 @@ const langSupport = Object.freeze({
   css: sass(),
 });
 
-export const CodeEditor = ({
+const CodeEditor = ({
   id,
   height,
   darkMode,
@@ -102,7 +102,9 @@ export const CodeEditor = ({
             : { minHeight: height - 1, maxHeight: '320px', overflow: 'auto' }),
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
+          border: `1px solid ${styles.borderColor}`,
           '--cc-code-editor-min-height': `${height - 1}px`,
+          '--cc-code-editor-background-color': styles.backgroundColor,
         }}
       >
         <CodeMirror
@@ -127,3 +129,5 @@ export const CodeEditor = ({
     </div>
   );
 };
+
+export default CodeEditor;

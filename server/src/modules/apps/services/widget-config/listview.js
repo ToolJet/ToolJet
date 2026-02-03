@@ -3,8 +3,8 @@ export const listviewConfig = {
   displayName: 'List View',
   description: 'List multiple items',
   defaultSize: {
-    width: 30,
-    height: 320,
+    width: 15,
+    height: 450,
   },
   defaultChildren: [
     {
@@ -161,7 +161,7 @@ export const listviewConfig = {
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
     },
     visibility: {
@@ -220,7 +220,7 @@ export const listviewConfig = {
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },

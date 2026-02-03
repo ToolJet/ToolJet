@@ -65,9 +65,10 @@ export class AppsController implements IAppsController {
     @Query('version_id') versionId: string,
     @Query('environment_id') envId: string,
     @Ability() ability: AppAbility,
-    @App() app: AppEntity
+    @App() app: AppEntity,
+    @User() user: UserEntity
   ) {
-    return this.appsService.validatePrivateAppAccess(app, ability, {
+    return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
       versionName,
       environmentName,

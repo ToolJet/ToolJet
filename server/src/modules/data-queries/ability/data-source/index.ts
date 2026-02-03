@@ -45,6 +45,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.UPDATE_ONE,
+          FEATURE_KEY.LIST_TABLES,
         ],
         DataSource
       );
@@ -65,6 +66,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.UPDATE_ONE,
+          FEATURE_KEY.LIST_TABLES,
         ],
         DataSource
       );
@@ -78,6 +80,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.DELETE,
           FEATURE_KEY.CREATE,
+          FEATURE_KEY.LIST_TABLES,
         ],
         DataSource
       );
@@ -96,6 +99,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_ONE,
+          FEATURE_KEY.LIST_TABLES,
         ],
         DataSource
       );

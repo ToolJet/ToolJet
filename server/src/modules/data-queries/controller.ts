@@ -146,6 +146,17 @@ export class DataQueriesController implements IDataQueriesController {
     return this.dataQueriesService.runQueryForApp(user, dataQueryId, updateDataQueryDto, response, app);
   }
 
+  @InitFeature(FEATURE_KEY.LIST_TABLES)
+  @UseGuards(JwtAuthGuard, ValidateQuerySourceGuard, DataSourceFeatureAbilityGuard)
+  @Get(':dataSourceId/list-tables/:environmentId')
+  async listTables(
+    @User() user: UserEntity,
+    @DataSource() dataSource: DataSourceEntity,
+    @Param('environmentId') environmentId
+  ) {
+    return this.dataQueriesService.listTablesForApp(user, dataSource, environmentId);
+  }
+
   @InitFeature(FEATURE_KEY.PREVIEW)
   @UseGuards(
     JwtAuthGuard,
@@ -164,6 +175,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     const dataQuery: DataQuery = dataSource.dataQueries[0];
+
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = Object.assign(new DataQuery(), {
       ...dataQuery,
@@ -172,7 +184,9 @@ export class DataQueriesController implements IDataQueriesController {
       app,
     });
 
-    return this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
+    const result = await this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
+
+    return result;
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE)

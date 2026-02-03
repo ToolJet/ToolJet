@@ -462,9 +462,12 @@
             "properties": "Proprietà",
             "events": "Eventi",
             "layout": "Layout",
+            "devices": "Dispositivi",
             "styles": "Stili",
             "general": "Generale",
             "validation": "Validazione",
+            "data": "Dati",
+            "additionalActions": "Azioni aggiuntive",
             "documentation": "{{componentMeta}} documentazione",
             "widgetNameEmptyError": "Il nome del Widget non può essere lasciato vuoto",
             "componentNameExistsError": "Nome del componente già esistente",
@@ -584,6 +587,14 @@
             "parseContent": "Effettua il parsing del contenuto",
             "fileType": "Tipo di file",
             "dateFormat": "Formato data",
+            "timeFormat": "Formato ora",
+            "minTime": "Ora minima",
+            "maxTime": "Ora massima",
+            "displayIn": "Visualizza in",
+            "storeIn": "Memorizza in",
+            "minDate": "Data minima",
+            "maxDate": "Data massima",
+            "makeThisFieldMandatory": "Rendi questo campo obbligatorio",
             "defaultDate": "Data predefinita",
             "events": "Eventi",
             "resources": "Risorse",
@@ -913,6 +924,22 @@
         "Back": {
             "text": "Indietro",
             "tip": "Torna alla Home"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "Gennaio",
+            "february": "Febbraio",
+            "march": "Marzo",
+            "april": "Aprile",
+            "may": "Maggio",
+            "june": "Giugno",
+            "july": "Luglio",
+            "august": "Agosto",
+            "september": "Settembre",
+            "october": "Ottobre",
+            "november": "Novembre",
+            "december": "Dicembre"
         }
     }
 }

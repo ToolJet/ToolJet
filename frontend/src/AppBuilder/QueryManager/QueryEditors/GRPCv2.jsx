@@ -51,8 +51,8 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     );
 
     return new Fuse(allMethods, {
-      keys: ['label', 'serviceLabel'],
-      threshold: 0.4,
+      keys: ['serviceLabel'], // Only search service names
+      threshold: 0.3,
       shouldSort: true,
     });
   }, [options]);
@@ -139,17 +139,23 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     // Use pre-computed search index
     const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
 
-    // Group results by service using optimized approach
+    // Group by service and include all methods
     const grouped = {};
     results.forEach((method) => {
-      if (!grouped[method.serviceLabel]) {
-        grouped[method.serviceLabel] = {
-          ...options.find((s) => s.label === method.serviceLabel),
-          methods: [],
+      const serviceKey = method.serviceValue;
+
+      if (!grouped[serviceKey]) {
+        const originalService = options.find((s) => s.value === method.serviceValue);
+        grouped[serviceKey] = {
+          label: originalService.label,
+          value: originalService.value,
+          type: originalService.type,
+          service: originalService.service,
+          methods: originalService.methods, // Include all methods from the service
         };
       }
-      grouped[method.serviceLabel].methods.push(method);
     });
+
     return Object.values(grouped);
   }, [debouncedSearchTerm, options, searchIndex]);
 
@@ -219,7 +225,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
             <div className="grpcv2-dropdown__no-results">No results found</div>
           ) : (
             getFilteredOptions.map((service, index) => (
-              <React.Fragment key={service.value}>
+              <React.Fragment key={`service-${index}`}>
                 {index > 0 && <div className="grpcv2-dropdown__separator" />}
                 <div>
                   <div onClick={() => toggleService(service.label)} className="grpcv2-dropdown__service">
@@ -532,10 +538,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                   options?.service && options?.method
                     ? `${options.service} → ${options.method}`
                     : isLoadingServices
-                    ? 'Loading services...'
-                    : hierarchicalOptions.length === 0
-                    ? 'No services found'
-                    : 'Select service'
+                      ? 'Loading services...'
+                      : hierarchicalOptions.length === 0
+                        ? 'No services found'
+                        : 'Select service'
                 }
                 disabled={
                   (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)
@@ -708,9 +714,8 @@ const TabContent = ({
                 />
               </div>
               <button
-                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
-                  darkMode ? 'delete-field-option-dark' : ''
-                }`}
+                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${darkMode ? 'delete-field-option-dark' : ''
+                  }`}
                 role="button"
                 onClick={() => {
                   removeKeyValuePair(index);

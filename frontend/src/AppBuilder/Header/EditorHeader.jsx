@@ -2,7 +2,7 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { LogoNavDropdown } from '@/modules/Appbuilder/components';
+import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
@@ -56,7 +56,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
-                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
+                      {isModuleEditor && <ModuleEditorBanner />}
                       <EditAppName />
                     </div>
                     <div>

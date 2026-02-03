@@ -1,9 +1,72 @@
 #!/bin/bash
 
 set -e
+
+# Configure apt for better reliability
+sudo tee /etc/apt/apt.conf.d/99packer-reliability > /dev/null <<EOF
+Acquire::Retries "3";
+Acquire::http::Timeout "30";
+Acquire::https::Timeout "30";
+Acquire::ftp::Timeout "30";
+Acquire::Check-Valid-Until "false";
+EOF
+
+# Clean any stale apt cache from base image
+echo "Cleaning initial apt cache..."
+sudo rm -rf /var/lib/apt/lists/*
+sudo mkdir -p /var/lib/apt/lists/partial
+
+# Retry function for apt-get operations with exponential backoff
+retry_apt_update() {
+  local max_attempts=5
+  local timeout=30
+  local attempt=1
+  local exitCode=0
+
+  while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt of $max_attempts: Running apt-get update..."
+
+    # Clean apt cache before retry (important for corrupt cache issues)
+    if [ $attempt -gt 1 ]; then
+      echo "Cleaning apt cache before retry..."
+      sudo rm -rf /var/lib/apt/lists/*
+      sudo mkdir -p /var/lib/apt/lists/partial
+    fi
+
+    # Run apt-get update with timeout
+    if timeout $timeout sudo apt-get update; then
+      echo "apt-get update succeeded on attempt $attempt"
+      return 0
+    else
+      exitCode=$?
+      echo "apt-get update failed on attempt $attempt (exit code: $exitCode)"
+    fi
+
+    if [ $attempt -lt $max_attempts ]; then
+      # Exponential backoff: 5s, 10s, 20s, 40s
+      local sleep_time=$((5 * (2 ** ($attempt - 1))))
+      echo "Waiting ${sleep_time}s before retry..."
+      sleep $sleep_time
+    fi
+
+    attempt=$((attempt + 1))
+  done
+
+  echo "ERROR: apt-get update failed after $max_attempts attempts"
+  return $exitCode
+}
+
 # Setup prerequisite dependencies
-sudo apt-get update
-sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
+retry_apt_update
+sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl
+
+# Add PostgreSQL official APT repository
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+retry_apt_update
+
+# Install PostgreSQL client
+sudo apt-get -y install --no-install-recommends postgresql-client-14
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -15,9 +78,9 @@ sudo npm i -g npm@10.9.2
 
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
-echo "deb http://openresty.org/package/ubuntu bionic main" > openresty.list
+echo "deb http://openresty.org/package/ubuntu jammy main" > openresty.list
 sudo mv openresty.list /etc/apt/sources.list.d/
-sudo apt-get update
+retry_apt_update
 sudo apt-get -y install --no-install-recommends openresty
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
@@ -67,7 +130,7 @@ sudo rm postgrest-v12.2.0-linux-static-x64.tar.xz
 sudo add-apt-repository ppa:redislabs/redis -y
 
 # Install redis
-sudo apt-get update
+retry_apt_update
 sudo apt-get install redis-server -y
 
 # Setup app, postgrest and redis as systemd service

@@ -80,13 +80,15 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isLicenseValid = await this.licenseUtilService.isValidLicense(organizationId);
+      // Check if plan is restricted (basic/starter have read-only permissions)
+      const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
       const groupPermission = await this.groupPermissionRepository.getGroup({
         id: groupId,
         organizationId,
       });
 
-      if (!isLicenseValid) {
+      // For restricted plans (basic/starter), return hardcoded granular permissions
+      if (isRestrictedPlan) {
         return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
       }
       return await this.groupPermissionRepository.getAllGranularPermissions(

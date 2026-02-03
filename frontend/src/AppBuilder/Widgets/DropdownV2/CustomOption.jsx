@@ -10,11 +10,6 @@ const CustomOption = (props) => {
       {...props}
       innerProps={{
         ...props.innerProps,
-        onTouchEnd: (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          props.selectOption(props.data);
-        },
       }}
     >
       <div className="cursor-pointer">
