@@ -611,12 +611,12 @@ const DynamicFormV2 = ({
           isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null
             ? customValidation
             : skipValidation
-            ? { valid: null, message: '' }
-            : validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' };
+              ? { valid: null, message: '' }
+              : validationMessages[key]
+                ? { valid: false, message: validationMessages[key] }
+                : isRequired
+                  ? { valid: true, message: '' }
+                  : { valid: null, message: '' };
         return {
           propertyKey: key,
           widget,

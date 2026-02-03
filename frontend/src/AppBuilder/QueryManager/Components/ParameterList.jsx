@@ -3,6 +3,7 @@ import ParameterDetails, { PillButton } from './ParameterDetails';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import ParameterForm from './ParameterForm';
 import Warning from '@/_ui/Icon/solidIcons/Warning';
+import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers.js';
 
 const ParameterList = ({
   parameters = [],
@@ -21,14 +22,14 @@ const ParameterList = ({
     let totalWidth = 0;
     const formattedParams = containerWidth
       ? parameters.map((param, index) => {
-          const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
-          totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
-          return {
-            ...param,
-            isVisible: totalWidth < containerWidth - 178,
-            index,
-          };
-        })
+        const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
+        totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
+        return {
+          ...param,
+          isVisible: totalWidth < containerWidth - 178,
+          index,
+        };
+      })
       : [];
     setFormattedParameters(formattedParams);
     if (formattedParams.every((param) => param.isVisible)) {
@@ -58,6 +59,7 @@ const ParameterList = ({
       <p
         className="text-placeholder font-weight-medium"
         style={{ marginRight: '16px', marginBottom: '0px', width: '100px' }}
+        data-cy="label-parameter"
       >
         Parameters
       </p>
@@ -75,6 +77,7 @@ const ParameterList = ({
               defaultValue={parameter.defaultValue}
               // currentState={currentState}
               darkMode={darkMode}
+              dataCy={generateCypressDataCy(parameter.name)}
             />
           );
         })}
