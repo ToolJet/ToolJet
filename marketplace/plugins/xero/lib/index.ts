@@ -103,7 +103,10 @@ export default class Xero implements QueryService {
         ['', ''],
         ['tj-x-forwarded-for', '::1'],
       ],
-      custom_query_params: [['', '']],
+      custom_query_params: [
+        ['access_type', 'offline'],
+        ['prompt', 'consent'],
+      ],
       custom_auth_params: [['', '']],
       access_token_custom_headers: [['', '']],
       ssl_certificate: 'none',
@@ -273,7 +276,6 @@ export default class Xero implements QueryService {
     const queryParams = queryOptions['params']['query'];
     const bodyParams = queryOptions['params']['request'];
 
-    // console.log(`------------------------------------>query Options`, queryOptions);
     let baseUrl: string;
 
     switch (specType.toLowerCase()) {
@@ -291,6 +293,7 @@ export default class Xero implements QueryService {
         baseUrl = 'https://api.xero.com/files.xro/1.0';
         break;
       case 'identity':
+      case 'webhooks':
         baseUrl = 'https://api.xero.com';
         break;
       case 'bank_feeds':
@@ -384,7 +387,8 @@ export default class Xero implements QueryService {
         error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
-      if (statusCode === 401 ||statusCode === 403) {
+      if (statusCode === 401 || statusCode === 403) {
+        console.log('Throwing OAuthUnauthorizedClientError---');
         throw new OAuthUnauthorizedClientError('OAuth token expired or invalid', error.message, error);
       }
 
@@ -409,9 +413,14 @@ export default class Xero implements QueryService {
     }
   }
 
-  async invokeMethod(methodName: string, sourceOptions: any, args?: any, userId?: string): Promise<any> {
+  async invokeMethod(
+    methodName: string,
+    context: { user?: User; app?: App },
+    sourceOptions: any,
+    args?: any
+  ): Promise<any> {
     if (methodName === 'getTenants') {
-      return await this.getTenants(sourceOptions, userId);
+      return await this.getTenants(sourceOptions, context.user?.id);
     }
 
     throw new QueryError('Method not found', `Method ${methodName} is not supported for Xero plugin`, {

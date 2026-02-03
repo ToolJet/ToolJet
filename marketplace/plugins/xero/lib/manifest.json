@@ -44,7 +44,7 @@
       "value": "authorization_code"
     },
     "scopes": {
-      "value": "openid profile email accounting.transactions accounting.reports.read accounting.reports.tenninetynine.read accounting.journals.read accounting.settings accounting.contacts accounting.attachments accounting.budgets.read payroll.employees payroll.payruns payroll.payslip payroll.timesheets payroll.settings files assets projects"
+      "value": "openid profile email offline_access accounting.settings accounting.settings.read accounting.contacts accounting.contacts.read accounting.attachments accounting.attachments.read accounting.transactions accounting.transactions.read accounting.journals.read accounting.reports.read files files.read projects assets assets.read"
     },
     "oauth_type": {
       "value": "custom_app"
