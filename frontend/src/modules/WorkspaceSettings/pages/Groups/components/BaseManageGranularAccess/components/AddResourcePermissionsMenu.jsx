@@ -4,7 +4,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { RESOURCE_TYPE } from '../../../index';
 
-function AddResourcePermissionsMenu ({
+function AddResourcePermissionsMenu({
   openAddPermissionModal,
   resourcesOptions,
   currentGroupPermission,

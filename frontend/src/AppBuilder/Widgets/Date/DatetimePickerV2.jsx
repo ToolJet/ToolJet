@@ -3,8 +3,6 @@ import cx from 'classnames';
 import moment from 'moment-timezone';
 // import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
 
-
-
 export const TIMEZONE_OPTIONS = [
   { name: 'UTC', value: 'Etc/UTC' },
   { name: '-12:00', value: 'Etc/GMT+12' },
@@ -142,10 +140,10 @@ export const DatetimePickerV2 = ({
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
       : getUnixTimeFromParsedDate(
-        date,
-        propStoreTimezone ? propStoreTimezone : storeTimezone,
-        format ? format : displayFormat
-      );
+          date,
+          propStoreTimezone ? propStoreTimezone : storeTimezone,
+          format ? format : displayFormat
+        );
     const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);

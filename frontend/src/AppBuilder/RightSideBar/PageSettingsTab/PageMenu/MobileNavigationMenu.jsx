@@ -162,12 +162,13 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       sheetProps={{
         container: document.getElementsByClassName('canvas-wrapper')[0],
         overlayClassName: 'tw-absolute tw-h-dvh',
-        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${isMobilePreviewMode && !isPreviewInEditor
-          ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
-          : currentMode === 'view' && !isMobilePreviewMode
+        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${
+          isMobilePreviewMode && !isPreviewInEditor
+            ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
+            : currentMode === 'view' && !isMobilePreviewMode
             ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
             : 'tw-h-full'
-          }`,
+        }`,
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"

@@ -1,5 +1,5 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { datasourceService } from '@/_services';
 import { capitalize } from 'lodash';
@@ -35,7 +35,7 @@ const OAuthWrapper = ({
 
   const hasFieldsChanged = () => {
     if (!selectedDataSource?.id || !initialOptions) {
-      return true; 
+      return true;
     }
 
     const optionKeys = Object.keys(options || {});

@@ -18,7 +18,9 @@ export const Checkbox = ({ label, isChecked, onChange, key = '', value }) => {
         checked={isChecked}
         data-cy={`${generateCypressDataCy(label)}-checkbox-input`}
       />
-      <label className="form-check-label" data-cy={`label-${generateCypressDataCy(label)}`}>{label}</label>
+      <label className="form-check-label" data-cy={`label-${generateCypressDataCy(label)}`}>
+        {label}
+      </label>
     </div>
   );
 };

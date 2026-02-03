@@ -61,7 +61,9 @@ const OAuth = ({
     <>
       {authOptions(isGrpc).length > 1 && (
         <>
-          <label className="form-label" data-cy="authentication-type-dropdown-label">Authentication type</label>
+          <label className="form-label" data-cy="authentication-type-dropdown-label">
+            Authentication type
+          </label>
           <Select
             options={authOptions(isGrpc)}
             value={auth_type}

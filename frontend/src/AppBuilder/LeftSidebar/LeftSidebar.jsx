@@ -94,7 +94,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-        100
+          100
       );
     } else {
       setPopoverContentHeight(100);
@@ -105,7 +105,6 @@ export const BaseLeftSidebar = ({
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
@@ -221,7 +220,7 @@ export const BaseLeftSidebar = ({
     <div
       className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999 , maxWidth: '304px'}}
+      style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems()}
       <Popover

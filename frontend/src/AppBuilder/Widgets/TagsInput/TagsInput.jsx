@@ -119,13 +119,13 @@ const TagsInput = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          isDisabled: data?.disable ?? false,
-        }))
+          .filter((data) => data?.visible ?? true)
+          .map((data) => ({
+            ...data,
+            label: getSafeRenderableValue(data?.label),
+            value: data?.value,
+            isDisabled: data?.disable ?? false,
+          }))
       : [];
     return sortArray(_selectOptions, sort);
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
@@ -136,21 +136,24 @@ const TagsInput = ({
   }, [selectOptions, newTagsAdded]);
 
   // Color palette for auto pick chip color (matching Tags component)
-  const chipColorPalette = useMemo(() => [
-    { bg: '#40474D1A', text: '#40474D' }, // gray
-    { bg: '#CE27611A', text: '#CE2761' }, // pink
-    { bg: '#6745E21A', text: '#6745E2' }, // purple
-    { bg: '#2576CE1A', text: '#2576CE' }, // blue
-    { bg: '#1A9C6D1A', text: '#1A9C6D' }, // teal
-    { bg: '#69AF201A', text: '#69AF20' }, // green
-    { bg: '#F357171A', text: '#F35717' }, // orange
-    { bg: '#EB2E391A', text: '#EB2E39' }, // red
-    { bg: '#A438C01A', text: '#A438C0' }, // magenta
-    { bg: '#405DE61A', text: '#405DE6' }, // indigo
-    { bg: '#1E8FA31A', text: '#1E8FA3' }, // cyan
-    { bg: '#34A9471A', text: '#34A947' }, // lime
-    { bg: '#F191191A', text: '#F19119' }, // amber
-  ], []);
+  const chipColorPalette = useMemo(
+    () => [
+      { bg: '#40474D1A', text: '#40474D' }, // gray
+      { bg: '#CE27611A', text: '#CE2761' }, // pink
+      { bg: '#6745E21A', text: '#6745E2' }, // purple
+      { bg: '#2576CE1A', text: '#2576CE' }, // blue
+      { bg: '#1A9C6D1A', text: '#1A9C6D' }, // teal
+      { bg: '#69AF201A', text: '#69AF20' }, // green
+      { bg: '#F357171A', text: '#F35717' }, // orange
+      { bg: '#EB2E391A', text: '#EB2E39' }, // red
+      { bg: '#A438C01A', text: '#A438C0' }, // magenta
+      { bg: '#405DE61A', text: '#405DE6' }, // indigo
+      { bg: '#1E8FA31A', text: '#1E8FA3' }, // cyan
+      { bg: '#34A9471A', text: '#34A947' }, // lime
+      { bg: '#F191191A', text: '#F19119' }, // amber
+    ],
+    []
+  );
 
   // Create a stable color map for all options
   const optionColorMap = useMemo(() => {
@@ -228,7 +231,10 @@ const TagsInput = ({
     const newTag = { label: trimmedValue, value: trimmedValue };
     const updatedNewTags = [...newTagsAdded, newTag];
     setNewTagsAdded(updatedNewTags);
-    setExposedVariable('newTagsAdded', updatedNewTags.map(({ label, value }) => ({ label, value })));
+    setExposedVariable(
+      'newTagsAdded',
+      updatedNewTags.map(({ label, value }) => ({ label, value }))
+    );
 
     const newSelected = [...selected, newTag];
     setInputValues(newSelected);
@@ -254,7 +260,10 @@ const TagsInput = ({
     const hasDelimiters = value.includes(',') || value.includes(';');
     if (!hasDelimiters) return null;
 
-    const parts = value.split(/[,;]/).map((part) => part.trim()).filter(Boolean);
+    const parts = value
+      .split(/[,;]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
     return parts.length > 1 ? parts : null;
   };
 
@@ -273,7 +282,10 @@ const TagsInput = ({
     const newTag = { label: tagText, value: tagText };
     setNewTagsAdded((prev) => {
       const updated = [...prev, newTag];
-      setExposedVariable('newTagsAdded', updated.map(({ label, value }) => ({ label, value })));
+      setExposedVariable(
+        'newTagsAdded',
+        updated.map(({ label, value }) => ({ label, value }))
+      );
       return updated;
     });
     return newTag;
@@ -559,9 +571,7 @@ const TagsInput = ({
           const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
           // Find matching option by value first, then by label as fallback
-          const matchingOption = allOptions.find(
-            (option) => option.value === tagValue || option.label === tagLabel
-          );
+          const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
 
           if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
             newSelected.push(matchingOption);
@@ -580,9 +590,7 @@ const TagsInput = ({
         // Filter out options that match by value OR label
         const newSelected = selected.filter(
           (option) =>
-            !tagIdentifiers.some(
-              (identifier) => option.value === identifier.value || option.label === identifier.label
-            )
+            !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
         );
         setInputValues(newSelected);
       }
@@ -641,8 +649,7 @@ const TagsInput = ({
       ...provided,
       minHeight: _height,
       height: isDynamicHeightEnabled ? 'auto' : _height,
-      boxShadow:
-        state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
+      boxShadow: state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
       alignItems: 'flex-start',
       overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
@@ -722,16 +729,15 @@ const TagsInput = ({
       const { selectProps, data } = state;
       const options = selectProps?.options || [];
       const optionIndex = options.findIndex((opt) => opt.value === data?.value);
-      const isControlledFocused = selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
+      const isControlledFocused =
+        selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
 
       // Use color-mix to get 50% of hover color (effectively 4% alpha from 8%)
       const hoverBgColor = 'color-mix(in srgb, var(--interactive-overlays-fill-hover) 50%, transparent)';
 
       return {
         ...provided,
-        backgroundColor: isControlledFocused
-          ? hoverBgColor
-          : 'var(--surfaces-surface-01)',
+        backgroundColor: isControlledFocused ? hoverBgColor : 'var(--surfaces-surface-01)',
         color: 'var(--text-primary)',
         opacity: state.isDisabled ? 0.3 : 1,
         cursor: 'pointer',
@@ -751,7 +757,7 @@ const TagsInput = ({
       flexDirection: 'column',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
-      padding: "4px",
+      padding: '4px',
     }),
     menu: (provided) => ({
       ...provided,
@@ -780,7 +786,7 @@ const TagsInput = ({
           data-cy={`label-${String(componentName).toLowerCase()}`}
           className={cx('tags-input-widget', 'd-flex', {
             [alignment === 'top' &&
-              ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
               ? 'flex-column'
               : 'align-items-start']: true,
             'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -873,7 +879,9 @@ const TagsInput = ({
                   />
                 ),
                 Option: TagsInputOption,
-                LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
+                LoadingIndicator: () => (
+                  <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />
+                ),
                 DropdownIndicator: () => null,
               }}
               isClearable={false}

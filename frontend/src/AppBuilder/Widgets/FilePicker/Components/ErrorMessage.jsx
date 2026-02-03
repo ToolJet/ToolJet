@@ -17,4 +17,4 @@ ErrorMessage.propTypes = {
   message: PropTypes.string.isRequired,
 };
 
-export default ErrorMessage; 
+export default ErrorMessage;

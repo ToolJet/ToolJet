@@ -666,8 +666,12 @@ export const Inspector = ({
                   toggleModal={toggleComponentPermissionModal}
                   darkMode={darkMode}
                   fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                  createPermission={(id, appId, body) =>
+                    appPermissionService.createComponentPermission(appId, id, body)
+                  }
+                  updatePermission={(id, appId, body) =>
+                    appPermissionService.updateComponentPermission(appId, id, body)
+                  }
                   deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
                   onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
                 />

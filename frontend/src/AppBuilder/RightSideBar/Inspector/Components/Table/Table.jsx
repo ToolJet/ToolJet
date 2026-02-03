@@ -586,7 +586,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value) ||
-      resolveReferences(component.component.definition.properties.showBulkSelector.value);
+        resolveReferences(component.component.definition.properties.showBulkSelector.value);
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType);
@@ -744,8 +744,9 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility)}
-                                      className={`${this.state.activeColumnPopoverIndex === index && 'active-column-list'
-                                        }`}
+                                      className={`${
+                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                      }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                       Icon={getColumnIcon(item?.columnType)}

@@ -12,12 +12,12 @@ const getInputStep = (allowedDecimalPlaces) => {
   if (allowedDecimalPlaces === null || allowedDecimalPlaces === undefined) {
     return 'any';
   }
-  
+
   const num = Number(allowedDecimalPlaces);
   if (!Number.isFinite(num) || num < 0) {
     return 'any';
   }
-  
+
   const validDecimalPlaces = Math.floor(num);
   return validDecimalPlaces === 0 ? '1' : `0.${'0'.repeat(validDecimalPlaces - 1)}1`;
 };

@@ -150,5 +150,5 @@ export const ActionTypes = [
     id: 'toggle-app-mode',
     options: [{ name: 'appMode', type: 'text', default: '' }],
     group: 'other',
-  }
+  },
 ];

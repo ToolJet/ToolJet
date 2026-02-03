@@ -44,19 +44,19 @@ const ViewerApp = () => {
   // Toast options for viewer
   const toastOptions = isAppDarkMode
     ? {
-      className: 'toast-dark-mode',
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-        wordBreak: 'break-all',
-      },
-    }
+        className: 'toast-dark-mode',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+          wordBreak: 'break-all',
+        },
+      }
     : {
-      style: {
-        wordBreak: 'break-all',
-      },
-    };
+        style: {
+          wordBreak: 'break-all',
+        },
+      };
 
   // Simple dark mode switcher for viewer
   const switchDarkMode = (newMode) => {
@@ -163,4 +163,3 @@ const ViewerApp = () => {
 };
 
 export default ViewerApp;
-
