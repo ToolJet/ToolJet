@@ -158,7 +158,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Install Redis 7.x from official Redis repository for BullMQ compatibility
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
-    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
