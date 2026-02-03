@@ -40,9 +40,7 @@ const GlobalSettings = ({ darkMode, onClose }) => {
         {/* Main Content Section */}
         <div className="global-settings-main-content">
           <SlugInput />
-          <div className={cx({ disabled: shouldFreeze })}>
-            <MaintenanceMode darkMode={darkMode} />
-          </div>
+          <MaintenanceMode darkMode={darkMode} />
           <AppExport darkMode={darkMode} />
         </div>
 
