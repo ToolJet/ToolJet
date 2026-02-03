@@ -24,7 +24,6 @@
       "description": "Single select dropdown for operation",
       "specUrl": {
         "Accounts": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_accounting.yaml",
-        "WebHooks": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-webhooks.yaml",
         "Finance": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-finance.yaml",
         "identity": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero-identity.yaml",
         "BankFeeds": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/master/xero_bankfeeds.yaml",
