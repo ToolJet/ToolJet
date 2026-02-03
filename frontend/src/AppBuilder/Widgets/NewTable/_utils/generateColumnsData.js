@@ -21,6 +21,7 @@ import {
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
+  RatingColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 import SelectSearch from 'react-select-search';
@@ -390,6 +391,25 @@ export default function generateColumnsData({
                   containerWidth={columnSize}
                   cell={cell}
                   id={id}
+                />
+              );
+            }
+
+            case 'rating': {
+              return (
+                <RatingColumn
+                  isEditable={isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  row={row}
+                  id={id}
+                  isNewRow={columnForAddNewRow}
                 />
               );
             }

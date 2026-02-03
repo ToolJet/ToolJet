@@ -264,6 +264,7 @@ class DataSourceManagerComponent extends React.Component {
       'microsoft_graph',
       'hubspot',
       'gmail',
+      'googlesheetsv2',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -407,6 +408,9 @@ class DataSourceManagerComponent extends React.Component {
   checkShouldRenderFooterComponent = (datasourceKind, datasourceOptions) => {
     switch (datasourceKind) {
       case 'googlesheets': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'googlesheetsv2': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
       default:

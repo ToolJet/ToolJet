@@ -6,7 +6,6 @@ import Fuse from 'fuse.js';
 import JSONViewer from './JSONViewer';
 import { Node } from './Node';
 import { v4 as uuidv4 } from 'uuid';
-import InputComponent from '@/components/ui/Input/Index';
 import { isEmpty } from 'lodash';
 
 const ensureUniqueIds = (node, parentId = '') => {
@@ -44,7 +43,6 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
   const getComponentIdFromName = useStore((state) => state.getComponentIdFromName, shallow);
   const getComponentDefinition = useStore((state) => state.getComponentDefinition, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
-  const setSearchValue = useStore((state) => state.setInspectorSearchValue, shallow);
   const selectedNodePath = useStore((state) => state.selectedNodePath, shallow);
   const setSelectedNodePath = useStore((state) => state.setSelectedNodePath, shallow);
 
@@ -167,60 +165,35 @@ const JSONTreeViewerV2 = ({ data = {}, iconsList = [], darkMode, searchablePaths
   return (
     <>
       {!selectedNodePath || !selectedData || (typeof selectedData == 'object' && isEmpty(selectedData)) ? (
-        <div>
-          <div style={{ margin: '8px 16px 12px 16px' }}>
-            {/* <SearchBox
-              dataCy={`inspector-search`}
-              initialValue={searchValue}
-              callBack={(e) => setSearchValue(e.target.value)}
-              onClearCallback={() => setSearchValue('')}
-              placeholder={`Search`}
-              customClass={`tj-inspector-search-input  tj-text-xsm`}
-              showClearButton={false}
-              width={300}
-            /> */}
+        <div className="json-tree-view">
+          <TreeView
+            data={flattendedData}
+            className="basic"
+            aria-label="basic example tree"
+            defaultExpandedIds={selectedNodes}
+            expandedIds={filteredIds}
+            key={key}
+            nodeRenderer={(props) => {
+              const { element } = props;
+              const { metadata } = element || {};
+              const { path } = metadata || {};
+              const data = {
+                nodeName: element.name,
+                selectedNodePath: path,
+              };
 
-            <InputComponent
-              leadingIcon="search01"
-              onChange={(e) => setSearchValue(e.target.value)}
-              onClear={() => setSearchValue('')}
-              size="medium"
-              placeholder="Search"
-              value={searchValue}
-              {...(searchValue && { trailingAction: 'clear' })}
-              data-cy="inspector-search-input"
-            />
-          </div>
-          <div className="json-tree-view">
-            <TreeView
-              data={flattendedData}
-              className="basic"
-              aria-label="basic example tree"
-              defaultExpandedIds={selectedNodes}
-              expandedIds={filteredIds}
-              key={key}
-              nodeRenderer={(props) => {
-                const { element } = props;
-                const { metadata } = element || {};
-                const { path } = metadata || {};
-                const data = {
-                  nodeName: element.name,
-                  selectedNodePath: path,
-                };
-
-                return (
-                  <Node
-                    {...props}
-                    darkMode={darkMode}
-                    setSelectedNodePath={setSelectedNodePath}
-                    searchValue={searchValue}
-                    iconsList={iconsList}
-                    data={data}
-                  />
-                );
-              }}
-            />
-          </div>
+              return (
+                <Node
+                  {...props}
+                  darkMode={darkMode}
+                  setSelectedNodePath={setSelectedNodePath}
+                  searchValue={searchValue}
+                  iconsList={iconsList}
+                  data={data}
+                />
+              );
+            }}
+          />
         </div>
       ) : (
         <JSONViewer
