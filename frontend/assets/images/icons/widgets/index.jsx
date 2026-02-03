@@ -66,6 +66,7 @@ import PopoverMenu from './popovermenu.jsx';
 import AudioRecorder from './audiorecorder.jsx';
 import Camera from './camera.jsx';
 import TagsInput from './tagsinput.jsx';
+import Accordion from './accordion.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -225,6 +226,8 @@ const WidgetIcon = (props) => {
       return <AudioRecorder {...props} />;
     case 'camera':
       return <Camera {...props} />;
+    case 'accordion':
+      return <Accordion {...props} />;
     default:
       return <BoundedBox {...props} />;
   }
