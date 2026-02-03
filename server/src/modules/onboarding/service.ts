@@ -62,6 +62,7 @@ import { IOnboardingService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -165,8 +166,12 @@ export class OnboardingService implements IOnboardingService {
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
-          if (!defaultWorkspace.enableSignUp) {
-            throw new ForbiddenException('Signup is disabled for the default workspace. Please contact the workspace admin.');
+          const edition = getTooljetEdition();
+          const isCE = edition === 'ce'; 
+          if (isCE && !defaultWorkspace.enableSignUp) {
+            throw new ForbiddenException(
+              'Signup is disabled for the default workspace. Please contact the workspace admin.'
+            );
           }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,

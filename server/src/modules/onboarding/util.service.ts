@@ -150,6 +150,26 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
     return nameObj;
   }
+  private async activateUserWithPassword(
+    existingUser: User,
+    params: { password: string; firstName?: string; lastName?: string },
+    targetOrg?: Organization,
+    manager?: EntityManager
+  ): Promise<void> {
+    await this.userRepository.updateOne(
+      existingUser.id,
+      {
+        password: params.password, 
+        status: USER_STATUS.ACTIVE,
+        invitationToken: null,
+        ...(params.firstName && { firstName: params.firstName }),
+        ...(params.lastName && { lastName: params.lastName }),
+      },
+      manager
+    ); 
+    existingUser.status = USER_STATUS.ACTIVE;
+    existingUser.password = params.password;
+  }
 
   whatIfTheSignUpIsAtTheWorkspaceLevel = async (
     existingUser: User,
@@ -167,42 +187,60 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       const organizationUsers = existingUser.organizationUsers || [];
       
-      const isAlreadyActiveInThisOrg = organizationUsers.find(
-        (ou) => ou.organizationId === targetOrg?.id && ou.status === WORKSPACE_USER_STATUS.ACTIVE
+      const membershipInCurrentOrg = organizationUsers.find(
+        (ou) => ou.organizationId === targetOrg?.id
       );
 
-      if (isAlreadyActiveInThisOrg) {
-        throw new NotAcceptableException('Email already exists in this workspace');
+      if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
+        throw new NotAcceptableException(
+          'The user is already registered. Please check your inbox for the activation link'
+        );
       }
 
-      const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-      if (!isPasswordCorrect) {
-        throw new NotAcceptableException('You already have an account with this email. Please use your existing password to join this workspace.');
+      // 2. If already active here, block as "already exists"
+      if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.ACTIVE) {
+        throw new NotAcceptableException('Email already exists in this workspace');
       }
+      
 
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
 
       if (!isCloudEdition && response) {
+        if (!existingUser.password) {
+          await this.activateUserWithPassword(
+            existingUser,
+            { password, firstName, lastName },
+            targetOrg,
+            manager
+          );
+        } else {
+          const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+          if (!isPasswordCorrect) {
+            throw new NotAcceptableException(
+              'You already have an account with this email. Please use your existing password to join this workspace.'
+            );
+          }
+        }
         if (!targetOrg) {
           throw new NotAcceptableException('No valid workspace found to log into.');
         }
 
         existingUser.organization = targetOrg;
-        const orgUser = await this.addUserToTheWorkspace(existingUser, targetOrg, manager);
-        await this.organizationUsersUtilService.activateOrganization(orgUser, manager);
-        
-        orgUser.status = WORKSPACE_USER_STATUS.ACTIVE;
-        if (!existingUser.organizationUsers) existingUser.organizationUsers = [];
-        existingUser.organizationUsers.push(orgUser);
-        
-        if (existingUser.status === USER_STATUS.INVITED) {
-          existingUser.status = USER_STATUS.ACTIVE;
-          existingUser.invitationToken = null;
-          await this.userRepository.updateOne(existingUser.id, { 
-              status: USER_STATUS.ACTIVE, 
-              invitationToken: null 
-          }, manager);
+
+        // DO NOT create org user if already invited
+        let orgUser = organizationUsers.find(
+          ou => ou.organizationId === targetOrg.id
+        );
+
+        // only create if truly not present
+        if (!orgUser) {
+          orgUser = await this.addUserToTheWorkspace(existingUser, targetOrg, manager);
+        }
+
+        // activate if invited
+        if (orgUser.status === WORKSPACE_USER_STATUS.INVITED) {
+          await this.organizationUsersUtilService.activateOrganization(orgUser, manager);
         }
 
         return await this.sessionUtilService.generateLoginResultPayload(
