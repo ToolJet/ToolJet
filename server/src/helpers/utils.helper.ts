@@ -589,6 +589,32 @@ export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
 };
 
+export const isRequestSecure = (request?: any): boolean => {
+  if (!request) {
+    // Fallback to TOOLJET_HOST if no request context
+    return isHttpsEnabled();
+  }
+
+  // Check various headers that indicate HTTPS (set by reverse proxies)
+  const proto = request.headers?.['x-forwarded-proto'];
+  if (proto) {
+    return proto === 'https';
+  }
+
+  const forwardedSsl = request.headers?.['x-forwarded-ssl'];
+  if (forwardedSsl) {
+    return forwardedSsl === 'on';
+  }
+
+  // Check if request is secure (for direct HTTPS without proxy)
+  if (request.secure !== undefined) {
+    return request.secure;
+  }
+
+  // Fallback to TOOLJET_HOST
+  return isHttpsEnabled();
+};
+
 export function areAllUnique(array) {
   const set = new Set(array);
   return set.size === array.length;
@@ -767,3 +793,28 @@ export async function validatePasswordDomain(
     instanceSettings?.PASSWORD_RESTRICTED_DOMAINS
   );
 }
+
+/**
+ * Extracts the domain from TOOLJET_HOST environment variable
+ * @returns The domain name (e.g., "example.com") or null if TOOLJET_HOST is not set or invalid
+ * @example
+ * // TOOLJET_HOST="https://example.com" → "example.com"
+ * // TOOLJET_HOST="http://example.com:3000" → "example.com"
+ * // TOOLJET_HOST="example.com" → "example.com"
+ */
+export const extractDomainFromTooljetHost = (): string | null => {
+  const tooljetHost = process.env.TOOLJET_HOST;
+  if (!tooljetHost) {
+    return null;
+  }
+
+  try {
+    const url = new URL(tooljetHost);
+    return url.hostname;
+  } catch (error) {
+    // If URL parsing fails, try to extract domain directly
+    // Handle formats like: "https://example.com" or "example.com"
+    const match = tooljetHost.match(/^(?:https?:\/\/)?([^/:]+)/);
+    return match ? match[1] : null;
+  }
+};

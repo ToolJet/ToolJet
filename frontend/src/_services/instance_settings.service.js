@@ -4,6 +4,7 @@ import { appService } from './app.service';
 
 export const instanceSettingsService = {
   fetchSettings,
+  get: fetchSettings,
   fetchSMTPSettings,
   update,
   updateSMTPSettings,
@@ -12,6 +13,7 @@ export const instanceSettingsService = {
   updateGeneralConfigs,
   updateSmtpEnvSetting,
   updateSmtpStatus,
+  validateSslPrerequisites,
 };
 
 function fetchSettings(type = 'user') {
@@ -96,4 +98,13 @@ async function update(settings) {
   });
   const updatedSettings = await handleResponse(response);
   return updatedSettings;
+}
+
+async function validateSslPrerequisites() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/instance-settings/ssl/validate`, requestOptions).then(handleResponse);
 }
