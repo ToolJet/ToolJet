@@ -145,6 +145,7 @@ export const widgets = [
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -158,7 +159,6 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
-  jsonExplorerConfig,
   jsonEditorConfig,
 
   //Legacy
