@@ -10,6 +10,9 @@ import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
 import { linter, lintGutter } from '@codemirror/lint';
 import './jsonEditor.scss';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 export const JSONEditor = function JSONEditor(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -28,8 +31,11 @@ export const JSONEditor = function JSONEditor(props) {
     subContainerIndex,
   } = props;
 
-  const { shouldExpandEntireJSON, loadingState, visibility, disabledState } = properties;
+  const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
+  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
+  const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
+  const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
 
   // ===== STATE MANAGEMENT =====
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -37,8 +43,8 @@ export const JSONEditor = function JSONEditor(props) {
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState,
+    value: JSON.stringify(value, null, 2),
   });
-  const [value, setValue] = useState(JSON.stringify(properties.value, null, 2));
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const editorRef = useRef(null);
 
@@ -60,6 +66,17 @@ export const JSONEditor = function JSONEditor(props) {
       ...prevState,
       [key]: value,
     }));
+  };
+
+  const setValue = (newValue) => {
+    updateExposedVariablesState('value', newValue);
+    setForceDynamicHeightUpdate((prev) => !prev);
+    try {
+      const parsedValue = JSON.parse(newValue);
+      setExposedVariables({ value: parsedValue, isValid: true });
+    } catch (error) {
+      setExposedVariable('isValid', false);
+    }
   };
 
   // ===== COMPUTED VALUES =====
@@ -155,11 +172,11 @@ export const JSONEditor = function JSONEditor(props) {
       },
     },
     {
-      dep: properties.value,
+      dep: value,
       sideEffect: () => {
-        setValue(JSON.stringify(properties.value, null, 2));
+        updateExposedVariablesState('value', JSON.stringify(value, null, 2));
         setForceDynamicHeightUpdate((prev) => !prev);
-        setExposedVariables({ value: properties.value, isValid: true });
+        setExposedVariables({ value: value, isValid: true });
       },
     },
     {
@@ -183,11 +200,14 @@ export const JSONEditor = function JSONEditor(props) {
 
   useEffect(() => {
     const exposedVariables = {
-      value: properties.value,
+      value: value,
       isValid: true,
       isLoading: loadingState,
       isVisible: visibility,
       isDisabled: disabledState,
+      setValue: async function (value) {
+        setValue(value);
+      },
       setLoading: async function (value) {
         updateExposedVariablesState('isLoading', !!value);
         setExposedVariable('isLoading', !!value);
@@ -196,7 +216,7 @@ export const JSONEditor = function JSONEditor(props) {
         updateExposedVariablesState('isVisible', !!value);
         setExposedVariable('isVisible', !!value);
       },
-      setDisabled: async function (value) {
+      setDisable: async function (value) {
         updateExposedVariablesState('isDisabled', !!value);
         setExposedVariable('isDisabled', !!value);
       },
@@ -215,7 +235,12 @@ export const JSONEditor = function JSONEditor(props) {
           onCreateEditor={(view) => {
             editorRef.current = view;
           }}
-          value={value}
+          value={exposedVariablesTemporaryState.value}
+          onFocus={() => {
+            setSelectedComponents([id]);
+            setRightSidebarOpen(true);
+            setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+          }}
           height={'100%'}
           minHeight={isDynamicHeightEnabled ? `${height}px` : height}
           maxHeight={isDynamicHeightEnabled ? 'none' : height}
@@ -224,13 +249,6 @@ export const JSONEditor = function JSONEditor(props) {
           extensions={extensions}
           onChange={(newValue) => {
             setValue(newValue);
-            setForceDynamicHeightUpdate((prev) => !prev);
-            try {
-              const parsedValue = JSON.parse(newValue);
-              setExposedVariables({ value: parsedValue, isValid: true });
-            } catch (error) {
-              setExposedVariable('isValid', false);
-            }
           }}
           basicSetup={basicSetup}
           className={`codehinter-multi-line-input`}

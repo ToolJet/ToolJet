@@ -30,6 +30,7 @@ export const JSONExplorer = function JSONExplorer(props) {
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState,
+    value: value,
   });
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const containerRef = useRef(null);
@@ -107,6 +108,7 @@ export const JSONExplorer = function JSONExplorer(props) {
       dep: value,
       sideEffect: () => {
         setForceDynamicHeightUpdate((prev) => !prev);
+        updateExposedVariablesState('value', value);
         setExposedVariable('value', value);
       },
     },
@@ -124,6 +126,10 @@ export const JSONExplorer = function JSONExplorer(props) {
       isVisible: visibility,
       isDisabled: disabledState,
       value: value,
+      setValue: async function (value) {
+        updateExposedVariablesState('value', value);
+        setExposedVariable('value', value);
+      },
       setLoading: async function (value) {
         updateExposedVariablesState('isLoading', !!value);
         setExposedVariable('isLoading', !!value);
@@ -132,7 +138,7 @@ export const JSONExplorer = function JSONExplorer(props) {
         updateExposedVariablesState('isVisible', !!value);
         setExposedVariable('isVisible', !!value);
       },
-      setDisabled: async function (value) {
+      setDisable: async function (value) {
         updateExposedVariablesState('isDisabled', !!value);
         setExposedVariable('isDisabled', !!value);
       },
@@ -167,7 +173,7 @@ export const JSONExplorer = function JSONExplorer(props) {
       ) : (
         <JSONTree
           key={`json-tree-${shouldExpandEntireJSON}`}
-          data={value}
+          data={exposedVariablesTemporaryState.value}
           theme={theme}
           shouldExpandNodeInitially={shouldExpandNodeInitially}
           hideRoot={!shouldShowRootNode}
