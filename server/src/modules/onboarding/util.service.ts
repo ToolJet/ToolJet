@@ -150,18 +150,12 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     }
     return nameObj;
   }
-  private async activateInvitedUserWithPassword(
+  private async activateUserWithPassword(
     existingUser: User,
     params: { password: string; firstName?: string; lastName?: string },
     targetOrg?: Organization,
     manager?: EntityManager
   ): Promise<void> {
-    if (
-      existingUser.status !== USER_STATUS.INVITED ||
-      existingUser.password
-    ) {
-      return; // not an invited-without-password user
-    }
     await this.userRepository.updateOne(
       existingUser.id,
       {
@@ -172,27 +166,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         ...(params.lastName && { lastName: params.lastName }),
       },
       manager
-    );
-
-    // Sync the local object state
+    ); 
     existingUser.status = USER_STATUS.ACTIVE;
-    existingUser.invitationToken = null;
-
-    // Activate workspace invite if exists
-    if (targetOrg && existingUser.organizationUsers?.length) {
-      const invitedOrgUser = existingUser.organizationUsers.find(
-        (ou) =>
-          ou.organizationId === targetOrg.id &&
-          ou.status === WORKSPACE_USER_STATUS.INVITED
-      );
-
-      if (invitedOrgUser) {
-        await this.organizationUsersUtilService.activateOrganization(
-          invitedOrgUser,
-          manager
-        );
-      }
-    }
+    existingUser.password = params.password;
   }
 
   whatIfTheSignUpIsAtTheWorkspaceLevel = async (
@@ -211,38 +187,41 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       const organizationUsers = existingUser.organizationUsers || [];
       
-      const isAlreadyActiveInThisOrg = organizationUsers.find(
-        (ou) => ou.organizationId === targetOrg?.id && ou.status === WORKSPACE_USER_STATUS.ACTIVE
+      const membershipInCurrentOrg = organizationUsers.find(
+        (ou) => ou.organizationId === targetOrg?.id
       );
 
-      if (isAlreadyActiveInThisOrg) {
-        throw new NotAcceptableException('Email already exists in this workspace');
+      if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
+        throw new NotAcceptableException(
+          'You have been invited to this workspace. Please use the activation link in your email.'
+        );
       }
 
-      // handle invited user first-password onboarding
-      if (
-        existingUser.status === USER_STATUS.INVITED &&
-        !existingUser.password
-      ) {
-        await this.activateInvitedUserWithPassword(
-          existingUser,
-          { password, firstName, lastName },
-          targetOrg,
-          manager
-        );
-      } else {
-        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-        if (!isPasswordCorrect) {
-          throw new NotAcceptableException(
-            'You already have an account with this email. Please use your existing password to join this workspace.'
-          );
-        }
+      // 2. If already active here, block as "already exists"
+      if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.ACTIVE) {
+        throw new NotAcceptableException('Email already exists in this workspace');
       }
+      
 
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
 
       if (!isCloudEdition && response) {
+        if (!existingUser.password) {
+          await this.activateUserWithPassword(
+            existingUser,
+            { password, firstName, lastName },
+            targetOrg,
+            manager
+          );
+        } else {
+          const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+          if (!isPasswordCorrect) {
+            throw new NotAcceptableException(
+              'You already have an account with this email. Please use your existing password to join this workspace.'
+            );
+          }
+        }
         if (!targetOrg) {
           throw new NotAcceptableException('No valid workspace found to log into.');
         }
