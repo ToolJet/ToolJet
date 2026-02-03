@@ -3,11 +3,8 @@ import { LeftSidebarDebugger } from './SidebarDebugger/SidebarDebugger';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-function Debugger({ pinned, setPinned }) {
-  const [logs, clearLogs] = useStore(
-    (state) => [state.debugger.logs, state.debugger.clear, state.debugger.pinned, state.debugger.setPinned],
-    shallow
-  );
+function Debugger({ onClose, darkMode }) {
+  const [logs, clearLogs] = useStore((state) => [state.debugger.logs, state.debugger.clear], shallow);
 
   const currentPageId = useStore((state) => state.modules.canvas.currentPageId);
 
@@ -16,11 +13,10 @@ function Debugger({ pinned, setPinned }) {
   return (
     <div>
       <LeftSidebarDebugger
-        darkMode={false}
+        darkMode={darkMode}
         errors={logsToBeShown.filter((log) => log.logLevel === 'error')}
         clearErrorLogs={clearLogs}
-        setPinned={setPinned}
-        pinned={pinned}
+        onClose={onClose}
         allLog={logs}
       />
     </div>

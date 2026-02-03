@@ -110,8 +110,7 @@ export const BaseLeftSidebar = ({
         return (
           <LeftSidebarInspector
             darkMode={darkMode}
-            setPinned={setPinned}
-            pinned={pinned}
+            onClose={() => toggleLeftSidebar(false)}
             moduleId={moduleId}
             appType={appType}
           />
@@ -121,9 +120,15 @@ export const BaseLeftSidebar = ({
       case 'apphistory':
         return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
       case 'debugger':
-        return <Debugger setPinned={setPinned} pinned={pinned} darkMode={darkMode} />;
+        return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'settings':
-        return <GlobalSettings darkMode={darkMode} isModuleEditor={isModuleEditor} />;
+        return (
+          <GlobalSettings
+            darkMode={darkMode}
+            isModuleEditor={isModuleEditor}
+            onClose={() => toggleLeftSidebar(false)}
+          />
+        );
     }
   };
 
@@ -215,13 +220,13 @@ export const BaseLeftSidebar = ({
     <div
       className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (selectedSidebarItem === 'tooljetai') return;
+          if (['tooljetai', 'inspect', 'debugger', 'settings'].includes(selectedSidebarItem)) return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
