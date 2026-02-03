@@ -166,8 +166,9 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
         released: appSpecificAccess.released === true || defaultAccess.released === true,
       };
 
-      // If user has no access to any environment, grant development as fallback
-      if (!result.development && !result.staging && !result.production && !result.released) {
+      // Only grant development as fallback for builders with no environment access
+      // End-users without environment access should not get any access
+      if (isBuilder && !result.development && !result.staging && !result.production && !result.released) {
         result.development = true;
       }
 
@@ -183,8 +184,9 @@ export const getEnvironmentAccessFromPermissions = (appGroupPermissions, appId =
     released: defaultAccess.released === true,
   };
 
-  // If user has no access to any environment, grant development as fallback
-  if (!result.development && !result.staging && !result.production && !result.released) {
+  // Only grant development as fallback for builders with no environment access
+  // End-users without environment access should not get any access
+  if (isBuilder && !result.development && !result.staging && !result.production && !result.released) {
     result.development = true;
   }
 
