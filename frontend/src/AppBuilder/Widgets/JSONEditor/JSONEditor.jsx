@@ -206,7 +206,13 @@ export const JSONEditor = function JSONEditor(props) {
       isVisible: visibility,
       isDisabled: disabledState,
       setValue: async function (value) {
-        setValue(value);
+        if (typeof value === 'object') {
+          setValue(JSON.stringify(value, null, 2));
+          setExposedVariables({ value: value, isValid: true });
+        } else {
+          setValue(String(value));
+          setExposedVariables({ value: value, isValid: false });
+        }
       },
       setLoading: async function (value) {
         updateExposedVariablesState('isLoading', !!value);
