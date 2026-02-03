@@ -11,6 +11,7 @@ export const FolderMenu = function FolderMenu({
   canUpdateFolder,
   darkMode,
   dataCy = '',
+  folderCount = 0,
 }) {
   const [open, setOpen] = React.useState(false);
   const closeMenu = () => {
@@ -56,7 +57,7 @@ export const FolderMenu = function FolderMenu({
         >
           <Popover.Body bsPrefix="popover-body">
             <div>
-              {canUpdateFolder && (
+              {canUpdateFolder && folderCount === 0 && (
                 <Field text={t('homePage.foldersSection.editFolder', 'Edit folder')} onClick={editFolder} />
               )}
               {canDeleteFolder && (

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
+import { AppGitSync } from '../../entities/app_git_sync.entity'
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { decamelizeKeys } from 'humps';
@@ -28,7 +29,16 @@ export class FolderAppsService implements IFolderAppsService {
       if (existingFolderApp) {
         throw new BadRequestException('Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.');
       }
-
+      // Check if app is git-synced
+      const gitSyncedApp = await manager.findOne(AppGitSync, {
+        where: { appId },
+        select: ['id'],
+      });
+    if (gitSyncedApp) {
+      throw new BadRequestException(
+        'Git-synced app cannot be moved to another folder'
+      );
+    }
       // TODO: check if folder under user.organizationId and user has edit permission on app
 
       const newFolderApp = manager.create(FolderApp, {
