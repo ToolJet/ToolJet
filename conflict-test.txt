@@ -1,0 +1,2 @@
+This is a test file for conflict testing.
+Version: TEST-BRANCH-B
