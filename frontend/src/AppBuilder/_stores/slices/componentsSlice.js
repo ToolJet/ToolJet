@@ -2353,7 +2353,6 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageId,
       setComponentPropertyByComponentIds,
       addComponentToCurrentPage,
-      setPages,
       deletePage,
     } = get();
 
@@ -2384,30 +2383,48 @@ export const createComponentsSlice = (set, get) => ({
             return { ...page, components: {} };
           });
 
-          setPages([...get().modules[moduleId].pages, ...formattedPages]);
+          set(
+            (state) => {
+              state.modules[moduleId].pages.push(...formattedPages);
+            },
+            false,
+            'addNewPages'
+          );
           break;
         }
         case 'update': {
           if (pages?.length) {
             pages.forEach((item) => {
-              if (!isEmpty(item?.components) && item.id) {
-                // TODO: Might remove above if condition later on, this is just because backend response seems a bit different than expected
+              if (item?.id) {
+                const { components, ...restOfPageProperties } = item;
+
                 if (item.id === currentPageId) {
-                  const componentIdsToDelete = Array.isArray(item.components?.delete) ? item.components.delete : [];
+                  const componentIdsToDelete = Array.isArray(components?.delete) ? components.delete : [];
 
                   const componentsToUpdate =
-                    item.components?.update?.reduce((acc, comp) => {
+                    components?.update?.reduce((acc, comp) => {
                       acc[comp.id] = comp;
                       return acc;
                     }, {}) ?? {};
 
                   // Convert create operations format to match addComponentToCurrentPage expectations
-                  const componentsToCreate = (item.components?.create ?? []).map((component) => ({
+                  const componentsToCreate = (components?.create ?? []).map((component) => ({
                     id: component.id,
                     name: component.component?.name,
                     component: component.component,
                     layouts: component.layouts,
                   }));
+
+                  // Update page properties except components
+                  set(
+                    (state) => {
+                      const page = state.modules[moduleId].pages.find((p) => p.id === item.id);
+
+                      if (page) Object.assign(page, restOfPageProperties);
+                    },
+                    false,
+                    'updateCurrentPageProperties'
+                  );
 
                   // Delete Components
                   componentIdsToDelete.length &&
@@ -2424,15 +2441,18 @@ export const createComponentsSlice = (set, get) => ({
                       skipFormUpdate: true,
                     });
                 } else {
-                  const componentIdsToDelete = Array.isArray(item.components?.delete) ? item.components.delete : [];
-                  const componentsToUpdate = item.components?.update ?? [];
-                  const componentsToCreate = item.components?.create ?? [];
+                  const componentIdsToDelete = Array.isArray(components?.delete) ? components.delete : [];
+                  const componentsToUpdate = components?.update ?? [];
+                  const componentsToCreate = components?.create ?? [];
 
                   set(
                     (state) => {
                       const pageToUpdate = state.modules[moduleId].pages.find((p) => p.id === item.id) ?? null;
 
                       if (!pageToUpdate) return;
+
+                      // Update page properties except components
+                      Object.assign(pageToUpdate, restOfPageProperties);
 
                       if (!pageToUpdate.components) pageToUpdate.components = {};
                       const componentsInState = pageToUpdate.components;
