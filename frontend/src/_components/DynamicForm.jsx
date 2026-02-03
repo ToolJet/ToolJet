@@ -28,6 +28,7 @@ import Sharepoint from '@/_components/Sharepoint';
 import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
+import DynamicSelector from '@/_ui/DynamicSelector';
 
 const DynamicForm = ({
   schema,
@@ -164,6 +165,21 @@ const DynamicForm = ({
 
       if (prevDataSourceId !== selectedDataSource?.id) {
         setComputedProps({ ...encryptedFieldsProps });
+        const isGoogleSheetsV2 = selectedDataSource?.kind === 'googlesheetsv2';
+        if (isGoogleSheetsV2) {
+          const fieldsWithDependencies = Object.keys(fields).filter((key) => {
+            const field = fields[key];
+            return field?.dependsOn || field?.depends_on;
+          });
+          
+          if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
+            const clearedOptions = { ...options };
+            fieldsWithDependencies.forEach((fieldKey) => {
+              delete clearedOptions[fieldKey];
+            });
+            optionsChanged(clearedOptions);
+          }
+        }
       } else {
         setComputedProps({ ...computedProps, ...encryptedFieldsProps });
       }
@@ -218,6 +234,8 @@ const DynamicForm = ({
         return Sharepoint;
       case 'react-component-oauth':
         return OAuthWrapper;
+      case 'dynamic-selector':
+        return DynamicSelector;
       default:
         return <div>Type is invalid</div>;
     }
@@ -255,10 +273,16 @@ const DynamicForm = ({
     spec_url = '',
     disabled = false,
     buttonText: buttonTextProp,
-    button_text, // For marketplace plugins, it currently receives button_text instead of buttonText
+    button_text,
     text,
     subtext,
     oauth_configs,
+    operation,
+    dependsOn,
+    depends_on,
+    label,
+    fx_enabled,
+    fxEnabled
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -528,6 +552,25 @@ const DynamicForm = ({
           options,
           darkMode,
         };
+      case 'dynamic-selector':
+        return {
+          operation: operation,
+          dependsOn: dependsOn || depends_on,
+          selectedDataSource,
+          currentAppEnvironmentId,
+          optionchanged,
+          options,
+          label: label,
+          description,
+          disabled,
+          computeSelectStyles,
+          disableMenuPortal,
+          queryName,
+          propertyKey: key,
+          value: options?.[key]?.value || options?.[key],
+          optionsChanged,
+          fxEnabled: fxEnabled || fx_enabled
+        };
       default:
         return {};
     }
@@ -612,7 +655,16 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = obj[key];
+          const fieldConfig = obj[key];
+          const {
+            label,
+            type,
+            encrypted,
+            className,
+            key: propertyKey,
+            shouldRenderTheProperty = ''
+          } = fieldConfig;
+
           const Element = getElement(type);
           const isSpecificComponent = [
             'tooljetdb-operations',
@@ -624,6 +676,12 @@ const DynamicForm = ({
           const enabled = shouldRenderTheProperty
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
             : true;
+
+          const elementProps = getElementProps({
+            ...fieldConfig,
+            key,
+            type,
+          });
 
           return (
             enabled && (
@@ -698,11 +756,10 @@ const DynamicForm = ({
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
-                    {...getElementProps(obj[key])}
+                    {...elementProps}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
                     dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}
-                    //to be removed after whole ui is same
                     isHorizontalLayout={isHorizontalLayout}
                   />
                 </div>
