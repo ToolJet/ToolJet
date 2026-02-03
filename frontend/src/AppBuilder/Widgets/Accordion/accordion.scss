@@ -1,0 +1,20 @@
+.jet-container.jet-container-collapsed {
+    .tj-accordion-header {
+        .wj-container-header, .tj-accordion-close-btn {
+            border-bottom: none !important;
+        }
+    }
+}
+
+.tj-accordion-header {
+    display: flex;
+
+    .tj-accordion-close-btn {
+        height: 100%;
+        width: 48px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-bottom: 1px solid var(--cc-container-header-divider-color, var(--cc-default-border));
+    }
+}
