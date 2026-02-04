@@ -9,7 +9,7 @@ The **Google Gemini** Plugin can be integrated with ToolJet to enable the develo
 
 To connect with Gemini, you will need the **API Key**, which can be generated from **[Google AI Studio](https://aistudio.google.com/apikey)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
 
 ## Supported Operations
 
