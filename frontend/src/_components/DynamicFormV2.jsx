@@ -60,6 +60,51 @@ const DynamicFormV2 = ({
   const autoFillTimeoutRef = React.useRef(null);
   const manuallyEditedFieldsRef = React.useRef(new Set());
   const skipNextAutoFillRef = React.useRef(false);
+
+  // const getSortedKeys = (obj) => {
+  //   if (!obj || typeof obj !== 'object') return [];
+  //   return Object.keys(obj)
+  //     .filter((key) => key !== 'order') // Exclude the 'order' key itself
+  //     .sort((a, b) => {
+  //       const orderA = obj[a]?.order ?? Number.MAX_SAFE_INTEGER;
+  //       const orderB = obj[b]?.order ?? Number.MAX_SAFE_INTEGER;
+  //       return orderA - orderB;
+  //     });
+  // };
+  const getSortedKeys = (obj) => {
+    if (!obj || typeof obj !== 'object') return [];
+
+    const keys = Object.keys(obj).filter((key) => key !== 'order');
+
+    // Check if any item has an order defined
+    const hasAnyOrder = keys.some((key) => obj[key]?.order !== undefined);
+
+    // If no order defined anywhere, preserve original order
+    if (!hasAnyOrder) {
+      return keys;
+    }
+
+    // Sort by order, preserving original position for items without order
+    return keys
+      .map((key, index) => ({ key, originalIndex: index }))
+      .sort((a, b) => {
+        const orderA = obj[a.key]?.order;
+        const orderB = obj[b.key]?.order;
+
+        // Both have order - sort by order
+        if (orderA !== undefined && orderB !== undefined) {
+          return orderA - orderB;
+        }
+        // Only A has order - A comes first
+        if (orderA !== undefined) return -1;
+        // Only B has order - B comes first
+        if (orderB !== undefined) return 1;
+        // Neither has order - preserve original position
+        return a.originalIndex - b.originalIndex;
+      })
+      .map((item) => item.key);
+  };
+
   React.useEffect(() => {
     const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
 
@@ -502,7 +547,7 @@ const DynamicFormV2 = ({
       // case 'dropdown-component-flip':
       //   return Select;
       default:
-        return <div>Type is invalid</div>;
+        return null;
     }
   };
 
@@ -778,9 +823,15 @@ const DynamicFormV2 = ({
 
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
-        {Object.keys(uiProperties).map((key) => {
+        {getSortedKeys(uiProperties).map((key) => {
           const { label, widget, encrypted, className, key: propertyKey } = uiProperties[key];
           const Element = getElement(widget);
+
+          // Skip rendering if Element is null (invalid widget type)
+          if (!Element) {
+            return null;
+          }
+
           const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(widget);
 
           return (
@@ -844,71 +895,105 @@ const DynamicFormV2 = ({
   };
 
   const FlipComponentDropdown = (uiProperties) => {
-    const flipComponentDropdowns = filter(uiProperties, ['widget', 'dropdown-component-flip']);
+    const flipComponentDropdowns = filter(uiProperties, ['widget', 'dropdown-component-flip']).sort((a, b) => {
+      const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
 
-    const dropdownComponents = flipComponentDropdowns.map((flipComponentDropdown) => {
+    // Build all components with their order for sorting
+    const allComponents = [];
+    let insertIndex = 0;
+
+    // Add dropdown components with their order
+    flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
 
-      return (
-        <div key={flipComponentDropdown.key}>
-          <div className={isHorizontalLayout ? '' : 'row'}>
-            {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
-
-            <div
-              className={cx('my-2', {
-                'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
-                'd-flex': isHorizontalLayout,
-                'dynamic-form-row': isHorizontalLayout,
-                [flipComponentDropdown.className]: !!flipComponentDropdown.className,
-              })}
-              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
-            >
-              {(flipComponentDropdown.label || isHorizontalLayout) && (
-                <label
-                  className={cx('form-label')}
-                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
-                >
-                  {flipComponentDropdown.label}
-                </label>
-              )}
+      allComponents.push({
+        order: flipComponentDropdown.order, // Keep undefined if not set
+        insertIndex: insertIndex++,
+        key: `dropdown-${flipComponentDropdown.key}`,
+        element: (
+          <div key={flipComponentDropdown.key}>
+            <div className={isHorizontalLayout ? '' : 'row'}>
+              {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
 
               <div
-                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
-                className={cx({ 'flex-grow-1': isHorizontalLayout })}
+                className={cx('my-2', {
+                  'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
+                  'd-flex': isHorizontalLayout,
+                  'dynamic-form-row': isHorizontalLayout,
+                  [flipComponentDropdown.className]: !!flipComponentDropdown.className,
+                })}
+                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
-                <Select
-                  {...getElementProps(flipComponentDropdown)}
-                  styles={{}}
-                  useCustomStyles={false}
-                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
-                />
+                {(flipComponentDropdown.label || isHorizontalLayout) && (
+                  <label
+                    className={cx('form-label')}
+                    data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                  >
+                    {flipComponentDropdown.label}
+                  </label>
+                )}
+
+                <div
+                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
+                  className={cx({ 'flex-grow-1': isHorizontalLayout })}
+                >
+                  <Select
+                    {...getElementProps(flipComponentDropdown)}
+                    styles={{}}
+                    useCustomStyles={false}
+                    dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                  />
+                </div>
+                {flipComponentDropdown.helpText && (
+                  <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+                )}
               </div>
-              {flipComponentDropdown.helpText && (
-                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
-              )}
             </div>
+
+            {getLayout(uiProperties[selector])}
           </div>
-
-          {getLayout(uiProperties[selector])}
-        </div>
-      );
+        ),
+      });
     });
 
-    const normalComponents = Object.keys(uiProperties).map((key) => {
+    // Add normal components with their order
+    Object.keys(uiProperties).forEach((key) => {
       const component = uiProperties[key];
+      const componentType = component.widget || component.type;
 
-      if (component.type && component.type !== 'dropdown-component-flip') {
-        return <div key={key}>{getLayout({ [key]: component })}</div>;
+      if (componentType && componentType !== 'dropdown-component-flip') {
+        allComponents.push({
+          order: component.order, // Keep undefined if not set
+          insertIndex: insertIndex++,
+          key: `normal-${key}`,
+          element: <div key={key}>{getLayout({ [key]: component })}</div>,
+        });
       }
-      return null;
     });
 
-    return (
-      <>
-        {normalComponents}
-        {dropdownComponents}
-      </>
-    );
+    // Check if any component has order defined
+    const hasAnyOrder = allComponents.some((item) => item.order !== undefined);
+
+    // Only sort if at least one component has order
+    if (hasAnyOrder) {
+      allComponents.sort((a, b) => {
+        // Both have order - sort by order
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        // Only A has order - A comes first
+        if (a.order !== undefined) return -1;
+        // Only B has order - B comes first
+        if (b.order !== undefined) return 1;
+        // Neither has order - preserve insertion order
+        return a.insertIndex - b.insertIndex;
+      });
+    }
+
+    return <>{allComponents.map((item) => item.element)}</>;
   };
 
   const isFlipComponentDropdown = (uiProperties) => {

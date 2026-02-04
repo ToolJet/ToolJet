@@ -175,6 +175,7 @@
   ],
   "tj:ui:properties": {
     "connection_type": {
+      "order": 10,
       "$ref": "#/properties/connection_type",
       "key": "connection_type",
       "label": "Connection type",
@@ -189,19 +190,12 @@
           "name": "Connection string",
           "value": "string"
         }
-      ],
-      "commonFields": {
-        "allow_dynamic_connection_parameters": {
-          "$ref": "#/properties/allow_dynamic_connection_parameters",
-          "key": "allow_dynamic_connection_parameters",
-          "label": "Allow dynamic connection parameters",
-          "description": "Turning this on will allow dynamically setting host name and database from application",
-          "widget": "toggle"
-        }
-      }
+      ]
     },
     "manual": {
+      "order": 20,
       "ssl_certificate": {
+        "order": 10,
         "$ref": "#/properties/ssl_certificate",
         "key": "ssl_certificate",
         "label": "SSL certificate",
@@ -223,6 +217,7 @@
         ],
         "commonFields": {
           "host": {
+            "order": 10,
             "$ref": "#/properties/host",
             "key": "host",
             "label": "Host",
@@ -231,6 +226,7 @@
             "required": true
           },
           "port": {
+            "order": 20,
             "$ref": "#/properties/port",
             "key": "port",
             "label": "Port",
@@ -239,6 +235,7 @@
             "required": true
           },
           "ssl_enabled": {
+            "order": 30,
             "$ref": "#/properties/ssl_enabled",
             "key": "ssl_enabled",
             "label": "SSL",
@@ -246,6 +243,7 @@
             "widget": "toggle"
           },
           "database": {
+            "order": 40,
             "$ref": "#/properties/database",
             "key": "database",
             "label": "Database name",
@@ -253,6 +251,7 @@
             "widget": "text-v3"
           },
           "username": {
+            "order": 50,
             "$ref": "#/properties/username",
             "key": "username",
             "label": "Username",
@@ -261,6 +260,7 @@
             "required": true
           },
           "password": {
+            "order": 60,
             "$ref": "#/properties/password",
             "key": "password",
             "label": "Password",
@@ -269,6 +269,7 @@
             "required": true
           },
           "connection_options": {
+            "order": 70,
             "$ref": "#/properties/connection_options",
             "key": "connection_options",
             "label": "Connection options",
@@ -279,7 +280,9 @@
         }
       },
       "ca_certificate": {
+        "order": 20,
         "ca_cert": {
+          "order": 10,
           "$ref": "#/properties/ca_cert",
           "key": "ca_cert",
           "label": "CA Cert",
@@ -288,7 +291,9 @@
         }
       },
       "self_signed": {
+        "order": 30,
         "client_key": {
+          "order": 10,
           "$ref": "#/properties/client_key",
           "key": "client_key",
           "label": "Client Key",
@@ -296,6 +301,7 @@
           "widget": "password-v3-textarea"
         },
         "client_cert": {
+          "order": 20,
           "$ref": "#/properties/client_cert",
           "key": "client_cert",
           "label": "Client Cert",
@@ -303,6 +309,7 @@
           "widget": "password-v3-textarea"
         },
         "root_cert": {
+          "order": 30,
           "$ref": "#/properties/root_cert",
           "key": "root_cert",
           "label": "Root Cert",
@@ -312,7 +319,9 @@
       }
     },
     "string": {
+      "order": 30,
       "connection_string": {
+        "order": 10,
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
         "label": "Connection string",
@@ -320,6 +329,14 @@
         "widget": "password-v3-textarea",
         "required": true
       }
+    },
+    "allow_dynamic_connection_parameters": {
+      "order": 20,
+      "$ref": "#/properties/allow_dynamic_connection_parameters",
+      "key": "allow_dynamic_connection_parameters",
+      "label": "Allow dynamic connection parameters",
+      "description": "Turning this on will allow dynamically setting host name and database from application",
+      "widget": "toggle"
     }
   }
 }
