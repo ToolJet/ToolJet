@@ -134,7 +134,10 @@ export const Accordion = ({
       : isDynamicHeightEnabled
       ? '100%'
       : height,
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display:
+      exposedVariablesTemporaryState.isVisible && (showHeader || exposedVariablesTemporaryState.isExpanded)
+        ? 'flex'
+        : 'none',
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
