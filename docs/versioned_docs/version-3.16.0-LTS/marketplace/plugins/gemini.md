@@ -33,9 +33,7 @@ Use this operation to generate text based on the prompt, system instructions, an
 **Optional Parameter**
 
 - **System Prompt**: A predefined instruction guiding the model's tone and behavior.
-
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
@@ -79,17 +77,13 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 - **Model**: Specifies the Gemini model to use for generating responses in the chat.
     - **Gemini 3 Pro Preview**
-
 - **User Prompt**: The user's question or request that the model will respond to.
 
 **Optional Parameter**
 
 - **System Prompt**: Provides the model with guidance on the style and type of responses expected.
-
 - **History**: Keeps track of previous interactions to maintain context in the conversation.
-
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
-
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-v2.png" alt="Gemini Query" />
