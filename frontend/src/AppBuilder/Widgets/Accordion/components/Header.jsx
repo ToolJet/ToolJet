@@ -52,7 +52,7 @@ const Header = (props) => {
   };
 
   return (
-    <div className="tj-accordion-header">
+    <div className="tj-accordion-header" style={{ ...headerBgColor }}>
       <div className="tw-h-full tw-w-full">
         <HorizontalSlot
           slotName={'header'}
@@ -68,14 +68,15 @@ const Header = (props) => {
         />
       </div>
       <div className="tj-accordion-close-btn">
-        <span
+        <button
+          type="button"
+          disabled={isDisabled}
+          aria-label={isExpanded ? 'Collapse accordion' : 'Expand accordion'}
           data-cy={`accordion-close-button`}
           onClick={(e) => {
-            e.preventDefault();
+            if (isDisabled) return;
             e.stopPropagation();
-
             const expand = !isExpanded;
-
             setExpanded(expand);
             fireEvent(expand ? 'onExpand' : 'onCollapse');
           }}
@@ -86,7 +87,7 @@ const Header = (props) => {
             color={chevronIconColor}
             className={`tw-transition-transform tw-duration-200 ${isExpanded ? '' : 'tw-rotate-180'}`}
           />
-        </span>
+        </button>
       </div>
     </div>
   );

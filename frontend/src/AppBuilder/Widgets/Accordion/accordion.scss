@@ -16,5 +16,12 @@
         justify-content: center;
         align-items: center;
         border-bottom: 1px solid var(--cc-container-header-divider-color, var(--cc-default-border));
+
+        button {
+            padding: 0;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+        }
     }
 }
