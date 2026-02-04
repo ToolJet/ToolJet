@@ -224,6 +224,14 @@ export class AppsService implements IAppsService {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
 
+    // Check if app is git-synced and prevent rename
+    if (name && name !== app.name) {
+      const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
+      if (appGit) {
+        throw new BadRequestException('Apps synced to git cannot be renamed');
+      }
+    }
+
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
       const appRenameDto = {
