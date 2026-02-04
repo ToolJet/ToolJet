@@ -3,19 +3,6 @@ name: Deploy to Vercel
 # This workflow deploys the ToolJet frontend to Vercel using the official pattern
 # Pattern: vercel pull → vercel build → vercel deploy --prebuilt
 # This approach bypasses the "git author must have access to team" error
-#
-# Required GitHub Secrets:
-# - VERCEL_TOKEN: Vercel API token (get from https://vercel.com/account/tokens)
-# - VERCEL_ORG_ID: team_SsaGMOGYsC8KFX3InHcUiy3T
-# - VERCEL_PROJECT_ID: prj_iX5rpyQy7hq8upcHijcED3jkRQn4
-# - CUSTOM_GITHUB_TOKEN: For submodule checkout
-# - ALLOWED_USER1_USERNAME, ALLOWED_USER2_USERNAME, ALLOWED_USER3_USERNAME: Authorized users
-#
-# Vercel Project Configuration (must be set in Vercel Dashboard):
-# - Build Command: npm run build:plugins:prod && npm run build:frontend
-# - Output Directory: frontend/build
-# - Install Command: npm install
-# - Node.js Version: 22.15.1
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
