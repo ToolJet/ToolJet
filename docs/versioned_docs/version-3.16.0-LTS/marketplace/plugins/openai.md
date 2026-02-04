@@ -60,6 +60,8 @@ The function of this operation is to examine the user's input and generate a sui
 - **Stop sequence**: This Stop sequence/parameter is used to specify when the API should stop generating text completions. This parameter is optional and can be used to customize the length and quality of the generated text.
 - **Suffix**: The suffix that follows the inserted text completion.
 
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
+
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
@@ -73,12 +75,8 @@ Suffix: \n
 ```
 </details>
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/chat-v4.png" alt="Chat Operation" />
-</div>
-
 <details id="tj-dropdown">
-<summary>**Sample Response Output**</summary>
+<summary>**Response Example**</summary>
 
 ```json
 "Machine learning, a subset of artificial intelligence, is fundamentally about designing and implementing algorithms that can learn from and make predictions or decisions based on data. The key principles of machine learning can be outlined as follows:nn1. **Learning from Data**: At its core, machine learning involves developing algorithms that can learn from and make predictions or inferences from data. Models are trained using a large set of data known as training data, which helps them make decisions or predictions without being explicitly programmed for the task.nn2"
@@ -100,12 +98,11 @@ This operation generates AI images based on the given prompt.
 #### Optional Parameters
 
 - **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
-
     - **GPT Image 1**: Must be one of `1792x1024`, `1024x1792`, or `1024x1024`.
-
     - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
-
     - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-image-v4.png" alt="Generate AI Images Operation" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -117,12 +114,8 @@ Size(in pixels): 1024x1024
 ```
 </details>
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-image-v4.png" alt="Generate AI Images Operation" />
-</div>
-
 <details id="tj-dropdown">
-<summary>**Sample Response Output**</summary>
+<summary>**Response Example**</summary>
 
 ```json
 {
@@ -153,6 +146,8 @@ This operation is used to generate vector embeddings from the given text, which 
 - **Encoding format**: Specifies the output format of the vector embedding from the dropdown, float or base64.
 - **Dimensions**: Defines the number of values in the generated embedding vector, affecting its size and level of detail.
 
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-embed.png" alt="Generate Vector Embedding" />
+
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
@@ -164,10 +159,8 @@ Dimensions: 10
 ```
 </details>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-embed.png" alt="Generate Vector Embedding" />
-
 <details id="tj-dropdown">
-<summary>**Sample Response Output**</summary>
+<summary>**Response Example**</summary>
 
 ```json
 {
