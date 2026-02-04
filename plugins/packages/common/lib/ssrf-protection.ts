@@ -5,7 +5,7 @@ import { lookup as dnsLookup } from 'dns';
 import * as net from 'net';
 
 const CLOUD_METADATA_ENDPOINTS = [
-  // AWS EC2 metadata endpoint (most common SSRF target)
+  // AWS EC2, IBM Cloud, and OpenStack metadata endpoint (most common SSRF target)
   /^169\.254\.169\.254$/,
   /^169\.254\.169\.253$/,        // Alternate AWS endpoint
 
@@ -29,16 +29,9 @@ const CLOUD_METADATA_ENDPOINTS = [
   /^169\.254\.169\.254$/,
 ];
 
-// Dangerous schemes that could lead to SSRF vulnerabilities
-const DANGEROUS_SCHEMES = [
-  'file',
-  'ftp',
-  'dict',
-  'gopher',
-  'jar',
-  'data',
-  'javascript',
-];
+// Note: Dangerous URL schemes (file, ftp, dict, gopher, jar, data, javascript, etc.)
+// are configured via SSRF_BLOCKED_SCHEMES environment variable for flexibility.
+// Users should configure blocked schemes based on their security requirements.
 
 interface SSRFProtectionOptions {
   enabled?: boolean;
@@ -94,9 +87,14 @@ export function isCloudMetadataEndpoint(ipOrHostname: string): boolean {
 /**
  * Normalize alternative IP formats to standard decimal notation
  * Handles: hex (0xA9FEA9FE), decimal (2852039166), octal (0251.0376.0251.0376)
+ * Note: Mixed-base dotted formats (e.g., 127.0x0.0x0.1, 0177.0.0.1, 0x7f.0.0.1) can be
+ * added in future iterations for more comprehensive normalization.
  */
 function normalizeIPFormat(ip: string): string {
   if (!ip) return ip;
+
+  // Trim whitespace from IP address
+  ip = ip.trim();
 
   // Hex: 0xA9FEA9FE or 0xA9.0xFE.0xA9.0xFE
   if (ip.startsWith('0x') || ip.includes('.0x')) {
@@ -228,6 +226,16 @@ export function isPrivateIP(ip: string): boolean {
     return true;
   }
 
+  // Multicast: 224.0.0.0/4
+  if (a >= 224 && a <= 239) {
+    return true;
+  }
+
+  // Reserved: 240.0.0.0/4
+  if (a >= 240 && a <= 255) {
+    return true;
+  }
+
   return false;
 }
 
@@ -265,18 +273,6 @@ function isPrivateIPv6(ip: string): boolean {
   }
 
   return false;
-}
-
-export async function resolvesToCloudMetadata(hostname: string): Promise<boolean> {
-  try {
-    const addresses = await dns.resolve(hostname);
-    return addresses.some(addr => isCloudMetadataEndpoint(addr));
-  } catch (error) {
-    // If DNS resolution fails, allow the request (fail open for self-hosted)
-    // Users can enable stricter checking if needed
-    console.warn(`DNS resolution failed for ${hostname}:`, error.message);
-    return false;
-  }
 }
 
 /**
@@ -459,13 +455,11 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
 
       // Clean up old cache entries to prevent memory leak
       if (dnsCache.size > 1000) {
-        const entriesToDelete: string[] = [];
         dnsCache.forEach((value, key) => {
           if ((now - value.timestamp) > CACHE_TTL) {
-            entriesToDelete.push(key);
+            dnsCache.delete(key);
           }
         });
-        entriesToDelete.forEach(key => dnsCache.delete(key));
       }
 
       // IP is safe, proceed with connection
