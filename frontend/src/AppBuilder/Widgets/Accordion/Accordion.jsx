@@ -45,17 +45,18 @@ export const Accordion = ({
     }));
   };
 
-  // Dynamic height
+  // Dynamic height - always enable position adjustments in view mode for accordion
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const shouldAdjustPositions = currentMode === 'view';
   useDynamicHeight({
-    isDynamicHeightEnabled,
+    isDynamicHeightEnabled: shouldAdjustPositions,
     id,
     height,
     adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
-    value: JSON.stringify({ headerHeight, showHeader }),
+    value: JSON.stringify({ headerHeight, showHeader, isExpanded: exposedVariablesTemporaryState.isExpanded }),
     visibility: exposedVariablesTemporaryState.isVisible,
     subContainerIndex,
   });
