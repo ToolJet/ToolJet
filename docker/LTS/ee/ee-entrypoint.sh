@@ -64,28 +64,5 @@ if [ -n "$SETUP_CMD" ]; then
   $SETUP_CMD
 fi
 
-# =============================================================================
-# SSL/HTTPS Support (Managed by TypeScript)
-# =============================================================================
-# SSL certificate management has been moved to TypeScript services in NestJS.
-# The following services handle all SSL functionality:
-#
-#   - SslBootstrapService: Starts nginx automatically on application bootstrap
-#   - NginxProcessService: Manages nginx process lifecycle
-#   - NginxConfigurationService: Generates nginx configs based on SSL state
-#   - CertificateAcquisitionService: Handles on-demand certificate acquisition
-#
-# User Flow:
-#   1. Start with TOOLJET_HOST=http://tooljet.example.com
-#   2. Enable SSL from dashboard: PATCH /api/ssl
-#   3. Acquire certificate: POST /api/ssl/certificate/acquire (no restart needed!)
-#
-# nginx automatically starts when NestJS bootstraps and listens on:
-#   - Port 80: HTTP (redirects to HTTPS if SSL active)
-#   - Port 443: HTTPS (if certificate acquired)
-#   - NestJS listens on 127.0.0.1:3000 (internal only)
-#
-# No bash SSL logic needed - everything is handled in TypeScript!
-# =============================================================================
 
 exec "$@"

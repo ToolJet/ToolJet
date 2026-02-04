@@ -92,11 +92,7 @@ RUN apt-get update && \
         git \
         openssh-client \
         freetds-dev \
-        nginx \
-        certbot \
-        python3-certbot-nginx \
         gettext-base \
-        libcap2-bin \
         openssl \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \

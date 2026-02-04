@@ -12,12 +12,16 @@ import { ConfigService } from '@nestjs/config';
 import { custom } from 'openid-client';
 import { join } from 'path';
 import * as express from 'express';
+import * as http from 'http';
 import { AppModule } from '@modules/app/module';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { validateEdition } from '@helpers/edition.helper';
 import { ResponseInterceptor } from '@modules/app/interceptors/response.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SslServerManagerService } from '@services/ssl-server-manager.service';
+import { acmeHttpChallengeMiddleware } from '@middleware/acme-http-challenge.middleware';
+import { HttpToHttpsRedirectMiddleware } from '@middleware/http-to-https-redirect.middleware';
 
 // Import helper functions
 import {
@@ -141,10 +145,56 @@ async function bootstrap() {
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
-    appLogger.log(`Starting server on ${listen_addr}:${port}...`);
-    await app.listen(port, listen_addr, async function () {
+    // Check if native HTTPS is enabled
+    const enableNativeHttps = process.env.ENABLE_NATIVE_HTTPS === 'true';
+
+    if (enableNativeHttps) {
+      appLogger.log('Native HTTPS enabled - setting up dual HTTP/HTTPS servers...');
+
+      // Setup ACME challenge middleware for certificate acquisition
+      const expressInstance = app.getHttpAdapter().getInstance();
+      expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
+      appLogger.log('✅ ACME challenge middleware registered');
+
+      // Determine ports
+      const httpPort = port; // Use existing PORT env var for HTTP
+      const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
+
+      // Create and start HTTP server (always running)
+      const httpServer = http.createServer(expressInstance);
+      await new Promise<void>((resolve, reject) => {
+        httpServer.listen(httpPort, listen_addr, () => {
+          appLogger.log(`✅ HTTP server listening on ${listen_addr}:${httpPort}`);
+          resolve();
+        });
+
+        httpServer.on('error', (error) => {
+          appLogger.error(`HTTP server error: ${error.message}`);
+          reject(error);
+        });
+      });
+
+      // Store HTTP server reference for shutdown
+      (app as any).httpServer = httpServer;
+
+      // Get SSL server manager and initialize HTTPS (conditionally based on SSL state)
+      const sslServerManager = app.get(SslServerManagerService);
+      await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
+
+      // Setup HTTP to HTTPS redirect middleware (after SSL manager initialization)
+      const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
+      expressInstance.use((req, res, next) => httpToHttpsRedirect.use(req, res, next));
+      appLogger.log('✅ HTTP to HTTPS redirect middleware registered');
+
+      appLogger.log('Native HTTPS setup complete - SSL server will be managed by SslServerManagerService');
       logStartupInfo(configService, appLogger);
-    });
+    } else {
+      // Legacy approach (ENABLE_NATIVE_HTTPS not enabled)
+      appLogger.log(`Starting server on ${listen_addr}:${port}...`);
+      await app.listen(port, listen_addr, async function () {
+        logStartupInfo(configService, appLogger);
+      });
+    }
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);
@@ -155,6 +205,20 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
     try {
+      // Close HTTP server if native HTTPS is enabled
+      const httpServer = (app as any).httpServer;
+      if (httpServer) {
+        await new Promise<void>((resolve) => {
+          httpServer.close(() => {
+            logger.log('HTTP server closed');
+            resolve();
+          });
+        });
+      }
+
+      // SslServerManagerService will handle HTTPS shutdown via OnModuleDestroy
+
+      // Close NestJS app (handles cleanup via OnModuleDestroy)
       await app.close();
       logger.log('✅ Application closed successfully');
       process.exit(0);

@@ -1,6 +1,7 @@
 import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
+import { SslServerManagerService } from '@services/ssl-server-manager.service';
 
 export class SslConfigurationModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -9,8 +10,7 @@ export class SslConfigurationModule extends SubModule {
       SslConfigurationController,
       SslCertificateLifecycleService,
       SslCertificateRenewalScheduler,
-      NginxProcessService,
-      NginxConfigurationService,
+      AcmeClientService,
       CertificateAcquisitionService,
       SslBootstrapService,
     } = await this.getProviders(
@@ -21,8 +21,7 @@ export class SslConfigurationModule extends SubModule {
         'controller',
         'ssl-lifecycle.service',
         'ssl-renewal.scheduler',
-        'nginx-process.service',
-        'nginx-configuration.service',
+        'acme-client.service',
         'certificate-acquisition.service',
         'ssl-bootstrap.service',
       ]
@@ -31,16 +30,16 @@ export class SslConfigurationModule extends SubModule {
     // Conditionally exclude lifecycle services during migrations
     const providers = [
       SslConfigurationService,
-      NginxProcessService,
-      NginxConfigurationService,
+      AcmeClientService,
+      SslServerManagerService,
       CertificateAcquisitionService,
       SslBootstrapService,
     ];
 
     const exports = [
       SslConfigurationService,
-      NginxProcessService,
-      NginxConfigurationService,
+      AcmeClientService,
+      SslServerManagerService,
       CertificateAcquisitionService,
       SslBootstrapService,
     ];

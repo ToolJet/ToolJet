@@ -93,6 +93,7 @@
     "@temporalio/worker": "^1.11.6",
     "@temporalio/workflow": "^1.11.6",
     "@tooljet/plugins": "../plugins",
+    "acme-client": "^5.4.0",
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
     "ajv": "^8.14.0",

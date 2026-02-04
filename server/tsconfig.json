@@ -38,6 +38,12 @@
       "@otel/*": [
         "src/otel/*"
       ],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@middleware/*": [
+        "src/middleware/*"
+      ]
     },
   },
   "exclude": [
