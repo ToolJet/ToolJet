@@ -41,7 +41,7 @@ This operation processes the user's input and generates appropriate, context-awa
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query-v2.png" alt="Anthropic Query" />
 
 <details id="tj-dropdown">
-<summary>**Sample Output Response**</summary>
+<summary>**Response Example**</summary>
 
 ```json
 [
