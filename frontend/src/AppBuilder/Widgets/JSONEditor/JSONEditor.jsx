@@ -6,13 +6,27 @@ import { foldAll, unfoldAll, foldEffect, unfoldEffect } from '@codemirror/langua
 import { json, jsonParseLinter } from '@codemirror/lang-json';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { okaidia } from '@uiw/codemirror-theme-okaidia';
-import { githubLight } from '@uiw/codemirror-theme-github';
 import { linter, lintGutter } from '@codemirror/lint';
 import './jsonEditor.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+
+export async function loadCodeMirrorTheme(theme) {
+  const mod = await import('@uiw/codemirror-themes-all');
+  switch (theme) {
+    case 'monokai':
+      return mod.monokai;
+    case 'solarized':
+      return mod.solarizedDark;
+    case 'tomorrow':
+      return mod.tomorrowNightBlue;
+    case 'bespin':
+      return mod.bespin;
+    default:
+      return mod.monokai;
+  }
+}
 
 export const JSONEditor = function JSONEditor(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -31,7 +45,7 @@ export const JSONEditor = function JSONEditor(props) {
     subContainerIndex,
   } = props;
 
-  const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState } = properties;
+  const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState, theme } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen, shallow);
@@ -46,6 +60,7 @@ export const JSONEditor = function JSONEditor(props) {
     value: JSON.stringify(value, null, 2),
   });
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
+  const [resolvedTheme, setResolvedTheme] = useState(undefined);
   const editorRef = useRef(null);
 
   useDynamicHeight({
@@ -111,8 +126,6 @@ export const JSONEditor = function JSONEditor(props) {
         }
       : {}),
   };
-
-  const theme = useMemo(() => (darkMode ? okaidia : githubLight), [darkMode]);
 
   const extensions = useMemo(() => {
     const ThemeOverride = EditorView.theme(
@@ -199,6 +212,20 @@ export const JSONEditor = function JSONEditor(props) {
   }, [shouldExpandEntireJSON]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    loadCodeMirrorTheme(theme).then((cmTheme) => {
+      if (!cancelled) {
+        setResolvedTheme(cmTheme);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [theme]);
+
+  useEffect(() => {
     const exposedVariables = {
       value: value,
       isValid: true,
@@ -251,7 +278,7 @@ export const JSONEditor = function JSONEditor(props) {
           minHeight={isDynamicHeightEnabled ? `${height}px` : height}
           maxHeight={isDynamicHeightEnabled ? 'none' : height}
           width="100%"
-          theme={theme}
+          theme={resolvedTheme}
           extensions={extensions}
           onChange={(newValue) => {
             setValue(newValue);

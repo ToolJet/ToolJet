@@ -20,6 +20,20 @@ export const jsonExplorerConfig = {
         defaultValue: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
       },
     },
+    theme: {
+      type: 'select',
+      displayName: 'Theme',
+      options: [
+        { name: 'monokai', value: 'monokai' },
+        { name: 'solarized', value: 'solarized' },
+        { name: 'tomorrow', value: 'tomorrow' },
+        { name: 'bespin', value: 'bespin' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'monokai',
+      },
+    },
     shouldExpandEntireJSON: {
       type: 'toggle',
       displayName: 'Expand entire JSON',
@@ -151,6 +165,7 @@ export const jsonExplorerConfig = {
       value: {
         value: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
       },
+      theme: { value: 'monokai' },
       shouldExpandEntireJSON: { value: '{{true}}' },
       shouldShowRootNode: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },

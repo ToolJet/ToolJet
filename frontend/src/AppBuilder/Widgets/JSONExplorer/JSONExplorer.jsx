@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { JSONTree } from 'react-json-tree';
+import { getBase16Theme } from 'react-base16-styling';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -21,7 +22,8 @@ export const JSONExplorer = function JSONExplorer(props) {
     subContainerIndex,
   } = props;
 
-  const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState } = properties;
+  const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState, theme } =
+    properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   // ===== STATE MANAGEMENT =====
@@ -60,9 +62,10 @@ export const JSONExplorer = function JSONExplorer(props) {
   };
 
   // ===== COMPUTED VALUES =====
-  const theme = {
+  const styling = getBase16Theme(theme);
+  const resolvedTheme = {
+    ...styling,
     base00: 'transparent',
-    base0D: 'var(--cc-primary-brand)',
   };
 
   const containerComputedStyles = {
@@ -174,7 +177,7 @@ export const JSONExplorer = function JSONExplorer(props) {
         <JSONTree
           key={`json-tree-${shouldExpandEntireJSON}`}
           data={exposedVariablesTemporaryState.value}
-          theme={theme}
+          theme={resolvedTheme}
           shouldExpandNodeInitially={shouldExpandNodeInitially}
           hideRoot={!shouldShowRootNode}
         />

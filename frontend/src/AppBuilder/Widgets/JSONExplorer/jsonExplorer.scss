@@ -5,6 +5,11 @@
         padding: 16px;
         overflow-y: auto;
         font-size: 14px;
+        font-family: monospace;
+
+        li {
+            padding-top: 0 !important;
+        }
         > ul {
             margin: 0 !important;
         }
