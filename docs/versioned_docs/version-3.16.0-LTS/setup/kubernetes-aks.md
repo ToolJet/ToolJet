@@ -5,14 +5,13 @@ title: Kubernetes (AKS)
 
 # Deploying ToolJet on Kubernetes (AKS)
 
-:::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
-:::
-
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using **Azure Database for PostgreSQL** since this guide is for deploying using AKS. You can find the system requirements [here](/docs/3.5.0-LTS/setup/system-requirements#postgresql).
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using **Azure Database for PostgreSQL** since this guide is for deploying using AKS. You can find the system requirements [here](/docs/setup/system-requirements#postgresql).
 
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
+
+:::warning
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
@@ -24,23 +23,74 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
    ```
 
-   For the setup, ToolJet requires:
+   **Configure all required environment variables** in the `deployment.yaml`:
 
-   ```
+   #### Application Configuration
+
+   ```bash
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
    SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+   ```
 
+   #### Database 1: Application Database (PG_DB)
+
+   This database stores ToolJet's core application data including users, apps, and configurations.
+
+   ```bash
    PG_USER=<username>
    PG_HOST=<postgresql-database-host>
    PG_PASS=<password>
    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
    ```
 
-   Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
-   :::info
-   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
+   #### Database 2: ToolJet Database (TOOLJET_DB)
+
+   ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+   ```bash
+   TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
+   TOOLJET_DB_HOST=<postgresql-database-host>
+   TOOLJET_DB_USER=<username>
+   TOOLJET_DB_PASS=<password>
+   ```
+
+   :::warning
+   **Critical**: `TOOLJET_DB` and `PG_DB` must be **different database names**. Using the same database for both will cause deployment failure.
    :::
+
+   <details id="tj-dropdown">
+   <summary>Why does ToolJet require two databases?</summary>
+
+   ToolJet requires **two separate database names** for optimal functionality:
+
+   - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
+   - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
+
+   This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
+
+   **Deployment Flexibility:**
+   - **Same PostgreSQL instance** (recommended for most use cases): Create both databases within a single PostgreSQL server
+   - **Separate PostgreSQL instances** (optional, for scale): Host each database on different PostgreSQL servers based on your performance and isolation requirements
+
+   </details>
+
+   #### PostgREST Configuration (Required)
+
+   PostgREST provides the REST API layer for ToolJet Database. These variables are **mandatory**:
+
+   :::tip
+   Use `openssl rand -hex 32` to generate a secure value for `PGRST_JWT_SECRET`. PostgREST will refuse authentication requests if this parameter is not set.
+   :::
+
+   ```bash
+   PGRST_HOST=localhost:3001
+   PGRST_LOG_LEVEL=info
+   PGRST_DB_PRE_CONFIG=postgrest.pre_config
+   PGRST_SERVER_PORT=3001
+   PGRST_JWT_SECRET=<generate using openssl rand -hex 32>
+   PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+   ```
 
 3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
    ```bash
@@ -52,57 +102,6 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
    ```
 
 You will be able to access your ToolJet installation once the pods and services running.
-
-## ToolJet Database
-
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
-
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-
-#### Setting Up ToolJet Database
-
-To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
-
-```env
-TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
-TOOLJET_DB_HOST=<postgresql-database-host>
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_PASS=<password>
-```
-
-:::note
-Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
-:::
-
-Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
-
-:::tip
-If you have openssl installed, you can run the
-command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
-
-If this parameter is not specified, PostgREST will refuse authentication requests.
-:::
-
-```env
-PGRST_HOST=localhost:3001
-PGRST_LOG_LEVEL=info
-PGRST_DB_PRE_CONFIG=postgrest.pre_config
-PGRST_SERVER_PORT=3001
-PGRST_DB_URI=
-PGRST_JWT_SECRET=
-```
-
-The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
-
-#### Format:
-
-```env
-PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
-```
-
-**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet deployment.**
 
 ## Workflows
 
@@ -170,6 +169,8 @@ This example deployment creates:
 - A Secret for optional password authentication
 
 :::info
+Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
+
 This is an example configuration that you can customize to your needs. However, **AOF (Append Only File) persistence** and **`maxmemory-policy noeviction`** are critical settings that must be maintained for BullMQ job queue reliability.
 :::
 
@@ -187,20 +188,36 @@ REDIS_PASSWORD=your-secure-redis-password-here  # Match the password in redis-se
 - `REDIS_DB=0` - Redis database number (default: 0)
 - `REDIS_TLS=false` - Enable TLS/SSL (set to 'true')
 
-**Note:** Update the `redis-secret` in the Redis deployment YAML with a secure password before deploying to production.
-
-**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret).
+**Note:** Ensure that these environment variables are added to your Kubernetes deployment configuration (e.g., in your deployment.yaml file or Kubernetes secret). **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
 
 ## Upgrading to the Latest LTS Version
 
+:::info
+If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
+:::
+
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+### Prerequisites for Upgrading
 
-#### Prerequisites for Upgrading to the Latest LTS Version:
+:::warning Critical: Backup Your PostgreSQL Instance
 
-- It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+Before starting the upgrade process, perform a **comprehensive backup of your PostgreSQL instance** to prevent data loss. Your backup must include both required databases:
 
-- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+1. **PG_DB** (Application Database) - Contains users, apps, and configurations
+2. **TOOLJET_DB** (Internal Database) - Contains ToolJet Database feature data
 
-_If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or send us an email at support@tooljet.com._
+Ensure both databases are included in your backup before proceeding with the upgrade.
+:::
+
+- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

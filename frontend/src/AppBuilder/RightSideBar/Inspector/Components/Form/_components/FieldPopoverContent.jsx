@@ -109,7 +109,7 @@ const FieldPopoverContent = ({
 
   return (
     <>
-      <Popover.Header className="d-flex justify-content-between align-items-center tw-px-4 tw-py-2 form-field-popover-header bg-white">
+      <Popover.Header className="d-flex justify-content-between align-items-center tw-px-4 tw-py-2 form-field-popover-header">
         <span className="tw-text-text-default base-medium">{mode === 'edit' ? 'Edit field' : 'New custom field'}</span>
         <div className="tw-flex">
           {mode === 'edit' ? (
@@ -138,7 +138,7 @@ const FieldPopoverContent = ({
           )}
         </div>
       </Popover.Header>
-      <Popover.Body className="bg-white tw-p-4 form-field-popover-body">
+      <Popover.Body className="tw-p-4 form-field-popover-body">
         <div className="tw-space-y-[12px]">
           <div>
             <Dropdown

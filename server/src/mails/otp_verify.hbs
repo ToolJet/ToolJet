@@ -1,0 +1,75 @@
+<table align="center" class="content-body">
+    <tr>
+        <td class="content-body_wrap padding-x-40">
+            <table>
+                <!-- Greeting -->
+                <tr>
+                    <td>
+                        <p>Hi {{name}},</p>
+                    </td>
+                </tr>
+
+                <!-- Message -->
+                <tr>
+                    <td class="padding-y-20">
+                        <p>Welcome to {{whiteLabelText}}! To complete your sign up and start building applications,
+                            please verify your email address.</p>
+
+
+                        <p class="padding-t-20">
+                            Your verification code:
+
+                            <span style="
+    display: inline-block;
+    margin-left: 4px;
+    padding: 6px 14px;
+    background: #F5F7FA;
+    border-radius: 8px;
+    line-height: 1;
+  ">
+                                <span style="
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 6px;
+      color: #111827;
+    ">
+                                    {{otp}}
+                                </span>
+                            </span>
+                        </p>
+
+
+
+                        <p class="padding-t-20">
+                            This code expires in <strong>5 minutes</strong>.
+                            Enter this code to complete your registration. Never share this code with anyone. <br>If you
+                            didn't request this, ignore this email.
+                        </p>
+
+                        {{#if (and (eq whiteLabelText "ToolJet") (eq tooljetEdition "cloud"))}}
+                        <p class="padding-t-20">
+                            Need help?
+                            <a class="url" href="mailto:support@tooljet.com" target="_blank">
+                                support@tooljet.com
+                            </a>
+                        </p>
+                        {{/if}}
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td class="padding-y-10 footer-note">
+                        {{#if (eq whiteLabelText "ToolJet")}}
+                        <span>Thank you,</span>
+                        <br />
+                        <span>ToolJet Team</span>
+                        {{else}}
+                        <span>Thanks!</span>
+                        {{/if}}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>

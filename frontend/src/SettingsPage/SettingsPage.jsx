@@ -90,10 +90,10 @@ function SettingsPage(props) {
     setNewPassword(input);
     const trimmedInput = input.trim();
     if (trimmedInput.length > 100) {
-      setHelperText('Password should be Max 100 characters');
+      // setHelperText('Password should be Max 100 characters');
       setValidPassword(false);
     } else if (trimmedInput.length < 5 && trimmedInput.length > 0) {
-      setHelperText('Password should be at least 5 characters');
+      // setHelperText('Password should be at least 5 characters');
       setValidPassword(false);
     } else {
       setHelperText('');
@@ -144,7 +144,16 @@ function SettingsPage(props) {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error) {
-      toast.error('Please verify that you have entered the correct password', {
+      const backendMessage = error?.data?.message;
+      const specificRequirementMessage = 'Password must be 12–24 characters and may include letters, numbers and special characters';
+
+      // Check if the backend message exactly matches the specific password requirement message
+      const errorMessage = 
+        backendMessage === specificRequirementMessage
+          ? backendMessage
+          : 'Please verify that you have entered the correct password';
+
+      toast.error(errorMessage, {
         duration: 3000,
       });
     }

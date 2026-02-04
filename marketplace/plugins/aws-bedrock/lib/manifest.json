@@ -1,0 +1,184 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "AWS Bedrock datasource",
+  "description": "Plugin to use AI foundation models available on AWS",
+  "type": "api",
+  "source": {
+    "name": "AWS Bedrock",
+    "kind": "aws-bedrock",
+    "customTesting": false,
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "access_key": {
+        "type": "string"
+      },
+      "secret_access_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "region": {
+        "type": "string"
+      },
+      "session_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "access_key": {
+      "value": ""
+    },
+    "secret_access_key": {
+      "value": ""
+    },
+    "region": {
+      "value": ""
+    },
+    "session_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "access_key": {
+      "label": "Access Key ID",
+      "key": "access_key",
+      "type": "text",
+      "description": "Enter your AWS Access Key ID",
+      "helpText": "For generating Acess Key credentials visit : <a href='https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html' target='_blank' rel='noreferrer'>AWS Docs</a>"
+    },
+    "secret_access_key": {
+      "label": "Secret Access Key",
+      "key": "secret_access_key",
+      "type": "password",
+      "description": "Enter your AWS Secret Access Key",
+      "helpText": "For generating secret access key, visit: <a href='https://console.aws.amazon.com/iam/home#/security_credentials' target='_blank' rel='noreferrer'>AWS IAM Console</a>"
+    },
+    "region": {
+      "label": "Region",
+      "key": "region",
+      "type": "dropdown",
+      "description": "Single select dropdown for region",
+      "helpText": "Supported foundation models in Amazon Bedrock : <a href='https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html' target='_blank' rel='noreferrer'>AWS Models Docs</a>",
+      "list": [
+        {
+          "name": "US East (Ohio)",
+          "value": "us-east-2"
+        },
+        {
+          "name": "US East (N. Virginia)",
+          "value": "us-east-1"
+        },
+        {
+          "name": "US West (N. California)",
+          "value": "us-west-1"
+        },
+        {
+          "name": "US West (Oregon)",
+          "value": "us-west-2"
+        },
+        {
+          "name": "Africa (Cape Town)",
+          "value": "af-south-1"
+        },
+        {
+          "name": "Asia Pacific (Hong Kong)",
+          "value": "ap-east-1"
+        },
+        {
+          "name": "Asia Pacific (Mumbai)",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "Asia Pacific (Osaka)",
+          "value": "ap-northeast-3"
+        },
+        {
+          "name": "Asia Pacific (Seoul)",
+          "value": "ap-northeast-2"
+        },
+        {
+          "name": "Asia Pacific (Singapore)",
+          "value": "ap-southeast-1"
+        },
+        {
+          "name": "Asia Pacific (Sydney)",
+          "value": "ap-southeast-2"
+        },
+        {
+          "name": "Asia Pacific (Tokyo)",
+          "value": "ap-northeast-1"
+        },
+        {
+          "name": "Canada (Central)",
+          "value": "ca-central-1"
+        },
+        {
+          "name": "China (Beijing)",
+          "value": "cn-north-1"
+        },
+        {
+          "name": "China (Ningxia)",
+          "value": "cn-northwest-1"
+        },
+        {
+          "name": "Europe (Frankfurt)",
+          "value": "eu-central-1"
+        },
+        {
+          "name": "Europe (Ireland)",
+          "value": "eu-west-1"
+        },
+        {
+          "name": "Europe (London)",
+          "value": "eu-west-2"
+        },
+        {
+          "name": "Europe (Milan)",
+          "value": "eu-south-1"
+        },
+        {
+          "name": "Europe (Paris)",
+          "value": "eu-west-3"
+        },
+        {
+          "name": "Europe (Stockholm)",
+          "value": "eu-north-1"
+        },
+        {
+          "name": "Middle East (Bahrain)",
+          "value": "me-south-1"
+        },
+        {
+          "name": "South America (São Paulo)",
+          "value": "sa-east-1"
+        },
+        {
+          "name": "AWS GovCloud (US-East)",
+          "value": "us-gov-east-1"
+        },
+        {
+          "name": "AWS GovCloud (US-West)",
+          "value": "us-gov-west-1"
+        }
+      ]
+    },
+    "session_token": {
+      "label": "Session Token",
+      "key": "session_token",
+      "type": "password",
+      "description": "Enter your AWS Session Token (optional)",
+      "helpText": "Required only while using temporary credentials",
+      "optional": true
+    }
+  },
+  "required": [
+    "access_key",
+    "secret_access_key",
+    "region"
+  ]
+}

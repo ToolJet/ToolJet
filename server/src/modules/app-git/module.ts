@@ -11,7 +11,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
 export class AppGitModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
       AppGitController,
       AppGitService,
@@ -44,7 +44,7 @@ export class AppGitModule extends SubModule {
         await ImportExportResourcesModule.register(configs),
         await VersionModule.register(configs),
       ],
-      controllers: [AppGitController],
+      controllers: isMainImport ? [AppGitController] : [],
       providers: [
         OrganizationGitSyncRepository,
         AppGitRepository,

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import '@/_styles/widgets/kanban.scss';
@@ -8,13 +8,25 @@ import { shallow } from 'zustand/shallow';
 import { diff } from 'deep-object-diff';
 import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
+import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
 export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanProps, lastSelectedCard }) {
+  const isInitialRender = useRef(true);
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
-  const parentRef = useRef(null);
-  const { id, containerProps, component } = kanbanProps;
+  const { id, containerProps, component, properties } = kanbanProps;
+  const { size, modalHeight } = properties;
   const prevLastSelectedCard = useRef(lastSelectedCard);
+  const isFullScreen = size === 'fullscreen';
+  const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
+
+  const { modalWidth, parentRef } = useModalEventSideEffects({
+    showModal,
+    size,
+    id,
+    onShowSideEffects,
+  });
 
   // Check if the previous lastSelectedCard data is different from the current lastSelectedCard data
   if (Object.keys(diff(lastSelectedCard, prevLastSelectedCard.current)).length > 0) {
@@ -46,12 +58,29 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
     );
   };
 
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    if (showModal) {
+      onShowSideEffects();
+    } else {
+      onHideSideEffects();
+    }
+
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
+
   return (
     <BootstrapModal
       show={showModal}
       contentClassName="modal-component kanban-modal"
       container={document.getElementsByClassName('real-canvas')[0]}
-      size={'lg'}
+      size={size}
       keyboard={true}
       enforceFocus={false}
       animation={false}
@@ -59,11 +88,11 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
       backdrop={'static'}
       component-id={`${id}-modal`}
     >
-      <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: '400px' }}>
+      <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: _modalHeight }}>
         {renderCloseButton()}
         <SubContainer
-          canvasWidth={720}
           canvasHeight={400}
+          canvasWidth={modalWidth}
           id={`${id}-modal`}
           index={0} // index will be always 0 as it has only one container
           {...containerProps}

@@ -13,8 +13,8 @@ export default class Textract implements QueryService {
       switch (operation) {
         case Operation.AnalyzeDocument:
           result = await analyzeDocument(
-            queryOptions?.document, 
-            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType), 
+            queryOptions?.document,
+            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType),
             client
           );
           break;
@@ -32,7 +32,7 @@ export default class Textract implements QueryService {
           break;
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new QueryError('Query could not be completed', error?.message, {});
     }
 

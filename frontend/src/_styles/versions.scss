@@ -10,6 +10,34 @@
 	}
 }
 
+.version-action-btn {
+	padding: 2px 8px !important;
+	font-size: 11px !important;
+	font-weight: 500;
+	border: 1px solid var(--border-weak);
+	background-color: #ffffff;
+	color: var(--text-default);
+	cursor: pointer;
+    box-shadow: var(--elevation-100-box-shadow);
+	transition: box-shadow 0.12s ease, transform 0.08s ease;
+	border-radius: 4px !important;
+	outline: none;
+
+	&:hover {
+		border: 1px solid var(--border-weak) !important;
+	}
+
+	&:disabled {
+		cursor: not-allowed;
+		color: #acb2b9;
+		border-color: var(--border-weak);
+		background-color: #ffffff;
+		box-shadow: none;
+		opacity: 1;
+	}
+}
+
+
 .env-option {
 	position: relative;
 	min-height: 40px;
@@ -109,6 +137,12 @@
 	background-color: #2b3547;
 }
 
+
+.app-environment-menu+.navbar-seperator {
+	display: flex;
+}
+
+
 .env-container {
 	font-family: 'IBM Plex Sans';
 	box-sizing: border-box;
@@ -120,10 +154,8 @@
 	gap: 4px;
 	position: relative;
 	width: 100%;
-	min-width: 176px;
 	z-index: 1;
 	color: #11181C;
-	padding-right: 12px;
 	height: 32px;
 	border-top-left-radius: 4px;
 	border-bottom-left-radius: 4px;
@@ -131,8 +163,8 @@
 	&.selected {
 		box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
 		border-radius: 6px;
-		border: 1px solid #3E63DD;
-		background: unset !important;
+		// border: 1px solid #3E63DD;
+		background: var(--button-outline-hover) !important;
 	}
 
 	.env-header {
@@ -148,7 +180,7 @@
 
 	.env-popover {
 		position: absolute;
-		top: 128%;
+		top: 36px;
 		left: 0;
 		width: 100%;
 		width: 176px;
@@ -163,15 +195,16 @@
 	}
 
 	.env-popover>.selected-env {
-		height: 40px;
-		padding: 16px 14px;
+		height: 36px;
+		padding: 8px 16px;
 		font-style: normal;
-		font-weight: 400;
-		font-size: 14px;
+		font-weight: 500;
+		font-size: 11px;
 		line-height: 20px;
+		color: var(--text-placeholder);
 		display: flex;
 		align-items: center;
-		border-bottom: 1px solid #F1F3F5;
+		border-bottom: 1px solid var(--border-weak);
 	}
 
 	.env-popover>.popover-options {
@@ -186,6 +219,16 @@
 
 		&.env-arrow-roate {
 			transform: rotate(-90deg);
+		}
+	}
+}
+
+.app-environment-menu {
+	.env-container {
+		.env-header {
+			:hover {
+				opacity: 1 !important;
+			}
 		}
 	}
 }
@@ -228,4 +271,61 @@
 	color: var(--purple9);
 	margin-left: 2px !important;
 	margin-right: 8px !important;
+}
+
+.version-manager-container {
+	.app-environment-menu {
+		min-width: unset;
+	}
+
+	.env-container {
+		min-width: unset;
+	}
+}
+
+.version-tooltip {
+	opacity: 1 !important;
+}
+
+.tooltip.version-tooltip .tooltip-inner {
+	background-color: #ffffff !important;
+	color: var(--text-default) !important;
+	border-radius: 8px !important;
+	padding: 0 !important;
+	max-width: 300px !important;
+    box-shadow: var(--elevation-400-box-shadow) !important;
+	text-align: left !important;
+}
+
+.tooltip.version-tooltip .tooltip-arrow,
+.tooltip.version-tooltip .tooltip-arrow::before,
+.tooltip.version-tooltip .tooltip-arrow::after {
+	background: transparent !important;
+}
+
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-left .tooltip-arrow::after,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-start .tooltip-arrow::after {
+	border-left-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-right .tooltip-arrow::after {
+	border-right-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-top .tooltip-arrow::after {
+	border-top-color: #ffffff !important;
+}
+.tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::before,
+.tooltip.version-tooltip.bs-tooltip-bottom .tooltip-arrow::after {
+	border-bottom-color: #ffffff !important;
+}
+
+.tooltip.version-tooltip .tooltip-arrow::before,
+.tooltip.version-tooltip .tooltip-arrow::after {
+	border-top-color: #ffffff !important;
+	border-right-color: #ffffff !important;
+	border-bottom-color: #ffffff !important;
+	border-left-color: #ffffff !important;
 }

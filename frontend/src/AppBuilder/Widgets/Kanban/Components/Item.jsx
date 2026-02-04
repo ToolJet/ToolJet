@@ -56,6 +56,9 @@ export const Item = React.memo(
           }}
           ref={ref}
           onClick={({ target }) => {
+            const { properties } = kanbanProps;
+            const { openModalOnCardClick } = properties;
+            if (!openModalOnCardClick) return;
             if (
               target.style.cursor.includes('resize') ||
               target?.classList?.contains('delete-icon') ||

@@ -32,12 +32,17 @@ const LoginForm = ({
     email: setisDefaultFormEmail,
     password: setisDefaultFormPassword,
   };
+  // For OIDC, handle both array (multi-tenant) and single object (legacy) formats
+  const hasEnabledOidc = Array.isArray(configs?.openid)
+    ? configs.openid.some((config) => config.enabled)
+    : configs?.openid?.enabled;
+
   const isAnySSOEnabled =
     configs?.google?.enabled ||
     configs?.git?.enabled ||
     configs?.ldap?.enabled ||
     configs?.saml?.enabled ||
-    configs?.openid?.enabled;
+    hasEnabledOidc;
 
   const noLoginMethodsEnabled = !configs?.form?.enabled && !isAnySSOEnabled;
   const workspaceSignUpEnabled = organizationId && configs?.enable_sign_up;

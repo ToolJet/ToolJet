@@ -6,6 +6,7 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  getTooljetEdition,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
@@ -14,8 +15,10 @@ import { isEmpty } from '@tooljet-plugins/common';
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
   private STATEMENT_TIMEOUT;
+  private tooljet_edition: string;
 
   constructor() {
+    this.tooljet_edition = getTooljetEdition();
     // Default 120 secs
     this.STATEMENT_TIMEOUT =
       process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
@@ -63,6 +66,7 @@ export default class PostgresqlQueryService implements QueryService {
             pgConnection = await pgPool.acquire().promise;
             const query = queryOptions.query;
             let result = { rows: [] };
+
             result = await pgConnection.query(query);
             return {
               status: 'ok',
@@ -98,6 +102,33 @@ export default class PostgresqlQueryService implements QueryService {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
     await knexInstance.raw('SELECT version();').timeout(this.STATEMENT_TIMEOUT);
     return { status: 'ok' };
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+
+      const { rows } = await knexInstance.raw(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_type = 'BASE TABLE'
+      ORDER BY table_name;
+    `);
+
+      return {
+        status: 'ok',
+        data: rows,
+      };
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    }
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
@@ -150,12 +181,12 @@ export default class PostgresqlQueryService implements QueryService {
         password: sourceOptions.password,
         port: sourceOptions.port,
         ssl: this.getSslConfig(sourceOptions),
-        statement_timeout: this.STATEMENT_TIMEOUT,
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
         connectionString: sourceOptions.connection_string,
-        statement_timeout: this.STATEMENT_TIMEOUT,
+        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     }
     const connectionOptions: Knex.Config = {

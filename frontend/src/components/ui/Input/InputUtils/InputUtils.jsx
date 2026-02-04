@@ -54,7 +54,7 @@ export const InputLabel = ({ disabled, label, required }) => (
     type="label"
     size="default"
     className={`tw-font-medium tw-mb-[2px] ${disabled ? 'tw-text-text-disabled' : ''}`}
-    data-cy={`${generateCypressDataCy(label)}-field-label`}
+    data-cy={`label-${generateCypressDataCy(label)}`}
   >
     {label}
     {required && <RequiredIndicator disabled={disabled} />}

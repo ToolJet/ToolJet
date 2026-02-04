@@ -20,18 +20,14 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'currentEnvironmentId', 'appId'],
+        select: ['id', 'name', 'description', 'status', 'currentEnvironmentId', 'appId'],
         where: { id: editingVersionId },
       });
       return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
     });
   }
 
-  async processActions(
-    organizationId: string | null,
-    action: string,
-    actionParameters: AppEnvironmentActionParametersDto
-  ) {
+  async processActions(user: any, action: string, actionParameters: AppEnvironmentActionParametersDto) {
     const { editorEnvironmentId, deletedVersionId, editorVersionId, appId } = actionParameters;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -216,7 +212,20 @@ export class AppEnvironmentService implements IAppEnvironmentService {
         order: {
           createdAt: 'DESC',
         },
-        select: ['id', 'name', 'appId'],
+        select: [
+          'id',
+          'name',
+          'description',
+          'status',
+          'appId',
+          'currentEnvironmentId',
+          'parentVersionId',
+          'promotedFrom',
+          'createdAt',
+          'updatedAt',
+          'publishedAt',
+          'releasedAt',
+        ],
       });
     });
   }

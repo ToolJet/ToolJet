@@ -20,30 +20,12 @@ export class LicenseCountsService implements ILicenseCountsService {
     const statusList = [WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ACTIVE];
     // edition != cloud for instance-specific logic
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
-      const userIdsWithEditPermissions = new Set(
-        (
-          await this.userRepository.getUsers(
-            {
-              status: Not(USER_STATUS.ARCHIVED),
-              organizationUsers: {
-                status: In(statusList),
-                organization: {
-                  status: WORKSPACE_STATUS.ACTIVE,
-                },
-              },
-              userPermissions: {
-                name: In([USER_ROLE.ADMIN, USER_ROLE.BUILDER]),
-              },
-            },
-            null,
-            ['organizationUsers', 'organizationUsers.organization', 'userPermissions'],
-            { id: true },
-            manager
-          )
-        ).map((record) => record.id)
+      const userIdsWithEditPermissions = await this.userRepository.getUsersWithActiveOrganizations(
+        statusList,
+        [USER_ROLE.ADMIN, USER_ROLE.BUILDER],
+        manager
       );
-
-      return userIdsWithEditPermissions?.size ? Array.from(userIdsWithEditPermissions) : [];
+      return userIdsWithEditPermissions.map((user) => user.id);
     } else {
       // Logic for cloud-based organization
       const userIdsWithEditPermissions = (

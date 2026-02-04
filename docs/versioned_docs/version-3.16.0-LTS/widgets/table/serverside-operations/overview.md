@@ -36,6 +36,6 @@ The following server side operations can be performed on a Table in ToolJet:
 - [Filter](/docs/widgets/table/serverside-operations/filter/)
 - [Pagination](/docs/widgets/table/serverside-operations/pagination/)
 
-<img className="screenshot-full" src="/img/widgets/table/serverside-operations/serverside-operations.png" alt="Serverside Operations Present for Table Component in ToolJet" />
+<img className="screenshot-full img-full" src="/img/widgets/table/serverside-operations/serverside-operations.png" alt="Serverside Operations Present for Table Component in ToolJet" />
 
 </div>

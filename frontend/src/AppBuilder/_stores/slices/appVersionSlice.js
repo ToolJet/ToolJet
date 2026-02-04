@@ -8,6 +8,7 @@ const initialState = {
   appVersions: [],
   isAppVersionPromoted: false,
   currentAppVersionEnvironment: null,
+  restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -60,5 +61,15 @@ export const createAppVersionSlice = (set, get) => ({
 
   getShouldFreeze: () => {
     return get().isVersionReleased || get().isEditorFreezed || get().selectedVersion?.id === get().releasedVersionId;
+  },
+
+  setRestoredAppHistoryId: (id) => {
+    set(
+      (state) => {
+        state.restoredAppHistoryId = id;
+      },
+      false,
+      'setRestoredAppHistoryId'
+    );
   },
 });

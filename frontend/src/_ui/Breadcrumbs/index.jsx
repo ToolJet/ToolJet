@@ -6,6 +6,7 @@ import cx from 'classnames';
 
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
+  { path: '/:workspace_id/home', breadcrumb: 'Home' },
   { path: '/:worspace_id', breadcrumb: 'Applications' },
   { path: '/:workspace_id/modules', breadcrumb: 'Modules' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },

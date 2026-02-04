@@ -31,7 +31,7 @@ import {
   convertDateToTimeZoneFormatted,
   getLocalTimeZone,
   getUTCOffset,
-} from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+} from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {

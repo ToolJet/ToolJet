@@ -9,14 +9,25 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "runner": "groups",
+  "testTimeout": 60000,
+  "forceExit": true,
+  "detectOpenHandles": true,
   "transformIgnorePatterns": [
-    "node_modules/(?!(lib0|y-protocols)/)"
+    "node_modules/(?!(lib0|y-protocols|@octokit|before-after-hook|universal-user-agent|universal-github-app-jwt|cookie-parser)/)"
   ],
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": "<rootDir>/../tsconfig.json"
+      }
+    ]
   },
   "moduleNameMapper": {
+    "^lib/utils$": "<rootDir>/../lib/utils.ts",
+    "^ormconfig$": "<rootDir>/../ormconfig.ts",
     "^src/(.*)": "<rootDir>/../src/$1",
+    "^scripts/(.*)": "<rootDir>/../scripts/$1",
     "@plugins/(.*)": "<rootDir>/../plugins/$1",
     "@dto/(.*)": "<rootDir>/../src/dto/$1",
     "@services/(.*)": "<rootDir>/../src/services/$1",
@@ -24,6 +35,8 @@
     "@controllers/(.*)": "<rootDir>/../src/controllers/$1",
     "@modules/(.*)": "<rootDir>/../src/modules/$1",
     "@ee/(.*)": "<rootDir>/../ee/$1",
-    "@apps/(.*)": "<rootDir>/../ee/apps/$1"
+    "@helpers/(.*)": "<rootDir>/../src/helpers/$1",
+    "@licensing/(.*)": "<rootDir>/../ee/licensing/$1",
+    "@instance-settings/(.*)": "<rootDir>/../ee/instance-settings/$1"
   }
 }

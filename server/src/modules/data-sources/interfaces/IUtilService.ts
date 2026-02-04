@@ -10,7 +10,12 @@ export interface IDataSourcesUtilService {
 
   parseOptionsForCreate(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
 
-  parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager): Promise<any>;
+  parseOptionsForUpdate(
+    dataSource: DataSource,
+    options: Array<object>,
+    manager: EntityManager,
+    userId: string
+  ): Promise<any>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
 
@@ -28,7 +33,11 @@ export interface IDataSourcesUtilService {
     manager?: EntityManager
   ): Promise<void>;
 
-  parseOptionsForOauthDataSource(options: Array<object>, resetSecureData?: boolean): Promise<Array<object>>;
+  parseOptionsForOauthDataSource(
+    options: Array<object>,
+    resetSecureData?: boolean,
+    userId?: string
+  ): Promise<Array<object>>;
 
   resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
 

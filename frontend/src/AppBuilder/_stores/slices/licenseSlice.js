@@ -25,4 +25,7 @@ export const createLicenseSlice = (set, get) => ({
     }
     return false;
   },
+  isFeatureAccessible: (featureName) => {
+    return get().license.featureAccess?.[featureName] ?? false;
+  },
 });

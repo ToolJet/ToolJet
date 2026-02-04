@@ -61,6 +61,5 @@ export class PagesController implements IPagesController {
       deletePageDto.deleteAssociatedPages,
       app.organizationId
     );
-    return;
   }
 }

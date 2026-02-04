@@ -6,7 +6,7 @@ title: OpenAI
 ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, create images tailored to specific inputs, and generate vector embeddings.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -33,6 +33,7 @@ The function of this operation is to examine the user's input and generate a sui
 #### Required Parameters
 
 - **Model**: The model to use for generating the chat response. The available models are:
+<<<<<<< HEAD
     - **GPT-5.2**
     - **GPT-5.1**
     - **GPT-5**
@@ -51,6 +52,12 @@ The function of this operation is to examine the user's input and generate a sui
     - **GPT-4o Mini**
     - **GPT-3.5 Turbo**
 
+=======
+  - GPT-4.0
+  - GPT-4.0 mini
+  - GPT-4 Turbo
+  - GPT-3.5 Turbo
+>>>>>>> develop
 - **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
 
 #### Optional Parameters
@@ -83,6 +90,54 @@ Suffix: \n
 ```json
 "Machine learning, a subset of artificial intelligence, is fundamentally about designing and implementing algorithms that can learn from and make predictions or decisions based on data. The key principles of machine learning can be outlined as follows:nn1. **Learning from Data**: At its core, machine learning involves developing algorithms that can learn from and make predictions or inferences from data. Models are trained using a large set of data known as training data, which helps them make decisions or predictions without being explicitly programmed for the task.nn2"
 ```
+<<<<<<< HEAD
+=======
+
+</details>
+
+### Completions
+
+The purpose of this operation is to generate text completions based on a given prompt.
+
+#### Required Parameters
+
+- **Model**: The model to use for generating the text completion. The available models are:
+  - GPT-3.5 Turbo
+- **Prompt**: OpenAI uses the prompt as a starting point to generate a continuation or completion of the text, which can be in the form of a sentence, paragraph, or even an entire article. The quality and relevance of the generated text output can depend on the quality and specificity of the prompt provided.
+
+#### Optional Parameters
+
+- **Max Tokens**: This parameter specifies the maximum number of tokens to generate in the text completion output. For example, if you set it to 50, then it will generate a text completion that contains up to 50 tokens.
+- **Temperature**: Temperature is used to control the creativity and randomness of the generated text. It ranges from 0 to 1, a higher value such as 0.8 will increase the randomness of the output, whereas a lower value such as 0.2 will make it more focused and deterministic.
+- **Stop sequence**: Stop sequence is used to specify when the API should stop generating text completions. This parameter is optional and can be used to customize the length and quality of the generated text.
+- **Suffix**: The suffix that follows the inserted text completion.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/marketplace/plugins/openai/completions-v3.png" alt="Completions Operation" />
+</div>
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+
+```yaml
+Model: GPT-3.5 Turbo
+Prompt: The benefits of using low code platforms for software development include
+Max Tokens: 100
+Temperature: 0.6
+Stop sequence: END
+Suffix: \n
+```
+
+</details>
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+
+```json
+":1. Increased Speed and Efficiency: Low code platforms allow developers to quickly build and deploy applications without having to write extensive lines of code. This significantly reduces development time and increases efficiency.nn2. Cost Savings: With low code platforms, businesses can save on development costs by reducing the need for a large team of developers. This also leads to lower maintenance costs as the applications are easier to maintain and update.nn3. User-Friendly Interface: Low code platforms are designed to be user-friendly and require minimal"
+```
+
+>>>>>>> develop
 </details>
 
 ### Generate AI Image(s)
@@ -92,14 +147,24 @@ This operation generates AI images based on the given prompt.
 #### Required Parameters
 
 - **Model**: The model to use for generating the image. The available models are:
+<<<<<<< HEAD
     - **GPT Image 1**
     - **DALL-E 3**
     - **DALL-E 2**
+=======
+  - DALL-E 3
+  - DALL-E 2
+>>>>>>> develop
 - **Prompt**: The prompt is the initial message or question that is provided as input to the AI model to generate an image.
 
 #### Optional Parameters
 
 - **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
+<<<<<<< HEAD
+=======
+  - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
+  - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
+>>>>>>> develop
 
     - **GPT Image 1**: Must be one of `1792x1024`, `1024x1792`, or `1024x1024`.
 
@@ -142,9 +207,15 @@ This operation is used to generate vector embeddings from the given text, which 
 #### Required Parameters
 
 - **Model**: The model to use for generating the vector embedding. The available models are:
+<<<<<<< HEAD
     - **text-embedding-3-small**
     - **text-embedding-3-large**
     - **text-embedding-ada-002**
+=======
+  - text-embedding-3-small
+  - text-embedding-3-large
+  - text-embedding-ada-002
+>>>>>>> develop
 
 - **Input**: The text input used for generating the vector embedding.
 
@@ -172,17 +243,10 @@ Dimensions: 10
 ```json
 {
   "embedding": [
-    -0.49750686,
-    -0.7019393,
-    -0.23043627,
-    -0.12421317,
-    -0.076866604,
-    0.2191516,
-    0.2548046,
-    0.1453106,
-    -0.20050736,
-    0.10516006
+    -0.49750686, -0.7019393, -0.23043627, -0.12421317, -0.076866604, 0.2191516,
+    0.2548046, 0.1453106, -0.20050736, 0.10516006
   ]
 }
 ```
+
 </details>

@@ -21,6 +21,7 @@ import { fullName, generateOrgInviteURL, isSuperAdmin } from '@helpers/utils.hel
 import { decamelizeKeys } from 'humps';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionService {
@@ -32,17 +33,31 @@ export class SessionService {
     protected readonly organizationUserRepository: OrganizationUsersRepository
   ) {}
 
-  async terminateSession(userId: string, sessionId: string, response: Response): Promise<void> {
+  async terminateSession(user: User, sessionId: string, response: Response): Promise<void> {
     response.clearCookie('tj_auth_token');
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.delete(UserSessions, { id: sessionId, userId });
-      const user = await manager.findOneOrFail(User, {
-        where: { id: userId },
-      });
+      await manager.delete(UserSessions, { id: sessionId, userId: user.id });
+
+      // Decrement metrics
+      try {
+        decrementActiveSessions({
+          userId: user.id,
+          sessionType: 'user',
+        });
+
+        if (user?.organizationId) {
+          decrementConcurrentUsers({
+            workspaceId: user.organizationId,
+            userId: user.id,
+          });
+        }
+      } catch (error) {
+        console.error('Error decrementing session metrics:', error);
+      }
 
       const auditLogData = {
         userId: user.id,
-        organizationId: user.defaultOrganizationId,
+        organizationId: user.organizationId,
         resourceId: user.id,
         resourceName: user.email,
       };

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "FedEx datasource",
+  "description": "A schema defining FedEx datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "fedex_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": {
+        "Address Validation": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/address-validation.json",
+        "Ground End of Day Close": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/close.json",
+        "Ship Consolidation": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/consolidation.json",
+        "Open Ship": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/open-ship.json",
+        "Pickup Request": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/pickup.json",
+        "Postal Code Validation": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/postal-code.json",
+        "Rates and Transit Times": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/rate.json",
+        "Ship": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/ship%20(1).json",
+        "Tracking (Basic Integrated Visibility)": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/track.json",
+        "Trade Documents Upload": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/upload-documents.json",
+        "FedEx Location Search": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/locations.json",
+        "Freight LTL": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/ltl-freight.json",
+        "Service Availability": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/fedex/service-availability.json"
+      }
+    }
+  }
+}
