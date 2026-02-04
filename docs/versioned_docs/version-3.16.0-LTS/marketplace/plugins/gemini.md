@@ -3,7 +3,7 @@ id: marketplace-plugin-gemini
 title: Gemini
 ---
 
-The **Google Gemini Plugin** can be integrated with ToolJet to enable the development of context-aware, intelligent chatbots and to support the generation of high-quality, creative text content within applications.
+The **Google Gemini** Plugin can be integrated with ToolJet to enable the development of context-aware, intelligent chatbots and to support the generation of high-quality, creative text content within applications.
 
 ## Connection
 
