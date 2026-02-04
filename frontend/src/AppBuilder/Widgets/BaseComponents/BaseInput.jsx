@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
@@ -75,8 +75,8 @@ export const BaseInput = ({
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
   };
@@ -94,19 +94,15 @@ export const BaseInput = ({
     };
   }
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
-
   return (
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input scrollbar-container d-flex ${
-          defaultAlignment === 'top' &&
+        className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : ''
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : ''
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -150,23 +146,23 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                ? accentColor != '4368E3'
-                  ? accentColor
-                  : 'var(--primary-accent-strong)'
-                : borderColor != '#CCD1D5'
-                ? borderColor
-                : disable || loading
-                ? '1px solid var(--borders-disabled-on-white)'
-                : 'var(--borders-default)',
+                  ? accentColor != '4368E3'
+                    ? accentColor
+                    : 'var(--primary-accent-strong)'
+                  : borderColor != '#CCD1D5'
+                    ? borderColor
+                    : disable || loading
+                      ? '1px solid var(--borders-disabled-on-white)'
+                      : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                ? darkMode
-                  ? 'var(--surfaces-app-bg-default)'
-                  : 'var(--surfaces-surface-03)'
-                : 'var(--surfaces-surface-01)',
+                  ? darkMode
+                    ? 'var(--surfaces-app-bg-default)'
+                    : 'var(--surfaces-surface-03)'
+                  : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
@@ -178,7 +174,8 @@ export const BaseInput = ({
           }}
         >
           {showLeftIcon && (
-            <IconElement
+            <TablerIcon
+              iconName={icon}
               data-cy={'text-input-icon'}
               className={cn('tw-shrink-0', classes?.leftIcon)}
               style={{

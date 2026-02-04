@@ -24,7 +24,7 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-
+import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -223,7 +223,20 @@ export const createComponentsSlice = (set, get) => ({
       'addNewQueryMapping'
     );
   },
-  clearSelectedComponents: () => set({ selectedComponents: [] }, false, 'clearSelectedComponents'),
+  clearSelectedComponents: () =>
+    set(
+      (state) => {
+        state.selectedComponents = [];
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab =
+            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+              ? RIGHT_SIDE_BAR_TAB.PAGES
+              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
+        }
+      },
+      false,
+      'clearSelectedComponents'
+    ),
 
   renameQueryMapping: (oldName, newName, queryId, moduleId = 'canvas') => {
     set((state) => {
@@ -1085,11 +1098,7 @@ export const createComponentsSlice = (set, get) => ({
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
-            state.selectedComponents = []; // Empty the selected components
-            // Auto-switch to components tab when no components are selected after deletion
-            if (state.isRightSidebarOpen) {
-              state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.COMPONENTS;
-            }
+            get().clearSelectedComponents();
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
@@ -1672,6 +1681,10 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
+    if (components.length === 0) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = components;
@@ -1686,6 +1699,10 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
+    if (!componentId) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
@@ -2144,7 +2161,7 @@ export const createComponentsSlice = (set, get) => ({
 
     if (alignment.value && resolvedAlignment === 'top') {
       if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
+        newHeight += TOP_ALIGNMENT_HEIGHT_INCREMENT;
       }
     }
     return newHeight;
@@ -2453,5 +2470,15 @@ export const createComponentsSlice = (set, get) => ({
     );
     if (componentExposedProperty !== undefined) return componentExposedProperty;
     return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
+  },
+  getComponentAlignment: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.styles?.alignment;
+  },
+  getComponentLabel: (componentId, moduleId = 'canvas') => {
+    const { getResolvedComponent } = get();
+    const component = getResolvedComponent(componentId, null, moduleId);
+    return component?.properties?.label;
   },
 });

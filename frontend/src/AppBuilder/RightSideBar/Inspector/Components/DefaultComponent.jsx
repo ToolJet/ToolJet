@@ -49,6 +49,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TagsInput',
   'JSONExplorer',
   'JSONEditor',
+  'IFrame',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -187,6 +188,7 @@ export const baseComponentProperties = (
       'Camera',
       'JSONExplorer',
       'JSONEditor',
+      'IFrame',
     ],
     Layout: [],
   };
