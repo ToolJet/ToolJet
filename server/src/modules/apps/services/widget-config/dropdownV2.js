@@ -272,7 +272,7 @@ export const dropdownV2Config = {
       displayName: 'Menu width',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'matchContent',
+        defaultValue: 'matchField',
       },
       options: [
         { name: 'Match the field', value: 'matchField' },
