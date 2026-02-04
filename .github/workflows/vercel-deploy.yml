@@ -19,7 +19,6 @@ on:
         required: true
         type: choice
         options:
-          - preview
           - production
 
 jobs:
