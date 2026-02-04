@@ -136,6 +136,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
       style={{
         width: '100%',
         maxWidth: canvasMaxWidth,
+        margin: '0 auto',
         transform: 'translateZ(0)',
         ...(isModuleMode && { height: '100%' }),
       }}
