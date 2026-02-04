@@ -71,8 +71,8 @@ Format a **Rating** column so that low ratings appear in red, mid-range in orang
 ```js
 {{cellValue >= 4 ? '#5CB85C' : cellValue >= 2.5 ? '#F0AD4E' : '#D9534F'}}
 ```
-<!-- 
-<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/text-cv.png" alt="Text Color Based on Cell Value" /> -->
+
+<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/text-cv.png" alt="Text Color Based on Cell Value" /> 
 
 #### Cell Background Color Based on Cell Value
 
@@ -81,32 +81,43 @@ Highlight a **Sales** column where high-value cells get a green background and l
 ```js
 {{cellValue >= 1000 ? '#e8f5e9' : cellValue >= 500 ? '#fff3e0' : '#ffebee'}}
 ```
-<!-- 
-<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/cell-cv.png" alt="Cell Color Based on Cell Value" /> -->
+
+<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/cell-cv.png" alt="Cell Color Based on Cell Value" /> 
 
 #### Text Color Based on Row Data
 
-Change the text color of a **Product Name** column based on the `price` column in the same row:
+Change the text color of a **id** column based on the `phone` column in the same row:
 
 ```js
-{{rowData.price > 100 ? '#D9534F' : '#5CB85C'}}
+{{ rowData.id > 3 ? '#D9534F' : '#5CB85C' }}
 ```
+
+<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/text-rowdata.png" alt="Text Color Based on Row Data" /> 
+
 
 #### Cell Background Color Based on Row Data
 
-Color-code a **Title** column based on the product's `category`:
+Color-code a **Title** column based on the product's `interest`:
 
 ```js
-{{rowData.category === 'electronics' ? '#e3f2fd' : rowData.category === 'jewelery' ? '#fce4ec' : '#f5f5f5'}}
+{{ 
+  rowData.interest?.includes('Photography') ? '#030f16' : rowData.interest?.includes('Traveling') ? '#5ec522' : '#ed1717' 
+}}
 ```
+
+<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/cell-rowdata.png" alt="Cell Background Based on Row Data" /> 
 
 #### Combining Multiple Conditions
 
-Use nested ternary operators or logical operators to build more complex rules. For example, format a **Name** column by combining `status` and `role` from row data:
+Use nested ternary operators or logical operators to build more complex rules. For example, format a **Name** column by combining `id` and `phone` from row data:
 
 ```js
-{{rowData.status === 'inactive' ? '#bdbdbd' : rowData.role === 'admin' ? '#1565c0' : '#212121'}}
+{{ 
+  rowData.id === 1 ? '#1565c0' : rowData.phone > 9000000000 ? '#212121' : '#bdbdbd' 
+}}
 ```
+
+<img className="screenshot-full img-l" src="/img/widgets/table/conditional-formatting/multiple-condition.png" alt="Combining Multiple Conditions" /> 
 
 :::info
 You can use hex color codes, named CSS colors (`red`, `lightgreen`), or `rgb()`/`hsl()` functions in your expressions.
