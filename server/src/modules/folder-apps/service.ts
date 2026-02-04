@@ -36,7 +36,7 @@ export class FolderAppsService implements IFolderAppsService {
       });
     if (gitSyncedApp) {
       throw new BadRequestException(
-        'Git-synced app cannot be moved to another folder'
+        'Git-synced app cannot be moved to a folder'
       );
     }
       // TODO: check if folder under user.organizationId and user has edit permission on app
@@ -56,6 +56,15 @@ export class FolderAppsService implements IFolderAppsService {
 
   async remove(folderId: string, appId: string): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+    const gitSyncedApp = await manager.findOne(AppGitSync, {
+        where: { appId },
+        select: ['id'], 
+      });
+    if (gitSyncedApp) {
+        throw new BadRequestException(
+          "Apps connected to git can't be removed from folders."
+        );
+      }
       // TODO: folder under user.organizationId
       return await manager.delete(FolderApp, { folderId, appId });
     });

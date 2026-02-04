@@ -370,7 +370,6 @@ export const Folders = function Folders({
                   editFolder={() => updateFolder(folder)}
                   darkMode={darkMode}
                   dataCy={folder.name}
-                  folderCount={folder.count}
                 />
               </div>
             )}
