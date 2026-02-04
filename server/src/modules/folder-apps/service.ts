@@ -20,28 +20,7 @@ export class FolderAppsService implements IFolderAppsService {
   ) {}
 
   async create(folderId: string, appId: string): Promise<FolderApp> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId, folderId },
-      });
-
-      if (existingFolderApp) {
-        throw new BadRequestException('App has already been added to the folder');
-      }
-
-      // TODO: check if folder under user.organizationId and user has edit permission on app
-
-      const newFolderApp = manager.create(FolderApp, {
-        folderId,
-        appId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const folderApp = await manager.save(FolderApp, newFolderApp);
-
-      return folderApp;
-    });
+    return this.folderAppsUtilService.create(folderId, appId);
   }
 
   async remove(folderId: string, appId: string): Promise<void> {
