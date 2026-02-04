@@ -14,12 +14,8 @@
           "type": "category",
           "label": "How To",
           "items": [
-            "how-to/build-dynamic-forms",
-            "how-to/use-form-component",
-            "how-to/bulk-update-multiple-rows",
-            "how-to/delete-multiple-rows",
             "how-to/loading-image-pdf-from-db",
-            "how-to/use-events-on-chart"
+            
           ]
         },
         {
@@ -288,7 +284,8 @@
                   "items": [
                     "widgets/chart/chart-properties",
                     "widgets/chart/chart-examples",
-                    "widgets/chart/transforming-data-for-charts"
+                    "widgets/chart/transforming-data-for-charts",
+                    "widgets/chart/use-events-on-chart"
                   ]
                 },
                 {
@@ -334,7 +331,9 @@
                     "widgets/form/generate-form",
                     "widgets/form/properties",
                     "widgets/form/csa",
-                    "widgets/form/schema"
+                    "widgets/form/schema",
+                    "widgets/form/build-dynamic-forms",
+                    "widgets/form/use-form-component"
                   ]
                 },
                 "widgets/html",
