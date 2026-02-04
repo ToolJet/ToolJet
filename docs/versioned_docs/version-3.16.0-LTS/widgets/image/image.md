@@ -1,6 +1,7 @@
 ---
 id: image
 title: Image
+slug: /widgets/image/
 ---
 
 The **Image** component is used to display images in your application.

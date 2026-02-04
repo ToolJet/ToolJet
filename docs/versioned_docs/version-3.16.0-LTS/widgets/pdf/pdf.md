@@ -1,6 +1,7 @@
 ---
 id: pdf
 title: PDF
+slug: /widgets/pdf/
 ---
 
 The **PDF** component can be used to embed PDF files either by URL or through Base64 code.

@@ -12,14 +12,6 @@
         "getting-started/quickstart-guide",
         {
           "type": "category",
-          "label": "How To",
-          "items": [
-            "how-to/loading-image-pdf-from-db",
-            
-          ]
-        },
-        {
-          "type": "category",
           "label": "Deployment",
           "link": {
             "type": "doc",
@@ -339,7 +331,18 @@
                 "widgets/html",
                 "widgets/icon",
                 "widgets/iframe",
-                "widgets/image",
+                {
+                  "type": "category",
+                  "label": "Image",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/image/image"
+                  },
+                  "items": [
+                    "widgets/image/image",
+                    "widgets/image/loading-image-pdf-from-db"
+                  ]
+                },
                 "widgets/kanban",
                 "widgets/link",
                 {
@@ -360,7 +363,18 @@
                 "widgets/number-input",
                 "widgets/password-input",
                 "widgets/pagination",
-                "widgets/pdf",
+                {
+                  "type": "category",
+                  "label": "PDF",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/pdf/pdf"
+                  },
+                  "items": [
+                    "widgets/pdf/pdf",
+                    "widgets/pdf/pdf"
+                  ]
+                },
                 "widgets/phone-input",
                 "widgets/popover-menu",
                 "widgets/qr-scanner",
