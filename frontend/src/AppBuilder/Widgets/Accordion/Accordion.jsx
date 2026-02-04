@@ -75,13 +75,17 @@ export const Accordion = ({
         updateExposedVariablesState('isExpanded', false);
         fireEvent('onCollapse');
       },
+      setLoading: async function (value) {
+        setExposedVariable('isLoading', !!value);
+        updateExposedVariablesState('isLoading', !!value);
+      },
       setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        updateExposedVariablesState('isVisible', value);
+        setExposedVariable('isVisible', !!value);
+        updateExposedVariablesState('isVisible', !!value);
       },
       setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        updateExposedVariablesState('isDisabled', value);
+        setExposedVariable('isDisabled', !!value);
+        updateExposedVariablesState('isDisabled', !!value);
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
