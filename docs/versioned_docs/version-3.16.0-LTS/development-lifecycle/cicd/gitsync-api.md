@@ -3,6 +3,7 @@ id: gitsync-api
 title: GitSync API
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
 <div className="badge badge--primary heading-badge">   
   <img 
     src="/img/badge-icons/premium.svg" 
@@ -12,6 +13,13 @@ title: GitSync API
   />
  <span>Paid feature</span>
 </div>
+
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+
+</div>
+
 
 ToolJet’s git sync CI/CD APIs enable organizations to programmatically manage the complete lifecycle of their ToolJet applications within their existing CI/CD piplines. With these RESTful APIs, you can configure git sync, push and pull changes from Git repositories, and automate application deployments without manual intervention.
 

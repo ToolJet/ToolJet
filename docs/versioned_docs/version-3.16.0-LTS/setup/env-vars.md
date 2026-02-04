@@ -52,6 +52,9 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_USER`: Database username
 - `TOOLJET_DB_PASS`: Database password
 - `TOOLJET_DB_PORT`: Database port
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
+
 
 #### Why ToolJet Requires Two Databases
 
@@ -89,7 +92,7 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.x or higher, v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v7.x recommended)** for a multi-service or multi-pod setup, or when running workflows with separate worker containers.
 
 **Required Variables:**
 
@@ -369,3 +372,12 @@ Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high card
 :::
 
 For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

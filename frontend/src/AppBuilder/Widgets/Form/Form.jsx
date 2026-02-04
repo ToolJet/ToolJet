@@ -4,10 +4,9 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import _, { debounce, omit } from 'lodash';
 import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
-import { useAppInfo } from '@/_stores/appDataStore';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { deepClone, deepCloneWithFunctions } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -25,7 +24,7 @@ import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 import './form.scss';
-import { getModifiedColor } from '@/Editor/Components/utils';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 const FormComponent = (props) => {
   const {
@@ -45,6 +44,8 @@ const FormComponent = (props) => {
     currentLayout,
     componentCount,
     onComponentClick,
+    subContainerIndex,
+    currentMode,
   } = props;
 
   const { moduleId } = useModuleContext();
@@ -52,7 +53,15 @@ const FormComponent = (props) => {
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
   const themeChanged = useStore((state) => state.themeChanged);
 
-  const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
+  const {
+    borderRadius,
+    borderColor,
+    boxShadow,
+    footerBackgroundColor,
+    headerBackgroundColor,
+    headerDividerColor,
+    footerDividerColor,
+  } = styles;
 
   const {
     buttonToSubmit,
@@ -66,9 +75,9 @@ const FormComponent = (props) => {
     validateOnSubmit = true,
     resetOnSubmit = true,
     newJsonSchema,
-    dynamicHeight,
   } = properties;
 
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
   const advanced = _deprecatedAdvanced || isJSONSchema;
   const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 
@@ -90,17 +99,18 @@ const FormComponent = (props) => {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height: dynamicHeight ? '100%' : height,
+    height: isDynamicHeightEnabled ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     position: 'relative',
     boxShadow,
     flexDirection: 'column',
     clipPath: `inset(0 round ${computedBorderRadius})`,
     '--cc-form-scroll-bar-color': activeColor,
+    '--cc-form-header-divider-color': headerDividerColor,
+    '--cc-form-footer-divider-color': footerDividerColor,
   };
 
   const formContent = {
-    overflow: 'hidden auto',
     display: 'flex',
     height: canHeight || '100%',
     paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -138,7 +148,7 @@ const FormComponent = (props) => {
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
   useDynamicHeight({
-    dynamicHeight,
+    isDynamicHeightEnabled,
     id,
     height,
     adjustComponentPositions,
@@ -147,6 +157,7 @@ const FormComponent = (props) => {
     componentCount,
     value: isJSONSchema,
     visibility: isVisible,
+    subContainerIndex,
   });
 
   const parentRef = useRef(null);
@@ -265,10 +276,9 @@ const FormComponent = (props) => {
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
     );
 
-    const formattedChildDataClone = deepClone(formattedChildData);
     const exposedVariables = {
-      ...(!advanced && { children: formattedChildDataClone }),
-      data: removeFunctionObjects(formattedChildData),
+      ...(!advanced && { children: deepCloneWithFunctions(formattedChildData) }),
+      data: removeFunctionObjects(deepClone(formattedChildData)),
       isValid: childValidation,
       formData, // Expose formData
     };
@@ -310,20 +320,11 @@ const FormComponent = (props) => {
   };
 
   function onComponentOptionChangedForSubcontainer(component, key, value, id = '') {
-    if (typeof value === 'function') {
-      return Promise.resolve();
-    }
     onOptionChange(key, value, id, component);
   }
 
   function onComponentOptionsChangedForSubcontainer(component, exposedValues, id) {
-    const transformedExposedValues = Object.entries(exposedValues).reduce((acc, [key, value]) => {
-      if (typeof value === 'function') {
-        return acc;
-      }
-      return { ...acc, [key]: value };
-    }, {});
-    onOptionsChange(transformedExposedValues, id, component);
+    onOptionsChange(exposedValues, id, component);
   }
 
   const onOptionChange = useCallback(
@@ -416,7 +417,7 @@ const FormComponent = (props) => {
       )}
       <div
         className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
-          properties.dynamicHeight && `dynamic-${id}`
+          isDynamicHeightEnabled && `dynamic-${id}`
         }`}
         style={formContent}
       >
@@ -436,7 +437,6 @@ const FormComponent = (props) => {
                   onOptionsChange={onOptionsChange}
                   styles={{
                     backgroundColor: computedStyles.backgroundColor,
-                    // overflow: 'hidden auto',
                     height: '100%',
                   }}
                   darkMode={darkMode}

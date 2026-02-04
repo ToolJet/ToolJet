@@ -8,9 +8,11 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { useTranslation } from 'react-i18next';
 
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
+  const { t } = useTranslation();
   const [workflowOptions, setWorkflowOptions] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
@@ -51,7 +53,20 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   return (
     <>
+      <div style={{ marginBottom: '2px' }}>
+        {`To know more about querying workflows data,`}
+        &nbsp;
+        <a
+          href={'https://docs.tooljet.com/docs/workflows/how-to/trigger-workflow-from-app'}
+          target="_blank"
+          style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+          rel="noreferrer"
+        >
+          {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+        </a>
+      </div>
       <label className="mb-1">Workflow</label>
+      <div data-cy="workflow-dropdown"></div>
       <Select
         options={workflowOptions}
         value={options.workflowId ?? {}}
@@ -67,12 +82,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
         width="300px"
         menuPlacement="bottom"
         customClassPrefix="workflow-select"
-        onMenuOpen={() => {
-          setIsMenuOpen(true);
-        }}
-        onMenuClose={() => {
-          setIsMenuOpen(false);
-        }}
+        onMenuOpen={() => setIsMenuOpen(true)}
+        onMenuClose={() => setIsMenuOpen(false)}
       />
       <label className="my-2">Params</label>
       <div className="grid"></div>

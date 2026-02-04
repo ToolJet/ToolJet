@@ -15,22 +15,62 @@
       "api_key": {
         "type": "string",
         "encrypted": true
+      },
+      "service_account_key": {
+        "type": "string",
+        "encrypted": true
       }
     },
-    "customTesting": true,
-    "hideSave": true
+    "customTesting": false,
+    "hideSave": false
   },
   "defaults": {
     "access_type": {
       "value": "read"
+    },
+    "authentication_type": {
+      "value": "oauth2"
     }
   },
   "properties": {
-    "sheets": {
-      "label": "",
-      "key": "sheets",
-      "type": "react-component-google-sheets",
-      "description": "A component for google sheets"
+    "credentials": {
+      "label": "Authentication Type",
+      "key": "authentication_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing authentication type",
+      "list": [
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        },
+        {
+          "value": "service_account",
+          "name": "Service Account"
+        }
+      ]
+    },
+    "oauth2": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      }
+    },
+    "service_account": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      },
+      "service_account_key": {
+        "label": "Service Account Key",
+        "key": "service_account_key",
+        "type": "textarea",
+        "description": "Enter JSON private key for service account",
+        "encrypted": true 
+      }
     }
   }
 }

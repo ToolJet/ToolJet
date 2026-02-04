@@ -65,7 +65,7 @@ export const createInitSlice = (set, get) => ({
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
-        state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
+        state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? false;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;

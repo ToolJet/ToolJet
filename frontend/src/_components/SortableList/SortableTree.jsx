@@ -15,7 +15,6 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 
 import { buildTree, flattenTree, getProjection, getChildCount, removeChildrenOf } from './utilities';
 import { CSS } from '@dnd-kit/utilities';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { sortableTreeKeyboardCoordinates } from './keyboardCoordinates';
 
@@ -143,14 +142,6 @@ export function SortableTree({
     setItems(treebuilt);
   }, [defaultItems]);
 
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
-
   console.log({
     items,
   });
@@ -177,10 +168,6 @@ export function SortableTree({
 
   function handleDragEnd({ active, over }) {
     resetState();
-    if (isVersionReleased) {
-      enableReleasedVersionPopupState();
-      return;
-    }
     if (projected && over) {
       const { depth, pageGroupId } = projected;
       const clonedItems = JSON.parse(JSON.stringify(flattenTree(items)));

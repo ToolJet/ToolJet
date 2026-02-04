@@ -76,12 +76,12 @@ export function defineDataQueryAppAbility(
   }
 
   if (isAllViewable) {
-    can([FEATURE_KEY.RUN_VIEWER], App);
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
-    can([FEATURE_KEY.RUN_VIEWER], App);
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 }

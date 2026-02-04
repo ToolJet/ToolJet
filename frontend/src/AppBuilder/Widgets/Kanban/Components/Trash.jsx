@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-export const Trash = ({ id }) => {
+export const Trash = ({ id, deleteLabel }) => {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -24,7 +24,7 @@ export const Trash = ({ id }) => {
         borderColor: isOver ? 'red' : '#DDD',
       }}
     >
-      Drop here to delete
+      {deleteLabel}
     </div>
   );
 };

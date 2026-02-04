@@ -1,6 +1,7 @@
 import React, { useMemo, useState, memo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { debounce } from 'lodash';
+import { IconSearch } from '@tabler/icons-react';
 
 // Table Search
 export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
@@ -18,11 +19,11 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
       className="d-flex align-items-center table-global-search"
       style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}
     >
-      <div className="d-flex">
-        <SolidIcon name="search" style={{ marginTop: '3px' }} width="16" height="16" fill={'var(--icons-default)'} />
+      <div className="d-flex align-items-center">
+        <IconSearch size="16" color={'var(--cc-weak-icon, var(--cc-default-icon))'} />
         <input
           type="text"
-          className={`align-self-center bg-transparent tj-text tj-text-sm mx-lg-1`}
+          className={`tw-w-full align-self-center bg-transparent tj-text tj-text-sm tw-mx-[4px] tw-rounded-none`}
           value={value || ''}
           onChange={(e) => {
             setValue(e.target.value);
@@ -43,7 +44,12 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
             debouncedChange('');
           }}
         >
-          <SolidIcon name="removerectangle" width="16" height="16" fill={'var(--icons-default)'} />
+          <SolidIcon
+            name="removerectangle"
+            width="16"
+            height="16"
+            fill={'var(--cc-weak-icon, var(--cc-default-icon))'}
+          />
         </div>
       </div>
     </div>

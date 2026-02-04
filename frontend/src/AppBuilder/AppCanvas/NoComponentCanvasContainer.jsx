@@ -11,6 +11,7 @@ const NoComponentCanvasContainer = () => {
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery, shallow);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
 
   const queryBoxText = sampleDataSource
     ? 'Connect to your data source or use our sample data source to start playing around!'
@@ -28,6 +29,7 @@ const NoComponentCanvasContainer = () => {
   const handleConnectSampleDB = () => {
     const source = sampleDataSource;
     const query = `SELECT tablename \nFROM pg_catalog.pg_tables \nWHERE schemaname='public';`;
+    expandQueryPaneIfNeeded();
     createDataQuery(source, true, { query });
     setPreviewData(null);
   };

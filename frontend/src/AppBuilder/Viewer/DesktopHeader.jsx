@@ -2,7 +2,7 @@ import React from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import LogoIcon from '@assets/images/rocket.svg';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import { shallow } from 'zustand/shallow';
@@ -20,6 +20,7 @@ const DesktopHeader = ({
   isAppLoaded,
   changeToDarkMode,
 }) => {
+  const location = useLocation();
   const { showDarkModeToggle, isReleasedVersionId } = useStore(
     (state) => ({
       isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
@@ -27,6 +28,15 @@ const DesktopHeader = ({
     }),
     shallow
   );
+
+  // Check if we're in preview mode (has env or version query params)
+  const searchParams = new URLSearchParams(location.search);
+  const isPreviewMode = searchParams.has('env') || searchParams.has('version');
+
+  // Don't render header at all if not in preview mode
+  if (!isPreviewMode) {
+    return null;
+  }
 
   const _renderAppNameAndLogo = () => (
     <div
@@ -55,14 +65,12 @@ const DesktopHeader = ({
   if (!showHeader) {
     return (
       <>
-        {!isReleasedVersionId && (
-          <PreviewSettings
-            isMobileLayout={false}
-            showHeader={showHeader}
-            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-            darkMode={darkMode}
-          />
-        )}
+        <PreviewSettings
+          isMobileLayout={false}
+          showHeader={showHeader}
+          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+          darkMode={darkMode}
+        />
         {showDarkModeToggle && isAppLoaded && (
           <span className="released-version-no-header-dark-mode-icon">
             <DarkModeToggle switchDarkMode={changeToDarkMode} darkMode={darkMode} />
@@ -72,18 +80,14 @@ const DesktopHeader = ({
     );
   }
   return (
-    !isReleasedVersionId && (
-      <Header>
-        {
-          <PreviewSettings
-            isMobileLayout={false}
-            showHeader={showHeader}
-            setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-            darkMode={darkMode}
-          />
-        }
-      </Header>
-    )
+    <Header>
+      <PreviewSettings
+        isMobileLayout={false}
+        showHeader={showHeader}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        darkMode={darkMode}
+      />
+    </Header>
   );
 };
 

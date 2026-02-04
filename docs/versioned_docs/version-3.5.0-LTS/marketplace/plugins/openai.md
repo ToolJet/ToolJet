@@ -6,7 +6,7 @@ title: OpenAI
 ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, create images tailored to specific inputs, and generate vector embeddings.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -34,10 +34,10 @@ The function of this operation is to examine the user's input and generate a sui
 #### Required Parameters
 
 - **Model**: The model to use for generating the chat response. The available models are:
-    - GPT-4.0
-    - GPT-4.0 mini
-    - GPT-4 Turbo
-    - GPT-3.5 Turbo
+  - GPT-4.0
+  - GPT-4.0 mini
+  - GPT-4 Turbo
+  - GPT-3.5 Turbo
 - **Prompt**: A prompt is the initial message or question that is provided as input to the chatbot model to start a conversation.
 
 #### Optional Parameters
@@ -81,7 +81,7 @@ The purpose of this operation is to generate text completions based on a given p
 #### Required Parameters
 
 - **Model**: The model to use for generating the text completion. The available models are:
-    - GPT-3.5 Turbo
+  - GPT-3.5 Turbo
 - **Prompt**: OpenAI uses the prompt as a starting point to generate a continuation or completion of the text, which can be in the form of a sentence, paragraph, or even an entire article. The quality and relevance of the generated text output can depend on the quality and specificity of the prompt provided.
 
 #### Optional Parameters
@@ -112,7 +112,7 @@ Suffix: \n
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
-``` json
+```json
 ":1. Increased Speed and Efficiency: Low code platforms allow developers to quickly build and deploy applications without having to write extensive lines of code. This significantly reduces development time and increases efficiency.nn2. Cost Savings: With low code platforms, businesses can save on development costs by reducing the need for a large team of developers. This also leads to lower maintenance costs as the applications are easier to maintain and update.nn3. User-Friendly Interface: Low code platforms are designed to be user-friendly and require minimal"
 ```
 
@@ -125,15 +125,15 @@ This operation generates AI images based on the given prompt.
 #### Required Parameters
 
 - **Model**: The model to use for generating the image. The available models are:
-    - DALL-E 3
-    - DALL-E 2
+  - DALL-E 3
+  - DALL-E 2
 - **Prompt**: The prompt is the initial message or question that is provided as input to the AI model to generate an image.
 
 #### Optional Parameters
 
 - **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
-    - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
-    - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
+  - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
+  - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images-v2.png" alt="Generate AI Images Operation" />
@@ -172,9 +172,9 @@ This operation is used to generate vector embeddings from the given text, which 
 #### Required Parameters
 
 - **Model**: The model to use for generating the vector embedding. The available models are:
-    - text-embedding-3-small
-    - text-embedding-3-large
-    - text-embedding-ada-002
+  - text-embedding-3-small
+  - text-embedding-3-large
+  - text-embedding-ada-002
 
 - **Input**: The text input used for generating the vector embedding.
 
@@ -203,17 +203,10 @@ Dimensions: 10
 ```json
 {
   "embedding": [
-    -0.49750686,
-    -0.7019393,
-    -0.23043627,
-    -0.12421317,
-    -0.076866604,
-    0.2191516,
-    0.2548046,
-    0.1453106,
-    -0.20050736,
-    0.10516006
+    -0.49750686, -0.7019393, -0.23043627, -0.12421317, -0.076866604, 0.2191516,
+    0.2548046, 0.1453106, -0.20050736, 0.10516006
   ]
 }
 ```
+
 </details>

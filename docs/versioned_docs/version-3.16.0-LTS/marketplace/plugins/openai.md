@@ -6,7 +6,7 @@ title: OpenAI
 ToolJet integrates with OpenAI to utilize its AI capabilities. This integration enables ToolJet to generate text based on user prompts, facilitate chat interactions, create images tailored to specific inputs, and generate vector embeddings.
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -165,16 +165,8 @@ Dimensions: 10
 ```json
 {
   "embedding": [
-    -0.49750686,
-    -0.7019393,
-    -0.23043627,
-    -0.12421317,
-    -0.076866604,
-    0.2191516,
-    0.2548046,
-    0.1453106,
-    -0.20050736,
-    0.10516006
+    -0.49750686, -0.7019393, -0.23043627, -0.12421317, -0.076866604, 0.2191516,
+    0.2548046, 0.1453106, -0.20050736, 0.10516006
   ]
 }
 ```

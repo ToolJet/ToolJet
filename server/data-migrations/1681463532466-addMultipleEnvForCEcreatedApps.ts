@@ -11,10 +11,10 @@ import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
-    if (edition !== TOOLJET_EDITIONS.EE) {
-      console.log('Skipping migration as it is not EE edition');
-      return;
-    }
+    // if (edition !== TOOLJET_EDITIONS.EE) {
+    //   console.log('Skipping migration as it is not EE edition');
+    //   return;
+    // }
 
     const entityManager = queryRunner.manager;
     // Fetch all organizations with their app environments

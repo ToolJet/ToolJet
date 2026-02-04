@@ -3,6 +3,13 @@ id: instances
 title: Instances
 ---
 
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--self-hosted heading-badge" >   
+ <span>Self Hosted</span>
+</div>
+</div>
+
+
 Instances in ToolJet refer to self-hosted deployments of the ToolJet platform. Each instance operates independently and can have its own configurations, data, and user base. You can create multiple [workspaces](/docs/tj-setup/workspaces) inside of an instance. Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions.
 
 When it comes to roles, ToolJet offers a [Super Admin](/docs/user-management/role-based-access/super-admin) role, who can manage the instances and has full access to all the Workspaces, Users, and Groups of an instance. Within each workspace, users can be assigned one of the predefined roles (Admin, Builder, or End User) or we can add the user to a create custom group with custom permissions . For more details on managing users and roles within workspaces, refer to the [Workspace Users and Groups](/docs/user-management/role-based-access/user-roles) documentation.

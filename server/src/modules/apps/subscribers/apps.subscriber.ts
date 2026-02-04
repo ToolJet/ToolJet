@@ -25,11 +25,13 @@ export class AppsSubscriber implements EntitySubscriberInterface<App> {
   }
 
   async afterLoad(app: App): Promise<void> {
-    if (app) {
-      app.editingVersion = await this.appVersionRepository.findOne({
-        where: { appId: app.id },
-        order: { updatedAt: 'DESC' },
-      });
-    }
+    if (!app || (app as any).__loaded) return;
+
+    (app as any).__loaded = true; // mark entity as processed
+
+    app.editingVersion = await this.appVersionRepository.findOne({
+      where: { appId: app.id },
+      order: { updatedAt: 'DESC' },
+    });
   }
 }

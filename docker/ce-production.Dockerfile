@@ -35,6 +35,19 @@ RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build
 
+# Install dependencies for PostgREST, curl, tar, etc.
+RUN apt-get update && apt-get install -y \
+    curl ca-certificates tar \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV POSTGREST_VERSION=v12.2.0
+
+RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-v12.2.0-linux-static-x64.tar.xz && \
+    tar -xf postgrest.tar.xz && \
+    mv postgrest /postgrest && \
+    rm postgrest.tar.xz && \
+    chmod +x /postgrest
+
 FROM debian:12
 
 RUN apt-get update -yq \
@@ -102,6 +115,13 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /home/appuser \
     && chmod u+x /app \
     && chmod -R g=u /app
+
+# Use the PostgREST binary from the builder stage
+COPY --from=builder --chown=appuser:0 /postgrest /usr/local/bin/postgrest
+
+RUN mv /usr/local/bin/postgrest /usr/local/bin/postgrest-original && \
+    echo '#!/bin/bash\nexec /usr/local/bin/postgrest-original "$@" 2>&1 | sed "s/^/[PostgREST] /"' > /usr/local/bin/postgrest && \
+    chmod +x /usr/local/bin/postgrest
 
 # Set npm cache directory
 ENV npm_config_cache /home/appuser/.npm

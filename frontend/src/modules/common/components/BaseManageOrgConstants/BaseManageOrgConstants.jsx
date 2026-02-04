@@ -121,25 +121,25 @@ const BaseManageOrgConstants = ({
     const globalCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-            if (constant.type === Constants.Global) {
-              const foundConstant = constant.values.find((env) => env.environmentName === envName);
-              if (!foundConstant || foundConstant.value === '') return false;
-              return true;
-            }
-            return false;
-          }).length
+          if (constant.type === Constants.Global) {
+            const foundConstant = constant.values.find((env) => env.environmentName === envName);
+            if (!foundConstant || foundConstant.value === '') return false;
+            return true;
+          }
+          return false;
+        }).length
         : 0;
 
     const secretCount =
       allConstants.length > 0
         ? allConstants.filter((constant) => {
-            if (constant.type === Constants.Secret) {
-              const foundConstant = constant.values.find((env) => env.environmentName === envName);
-              if (!foundConstant || foundConstant.value === '') return false;
-              return true;
-            }
-            return false;
-          }).length
+          if (constant.type === Constants.Secret) {
+            const foundConstant = constant.values.find((env) => env.environmentName === envName);
+            if (!foundConstant || foundConstant.value === '') return false;
+            return true;
+          }
+          return false;
+        }).length
         : 0;
 
     setGlobalCount(globalCount);
@@ -512,7 +512,7 @@ const BaseManageOrgConstants = ({
                       onClick={() => handleTabChange(Constants.Global)}
                       style={{ color: 'var(--text-default)' }}
                     >
-                      <span className="workspace-constant-text">
+                      <span className="workspace-constant-text" data-cy="global-constants-button">
                         Global constants
                         <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
                           ({globalCount})
@@ -524,7 +524,7 @@ const BaseManageOrgConstants = ({
                       onClick={() => handleTabChange(Constants.Secret)}
                       style={{ color: 'var(--text-default)' }}
                     >
-                      <span className="workspace-constant-text">
+                      <span className="workspace-constant-text" data-cy="secrets-constants-button">
                         Secrets
                         <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
                           ({secretCount})
@@ -577,7 +577,7 @@ const BaseManageOrgConstants = ({
                           // Todo: Update link to documentation: workspace constants
                           onClick={() =>
                             window.open(
-                              'https://docs.tooljet.ai/docs/org-management/workspaces/workspace_constants/',
+                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
                               '_blank'
                             )
                           }
@@ -598,7 +598,7 @@ const BaseManageOrgConstants = ({
                 <div className="manage-sso-container h-100">
                   <div className="d-flex manage-constant-wrapper-card">
                     {(activeTab === Constants.Global && globalCount > 0) ||
-                    (activeTab === Constants.Secret && secretCount > 0) ? (
+                      (activeTab === Constants.Secret && secretCount > 0) ? (
                       <div className="w-100 workspace-constant-card-body">
                         <ConstantTable
                           constants={currentTableData}

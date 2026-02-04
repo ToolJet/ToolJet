@@ -12,10 +12,12 @@ export const appVersionService = {
   autoSaveApp,
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
+  bulkCreateAppVersionEventHandlers,
   deleteAppVersionEventHandler,
   clonePage,
   findAllEventsWithSourceId,
   cloneGroup,
+  createDraftVersion,
 };
 
 function getAll(appId) {
@@ -44,9 +46,10 @@ function getAppVersionData(appId, versionId, mode) {
   );
 }
 
-function create(appId, versionName, versionFromId, currentEnvironmentId) {
+function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId) {
   const body = {
     versionName,
+    versionDescription,
     versionFromId,
     environmentId: currentEnvironmentId,
   };
@@ -58,6 +61,24 @@ function create(appId, versionName, versionFromId, currentEnvironmentId) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+}
+
+function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '') {
+  const body = {
+    versionFromId,
+    environmentId,
+  };
+  if (versionDescription) {
+    body.versionDescription = versionDescription;
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/draft-versions`, requestOptions).then(handleResponse);
 }
 
 function del(appId, versionId) {
@@ -74,6 +95,8 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
   if (values.diff) body['app_diff'] = values.diff;
+  if (values.description !== undefined && values.description !== null) body['description'] = values.description;
+  if (values.status) body['status'] = values.status;
 
   const requestOptions = {
     method: 'PUT',
@@ -174,6 +197,22 @@ function createAppVersionEventHandler(appId, versionId, event) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function bulkCreateAppVersionEventHandlers(appId, versionId, events) {
+  const body = {
+    events,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/bulk`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteAppVersionEventHandler(appId, versionId, eventId) {

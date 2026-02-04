@@ -332,25 +332,25 @@
 }
 
 .column-name-description {
-  width: 111px !important;
+  width: 130px !important;
   color: var(--slate11) !important;
 }
 
 .dataType-description {
-  width: 111px !important;
-  margin-left: 40px !important;
+  width: 130px !important;
+  margin-left: 12px !important;
   color: var(--slate11) !important;
 }
 
 .defaultValue-description {
   width: 111px !important;
-  margin-left: 22px !important;
+  margin-left: 8px !important;
   color: var(--slate11) !important;
 }
 
 .primaryKey-description {
-  width: 111px !important;
-  margin-left: 26px !important;
+  width: 48px !important;
+  margin-left: 16px !important;
   color: var(--slate11) !important;
 }
 
@@ -838,11 +838,12 @@
 }
 
 .input-element{
-  width: 181.5px !important;
+  width: 100% !important;
   background-color: transparent !important;
   color: var(--text-default) !important;
-  border-radius: 0px;
+  border-radius: 0px !important;
   border: 1px solid var(--border-default) !important;
+  font-size: inherit !important;
 }
 
 .delete-icon-wrapper{
@@ -850,7 +851,7 @@
   align-items: center;
   justify-content: center;
   height: 32px;
-  width: 32px;
+  width: 32px !important;
   border: 1px solid var(--border-default);
   border-radius: 0px 8px 8px 0px;
   cursor: pointer;
