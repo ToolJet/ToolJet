@@ -62,6 +62,7 @@ export const JSONEditor = function JSONEditor(props) {
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [resolvedTheme, setResolvedTheme] = useState(undefined);
   const editorRef = useRef(null);
+  const foldingAppliedRef = useRef(false);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -137,6 +138,28 @@ export const JSONEditor = function JSONEditor(props) {
       { dark: darkMode }
     );
 
+    // 🔑 Folding init listener
+    const foldingInitListener = EditorView.updateListener.of((update) => {
+      if (!editorRef.current) return;
+      if (foldingAppliedRef.current) return;
+
+      // Wait until:
+      // 1. Document exists
+      // 2. Language has produced fold ranges
+      if (!update.view.state.doc.length) return;
+
+      // First meaningful update → folding is now safe
+      foldingAppliedRef.current = true;
+
+      queueMicrotask(() => {
+        if (shouldExpandEntireJSON) {
+          unfoldAll(update.view);
+        } else {
+          foldAll(update.view);
+        }
+      });
+    });
+
     // Listen for fold/unfold events to trigger dynamic height recalculation
     const foldListener = EditorView.updateListener.of((update) => {
       if (!update.transactions.length || !isDynamicHeightEnabled) return;
@@ -164,9 +187,10 @@ export const JSONEditor = function JSONEditor(props) {
       }),
       lintGutter(),
       ThemeOverride,
+      foldingInitListener,
       foldListener,
     ];
-  }, [backgroundColor, darkMode, isDynamicHeightEnabled]);
+  }, [backgroundColor, darkMode, isDynamicHeightEnabled, shouldExpandEntireJSON]);
 
   // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
@@ -201,14 +225,24 @@ export const JSONEditor = function JSONEditor(props) {
     },
   ]);
 
+  // Reset the folding flag when shouldExpandEntireJSON changes
+  useEffect(() => {
+    foldingAppliedRef.current = false;
+  }, [shouldExpandEntireJSON]);
+
   useEffect(() => {
     if (!editorRef.current) return;
 
-    if (shouldExpandEntireJSON) {
-      unfoldAll(editorRef.current);
-    } else {
-      foldAll(editorRef.current);
-    }
+    // Give a microtask delay to ensure the view is ready
+    queueMicrotask(() => {
+      if (!editorRef.current) return;
+
+      if (shouldExpandEntireJSON) {
+        unfoldAll(editorRef.current);
+      } else {
+        foldAll(editorRef.current);
+      }
+    });
   }, [shouldExpandEntireJSON]);
 
   useEffect(() => {
@@ -260,7 +294,7 @@ export const JSONEditor = function JSONEditor(props) {
 
   // ===== MAIN RENDER =====
   return (
-    <div className="json-editor-widget" style={containerComputedStyles}>
+    <div className="json-editor-widget scrollbar-container" style={containerComputedStyles}>
       {exposedVariablesTemporaryState.isLoading ? (
         <Loader width="24" absolute={false} />
       ) : (
@@ -284,7 +318,7 @@ export const JSONEditor = function JSONEditor(props) {
             setValue(newValue);
           }}
           basicSetup={basicSetup}
-          className={`codehinter-multi-line-input`}
+          // className={`codehinter-multi-line-input`}
           indentWithTab={true}
         />
       )}

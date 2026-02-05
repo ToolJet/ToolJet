@@ -2,7 +2,28 @@
     .json-editor-widget {
         height: 100%;
         width: 100%;
-        overflow-y: auto;
+        overflow: auto;
+        .cm-editor {
+            border: none !important;
+        }
+        .cm-theme {
+            height: 100% !important;
+        }
+
+        .cm-gutters {
+            width: 42px !important;
+            background-color: var(--interactive-default) !important;
+            color: var(--text-disabled) !important;
+            border-right: 1px solid var(--borders-disabled-on-white) !important;
+            align-self: stretch !important;
+            height: auto !important;
+        }
+
+        .cm-scroller {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior: contain;
+        }
     }
     .cm-diagnostic-error {
         background-color: var(--cc-surface1-surface);

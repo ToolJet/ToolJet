@@ -31,7 +31,7 @@ export const jsonEditorConfig = {
       ],
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'monokai',
+        defaultValue: 'solarized',
       },
     },
     shouldExpandEntireJSON: {
@@ -91,7 +91,7 @@ export const jsonEditorConfig = {
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'container',
     },
@@ -160,7 +160,7 @@ export const jsonEditorConfig = {
       value: {
         value: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
       },
-      theme: { value: 'monokai' },
+      theme: { value: 'solarized' },
       shouldExpandEntireJSON: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
@@ -170,7 +170,7 @@ export const jsonEditorConfig = {
     events: [],
     styles: {
       borderRadius: { value: '{{6}}' },
-      borderColor: { value: 'var(--cc-default-border)' },
+      borderColor: { value: 'var(--cc-weak-border)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
