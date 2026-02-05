@@ -10,4 +10,8 @@ export class NpmRegistryService implements INpmRegistryService {
   async getPackageInfo(packageName: string): Promise<PackageInfo> {
     throw new Error('NPM package info is not available in Community Edition');
   }
+
+  async getPackageVersions(packageName: string): Promise<string[]> {
+    throw new Error('NPM package versions is not available in Community Edition');
+  }
 }

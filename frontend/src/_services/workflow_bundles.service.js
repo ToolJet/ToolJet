@@ -9,29 +9,29 @@ export const workflowBundlesService = {
   updateExistingPackages,
 };
 
-function getPackages(searchTerm) {
+function getPackages(searchTerm, language = 'javascript') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const url = `${config.apiUrl}/workflows/packages/search?q=${encodeURIComponent(searchTerm)}&limit=50`;
+  const url = `${config.apiUrl}/workflows/packages/${language}/search?q=${encodeURIComponent(searchTerm)}&limit=50`;
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function updatePackages(workflowId, body) {
+function updatePackages(workflowId, body, language = 'javascript') {
   const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/packages`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/packages/${language}`, requestOptions).then(handleResponse);
 }
 
-function getInstalledPackages(workflowId) {
+function getInstalledPackages(workflowId, language = 'javascript') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/packages`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/packages/${language}`, requestOptions).then(handleResponse);
 }
 
-function getPackageStatus(workflowId, signal) {
+function getPackageStatus(workflowId, signal, language = 'javascript') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   if (signal) requestOptions.signal = signal;
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/status`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/status`, requestOptions).then(handleResponse);
 }
 
-function updateExistingPackages(workflowId) {
+function updateExistingPackages(workflowId, language = 'javascript') {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify({}) };
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/rebuild`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/rebuild`, requestOptions).then(handleResponse);
 }
