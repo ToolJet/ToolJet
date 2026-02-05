@@ -134,6 +134,16 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 ### Optional Configurations
 
+#### Built-in SSL & nginx
+
+- `ENABLE_BUILTIN_NGINX=true/false`: Enable built-in nginx reverse proxy with automatic SSL certificate management via Let's Encrypt. When enabled, nginx handles HTTP/HTTPS traffic on ports 80 and 443. Default: `false` (disabled for backward compatibility).
+
+For detailed setup instructions, see the [Built-in SSL & nginx guide](./builtin-ssl-nginx).
+
+:::warning
+When `ENABLE_BUILTIN_NGINX=true`, expose ports 80 and 443 instead of port 3000. The application will only be accessible through nginx.
+:::
+
 #### Comments Feature
 
 - `COMMENT_FEATURE_ENABLE=true/false`: Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
