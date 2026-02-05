@@ -13,6 +13,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { FeatureAbilityFactory } from './ability';
 import { UserSessionRepository } from './repository';
+import { EncryptionService } from '@modules/encryption/service';
 
 export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -34,6 +35,7 @@ export class SessionModule extends SubModule {
       JwtStrategy,
       FeatureAbilityFactory,
       UserSessionRepository,
+      EncryptionService,
     ];
 
     return {

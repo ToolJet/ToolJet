@@ -37,6 +37,7 @@ import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { EncryptionService } from '@modules/encryption/service';
 import * as uuid from 'uuid';
 
 @Injectable()
@@ -58,7 +59,8 @@ export class OauthService implements IOAuthService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    protected readonly encryptionService: EncryptionService
   ) {}
 
   async signIn(

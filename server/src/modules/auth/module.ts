@@ -19,6 +19,8 @@ import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { SubModule } from '@modules/app/sub-module';
 import { OnboardingModule } from '@modules/onboarding/module';
 import { UserMfaRepository } from './mfa/repository';
+import { EncryptionModule } from '@modules/encryption/module';
+import { EncryptionService } from '@modules/encryption/service';
 
 @Module({})
 export class AuthModule extends SubModule {
@@ -53,20 +55,22 @@ export class AuthModule extends SubModule {
       'website/otp-controller',
     ]);
 
+    // const { EncryptionService } = await this.getProviders(configs, 'session', ['service']);
+
     return {
       module: AuthModule,
       imports: [
-        await SessionModule.register(configs),
         await InstanceSettingsModule.register(configs),
         await OrganizationUsersModule.register(configs),
         await RolesModule.register(configs),
         await GroupPermissionsModule.register(configs),
         await ProfileModule.register(configs),
-        await SessionModule.register(configs),
         await LoginConfigsModule.register(configs),
         await SetupOrganizationsModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
+        await EncryptionModule.register(configs),
+        await SessionModule.register(configs),
       ],
       controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController, WebsiteOtpController] : [],
       providers: [
@@ -88,6 +92,7 @@ export class AuthModule extends SubModule {
         SSOConfigsRepository,
         WebsiteAuthService,
         UserMfaRepository,
+        EncryptionService,
       ],
       exports: [AuthUtilService],
     };
