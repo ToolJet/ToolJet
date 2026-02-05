@@ -5,6 +5,7 @@ import KeyValueRow from './_components/KeyValueRow';
 import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
 
 /**
  * KeyValuePair Widget
@@ -25,6 +26,9 @@ export const KeyValuePair = ({
   const {
     dataSourceSelector,
     fields = [],
+    useDynamicField = false,
+    fieldDynamicData = [],
+    fieldDeletionHistory = [],
     loadingState = false,
     visibility = true,
     disabledState = false,
@@ -86,23 +90,15 @@ export const KeyValuePair = ({
     });
   }, [data, editedData, setExposedVariables]);
 
-  // Filter visible fields and generate from data if not provided
-  const resolvedFields = useMemo(() => {
-    let fieldList = fields;
-
-    if (!fieldList || fieldList.length === 0) {
-      // Auto-generate fields from data keys
-      fieldList = Object.keys(data).map((key) => ({
-        key,
-        name: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-        fieldType: 'string',
-        isEditable: false,
-      }));
-    }
-
-    // Filter out hidden fields
-    return fieldList.filter((field) => field.fieldVisibility !== false);
-  }, [fields, data]);
+  // Auto-generate fields using custom hook
+  const resolvedFields = useAutoGenerateFields({
+    data,
+    fields,
+    fieldDeletionHistory,
+    useDynamicField,
+    fieldDynamicData,
+    id,
+  });
 
   if (isLoading) {
     return (

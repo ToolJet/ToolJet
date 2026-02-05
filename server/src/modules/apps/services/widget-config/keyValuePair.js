@@ -194,6 +194,7 @@ export const keyValuePairConfig = {
       displayName: 'Set loading',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+   
   ],
   definition: {
     others: {
@@ -367,13 +368,13 @@ export const keyValuePairConfig = {
       },
       useDynamicField: { value: '{{false}}' },
       fieldDynamicData: {
-        value:
-          "{{[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]}}",
+        value: "{{[{name: 'Name', key: 'name'}, {name: 'Email', key: 'email'}, {name: 'Website', key: 'website'}]}}",
       },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      fieldDeletionHistory: { value: [] },
     },
     events: [],
     styles: {

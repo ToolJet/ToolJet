@@ -176,9 +176,7 @@ export const keyValuePairConfig = {
   },
   exposedVariables: {
     data: {},
-    originalData: {},
-    changedField: {},
-    unsavedChanges: false,
+    changeSet: {},
   },
   actions: [
     {
@@ -195,18 +193,6 @@ export const keyValuePairConfig = {
       handle: 'setLoading',
       displayName: 'Set loading',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'resetData',
-      displayName: 'Reset data',
-    },
-    {
-      handle: 'saveChanges',
-      displayName: 'Save changes',
-    },
-    {
-      handle: 'cancelChanges',
-      displayName: 'Cancel changes',
     },
   ],
   definition: {
@@ -381,13 +367,13 @@ export const keyValuePairConfig = {
       },
       useDynamicField: { value: '{{false}}' },
       fieldDynamicData: {
-        value:
-          "{{[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]}}",
+        value: "{{[{name: 'Name', key: 'name'}, {name: 'Email', key: 'email'}, {name: 'Website', key: 'website'}]}}",
       },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      fieldDeletionHistory: { value: [] },
     },
     events: [],
     styles: {
