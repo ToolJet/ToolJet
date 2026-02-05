@@ -109,7 +109,9 @@ class HomePageComponent extends React.Component {
       importingApp: false,
       importingGitAppOperations: {},
       latestCommitData: null,
+      tags: [],
       fetchingLatestCommitData: false,
+      selectedVersionOption: null,
       featuresLoaded: false,
       showCreateAppModal: false,
       showCreateAppFromTemplateModal: false,
@@ -833,7 +835,6 @@ class HomePageComponent extends React.Component {
       .gitPull()
       .then((data) => {
         this.setState({ appsFromRepos: data?.meta_data });
-        console.log('testing something rohan', data?.meta_data);
       })
       .catch((error) => {
         toast.error(error?.error);
@@ -844,10 +845,30 @@ class HomePageComponent extends React.Component {
   };
 
   importGitApp = () => {
-    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName } = this.state;
+    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName, selectedVersionOption, tags } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
     const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
       appToImport;
+
+    let commitHash = null;
+    let commitMessage = last_commit_message;
+    let commitUser = last_commit_user;
+    let commitDate = lastpush_date;
+
+    // If a tag is selected (not latest), use tag's commit info
+    if (selectedVersionOption && selectedVersionOption !== 'latest') {
+      const selectedTag = tags.find((t) => t.name === selectedVersionOption);
+      if (selectedTag) {
+        commitHash = selectedTag.commit?.sha;
+        commitMessage = selectedTag.message;
+        commitUser = selectedTag.tagger?.name;
+        commitDate = selectedTag.tagger?.date;
+      } else {
+        commitMessage = last_commit_message;
+        commitUser = last_commit_user;
+        commitDate = lastpush_date;
+      }
+    }
 
     this.setState({ importingApp: true });
     const body = {
@@ -858,10 +879,12 @@ class HomePageComponent extends React.Component {
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
-      ...(last_commit_message && { lastCommitMessage: last_commit_message }),
-      ...(last_commit_user && { lastCommitUser: last_commit_user }),
-      ...(lastpush_date && { lastPushDate: new Date(lastpush_date) }),
+      ...(commitHash && { commitHash }),
+      ...(commitMessage && { lastCommitMessage: commitMessage }),
+      ...(commitUser && { lastCommitUser: commitUser }),
+      ...(commitDate && { lastPushDate: new Date(commitDate) }),
     };
+
     gitSyncService
       .importGitApp(body)
       .then((data) => {
@@ -1185,13 +1208,23 @@ class HomePageComponent extends React.Component {
         latestCommitData: null,
       });
     } else {
-      this.setState({ importingGitAppOperations: {}, fetchingLatestCommitData: true, latestCommitData: null });
+      this.setState({
+        importingGitAppOperations: {},
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+        selectedVersionOption: null,
+      });
     }
     const selectedBranch = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.git_branch || orgGit?.git_lab_branch;
 
     try {
       const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedBranch);
-      this.setState({ latestCommitData: data?.metaData, fetchingLatestCommitData: false });
+      this.setState({
+        latestCommitData: data?.metaData,
+        tags: data?.metaData.tags,
+        fetchingLatestCommitData: false,
+        selectedVersionOption: 'latest',
+      });
       // TODO: Handle the response data
     } catch (error) {
       console.error('Failed to check for updates:', error);
@@ -1250,6 +1283,36 @@ class HomePageComponent extends React.Component {
     this.eraseAIOnboardingRelatedCookies();
   };
 
+  generateVersionOptions = () => {
+    const { latestCommitData, tags } = this.state;
+    const options = [];
+
+    // Add latest commit as first option
+    if (latestCommitData?.latestCommit?.[0]) {
+      options.push({
+        name: 'Latest commit',
+        value: 'latest',
+      });
+    }
+
+    // Add tags
+    if (tags && tags.length > 0) {
+      tags.forEach((tag) => {
+        const [, version] = tag.name.split('/');
+        options.push({
+          name: version,
+          value: tag.name,
+        });
+      });
+    }
+
+    return options;
+  };
+
+  handleVersionOptionChange = (newVal) => {
+    this.setState({ selectedVersionOption: newVal });
+  };
+
   render() {
     const {
       apps,
@@ -1282,6 +1345,7 @@ class HomePageComponent extends React.Component {
       latestCommitData,
       fetchingLatestCommitData,
       importingApp,
+      selectedVersionOption,
       importingGitAppOperations,
       featuresLoaded,
       showCreateAppModal,
@@ -1585,6 +1649,7 @@ class HomePageComponent extends React.Component {
                 </div>
                 {selectedAppRepo && (
                   <div className="commit-info">
+                    {/* APP NAME */}
                     <div className="form-group mb-3">
                       <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500" data-cy="app-name-label">
                         App name
@@ -1611,6 +1676,8 @@ class HomePageComponent extends React.Component {
                         </div>
                       </div>
                     </div>
+
+                    {/* EDITABLE CHECKBOX */}
                     <div className="application-editable-checkbox-container">
                       <input
                         className="form-check-input"
@@ -1628,6 +1695,27 @@ class HomePageComponent extends React.Component {
                         </div>
                       </div>
                     </div>
+
+                    {/* VERSION/TAG SELECT */}
+                    <div className="form-group mb-3">
+                      <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
+                        Select version to pull from
+                      </label>
+                      <div className="tj-app-input" data-cy="version-select">
+                        <Select
+                          options={this.generateVersionOptions()}
+                          disabled={importingApp || fetchingLatestCommitData}
+                          onChange={this.handleVersionOptionChange}
+                          width={'100%'}
+                          value={this.state.selectedVersionOption}
+                          placeholder={fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'}
+                          closeMenuOnSelect={true}
+                          customWrap={true}
+                        />
+                      </div>
+                    </div>
+
+                    {/* LAST COMMIT */}
                     <div className="form-group">
                       <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
                         Last commit
