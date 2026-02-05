@@ -1,8 +1,7 @@
 .key-value-pair-container {
   width: 100%;
   height: 100%;
-  overflow: auto;
-  position: relative; // For popover positioning
+  position: relative;
   
   &.kv-padding-default {
     padding: 4px;
@@ -16,7 +15,7 @@
     display: none;
   }
 
-  // ChangeSet Popover - centered, 10px from bottom
+  // ChangeSet Popover - fixed at bottom, overlays content
   .kv-changeset-popover {
     position: absolute;
     bottom: 10px;
@@ -88,6 +87,8 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    height: 100%;
+    overflow-y: auto;
   }
 }
 
