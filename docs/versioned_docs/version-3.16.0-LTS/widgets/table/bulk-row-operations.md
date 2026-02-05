@@ -3,7 +3,8 @@ id: bulk-row-operations
 title: Bulk Row Operations
 ---
 
-This guide explains how to perform bulk operations on table rows using row selection, JavaScript queries, and SQL. It assumes that a data source is already connected. PostgreSQL is used in the examples, but the same approach applies to other SQL databases.
+This guide explains how to perform bulk operations on table rows using row selection, JavaScript queries, and SQL with a configured SQL data source. PostgreSQL is used in the examples, but the same approach applies to other SQL databases.
+
 
 ### Prerequisites
 
