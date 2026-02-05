@@ -3,18 +3,12 @@ import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
-  darkMode,
-  // eslint-disable-next-line no-unused-vars
-  label,
   index,
   callbackFunction,
   property,
   props = {},
   component,
   paramMeta,
-  // eslint-disable-next-line no-unused-vars
-  paramType,
-  currentState,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
     switch (property) {
@@ -30,6 +24,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.linkTarget;
       case 'isAllColumnsEditable':
         return props?.isAllColumnsEditable;
+      case 'isAllFieldsEditable':
+        return props?.isAllFieldsEditable;
       case 'underlineColor':
         return props.underlineColor;
       case 'linkColor':

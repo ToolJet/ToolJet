@@ -14,7 +14,6 @@ export const FieldsList = ({
   isRootCloseEnabled,
   isAllFieldsEditable,
   darkMode,
-  currentState,
   component,
   onDragEnd,
   onRemove,
@@ -58,8 +57,6 @@ export const FieldsList = ({
       </div>
       <ProgramaticallyHandleProperties
         label="Make all fields editable"
-        currentState={currentState}
-        darkMode={darkMode}
         callbackFunction={(index, property, value) => onSetAllEditable(value)}
         property="isAllFieldsEditable"
         props={{ isAllFieldsEditable: `{{${isAllFieldsEditable}}}` }}
