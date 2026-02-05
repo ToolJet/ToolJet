@@ -11,6 +11,7 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
@@ -68,11 +69,10 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
       >
         <div
-          className={`d-flex thead-editable-icon-header-text-wrapper ${
-            column.columnType === 'selector'
-              ? 'justify-content-center'
-              : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
-          } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+          className={`d-flex thead-editable-icon-header-text-wrapper ${column.columnType === 'selector'
+            ? 'justify-content-center'
+            : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
+            } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
           <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
@@ -85,6 +85,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
               'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
               'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
             })}
+            data-cy={`${generateCypressDataCy(column.name)}-column-header`}
             style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
           >
             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -93,9 +94,9 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         {header.column.getIsSorted() && (
           <div className="tw-flex-shrink-0">
             {header.column.getIsSorted() === 'desc' ? (
-              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`} />
             ) : (
-              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`} />
             )}
           </div>
         )}
@@ -111,6 +112,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
             style={{
               display: header.column.getIsResizing() ? 'block' : 'none',
             }}
+            data-cy={`${generateCypressDataCy(column.name)}-column-resizer`}
           ></div>
         </div>
       )}
