@@ -125,7 +125,7 @@ export const KeyValuePair = ({
         {resolvedFields.map((field, index) => (
           <KeyValueRow
             componentId={id}
-            key={field.key || field.id || index}
+            key={field.id || field.key || index}
             field={field}
             value={currentData[field.key]}
             onChange={(newValue) => handleValueChange(field.key, newValue)}
