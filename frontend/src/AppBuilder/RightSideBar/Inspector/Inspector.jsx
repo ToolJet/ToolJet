@@ -135,6 +135,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'CodeEditor',
   'Form',
   'IFrame',
+  'Accordion',
 ];
 
 export const Inspector = ({

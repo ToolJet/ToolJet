@@ -13,7 +13,7 @@ const sectionConfig = {
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
@@ -25,7 +25,15 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['TagsInput', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),  
+    valueSet: new Set([
+      'TagsInput',
+      'DropdownV2',
+      'MultiselectV2',
+      'ToggleSwitchV2',
+      'RadioButtonV2',
+      'Checkbox',
+      'TreeSelect',
+    ]),
   },
   dateTimeInputs: {
     title: 'Date and time inputs',

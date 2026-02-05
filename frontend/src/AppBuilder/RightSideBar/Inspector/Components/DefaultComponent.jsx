@@ -48,6 +48,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Html',
   'TagsInput',
   'IFrame',
+  'Accordion',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -73,6 +74,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Kanban: 'Board configuration',
   AudioRecorder: 'Content',
   Camera: 'Content',
+  Accordion: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -183,6 +185,7 @@ export const baseComponentProperties = (
       'AudioRecorder',
       'Camera',
       'IFrame',
+      'Accordion',
     ],
     Layout: [],
   };

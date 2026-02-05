@@ -69,6 +69,7 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  accordionConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -85,6 +86,7 @@ export const widgets = [
   formConfig,
   modalV2Config,
   containerConfig,
+  accordionConfig,
   tabsConfig,
   listviewConfig,
   calendarConfig,
