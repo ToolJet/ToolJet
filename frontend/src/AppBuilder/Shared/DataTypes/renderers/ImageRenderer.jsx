@@ -36,8 +36,9 @@ export const ImageRenderer = ({
         src={value}
         alt=""
         style={{
+          pointerEvents: 'auto',
           width: width ? `${width}px` : 'auto',
-          height: height,
+          height: height || '100%',
           borderRadius: borderRadius ? `${borderRadius}px` : undefined,
           objectFit: objectFit,
         }}

@@ -12,7 +12,7 @@ export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit,
     <ImageRenderer
       value={cellValue}
       width={width}
-      height={height ? `${height}px` : '100%'}
+      height={height}
       borderRadius={borderRadius}
       objectFit={objectFit}
       horizontalAlignment={horizontalAlignment}
