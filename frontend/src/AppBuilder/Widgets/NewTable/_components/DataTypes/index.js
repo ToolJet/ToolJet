@@ -16,3 +16,4 @@ export { ToggleColumn } from './Toggle';
 export { TagsColumn } from './Tags';
 export { RadioColumn } from './Radio';
 export { CustomDropdownColumn } from './CustomDropdown';
+export { RatingColumn } from './Rating';

@@ -675,6 +675,7 @@ export const Table = (props) => {
       searchSortFilterOptions,
       paginationOptions,
       layoutPropertyChanged,
+      additionalActions,
     ]
   );
 

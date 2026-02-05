@@ -35,6 +35,32 @@ export const createInspectorSlice = (set, get) => ({
   setSelectedNodePath: (path) => {
     set({ selectedNodePath: path });
   },
+  isInspectorDetailViewOpen: () => {
+    const { selectedNodePath, getResolvedValue, getComponentIdFromName, getComponentDefinition } = get();
+    if (!selectedNodePath) return false;
+
+    let selectedData;
+    if (selectedNodePath.startsWith('components.')) {
+      const pathArray = selectedNodePath.split('.');
+      const componentName = pathArray?.[1];
+      const componentId = getComponentIdFromName(componentName);
+      const component = getComponentDefinition(componentId);
+      const parent = component?.component?.parent;
+      if (parent) {
+        const parentComponent = getComponentDefinition(parent);
+        const parentType = parentComponent?.component?.component;
+        if (parentType === 'Form') {
+          selectedData = { id: componentId };
+        }
+      }
+    }
+    if (!selectedData) {
+      selectedData = getResolvedValue(`{{${selectedNodePath}}}`);
+    }
+
+    // Return true only if there's actual data to display
+    return selectedData && !(typeof selectedData === 'object' && Object.keys(selectedData).length === 0);
+  },
   getAllComponentChildrenById: (id) => {
     const { getComponentDefinition, getResolvedComponent } = get();
     const component = getComponentDefinition(id);

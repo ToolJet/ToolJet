@@ -22,7 +22,7 @@ export const createDebuggerSlice = (set, get) => ({
       set(
         (state) => {
           state.debugger.logs = [];
-          state.unreadErrorCount = 0;
+          state.debugger.unreadErrorCount = 0;
         },
         false,
         'clearLogs'
