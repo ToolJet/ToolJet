@@ -150,7 +150,7 @@ export const Accordion = ({
 
   const accordionContentStyles = useMemo(() => {
     return {
-      display: 'flex',
+      display: exposedVariablesTemporaryState.isExpanded ? 'flex' : 'none',
       height: '100%',
       padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
       ...(exposedVariablesTemporaryState.isDisabled && {
@@ -158,7 +158,7 @@ export const Accordion = ({
         pointerEvents: 'none',
       }),
     };
-  }, [exposedVariablesTemporaryState.isDisabled]);
+  }, [exposedVariablesTemporaryState.isDisabled, exposedVariablesTemporaryState.isExpanded]);
 
   return (
     <div
@@ -190,25 +190,23 @@ export const Accordion = ({
               chevronIconColor={chevronIconColor}
             />
           )}
-          {exposedVariablesTemporaryState.isExpanded && (
-            <div
-              style={accordionContentStyles}
-              className={`${dynamicHeight && `dynamic-${id}`} widget-type-container`}
-              data-disabled={exposedVariablesTemporaryState.isDisabled}
-            >
-              <ContainerComponent
-                id={id}
-                styles={{
-                  ...contentBgColor,
-                  borderRadius: `${borderRadius}px`,
-                }}
-                canvasHeight={isDynamicHeightEnabled ? '100%' : height}
-                canvasWidth={width}
-                darkMode={darkMode}
-                componentType="Container"
-              />
-            </div>
-          )}
+          <div
+            style={accordionContentStyles}
+            className={`${dynamicHeight && `dynamic-${id}`} widget-type-container`}
+            data-disabled={exposedVariablesTemporaryState.isDisabled}
+          >
+            <ContainerComponent
+              id={id}
+              styles={{
+                ...contentBgColor,
+                borderRadius: `${borderRadius}px`,
+              }}
+              canvasHeight={isDynamicHeightEnabled ? '100%' : height}
+              canvasWidth={width}
+              darkMode={darkMode}
+              componentType="Container"
+            />
+          </div>
         </>
       )}
     </div>
