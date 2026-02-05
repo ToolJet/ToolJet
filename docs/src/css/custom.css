@@ -536,10 +536,14 @@ img {
 }
 
 [data-theme='dark'] .navbar-signin,
-[data-theme='dark'] .navbar-signin:hover,
-[data-theme='dark'] .navbar-website,
-[data-theme='dark'] .navbar-website:hover {
+[data-theme='dark'] .navbar-website
+ {
   color: white;
+}
+
+[data-theme='dark'] .navbar-signin:hover,
+[data-theme='dark'] .navbar-website:hover {
+  color: black;
 }
 
 .navbar-website {
