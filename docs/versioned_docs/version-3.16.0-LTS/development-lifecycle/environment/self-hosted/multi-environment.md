@@ -85,14 +85,13 @@ This means:
 #### Examples:
 The following examples illustrate how different combinations of application permissions, environment access, and role defaults determine a user’s final permissions:
 
-| Scenario                                                           | App Permission (Final) | Environment Access (Final)                                                              | Development              | Staging                                                | Production                                             |
-| ------------------------------------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------ | ------------------------------------------------------ |
-| **1. Builder with multiple permissions in same group**             | **Edit** (Edit > View) | **Staging only** (because environment is explicitly specified)                          | ❌                        | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ❌                                                      |
-| **2. Builder + Custom Group with overlapping permissions**         | **Edit** (Edit > View) | **Union of environments specified** : Staging only (because only Staging was specified) | ❌                        | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ❌                                                      |
-| **3. Builder (default role) with NO environment specified at all** | **Edit**               | **All environments** (because none of the permissions specify any environment)          | ✅ Can edit UI + queries | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries | ✅ Can open + run queries<br/>❌ Cannot edit UI/queries |
-| **4. End User**                                                    | **View**               | Released app only                                                                         | ❌                        | ❌                                                      | ❌                             |
-
-
+| Scenario                                                           | App Permission (Final) | Environment Access (Final)                            | Development                         | Staging                            | Production                         |
+| ------------------------------------------------------------------ | ---------------------- | ----------------------------------------------------- | ----------------------------------- | ---------------------------------- | ---------------------------------- |
+| **1. Builder with multiple permissions in same group**             | Edit (Edit > View)     | Staging only (explicitly specified)                  | -                                   | ✅ Can open + run queries<br/>Cannot edit UI/queries | -                                   |
+| **2. Builder + Custom Group with overlapping permissions**         | Edit (Edit > View)     | Union of environments specified: Staging only        | -                                   | ✅ Can open + run queries<br/>Cannot edit UI/queries | -                                   |
+| **3. Builder (default role) with NO environment specified at all** | Edit                   | All environments (none specified)                    | ✅ Can edit UI + queries             | ✅ Can open + run queries<br/>Cannot edit UI/queries | ✅ Can open + run queries<br/>Cannot edit UI/queries |
+| **4. End User (default)**                                          | View                   | Released app only (default)                          | -                                   | -                                  | -                                   |
+| **5. End User with explicit preview access**                       | View                   | Development + Staging (explicitly selected)          | ✅ Can preview only                  | ✅ Can preview only                 | -                                   |
 
 ### Promote Application Permission
 
