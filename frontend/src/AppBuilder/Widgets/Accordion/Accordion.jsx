@@ -6,7 +6,6 @@ import {
   CONTAINER_FORM_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-import '../Container/container.scss';
 import './accordion.scss';
 import Header from './components/Header';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
@@ -146,10 +145,10 @@ export const Accordion = ({
     flexDirection: 'column',
     position: 'relative',
     boxShadow,
-    '--cc-container-header-divider-color': headerDividerColor,
+    '--cc-accordion-header-divider-color': headerDividerColor,
   };
 
-  const containerContentStyles = useMemo(() => {
+  const accordionContentStyles = useMemo(() => {
     return {
       display: 'flex',
       height: '100%',
@@ -193,7 +192,7 @@ export const Accordion = ({
           )}
           {exposedVariablesTemporaryState.isExpanded && (
             <div
-              style={containerContentStyles}
+              style={accordionContentStyles}
               className={`${dynamicHeight && `dynamic-${id}`} widget-type-container`}
               data-disabled={exposedVariablesTemporaryState.isDisabled}
             >

@@ -34,7 +34,16 @@ const Header = (props) => {
     };
   }, [headerBackgroundColor, darkMode]);
 
-  const containerHeaderStyles = useMemo(() => {
+  const accordionHeaderStyles = useMemo(() => {
+    return {
+      borderTopLeftRadius: `${borderRadius}px`,
+      borderTopRightRadius: `${borderRadius}px`,
+      ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px`, borderBottomRightRadius: `${borderRadius}px` }),
+      ...headerBgColor,
+    };
+  }, [borderRadius, isExpanded, headerBgColor]);
+
+  const accordionHeaderContainerStyles = useMemo(() => {
     return {
       flexShrink: 0,
       padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
@@ -52,11 +61,11 @@ const Header = (props) => {
   };
 
   return (
-    <div className="tj-accordion-header" style={{ ...headerBgColor }}>
-      <div className="tw-h-full tw-w-full">
+    <div className="tj-accordion-header" style={accordionHeaderStyles}>
+      <div className="tj-accordion-header-container">
         <HorizontalSlot
           slotName={'header'}
-          slotStyle={containerHeaderStyles}
+          slotStyle={accordionHeaderContainerStyles}
           id={`${id}-header`}
           height={headerHeight}
           width={width}
