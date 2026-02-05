@@ -7,8 +7,9 @@ import cx from 'classnames';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
@@ -32,7 +33,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   }, [updateShouldPersistAddNewRow, clearAddNewRowDetails, id]);
 
   useEffect(() => {
-    function discardNewlyAddedRows() {
+    function discardNewlyAddedRows () {
       clearAddNewRowDetails(id);
       hideAddNewRowPopup();
     }
@@ -97,24 +98,24 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-500 tj-text-lg">
+          <h4 data-cy='add-new-rows-header' className="font-weight-500 tj-text-lg">
             Add new rows
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy={`button-close-filters`} onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
+          <button data-cy='close-button' onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
             x
           </button>
         </div>
       </div>
       <div className="table-responsive jet-data-table" ref={addRowTableRef}>
-        <table className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`}>
+        <table className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`} data-cy='add-new-row-table'>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="tr" style={{ display: 'flex' }}>
+              <tr key={headerGroup.id} className="tr" style={{ display: 'flex' }} >
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="th" style={{ width: header.column.getSize() }}>
-                    <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper">
+                  <th key={header.id} className="th" style={{ width: header.column.getSize() }} data-cy={`${generateCypressDataCy(typeof header.column.columnDef?.header === 'string' ? header.column.columnDef?.header : header.column.id)}-column-header`}>
+                    <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper" data-cy={`${generateCypressDataCy(typeof header.column.columnDef?.header === 'string' ? header.column.columnDef?.header : header.column.id)}-editable-icon`}>
                       {header.column.columnDef.meta?.columnType !== 'image' && <div>
                         <SolidIcon
                           name="editable"
@@ -135,10 +136,11 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} style={{ display: 'flex' }} className="table-row">
+              <tr key={row.id} style={{ display: 'flex' }} className="table-row" data-cy={`add-new-row-${row.index}`}>
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
+                    data-cy={`${generateCypressDataCy(typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id)}-column-${row.index}`}
                     className={cx(`table-text-align-${cell.column.columnDef.meta?.horizontalAlignment} td`, {
                       'has-actions':
                         cell.column.columnDef.meta?.position === 'right' ||
@@ -175,6 +177,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
         <button
           className="btn btn-light btn-sm m-2"
           onClick={addNewRow}
+          data-cy={`add-another-row-button`}
           data-tooltip-id="tooltip-for-add-row"
           data-tooltip-content="Add another row"
         >
@@ -186,6 +189,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
         <ButtonSolid
           variant="primary"
           className="tj-text-xsm"
+          data-cy='save-button'
           onClick={async () => {
             await fireEvent('onNewRowsAdded');
             hideAddNewRowPopup();
@@ -198,6 +202,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
         <ButtonSolid
           variant="tertiary"
           className="tj-text-xsm"
+          data-cy='discard-button'
           onClick={() => {
             hideAddNewRowPopup();
             clearAddNewRowDetails(id);
