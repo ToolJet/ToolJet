@@ -111,6 +111,13 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
   }
 
   /**
+   * Get HTTP server instance for shutdown handling
+   */
+  getHttpServer(): http.Server | null {
+    return this.httpServer || null;
+  }
+
+  /**
    * Determine SSL state from configuration
    */
   determineState(sslConfig: any): SslServerState {

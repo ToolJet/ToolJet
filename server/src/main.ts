@@ -160,26 +160,12 @@ async function bootstrap() {
       const httpPort = port; // Use existing PORT env var for HTTP
       const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
 
-      // Create and start HTTP server (always running)
-      const httpServer = http.createServer(expressInstance);
-      await new Promise<void>((resolve, reject) => {
-        httpServer.listen(httpPort, listen_addr, () => {
-          appLogger.log(`✅ HTTP server listening on ${listen_addr}:${httpPort}`);
-          resolve();
-        });
-
-        httpServer.on('error', (error) => {
-          appLogger.error(`HTTP server error: ${error.message}`);
-          reject(error);
-        });
-      });
-
-      // Store HTTP server reference for shutdown
-      (app as any).httpServer = httpServer;
-
-      // Get SSL server manager and initialize HTTPS (conditionally based on SSL state)
+      // Get SSL server manager and initialize both HTTP and HTTPS servers
       const sslServerManager = app.get(SslServerManagerService);
       await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
+
+      // Store HTTP server reference for shutdown (from SslServerManagerService)
+      (app as any).httpServer = sslServerManager.getHttpServer();
 
       // Setup HTTP to HTTPS redirect middleware (after SSL manager initialization)
       const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
