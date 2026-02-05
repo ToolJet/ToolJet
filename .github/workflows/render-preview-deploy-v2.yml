@@ -199,8 +199,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ce-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ce-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline_`
             });
 
@@ -676,8 +675,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline - LTS Edition_`
             });
 
@@ -1156,8 +1154,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-pre-release-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline - Pre-release Edition_`
             });
 
