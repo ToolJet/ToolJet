@@ -205,7 +205,7 @@ export const keyValuePairConfig = {
       dataSourceSelector: { value: 'rawJson' },
       data: {
         value:
-          "{{ { name: 'Olivia Nguyen', date: '15/05/2022', email: 'olivia.nguyen@example.com', website: 'oliviaexample.com', description: 'A passionate software developer with a knack for creating innovative solutions.',  mobile_number: 9876543210, categories: ['Reading', 'Traveling','Photography'], tags: 'Reading' , status: true } }}",
+          "{{ { name: 'Olivia Nguyen', date: '15/05/2022', email: 'olivia.nguyen@example.com', website: 'oliviaexample.com',  mobile_number: 9876543210, categories: ['Reading', 'Traveling','Photography'], tags: 'Reading' , status: true } }}",
       },
       fields: {
         value: [
