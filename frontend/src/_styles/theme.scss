@@ -16399,41 +16399,6 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-
-    padding: 0.5rem 1.25rem;
-
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
-
-    section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      button {
-        height: 28px;
-        width: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-
-        &:hover {
-          background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-        }
-
-        // &:focus {
-        //     border: 1px solid var(--border-default, #CCD1D5);
-        //     background: var(--button-outline, #FFF);
-        //     box-shadow: 0px 0px 0px 2px var(--Interactive-focusActive, #4368E3);
-        // }
-      }
-    }
-  }
-
   .conversation-wrapper {
     overflow-y: auto;
     flex-grow: 1;
