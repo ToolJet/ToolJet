@@ -16860,7 +16860,7 @@ section.ai-message-prompt-input-wrapper {
           white-space: pre-wrap;
           display: inline-block;
           border-radius: 8px;
-          background: #f5f6f7;
+          background-color: var(--interactive-default);
           padding: 0.75rem 1rem;
           justify-content: flex-end;
           align-items: center;
@@ -16868,10 +16868,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--text-default, #1b1f24);
 
           margin-left: auto;
-
-          &.dark-theme {
-            background-color: #1b1f24;
-          }
         }
       }
     }
