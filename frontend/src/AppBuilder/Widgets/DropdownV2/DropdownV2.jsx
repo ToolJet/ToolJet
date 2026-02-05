@@ -362,8 +362,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -438,11 +438,10 @@ export const DropdownV2 = ({
     <>
       <div
         ref={dropdownRef}
-        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) ||
+              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -462,6 +461,7 @@ export const DropdownV2 = ({
         }}
       >
         <Label
+          dataCy={dataCy}
           label={label}
           width={labelWidth}
           labelRef={labelRef}
@@ -476,6 +476,7 @@ export const DropdownV2 = ({
           id={`${id}-label`}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="px-0 h-100 dropdownV2-widget"
           ref={ref}
           onClick={handleClickInsideSelect}
