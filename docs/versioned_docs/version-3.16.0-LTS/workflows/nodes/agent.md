@@ -41,11 +41,20 @@ Supported AI providers:
 
 ### Tools
 
-Tools allow the agent to interact with your data and perform actions. Each tool is a workflow node that the agent can invoke.
+Tools allow the agent to interact with your data and perform actions. Each tool is a workflow node that the agent can invoke. The agent autonomously decides which tools to use based on the task and your system prompt instructions.
 
-Drag the nodes from the agent node that you want to use as tools (datasource queries, REST API calls, JavaScript nodes, etc.)
+To add tools, drag nodes from the Agent node's tool handle to connect datasource queries, REST API calls, JavaScript nodes, or any other workflow nodes.
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/agent-tools.png" alt="Agent Tools Configuration" />
+
+#### Supported Tool Types
+
+You can use any workflow node as a tool, including:
+
+- **Datasource Queries**: PostgreSQL, MySQL, MongoDB, and other database queries
+- **REST API**: Connect to external services like Slack, GitHub, Gmail, Twilio, etc.
+- **JavaScript**: Custom logic for data transformation or complex operations
+- **ToolJet Database**: Query your ToolJet Database tables
 
 ## Accessing Agent Node Data
 
@@ -80,54 +89,131 @@ agent1.data
 ```
 
 
-## Example: Customer Support Agent
+## Use Cases
 
-Suppose you wish to create an agent that can look up customer information and create support tickets, here is how you can do it:
+### Customer Support Agent
+
+Create an agent that looks up customer information, creates support tickets, and retrieves order history.
+
+**Tools:**
+| Tool | Type | Description |
+|:-----|:-----|:------------|
+| `lookupCustomer` | PostgreSQL | Queries the database for customer details by email |
+| `createTicket` | REST API | Creates a new support ticket in the ticketing system |
+| `getOrderHistory` | PostgreSQL | Retrieves recent orders for a customer |
 
 **System Prompt:**
 ```
-You are a Customer Support Automation Agent integrated with a ToolJet workflow.
+You are a Customer Support Automation Agent.
 
-Your task is to process the user's message and execute the following steps strictly in order:
+Process the user's message and execute the following steps in order:
 
-STEP 1:
-Extract the following information from the user's message:
-- user_name
-- user_email
-- issue_summary (1 concise sentence)
-- tags (array of keywords)
-- priority ("critical", "normal", "low")
-
-Infer missing values using reasonable defaults such as "Unknown".
-
-STEP 2:
-Look up for the customer in the database "lookupCustomer".
-
-STEP 3:
-After verifying the customer, create a new support ticket using the REST API "createTicket"
-
-STEP 4:
-After creating the ticket, find the order history of the customer in the database "getOrderHistory"
+1. Extract: user_name, user_email, issue_summary, tags, priority ("critical", "normal", "low")
+2. Look up the customer using "lookupCustomer"
+3. Create a support ticket using "createTicket"
+4. Retrieve order history using "getOrderHistory"
 
 Rules:
-- Always call lookupCustomer first.
-- Always call createTicket after verifying customer.
-- Do not ask follow-up questions.
-- Do not explain your reasoning.
+- Always call lookupCustomer first
+- Always call createTicket after verifying customer
+- Do not ask follow-up questions
 ```
 
-**User Prompt**
+<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/customer-support-agent.png" alt="Customer Support Agent" />
 
-```
-{{startTrigger.params.userPrompt}}
-```
+### GitHub Issue Triager
+
+Automate issue management by analyzing new issues and assigning labels, assignees, and priorities.
 
 **Tools:**
-- `lookupCustomer`: Queries the database for customer details by email
-- `createTicket`: Creates a new support ticket in the ticketing system
-- `getOrderHistory`: Retrieves recent orders for a customer
+| Tool | Type | Description |
+|:-----|:-----|:------------|
+| `getIssueDetails` | GitHub | Fetches issue title, description, and metadata |
+| `addLabels` | GitHub | Adds appropriate labels to the issue |
+| `assignReviewer` | GitHub | Assigns a team member based on issue type |
+| `postComment` | GitHub | Posts a welcome comment or asks for more details |
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/customer-support-agent.png" alt="Agent Tools Configuration" />
+**System Prompt:**
+```
+You are a GitHub Issue Triage Agent.
+
+When a new issue is created:
+1. Analyze the issue content using "getIssueDetails"
+2. Categorize it (bug, feature, documentation, question)
+3. Add appropriate labels using "addLabels"
+4. Assign to the right team member using "assignReviewer"
+5. Post a helpful comment using "postComment"
+
+Label guidelines:
+- Bug reports: add "bug" and priority label
+- Feature requests: add "enhancement"
+- Questions: add "question" and post documentation links
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/github-issue-triager.png" alt="GitHub Issue Triage" />
+
+### Slack Notification Agent
+
+Monitor events and send contextual notifications to the right Slack channels.
+
+**Tools:**
+| Tool | Type | Description |
+|:-----|:-----|:------------|
+| `getAlertDetails` | PostgreSQL | Fetches alert information from the database |
+| `getUserOnCall` | REST API | Gets the current on-call engineer |
+| `sendSlackMessage` | Slack | Sends a message to a Slack channel |
+| `createIncident` | REST API | Creates an incident in your incident management system |
+
+**System Prompt:**
+```
+You are an Alert Notification Agent.
+
+When an alert is triggered:
+1. Get alert details using "getAlertDetails"
+2. Determine severity (critical, warning, info)
+3. For critical alerts:
+   - Get on-call engineer using "getUserOnCall"
+   - Create incident using "createIncident"
+   - Send urgent Slack message using "sendSlackMessage"
+4. For warnings: send Slack message to #engineering-alerts
+5. For info: send Slack message to #system-logs
+
+Always include: alert name, severity, timestamp, and recommended action.
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/slack-agent.png" alt="Slack Agent" />
+
+### Email Assistant Agent
+
+Process incoming emails and draft responses or route them to the appropriate team.
+
+**Tools:**
+| Tool | Type | Description |
+|:-----|:-----|:------------|
+| `getEmailContent` | Gmail | Fetches email subject, body, and sender info |
+| `classifyEmail` | JavaScript | Analyzes email intent and urgency |
+| `draftReply` | Gmail | Creates a draft response |
+| `forwardEmail` | Gmail | Forwards to the appropriate department |
+| `logEmail` | PostgreSQL | Logs the email for tracking |
+
+**System Prompt:**
+```
+You are an Email Processing Agent.
+
+For each incoming email:
+1. Get email content using "getEmailContent"
+2. Classify the email type (inquiry, complaint, order, spam)
+3. Based on classification:
+   - Inquiries: draft a helpful reply using "draftReply"
+   - Complaints: forward to support team using "forwardEmail"
+   - Orders: log in database using "logEmail"
+   - Spam: ignore
+4. Log all processed emails in the database
+
+Maintain a professional and helpful tone in all responses.
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/email-assistant.png" alt="Email Assistant" />
 
 ## Limitations
 
