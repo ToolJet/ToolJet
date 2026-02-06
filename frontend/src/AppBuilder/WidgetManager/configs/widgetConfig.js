@@ -69,6 +69,7 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  keyValuePairConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -80,6 +81,7 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
