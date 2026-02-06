@@ -10,6 +10,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
+import { AppGitSync } from '../../entities/app_git_sync.entity'
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
@@ -175,11 +176,22 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   async create(folderId: string, appId: string): Promise<FolderApp> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId, folderId },
+        where: { appId },
       });
 
       if (existingFolderApp) {
-        throw new BadRequestException('App has already been added to the folder');
+        throw new BadRequestException(
+          'Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.'
+        );
+      }
+      
+      const gitSyncedApp = await manager.findOne(AppGitSync, {
+        where: { appId },
+        select: ['id'],
+      });
+
+      if (gitSyncedApp) {
+      throw new BadRequestException('Git-synced app cannot be moved to the folder');
       }
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
