@@ -11,7 +11,7 @@ ToolJet enables you to execute Redis commands on your Redis instances.
 
 To establish a connection with the Redis data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Redis as the data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/connect-v2.png" alt="Redis data source Connection" style={{marginBottom:'15px'}} />
 
 To connect ToolJet with Redis, you need to provide the following connection details:
 
@@ -51,7 +51,7 @@ The `PING` command is used to test the connection to Redis. If the connection is
 PING
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/ping.png" alt="Redis Connection" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/ping-query.png" alt="Redis querying" style={{marginBottom:'15px'}} />
 
 ### SET Command
 
@@ -68,7 +68,7 @@ When the input value contains spaces, you should encode the value before providi
 SET products {{encodeURI('John Doe')}}
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/redis/encode-v2.png" alt="Redis Example Encode" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/redis/setprod-query.png" alt="Redis Example querying" style={{marginBottom:'15px'}} />
 
 ### GET Command
 
@@ -94,7 +94,7 @@ To retrieve a value that was previously encoded while setting, you can use trans
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/redis/decode-v2.png" alt="Redis Example Decode" />
+  <img className="screenshot-full img-full" src="/img/datasource-reference/redis/get-query.png" alt="Redis Example querying" />
 
   </div>
   
