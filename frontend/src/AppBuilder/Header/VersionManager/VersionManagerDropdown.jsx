@@ -35,7 +35,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
       currentVersionId: state.currentVersionId,
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments || [],
