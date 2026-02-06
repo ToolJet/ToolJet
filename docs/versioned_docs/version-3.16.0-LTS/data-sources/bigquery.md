@@ -27,7 +27,7 @@ How to get a Private key?
 3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
 4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-v3.png" alt="BQ create" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-v3.png" alt="Adding Bigquery Connection" />
 
 **The JSON file should look like this:**
 
@@ -54,7 +54,7 @@ How to get a Private key?
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-query-v2.png" alt="BQ query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-listops.png" alt="Bigquery list all operations" />
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
@@ -84,13 +84,13 @@ This operation returns the data based on the **Query**.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-query-v3.png" alt="BQ query" style={{marginBottom:'15px'}}/>
 
 ### List Datasets
 
 This operation returns the list of datasets.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-datasets.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
 
 ### List Tables
 
@@ -100,7 +100,7 @@ This operation returns the list of tables within a dataset.
 
 - **Dataset ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/listtables-v2.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-tables.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
 
 ### Create Table
 
@@ -112,7 +112,7 @@ This operation is used to create a table.
 - **Dataset ID**
 - **Options**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-table-v4.png"  alt="BQ create tables"/>
 
 **NOTE:** Visit https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
 
@@ -125,7 +125,7 @@ This operation is used to delete a table.
 - **Table ID**
 - **Dataset ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/delete-table.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-table-v3.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
 
 ### Create View
 
@@ -141,7 +141,7 @@ This operation is used to create a view.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/create-view-v2.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-create-view.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
 
 ### Insert Record
 
@@ -153,7 +153,7 @@ This operation is used to insert a record.
 - **Dataset ID**
 - **Rows**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v3.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
 
 ### Delete Record
 
@@ -167,7 +167,7 @@ Use this operation to delete a record.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-v2.png"  alt="BQ delete" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-delete-rec.png"  alt="BQ delete" />
 
 :::warning
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
@@ -185,4 +185,4 @@ Use this operation to update a record.
 - **Condition**
 - **Query results options**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-update-v2.png" alt="BQ update" />
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-update-rec.png" alt="BQ update" />
