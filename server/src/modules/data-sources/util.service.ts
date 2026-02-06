@@ -529,7 +529,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     } catch (error) {
       result = {
         status: 'failed',
-        message: error.message,
+        message: `${error.message}${error?.description ? `: ${error.description}` : ''}
+        ${error?.data ? ` - ${JSON.stringify(error.data)}` : ''}`,
       };
     }
 
