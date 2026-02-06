@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useMemo, useRef, useState, useContext } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useContext } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
-import { camelCase, isEmpty, noop, get } from 'lodash';
+import { camelCase, debounce, isEmpty, noop, get } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import {
@@ -226,6 +226,23 @@ const EditorInput = ({
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
 
+  const currentValueRef = useRef(currentValue);
+  const debouncedSetCurrentValue = useMemo(() => debounce((val) => setCurrentValue(val), 300), [setCurrentValue]);
+
+  // Sync ref when currentValue changes from the parent (e.g. initialValue reset)
+  // and cancel any pending debounce to avoid overwriting the parent-driven value
+  useEffect(() => {
+    if (currentValue !== currentValueRef.current) {
+      currentValueRef.current = currentValue;
+      debouncedSetCurrentValue.cancel();
+    }
+  }, [currentValue, debouncedSetCurrentValue]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => debouncedSetCurrentValue.cancel();
+  }, [debouncedSetCurrentValue]);
+
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow
@@ -298,25 +315,32 @@ const EditorInput = ({
     [isInsideQueryManager, paramHints]
   );
 
-  const autoCompleteConfig = autocompletion({
-    override: [overRideFunction],
-    compareCompletions: (a, b) => {
-      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
-    },
-    aboveCursor: false,
-    defaultKeymap: true,
-    positionInfo: () => {
-      return {
-        class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
-      };
-    },
-    maxRenderedOptions: 10,
-  });
+  const autoCompleteConfig = useMemo(
+    () =>
+      autocompletion({
+        override: [overRideFunction],
+        compareCompletions: (a, b) => {
+          return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+        },
+        aboveCursor: false,
+        defaultKeymap: true,
+        positionInfo: () => {
+          return {
+            class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
+          };
+        },
+        maxRenderedOptions: 10,
+      }),
+    [overRideFunction]
+  );
 
-  const customKeyMaps = [
-    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
-    ...completionKeymap,
-  ];
+  const customKeyMaps = useMemo(
+    () => [
+      ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+      ...completionKeymap,
+    ],
+    []
+  );
 
   const customTabKeymap = keymap.of([
     {
@@ -342,21 +366,26 @@ const EditorInput = ({
     ...queryPanelKeybindings,
   ]);
 
-  const handleOnChange = React.useCallback((val) => {
-    setCurrentValue(val);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleOnChange = useCallback(
+    (val) => {
+      currentValueRef.current = val;
+      debouncedSetCurrentValue(val);
+    },
+    [debouncedSetCurrentValue]
+  );
 
   const handleOnBlur = () => {
     !cursorInsidePreview && setShowPreview(false);
+    debouncedSetCurrentValue.flush();
+    const latestValue = currentValueRef.current;
 
     if (!delayOnChange) {
       setFirstTimeFocus(false);
-      return onBlurUpdate(currentValue);
+      return onBlurUpdate(latestValue);
     }
     setTimeout(() => {
       setFirstTimeFocus(false);
-      onBlurUpdate(currentValue);
+      onBlurUpdate(latestValue);
     }, 0);
   };
 
@@ -374,6 +403,21 @@ const EditorInput = ({
   const currentEditorHeightRef = useRef(null);
   const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+
+  const basicSetupConfig = useMemo(
+    () => ({
+      lineNumbers: showLineNumbers,
+      syntaxHighlighting: true,
+      bracketMatching: true,
+      foldGutter: false,
+      highlightActiveLine: false,
+      autocompletion: true,
+      defaultKeymap: false,
+      completionKeymap: true,
+      searchKeymap: false,
+    }),
+    [showLineNumbers]
+  );
 
   const customClassNames = cx('codehinter-input single-line-codehinter-input', {
     'border-danger': error,
@@ -497,17 +541,7 @@ const EditorInput = ({
                 handleOnChange(val);
                 onInputChange && onInputChange(val);
               }}
-              basicSetup={{
-                lineNumbers: showLineNumbers,
-                syntaxHighlighting: true,
-                bracketMatching: true,
-                foldGutter: false,
-                highlightActiveLine: false,
-                autocompletion: true,
-                defaultKeymap: false,
-                completionKeymap: true,
-                searchKeymap: false,
-              }}
+              basicSetup={basicSetupConfig}
               onMouseDown={() => handleFocus()}
               onBlur={() => handleOnBlur()}
               className={customClassNames}
