@@ -5,13 +5,13 @@ title: Quickstart Guide
 
 This quickstart guide walks you through the process of creating an employee directory app using ToolJet. The application lets users track and update employee details while working with core features of the platform, all within a user-friendly interface. Here are the step-by-step instructions:
 
-**[1. Create Your First Application](#1-create-your-first-application)** <br/>
-**[2. Create a Database Table](#2-create-a-database-table)** <br/>
-**[3. Create a Query to Fetch Data](#3-create-a-query-to-fetch-data)** <br/>
-**[4. Bind Queried Data to the UI](#4-bind-queried-data-to-the-ui)** <br/>
-**[5. Create a Query to Add Data](#5-create-a-query-to-add-data)** <br/>
-**[6. Use Events to Trigger Queries](#6-use-events-to-trigger-queries)** <br/>
-**[7. Preview, Release and Share](#7-preview-release-and-share)** <br/>
+1. **[Create Your First Application](#1-create-your-first-application)** <br/>
+2. **[Create a Database Table](#2-create-a-database-table)** <br/>
+3. **[Create a Query to Fetch Data](#3-create-a-query-to-fetch-data)** <br/>
+4. **[Bind Queried Data to the UI](#4-bind-queried-data-to-the-ui)** <br/>
+5. **[Create a Query to Add Data](#5-create-a-query-to-add-data)** <br/>
+6. **[Use Events to Trigger Queries](#6-use-events-to-trigger-queries)** <br/>
+7. **[Preview, Release and Share](#7-preview-release-and-share)** <br/>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
