@@ -33,7 +33,7 @@ const sectionConfig = {
   },
   navigation: {
     title: 'Navigation',
-    valueSet: new Set(['Link', 'Pagination', 'Steps']),
+    valueSet: new Set(['Navigation', 'Link', 'Pagination', 'Steps']),
   },
   media: {
     title: 'Media',
