@@ -33,7 +33,7 @@ ToolJet requires the following to connect to a RethinkDB data source:
 3. Select the desired operation.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/operations.png"  alt="RethinkDB Connection Page" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/listops.png"  alt="RethinkDB Connection Page" />
 
 </div>
 
@@ -66,7 +66,7 @@ Creates a new database in RethinkDB.
 #### Required Parameter
 - **Database Name**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/create-db.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/create-db-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Create Table
@@ -77,7 +77,7 @@ Creates a new table in a specified database.
 - **Database Name**
 - **Tablename**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/create-table.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/create-table-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Delete Database
@@ -87,7 +87,7 @@ Deletes an existing database in RethinkDB.
 #### Required Parameter
 - **Database Name**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/delete-db.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/del-db-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Delete Table
@@ -98,14 +98,14 @@ Deletes a table from a specified database.
 - **Database Name**
 - **Tablename**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/delete-table.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/del-table-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### List All Database
 
 Lists all available databases.
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/list-database.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/listall-db.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### List All Table
@@ -115,7 +115,7 @@ Lists all tables in a specified database.
 #### Required Parameter
 - **Database Name**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/list-table.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/listall-table.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### List All Documents
@@ -126,7 +126,7 @@ Retrieves all documents from a specified table.
 - **Database Name**
 - **Tablename**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/list-docs.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/listall-doc-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Insert Document
@@ -138,7 +138,7 @@ Inserts a new document into a specified table.
 - **Tablename**
 - **Data**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/insert-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/insert-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 #### Example
 
@@ -159,7 +159,7 @@ Fetches a document from a specified table by its key.
 - **Tablename**
 - **Primary key**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/retrieve-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/retrieve-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Update Document Using ID
@@ -172,13 +172,13 @@ Updates a specific document in a table using its ID.
 - **Primary key**
 - **Data**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/update-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/update-by-id-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 #### Example
 
 ```yaml
 { 
-  "age": 31 
+  "age": 35 
 }
 ```
 
@@ -192,7 +192,7 @@ Updates all documents in a specified table.
 - **Tablename**
 - **Data**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/update-all-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/update-all-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 #### Example
 
@@ -212,7 +212,7 @@ Deletes a specific document in a table using its ID.
 - **Tablename**
 - **Primary key**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/delete-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/del-by-id-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 
 ### Delete All Documents
@@ -223,6 +223,6 @@ Deletes all documents from a specified table.
 - **Database Name**
 - **Tablename**
 
-<img className="screenshot-full" src="/img/datasource-reference/rethink/delete-all-doc.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/rethink/del-all-query.png"  alt="RethinkDB Create Database Operation" style={{marginBottom:'15px'}}/>
 
 </div>

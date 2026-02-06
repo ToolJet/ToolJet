@@ -41,7 +41,7 @@ The SMTP configuration details like host and port can usually be obtained from y
     - **Password**: your Outlook.com/Hotmail password.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/smtp/connect-v2.png" alt="smtp connect" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/smtp/connect-v2.png" alt="smtp connect" />
 
 </div>
 
@@ -69,6 +69,6 @@ To create a query for sending an email, follow these steps:
  - **Attachments** : You can add attachments to an SMTP query by referencing the file from the File Picker component in the attachments field.
     - For instance, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or pass an object `{{[{ name: "filename.jpg", dataURL: " " }]}}` to include attachments.
 
-<img className="screenshot-full" src="/img/datasource-reference/smtp/querysmtp-v2.png" alt="smtp connect" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/smtp/querying-v3.png" alt="smtp cquerying" />
 
 </div>
