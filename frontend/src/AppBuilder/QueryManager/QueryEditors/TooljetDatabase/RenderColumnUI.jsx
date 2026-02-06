@@ -32,6 +32,7 @@ const RenderColumnUI = ({
               onChange={handleColumnChange}
               darkMode={darkMode}
               buttonClasses="border border-end-0 rounded-start overflow-hidden"
+              dataCy="select-column-dropdown"
             />
           </Col>
           <Col sm="8" className="p-0 d-flex tjdb-codhinter-wrapper">
@@ -48,12 +49,14 @@ const RenderColumnUI = ({
                 }
               }}
               {...(isJSonTypeColumn && { lang: 'javascript' })}
+              cyLabel="column-value"
             />
             <ButtonSolid
               size="sm"
               variant="ghostBlack"
               className="px-1 rounded-0 border rounded-end qm-delete-btn"
               onClick={() => removeColumnOptionsPair(id)}
+              data-cy="delete-column-button"
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />
             </ButtonSolid>
