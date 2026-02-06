@@ -124,10 +124,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
   // Check if there's only one draft and no other saved versions
-  const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
+  // draftVersions are versions of type 'version' (not branches)
+  const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-  // Disable create draft if git sync is enabled and a draft already exists
+  // Disable create draft if git sync is enabled and a version already exists
   const shouldDisableCreateDraft = draftVersions.length > 0 && isGitSyncEnabled;
   // Determine tooltip message based on why create draft is disabled
   const createDraftDisabledTooltip =
