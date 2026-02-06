@@ -44,6 +44,19 @@ export const DatepickerInput = forwardRef(
       clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
     const clearButtonTop = '50%';
     const clearButtonTransform = 'translateY(-50%)';
+    // Check if value is a placeholder text (not an actual date/time value)
+    const isPlaceholderValue =
+      value === 'Select date' ||
+      value === 'Select time' ||
+      value === 'Select date and time' ||
+      value === 'Select Date Range' ||
+      (typeof value === 'string' && value.includes('→') && value.trim() === '→');
+
+    const computedInputStyles = {
+      ...inputStyles,
+      color: isPlaceholderValue ? 'var(--cc-placeholder-text)' : inputStyles?.color,
+    };
+
     return (
       <>
         <input
@@ -65,7 +78,7 @@ export const DatepickerInput = forwardRef(
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           ref={dateInputRef}
           id={`component-${inputId}`}
-          style={inputStyles}
+          style={computedInputStyles}
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);

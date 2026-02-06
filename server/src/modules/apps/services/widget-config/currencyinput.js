@@ -323,6 +323,7 @@ export const currencyinputConfig = {
       showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
       showClearBtn: { value: '{{false}}' },
+      numberFormat: { value: 'us' },
     },
     events: [],
     styles: {
