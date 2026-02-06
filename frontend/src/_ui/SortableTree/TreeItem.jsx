@@ -71,7 +71,7 @@ export const TreeItem = forwardRef(
             width: '100%',
             ...(isNested && {
               borderLeft: '1px dashed var(--border-weak, var(--icon-weak))',
-              padding: '0 0 0 16px',
+              padding: '0 0 0 15px',
             }),
           }}
         >

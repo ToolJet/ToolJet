@@ -17,7 +17,7 @@ const PROPERTY_NAMES = {
  * PageMenu's SortableTree wrapper
  * Uses the shared SortableTree library with PageMenu-specific rendering
  */
-export function SortableTree({ collapsible = true, indicator = true, indentationWidth = 15, darkMode, treeRef }) {
+export function SortableTree({ collapsible = true, indicator = false, indentationWidth = 15, darkMode, treeRef }) {
   const reorderPages = useStore((state) => state.reorderPages);
   const debouncedReorderPages = React.useMemo(() => _.debounce(reorderPages, 500), [reorderPages]);
 

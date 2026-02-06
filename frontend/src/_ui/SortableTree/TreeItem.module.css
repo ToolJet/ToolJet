@@ -67,7 +67,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0;
+  padding: var(--vertical-padding) 10px;
   color: var(--text-default, #222);
   box-sizing: border-box;
 }
