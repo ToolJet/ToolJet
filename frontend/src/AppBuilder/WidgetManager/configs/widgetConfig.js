@@ -69,6 +69,8 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -143,6 +145,7 @@ export const widgets = [
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -156,6 +159,7 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,

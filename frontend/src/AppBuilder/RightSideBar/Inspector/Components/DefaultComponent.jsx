@@ -47,6 +47,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Kanban',
   'Html',
   'TagsInput',
+  'JSONExplorer',
+  'JSONEditor',
   'IFrame',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -73,6 +75,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Kanban: 'Board configuration',
   AudioRecorder: 'Content',
   Camera: 'Content',
+  JSONExplorer: 'Data',
+  JSONEditor: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -182,6 +186,8 @@ export const baseComponentProperties = (
       'Kanban',
       'AudioRecorder',
       'Camera',
+      'JSONExplorer',
+      'JSONEditor',
       'IFrame',
     ],
     Layout: [],

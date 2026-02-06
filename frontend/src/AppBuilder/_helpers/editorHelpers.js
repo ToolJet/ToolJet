@@ -55,13 +55,14 @@ import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
+import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
+import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
   import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainer }))
 );
 const ModuleViewer = lazy(() => import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer })));
-
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -171,6 +172,8 @@ export const AllComponents = {
   TagsInput,
   AudioRecorder,
   Camera,
+  JSONEditor,
+  JSONExplorer,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;
@@ -366,6 +369,7 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-    }px)`;
+  return `calc(${100}% - ${
+    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+  }px)`;
 };

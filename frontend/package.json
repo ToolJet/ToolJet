@@ -43,6 +43,7 @@
     "@tooljet/plugins": "../plugins",
     "@uiw/codemirror-theme-github": "^4.21.21",
     "@uiw/codemirror-theme-okaidia": "^4.21.21",
+    "@uiw/codemirror-themes-all": "^4.25.4",
     "@uiw/react-codemirror": "^4.21.21",
     "@wojtekmaj/react-daterange-picker": "^5.2.0",
     "@wojtekmaj/react-datetimerange-picker": "^5.2.0",
