@@ -22,7 +22,7 @@ ToolJet requires the following to connect to your SAP HANA database:
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/saphana/connect-v2.png" alt="ToolJet - Data source - SAP HANA" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/saphana/connect-v2.png" alt="ToolJet - Data source - SAP HANA" />
 
 </div>
 
@@ -35,7 +35,7 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 3. Add the Query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/saphana/query-v2.png" alt="saphana query" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/saphana/query-v3.png" alt="saphana query" />
 
 ```sql
 select * from PRODUCTS
