@@ -35,3 +35,4 @@ export * from './ai.service';
 export * from './appPermission.service';
 export * from './ai-onboarding.service';
 export * from './workflow_bundles.service';
+export * from './support.service';
