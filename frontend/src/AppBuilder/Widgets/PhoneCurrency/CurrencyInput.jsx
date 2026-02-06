@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
@@ -67,9 +68,9 @@ export const CurrencyInput = (props) => {
     isCountryChangeEnabled,
     defaultCountry = 'US',
     showFlag = true,
+    showClearBtn,
     numberFormat = 'us',
   } = properties;
-
   // Track previous number format to detect format changes
   const previousNumberFormat = useRef(numberFormat);
   // Get separators based on number format
@@ -119,8 +120,12 @@ export const CurrencyInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const computedStyles = {
     height: '100%',
     borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
@@ -148,6 +153,7 @@ export const CurrencyInput = (props) => {
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
@@ -157,20 +163,19 @@ export const CurrencyInput = (props) => {
     right:
       direction === 'right' &&
       defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+      hasLabel
         ? `${labelWidth + 11}px`
         : '11px',
     top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
+      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
     transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
     return formatValue({
@@ -339,6 +344,30 @@ export const CurrencyInput = (props) => {
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (

@@ -12,6 +12,7 @@ export const NumberInput = (props) => {
       value: Number(parseFloat(props.properties.value).toFixed(props.properties.decimalPlaces)),
     },
   });
+  const showClearBtn = props.properties?.showClearBtn;
 
   const handleChange = (e) => {
     if (e.target.value === '') {
@@ -48,6 +49,18 @@ export const NumberInput = (props) => {
     if (!isNaN(newValue)) {
       props.fireEvent('onChange');
     }
+  };
+
+  const getCustomStyles = (baseStyles) => {
+    return {
+      ...baseStyles,
+      paddingRight: showClearBtn ? '30px' : '0px', 
+    };
+  };
+
+  const handleClear = () => {
+    inputLogic.setInputValue('');
+    props.fireEvent('onChange');
   };
 
   const numberControls = !inputLogic.isResizing && (
@@ -89,6 +102,10 @@ export const NumberInput = (props) => {
       classes={{
         inputContainer: cn({ 'tw-pr-0 tw-py-0': !inputLogic.loading }),
       }}
+      showClearBtn={showClearBtn}
+      onClear={handleClear}
+      clearButtonRightOffset={20}
+      getCustomStyles={getCustomStyles}
     />
   );
 };

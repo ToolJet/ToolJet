@@ -63,6 +63,12 @@ export const numberinputConfig = {
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Show clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {
     onChange: { displayName: 'On change' },
@@ -302,6 +308,7 @@ export const numberinputConfig = {
       visibility: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {
