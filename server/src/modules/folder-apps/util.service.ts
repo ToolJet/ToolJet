@@ -1,6 +1,6 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
@@ -172,6 +172,31 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     });
   }
 
+  async create(folderId: string, appId: string): Promise<FolderApp> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const existingFolderApp = await manager.findOne(FolderApp, {
+        where: { appId, folderId },
+      });
+
+      if (existingFolderApp) {
+        throw new BadRequestException('App has already been added to the folder');
+      }
+
+      // TODO: check if folder under user.organizationId and user has edit permission on app
+
+      const newFolderApp = manager.create(FolderApp, {
+        folderId,
+        appId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const folderApp = await manager.save(FolderApp, newFolderApp);
+
+      return folderApp;
+    });
+  }
+
   protected addViewableFrontendFilter(
     query: SelectQueryBuilder<AppBase>,
     folderAppIds: string[],
@@ -182,18 +207,18 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     const viewableAppsTotal = isAllEditable
       ? [null, ...folderAppIds]
       : hideAll
-      ? [null, ...userAppPermissions.editableAppsId]
-      : isAllViewable
-      ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-            ])
-          ),
-        ];
+        ? [null, ...userAppPermissions.editableAppsId]
+        : isAllViewable
+          ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+          : [
+              null,
+              ...Array.from(
+                new Set([
+                  ...userAppPermissions.editableAppsId,
+                  ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+                ])
+              ),
+            ];
 
     const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 

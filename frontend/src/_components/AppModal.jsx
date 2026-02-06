@@ -32,7 +32,8 @@ export function AppModal({
   appType,
   dependentPluginsDetail = [],
   dependentPlugins = [],
-  isAutoCommit = false,
+  modalType,
+  // isAutoCommit = false,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -219,28 +220,31 @@ export function AppModal({
                   {`${appTypeName} name must be unique and max 50 characters`}
                 </small>
               )}
-              {orgGit?.is_enabled && appType != APP_TYPE.WORKFLOW && appType != APP_TYPE.MODULE && (
-                <div className="commit-changes mt-3">
-                  <div>
-                    <input
-                      class="form-check-input"
-                      checked={commitEnabled}
-                      type="checkbox"
-                      onChange={handleCommitEnableChange}
-                      disabled={isAutoCommit}
-                      data-cy="git-commit-input"
-                    />
-                  </div>
-                  <div>
-                    <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                      Commit changes
+              {orgGit?.is_enabled &&
+                modalType !== 'create' &&
+                appType != APP_TYPE.WORKFLOW &&
+                appType != APP_TYPE.MODULE && (
+                  <div className="commit-changes mt-3">
+                    <div>
+                      <input
+                        class="form-check-input"
+                        checked={commitEnabled}
+                        type="checkbox"
+                        onChange={handleCommitEnableChange}
+                        // disabled={isAutoCommit}
+                        data-cy="git-commit-input"
+                      />
                     </div>
-                    <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                      This action commits the app&apos;s creation to the git repository
+                    <div>
+                      <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
+                        Commit changes
+                      </div>
+                      <div className="tj-text-xxsm" data-cy="commit-helper-text">
+                        This action commits the app&apos;s creation to the git repository
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
             {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>

@@ -10,31 +10,12 @@ import { DeleteResult } from 'typeorm';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
+import { FoldersUtilService } from './util.service';
 @Injectable()
 export class FoldersService implements IFoldersService {
+  constructor(protected foldersUtilService: FoldersUtilService) {}
   async createFolder(user, createFolderDto: CreateFolderDto) {
-    const folderName = createFolderDto.name;
-    const type = createFolderDto.type;
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const folder = await catchDbException(async () => {
-        return await manager.save(
-          manager.create(Folder, {
-            name: folderName,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            organizationId: user?.organizationId,
-            type,
-          })
-        );
-      }, [
-        {
-          dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE,
-          message: 'This folder name is already taken.',
-        },
-      ]);
-
-      return decamelizeKeys(folder);
-    });
+    return this.foldersUtilService.createFolder(user, createFolderDto);
   }
   async updateFolder(user, id, updateFolderDto: UpdateFolderDto) {
     const folderId = id;

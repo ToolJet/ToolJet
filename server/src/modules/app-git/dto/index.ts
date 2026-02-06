@@ -78,6 +78,10 @@ export class AppGitPullDto {
   @IsBoolean()
   @IsOptional()
   allowEditing: boolean;
+
+  @IsString()
+  @IsOptional()
+  commitHash?: string;
 }
 
 export class AppGitPullUpdateDto {

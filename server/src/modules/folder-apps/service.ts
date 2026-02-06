@@ -21,37 +21,7 @@ export class FolderAppsService implements IFolderAppsService {
   ) {}
 
   async create(folderId: string, appId: string): Promise<FolderApp> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId },
-      });
-
-      if (existingFolderApp) {
-        throw new BadRequestException('Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.');
-      }
-      // Check if app is git-synced
-      const gitSyncedApp = await manager.findOne(AppGitSync, {
-        where: { appId },
-        select: ['id'],
-      });
-    if (gitSyncedApp) {
-      throw new BadRequestException(
-        'Git-synced app cannot be moved to a folder'
-      );
-    }
-      // TODO: check if folder under user.organizationId and user has edit permission on app
-
-      const newFolderApp = manager.create(FolderApp, {
-        folderId,
-        appId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const folderApp = await manager.save(FolderApp, newFolderApp);
-
-      return folderApp;
-    });
+    return this.folderAppsUtilService.create(folderId, appId);
   }
 
   async remove(folderId: string, appId: string): Promise<void> {
