@@ -1,6 +1,6 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
@@ -66,21 +66,16 @@ export const PageMenuItem = withRouter(
 
     const isEditingPage = editingPage?.id === page?.id;
     const icon = (props) => {
-      const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-      // eslint-disable-next-line import/namespace
-      const Icon = Icons?.[iconName] ?? Icons?.['IconFile'];
+      const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon || 'IconFile';
 
       return (
-        <Icon {...props} style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }} />
+        <TablerIcon
+          iconName={iconName}
+          fallbackIcon="IconFile"
+          {...props}
+          style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }}
+        />
       );
-
-      // if (!isDisabled && !isHidden) {
-      // }
-      // if (isDisabled || (isDisabled && isHidden)) {
-      //   return (
-      //     <FileRemove fill={computedStyles?.icon?.fill} className=" " width={16} height={16} viewBox={'0 0 16 16'} />
-      //   );
-      // }
     };
     const computeStyles = useCallback(() => {
       const baseStyles = {
@@ -275,8 +270,9 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${(showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-              }`}
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
+              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            }`}
             style={{
               position: 'relative',
               width: '100%',
@@ -456,7 +452,9 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                                  message={
+                                    "You don't have access to page permissions. Upgrade your plan to access this feature."
+                                  }
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"

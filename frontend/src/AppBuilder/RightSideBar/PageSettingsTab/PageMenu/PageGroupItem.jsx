@@ -1,9 +1,7 @@
 import React, { memo, useState, useMemo, useCallback, useRef } from 'react';
 import cx from 'classnames';
-import * as Icons from '@tabler/icons-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { RenameInput } from './RenameInput';
-import IconSelector from './IconSelector';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
