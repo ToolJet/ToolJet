@@ -30,6 +30,7 @@ const Table = memo(
     currentLayout,
     currentMode,
     subContainerIndex,
+    dataCy,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
@@ -222,6 +223,7 @@ const Table = memo(
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}
+          dataCy={componentName}
         />
       </div>
     );
