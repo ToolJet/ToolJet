@@ -847,8 +847,15 @@ class HomePageComponent extends React.Component {
   importGitApp = () => {
     const { appsFromRepos, selectedAppRepo, orgGit, importedAppName, selectedVersionOption, tags } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
-    const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
-      appToImport;
+    const {
+      git_app_name,
+      git_version_id,
+      git_version_name,
+      last_commit_message,
+      last_commit_user,
+      lastpush_date,
+      app_co_relation_id,
+    } = appToImport;
 
     let commitHash = null;
     let commitMessage = last_commit_message;
@@ -879,7 +886,7 @@ class HomePageComponent extends React.Component {
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
-      ...(commitHash && { commitHash }),
+      ...(commitHash && { commitHash, appCoRelationId: app_co_relation_id }),
       ...(commitMessage && { lastCommitMessage: commitMessage }),
       ...(commitUser && { lastCommitUser: commitUser }),
       ...(commitDate && { lastPushDate: new Date(commitDate) }),
@@ -1650,8 +1657,8 @@ class HomePageComponent extends React.Component {
                 {selectedAppRepo && (
                   <div className="commit-info">
                     {/* APP NAME */}
-                    <div className="form-group mb-3">
-                      <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500" data-cy="app-name-label">
+                    <div className="form-group">
+                      <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="app-name-label">
                         App name
                       </label>
                       <div className="tj-app-input">
@@ -1697,7 +1704,7 @@ class HomePageComponent extends React.Component {
                     </div>
 
                     {/* VERSION/TAG SELECT */}
-                    <div className="form-group mb-3">
+                    <div className="form-group">
                       <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
                         Select version to pull from
                       </label>

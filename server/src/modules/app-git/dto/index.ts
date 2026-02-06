@@ -57,6 +57,10 @@ export class AppGitPullDto {
 
   @IsString()
   @IsOptional()
+  appCoRelationId?: string;
+
+  @IsString()
+  @IsOptional()
   lastCommitUser?: string;
 
   @IsString()
