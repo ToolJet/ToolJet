@@ -13,6 +13,7 @@ export type QueryOptions = {
   operation: string;
   language: string;
   soql_query: string;
+  query: string;
   actiontype: string;
   resource_id: string;
   resource_name: string;
