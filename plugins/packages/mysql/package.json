@@ -20,6 +20,10 @@
     "knex": "^3.1.0",
     "mysql2": "^3.9.7",
     "react": "^17.0.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/ssh2": "^1.15.5"
   }
 }
