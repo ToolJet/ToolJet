@@ -15217,7 +15217,8 @@ textarea.tj-text-input-widget {
   }
 }
 
-.ds-svg-container svg {
+.ds-svg-container svg,
+.ds-svg-container img {
   padding: 2px;
   object-fit: contain;
 }
