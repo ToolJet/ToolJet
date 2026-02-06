@@ -37,7 +37,7 @@
   },
   "properties": {
     "data_api_url": {
-      "label": "Data API Endpoint",
+      "label": "Data API endpoint",
       "key": "data_api_url",
       "type": "text",
       "description": "Enter your Couchbase Data API endpoint URL (e.g., https://<your-data-api-endpoint>)"
