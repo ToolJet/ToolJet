@@ -2,7 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
-import { SortableTree } from './Tree';
+import { SortableTree } from '@/_ui/SortableTree';
+import { MenuItem } from './MenuItem';
+import { GroupMenuItem } from './GroupMenuItem';
+import { NavMenuItemGhost } from './NavMenuItemGhost';
 
 const AddMenuPopover = React.forwardRef(({ onAddItem, onAddGroup, onClose, darkMode, buttonWidth, ...props }, ref) => {
   return (
@@ -60,15 +63,53 @@ const NavItemsList = ({
     }
   }, []);
 
-  return (
-    <div data-cy="inspector-navigation-menu-items-list" style={{ marginBottom: '12px' }}>
-      <SortableTree
-        menuItems={menuItems}
+  // Render function for tree items
+  const renderItem = (item, itemProps) => {
+    const { isHighlighted, ...restProps } = itemProps;
+
+    if (item?.isGroup) {
+      return (
+        <GroupMenuItem
+          item={item}
+          darkMode={darkMode}
+          highlight={isHighlighted}
+          onDeleteItem={onDeleteItem}
+          onItemChange={onItemChange}
+          getResolvedValue={getResolvedValue}
+          {...restProps}
+        />
+      );
+    }
+
+    return (
+      <MenuItem
+        item={item}
         darkMode={darkMode}
         onDeleteItem={onDeleteItem}
         onItemChange={onItemChange}
-        onReorder={onReorder}
         getResolvedValue={getResolvedValue}
+        {...restProps}
+      />
+    );
+  };
+
+  // Render function for drag ghost
+  const renderGhost = (item) => {
+    return <NavMenuItemGhost item={item} darkMode={darkMode} getResolvedValue={getResolvedValue} />;
+  };
+
+  return (
+    <div data-cy="inspector-navigation-menu-items-list" style={{ marginBottom: '12px' }}>
+      <SortableTree
+        items={menuItems}
+        darkMode={darkMode}
+        onReorder={onReorder}
+        renderItem={renderItem}
+        renderGhost={renderGhost}
+        propertyNames={{ isGroup: 'isGroup', parentId: 'parentId' }}
+        collapsible={true}
+        indicator={true}
+        indentationWidth={15}
       />
       <OverlayTrigger
         trigger="click"
