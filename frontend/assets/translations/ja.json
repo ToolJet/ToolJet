@@ -1,0 +1,1068 @@
+{
+    "globals": {
+        "readDocumentation": "ドキュメントを読む",
+        "cancel": "キャンセル",
+        "save": "保存",
+        "savechanges": "変更を保存",
+        "execute": "実行",
+        "Build": "ビルド",
+        "back": "戻る",
+        "edit": "編集",
+        "search": "検索",
+        "update": "更新",
+        "delete": "削除",
+        "remove": "削除",
+        "add": "追加",
+        "view": "表示",
+        "create": "作成",
+        "enabled": "有効",
+        "disabled": "無効",
+        "yes": "はい",
+        "submit": "送信",
+        "select": "選択",
+        "environmentVar": "ワークスペース定数/変数",
+        "saving": "保存中...",
+        "saveDatasource": "データソースを保存",
+        "authorize": "認可",
+        "connect": "接続",
+        "reconnect": "再接続",
+        "components": "コンポーネント",
+        "send": "送信",
+        "noConnection": "接続できませんでした",
+        "connectionVerified": "接続を確認しました",
+        "left": "左",
+        "center": "中央",
+        "right": "右",
+        "justified": "両端揃え",
+        "host": "ホスト",
+        "operation": "操作",
+        "header": "ヘッダー",
+        "path": "パス",
+        "query": "クエリ",
+        "requestBody": "リクエスト本文",
+        "page": "ページ",
+        "searchItem": "このワークスペース内のアプリを検索",
+        "workflowsSearchItem": "このワークスペース内のワークフローを検索",
+        "searchComponents": "コンポーネントを検索",
+        "promote": "プロモート",
+        "release": "リリース"
+    },
+    "errorBoundary": "問題が発生しました。",
+    "viewer": "申し訳ありません。このアプリはメンテナンス中です",
+    "app": {
+        "updateAvailable": "更新があります",
+        "newVersionReleased": "ToolJet の新しいバージョンがリリースされました。",
+        "readReleaseNotes": "リリースノートを読んで更新",
+        "skipVersion": "このバージョンをスキップ"
+    },
+    "stripe": "Stripe の OpenAPI 仕様を読み込んでいます。しばらくお待ちください。",
+    "openApi": {
+        "noValidOpenApi": "有効な OpenAPI 仕様がありません。",
+        "selectHost": "ホストを選択",
+        "selectOperation": "操作を選択"
+    },
+    "slack": {
+        "authorize": "認可",
+        "connectToolJetToSlack": "{{whiteLabelText}} は Slack に接続してユーザー一覧表示やメッセージ送信などができます。適切な権限スコープを選択してください。",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "あなたの {{whiteLabelText}} アプリはユーザー一覧の取得とユーザー/チャンネルへのメッセージ送信ができます。",
+        "connectSlack": "Slack に接続"
+    },
+    "googleSheets": {
+        "readOnly": "読み取り専用",
+        "enableReadAndWrite": "Google スプレッドシートを {{whiteLabelText}} アプリで編集する場合は、読み取り/書き込みアクセスを選択してください",
+        "readDataFromSheets": "{{whiteLabelText}} アプリは Google スプレッドシートのデータを読み取りのみできます",
+        "readWrite": "読み取り/書き込み",
+        "readModifySheets": "{{whiteLabelText}} アプリはシートの読み取り、編集などができます。",
+        "toGoogleSheets": "Google Sheets へ"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "Zendesk リソースを {{whiteLabelText}} アプリで変更する場合は、読み取り/書き込みアクセスを選択してください",
+        "readDataFromResources": "{{whiteLabelText}} アプリはリソースの読み取りのみができます",
+        "readModifySheets": "{{whiteLabelText}} アプリはリソースの読み取り、変更などができます。"
+    },
+    "profile": {
+        "profileSettings": "プロフィール設定"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "メール",
+        "enterFullName": "氏名を入力",
+        "enterNewPassword": "新しいパスワードを入力",
+        "name": "名前",
+        "password": "パスワード",
+        "acceptInvite": "招待を承諾",
+        "successfullyVerifiedEmail": "メールの確認が完了しました",
+        "setupTooljet": "{{whiteLabelText}} をセットアップ"
+    },
+    "loginSignupPage": {
+        "forgotPassword": "パスワードを忘れた",
+        "emailAddress": "メールアドレス",
+        "enterEmail": "メールを入力",
+        "dontHaveAccount": "まだアカウントをお持ちではありませんか？",
+        "enterBusinessEmail": "業務用メールを入力",
+        "alreadyHaveAnAccount": "すでにアカウントをお持ちですか？",
+        "resetPassword": "パスワードをリセット",
+        "signIn": "サインイン",
+        "signUp": "サインアップ",
+        "createToolJetAccount": "アカウントを作成",
+        "password": "パスワード",
+        "showPassword": "パスワードを表示",
+        "loginTo": "ログイン",
+        "yourAccount": "あなたのアカウント",
+        "noLoginMethodsEnabled": "このワークスペースではログイン方法が有効化されていません",
+        "emailConfirmLink": "確認リンクがメールに送信されています。ご確認ください",
+        "newPassword": "新しいパスワード",
+        "passwordConfirmation": "パスワード確認",
+        "newToTooljet": "{{whiteLabelText}} は初めてですか？",
+        "newToWorkspace": "このワークスペースは初めてですか？",
+        "enterWorkEmail": "勤務先メールを入力",
+        "enterPassword": "パスワードを入力",
+        "forgot": "忘れた？",
+        "workEmail": "メール",
+        "joinTooljet": "{{whiteLabelText}} に参加",
+        "getStartedForFree": "無料で始める",
+        "passwordCharacter": "パスワードは5文字以上である必要があります",
+        "enterFullName": "氏名を入力",
+        "enterNewPassword": "新しいパスワードを入力"
+    },
+    "editor": {
+        "preview": "プレビュー",
+        "share": "共有",
+        "shareModal": {
+            "makeApplicationPublic": "アプリを公開する",
+            "shareableLink": "共有可能なアプリリンク",
+            "copy": "コピー",
+            "embeddableLink": "埋め込みアプリリンク",
+            "manageUsers": "ユーザー"
+        },
+        "appVersionManager": {
+            "version": "バージョン",
+            "currentlyReleased": "現在リリース中",
+            "createVersion": "バージョンを作成",
+            "saveVersion": "バージョンを保存",
+            "createDraftVersion": "下書きバージョンを作成",
+            "versionName": "バージョン名",
+            "versionDescription": "バージョン説明",
+            "createVersionFrom": "バージョンから作成",
+            "save": "保存",
+            "create": "バージョンを作成",
+            "editVersion": "バージョンを編集",
+            "deleteVersion": "このバージョン ({{version}}) を削除してもよろしいですか？",
+            "enterVersionName": "バージョン名を入力",
+            "enterVersionDescription": "バージョン説明を入力",
+            "versionNameHelper": "バージョン名は一意で最大25文字です",
+            "versionDescriptionHelper": "説明は最大500文字です",
+            "versionAlreadyReleased": "すでにリリース済みのバージョンは変更できません。\n 変更する場合は新しいバージョンを作成するか、別のバージョンに切り替えてください。"
+        },
+        "queries": "クエリ",
+        "inspectComponent": "検査するコンポーネントを選択してください",
+        "release": "リリース",
+        "searchQueries": "クエリを検索",
+        "createQuery": "クエリを作成",
+        "queryManager": {
+            "general": "一般",
+            "advanced": "詳細",
+            "preview": "プレビュー",
+            "Save": "保存",
+            "selectDatasource": "データソースを選択",
+            "addDatasource": "データソースを追加",
+            "dataSourceManager": {
+                "toast": {
+                    "success": {
+                        "dataSourceAdded": "データソースを追加しました",
+                        "dataSourceSaved": "データソースを保存しました"
+                    },
+                    "error": {
+                        "noEmptyDsName": "データソース名は空にできません"
+                    }
+                },
+                "suggestDataSource": "データソースを提案",
+                "suggestAnIntegration": "連携を提案",
+                "whatLookingFor": "探しているものを教えてください",
+                "noResultFound": "探しているものが見つかりませんか？",
+                "suggest": "提案",
+                "addNewDataSource": "新しいデータソースを追加",
+                "whiteListIP": "データソースが公開されていない場合は、当社の IP アドレスをホワイトリストに追加してください",
+                "copied": "コピーしました",
+                "copy": "コピー",
+                "saving": "保存中",
+                "noResultsFor": "結果がありません",
+                "noteTaken": "ありがとうございます。内容を記録しました！",
+                "goToAllDatasources": "すべてのデータソースへ",
+                "send": "送信"
+            },
+            "runQueryOnApplicationLoad": "アプリ読み込み時にこのクエリを実行",
+            "confirmBeforeQueryRun": "クエリ実行前に確認する",
+            "notificationOnSuccess": "成功時に通知を表示",
+            "successMessage": "成功メッセージ",
+            "queryRanSuccessfully": "クエリが正常に実行されました",
+            "notificationDuration": "通知の表示時間 (秒)",
+            "events": "イベント",
+            "transformation": {
+                "transformationToolTip": "変換はクエリ結果を変換するために有効化できます。ToolJet は JavaScript と Python の2つの言語でクエリ結果を変換できます",
+                "transformations": "変換"
+            }
+        },
+        "inspector": {
+            "eventManager": {
+                "event": "イベント",
+                "action": "アクション",
+                "debounce": "デバウンス",
+                "actionOptions": "アクションオプション",
+                "message": "メッセージ",
+                "alertType": "アラートタイプ",
+                "url": "URL",
+                "modal": "モーダル",
+                "text": "テキスト",
+                "query": "クエリ",
+                "key": "キー",
+                "value": "値",
+                "type": "タイプ",
+                "fileName": "ファイル名",
+                "data": "データ",
+                "table": "テーブル",
+                "pageIndex": "ページインデックス",
+                "component": "コンポーネント",
+                "addHandler": "新しいイベントハンドラー",
+                "addNewEvent": "新しいイベントを追加",
+                "addEventHandler": "+ イベントハンドラーを追加",
+                "emptyMessage": "この{{componentName}}にはイベントハンドラーがありません",
+                "page": "ページ",
+                "addKeyValueParam": "{{parameter}}を追加"
+            }
+        }
+    },
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "ライトモードを有効化",
+            "activateDarkMode": "ダークモードを有効化"
+        },
+        "languageSelection": {
+            "changeLanguage": "言語を変更",
+            "searchLanguage": "言語を検索"
+        },
+        "notificationCenter": {
+            "notifications": "通知",
+            "markAllAs": "すべてを次としてマーク",
+            "read": "既読",
+            "un": "未",
+            "youDontHaveany": "通知はありません",
+            "youAreCaughtUp": "すべて確認済みです！",
+            "view": "表示"
+        },
+        "organization": {
+            "addNewWorkSpace": "新しいワークスペースを追加",
+            "loadOrganizations": "組織を読み込む",
+            "createWorkspace": "ワークスペースを作成",
+            "workspaceName": "ワークスペース名",
+            "editWorkspace": "ワークスペースを編集",
+            "menus": {
+                "addWorkspace": "ワークスペースを追加",
+                "instanceLogout": {
+                    "title": "インスタンスログアウト",
+                    "customLogoutUrl": {
+                        "label": "カスタムログアウトURL",
+                        "helperText": "このインスタンスからログアウトするユーザー向けにカスタムログアウトURLを設定します。"
+                    }
+                },
+                "menusList": {
+                    "manageUsers": "ユーザー",
+                    "manageGroups": "グループ",
+                    "manageSso": "SSO",
+                    "manageEnv": "ワークスペース変数"
+                },
+                "manageUsers": {
+                    "usersAndPermission": "ユーザーと権限",
+                    "inviteNewUser": "ユーザーを1人招待",
+                    "inviteUsers": "ユーザーを招待",
+                    "name": "名前",
+                    "email": "メール",
+                    "status": "ステータス",
+                    "archive": "アーカイブ",
+                    "unarchive": "アーカイブ解除",
+                    "addNewUser": "ユーザーを追加",
+                    "emailAddress": "メールアドレス",
+                    "createUser": "ユーザーを作成",
+                    "enterFirstName": "名を入力",
+                    "enterLastName": "姓を入力",
+                    "enterEmail": "メールIDを入力",
+                    "enterFullName": "氏名を入力",
+                    "inviteNewUsers": "新しいユーザーを招待"
+                },
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "ユーザーグループ",
+                        "createNewGroup": "新しいグループを作成",
+                        "updateGroup": "グループを更新",
+                        "addNewGroup": "新しいグループを追加",
+                        "enterName": "グループ名を入力",
+                        "createGroup": "グループを作成",
+                        "name": "名前"
+                    },
+                    "permissionResources": {
+                        "userGroup": "ユーザーグループ",
+                        "apps": "アプリ",
+                        "workflows": "ワークフロー",
+                        "users": "ユーザー",
+                        "permissions": "権限",
+                        "addAppsToGroup": "グループに追加するアプリを選択",
+                        "addWorkflowsToGroup": "グループに追加するワークフローを選択",
+                        "name": "名前",
+                        "addUsersToGroup": "グループに追加するユーザーを選択",
+                        "email": "メール",
+                        "resource": "リソース",
+                        "createUpdateDelete": "作成/更新/削除",
+                        "folder": "フォルダー",
+                        "dataSource": "データソース"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "グループを削除",
+                        "duplicateGroup": "グループを複製"
+                    }
+                },
+                "manageSSO": {
+                    "manageSso": "SSO",
+                    "generalSettings": {
+                        "title": "一般設定",
+                        "enableSignup": "サインアップを有効化",
+                        "newAccountWillBeCreated": "ユーザーが初めて SSO でサインインする際に新しいアカウントが作成されます",
+                        "allowedDomains": "許可されたドメイン",
+                        "enterDomains": "ドメインを入力",
+                        "supportMultiDomains": "複数ドメインに対応。ドメイン名をカンマ区切りで入力してください。例: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl": "ログインURL",
+                        "workspaceLogin": "このURLでワークスペースに直接ログインできます",
+                        "allowDefaultSso": "デフォルトSSOを許可",
+                        "ssoAuth": "ユーザーがデフォルト SSO で認証できるようにします。デフォルト SSO 設定は\nワークスペースレベルの SSO で上書きできます。",
+                        "customLogoutUrl": "カスタムログアウトURL"
+                    },
+                    "google": {
+                        "title": "Google",
+                        "enabled": "有効",
+                        "disabled": "無効",
+                        "clientId": "クライアントID",
+                        "enterClientId": "クライアントIDを入力",
+                        "redirectUrl": "リダイレクトURL"
+                    },
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "ホスト名",
+                        "enterHostName": "ホスト名を入力",
+                        "requiredGithub": "GitHub がセルフホストの場合に必要です",
+                        "clientId": "クライアントID",
+                        "enterClientId": "クライアントIDを入力",
+                        "clientSecret": "クライアントシークレット",
+                        "enterClientSecret": "クライアントシークレットを入力",
+                        "encrypted": "暗号化済み",
+                        "redirectUrl": "リダイレクトURL"
+                    },
+                    "passwordLogin": "パスワードログイン",
+                    "environmentVar": {
+                        "noEnvConfig": "ワークスペース変数が設定されていません。'新しい変数を追加' ボタンで作成してください",
+                        "envWillBeDeleted": "変数は削除されます。続行しますか？",
+                        "addNewVariable": "新しい変数を追加",
+                        "variableForm": {
+                            "addNewVariable": "新しい変数を追加",
+                            "updatevariable": "変数を更新",
+                            "name": "名前",
+                            "value": "値",
+                            "enterVariableName": "変数名を入力",
+                            "enterValue": "値を入力",
+                            "type": "タイプ",
+                            "enableEncryption": "暗号化を有効化",
+                            "addVariable": "変数を追加"
+                        },
+                        "variableTable": {
+                            "name": "名前",
+                            "value": "値",
+                            "type": "タイプ",
+                            "secret": "シークレット"
+                        }
+                    }
+                }
+            }
+        },
+        "profileSettingPage": {
+            "profileSettings": "プロフィール設定",
+            "firstName": "名",
+            "lastName": "姓",
+            "enterFirstName": "名を入力",
+            "enterLastName": "姓を入力",
+            "email": "メールアドレス",
+            "avatar": "アバター",
+            "update": "更新",
+            "profile": "プロフィール",
+            "changePassword": "パスワードを変更",
+            "currentPassword": "現在のパスワード",
+            "newPassword": "新しいパスワード",
+            "confirmNewPassword": "新しいパスワードを確認",
+            "enterCurrentPassword": "現在のパスワードを入力",
+            "enterNewPassword": "新しいパスワードを入力",
+            "inviteUsers": "ユーザーを招待"
+        },
+        "profile": "プロフィール",
+        "logout": "ログアウト"
+    },
+    "homePage": {
+        "appCard": {
+            "changeIcon": "アイコンを変更",
+            "addToFolder": "フォルダーに追加",
+            "move": "移動",
+            "to": "へ",
+            "selectFolder": "フォルダーを選択",
+            "deleteApp": "アプリを削除",
+            "exportApp": "アプリをエクスポート",
+            "cloneApp": "アプリを複製",
+            "launch": "起動",
+            "maintenance": "メンテナンス",
+            "noDeployedVersion": "このアプリにはデプロイ済みバージョンがありません",
+            "openInAppViewer": "アプリビューアで開く",
+            "removeFromFolder": "フォルダーから削除"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "新しい ToolJet ワークスペースへようこそ",
+            "getStartedCreateNewApp": "新しいアプリを作成するか、ToolJet ライブラリのテンプレートから作成して始められます。",
+            "importApplication": "アプリをインポート"
+        },
+        "foldersSection": {
+            "allApplications": "すべてのアプリ",
+            "folders": "フォルダー",
+            "createNewFolder": "+ 新規作成",
+            "noFolders": "フォルダーが作成されていません。フォルダーを使ってアプリを整理できます",
+            "createFolder": "フォルダーを作成",
+            "updateFolder": "フォルダーを更新",
+            "editFolder": "フォルダーを編集",
+            "deleteFolder": "フォルダーを削除",
+            "folderName": "フォルダー名",
+            "wishToDeleteFolder": "フォルダー {{folderName}} を削除してもよろしいですか？フォルダー内のアプリは削除されません。"
+        },
+        "header": {
+            "createNewApplication": "アプリを作成",
+            "import": "デバイスからインポート",
+            "chooseFromTemplate": "テンプレートから選択"
+        },
+        "pagination": {
+            "showing": "表示中",
+            "of": "／",
+            "to": "〜"
+        },
+        "noApplicationFound": "アプリが見つかりません",
+        "noWorkflowFound": "ワークフローが見つかりません",
+        "thisFolderIsEmpty": "このフォルダーは空です",
+        "nonAccessibleFolderApps": "このフォルダー内のアプリにアクセスできません。",
+        "deleteAppAndData": "アプリ {{appName}} と関連データは完全に削除されます。続行しますか？",
+        "deleteWorkflowAndData": "ワークフロー {{appName}} と関連データは完全に削除されます。続行しますか？",
+        "removeAppFromFolder": "アプリはこのフォルダーから削除されます。続行しますか？",
+        "change": "変更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "プレビュー",
+            "leadGeneretion": "リード獲得"
+        },
+        "templateLibraryModal": {
+            "select": "テンプレートを選択",
+            "createAppfromTemplate": "テンプレートからアプリを作成"
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "実行",
+            "openInWorkflowEditor": "ワークフローエディタで開く"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "新しい ToolJet ワークスペースへようこそ",
+            "getStartedCreateNewApp": "新しいアプリを作成するか、ToolJet ライブラリのテンプレートから作成して始められます。",
+            "importApplication": "アプリケーションをインポート"
+        },
+        "foldersSection": {
+            "allApplications": "すべてのワークフロー",
+            "folders": "フォルダー",
+            "createNewFolder": "+ 新規作成",
+            "noFolders": "フォルダーが作成されていません。フォルダーを使ってアプリを整理できます",
+            "createFolder": "フォルダーを作成",
+            "updateFolder": "フォルダーを更新",
+            "editFolder": "フォルダーを編集",
+            "deleteFolder": "フォルダーを削除",
+            "folderName": "フォルダー名",
+            "wishToDeleteFolder": "フォルダーを削除してもよろしいですか？フォルダー内のアプリは削除されません。"
+        },
+        "header": {
+            "createNewApplication": "新しいワークフローを作成",
+            "import": "インポート",
+            "chooseFromTemplate": "テンプレートから選択"
+        },
+        "pagination": {
+            "showing": "表示中",
+            "of": "／",
+            "to": "〜"
+        },
+        "noApplicationFound": "アプリが見つかりません",
+        "thisFolderIsEmpty": "このフォルダーは空です",
+        "deleteAppAndData": "アプリと関連データは完全に削除されます。続行しますか？",
+        "removeAppFromFolder": "アプリはこのフォルダーから削除されます。続行しますか？",
+        "change": "変更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "プレビュー",
+            "leadGeneretion": "リード獲得"
+        },
+        "templateLibraryModal": {
+            "select": "テンプレートを選択",
+            "createAppfromTemplate": "テンプレートからアプリを作成"
+        }
+    },
+    "confirmationPage": {
+        "setupAccount": "アカウントを設定",
+        "signupWithGoogle": "Google でサインアップ",
+        "signupWithGitHub": "GitHub でサインアップ",
+        "signupWithOpenid": "でサインアップ",
+        "or": "または",
+        "firstName": "名",
+        "lastName": "姓",
+        "company": "会社",
+        "role": "役割",
+        "pleaseSelect": "選択してください",
+        "password": "パスワード",
+        "confirmPassword": "パスワードを確認",
+        "clickAndAgree": "下のボタンをクリックすると、以下に同意したものとみなされます",
+        "termsAndConditions": "利用規約",
+        "finishAccountSetup": "アカウント設定を完了",
+        "acceptInvite": "招待を承諾",
+        "accountExists": "すでにアカウントをお持ちですか？",
+        "and": "および"
+    },
+    "onBoarding": {
+        "finishToolJetInstallation": "ToolJet のインストールを完了",
+        "organization": "組織",
+        "name": "名前",
+        "email": "メール",
+        "receiveUpdatesFromToolJet": "ToolJet チームから更新情報が届きます（毎月1〜2通、スパムはしません）",
+        "finishSetup": "セットアップを完了",
+        "skip": "スキップ"
+    },
+    "redirectSso": {
+        "upgradingTov1.13.0": "v1.13.0 以降にアップグレードしています。",
+        "fromV1.13.0": "v1.13.0 から導入しました",
+        "multiWorkspace": "マルチワークスペース",
+        "singleSignOnConfig": "シングルサインオン関連の設定はワークスペース変数からデータベースへ移動されました。こちらを参照してください",
+        "link": "リンク",
+        "toConfigureSSO": "SSO を設定するために。",
+        "haveGoogleGithubSSo": "アップグレード前に Google または GitHub の SSO 設定があり、マルチワークスペースを無効にしていた場合、アップグレード時に SSO 設定が移行されます。ただし、SSO プロバイダー側でリダイレクト URL を再設定する必要があります。各 SSO のリダイレクト URL は以下のとおりです。",
+        "isMultiWorkspaceEnabled": "マルチワークスペースを有効にしている場合、アップグレード時に SSO 設定は移行されないため、各ワークスペースで SSO を再設定する必要があります。",
+        "youHaveEnabled": "有効にしています",
+        "setupSsoWorkspace": "パスワードでログインし、ワークスペースで SSO を設定できます",
+        "manageSsoMenu": "SSO メニューを管理。",
+        "youHaveDisabled": "無効にしています",
+        "configureRedirectUrl": "SSO プロバイダー側でリダイレクト URL を設定してください。",
+        "google": "Google",
+        "redirectUrl": "リダイレクトURL:",
+        "gitHub": "GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait": "お待ちください...",
+        "authSuccess": "認証に成功しました。このタブは閉じても大丈夫です。",
+        "authFailed": "認証に失敗しました"
+    },
+    "widgetManager": {
+        "commonlyUsed": "よく使う",
+        "layouts": "レイアウト",
+        "forms": "フォーム",
+        "integrations": "連携",
+        "others": "その他",
+        "noResults": "結果が見つかりません",
+        "tryAdjustingFilterMessage": "検索条件やフィルターを調整して、目的のものを見つけてください。",
+        "clearQuery": "検索条件をクリア"
+    },
+    "widget": {
+        "common": {
+            "properties": "プロパティ",
+            "events": "イベント",
+            "layout": "レイアウト",
+            "devices": "デバイス",
+            "styles": "スタイル",
+            "general": "一般",
+            "validation": "検証",
+            "structure": "構造",
+            "data": "データ",
+            "additionalActions": "追加アクション",
+            "documentation": "{{componentMeta}} のドキュメントを読む",
+            "widgetNameEmptyError": "ウィジェット名は空にできません",
+            "componentNameExistsError": "コンポーネント名は既に存在します",
+            "invalidWidgetName": "無効なウィジェット名です。英数字とアンダースコアのみで一意である必要があります。"
+        },
+        "commonProperties": {
+            "visibility": "表示",
+            "disable": "無効化",
+            "borderRadius": "角丸",
+            "transformation": "変換",
+            "boxShadow": "ボックスシャドウ",
+            "tooltip": "ツールチップ",
+            "showOnDesktop": "デスクトップで表示",
+            "showOnMobile": "モバイルで表示",
+            "showLoadingState": "ロード状態を表示",
+            "backgroundColor": "背景色",
+            "textColor": "テキスト色",
+            "loaderColor": "ローダー色",
+            "defaultValue": "デフォルト値",
+            "placeholder": "プレースホルダー",
+            "label": "ラベル",
+            "title": "タイトル",
+            "code": "コード",
+            "data": "データ",
+            "tableData": "テーブルデータ",
+            "tableColumns": "テーブル列",
+            "loadingState": "ロード状態",
+            "serverSidePagination": "サーバー側ページネーション",
+            "clientSidePagination": "クライアント側ページネーション",
+            "serverSideSearch": "サーバー側検索",
+            "showSearchBox": "検索ボックスを表示",
+            "showDownloadButton": "ダウンロードボタンを表示",
+            "showFilterButton": "フィルターボタンを表示",
+            "showBulkUpdateActions": "更新ボタンを表示",
+            "bulkSelection": "一括選択",
+            "highlightSelectedRow": "選択行を強調表示",
+            "actionButtonRadius": "アクションボタン角丸",
+            "tableType": "テーブルタイプ",
+            "cellSize": "セルサイズ",
+            "setPage": "ページを設定",
+            "page": "ページ",
+            "buttonText": "ボタンテキスト",
+            "click": "クリック",
+            "setText": "テキストを設定",
+            "text": "テキスト",
+            "markerColor": "マーカー色",
+            "showAxes": "軸を表示",
+            "showGridLines": "グリッド線を表示",
+            "chartType": "チャートタイプ",
+            "jsonDescription": "JSON 説明",
+            "usePlotlyJsonSchema": "Plotly JSON スキーマを使用",
+            "padding": "パディング",
+            "hideTitleBar": "タイトルバーを隠す",
+            "hideCloseButton": "閉じるボタンを隠す",
+            "hideOnEscape": "Esc で閉じない",
+            "modalSize": "モーダルサイズ",
+            "open": "開く",
+            "close": "閉じる",
+            "regex": "正規表現",
+            "minLength": "最小長",
+            "maxLength": "最大長",
+            "customValidation": "カスタム検証",
+            "clear": "クリア",
+            "minimumValue": "最小値",
+            "maximumValue": "最大値",
+            "format": "形式",
+            "enableTimeSelection": "時間選択を有効にしますか？",
+            "enableDateSelection": "日付選択を有効にしますか？",
+            "disabledDates": "無効な日付",
+            "minDate": "最小日付",
+            "maxDate": "最大日付",
+            "makeThisFieldMandatory": "このフィールドを必須にする",
+            "setChecked": "チェックを設定",
+            "status": "ステータス",
+            "defaultStatus": "デフォルトステータス",
+            "checkboxColor": "チェックボックス色",
+            "optionValues": "オプション値",
+            "optionLabels": "オプションラベル",
+            "activeColor": "アクティブ色",
+            "selectOption": "オプションを選択",
+            "option": "オプション",
+            "toggleSwitchColor": "トグルスイッチ色",
+            "defaultStartDate": "デフォルト開始日",
+            "defaultEndDate": "デフォルト終了日",
+            "textSize": "文字サイズ",
+            "alignText": "文字揃え",
+            "url": "URL",
+            "alternativeText": "代替テキスト",
+            "zoomButton": "ズームボタン",
+            "borderType": "ボーダータイプ",
+            "imageFit": "画像のフィット",
+            "optionsLoadingState": "オプションのロード状態",
+            "selectedTextColor": "選択時テキスト色",
+            "select": "選択",
+            "deselectOption": "オプションの選択解除",
+            "clearSelections": "選択をクリア",
+            "enableSelectAllOption": "全選択オプションを有効化",
+            "initialLocation": "初期位置",
+            "defaultMarkers": "デフォルトマーカー",
+            "addNewMarkers": "新しいマーカーを追加",
+            "searchForPlaces": "場所を検索",
+            "setLocation": "位置を設定",
+            "latitude": "緯度",
+            "longitude": "経度",
+            "numberOfStars": "星の数",
+            "defaultNoOfSelectedStars": "デフォルトの選択星数",
+            "enableHalfStar": "半星を有効化",
+            "tooltips": "ツールチップ",
+            "starColor": "星の色",
+            "labelColor": "ラベル色",
+            "dividerColor": "区切り線色",
+            "clearFiles": "ファイルをクリア",
+            "instructionText": "説明テキスト",
+            "useDropZone": "ドロップゾーンを使用",
+            "useFilePicker": "ファイルピッカーを使用",
+            "pickMultipleFiles": "複数ファイルを選択",
+            "maxFileCount": "最大ファイル数",
+            "acceptFileTypes": "許可するファイルタイプ",
+            "maxSizeLimitBytes": "最大サイズ制限 (バイト)",
+            "minSizeLimitBytes": "最小サイズ制限 (バイト)",
+            "parseContent": "内容を解析",
+            "fileType": "ファイルタイプ",
+            "dateFormat": "日付形式",
+            "timeFormat": "時刻形式",
+            "displayIn": "表示先",
+            "storeIn": "保存先",
+            "defaultDate": "デフォルト日付",
+            "events": "イベント",
+            "resources": "リソース",
+            "defaultView": "デフォルトビュー",
+            "startTimeOnWeekAndDayView": "週/日ビューの開始時刻",
+            "endTimeOnWeekAndDayView": "週/日ビューの終了時刻",
+            "showToolbar": "ツールバーを表示",
+            "showViewSwitcher": "ビュー切替を表示",
+            "highlightToday": "今日を強調表示",
+            "showPopoverWhenEventIsClicked": "イベントクリック時にポップオーバーを表示",
+            "cellSizeInViewsClassifiedByResource": "リソース別ビューのセルサイズ",
+            "headerDateFormatOnWeekView": "週表示のヘッダー日付形式",
+            "showLineNumber": "行番号を表示",
+            "mode": "モード",
+            "tabs": "タブ",
+            "defaultTab": "デフォルトタブ",
+            "hideTabs": "タブを非表示",
+            "highlightColor": "ハイライト色",
+            "tabWidth": "タブ幅",
+            "setCurrentTab": "現在のタブを設定",
+            "id": "ID",
+            "timerType": "タイマータイプ",
+            "listData": "リストデータ",
+            "rowHeight": "行の高さ",
+            "showBottomBorder": "下枠線を表示",
+            "tags": "タグ",
+            "numberOfPages": "ページ数",
+            "defaultPageIndex": "デフォルトページインデックス",
+            "progress": "進捗",
+            "color": "色",
+            "strokeWidth": "線幅",
+            "counterClockwise": "反時計回り",
+            "circleRatio": "円比率",
+            "colour": "色",
+            "size": "サイズ",
+            "primaryValueLabel": "主値ラベル",
+            "primaryValue": "主値",
+            "hideSecondaryValue": "副値を非表示",
+            "secondaryValueLabel": "副値ラベル",
+            "secondaryValue": "副値",
+            "secondarySignDisplay": "副符号表示",
+            "primaryLabelColour": "主ラベル色",
+            "primaryTextColour": "主テキスト色",
+            "secondaryLabelColour": "副ラベル色",
+            "secondaryTextColour": "副テキスト色",
+            "min": "最小",
+            "max": "最大",
+            "value": "値",
+            "twoHandles": "2つのハンドル",
+            "lineColor": "線の色",
+            "handleColor": "ハンドル色",
+            "trackColor": "トラック色",
+            "timelineData": "タイムラインデータ",
+            "hideDate": "日付を非表示",
+            "svgData": "SVG データ",
+            "rawHtml": "生HTML",
+            "values": "値",
+            "labels": "ラベル",
+            "defaultSelected": "デフォルト選択",
+            "enableMultipleSelection": "複数選択を有効化",
+            "selectedTextColour": "選択時テキスト色",
+            "selectedBackgroundColor": "選択時背景色",
+            "fileUrl": "ファイルURL",
+            "scalePageToWidth": "ページ幅に合わせて拡大縮小",
+            "showPageControls": "ページ操作を表示",
+            "steps": "ステップ",
+            "currentStep": "現在のステップ",
+            "stepsSelectable": "ステップ選択可",
+            "theme": "テーマ",
+            "columns": "列",
+            "cardData": "カードデータ",
+            "enableAddCard": "カード追加を有効化",
+            "width": "幅",
+            "minWidth": "最小幅",
+            "accentColor": "アクセント色",
+            "defaultColor": "デフォルト色",
+            "setColor": "色を設定",
+            "structure": "構造",
+            "checkedValues": "チェック済みの値",
+            "expandedValues": "展開済みの値"
+        },
+        "Table": {
+            "displayName": "テーブル",
+            "description": "ページングされた表形式データを表示",
+            "columnType": "列タイプ",
+            "columnName": "列名",
+            "overflow": "オーバーフロー",
+            "key": "キー",
+            "textColor": "テキスト色",
+            "validation": "検証",
+            "regex": "正規表現",
+            "minLength": "最小長",
+            "maxLength": "最大長",
+            "customRule": "カスタムルール",
+            "values": "値",
+            "labels": "ラベル",
+            "cellBgColor": "セル背景色",
+            "dateDisplayformat": "日付形式",
+            "dateParseformat": "日付",
+            "showTime": "時刻を表示",
+            "makeEditable": "編集可能にする",
+            "buttonText": "ボタンテキスト",
+            "buttonPosition": "ボタン位置",
+            "remove": "削除",
+            "addButton": "+ ボタンを追加",
+            "addColumn": "列を追加",
+            "addNewColumn": "新しい列を追加",
+            "noActionMessage": "このテーブルにはアクションボタンがありません",
+            "horizontalAlignment": "水平方向の配置",
+            "textAlignment": "文字揃え",
+            "deciamalPlaces": "小数点以下桁数",
+            "imageFit": "画像のフィット"
+        },
+        "Button": {
+            "displayName": "ボタン",
+            "description": "アクションをトリガー: クエリ、アラート、変数設定など。"
+        },
+        "Chart": {
+            "displayName": "チャート",
+            "description": "データを可視化"
+        },
+        "Modal": {
+            "displayName": "モーダル",
+            "description": "ポップアップウィンドウを表示"
+        },
+        "TextInput": {
+            "displayName": "テキスト入力",
+            "description": "ユーザーのテキスト入力欄"
+        },
+        "NumberInput": {
+            "displayName": "数値入力",
+            "description": "数値入力欄"
+        },
+        "PasswordInput": {
+            "displayName": "パスワード入力",
+            "description": "安全なテキスト入力"
+        },
+        "Datepicker": {
+            "displayName": "日付ピッカー",
+            "description": "日付と時刻を選択"
+        },
+        "Checkbox": {
+            "displayName": "チェックボックス",
+            "description": "単一チェックボックス切替"
+        },
+        "Radio-button": {
+            "displayName": "ラジオボタン",
+            "description": "複数の選択肢から1つ選択"
+        },
+        "ToggleSwitch": {
+            "displayName": "トグルスイッチ",
+            "description": "ユーザーがオン/オフを切り替えるスイッチ"
+        },
+        "Textarea": {
+            "displayName": "テキストエリア",
+            "description": "複数行のテキスト入力"
+        },
+        "DateRangePicker": {
+            "displayName": "日付範囲ピッカー",
+            "description": "日付範囲を選択"
+        },
+        "Text": {
+            "displayName": "テキスト",
+            "description": "テキストまたはHTMLを表示"
+        },
+        "Image": {
+            "displayName": "画像",
+            "description": "画像ファイルを表示"
+        },
+        "Container": {
+            "displayName": "コンテナ",
+            "description": "コンポーネントをグループ化"
+        },
+        "Dropdown": {
+            "displayName": "ドロップダウン",
+            "description": "単一項目の選択"
+        },
+        "Multiselect": {
+            "displayName": "複数選択",
+            "description": "複数項目の選択"
+        },
+        "RichTextEditor": {
+            "displayName": "テキストエディタ",
+            "description": "リッチテキストエディタ"
+        },
+        "Map": {
+            "displayName": "地図",
+            "description": "地図の位置を表示"
+        },
+        "QrScanner": {
+            "displayName": "QRスキャナー",
+            "description": "QRコードをスキャンしてデータを保持"
+        },
+        "StarRating": {
+            "displayName": "評価",
+            "description": "スター評価"
+        },
+        "Divider": {
+            "displayName": "区切り線",
+            "description": "コンポーネント間の区切り"
+        },
+        "FilePicker": {
+            "displayName": "ファイルピッカー",
+            "description": "ファイルピッカー"
+        },
+        "Calendar": {
+            "displayName": "カレンダー",
+            "description": "カレンダーイベントを表示"
+        },
+        "Iframe": {
+            "displayName": "Iframe",
+            "description": "外部コンテンツを埋め込む"
+        },
+        "CodeEditor": {
+            "displayName": "コードエディタ",
+            "description": "ソースコードを編集"
+        },
+        "Tabs": {
+            "displayName": "タブ",
+            "description": "タブでコンテンツを整理"
+        },
+        "Timer": {
+            "displayName": "タイマー",
+            "description": "カウントダウンまたはストップウォッチ"
+        },
+        "Listview": {
+            "displayName": "リストビュー",
+            "description": "複数項目を一覧表示"
+        },
+        "Tags": {
+            "displayName": "タグ",
+            "description": "タグラベルを表示"
+        },
+        "Pagination": {
+            "displayName": "ページネーション",
+            "description": "ページを移動"
+        },
+        "CircularProgressbar": {
+            "displayName": "円形プログレスバー",
+            "description": "円形の進捗を表示"
+        },
+        "Spinner": {
+            "displayName": "スピナー",
+            "description": "ロード状態を表示"
+        },
+        "Statistics": {
+            "displayName": "統計",
+            "description": "主要指標を表示"
+        },
+        "RangeSlider": {
+            "displayName": "レンジスライダー",
+            "description": "値の範囲を調整"
+        },
+        "Timeline": {
+            "displayName": "タイムライン",
+            "description": "イベントタイムラインを表示"
+        },
+        "SvgImage": {
+            "displayName": "SVG画像",
+            "description": "SVGグラフィックを表示"
+        },
+        "Html": {
+            "displayName": "HTMLビューア",
+            "description": "HTMLコンテンツを表示"
+        },
+        "VerticalDivider": {
+            "displayName": "縦区切り線",
+            "description": "垂直の区切り線"
+        },
+        "CustomComponent": {
+            "displayName": "カスタムコンポーネント",
+            "description": "React コンポーネントを作成"
+        },
+        "ButtonGroup": {
+            "displayName": "ボタングループ",
+            "description": "ボタンのグループ"
+        },
+        "PDF": {
+            "displayName": "PDF",
+            "description": "PDF ドキュメントを埋め込む"
+        },
+        "Steps": {
+            "displayName": "ステップ",
+            "description": "ステップ形式のナビゲーション補助"
+        },
+        "KanbanBoard": {
+            "displayName": "カンバンボード",
+            "description": "タスク管理ボード"
+        },
+        "ColorPicker": {
+            "displayName": "カラーピッカー",
+            "description": "パレットから色を選択"
+        },
+        "TreeSelect": {
+            "displayName": "ツリーセレクト",
+            "description": "階層的な項目セレクター"
+        }
+    },
+    "leftSidebar": {
+        "Inspector": {
+            "text": "インスペクター",
+            "tip": "インスペクター"
+        },
+        "Sources": {
+            "text": "ソース",
+            "tip": "データソースを追加または編集",
+            "dataSources": "データソース",
+            "addDataSource": "+ データソースを追加"
+        },
+        "Debugger": {
+            "text": "デバッガー",
+            "tip": "デバッガー",
+            "errors": "エラー",
+            "noErrors": "エラーは見つかりません",
+            "noLogs": "ログが見つかりません",
+            "clear": "クリア"
+        },
+        "Comments": {
+            "text": "コメント",
+            "tip": "コメントの切り替え",
+            "commentBody": "表示するコメントがありません",
+            "typeComment": "ここにコメントを入力"
+        },
+        "Settings": {
+            "text": "トリガー",
+            "tip": "グローバル設定",
+            "hideHeader": "起動したアプリのヘッダーを非表示",
+            "maintenanceMode": "メンテナンスモード",
+            "maxWidthOfCanvas": "キャンバスの最大幅",
+            "maxHeightOfCanvas": "キャンバスの最大高さ",
+            "backgroundColorOfCanvas": "キャンバスの背景",
+            "appMode": "アプリモード",
+            "exportApp": "アプリをエクスポート"
+        },
+        "Back": {
+            "text": "戻る",
+            "tip": "ホームに戻る"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "1月",
+            "february": "2月",
+            "march": "3月",
+            "april": "4月",
+            "may": "5月",
+            "june": "6月",
+            "july": "7月",
+            "august": "8月",
+            "september": "9月",
+            "october": "10月",
+            "november": "11月",
+            "december": "12月"
+        }
+    }
+}
