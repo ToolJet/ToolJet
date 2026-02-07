@@ -149,7 +149,14 @@
         "enterFullName": "Ingresa tu nombre completo",
         "enterNewPassword": "Ingresa tu nueva contraseña",
         "name": "Name",
-        "sigin": "Sign in"
+        "sigin": "Sign in",
+        "invalidEmail": "Invalid Email",
+        "emailRequired": "Email is required",
+        "passwordRequired": "Password is required",
+        "passwordMaxLength": "Password can be at max 100 characters long",
+        "signInToWorkspace": "Sign in to the workspace -",
+        "signInWith": "Sign in with",
+        "backTo": "Back to"
     },
     "editor": {
         "preview": "Prevista",
@@ -1462,6 +1469,118 @@
         },
         "icon": {
             "label": "Icon"
+        },
+        "Form": {
+            "displayName": "Form",
+            "description": "Wrapper for multiple components"
+        },
+        "PopoverMenu": {
+            "displayName": "Popover Menu",
+            "description": "Popover Menu"
+        },
+        "EmailInput": {
+            "displayName": "Email Input",
+            "description": "Email input field"
+        },
+        "TagsInput": {
+            "displayName": "Tags Input",
+            "description": "Tags Input"
+        },
+        "AudioRecorder": {
+            "displayName": "Audio Recorder",
+            "description": "Audio Recorder"
+        },
+        "BoundedBox": {
+            "displayName": "Bounded Box",
+            "description": "Bounded Box"
+        },
+        "Camera": {
+            "displayName": "Camera",
+            "description": "Camera"
+        },
+        "Chat": {
+            "displayName": "Chat",
+            "description": "Chat"
+        },
+        "CircularProgressBar": {
+            "displayName": "Circular Progressbar",
+            "description": "Circular Progressbar"
+        },
+        "CurrencyInput": {
+            "displayName": "Currency Input",
+            "description": "Currency Input"
+        },
+        "DatePickerLegacy": {
+            "displayName": "Date Picker (Legacy)",
+            "description": "Date Picker (Legacy)"
+        },
+        "DatePicker": {
+            "displayName": "Date Picker",
+            "description": "Date Picker"
+        },
+        "DatetimePicker": {
+            "displayName": "Date Time Picker",
+            "description": "Date Time Picker"
+        },
+        "HorizontalDivider": {
+            "displayName": "Horizontal Divider",
+            "description": "Horizontal Divider"
+        },
+        "DropdownLegacy": {
+            "displayName": "Dropdown (Legacy)",
+            "description": "Dropdown (Legacy)"
+        },
+        "Icon": {
+            "displayName": "Icon",
+            "description": "Icon"
+        },
+        "Kanban": {
+            "displayName": "Kanban",
+            "description": "Kanban"
+        },
+        "Link": {
+            "displayName": "Link",
+            "description": "Link"
+        },
+        "ModalLegacy": {
+            "displayName": "Modal (Legacy)",
+            "description": "Modal (Legacy)"
+        },
+        "ModuleContainer": {
+            "displayName": "Module Container",
+            "description": "Module Container"
+        },
+        "ModuleViewer": {
+            "displayName": "Module",
+            "description": "Module"
+        },
+        "MultiselectLegacy": {
+            "displayName": "Multi Select (Legacy)",
+            "description": "Multi Select (Legacy)"
+        },
+        "PhoneInput": {
+            "displayName": "Phone Input",
+            "description": "Phone Input"
+        },
+        "RadioButton": {
+            "displayName": "Radio Button",
+            "description": "Radio Button"
+        },
+        "RadioButtonLegacy": {
+            "displayName": "Radio Button (Legacy)",
+            "description": "Radio Button (Legacy)"
+        },
+        "RangeSliderLegacy": {
+            "displayName": "Range Slider (Legacy)",
+            "description": "Range Slider (Legacy)"
+        },
+        "TimePicker": {
+            "displayName": "Time Picker",
+            "description": "Time Picker"
+        },
+        "ToggleSwitchLegacy": {
+            "displayName": "Toggle Switch (Legacy)",
+            "description": "Toggle Switch (Legacy)"
         }
     },
     "leftSidebar": {
@@ -1577,7 +1696,8 @@
         "createAnAccount": "Create an account",
         "emailAddress": "Email address",
         "forgotPassword": "Forgot password",
-        "somethingWentWrong": "Something went wrong, please try again"
+        "somethingWentWrong": "Something went wrong, please try again",
+        "contactAdmin": "Contact {{adminUser}} to reset your password"
     },
     "basicPlanMigrationBanner": {
         "prefix": "We will be updating our domain on",

@@ -48,7 +48,9 @@ const LoginForm = ({
   const workspaceSignUpEnabled = organizationId && configs?.enable_sign_up;
   const instanceSignUpEnabled = !organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up);
   const isSignUpCTAEnabled = workspaceSignUpEnabled || instanceSignUpEnabled;
-  const signUpCTA = workspaceSignUpEnabled ? 'Sign up' : 'Create an account';
+  const signUpCTA = workspaceSignUpEnabled
+    ? t('loginSignupPage.signUp', 'Sign up')
+    : t('loginSignupPage.createToolJetAccount', 'Create an account');
   const signupText = workspaceSignUpEnabled
     ? t('loginSignupPage.newToWorkspace', 'New to this workspace?')
     : t('loginSignupPage.newToTooljet', 'New to {whiteLabelText}?', { whiteLabelText });
@@ -76,7 +78,11 @@ const LoginForm = ({
   const validateField = (name, value) => {
     switch (name) {
       case 'email':
-        return value.trim() ? (validateEmail(value) ? '' : 'Email is invalid') : 'Email is required';
+        return value.trim()
+          ? validateEmail(value)
+            ? ''
+            : t('loginSignupPage.invalidEmail', 'Invalid Email')
+          : t('loginSignupPage.emailRequired', 'Email is required');
       case 'password':
         return validatePassword(value);
       default:
@@ -97,17 +103,20 @@ const LoginForm = ({
     e.preventDefault();
     setIsLoading(true);
     if (!validateEmail(email)) {
-      setErrors((prev) => ({ ...prev, email: 'Invalid Email' }));
+      setErrors((prev) => ({ ...prev, email: t('loginSignupPage.invalidEmail', 'Invalid Email') }));
       setIsLoading(false);
       return;
     }
     if (!password || !password.trim()) {
-      setErrors((prev) => ({ ...prev, password: 'Password is required' }));
+      setErrors((prev) => ({ ...prev, password: t('loginSignupPage.passwordRequired', 'Password is required') }));
       setIsLoading(false);
       return;
     }
     if (password.length > 100) {
-      setErrors((prev) => ({ ...prev, password: 'Password can be at max 100 characters long' }));
+      setErrors((prev) => ({
+        ...prev,
+        password: t('loginSignupPage.passwordMaxLength', 'Password can be at max 100 characters long'),
+      }));
       setIsLoading(false);
       return;
     }
@@ -133,7 +142,7 @@ const LoginForm = ({
                 <p className="signup-info" data-cy="signup-info">
                   {organizationId && (
                     <>
-                      Sign in to the workspace -{' '}
+                      {t('loginSignupPage.signInToWorkspace', 'Sign in to the workspace -')}{' '}
                       <span className="workspace-name" data-cy="workspace-name">
                         {configs?.name}
                       </span>
@@ -186,14 +195,15 @@ const LoginForm = ({
                 configs={configs}
                 organizationSlug={paramOrganizationSlug}
                 setRedirectUrlToCookie={setRedirectUrlToCookie}
-                buttonText="Sign in with"
+                buttonText={t('loginSignupPage.signInWith', 'Sign in with')}
               />
               {currentOrganizationName && organizationId && (
                 <div
                   className="text-center-onboard mt-3"
                   data-cy={`back-to-${String(currentOrganizationName).toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  back to&nbsp; <Link onClick={() => redirectToDashboard()}>{currentOrganizationName}</Link>
+                  {t('loginSignupPage.backTo', 'Back to')}&nbsp;{' '}
+                  <Link onClick={() => redirectToDashboard()}>{currentOrganizationName}</Link>
                 </div>
               )}
             </>

@@ -48,21 +48,21 @@
         "release": "リリース",
         "filterBy": "Filter By",
         "sortBy": "Sort By",
-        "import": "Import",
+        "import": "インポート",
         "addLower": "add",
         "discard": "Discard",
         "loading": "Loading...",
-        "or": "OR",
+        "or": "または",
         "seeMore": "See more",
         "seeLess": "See less",
         "app": "App",
-        "label": "Label",
+        "label": "ラベル",
         "options": "Options",
         "description": "Description",
         "noData": "No data",
         "retry": "Retry",
         "modules": "Modules",
-        "preview": "Preview",
+        "preview": "プレビュー",
         "searchModules": "Search modules",
         "specType": "Select spec type",
         "static-error-modal": {
@@ -152,8 +152,15 @@
         "passwordCharacter": "パスワードは5文字以上である必要があります",
         "enterFullName": "氏名を入力",
         "enterNewPassword": "新しいパスワードを入力",
-        "name": "Name",
-        "sigin": "Sign in"
+        "name": "名前",
+        "sigin": "サインイン",
+        "invalidEmail": "無効なメールアドレス",
+        "emailRequired": "メールアドレスは必須です",
+        "passwordRequired": "パスワードは必須です",
+        "passwordMaxLength": "パスワードは最大100文字までです",
+        "signInToWorkspace": "ワークスペースにサインイン -",
+        "signInWith": "次でサインイン",
+        "backTo": "戻る"
     },
     "editor": {
         "preview": "プレビュー",
@@ -272,7 +279,7 @@
                 "newTab": "New tab",
                 "currentTab": "Current tab",
                 "queryParams": "Query params",
-                "appMode": "App mode",
+                "appMode": "アプリモード",
                 "runOnlyIf": "Run only if"
             }
         },
@@ -285,15 +292,15 @@
             "autoFixDescription": "Diagnose and resolve errors instantly to keep your apps running smoothly"
         },
         "emptyCanvas": {
-            "dragAndDrop": "Drag and drop a component",
-            "chooseComponent": "Choose a component from the right side panel or use our pre-built templates to get started quickly!",
-            "createQuery": "Create a Query",
-            "queryBoxWithSample": "Connect to your data source or use our sample data source to start playing around!",
-            "queryBoxNoSample": "Connect to a data source to be able to create a query",
-            "connectSample": "Connect to sample data source",
-            "shareApp": "Share your application!",
-            "inviteDescription": "Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.",
-            "inviteCollaborators": "Invite collaborators"
+            "dragAndDrop": "コンポーネントをドラッグ＆ドロップ",
+            "chooseComponent": "右側パネルからコンポーネントを選択するか、事前構築テンプレートを使ってすぐに開始できます。",
+            "createQuery": "クエリを作成",
+            "queryBoxWithSample": "データソースに接続するか、サンプルデータソースを使って試してみましょう。",
+            "queryBoxNoSample": "クエリを作成するにはデータソースに接続してください。",
+            "connectSample": "サンプルデータソースに接続",
+            "shareApp": "アプリケーションを共有しましょう！",
+            "inviteDescription": "マルチプレイヤー編集とコメントでユーザーを招待し、リアルタイムに共同作業できます。",
+            "inviteCollaborators": "コラボレーターを招待"
         },
         "configHandle": {
             "dynamicHeightEnabled": "Dynamic Height enabled",
@@ -317,8 +324,8 @@
         },
         "leftSidebar": {
             "globalSettings": "Global settings",
-            "debugger": "Debugger",
-            "inspector": "Inspector",
+            "debugger": "デバッガー",
+            "inspector": "インスペクター",
             "copyPath": "Copy path",
             "copyValue": "Copy value",
             "copyOptions": "Copy options"
@@ -363,7 +370,7 @@
             "promoteDraftTitle": "Promote Draft to Version",
             "versionNamePlaceholder": "e.g., v2.0.0",
             "versionNameHelper": "Must be unique and max 25 characters",
-            "versionDescription": "Version description",
+            "versionDescription": "バージョン説明",
             "versionDescriptionPlaceholder": "Enter version description (optional)",
             "versionDescriptionHelper": "Optional, max 500 characters",
             "promoteInfo": "This will convert the draft into a finalized version. The version name and description cannot be changed after promotion to staging or production.",
@@ -371,7 +378,7 @@
             "promoteToVersion": "Promote to Version"
         },
         "previewSettings": "Preview settings",
-        "layout": "Layout",
+        "layout": "レイアウト",
         "layoutDesktop": "Desktop Layout",
         "layoutMobile": "Mobile Layout",
         "switchToDesktopLayout": "Switch to desktop layout",
@@ -388,7 +395,7 @@
                 },
                 "noMappedColumns": "No mapped columns",
                 "inputLabelPlaceholder": "Input label",
-                "columnName": "Column name",
+                "columnName": "列名",
                 "mappedTo": "Mapped to",
                 "inputLabel": "Input label",
                 "mandatory": "Mandatory?",
@@ -396,19 +403,19 @@
                 "manageFields": "Manage fields",
                 "mapColumns": "Map columns",
                 "refreshData": "Refresh data",
-                "saving": "Saving",
+                "saving": "保存中",
                 "generating": "Generating",
                 "generateForm": "Generate form"
             },
             "fieldPopover": {
-                "placeholder": "Placeholder",
-                "defaultValue": "Default value",
+                "placeholder": "プレースホルダー",
+                "defaultValue": "デフォルト値",
                 "editField": "Edit field",
                 "newCustomField": "New custom field",
-                "component": "Component",
-                "makeMandatory": "Make this field mandatory",
+                "component": "コンポーネント",
+                "makeMandatory": "このフィールドを必須にする",
                 "makeEditable": "Make editable",
-                "visibility": "Visibility",
+                "visibility": "表示",
                 "addField": "Add Field"
             }
         },
@@ -416,16 +423,16 @@
             "sections": {
                 "pagesAndMenu": "Pages and menu",
                 "headerAndNavigation": "Header and navigation",
-                "devices": "Devices"
+                "devices": "デバイス"
             },
             "panelTitlePagesAndNavigation": "Pages and navigation",
             "tabs": {
-                "properties": "Properties",
-                "styles": "Styles"
+                "properties": "プロパティ",
+                "styles": "スタイル"
             },
             "styleAccordions": {
                 "itemList": "Item list",
-                "container": "Container"
+                "container": "コンテナ"
             },
             "styles": {
                 "defaultText": "Default text",
@@ -442,7 +449,7 @@
                 "sectionTitle": "App header",
                 "showAppHeader": "Show app header",
                 "showLogo": "Show logo",
-                "titleLabel": "Title",
+                "titleLabel": "タイトル",
                 "tooltips": {
                     "hideAppHeaderUpgrade": "You don't have access to hide app header. Upgrade your plan to access this feature.",
                     "hideLogoUpgrade": "You don't have access to hide logo. Upgrade your plan to access this feature."
@@ -474,8 +481,8 @@
                 }
             },
             "devices": {
-                "showOnDesktop": "Show on desktop",
-                "showOnMobile": "Show on mobile"
+                "showOnDesktop": "デスクトップで表示",
+                "showOnMobile": "モバイルで表示"
             }
         },
         "pageMenu": {
@@ -495,7 +502,7 @@
             "more": "More",
             "selectPlaceholder": "Select...",
             "deleteFolder": {
-                "title": "Delete folder",
+                "title": "フォルダーを削除",
                 "message": "Are you sure you want to delete this folder? This action is irreversible.",
                 "deleteGroupAndPages": "Delete group and pages"
             },
@@ -515,9 +522,9 @@
                 "noApplicationSlugProvided": "No application slug provided"
             },
             "events": {
-                "title": "Events",
+                "title": "イベント",
                 "onPageLoad": "On page load",
-                "close": "Close"
+                "close": "閉じる"
             },
             "labels": {
                 "pageName": "Page name",
@@ -550,7 +557,7 @@
                 "hidePageOnAppMenu": "Hide page on app menu",
                 "eventHandlers": "Event Handlers",
                 "enable": "Enable",
-                "disable": "Disable"
+                "disable": "無効化"
             },
             "pageTypes": {
                 "tjApp": "TJ app",
@@ -584,7 +591,7 @@
                 "pageNameMaxLength": "Page name cannot exceed 32 characters"
             },
             "defaultNames": {
-                "page": "Page",
+                "page": "ページ",
                 "url": "URL",
                 "app": "App",
                 "group": "Group"
@@ -621,8 +628,8 @@
             "close": "Close search panel"
         },
         "appSlug": "App slug",
-        "promote": "Promote",
-        "update": "Update"
+        "promote": "プロモート",
+        "update": "更新"
     },
     "header": {
         "darkModeToggle": {
@@ -749,8 +756,8 @@
                         "enterClientSecret": "クライアントシークレットを入力",
                         "encrypted": "暗号化済み",
                         "redirectUrl": "リダイレクトURL",
-                        "disabled": "Disabled",
-                        "enabled": "Enabled",
+                        "disabled": "無効",
+                        "enabled": "有効",
                         "inherited": "Inherited"
                     },
                     "passwordLogin": "パスワードログイン",
@@ -1267,7 +1274,7 @@
             "imageFit": "画像のフィット",
             "cellColor": "Cell color",
             "alignment": "Alignment",
-            "activeColor": "Active color",
+            "activeColor": "アクティブ色",
             "underlineColor": "Underline color",
             "showUnderline": "Show underline",
             "hover": "Hover",
@@ -1285,20 +1292,20 @@
                 "default": "Default",
                 "string": "String",
                 "badge": "Badge",
-                "dropdown": "Dropdown",
+                "dropdown": "ドロップダウン",
                 "singleSelect": "Single select",
                 "multipleBadges": "Multiple badges",
-                "tags": "Tags",
+                "tags": "タグ",
                 "radio": "Radio",
                 "multiselect": "Multiselect",
                 "toggleSwitch": "Toggle switch"
             },
-            "borderRadius": "Border radius",
+            "borderRadius": "角丸",
             "decimalPlaces": "Decimal places",
             "defaultRating": "Default rating",
             "maxRating": "Maximum rating",
             "timeFormat": "Time format",
-            "transformationField": "Transformation",
+            "transformationField": "変換",
             "unixTimestamp": "Unix timestamp"
         },
         "Button": {
@@ -1399,7 +1406,7 @@
             "allDay": "All day"
         },
         "Iframe": {
-            "displayName": "Iframe",
+            "displayName": "アイフレーム",
             "description": "外部コンテンツを埋め込む"
         },
         "CodeEditor": {
@@ -1467,7 +1474,7 @@
             "description": "ボタンのグループ"
         },
         "PDF": {
-            "displayName": "PDF",
+            "displayName": "PDFビューア",
             "description": "PDF ドキュメントを埋め込む",
             "enterPassword": "Enter the password to open this PDF file.",
             "invalidPassword": "Invalid password. Please try again.",
@@ -1508,6 +1515,118 @@
         },
         "icon": {
             "label": "Icon"
+        },
+        "Form": {
+            "displayName": "フォーム",
+            "description": "複数コンポーネントのラッパー"
+        },
+        "PopoverMenu": {
+            "displayName": "ポップオーバーメニュー",
+            "description": "ポップオーバーメニュー"
+        },
+        "EmailInput": {
+            "displayName": "メール入力",
+            "description": "メール入力フィールド"
+        },
+        "TagsInput": {
+            "displayName": "タグ入力",
+            "description": "タグ入力"
+        },
+        "AudioRecorder": {
+            "displayName": "音声レコーダー",
+            "description": "音声レコーダー"
+        },
+        "BoundedBox": {
+            "displayName": "境界ボックス",
+            "description": "境界ボックス"
+        },
+        "Camera": {
+            "displayName": "カメラ",
+            "description": "カメラ"
+        },
+        "Chat": {
+            "displayName": "チャット",
+            "description": "チャット"
+        },
+        "CircularProgressBar": {
+            "displayName": "円形プログレスバー",
+            "description": "円形プログレスバー"
+        },
+        "CurrencyInput": {
+            "displayName": "通貨入力",
+            "description": "通貨入力"
+        },
+        "DatePickerLegacy": {
+            "displayName": "日付ピッカー（レガシー）",
+            "description": "日付ピッカー（レガシー）"
+        },
+        "DatePicker": {
+            "displayName": "日付ピッカー",
+            "description": "日付ピッカー"
+        },
+        "DatetimePicker": {
+            "displayName": "日時ピッカー",
+            "description": "日時ピッカー"
+        },
+        "HorizontalDivider": {
+            "displayName": "水平区切り線",
+            "description": "水平区切り線"
+        },
+        "DropdownLegacy": {
+            "displayName": "ドロップダウン（レガシー）",
+            "description": "ドロップダウン（レガシー）"
+        },
+        "Icon": {
+            "displayName": "アイコン",
+            "description": "アイコン"
+        },
+        "Kanban": {
+            "displayName": "カンバン",
+            "description": "カンバン"
+        },
+        "Link": {
+            "displayName": "リンク",
+            "description": "リンク"
+        },
+        "ModalLegacy": {
+            "displayName": "モーダル（レガシー）",
+            "description": "モーダル（レガシー）"
+        },
+        "ModuleContainer": {
+            "displayName": "モジュールコンテナ",
+            "description": "モジュールコンテナ"
+        },
+        "ModuleViewer": {
+            "displayName": "モジュール",
+            "description": "モジュール"
+        },
+        "MultiselectLegacy": {
+            "displayName": "複数選択（レガシー）",
+            "description": "複数選択（レガシー）"
+        },
+        "PhoneInput": {
+            "displayName": "電話番号入力",
+            "description": "電話番号入力"
+        },
+        "RadioButton": {
+            "displayName": "ラジオボタン",
+            "description": "ラジオボタン"
+        },
+        "RadioButtonLegacy": {
+            "displayName": "ラジオボタン（レガシー）",
+            "description": "ラジオボタン（レガシー）"
+        },
+        "RangeSliderLegacy": {
+            "displayName": "範囲スライダー（レガシー）",
+            "description": "範囲スライダー（レガシー）"
+        },
+        "TimePicker": {
+            "displayName": "時間ピッカー",
+            "description": "時間ピッカー"
+        },
+        "ToggleSwitchLegacy": {
+            "displayName": "トグルスイッチ（レガシー）",
+            "description": "トグルスイッチ（レガシー）"
         }
     },
     "leftSidebar": {
@@ -1582,13 +1701,13 @@
     },
     "successInfoScreen": {
         "emailImageAlt": "Email image",
-        "checkYourMail": "Check your mail",
-        "didNotReceiveEmail": "Did not receive an email? Check your spam folder."
+        "checkYourMail": "メールを確認してください",
+        "didNotReceiveEmail": "メールが届かない場合は迷惑メールフォルダをご確認ください。"
     },
     "forgotPasswordInfoScreen": {
-        "sentEmailPrefix": "We've sent an email to",
-        "sentEmailSuffix": "with a password reset link. Please click on that link to reset your password.",
-        "backToLogin": "Back to log in"
+        "sentEmailPrefix": "次のメールアドレス宛にメールを送信しました：",
+        "sentEmailSuffix": "パスワードリセットリンクが記載されています。リンクをクリックしてパスワードをリセットしてください。",
+        "backToLogin": "ログインに戻る"
     },
     "signupInfoScreen": {
         "sentEmailPrefix": "We've sent an email to",
@@ -1607,18 +1726,19 @@
         "setupButton": "Set up ToolJet"
     },
     "forgotPasswordPage": {
-        "invalidEmail": "Invalid Email",
-        "resetLinkSent": "Please check your email/inbox for the password reset link",
-        "genericError": "Something went wrong, please try again",
-        "newTo": "New to",
-        "enterEmailAddress": "Enter email address",
-        "sendResetLink": "Send a reset link",
-        "contactSuperAdmin": "Contact super admin to reset your password",
-        "checkEmailForResetLink": "Please check your email/inbox for the password reset link",
-        "createAnAccount": "Create an account",
-        "emailAddress": "Email address",
-        "forgotPassword": "Forgot password",
-        "somethingWentWrong": "Something went wrong, please try again"
+        "invalidEmail": "無効なメールアドレス",
+        "resetLinkSent": "パスワードリセット用リンクをメールで送信しました。受信トレイを確認してください",
+        "genericError": "問題が発生しました。もう一度お試しください",
+        "newTo": "はじめてですか",
+        "enterEmailAddress": "メールアドレスを入力",
+        "sendResetLink": "リセットリンクを送信",
+        "contactSuperAdmin": "パスワードをリセットするにはスーパー管理者に連絡してください",
+        "checkEmailForResetLink": "パスワードリセット用リンクをメールで送信しました。受信トレイを確認してください",
+        "createAnAccount": "アカウントを作成",
+        "emailAddress": "メールアドレス",
+        "forgotPassword": "パスワードをお忘れですか",
+        "somethingWentWrong": "問題が発生しました。もう一度お試しください",
+        "contactAdmin": "パスワードをリセットするには{{adminUser}}に連絡してください"
     },
     "basicPlanMigrationBanner": {
         "prefix": "We will be updating our domain on",
@@ -1643,10 +1763,10 @@
         },
         "columnForm": {
             "title": "Create a new column",
-            "columnName": "Column name",
+            "columnName": "列名",
             "dataType": "Data type",
             "displayTime": "Display time",
-            "defaultValue": "Default value",
+            "defaultValue": "デフォルト値",
             "setDefaultNull": "Set default value to Null",
             "openReferencedTable": "Open referenced table",
             "foreignKeyRelation": "Foreign key relation",
@@ -1761,7 +1881,7 @@
             "empty": {
                 "filteredDescription": "No data found matching the criteria specified in current filters.",
                 "defaultDescription": "Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.",
-                "filteredTitle": "No results found",
+                "filteredTitle": "結果が見つかりません",
                 "defaultTitle": "No data added yet"
             }
         },
@@ -1772,7 +1892,7 @@
             "sourceDescription": "The current table on which foreign key constraint is being added",
             "target": "TARGET",
             "targetDescription": "The table that contains foreign key column’s reference",
-            "table": "Table",
+            "table": "テーブル",
             "column": "Column",
             "actionsTitle": "ACTIONS",
             "actionsDescription": "What happens to Source table when Target table is modified",
@@ -1808,14 +1928,14 @@
         "importWorkflow": "Import workflow",
         "welcomeToToolJet": "Welcome to ToolJet"
     },
-    "createToolJetAccount": "Create ToolJet account",
+    "createToolJetAccount": "ToolJet アカウントを作成",
     "forgotPasswordInfo": {
-        "backToLogin": "Back to log in",
-        "header": "Check your mail",
-        "info": "Did not receive an email? Check your spam folder.",
-        "message": "We've sent an email with a password reset link."
+        "backToLogin": "ログインに戻る",
+        "header": "メールを確認してください",
+        "info": "メールが届かない場合は迷惑メールフォルダをご確認ください。",
+        "message": "パスワードリセット用のリンクを記載したメールを送信しました。"
     },
-    "Select": "Select",
+    "Select": "選択",
     "sharepoint": {
         "toSharepoint": "Go to SharePoint"
     }

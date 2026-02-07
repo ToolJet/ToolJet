@@ -281,7 +281,8 @@
     "build-storybook": "npx storybook build",
     "check:circular": "bash scripts/check-circular-deps.sh",
     "check:bundle": "node scripts/check-bundle-size.js",
-    "check:all": "npm run check:circular && npm run check:bundle"
+    "check:i18n": "node scripts/validate-i18n-coverage.js",
+    "check:all": "npm run check:circular && npm run check:bundle && npm run check:i18n"
   },
   "eslintConfig": {
     "extends": "react-app"
