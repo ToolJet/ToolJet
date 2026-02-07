@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Folder } from '@entities/folder.entity';
+import { FolderApp } from '../../entities/folder_app.entity';
+import { AppGitSync } from '../../entities/app_git_sync.entity'
 import { decamelizeKeys } from 'humps';
 import { CreateFolderDto, UpdateFolderDto } from '@modules/folders/dto';
 import { IFoldersService } from './interfaces/IService';
@@ -19,6 +21,20 @@ export class FoldersService implements IFoldersService {
     const folderId = id;
     const folderName = updateFolderDto.name;
     return dbTransactionWrap(async (manager: EntityManager) => {
+
+    const gitSyncedAppInFolder = await manager
+      .createQueryBuilder(AppGitSync, 'ags')
+      .innerJoin(FolderApp, 'fa', 'fa.app_id = ags.app_id')
+      .where('fa.folder_id = :folderId', { folderId })
+      .select('ags.id')
+      .getOne();
+
+    if (gitSyncedAppInFolder) {
+      throw new BadRequestException(
+        'Folders with git-synced apps cannot be edited'
+      );
+    }
+
       const folder = await catchDbException(async () => {
         return manager.update(Folder, { id: folderId }, { name: folderName });
       }, [
@@ -35,6 +51,24 @@ export class FoldersService implements IFoldersService {
       const folder = await manager.findOneOrFail(Folder, {
         where: { id, organizationId: user.organizationId },
       });
+
+    const gitSyncedAppInFolder = await manager
+      .createQueryBuilder(AppGitSync, 'ags')
+      .innerJoin(
+        FolderApp,
+        'fa',
+        'fa.app_id = ags.app_id'
+      )
+      .where('fa.folder_id = :folderId', { folderId: folder.id })
+      .select('ags.id')
+      .getOne();
+
+    if (gitSyncedAppInFolder) {
+      throw new BadRequestException(
+        "Folders with apps synced to git can't be deleted. Delete the git apps and try again."
+      );
+    }
+
       return manager.delete(Folder, { id: folder.id, organizationId: user.organizationId });
     });
   }
