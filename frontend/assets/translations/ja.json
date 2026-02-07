@@ -46,33 +46,33 @@
         "searchComponents": "コンポーネントを検索",
         "promote": "プロモート",
         "release": "リリース",
-        "filterBy": "Filter By",
-        "sortBy": "Sort By",
+        "filterBy": "フィルター",
+        "sortBy": "並べ替え",
         "import": "インポート",
-        "addLower": "add",
-        "discard": "Discard",
-        "loading": "Loading...",
+        "addLower": "追加",
+        "discard": "破棄",
+        "loading": "読み込み中...",
         "or": "または",
-        "seeMore": "See more",
-        "seeLess": "See less",
-        "app": "App",
+        "seeMore": "もっと表示",
+        "seeLess": "少なく表示",
+        "app": "アプリ",
         "label": "ラベル",
-        "options": "Options",
-        "description": "Description",
-        "noData": "No data",
-        "retry": "Retry",
-        "modules": "Modules",
+        "options": "オプション",
+        "description": "説明",
+        "noData": "データなし",
+        "retry": "再試行",
+        "modules": "モジュール",
         "preview": "プレビュー",
-        "searchModules": "Search modules",
-        "specType": "Select spec type",
+        "searchModules": "モジュールを検索",
+        "specType": "仕様タイプを選択",
         "static-error-modal": {
-            "description": "Please try again or contact support.",
-            "title": "Something went wrong"
+            "description": "再試行するかサポートに連絡してください。",
+            "title": "問題が発生しました"
         },
         "workspace-modal": {
-            "continue-btn": "Continue",
-            "wrong-link": "Wrong link",
-            "wrong-link-desc": "This link is invalid or has expired."
+            "continue-btn": "続行",
+            "wrong-link": "無効なリンク",
+            "wrong-link-desc": "このリンクは無効か期限切れです。"
         }
     },
     "errorBoundary": "問題が発生しました。",
@@ -190,10 +190,10 @@
             "versionNameHelper": "バージョン名は一意で最大25文字です",
             "versionDescriptionHelper": "説明は最大500文字です",
             "versionAlreadyReleased": "すでにリリース済みのバージョンは変更できません。\n 変更する場合は新しいバージョンを作成するか、別のバージョンに切り替えてください。",
-            "emptyNameError": "Version name cannot be empty",
-            "maxDescriptionLengthError": "Version description cannot exceed 500 characters",
-            "maxLengthError": "Version name cannot exceed 25 characters",
-            "updateFailed": "Failed to update version"
+            "emptyNameError": "バージョン名を入力してください",
+            "maxDescriptionLengthError": "バージョン説明は500文字以内です",
+            "maxLengthError": "バージョン名は25文字以内です",
+            "updateFailed": "バージョンの更新に失敗しました"
         },
         "queries": "クエリ",
         "inspectComponent": "検査するコンポーネントを選択してください",
@@ -215,7 +215,7 @@
                     },
                     "error": {
                         "noEmptyDsName": "データソース名は空にできません",
-                        "validationFailed": "Validation failed"
+                        "validationFailed": "検証に失敗しました"
                     }
                 },
                 "suggestDataSource": "データソースを提案",
@@ -243,11 +243,11 @@
             "transformation": {
                 "transformationToolTip": "変換はクエリ結果を変換するために有効化できます。ToolJet は JavaScript と Python の2つの言語でクエリ結果を変換できます",
                 "transformations": "変換",
-                "enableTransformation": "Enable transformation"
+                "enableTransformation": "変換を有効化"
             },
-            "eventsHandler": "Events handler",
-            "settings": "Settings",
-            "timeout": "Timeout"
+            "eventsHandler": "イベントハンドラー",
+            "settings": "設定",
+            "timeout": "タイムアウト"
         },
         "inspector": {
             "eventManager": {
@@ -275,21 +275,21 @@
                 "emptyMessage": "この{{componentName}}にはイベントハンドラーがありません",
                 "page": "ページ",
                 "addKeyValueParam": "{{parameter}}を追加",
-                "openIn": "Open in",
-                "newTab": "New tab",
-                "currentTab": "Current tab",
-                "queryParams": "Query params",
+                "openIn": "開く場所",
+                "newTab": "新しいタブ",
+                "currentTab": "現在のタブ",
+                "queryParams": "クエリパラメータ",
                 "appMode": "アプリモード",
-                "runOnlyIf": "Run only if"
+                "runOnlyIf": "条件付きで実行"
             }
         },
         "previewBox": {
-            "tooLargeToDisplay": "Too large to display: {{count}} more items",
-            "serverVariablesRuntime": "Server variables would be resolved at runtime",
-            "serverVariablesPaid": "Server variables are only available in paid plans",
-            "secretValuesHidden": "Values of secret constants are hidden",
-            "autoFixTitle": "Auto-fix",
-            "autoFixDescription": "Diagnose and resolve errors instantly to keep your apps running smoothly"
+            "tooLargeToDisplay": "表示できないほど大きいです。残り {{count}} 件",
+            "serverVariablesRuntime": "サーバー変数は実行時に解決されます",
+            "serverVariablesPaid": "サーバー変数は有料プランのみで利用できます",
+            "secretValuesHidden": "シークレット定数の値は非表示です",
+            "autoFixTitle": "自動修正",
+            "autoFixDescription": "エラーを即座に診断し解決して、アプリを安定稼働させます"
         },
         "emptyCanvas": {
             "dragAndDrop": "コンポーネントをドラッグ＆ドロップ",
@@ -303,181 +303,181 @@
             "inviteCollaborators": "コラボレーターを招待"
         },
         "configHandle": {
-            "dynamicHeightEnabled": "Dynamic Height enabled",
-            "dynamicHeightDescription": "Your component expands based on content but won't shrink below the height you set on canvas.",
-            "neverShowAgain": "Never show this again"
+            "dynamicHeightEnabled": "動的高さを有効化",
+            "dynamicHeightDescription": "コンテンツに合わせて拡張しますが、キャンバスで設定した高さより小さくはなりません。",
+            "neverShowAgain": "今後表示しない"
         },
         "grid": {
-            "moduleEditNotAllowed": "Modules cannot be edited inside an app",
-            "incompatibleChild": "{{child}} is not compatible as a child component of {{parent}}",
-            "components": "Components"
+            "moduleEditNotAllowed": "アプリ内ではモジュールを編集できません",
+            "incompatibleChild": "{{child}} は {{parent}} の子コンポーネントとして互換性がありません",
+            "components": "コンポーネント"
         },
         "componentConfig": {
-            "properties": "Component properties",
-            "noComponentSelected": "No component selected",
-            "selectComponentHint": "Click a component on the canvas to view and edit its properties."
+            "properties": "コンポーネントのプロパティ",
+            "noComponentSelected": "コンポーネントが選択されていません",
+            "selectComponentHint": "キャンバス上のコンポーネントをクリックしてプロパティを表示・編集します。"
         },
         "componentsPanel": {
-            "title": "Components",
-            "addNewComponent": "Add new component",
-            "modules": "Modules"
+            "title": "コンポーネント",
+            "addNewComponent": "新しいコンポーネントを追加",
+            "modules": "モジュール"
         },
         "leftSidebar": {
-            "globalSettings": "Global settings",
+            "globalSettings": "グローバル設定",
             "debugger": "デバッガー",
             "inspector": "インスペクター",
-            "copyPath": "Copy path",
-            "copyValue": "Copy value",
-            "copyOptions": "Copy options"
+            "copyPath": "パスをコピー",
+            "copyValue": "値をコピー",
+            "copyOptions": "オプションをコピー"
         },
         "saveIndicator": {
-            "savingTooltip": "Saving in progress! Don't close the app yet.",
-            "saveErrorTooltip": "Could not save changes",
-            "saveError": "Could not save changes",
-            "savedTooltip": "Changes saved!"
+            "savingTooltip": "保存中です。アプリを閉じないでください。",
+            "saveErrorTooltip": "変更を保存できませんでした",
+            "saveError": "変更を保存できませんでした",
+            "savedTooltip": "変更を保存しました！"
         },
         "queryPanel": {
-            "noQueries": "No queries have been added.",
-            "draft": "Draft",
-            "dataSource": "Data Source",
-            "showSortFilter": "Show sort/filter",
+            "noQueries": "クエリが追加されていません。",
+            "draft": "下書き",
+            "dataSource": "データソース",
+            "showSortFilter": "並べ替え/フィルターを表示",
             "sort": {
-                "nameAsc": "Name: A-Z",
-                "nameDesc": "Name: Z-A",
-                "typeAsc": "Type: A-Z",
-                "typeDesc": "Type: Z-A",
-                "updatedAsc": "Last modified: oldest first",
-                "updatedDesc": "Last modified: newest first"
+                "nameAsc": "名前: A-Z",
+                "nameDesc": "名前: Z-A",
+                "typeAsc": "種類: A-Z",
+                "typeDesc": "種類: Z-A",
+                "updatedAsc": "最終更新: 古い順",
+                "updatedDesc": "最終更新: 新しい順"
             }
         },
         "versionManager": {
-            "createDraftFrom": "Create draft from",
-            "selectVersion": "Select version...",
-            "selectVersionHelper": "Select which version to use as a starting point for the draft",
-            "environment": "Environment",
-            "selectEnvironment": "Select environment...",
-            "selectEnvironmentHelper": "Select the environment for this draft version",
-            "draftDescriptionPlaceholder": "Enter draft description...",
-            "draftDescriptionHelper": "Add a description for this draft (max 500 characters)",
-            "createDraftVersion": "Create Draft Version",
-            "creatingDraft": "Creating...",
-            "createDraft": "Create Draft",
-            "versionNameRequired": "Version name is required",
-            "versionNameTooLong": "Version name should not be longer than 25 characters",
-            "versionDescriptionTooLong": "Version description should not be longer than 500 characters",
-            "promoteSuccess": "Draft promoted to version successfully",
-            "promoteError": "Failed to promote draft version",
-            "promoteDraftTitle": "Promote Draft to Version",
-            "versionNamePlaceholder": "e.g., v2.0.0",
-            "versionNameHelper": "Must be unique and max 25 characters",
+            "createDraftFrom": "下書きを作成元",
+            "selectVersion": "バージョンを選択...",
+            "selectVersionHelper": "下書きの作成元となるバージョンを選択してください",
+            "environment": "環境",
+            "selectEnvironment": "環境を選択...",
+            "selectEnvironmentHelper": "この下書きバージョンの環境を選択してください",
+            "draftDescriptionPlaceholder": "下書きの説明を入力...",
+            "draftDescriptionHelper": "下書きの説明を追加（最大500文字）",
+            "createDraftVersion": "下書きバージョンを作成",
+            "creatingDraft": "作成中...",
+            "createDraft": "下書きを作成",
+            "versionNameRequired": "バージョン名は必須です",
+            "versionNameTooLong": "バージョン名は25文字以内にしてください",
+            "versionDescriptionTooLong": "バージョン説明は500文字以内にしてください",
+            "promoteSuccess": "下書きをバージョンとして昇格しました",
+            "promoteError": "下書きの昇格に失敗しました",
+            "promoteDraftTitle": "下書きをバージョンに昇格",
+            "versionNamePlaceholder": "例: v2.0.0",
+            "versionNameHelper": "一意で最大25文字",
             "versionDescription": "バージョン説明",
-            "versionDescriptionPlaceholder": "Enter version description (optional)",
-            "versionDescriptionHelper": "Optional, max 500 characters",
-            "promoteInfo": "This will convert the draft into a finalized version. The version name and description cannot be changed after promotion to staging or production.",
-            "promoting": "Promoting...",
-            "promoteToVersion": "Promote to Version"
+            "versionDescriptionPlaceholder": "バージョン説明を入力（任意）",
+            "versionDescriptionHelper": "任意、最大500文字",
+            "promoteInfo": "下書きを確定版に変換します。ステージングまたは本番に昇格後は、バージョン名と説明を変更できません。",
+            "promoting": "昇格中...",
+            "promoteToVersion": "バージョンに昇格"
         },
-        "previewSettings": "Preview settings",
+        "previewSettings": "プレビュー設定",
         "layout": "レイアウト",
-        "layoutDesktop": "Desktop Layout",
-        "layoutMobile": "Mobile Layout",
-        "switchToDesktopLayout": "Switch to desktop layout",
-        "switchToMobileLayout": "Switch to mobile layout",
-        "environment": "Env",
-        "versionNotReleased": "This version has not been released yet",
+        "layoutDesktop": "デスクトップレイアウト",
+        "layoutMobile": "モバイルレイアウト",
+        "switchToDesktopLayout": "デスクトップレイアウトに切り替え",
+        "switchToMobileLayout": "モバイルレイアウトに切り替え",
+        "environment": "環境",
+        "versionNotReleased": "このバージョンはまだリリースされていません",
         "form": {
             "columnMapping": {
                 "section": {
-                    "existing": "Existing",
-                    "customFields": "Custom fields",
-                    "new": "New",
-                    "removed": "Removed"
+                    "existing": "既存",
+                    "customFields": "カスタムフィールド",
+                    "new": "新規",
+                    "removed": "削除済み"
                 },
-                "noMappedColumns": "No mapped columns",
-                "inputLabelPlaceholder": "Input label",
+                "noMappedColumns": "マッピングされた列がありません",
+                "inputLabelPlaceholder": "入力ラベル",
                 "columnName": "列名",
-                "mappedTo": "Mapped to",
-                "inputLabel": "Input label",
-                "mandatory": "Mandatory?",
-                "noneAvailable": "No {{section}} available",
-                "manageFields": "Manage fields",
-                "mapColumns": "Map columns",
-                "refreshData": "Refresh data",
+                "mappedTo": "マッピング先",
+                "inputLabel": "入力ラベル",
+                "mandatory": "必須？",
+                "noneAvailable": "{{section}} がありません",
+                "manageFields": "フィールドを管理",
+                "mapColumns": "列をマッピング",
+                "refreshData": "データを更新",
                 "saving": "保存中",
-                "generating": "Generating",
-                "generateForm": "Generate form"
+                "generating": "生成中",
+                "generateForm": "フォームを生成"
             },
             "fieldPopover": {
                 "placeholder": "プレースホルダー",
                 "defaultValue": "デフォルト値",
-                "editField": "Edit field",
-                "newCustomField": "New custom field",
+                "editField": "フィールドを編集",
+                "newCustomField": "新しいカスタムフィールド",
                 "component": "コンポーネント",
                 "makeMandatory": "このフィールドを必須にする",
-                "makeEditable": "Make editable",
+                "makeEditable": "編集可能にする",
                 "visibility": "表示",
-                "addField": "Add Field"
+                "addField": "フィールドを追加"
             }
         },
         "pageSettings": {
             "sections": {
-                "pagesAndMenu": "Pages and menu",
-                "headerAndNavigation": "Header and navigation",
+                "pagesAndMenu": "ページとメニュー",
+                "headerAndNavigation": "ヘッダーとナビゲーション",
                 "devices": "デバイス"
             },
-            "panelTitlePagesAndNavigation": "Pages and navigation",
+            "panelTitlePagesAndNavigation": "ページとナビゲーション",
             "tabs": {
                 "properties": "プロパティ",
                 "styles": "スタイル"
             },
             "styleAccordions": {
-                "itemList": "Item list",
+                "itemList": "アイテム一覧",
                 "container": "コンテナ"
             },
             "styles": {
-                "defaultText": "Default text",
-                "defaultIcon": "Default icon",
-                "selectedText": "Selected text",
-                "selectedIcon": "Selected icon",
-                "pillHoverBackground": "Pill hover background",
-                "pillSelectedBackground": "Pill selected background",
-                "pillRadius": "Pill radius",
-                "background": "Background",
-                "border": "Border"
+                "defaultText": "デフォルトテキスト",
+                "defaultIcon": "デフォルトアイコン",
+                "selectedText": "選択テキスト",
+                "selectedIcon": "選択アイコン",
+                "pillHoverBackground": "ピルのホバー背景",
+                "pillSelectedBackground": "ピルの選択背景",
+                "pillRadius": "ピルの角丸",
+                "background": "背景",
+                "border": "枠線"
             },
             "appHeader": {
-                "sectionTitle": "App header",
-                "showAppHeader": "Show app header",
-                "showLogo": "Show logo",
+                "sectionTitle": "アプリヘッダー",
+                "showAppHeader": "アプリヘッダーを表示",
+                "showLogo": "ロゴを表示",
                 "titleLabel": "タイトル",
                 "tooltips": {
-                    "hideAppHeaderUpgrade": "You don't have access to hide app header. Upgrade your plan to access this feature.",
-                    "hideLogoUpgrade": "You don't have access to hide logo. Upgrade your plan to access this feature."
+                    "hideAppHeaderUpgrade": "アプリヘッダーを非表示にする権限がありません。機能を利用するにはプランをアップグレードしてください。",
+                    "hideLogoUpgrade": "ロゴを非表示にする権限がありません。機能を利用するにはプランをアップグレードしてください。"
                 },
                 "errors": {
-                    "titleEmpty": "Title cannot be empty.",
-                    "titleTooLong": "Title cannot exceed 32 characters."
+                    "titleEmpty": "タイトルを入力してください。",
+                    "titleTooLong": "タイトルは32文字以内です。"
                 }
             },
             "navigation": {
-                "sectionTitle": "Navigation menu",
-                "position": "Position",
-                "style": "Style",
-                "collapsable": "Collapsable",
-                "hideNavigationMenu": "Hide navigation menu",
-                "selectPlaceholder": "Select...",
+                "sectionTitle": "ナビゲーションメニュー",
+                "position": "位置",
+                "style": "スタイル",
+                "collapsable": "折りたたみ可能",
+                "hideNavigationMenu": "ナビゲーションメニューを非表示",
+                "selectPlaceholder": "選択...",
                 "positionOptions": {
-                    "top": "Top",
-                    "side": "Side"
+                    "top": "上",
+                    "side": "側"
                 },
                 "collapsableOptions": {
-                    "true": "True",
-                    "false": "False"
+                    "true": "有効",
+                    "false": "無効"
                 },
                 "styleOptions": {
-                    "textAndIcon": "Text and icon",
-                    "textOnly": "Text only",
-                    "iconOnly": "Icon only"
+                    "textAndIcon": "テキストとアイコン",
+                    "textOnly": "テキストのみ",
+                    "iconOnly": "アイコンのみ"
                 }
             },
             "devices": {
@@ -487,147 +487,147 @@
         },
         "pageMenu": {
             "actions": {
-                "addPage": "Add Page"
+                "addPage": "ページを追加"
             },
-            "group": "Group",
-            "groupLower": "group",
-            "newPage": "New page",
-            "addNavItemWithUrl": "Add nav item with URL",
-            "addNavItemWithApp": "Add nav item ToolJet app",
-            "addNavGroup": "Add nav group",
-            "noNavGroupsAccess": "You don't have access to nav groups. Upgrade your plan to access this feature.",
-            "noPagePermissionsAccess": "You don't have access to page permissions. Upgrade your plan to access this feature.",
-            "pageAndNav": "Page and nav",
-            "pageHandle": "Page Handle",
-            "more": "More",
-            "selectPlaceholder": "Select...",
+            "group": "グループ",
+            "groupLower": "グループ",
+            "newPage": "新しいページ",
+            "addNavItemWithUrl": "URLのナビ項目を追加",
+            "addNavItemWithApp": "ToolJetアプリのナビ項目を追加",
+            "addNavGroup": "ナビグループを追加",
+            "noNavGroupsAccess": "ナビグループへのアクセス権がありません。この機能を利用するにはプランをアップグレードしてください。",
+            "noPagePermissionsAccess": "ページ権限へのアクセスがありません。この機能を利用するにはプランをアップグレードしてください。",
+            "pageAndNav": "ページとナビ",
+            "pageHandle": "ページハンドル",
+            "more": "その他",
+            "selectPlaceholder": "選択...",
             "deleteFolder": {
                 "title": "フォルダーを削除",
-                "message": "Are you sure you want to delete this folder? This action is irreversible.",
-                "deleteGroupAndPages": "Delete group and pages"
+                "message": "このフォルダーを削除してもよろしいですか？この操作は取り消せません。",
+                "deleteGroupAndPages": "グループとページを削除"
             },
             "deletePage": {
-                "title": "Delete Page",
-                "message": "Are you sure you want to delete {{pageName}} page?"
+                "title": "ページを削除",
+                "message": "ページ「{{pageName}}」を削除してもよろしいですか？"
             },
             "editPageHandle": {
-                "title": "Edit page handle",
-                "placeholder": "Enter page handle",
-                "warning": "Changing the page handle will break any existing apps that are using this page."
+                "title": "ページハンドルを編集",
+                "placeholder": "ページハンドルを入力",
+                "warning": "ページハンドルを変更すると、このページを使用している既存のアプリが動作しなくなる可能性があります。"
             },
             "errors": {
-                "pageHandleEmpty": "Page handle cannot be empty",
-                "pageHandleSame": "Page handle cannot be same as the existing page handle",
-                "noUrlProvided": "No URL provided",
-                "noApplicationSlugProvided": "No application slug provided"
+                "pageHandleEmpty": "ページハンドルを入力してください",
+                "pageHandleSame": "ページハンドルは既存のものと同じにできません",
+                "noUrlProvided": "URLが指定されていません",
+                "noApplicationSlugProvided": "アプリケーションスラッグが指定されていません"
             },
             "events": {
                 "title": "イベント",
-                "onPageLoad": "On page load",
+                "onPageLoad": "ページ読み込み時",
                 "close": "閉じる"
             },
             "labels": {
-                "pageName": "Page name",
-                "handle": "Handle",
-                "icon": "Icon",
-                "markAsHome": "Mark as home",
-                "disablePage": "Disable page",
+                "pageName": "ページ名",
+                "handle": "ハンドル",
+                "icon": "アイコン",
+                "markAsHome": "ホームに設定",
+                "disablePage": "ページを無効化",
                 "url": "URL",
-                "openUrlIn": "Open URL in",
-                "selectApp": "Select app",
-                "openAppIn": "Open app in",
-                "hideThisPageOnNavigation": "Hide this page on navigation",
-                "hideThisItemOnNavigation": "Hide this item on navigation"
+                "openUrlIn": "URLを開く場所",
+                "selectApp": "アプリを選択",
+                "openAppIn": "アプリを開く場所",
+                "hideThisPageOnNavigation": "ナビゲーションでこのページを非表示",
+                "hideThisItemOnNavigation": "ナビゲーションでこの項目を非表示"
             },
             "logLabels": {
-                "navigation": "Navigation",
+                "navigation": "ナビゲーション",
                 "navigationKey": "navigation"
             },
             "options": {
-                "editGroupDetails": "Edit group details",
-                "duplicateGroup": "Duplicate group",
-                "deleteGroup": "Delete group",
-                "editPageDetails": "Edit page details",
-                "markHome": "Mark home",
-                "duplicatePage": "Duplicate page",
-                "deletePage": "Delete page",
-                "pagePermission": "Page permission",
-                "rename": "Rename",
-                "showPageOnAppMenu": "Show page on app menu",
-                "hidePageOnAppMenu": "Hide page on app menu",
-                "eventHandlers": "Event Handlers",
-                "enable": "Enable",
+                "editGroupDetails": "グループの詳細を編集",
+                "duplicateGroup": "グループを複製",
+                "deleteGroup": "グループを削除",
+                "editPageDetails": "ページ詳細を編集",
+                "markHome": "ホームに設定",
+                "duplicatePage": "ページを複製",
+                "deletePage": "ページを削除",
+                "pagePermission": "ページ権限",
+                "rename": "名前を変更",
+                "showPageOnAppMenu": "アプリメニューにページを表示",
+                "hidePageOnAppMenu": "アプリメニューでページを非表示",
+                "eventHandlers": "イベントハンドラー",
+                "enable": "有効化",
                 "disable": "無効化"
             },
             "pageTypes": {
-                "tjApp": "TJ app",
+                "tjApp": "TJアプリ",
                 "url": "URL"
             },
             "permissions": {
-                "accessRestricted": "Access restricted",
-                "accessRestrictedToEmail": "Access restricted to {{email}}",
-                "accessRestrictedToUsers": "Access restricted to {{count}} users",
-                "accessRestrictedToGroup": "Access restricted to {{groupName}} group",
-                "accessRestrictedToGroups": "Access restricted to {{count}} groups"
+                "accessRestricted": "アクセス制限",
+                "accessRestrictedToEmail": "{{email}} へのアクセス制限",
+                "accessRestrictedToUsers": "{{count}}人のユーザーにアクセス制限",
+                "accessRestrictedToGroup": "{{groupName}} グループにアクセス制限",
+                "accessRestrictedToGroups": "{{count}}グループにアクセス制限"
             },
             "sections": {
-                "pageEvents": "Page events"
+                "pageEvents": "ページイベント"
             },
             "tooltips": {
-                "goToPage": "Go to page",
-                "duplicateEntity": "Duplicate {{entity}}",
-                "deleteEntity": "Delete {{entity}}",
-                "homePage": "Home page",
-                "disabledPage": "Disabled page",
-                "hiddenNavItem": "Hidden nav item",
-                "hiddenPage": "Hidden page",
-                "hiddenGroup": "Hidden group",
-                "homePageCannotBeDeleted": "Home page can't be deleted"
+                "goToPage": "ページへ移動",
+                "duplicateEntity": "{{entity}} を複製",
+                "deleteEntity": "{{entity}} を削除",
+                "homePage": "ホームページ",
+                "disabledPage": "無効なページ",
+                "hiddenNavItem": "非表示のナビ項目",
+                "hiddenPage": "非表示のページ",
+                "hiddenGroup": "非表示のグループ",
+                "homePageCannotBeDeleted": "ホームページは削除できません"
             },
             "toasts": {
-                "pageGroupNameMinLength": "Page group name should have at least 1 character",
-                "pageNameMinLength": "Page name should have at least 1 character",
-                "pageGroupNameMaxLength": "Page group name cannot exceed 32 characters",
-                "pageNameMaxLength": "Page name cannot exceed 32 characters"
+                "pageGroupNameMinLength": "ページグループ名は1文字以上必要です",
+                "pageNameMinLength": "ページ名は1文字以上必要です",
+                "pageGroupNameMaxLength": "ページグループ名は32文字以内です",
+                "pageNameMaxLength": "ページ名は32文字以内です"
             },
             "defaultNames": {
                 "page": "ページ",
                 "url": "URL",
-                "app": "App",
-                "group": "Group"
+                "app": "アプリ",
+                "group": "グループ"
             },
             "openModes": {
-                "new_tab": "New tab",
-                "same_tab": "Same tab"
+                "new_tab": "新しいタブ",
+                "same_tab": "同じタブ"
             },
             "popoverTitles": {
                 "add": {
-                    "default": "New page",
-                    "app": "New nav item with app",
-                    "url": "New nav item with URL",
-                    "group": "New nav group"
+                    "default": "新しいページ",
+                    "app": "アプリ付きのナビ項目を追加",
+                    "url": "URLのナビ項目を追加",
+                    "group": "新しいナビグループ"
                 },
                 "edit": {
-                    "default": "Edit page",
-                    "app": "Edit nav item",
-                    "url": "Edit nav item",
-                    "group": "Edit nav group"
+                    "default": "ページを編集",
+                    "app": "ナビ項目を編集",
+                    "url": "ナビ項目を編集",
+                    "group": "ナビグループを編集"
                 }
             }
         },
         "searchPanel": {
-            "find": "Find",
-            "findText": "Find text",
-            "replace": "Replace",
-            "replaceText": "Replace text",
-            "previous": "Previous",
-            "previousMatch": "Previous match",
-            "next": "Next",
-            "nextMatch": "Next match",
-            "replaceAll": "Replace all",
-            "close": "Close search panel"
+            "find": "検索",
+            "findText": "検索文字列",
+            "replace": "置換",
+            "replaceText": "置換文字列",
+            "previous": "前へ",
+            "previousMatch": "前の一致",
+            "next": "次へ",
+            "nextMatch": "次の一致",
+            "replaceAll": "すべて置換",
+            "close": "検索パネルを閉じる"
         },
-        "appSlug": "App slug",
+        "appSlug": "アプリスラッグ",
         "promote": "プロモート",
         "update": "更新"
     },
@@ -687,7 +687,7 @@
                     "enterEmail": "メールIDを入力",
                     "enterFullName": "氏名を入力",
                     "inviteNewUsers": "新しいユーザーを招待",
-                    "selectGroup": "Select group"
+                    "selectGroup": "グループを選択"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -734,8 +734,8 @@
                         "allowDefaultSso": "デフォルトSSOを許可",
                         "ssoAuth": "ユーザーがデフォルト SSO で認証できるようにします。デフォルト SSO 設定は\nワークスペースレベルの SSO で上書きできます。",
                         "customLogoutUrl": "カスタムログアウトURL",
-                        "domain": "Domain",
-                        "supportMultidomains": "Support multidomains"
+                        "domain": "ドメイン",
+                        "supportMultidomains": "複数ドメインに対応"
                     },
                     "google": {
                         "title": "Google",
@@ -758,7 +758,7 @@
                         "redirectUrl": "リダイレクトURL",
                         "disabled": "無効",
                         "enabled": "有効",
-                        "inherited": "Inherited"
+                        "inherited": "継承"
                     },
                     "passwordLogin": "パスワードログイン",
                     "environmentVar": {
@@ -784,11 +784,11 @@
                         }
                     },
                     "workspaceLogin": {
-                        "title": "Workspace login"
+                        "title": "ワークスペースログイン"
                     }
                 }
             },
-            "workspaceSlug": "Workspace slug"
+            "workspaceSlug": "ワークスペーススラッグ"
         },
         "profileSettingPage": {
             "profileSettings": "プロフィール設定",
@@ -826,16 +826,16 @@
             "noDeployedVersion": "このアプリにはデプロイ済みバージョンがありません",
             "openInAppViewer": "アプリビューアで開く",
             "removeFromFolder": "フォルダーから削除",
-            "deleteWorkflow": "Delete workflow",
-            "launchingWorkflowNotAvailable": "Launching workflow is not available",
-            "noReleasedAccess": "No access to released version",
-            "renameApp": "Rename app"
+            "deleteWorkflow": "ワークフローを削除",
+            "launchingWorkflowNotAvailable": "ワークフローの起動は利用できません",
+            "noReleasedAccess": "リリース版へのアクセス権がありません",
+            "renameApp": "アプリ名を変更"
         },
         "blankPage": {
             "welcomeToToolJet": "新しい ToolJet ワークスペースへようこそ",
             "getStartedCreateNewApp": "新しいアプリを作成するか、ToolJet ライブラリのテンプレートから作成して始められます。",
             "importApplication": "アプリをインポート",
-            "noAppsCreatedYet": "No apps created yet"
+            "noAppsCreatedYet": "まだアプリが作成されていません"
         },
         "foldersSection": {
             "allApplications": "すべてのアプリ",
@@ -848,7 +848,7 @@
             "deleteFolder": "フォルダーを削除",
             "folderName": "フォルダー名",
             "wishToDeleteFolder": "フォルダー {{folderName}} を削除してもよろしいですか？フォルダー内のアプリは削除されません。",
-            "filteredData": "No data found matching your search"
+            "filteredData": "検索条件に一致するデータがありません"
         },
         "header": {
             "createNewApplication": "アプリを作成",
@@ -872,45 +872,45 @@
             "use": "使用",
             "preview": "プレビュー",
             "leadGeneretion": "リード獲得",
-            "leadGeneration": "Lead generation"
+            "leadGeneration": "リード獲得"
         },
         "templateLibraryModal": {
             "select": "テンプレートを選択",
             "createAppfromTemplate": "テンプレートからアプリを作成"
         },
-        "appsLabel": "APPS",
-        "filterBy": "Filter by",
+        "appsLabel": "アプリ",
+        "filterBy": "フィルター",
         "missingGroups": {
-            "warningTitle": "Warning: Missing user groups for permissions",
-            "description": "Permissions for the following user group(s) won't be applied since they do not exist in this workspace.",
-            "userGroupsLabel": "User groups",
-            "info": "Restricted pages, queries, or components will become accessible to all users or to existing groups with permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after import.",
-            "cancelImport": "Cancel import",
-            "importLimited": "Import with limited permissions"
+            "warningTitle": "警告: 権限用のユーザーグループが不足しています",
+            "description": "以下のユーザーグループはこのワークスペースに存在しないため、権限が適用されません。",
+            "userGroupsLabel": "ユーザーグループ",
+            "info": "制限されたページ/クエリ/コンポーネントがすべてのユーザー、または権限がある既存グループに公開されます。回避するには、インポート前に不足グループを作成するか、インポート後に権限を再設定してください。",
+            "cancelImport": "インポートをキャンセル",
+            "importLimited": "制限された権限でインポート"
         },
-        "renameAppTitle": "Rename {{appType}}",
-        "renameAppAction": "Rename {{appType}}",
-        "renameAppLoading": "Renaming",
+        "renameAppTitle": "{{appType}} の名前を変更",
+        "renameAppAction": "{{appType}} の名前を変更",
+        "renameAppLoading": "名前を変更中",
         "modules": {
-            "emptyTitle": "Create reusable groups of components and queries via modules.",
-            "checkGuide": "Check out our guide",
-            "onCreatingModules": "on creating modules.",
-            "notAvailable": "Modules are not available on your current plan.",
-            "createNew": "Create new module"
+            "emptyTitle": "モジュールでコンポーネントとクエリの再利用グループを作成できます。",
+            "checkGuide": "ガイドを見る",
+            "onCreatingModules": "モジュール作成について",
+            "notAvailable": "現在のプランではモジュールを利用できません。",
+            "createNew": "新しいモジュールを作成"
         },
         "exportAppModal": {
-            "fetchVersionsError": "Could not fetch the versions.",
-            "fetchTablesError": "Could not fetch the tables.",
-            "exportSuccessModule": "Module has been exported successfully!",
-            "exportSuccessApp": "App has been exported successfully!",
-            "exportErrorModule": "Could not export module: {{message}}",
-            "exportErrorApp": "Could not export app: {{message}}",
-            "noOtherVersions": "No other versions found",
-            "exportSchema": "Export ToolJet table schema",
-            "exportAll": "Export All",
-            "exportSelectedVersion": "Export selected version",
-            "createdOn": "Created on {{date}}",
-            "loadingVersions": "Loading versions ..."
+            "fetchVersionsError": "バージョンを取得できませんでした。",
+            "fetchTablesError": "テーブルを取得できませんでした。",
+            "exportSuccessModule": "モジュールをエクスポートしました！",
+            "exportSuccessApp": "アプリをエクスポートしました！",
+            "exportErrorModule": "モジュールをエクスポートできませんでした: {{message}}",
+            "exportErrorApp": "アプリをエクスポートできませんでした: {{message}}",
+            "noOtherVersions": "他のバージョンが見つかりません",
+            "exportSchema": "ToolJetテーブルスキーマをエクスポート",
+            "exportAll": "すべてエクスポート",
+            "exportSelectedVersion": "選択したバージョンをエクスポート",
+            "createdOn": "{{date}} 作成",
+            "loadingVersions": "バージョンを読み込み中..."
         }
     },
     "workflowsDashboard": {
@@ -1272,41 +1272,41 @@
             "textAlignment": "文字揃え",
             "deciamalPlaces": "小数点以下桁数",
             "imageFit": "画像のフィット",
-            "cellColor": "Cell color",
-            "alignment": "Alignment",
+            "cellColor": "セル色",
+            "alignment": "配置",
             "activeColor": "アクティブ色",
-            "underlineColor": "Underline color",
-            "showUnderline": "Show underline",
-            "hover": "Hover",
-            "always": "Always",
-            "selectedColor": "Selected color",
-            "unselectedColor": "Unselected color",
-            "displayText": "Display text",
-            "addFilter": "+ add filter",
-            "clearFilters": "clear filters",
-            "noFiltersYet": "no filters yet.",
-            "deprecatedStyleMessage": "This style will be deprecated in the future releases",
-            "deprecatedColumnTitle": "Deprecating column type",
-            "deprecatedColumnMessage": "This column type is deprecated and will be removed in a future update.  We recommend using the new {{columnLabel}} when creating applications moving forward.",
+            "underlineColor": "下線色",
+            "showUnderline": "下線を表示",
+            "hover": "ホバー",
+            "always": "常に",
+            "selectedColor": "選択色",
+            "unselectedColor": "未選択色",
+            "displayText": "表示テキスト",
+            "addFilter": "+ フィルターを追加",
+            "clearFilters": "フィルターをクリア",
+            "noFiltersYet": "フィルターはまだありません。",
+            "deprecatedStyleMessage": "このスタイルは今後のリリースで非推奨になります",
+            "deprecatedColumnTitle": "列タイプの非推奨化",
+            "deprecatedColumnMessage": "この列タイプは非推奨で、将来の更新で削除されます。今後は新しい{{columnLabel}}の使用を推奨します。",
             "columnTypes": {
-                "default": "Default",
-                "string": "String",
-                "badge": "Badge",
+                "default": "デフォルト",
+                "string": "文字列",
+                "badge": "バッジ",
                 "dropdown": "ドロップダウン",
-                "singleSelect": "Single select",
-                "multipleBadges": "Multiple badges",
+                "singleSelect": "単一選択",
+                "multipleBadges": "複数バッジ",
                 "tags": "タグ",
-                "radio": "Radio",
-                "multiselect": "Multiselect",
-                "toggleSwitch": "Toggle switch"
+                "radio": "ラジオ",
+                "multiselect": "複数選択",
+                "toggleSwitch": "トグルスイッチ"
             },
             "borderRadius": "角丸",
-            "decimalPlaces": "Decimal places",
-            "defaultRating": "Default rating",
-            "maxRating": "Maximum rating",
-            "timeFormat": "Time format",
+            "decimalPlaces": "小数点以下桁数",
+            "defaultRating": "デフォルト評価",
+            "maxRating": "最大評価",
+            "timeFormat": "時刻形式",
             "transformationField": "変換",
-            "unixTimestamp": "Unix timestamp"
+            "unixTimestamp": "UNIXタイムスタンプ"
         },
         "Button": {
             "displayName": "ボタン",
@@ -1403,7 +1403,7 @@
         "Calendar": {
             "displayName": "カレンダー",
             "description": "カレンダーイベントを表示",
-            "allDay": "All day"
+            "allDay": "終日"
         },
         "Iframe": {
             "displayName": "アイフレーム",
@@ -1476,15 +1476,15 @@
         "PDF": {
             "displayName": "PDFビューア",
             "description": "PDF ドキュメントを埋め込む",
-            "enterPassword": "Enter the password to open this PDF file.",
-            "invalidPassword": "Invalid password. Please try again.",
-            "passwordPromptClosed": "Password prompt closed",
-            "noFile": "No PDF file specified",
-            "previousPage": "Previous page",
-            "nextPage": "Next page",
-            "pageOf": "{{page}} of {{total}}",
-            "download": "Download PDF",
-            "downloadAlt": "Download"
+            "enterPassword": "このPDFファイルを開くためのパスワードを入力してください。",
+            "invalidPassword": "パスワードが無効です。再試行してください。",
+            "passwordPromptClosed": "パスワード入力を閉じました",
+            "noFile": "PDFファイルが指定されていません",
+            "previousPage": "前のページ",
+            "nextPage": "次のページ",
+            "pageOf": "{{total}}中{{page}}",
+            "download": "PDFをダウンロード",
+            "downloadAlt": "ダウンロード"
         },
         "Steps": {
             "displayName": "ステップ",
@@ -1503,18 +1503,18 @@
             "description": "階層的な項目セレクター"
         },
         "labels": {
-            "legacy": "Lgcy",
-            "new": "New"
+            "legacy": "旧",
+            "new": "新規"
         },
         "phoneInput": {
-            "defaultCountry": "Default Country"
+            "defaultCountry": "デフォルト国"
         },
         "currencyInput": {
-            "defaultCurrency": "Default Currency",
-            "numberFormat": "Number Format"
+            "defaultCurrency": "デフォルト通貨",
+            "numberFormat": "数値形式"
         },
         "icon": {
-            "label": "Icon"
+            "label": "アイコン"
         },
         "Form": {
             "displayName": "フォーム",
@@ -1687,20 +1687,20 @@
         }
     },
     "planUpgrade": {
-        "contactUs": "To upgrade your plan, please reach out to us at",
-        "appsLimitExceeded": "Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.",
-        "usersLimitExceeded": "Oops! Your current plan has exceeded its users limit. Please upgrade your plan now to create a new user.",
-        "featureNotAvailable": "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.",
-        "appsCount": "Apps count",
-        "usersCount": "Users count",
+        "contactUs": "プランをアップグレードするには、こちらまでご連絡ください",
+        "appsLimitExceeded": "現在のプランのアプリ上限を超えています。新しいアプリを作成するにはプランをアップグレードしてください。",
+        "usersLimitExceeded": "現在のプランのユーザー上限を超えています。新しいユーザーを作成するにはプランをアップグレードしてください。",
+        "featureNotAvailable": "現在のプランではこの機能を利用できません。利用するにはプランをアップグレードしてください。",
+        "appsCount": "アプリ数",
+        "usersCount": "ユーザー数",
         "oidc": "OIDC",
-        "auditLogs": "Audit logs"
+        "auditLogs": "監査ログ"
     },
     "errors": {
-        "groupNameTooLong": "Failed to duplicate group.\nName exceeds 50 characters."
+        "groupNameTooLong": "グループの複製に失敗しました。\n名前は50文字以内です。"
     },
     "successInfoScreen": {
-        "emailImageAlt": "Email image",
+        "emailImageAlt": "メール画像",
         "checkYourMail": "メールを確認してください",
         "didNotReceiveEmail": "メールが届かない場合は迷惑メールフォルダをご確認ください。"
     },
@@ -1710,20 +1710,20 @@
         "backToLogin": "ログインに戻る"
     },
     "signupInfoScreen": {
-        "sentEmailPrefix": "We've sent an email to",
-        "sentEmailSuffix": "with a verification link. Please use that to verify your email address.",
-        "resendCountdown": "Resend verification mail in {{seconds}} s",
-        "resendAction": "Resend verification mail",
-        "editEmail": "Edit email address"
+        "sentEmailPrefix": "次の宛先にメールを送信しました:",
+        "sentEmailSuffix": "確認リンクが含まれています。リンクを使用してメールアドレスを確認してください。",
+        "resendCountdown": "{{seconds}}秒後に確認メールを再送できます",
+        "resendAction": "確認メールを再送",
+        "editEmail": "メールアドレスを編集"
     },
     "setupScreenSelfHost": {
-        "logoAlt": "ToolJet logo",
-        "onboardingAlt": "ToolJet onboarding",
-        "greeting": "Hello,",
-        "welcomeTo": "Welcome to",
+        "logoAlt": "ToolJet ロゴ",
+        "onboardingAlt": "ToolJet オンボーディング",
+        "greeting": "こんにちは、",
+        "welcomeTo": "ようこそ",
         "brandName": "ToolJet!",
-        "subHeader": "Let's set up your workspace to get started with ToolJet",
-        "setupButton": "Set up ToolJet"
+        "subHeader": "ToolJet を始めるためにワークスペースをセットアップしましょう",
+        "setupButton": "ToolJet をセットアップ"
     },
     "forgotPasswordPage": {
         "invalidEmail": "無効なメールアドレス",
@@ -1741,192 +1741,192 @@
         "contactAdmin": "パスワードをリセットするには{{adminUser}}に連絡してください"
     },
     "basicPlanMigrationBanner": {
-        "prefix": "We will be updating our domain on",
-        "date": "24th November '25",
-        "impact": "which will impact any SSO configured.",
-        "readDocs": "Read docs",
-        "toKnowMore": "to know more."
+        "prefix": "ドメインを以下の日付に更新します：",
+        "date": "2025年11月24日",
+        "impact": "これにより設定済みのSSOに影響があります。",
+        "readDocs": "ドキュメントを読む",
+        "toKnowMore": "詳細はこちら。"
     },
     "permissionDeniedModal": {
-        "defaultWorkspaceName": "My Workspace",
-        "workspaceCreated": "Workspace created successfully",
-        "builderLimitExceeded": "Creating a workspace makes you a builder which exceeds your limit. Contact super admin to know more",
-        "title": "Permission Denied",
-        "description": "You don't have permission to create apps in this workspace. Would you like to create the app in a new workspace?",
-        "createInNewWorkspace": "Create app in a new workspace"
+        "defaultWorkspaceName": "マイワークスペース",
+        "workspaceCreated": "ワークスペースを作成しました",
+        "builderLimitExceeded": "ワークスペースを作成するとビルダーになり、上限を超えます。詳細はスーパー管理者にお問い合わせください。",
+        "title": "権限がありません",
+        "description": "このワークスペースでアプリを作成する権限がありません。新しいワークスペースで作成しますか？",
+        "createInNewWorkspace": "新しいワークスペースでアプリを作成"
     },
     "tooljetDatabase": {
         "common": {
-            "noDataFound": "No data found",
-            "continue": "Continue",
-            "areYouSureContinue": "Are you sure you want to continue?"
+            "noDataFound": "データがありません",
+            "continue": "続行",
+            "areYouSureContinue": "続行してもよろしいですか？"
         },
         "columnForm": {
-            "title": "Create a new column",
+            "title": "新しい列を作成",
             "columnName": "列名",
-            "dataType": "Data type",
-            "displayTime": "Display time",
+            "dataType": "データ型",
+            "displayTime": "時刻を表示",
             "defaultValue": "デフォルト値",
-            "setDefaultNull": "Set default value to Null",
-            "openReferencedTable": "Open referenced table",
-            "foreignKeyRelation": "Foreign key relation",
-            "foreignKeyDescription": "Adding a foreign key relation will link this column with a column in an existing table.",
-            "notNull": "NOT NULL",
-            "notNullDescription": "This constraint will restrict entry of NULL values in this column.",
-            "uniqueDescription": "This constraint restricts entry of duplicate values in this column.",
+            "setDefaultNull": "デフォルト値をNULLに設定",
+            "openReferencedTable": "参照テーブルを開く",
+            "foreignKeyRelation": "外部キー関係",
+            "foreignKeyDescription": "外部キー関係を追加すると、この列が既存テーブルの列と紐づきます。",
+            "notNull": "NOT NULL（NULL不可）",
+            "notNullDescription": "この制約により、この列へのNULL値の入力が制限されます。",
+            "uniqueDescription": "この制約により、この列への重複値の入力が制限されます。",
             "placeholders": {
-                "columnName": "Enter column name",
-                "selectDataType": "Select data type",
-                "selectTimezone": "Select Timezone",
-                "defaultValue": "Enter default value",
-                "autoGenerated": "Auto-generated",
-                "null": "Null",
-                "enterValue": "Enter a value"
+                "columnName": "列名を入力",
+                "selectDataType": "データ型を選択",
+                "selectTimezone": "タイムゾーンを選択",
+                "defaultValue": "デフォルト値を入力",
+                "autoGenerated": "自動生成",
+                "null": "NULL",
+                "enterValue": "値を入力"
             },
             "errors": {
-                "columnNameEmpty": "Column name cannot be empty",
-                "dataTypeEmpty": "Data type cannot be empty",
-                "createColumnFailed": "Failed to create a new column in \"{{tableName}}\" table",
-                "defaultRequiredForNotNull": "Default value is required to populate this field in existing rows as NOT NULL constraint is added"
+                "columnNameEmpty": "列名を入力してください",
+                "dataTypeEmpty": "データ型を選択してください",
+                "createColumnFailed": "テーブル「{{tableName}}」に新しい列を作成できませんでした",
+                "defaultRequiredForNotNull": "NOT NULL制約を追加するため、既存行を埋めるデフォルト値が必要です"
             },
             "success": {
-                "columnCreated": "Column created successfully"
+                "columnCreated": "列を作成しました"
             },
             "tooltips": {
-                "setDefaultNull": "Set the default value for the column to Null",
-                "serialValuesReadOnly": "Serial data type values cannot be modified",
-                "foreignKeyNotAllowedSerial": "Foreign key relation cannot be created for serial type column",
-                "foreignKeyNotAllowedBoolean": "Foreign key relation cannot be created for boolean type column",
-                "foreignKeyNotAllowedTimestamp": "Foreign key relation cannot be created with this data type",
-                "foreignKeyNotAllowedJsonb": "Foreign key relation cannot be created for jsonb type column",
-                "fillDetailsForForeignKey": "Fill in column details to create a foreign key relation",
-                "uniqueNotAllowedBoolean": "Unique constraint cannot be added for boolean type column",
-                "uniqueNotAllowedTimestamp": "Unique constraint cannot be added for this type column",
-                "uniqueNotAllowedJsonb": "Unique constraint cannot be added for JSON type column"
+                "setDefaultNull": "列のデフォルト値をNULLに設定",
+                "serialValuesReadOnly": "シリアル型の値は変更できません",
+                "foreignKeyNotAllowedSerial": "シリアル型の列には外部キー関係を作成できません",
+                "foreignKeyNotAllowedBoolean": "ブール型の列には外部キー関係を作成できません",
+                "foreignKeyNotAllowedTimestamp": "このデータ型では外部キー関係を作成できません",
+                "foreignKeyNotAllowedJsonb": "jsonb型の列には外部キー関係を作成できません",
+                "fillDetailsForForeignKey": "外部キー関係を作成するには列の詳細を入力してください",
+                "uniqueNotAllowedBoolean": "ブール型の列には一意制約を追加できません",
+                "uniqueNotAllowedTimestamp": "この型の列には一意制約を追加できません",
+                "uniqueNotAllowedJsonb": "JSON型の列には一意制約を追加できません"
             },
             "confirmDeleteForeignKey": {
-                "title": "Delete foreign key relation",
-                "message": "Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?"
+                "title": "外部キー関係を削除",
+                "message": "外部キー関係の削除は取り消せません。続行しますか？"
             },
-            "unique": "UNIQUE"
+            "unique": "UNIQUE（一意）"
         },
         "editColumnForm": {
-            "primaryKey": "Primary key",
-            "dataTypeReadOnly": "Data type cannot be modified",
+            "primaryKey": "主キー",
+            "dataTypeReadOnly": "データ型は変更できません",
             "confirmDeleteForeignKey": {
-                "title": "Delete foreign key"
+                "title": "外部キーを削除"
             },
             "confirmChangeForeignKey": {
-                "title": "Change in foreign key relation",
-                "message": "Updating the foreign key relation will drop the current constraint and add the new one. This will also replace the default value set in the target table columns with those of the source table. Read docs to know more."
+                "title": "外部キー関係の変更",
+                "message": "外部キー関係を更新すると、現在の制約を削除して新しい制約を追加します。これにより、対象テーブル列に設定されたデフォルト値が、元テーブルの値に置き換えられます。詳細はドキュメントを参照してください。"
             },
-            "title": "Edit column",
-            "warning": "Editing the column could break queries and apps connected with this table.",
+            "title": "列を編集",
+            "warning": "この列を編集すると、関連するクエリやアプリが動作しなくなる可能性があります。",
             "errors": {
-                "validateDefaultFailed": "Failed to validate default value",
-                "editForeignKeyFailed": "Failed to edit foreign key",
-                "fetchColumnsFailed": "Error fetching columns for table \"{{tableName}}\"",
-                "editColumnFailed": "Failed to edit a column in \"{{tableName}}\" table",
-                "deleteForeignKeyFailed": "Failed to delete foreign key"
+                "validateDefaultFailed": "デフォルト値の検証に失敗しました",
+                "editForeignKeyFailed": "外部キーの編集に失敗しました",
+                "fetchColumnsFailed": "テーブル「{{tableName}}」の列取得でエラーが発生しました",
+                "editColumnFailed": "テーブル「{{tableName}}」の列編集に失敗しました",
+                "deleteForeignKeyFailed": "外部キーの削除に失敗しました"
             },
             "success": {
-                "foreignKeyCreated": "Foreign key created successfully",
-                "columnEdited": "Column edited successfully",
-                "foreignKeyDeleted": "Foreign key deleted successfully",
-                "foreignKeyEdited": "Foreign key edited successfully"
+                "foreignKeyCreated": "外部キーを作成しました",
+                "columnEdited": "列を編集しました",
+                "foreignKeyDeleted": "外部キーを削除しました",
+                "foreignKeyEdited": "外部キーを編集しました"
             },
             "warnings": {
-                "defaultValueChangeNotApplied": "Changing the default value will NOT update the fields having existing default value"
+                "defaultValueChangeNotApplied": "デフォルト値を変更しても、既存のデフォルト値が設定済みのフィールドは更新されません"
             },
             "tooltips": {
-                "disableNotNullForNullDefault": "Disable the NOT NULL constraint to set the default value to Null",
-                "foreignKeyNotAllowedTimestamp": "Foreign key relation cannot be created for this data type",
-                "foreignKeyNotAllowedJsonb": "Foreign key relation cannot be created for JSON data type",
-                "primaryKeyNotNull": "Primary key values cannot be null",
-                "serialNotNull": "Serial data type cannot have null value",
-                "primaryKeyUnique": "Primary key values must be unique",
-                "serialUnique": "Serial data type value must be unique"
+                "disableNotNullForNullDefault": "NOT NULL制約を無効にしてデフォルト値をNULLに設定",
+                "foreignKeyNotAllowedTimestamp": "このデータ型では外部キー関係を作成できません",
+                "foreignKeyNotAllowedJsonb": "JSONデータ型では外部キー関係を作成できません",
+                "primaryKeyNotNull": "主キーの値はNULLにできません",
+                "serialNotNull": "シリアル型の値はNULLにできません",
+                "primaryKeyUnique": "主キーの値は一意である必要があります",
+                "serialUnique": "シリアル型の値は一意である必要があります"
             }
         },
         "table": {
             "tooltips": {
-                "cannotEditPrimaryKey": "Cannot edit primary key values",
-                "serialValuesReadOnly": "Serial type values cannot be modified",
-                "columnReadOnly": "Column cannot be edited or deleted",
-                "compositePrimaryKey": "Composite primary key",
-                "uniqueForCompositePrimaryKey": "Unique constraint will be added to combinations of values of a composite primary key"
+                "cannotEditPrimaryKey": "主キーの値は編集できません",
+                "serialValuesReadOnly": "シリアル型の値は変更できません",
+                "columnReadOnly": "列は編集または削除できません",
+                "compositePrimaryKey": "複合主キー",
+                "uniqueForCompositePrimaryKey": "複合主キーの値の組み合わせに一意制約が追加されます"
             },
             "confirmDeleteColumn": {
-                "title": "Delete Column",
-                "message": "Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?",
-                "confirm": "Delete Column"
+                "title": "列を削除",
+                "message": "列を削除すると関連するクエリやコンポーネントに影響する可能性があります。続行しますか？",
+                "confirm": "列を削除"
             },
-            "deleteColumn": "Delete column",
+            "deleteColumn": "列を削除",
             "errors": {
-                "fetchMetadataFailed": "Error fetching metadata for table \"{{tableName}}\"",
-                "fetchTableFailed": "Failed to fetch table \"{{tableName}}\"",
-                "deleteRowsFailed": "Error deleting rows from table \"{{tableName}}\"",
-                "invalidRecordId": "Something went wrong - Record Id is incorrect",
-                "deleteColumnFailed": "Error deleting column \"{{columnName}}\" from table \"{{tableName}}\"",
-                "updateCellFailed": "Failed to create a new column table \"{{tableName}}\""
+                "fetchMetadataFailed": "テーブル「{{tableName}}」のメタデータ取得でエラーが発生しました",
+                "fetchTableFailed": "テーブル「{{tableName}}」の取得に失敗しました",
+                "deleteRowsFailed": "テーブル「{{tableName}}」の行削除でエラーが発生しました",
+                "invalidRecordId": "エラーが発生しました。レコードIDが正しくありません",
+                "deleteColumnFailed": "テーブル「{{tableName}}」の列「{{columnName}}」削除でエラーが発生しました",
+                "updateCellFailed": "テーブル「{{tableName}}」の新しい列の作成に失敗しました"
             },
             "success": {
-                "rowsDeleted": "Deleted {{count}} rows from table \"{{tableName}}\"",
-                "columnDeleted": "Deleted {{columnName}} from table \"{{tableName}}\"",
-                "columnEdited": "Column edited successfully"
+                "rowsDeleted": "テーブル「{{tableName}}」から{{count}}行を削除しました",
+                "columnDeleted": "テーブル「{{tableName}}」から列「{{columnName}}」を削除しました",
+                "columnEdited": "列を編集しました"
             },
             "confirmDeleteRows": {
-                "message": "Are you sure you want to delete the selected rows?"
+                "message": "選択した行を削除してもよろしいですか？"
             },
             "empty": {
-                "filteredDescription": "No data found matching the criteria specified in current filters.",
-                "defaultDescription": "Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.",
+                "filteredDescription": "現在のフィルター条件に一致するデータがありません。",
+                "defaultDescription": "メニューの「行を追加」または + アイコンから行を追加できます。CSVファイルを使った一括アップロードで複数行を追加することもできます。",
                 "filteredTitle": "結果が見つかりません",
-                "defaultTitle": "No data added yet"
+                "defaultTitle": "まだデータがありません"
             }
         },
         "tableKeyRelations": {
-            "type": "TYPE",
-            "single": "Single",
-            "source": "SOURCE",
-            "sourceDescription": "The current table on which foreign key constraint is being added",
-            "target": "TARGET",
-            "targetDescription": "The table that contains foreign key column’s reference",
+            "type": "タイプ",
+            "single": "単一",
+            "source": "ソース",
+            "sourceDescription": "外部キー制約を追加する現在のテーブル",
+            "target": "ターゲット",
+            "targetDescription": "外部キー列が参照するテーブル",
             "table": "テーブル",
-            "column": "Column",
-            "actionsTitle": "ACTIONS",
-            "actionsDescription": "What happens to Source table when Target table is modified",
-            "onUpdate": "On update",
-            "onRemove": "On remove",
+            "column": "列",
+            "actionsTitle": "アクション",
+            "actionsDescription": "ターゲットテーブル変更時にソーステーブルに起きる動作",
+            "onUpdate": "更新時",
+            "onRemove": "削除時",
             "actions": {
-                "restrict": "RESTRICT",
-                "cascade": "CASCADE",
-                "setNull": "SET NULL",
-                "setDefault": "SET DEFAULT"
+                "restrict": "RESTRICT（制限）",
+                "cascade": "CASCADE（連鎖）",
+                "setNull": "SET NULL（NULLに設定）",
+                "setDefault": "SET DEFAULT（既定に設定）"
             },
             "errors": {
-                "fetchTablesFailed": "Failed to fetch tables",
-                "fetchColumnsFailed": "Error fetching columns for table \"{{tableName}}\""
+                "fetchTablesFailed": "テーブルの取得に失敗しました",
+                "fetchColumnsFailed": "テーブル「{{tableName}}」の列取得でエラーが発生しました"
             }
         }
     },
     "resetPasswordModal": {
-        "title": "Reset password",
-        "success": "Password reset successful",
-        "error": "Password could not be reset. Please try again!",
-        "resetting": "Resetting...",
-        "reset": "Reset",
-        "autoOption": "Automatically generate a password",
-        "autoHelper": "You will be able to view and copy the password in the next step",
-        "manualOption": "Create password",
-        "done": "Done"
+        "title": "パスワードをリセット",
+        "success": "パスワードをリセットしました",
+        "error": "パスワードをリセットできませんでした。もう一度お試しください。",
+        "resetting": "リセット中...",
+        "reset": "リセット",
+        "autoOption": "パスワードを自動生成",
+        "autoHelper": "次のステップでパスワードを表示・コピーできます",
+        "manualOption": "パスワードを作成",
+        "done": "完了"
     },
     "blankPage": {
-        "getStartedCreateNewApp": "Get started by creating a new app",
-        "getStartedCreateNewWorkflow": "Get started by creating a new workflow",
-        "importApplication": "Import application",
-        "importWorkflow": "Import workflow",
-        "welcomeToToolJet": "Welcome to ToolJet"
+        "getStartedCreateNewApp": "新しいアプリを作成して始めましょう",
+        "getStartedCreateNewWorkflow": "新しいワークフローを作成して始めましょう",
+        "importApplication": "アプリケーションをインポート",
+        "importWorkflow": "ワークフローをインポート",
+        "welcomeToToolJet": "ToolJetへようこそ"
     },
     "createToolJetAccount": "ToolJet アカウントを作成",
     "forgotPasswordInfo": {
@@ -1937,6 +1937,6 @@
     },
     "Select": "選択",
     "sharepoint": {
-        "toSharepoint": "Go to SharePoint"
+        "toSharepoint": "SharePoint へ移動"
     }
 }
