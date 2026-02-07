@@ -8,7 +8,7 @@ title: Engagespot
 ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

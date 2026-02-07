@@ -50,6 +50,7 @@
     padding: 0;
     position: relative;
     min-height: 40px;
+    border-bottom: 1px solid var(--cc-modal-header-divider-color, var(--cc-default-border)) !important;
   }
 
   .modal-body {
@@ -60,7 +61,7 @@
   .modal-footer {
     position: relative;
     padding: 0;
-    border-top: 1px solid var(--cc-default-border);
+    border-top: 1px solid var(--cc-modal-footer-divider-color, var(--cc-default-border));
     overflow-x: hidden;
     width: 100%;
 

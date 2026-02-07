@@ -80,6 +80,7 @@ class OrganizationLogin extends React.Component {
     const ssoMap = new Map();
     const prevAutomaticSSOLoginStatus = this.state.options.automaticSsoLogin;
 
+    // Instance SSO can be deduped (no multi-OIDC support at instance level)
     if (defaultSso) {
       updatedInstanceSso.forEach((sso) => {
         if (sso.enabled && sso.sso != 'form') {
@@ -88,14 +89,22 @@ class OrganizationLogin extends React.Component {
       });
     }
 
+    // Organization SSO: Handle OIDC specially (multi-tenant support)
+    const orgOidcConfigs = [];
     updatedOrganizationSso.forEach((sso) => {
       if (sso.enabled && sso.sso != 'form') {
-        ssoMap.set(sso.sso, sso);
+        if (sso.sso === 'openid') {
+          // Don't deduplicate OIDC - count all configs
+          orgOidcConfigs.push(sso);
+        } else {
+          // Other SSO types override instance SSO
+          ssoMap.set(sso.sso, sso);
+        }
       }
     });
 
-    // Convert the map back to an array to get the combined and deduplicated SSO configs
-    const combinedSSOConfigs = Array.from(ssoMap.values());
+    // Convert the map back to an array and add all org OIDC configs
+    const combinedSSOConfigs = [...Array.from(ssoMap.values()), ...orgOidcConfigs];
 
     // Filter enabled SSOs
     const enabledSSOs = combinedSSOConfigs.filter(
@@ -163,6 +172,7 @@ class OrganizationLogin extends React.Component {
     const ssoConfigs = organizationSettings?.sso_configs;
     const ssoMap = new Map();
 
+    // Instance SSO can be deduped (no multi-OIDC support at instance level)
     if (organizationSettings?.inherit_s_s_o) {
       instanceSSO.forEach((sso) => {
         if (sso.enabled) {
@@ -171,13 +181,22 @@ class OrganizationLogin extends React.Component {
       });
     }
 
+    // Organization SSO: Handle OIDC specially (multi-tenant support)
+    const orgOidcConfigs = [];
     ssoConfigs.forEach((sso) => {
       if (sso.enabled) {
-        ssoMap.set(sso.sso, sso);
+        if (sso.sso === 'openid') {
+          // Don't deduplicate OIDC - count all configs
+          orgOidcConfigs.push(sso);
+        } else {
+          // Other SSO types override instance SSO
+          ssoMap.set(sso.sso, sso);
+        }
       }
     });
 
-    const combinedSSOConfigs = Array.from(ssoMap.values());
+    // Combine non-OIDC SSOs and all org OIDC configs
+    const combinedSSOConfigs = [...Array.from(ssoMap.values()), ...orgOidcConfigs];
 
     const enabledSSOs = combinedSSOConfigs.filter(
       (obj) => obj.enabled && obj.sso !== 'form' && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
@@ -256,6 +275,7 @@ class OrganizationLogin extends React.Component {
       await organizationService.editOrganizationConfigs(passwordLoginData);
       const ssoMap = new Map();
 
+      // Instance SSO can be deduped (no multi-OIDC support at instance level)
       if (defaultSSO) {
         instanceSSO.forEach((sso) => {
           if (sso.enabled && sso.sso != 'form') {
@@ -264,13 +284,22 @@ class OrganizationLogin extends React.Component {
         });
       }
 
+      // Organization SSO: Handle OIDC specially (multi-tenant support)
+      const orgOidcConfigs = [];
       ssoOptions.forEach((sso) => {
         if (sso.enabled && sso.sso != 'form') {
-          ssoMap.set(sso.sso, sso);
+          if (sso.sso === 'openid') {
+            // Don't deduplicate OIDC - count all configs
+            orgOidcConfigs.push(sso);
+          } else {
+            // Other SSO types override instance SSO
+            ssoMap.set(sso.sso, sso);
+          }
         }
       });
 
-      const combinedSSOConfigs = Array.from(ssoMap.values());
+      // Combine non-OIDC SSOs and all org OIDC configs
+      const combinedSSOConfigs = [...Array.from(ssoMap.values()), ...orgOidcConfigs];
 
       const enabledSSOs = combinedSSOConfigs.filter(
         (obj) =>
@@ -314,6 +343,13 @@ class OrganizationLogin extends React.Component {
   enablePasswordLogin = async () => {
     this.setState({ isSaving: true });
     const { options } = this.state;
+    const prevAutomaticSsoLoginEnabled = options.automaticSsoLogin;
+    const prevPasswordLoginEnabled = options.passwordLoginEnabled;
+
+    if (prevPasswordLoginEnabled && !prevAutomaticSsoLoginEnabled) {
+      this.setState({ isSaving: false });
+      return; //Already enabled password login
+    }
     options.passwordLoginEnabled = true;
     options.automaticSsoLogin = false;
     const passwordLoginData = {

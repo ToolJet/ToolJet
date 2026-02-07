@@ -8,6 +8,13 @@ const initialState = {};
 export const createFormComponentSlice = (set, get) => ({
   ...initialState,
 
+  // Extracts base parent ID from slot IDs (e.g., 'formId-header' -> 'formId')
+  // Returns the original parentId if it's not a slot ID
+  getBaseParentId: (parentId) => {
+    if (!parentId) return null;
+    return parentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] || parentId;
+  },
+
   isJsonSchemaInGenerateFormFrom: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
@@ -51,13 +58,33 @@ export const createFormComponentSlice = (set, get) => ({
       moduleId
     );
   },
+  // Updates form data section in local state only (no API call)
+  // Use this when the API call is handled by a batch operation
+  // Note: Does NOT call updateContainerAutoHeight - caller should handle auto-height if needed
+  updateFormDataSectionDataLocally: (componentId, data, fields, moduleId = 'canvas') => {
+    const { getComponentDefinition, getCurrentPageIndex } = get();
+    const componentDefinition = getComponentDefinition(componentId, moduleId);
+    if (!componentDefinition) return;
+
+    const currentPageIndex = getCurrentPageIndex(moduleId);
+    set(
+      (state) => {
+        const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
+        lodashSet(pageComponent, ['definition', 'properties', 'generateFormFrom'], data.generateFormFrom);
+        lodashSet(pageComponent, ['definition', 'properties', 'JSONData'], data.JSONData);
+        lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
+      },
+      false,
+      'updateFormDataSectionDataLocally'
+    );
+  },
   getFormFields: (componentId, moduleId = 'canvas') => {
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return [];
     return componentDefinition?.component?.definition?.properties?.fields?.value || [];
   },
-  saveFormFields: (componentId, fields, moduleId = 'canvas') => {
+  saveFormFields: (componentId, fields, moduleId = 'canvas', { skipSave = false } = {}) => {
     if (!componentId) return;
 
     const { getComponentDefinition, getCurrentPageIndex, saveComponentPropertyChanges } = get();
@@ -74,25 +101,42 @@ export const createFormComponentSlice = (set, get) => ({
       'saveFormFields'
     );
 
-    saveComponentPropertyChanges(componentId, 'fields', fields, 'properties', 'value', moduleId);
+    if (!skipSave) {
+      saveComponentPropertyChanges(componentId, 'fields', fields, 'properties', 'value', moduleId);
+    }
   },
 
   // Check if the parent component is a Form and delete the form fields if it has the componentId
-  checkIfParentIsFormAndDeleteField: (componentId, moduleId = 'canvas', skipSettingProperty = false) => {
-    const { getParentComponentType, getComponentDefinition, saveFormFields, getFormFields } = get();
+  // skipSettingProperty: if true, returns the componentId without updating (used for batching)
+  // skipSave: if true, updates local state but skips API call (for batching with other operations)
+  checkIfParentIsFormAndDeleteField: (
+    componentId,
+    moduleId = 'canvas',
+    skipSettingProperty = false,
+    { skipSave = false } = {}
+  ) => {
+    const { getParentComponentType, getComponentDefinition, saveFormFields, getFormFields, getBaseParentId } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     const parentId = componentDefinition?.component?.parent;
     if (!parentId) return;
+
+    // Handle slot IDs (e.g., formId-header, formId-footer) - extract base Form ID
+    const baseParentId = getBaseParentId(parentId);
 
     if (getParentComponentType(parentId, moduleId) === 'Form') {
       if (skipSettingProperty) {
         return componentId;
       }
-      const fields = getFormFields(parentId, moduleId);
+      const fields = getFormFields(baseParentId, moduleId);
 
       const updatedFields = fields.filter((field) => field.componentId !== componentId);
 
-      saveFormFields(parentId, updatedFields, moduleId);
+      saveFormFields(baseParentId, updatedFields, moduleId, { skipSave });
+
+      // Return the parent Form ID for batching purposes
+      if (skipSave) {
+        return baseParentId;
+      }
     }
   },
   // Check if the parent component is a Form and add the form fields
@@ -126,13 +170,17 @@ export const createFormComponentSlice = (set, get) => ({
   },
 
   // Logic is written considering that the component from different parent cannot be moved together
-  checkParentAndUpdateFormFields: (componentLayouts, newParentId, moduleId = 'canvas') => {
+  // When skipSave is true, updates the local state but skips the API call and returns the form field changes
+  // so they can be batched with other changes (e.g., layout changes)
+  checkParentAndUpdateFormFields: (componentLayouts, newParentId, moduleId = 'canvas', { skipSave = false } = {}) => {
     const {
       getParentComponentType,
       getComponentDefinition,
       checkIfParentIsFormAndAddField,
       checkIfParentIsFormAndDeleteField,
       saveFormFields,
+      getCurrentPageIndex,
+      getBaseParentId,
     } = get();
 
     const newParentType = getParentComponentType(newParentId, moduleId);
@@ -140,7 +188,13 @@ export const createFormComponentSlice = (set, get) => ({
 
     const firstComponentDefinition = getComponentDefinition(firstComponentId, moduleId);
     const currentParentId = firstComponentDefinition?.component?.parent;
-    const existingParentDefinition = currentParentId ? getComponentDefinition(currentParentId, moduleId) : null;
+
+    // Get the base parent IDs (without slot suffixes) to check if we're moving within the same Form
+    const newBaseParentId = getBaseParentId(newParentId);
+    const currentBaseParentId = getBaseParentId(currentParentId);
+
+    // Use base parent ID to get the component definition (handles slot IDs like formId-header)
+    const existingParentDefinition = currentBaseParentId ? getComponentDefinition(currentBaseParentId, moduleId) : null;
     const currentParentType = existingParentDefinition?.component?.component;
 
     /* There are three scenarios:
@@ -150,9 +204,13 @@ export const createFormComponentSlice = (set, get) => ({
     */
 
     // Case 1: If both newParentId and currentParentId are same, then return
-    if (newParentId === currentParentId) return;
+    if (newParentId === currentParentId) return null;
+
+    // Case 1b: If moving within the same Form (e.g., from header to body), no field updates needed
+    if (newBaseParentId === currentBaseParentId && newParentType === 'Form') return null;
+
     // Return if neither newParentId nor currentParentId is a Form
-    if (newParentType !== 'Form' && currentParentType !== 'Form') return;
+    if (newParentType !== 'Form' && currentParentType !== 'Form') return null;
 
     const addedFields = [],
       removedComponentIds = [];
@@ -175,8 +233,51 @@ export const createFormComponentSlice = (set, get) => ({
     const updatedFields = fields.filter((field) => !removedComponentIds.includes(field.componentId));
     const newParentComponentDefinition = getComponentDefinition(newParentId, moduleId);
     const newParentFields = newParentComponentDefinition?.component?.definition?.properties?.fields?.value || [];
-    saveFormFields(newParentId, [...newParentFields, ...addedFields], moduleId);
-    saveFormFields(currentParentId, updatedFields, moduleId);
+
+    const newParentUpdatedFields = [...newParentFields, ...addedFields];
+
+    // Update local state (skipSave will prevent API call in saveFormFields)
+    saveFormFields(newParentId, newParentUpdatedFields, moduleId, { skipSave });
+    saveFormFields(currentParentId, updatedFields, moduleId, { skipSave });
+
+    // If skipSave is true, return the form field changes so they can be merged with other diffs
+    if (skipSave) {
+      const currentPageIndex = getCurrentPageIndex(moduleId);
+      const formFieldsDiff = {};
+
+      // Build diff for new parent form (if it's a Form)
+      if (newParentId && newParentType === 'Form') {
+        const newParentComponent = get().modules[moduleId].pages[currentPageIndex].components[newParentId]?.component;
+        if (newParentComponent) {
+          const { events, exposedVariables, ...filteredDefinition } = newParentComponent.definition || {};
+          formFieldsDiff[newParentId] = {
+            component: {
+              ...newParentComponent,
+              definition: filteredDefinition,
+            },
+          };
+        }
+      }
+
+      // Build diff for current parent form (if it's a Form)
+      if (currentParentId && currentParentType === 'Form') {
+        const currentParentComponent =
+          get().modules[moduleId].pages[currentPageIndex].components[currentParentId]?.component;
+        if (currentParentComponent) {
+          const { events, exposedVariables, ...filteredDefinition } = currentParentComponent.definition || {};
+          formFieldsDiff[currentParentId] = {
+            component: {
+              ...currentParentComponent,
+              definition: filteredDefinition,
+            },
+          };
+        }
+      }
+
+      return Object.keys(formFieldsDiff).length > 0 ? formFieldsDiff : null;
+    }
+
+    return null;
   },
   setComponentPropertyByComponentIds: (
     componentDiffs,
@@ -282,11 +383,12 @@ export const createFormComponentSlice = (set, get) => ({
   },
 
   /**
-   * Performs batch operations on components (create, update, delete)
+   * Performs batch operations on components (create, update, delete, layout)
    * @param {Object} operations - Object containing the operations to perform
    * @param {Object} operations.added - Components to create { [componentId]: componentDefinition }
    * @param {Object} operations.updated - Components to update { [componentId]: componentDiff }
    * @param {Array} operations.deleted - Array of component IDs to delete
+   * @param {Object} operations.layout - Layout changes { [componentId]: { layouts, component? } }
    * @param {string} moduleId - Module ID (default: 'canvas')
    * @param {Object} options - Additional options { skipUndoRedo, saveAfterAction }
    * @returns {Promise} - Promise that resolves when all operations are complete
@@ -299,6 +401,8 @@ export const createFormComponentSlice = (set, get) => ({
       deleteComponents,
       saveComponentChanges,
       buildComponentDefinition,
+      updateContainerAutoHeight,
+      getBaseParentId,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
 
@@ -357,6 +461,29 @@ export const createFormComponentSlice = (set, get) => ({
       handleUpdate();
       const diff = await handleCreate();
 
+      // After creating components, update container auto-heights for affected parents
+      // Collect unique parent IDs from created components
+      const affectedParentIds = new Set();
+      if (operations.added) {
+        Object.values(operations.added).forEach((component) => {
+          const parentId = component.component?.parent;
+          if (parentId) {
+            affectedParentIds.add(getBaseParentId(parentId));
+          }
+        });
+      }
+
+      // Compute auto-height diffs for affected containers (without saving)
+      affectedParentIds.forEach((parentId) => {
+        const heightDiff = updateContainerAutoHeight(parentId, moduleId, {
+          saveAfterAction: false,
+          returnDiff: true,
+        });
+        if (heightDiff) {
+          upatedDiff = { ...upatedDiff, ...heightDiff };
+        }
+      });
+
       // Save all changes together if requested
       if (saveAfterAction) {
         let combinedDiff = {
@@ -371,6 +498,13 @@ export const createFormComponentSlice = (set, get) => ({
             diff: operations.deleted || [],
           },
         };
+
+        // Add layout operation if present
+        if (operations.layout && Object.keys(operations.layout).length > 0) {
+          combinedDiff.layout = {
+            diff: operations.layout,
+          };
+        }
 
         saveComponentChanges(combinedDiff, 'components/batch', 'update');
 

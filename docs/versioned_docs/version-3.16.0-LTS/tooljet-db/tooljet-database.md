@@ -1,6 +1,7 @@
 ---
 id: tooljet-database
-title: Overview
+title: ToolJet Database Overview
+sidebar_label: Overview
 ---
 
 Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database require no setup and gives you a powerful user interface for managing your data.

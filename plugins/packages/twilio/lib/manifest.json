@@ -32,7 +32,7 @@
   },
   "properties": {
     "auth_token": {
-      "label": "Auth Token",
+      "label": "Auth token",
       "key": "auth_token",
       "type": "password",
       "description": "Auth Token for Twilio",
@@ -46,7 +46,7 @@
       "helpText": "For generating Account SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
     },
     "messaging_service_sid": {
-      "label": "Messaging Service SID",
+      "label": "Messaging service SID",
       "key": "messaging_service_sid",
       "type": "text",
       "description": "Messaging Service SID for Twilio",

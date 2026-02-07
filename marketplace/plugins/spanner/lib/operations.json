@@ -1,0 +1,88 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Google Cloud Spanner datasource",
+  "description": "A schema defining Google Cloud Spanner datasource",
+  "type": "database",
+  "defaults": {
+    "dialect": "standard",
+    "query_mode": "read"
+  },
+  "properties": {
+    "dialect": {
+      "key": "dialect",
+      "label": "SQL dialect",
+      "type": "dropdown",
+      "description": "Select the SQL dialect to use",
+      "list": [
+        {
+          "name": "Google Standard SQL",
+          "value": "standard"
+        },
+        {
+          "name": "PostgreSQL",
+          "value": "postgresql"
+        }
+      ]
+    },
+    "query_mode": {
+      "key": "query_mode",
+      "label": "Query mode",
+      "type": "dropdown",
+      "description": "Choose how the query should be executed",
+      "list": [
+        {
+          "name": "Read-only (SELECT)",
+          "value": "read"
+        },
+        {
+          "name": "Write (INSERT, UPDATE, DELETE)",
+          "value": "write"
+        },
+        {
+          "name": "Schema changes (CREATE, ALTER, DROP)",
+          "value": "schema"
+        }
+      ]
+    },
+    "database_id": {
+      "key": "database_id",
+      "label": "Database ID",
+      "type": "codehinter",
+      "description": "Enter the Google Cloud Spanner database ID",
+      "placeholder": "my-database"
+    },
+    "sql": {
+      "key": "sql",
+      "label": "SQL query",
+      "type": "codehinter",
+      "description": "Enter SQL query",
+      "height": "150px",
+      "editorType": "multiline",
+      "placeholder": "SELECT AlbumTitle FROM Albums WHERE ArtistId = @artistId",
+      "helpText": "As per database configuration, use @paramName for GoogleSQL or $1, $2, etc. for PostgreSQL."
+    },
+    "query_params": {
+      "key": "query_params",
+      "label": "SQL Parameters",
+      "type": "react-component-headers",
+      "description": "Parameters for the SQL query",
+      "buttonText": "Add an SQL parameter",
+      "tooltip": "Use these parameters in the query using < @parameterName > notation for GoogleSQL and < $1, $2, $3 > notation for PostgreSQL"
+    },
+    "param_types": {
+      "key": "param_types",
+      "label": "Types",
+      "type": "react-component-headers",
+      "description": "Define types for the SQL parameters",
+      "buttonText": "Add a type",
+      "tooltip": "Define the Spanner data type for each parameter, which is crucial for certain types like BYTES, NUMERIC, JSON, ARRAY types, or when the JavaScript type inference might be ambiguous (e.g., Number could be INT64 or FLOAT64)."
+    },
+    "options": {
+      "key": "options",
+      "label": "Options",
+      "type": "codehinter",
+      "description": "Additional options for the query execution",
+      "placeholder": "{ \"requestOptions\": { \"requestTag\": \"my-query\" }, \"json\": true }"
+    }
+  }
+}

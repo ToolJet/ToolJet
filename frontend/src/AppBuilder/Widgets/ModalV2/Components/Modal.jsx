@@ -2,13 +2,14 @@ import React, { useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
+import { getCanvasHeight, isFalsyOrMultipleZeros } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { ModalHeader } from '@/AppBuilder/Widgets/ModalV2/Components/Header';
 import { ModalFooter } from '@/AppBuilder/Widgets/ModalV2/Components/Footer';
 import useStore from '@/AppBuilder/_stores/store';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 import Spinner from '@/_ui/Spinner';
 import classNames from 'classnames';
-import { isFalsyOrMultipleZeros } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
+import { shallow } from 'zustand/shallow';
 
 export const ModalWidget = ({ ...restProps }) => {
   const {
@@ -31,11 +32,18 @@ export const ModalWidget = ({ ...restProps }) => {
     onSelectModal,
     modalHeight,
     isFullScreen,
+    subContainerIndex,
+    isDynamicHeightEnabled,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const temporaryLayouts = useStore((state) => {
+    const transformedId = subContainerIndex ? `${id}-${subContainerIndex}` : id;
+    return state.temporaryLayouts?.[`${transformedId}-body`];
+  }, shallow);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
+
   const headerMaxHeight = isFullScreen
     ? `calc(${_modalHeight} - ${footerHeight} - 100px - 10px)`
     : parseInt(_modalHeight, 10) - parseInt(footerHeight, 10) - 100 - 10;
@@ -55,6 +63,10 @@ export const ModalWidget = ({ ...restProps }) => {
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalSlotClick = (event) => {
+    // If shift is pressed, don't select the component since its used for multi select
+    const isShiftPressed = event.shiftKey || event.nativeEvent?.shiftKey || false;
+    if (isShiftPressed) return;
+
     const clickedComponentId = event.target.getAttribute('component-id');
     const clickedId = event.target.getAttribute('id');
 
@@ -85,21 +97,44 @@ export const ModalWidget = ({ ...restProps }) => {
       const modalContent = document.querySelector(`.tj-modal-content-${id}`);
       if (restProps.show && modalContent) {
         if (!isFalsyOrMultipleZeros(modalHeight)) {
-          modalContent.style.setProperty('height', _modalHeight, 'important');
-          modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+          if (isDynamicHeightEnabled) {
+            const canvasHeaderHeight = getCanvasHeight(headerHeight);
+            const canvasFooterHeight = getCanvasHeight(footerHeight);
+            const canvasContentHeight = temporaryLayouts?.height
+              ? temporaryLayouts?.height
+              : getCanvasHeight(modalBodyHeight);
+            const totalHeight = canvasHeaderHeight + canvasFooterHeight + canvasContentHeight;
+            modalContent.style.setProperty('height', `${totalHeight}px`, 'important');
+            modalContent.style.setProperty('min-height', isFullScreen ? '100%' : `${modalHeight}px`, 'important');
+            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : `85vh`, 'important');
+          } else {
+            modalContent.style.setProperty('height', _modalHeight, 'important');
+            modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+          }
         } else {
           modalContent.style.setProperty('height', '5px', 'important');
         }
       }
     }, 100);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalHeight, restProps.show, isFullScreen]);
+  }, [
+    modalHeight,
+    modalBodyHeight,
+    headerHeight,
+    footerHeight,
+    showHeader,
+    showFooter,
+    restProps.show,
+    isFullScreen,
+    isDynamicHeightEnabled,
+    temporaryLayouts,
+  ]);
 
   return (
     <BootstrapModal
       {...restProps}
       contentClassName={classNames(
-        `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`
+        `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
+        isDynamicHeightEnabled && `dynamic-${id}`
       )}
       animation={true}
       onEscapeKeyDown={(e) => {
@@ -118,6 +153,8 @@ export const ModalWidget = ({ ...restProps }) => {
           setSelectedComponentAsModal={onSelectModal}
           componentType="Modal"
           isModalOpen={true}
+          visibility={true}
+          subContainerIndex={null}
         />
       )}
       {showHeader && (
@@ -153,7 +190,10 @@ export const ModalWidget = ({ ...restProps }) => {
             <SubContainer
               id={`${id}`}
               canvasHeight={modalBodyHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{
+                backgroundColor: customStyles.modalBody.backgroundColor,
+                overflowY: isDisabled ? 'hidden' : 'auto',
+              }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
               componentType="ModalV2"

@@ -1,14 +1,17 @@
 import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const DragGhostWidget = () => {
+export const DragResizeGhostWidget = () => {
   const draggingComponentId = useStore((state) => state.draggingComponentId);
+  const isGroupDragging = useStore((state) => state.isGroupDragging);
+  const isGroupResizing = useStore((state) => state.isGroupResizing);
+  const resizingComponentId = useStore((state) => state.resizingComponentId);
 
-  if (!draggingComponentId) return null;
+  if (!draggingComponentId && !resizingComponentId && !isGroupDragging && !isGroupResizing) return null;
 
   return (
     <div
-      id="moveable-drag-ghost"
+      id="moveable-ghost-widget"
       style={{
         zIndex: 4,
         position: 'absolute',
@@ -19,22 +22,5 @@ export const DragGhostWidget = () => {
         top: 0,
       }}
     />
-  );
-};
-
-export const ResizeGhostWidget = () => {
-  const resizingComponentId = useStore((state) => state.resizingComponentId);
-  if (!resizingComponentId) return null;
-
-  return (
-    <div
-      id="resize-ghost-widget"
-      style={{
-        zIndex: 4,
-        position: 'absolute',
-        background: '#D9E2FC',
-        opacity: '0.7',
-      }}
-    ></div>
   );
 };

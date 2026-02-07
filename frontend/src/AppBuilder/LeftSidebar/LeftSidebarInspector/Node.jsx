@@ -11,6 +11,7 @@ import useCallbackActions from './useCallbackActions';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { shallow } from 'zustand/shallow';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 const renderNodeIcons = (node, iconsList, darkMode) => {
   const icon = iconsList.filter((icon) => icon?.iconName === node && !icon?.isInfoIcon)[0];
@@ -145,6 +146,7 @@ export const Node = (props) => {
                 searchWords={[searchValue]}
                 autoEscape={true}
                 textToHighlight={element.name}
+                data-cy={`inspector-${generateCypressDataCy(element.name)}-subnode-label`}
               />
             </OverflowTooltip>
           )}

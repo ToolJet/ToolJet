@@ -24,7 +24,7 @@ export class SessionController implements ISessionController {
   @Get('logout')
   @InitFeature(FEATURE_KEY.LOG_OUT)
   async terminateUserSession(@User() user: UserEntity, @Res({ passthrough: true }) response: Response): Promise<void> {
-    await this.sessionService.terminateSession(user.id, user.sessionId, response);
+    await this.sessionService.terminateSession(user, user.sessionId, response);
     return;
   }
 

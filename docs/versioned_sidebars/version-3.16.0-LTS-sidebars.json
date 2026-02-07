@@ -50,9 +50,27 @@
           "label": "Deployment",
           "link": {
             "type": "doc",
-            "id": "setup/index"
+            "id": "setup/setup"
           },
           "items": [
+            "setup/try-tooljet",
+            "setup/choose-your-tooljet",
+            "setup/system-requirements",
+            "setup/digitalocean",
+            "setup/docker",
+            "setup/ami",
+            "setup/ecs",
+            "setup/openshift",
+            "setup/helm",
+            "setup/kubernetes",
+            "setup/kubernetes-gke",
+            "setup/kubernetes-aks",
+            "setup/kubernetes-eks",
+            "setup/azure-container",
+            "setup/google-cloud-run",
+            "setup/env-vars",
+            "setup/http-proxy",
+            "setup/tooljet-subpath",
             {
               "type": "category",
               "label": "PostgreSQL 13 → 16 Upgrade",
@@ -116,24 +134,6 @@
                 }
               ]
             },
-            "setup/try-tooljet",
-            "setup/choose-your-tooljet",
-            "setup/system-requirements",
-            "setup/digitalocean",
-            "setup/docker",
-            "setup/ami",
-            "setup/ecs",
-            "setup/openshift",
-            "setup/helm",
-            "setup/kubernetes",
-            "setup/kubernetes-gke",
-            "setup/kubernetes-aks",
-            "setup/kubernetes-eks",
-            "setup/azure-container",
-            "setup/google-cloud-run",
-            "setup/env-vars",
-            "setup/http-proxy",
-            "setup/tooljet-subpath",
             "setup/v2-migration-guide",
             "setup/upgrade-to-lts",
             "setup/upgrade-to-v3",
@@ -206,6 +206,10 @@
             {
               "type": "category",
               "label": "Events and Actions",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/events/overview"
+              },
               "items": [
                 "app-builder/events/overview",
                 "app-builder/events/event-triggers",
@@ -236,9 +240,16 @@
             {
               "type": "category",
               "label": "Dynamic Access Rules",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/dynamic-access-rule/overview"
+              },
               "items": [
-                "app-builder/walkthrough/row-level-security",
-                "app-builder/walkthrough/permissions"
+                "app-builder/dynamic-access-rule/overview",
+                "app-builder/dynamic-access-rule/component-level",
+                "app-builder/dynamic-access-rule/page-level",
+                "app-builder/dynamic-access-rule/query-level",
+                "app-builder/dynamic-access-rule/row-level-security"
               ]
             }
           ]
@@ -255,6 +266,10 @@
         {
           "type": "category",
           "label": "Modules",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/modules/overview"
+              },
           "items": [
             "app-builder/modules/overview",
             "app-builder/modules/create-module",
@@ -265,6 +280,10 @@
         {
           "type": "category",
           "label": "Embed Application",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/embed-app/overview"
+              },
           "items": [
             "app-builder/embed-app/overview",
             "app-builder/embed-app/public-app",
@@ -394,6 +413,7 @@
               "label": "Actions Reference",
               "items": [
                 "actions/run-query",
+                "actions/reset-query",
                 "actions/show-alert",
                 "actions/control-component",
                 "actions/show-modal",
@@ -448,6 +468,7 @@
             "data-sources/elasticsearch",
             "data-sources/gcs",
             "data-sources/googlesheets",
+            "data-sources/googlesheetsv2",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
@@ -496,6 +517,10 @@
           "type": "category",
           "label": "Marketplace",
           "collapsed": true,
+          "link": {
+                "type": "doc",
+                "id": "marketplace/marketplace-overview"
+              },
           "items": [
             "marketplace/marketplace-overview",
             {
@@ -677,6 +702,10 @@
         {
           "type": "category",
           "label": "Onboard and Offboard Users",
+          "link": {
+            "type": "doc",
+            "id": "user-management/onboard-users/overview"
+          },
           "items": [
             "user-management/onboard-users/overview",
             "user-management/onboard-users/invite-user",
@@ -824,6 +853,10 @@
         {
           "type": "category",
           "label": "GitSync",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/gitsync/overview"
+          },
           "items": [
             "development-lifecycle/gitsync/overview",
             {
@@ -851,6 +884,10 @@
         {
           "type": "category",
           "label": "GitSync CI/CD",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/cicd/overview"
+          },
           "items": [
             "development-lifecycle/cicd/overview",
             "development-lifecycle/cicd/example"
@@ -889,6 +926,10 @@
         {
           "type": "category",
           "label": "Backup",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/backup/gitsync-backup"
+          },
           "items": [
             "development-lifecycle/backup/gitsync-backup"
           ]
@@ -922,6 +963,10 @@
         {
           "type": "category",
           "label": "Audit Logs",
+          "link": {
+            "type": "doc",
+            "id": "security/audit-logs/audit-logs"
+          },
           "items": [
             "security/audit-logs/audit-logs",
             "security/audit-logs/stream-audit-to-datadog"

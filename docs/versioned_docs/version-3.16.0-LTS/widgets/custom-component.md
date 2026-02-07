@@ -140,3 +140,18 @@ ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
 <img className="screenshot-full" src="/img/widgets/custom-component/run-query.png" alt="Custom Component Run Query code" />
+
+## Styles
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Visibility | Controls component visibility. | Toggle on or off, or set programmatically using **fx**. |
+| Border color | Sets the border color of the component. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the component. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust related properties or set it programmatically using **fx**. |
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::

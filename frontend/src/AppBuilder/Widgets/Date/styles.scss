@@ -1,11 +1,3 @@
-.tj-daterange-widget {
-    .react-datepicker {
-        .react-datepicker__header {
-            background-color: var(--cc-surface1-surface);
-        }
-    }
-}
-
 .tj-table-datepicker .react-datepicker__day--keyboard-selected {
     background-color: var(--cc-surface1-surface) !important;
 }
@@ -39,20 +31,82 @@
 
 }
 
-
-.react-datepicker-time-component.tj-datepicker-widget {
-    width: 124px !important;
-}
-
 .daterangepicker-header {
     .react-select__menu .react-select__menu-list .react-select__option > div > span{
         color: var(--cc-primary-text) !important;
     }
 }
 
-.cc-timepicker-widget {
-    .react-datepicker__input-time-container {
-        border-radius: 10px;
-        overflow: clip !important;
+#component-portal {
+
+    // DatePickerV2 Component
+    .datepicker-component {
+        width: auto !important;
+
+        .react-datepicker {
+            .react-datepicker__month-container {
+                border-radius: 0.5rem !important;
+            }
+
+            .react-datepicker__header {
+                border-top-left-radius: 0.5rem;
+                border-top-right-radius: 0.5rem;
+            }
+        }
+    }
+
+    // TimePicker Component
+    .cc-timepicker-widget {
+        width: fit-content !important;
+        border-radius: 0.5rem !important;
+        overflow-x: hidden;
+
+        .react-datepicker--time-only {
+            width: auto;
+        }
+    }
+
+    // DateTimePickerV2 Component
+    .datetimepicker-widget {
+        width: auto !important;
+        border-radius: 0.5rem !important;
+        overflow-x: hidden;
+
+        .react-datepicker {
+            width: auto;
+        }
+    }
+
+    // DaterangePicker Component
+    .tj-daterange-widget {
+        border: 1px solid var(--slate5) !important;
+
+        .react-datepicker {
+            border-radius: 0.5rem !important;
+
+            .react-datepicker__month-container:nth-of-type(1) {
+                border-top-left-radius: 0.5rem !important;
+                border-bottom-left-radius: 0.5rem !important;
+
+                .react-datepicker__header {
+                    border-top-left-radius: 0.5rem;
+                    background-color: var(--cc-surface1-surface);
+                }
+            }
+
+            .react-datepicker__month-container:nth-of-type(2) {
+                border-top-right-radius: 0.5rem !important;
+                border-bottom-right-radius: 0.5rem !important;
+
+                .react-datepicker__header {
+                    border-top-right-radius: 0.5rem;
+                    background-color: var(--cc-surface1-surface);
+                }
+            }
+
+            .react-select__menu {
+                width: auto;
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
+import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { validateKebabCase } from '@/_helpers/utils';
 
 export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving = false }) => {

@@ -1,2 +1,6 @@
 @import '~bootstrap/scss/bootstrap';
-@import '../src/_styles/componentdesign.scss'
+@import '../src/_styles/componentdesign.scss';
+
+body {
+  overflow-y: scroll !important;
+}

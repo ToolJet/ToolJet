@@ -147,3 +147,80 @@ export const processDataInBatches = async <T>(
     }
   } while (data.length === batchSize);
 };
+
+/**
+ * Deletes app history entries for affected app versions when a migration
+ * modifies the structure of components, pages, queries, or global settings.
+ * This prevents corruption when users try to restore from incompatible history.
+ *
+ * @param entityManager - TypeORM entity manager
+ * @param options - Object containing either appVersionIds or componentIds
+ * @param migrationName - Name of the migration for logging purposes
+ */
+export const deleteAppHistoryForStructuralMigration = async (
+  entityManager: EntityManager,
+  options: {
+    appVersionIds?: string[];
+    componentIds?: string[];
+  },
+  migrationName = ''
+): Promise<void> => {
+  console.log(`[${migrationName}] Starting app history cleanup for structural migration`);
+
+  try {
+    let appVersionIds = options.appVersionIds;
+
+    // If componentIds are provided but not appVersionIds, get appVersionIds from components
+    if (!appVersionIds && options.componentIds && options.componentIds.length > 0) {
+      console.log(`[${migrationName}] Resolving app version IDs from ${options.componentIds.length} component IDs`);
+
+      // Use raw query for better performance with large datasets
+      const result = await entityManager.query(
+        `
+        SELECT DISTINCT p.app_version_id
+        FROM components c
+        INNER JOIN pages p ON c.page_id = p.id
+        WHERE c.id = ANY($1)
+        `,
+        [options.componentIds]
+      );
+
+      appVersionIds = result.map((row: any) => row.app_version_id);
+      console.log(`[${migrationName}] Found ${appVersionIds.length} app versions from components`);
+    }
+
+    if (!appVersionIds || appVersionIds.length === 0) {
+      console.log(`[${migrationName}] No app versions to clean up history for`);
+      return;
+    }
+
+    // Use raw query for better performance when deleting large amounts of data
+    // Process in batches to avoid query timeout and memory issues
+    const batchSize = 1000;
+    let totalDeleted = 0;
+
+    for (let i = 0; i < appVersionIds.length; i += batchSize) {
+      const batch = appVersionIds.slice(i, i + batchSize);
+
+      const result = await entityManager.query(
+        `
+        DELETE FROM app_history 
+        WHERE app_version_id = ANY($1)
+        `,
+        [batch]
+      );
+
+      const deleted = result[1] || 0; // PostgreSQL returns [query result, affected rows]
+      totalDeleted += deleted;
+
+      console.log(`[${migrationName}] Batch ${Math.floor(i / batchSize) + 1}: Deleted ${deleted} history entries`);
+    }
+
+    console.log(
+      `[${migrationName}] Completed: Deleted ${totalDeleted} app history entries for ${appVersionIds.length} app versions`
+    );
+  } catch (error) {
+    console.error(`[${migrationName}] Failed to delete app history:`, error);
+    throw error;
+  }
+};

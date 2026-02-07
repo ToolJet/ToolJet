@@ -54,3 +54,35 @@ All the following actions can be enabled or disabled either by using the toggle 
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
+## Styles
+
+### Message
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Name | Sets the color for the sender's name. | Select a color from the color picker or set it programmatically using **fx**. |
+| Message | Sets the color for the message text. | Select a color from the color picker or set it programmatically using **fx**. |
+| Timestamp | Sets the color for the timestamp. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Field
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border | Sets the border color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Accent | Sets the accent color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Text | Sets the text color of the input field. | Select a color from the color picker or set it programmatically using **fx**. |
+| Send icon | Sets the color of the send icon. | Select a color from the color picker or set it programmatically using **fx**. |
+
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Background | Sets the background color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border | Sets the border color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Box shadow | Sets the box shadow color of the chat container. | Select a color from the color picker or set it programmatically using **fx**. |
+| Border radius | Sets the corner radius of the chat container. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
+
+:::info
+Any property having **fx** button next to its field can be **programmatically configured**.
+:::

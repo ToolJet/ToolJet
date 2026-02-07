@@ -48,7 +48,7 @@ const GrpcAuthentication = ({
         <div className="col-md-12">
           <label className="form-label text-muted mt-3">
             Password
-            <small className="text-green mx-2">
+            <small className="text-green mx-2" data-cy="encrypted-text">
               <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
               Encrypted
             </small>

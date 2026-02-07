@@ -31,4 +31,12 @@ export class CreateWorkflowExecutionDto {
   @IsString()
   @IsNotEmpty()
   environmentId: string;
+
+  @IsString()
+  @IsOptional()
+  startNodeId?: string;
+
+  @IsOptional()
+  @IsObject()
+  injectedState?: object;
 }

@@ -60,10 +60,8 @@ export default class PineconeService implements QueryService {
 
     try {
       const indexes = await pinecone.listIndexes();
-      console.log('Indexes fetched:', indexes);
 
       if (indexes.indexes.length > 0) {
-        console.log('Connection successful, indexes found');
         return { status: 'ok' };
       } else {
         console.error('No indexes found');

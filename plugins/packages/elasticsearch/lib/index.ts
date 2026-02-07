@@ -79,12 +79,17 @@ export default class ElasticsearchService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const client = await this.getConnection(sourceOptions);
-    await client.info();
-
-    return {
-      status: 'ok',
-    };
+    try {
+      const client = await this.getConnection(sourceOptions);
+      await client.info();
+      return {
+        status: 'ok',
+        message: 'Connection successful',
+      };
+    } catch (err: any) {
+      const errorMessage = err || 'Unknown error';
+      throw new QueryError(errorMessage, err, {});
+    }
   }
 
   determineProtocol(sourceOptions: SourceOptions) {
@@ -116,7 +121,10 @@ export default class ElasticsearchService implements QueryService {
       url = `${protocol}://${host}:${port}`;
     }
 
-    const options: ClientOptions = { node: url };
+    const options: ClientOptions = { 
+      node: url,
+      requestTimeout: 10000,
+    };
 
     if (sslEnabled) {
       if (sslCertificate === 'ca_certificate') {

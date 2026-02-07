@@ -9,7 +9,7 @@ Integrating Anthropic with ToolJet enables the creation of interactive chatbots 
 
 To connect with Anthropic, you will need the **API Key**, which can be generated from **[Anthropic Console](https://console.anthropic.com/)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
 
 ## Supported Operations
 
@@ -20,11 +20,13 @@ This operation processes the user's input and generates appropriate, context-awa
 **Required Parameters**
 
 - **Model**: The model to use for generating the chat response. The available models are:
-    - claude-3-5-sonnet-20241022
-    - claude-3-5-haiku-20241022
-    - claude-3-opus-20240229
-    - claude-3-sonnet-20240229
-    - claude-3-haiku-20240307
+
+    - **claude-sonnet-4-5-20250929**
+    - **claude-sonnet-4-20250514**
+    - **claude-opus-4-5-20251101**
+    - **claude-opus-4-1-20250805**
+    - **claude-opus-4-20250514**
+    - **claude-haiku-4-5**
 
 - **Message**: Messages act as input interactions between the user and the model. In the Roles parameter, you can choose either User or Assistant.
 
@@ -36,7 +38,7 @@ This operation processes the user's input and generates appropriate, context-awa
 
 - **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query-v2.png" alt="Anthropic Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

@@ -1,7 +1,21 @@
 ---
-title: "Overview"
 id: overview
+title: Modules
+sidebar_label: Overview
 ---
+
+
+<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
+</div>
 
 **Modules** in ToolJet are reusable user interfaces that bundle components, queries, actions, and logic. Think of them as mini-apps you can plug into multiple applications within the same workspace. They help eliminate duplication, ensure consistency, and speed up development, especially for repeatable patterns like headers, forms, dashboards, or table views.
 
