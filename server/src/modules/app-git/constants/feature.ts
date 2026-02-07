@@ -14,6 +14,10 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GIT_GET_APP]: {
       license: LICENSE_FIELD.GIT_SYNC,
     },
+    // Used to fetch the latest git commit data for syncing the application by app name
+    [FEATURE_KEY.GIT_GET_APP_BY_NAME]: {
+      license: LICENSE_FIELD.GIT_SYNC,
+    },
     // Used for listing all the application from GIT
     [FEATURE_KEY.GIT_GET_APPS]: {
       license: LICENSE_FIELD.GIT_SYNC,

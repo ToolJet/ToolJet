@@ -336,6 +336,7 @@
   display: flex;
 
   .tooltip-inner {
-    width: 323px !important;
+    max-width: 323px !important;
+    width: auto !important;
   }
 }

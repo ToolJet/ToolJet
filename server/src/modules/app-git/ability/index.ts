@@ -41,6 +41,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(FEATURE_KEY.GIT_UPDATE_APP, AppGitSync);
       can(FEATURE_KEY.GIT_GET_APPS, AppGitSync);
       can(FEATURE_KEY.GIT_GET_APP, AppGitSync);
+      can(FEATURE_KEY.GIT_GET_APP_BY_NAME, AppGitSync);
       can(FEATURE_KEY.GIT_GET_APP_CONFIG, AppGitSync);
       can(FEATURE_KEY.GIT_SYNC_APP, AppGitSync);
       can(FEATURE_KEY.GIT_APP_VERSION_RENAME, AppGitSync);
@@ -62,6 +63,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(FEATURE_KEY.GIT_APP_VERSION_RENAME, AppGitSync);
       can(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE, AppGitSync);
       can(FEATURE_KEY.GIT_GET_APP, AppGitSync); // Used for syncing data from inside the application so only users with edit permission can perform the operation
+      can(FEATURE_KEY.GIT_GET_APP_BY_NAME, AppGitSync); // Used for syncing data from inside the application using app name
       can(FEATURE_KEY.GIT_GET_APP_CONFIG, AppGitSync);
     }
 
