@@ -29,8 +29,12 @@ export const WidgetBox = ({ component, darkMode }) => {
           style={{ height: '100%' }}
           data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
         >
-          {LEGACY_WIDGETS.includes(component.component) && <p className="widget-version-old-identifier">Lgcy</p>}
-          {NEW_WIDGETS.includes(component.component) && <p className="widget-version-new-identifier">New</p>}
+          {LEGACY_WIDGETS.includes(component.component) && (
+            <p className="widget-version-old-identifier">{t('widget.labels.legacy', 'Lgcy')}</p>
+          )}
+          {NEW_WIDGETS.includes(component.component) && (
+            <p className="widget-version-new-identifier">{t('widget.labels.new', 'New')}</p>
+          )}
           <center>
             <div
               className="widget-svg-container"

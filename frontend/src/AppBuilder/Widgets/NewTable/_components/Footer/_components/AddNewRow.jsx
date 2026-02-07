@@ -7,8 +7,10 @@ import cx from 'classnames';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
+import { useTranslation } from 'react-i18next';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+  const { t } = useTranslation();
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
@@ -193,7 +195,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           size="sm"
           customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         >
-          <span>Save</span>
+          <span>{t('globals.save', 'Save')}</span>
         </ButtonSolid>
         <ButtonSolid
           variant="tertiary"
@@ -205,7 +207,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           size="sm"
           customStyles={{ padding: '10px 20px' }}
         >
-          <span>Discard</span>
+          <span>{t('globals.discard', 'Discard')}</span>
         </ButtonSolid>
       </div>
     </div>

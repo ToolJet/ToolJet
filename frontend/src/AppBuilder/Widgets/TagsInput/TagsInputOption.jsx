@@ -1,10 +1,12 @@
 import React from 'react';
 import { components } from 'react-select';
 import { CornerDownLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const { Option } = components;
 
 const TagsInputOption = (props) => {
+  const { t } = useTranslation();
   const { data, selectProps } = props;
   const { getChipColor, selectedTextColor, tagBackgroundColor, autoPickChipColor } = selectProps || {};
   // Check if this is a "create new" option from react-select/creatable
@@ -32,7 +34,7 @@ const TagsInputOption = (props) => {
       >
         <div className="tags-input-create-option-inner">
           <div className="tags-input-new-tag-preview">
-            <span className="add-text">add</span>
+            <span className="add-text">{t('globals.addLower', 'add')}</span>
             <span
               className="tags-input-new-tag-preview-text"
               style={{

@@ -18,8 +18,10 @@ import { SettingsModal } from './SettingsModal';
 import { DeletePageConfirmationModal } from './DeletePageConfirmationModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { appPermissionService } from '@/_services';
+import { useTranslation } from 'react-i18next';
 
 export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
+  const { t } = useTranslation();
   const showAddNewPageInput = useStore((state) => state.showAddNewPageInput);
   const toggleShowAddNewPageInput = useStore((state) => state.toggleShowAddNewPageInput);
   const showSearch = useStore((state) => state.showSearch);
@@ -65,7 +67,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
           </button>
           <PageGroupMenu
             isLicensed={isLicensed}
-            title={'Add Page'}
+            title={t('editor.pageMenu.actions.addPage', 'Add Page')}
             onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
             className="left-sidebar-header-btn"
             fill={`var(--slate12)`}
@@ -79,7 +81,7 @@ export const PageMenu = ({ darkMode, switchPage, pinned, setPinned }) => {
         {showSearch && (
           <HeaderSection.SearchBoxComponent
             onChange={handleSearch}
-            placeholder={'Search'}
+            placeholder={t('globals.search', 'Search')}
             placeholderIcon={''}
             darkMode={darkMode}
           />

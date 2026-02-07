@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import cx from 'classnames';
 import './debuggerHeader.scss';
+import { useTranslation } from 'react-i18next';
 
 const DebuggerTab = ({ label, isActive, onClick }) => {
   return (
@@ -20,10 +21,11 @@ const DebuggerTab = ({ label, isActive, onClick }) => {
 };
 
 export const SidebarDebuggerHeader = ({ darkMode, onClear, onClose, activeTab, onTabChange }) => {
+  const { t } = useTranslation();
   return (
     <div className={cx('debugger-header', { 'dark-theme': darkMode })}>
       <div className="debugger-header-top">
-        <span className="debugger-header-title">Debugger</span>
+        <span className="debugger-header-title">{t('editor.leftSidebar.debugger', 'Debugger')}</span>
         <div className="debugger-header-actions">
           <Button
             iconOnly

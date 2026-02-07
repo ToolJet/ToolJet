@@ -5,6 +5,7 @@ import Dropdown from '@/components/ui/Dropdown/Index';
 import Popover from 'react-bootstrap/Popover';
 import { Button } from '@/components/ui/Button/Button';
 import { getInputTypeOptions, isPropertyFxControlled, isTrueValue } from '../utils/utils';
+import { useTranslation } from 'react-i18next';
 
 const FieldPopoverContent = ({
   field,
@@ -16,6 +17,7 @@ const FieldPopoverContent = ({
   onDropdownClose,
   setSelectedComponents,
 }) => {
+  const { t } = useTranslation();
   const [localField, setLocalField] = useState(field ?? {});
 
   useEffect(() => {
@@ -76,7 +78,9 @@ const FieldPopoverContent = ({
       return null;
     return (
       <div>
-        <label className="tw-text-text-default base-medium">Placeholder</label>
+        <label className="tw-text-text-default base-medium">
+          {t('editor.form.fieldPopover.placeholder', 'Placeholder')}
+        </label>
         <CodeHinter
           type={'basic'}
           initialValue={localField.placeholder || ''}
@@ -94,7 +98,9 @@ const FieldPopoverContent = ({
 
     return (
       <div>
-        <label className="tw-text-text-default base-medium">Default value</label>
+        <label className="tw-text-text-default base-medium">
+          {t('editor.form.fieldPopover.defaultValue', 'Default value')}
+        </label>
         <CodeHinter
           type={'basic'}
           initialValue={localField.value || ''}
@@ -110,7 +116,11 @@ const FieldPopoverContent = ({
   return (
     <>
       <Popover.Header className="d-flex justify-content-between align-items-center tw-px-4 tw-py-2 form-field-popover-header">
-        <span className="tw-text-text-default base-medium">{mode === 'edit' ? 'Edit field' : 'New custom field'}</span>
+        <span className="tw-text-text-default base-medium">
+          {mode === 'edit'
+            ? t('editor.form.fieldPopover.editField', 'Edit field')
+            : t('editor.form.fieldPopover.newCustomField', 'New custom field')}
+        </span>
         <div className="tw-flex">
           {mode === 'edit' ? (
             <>
@@ -153,14 +163,14 @@ const FieldPopoverContent = ({
                 handleFieldChange('componentType', value);
               }}
               width="100%"
-              label="Component"
+              label={t('editor.form.fieldPopover.component', 'Component')}
               onOpen={onDropdownOpen}
               onClose={onDropdownClose}
             />
           </div>
 
           <div>
-            <label className="tw-text-text-default base-medium">Label</label>
+            <label className="tw-text-text-default base-medium">{t('globals.label', 'Label')}</label>
             <CodeHinter
               type={'basic'}
               initialValue={localField.label || ''}
@@ -181,12 +191,12 @@ const FieldPopoverContent = ({
               mode="javascript"
               lineNumbers={false}
               type={'fxEditor'}
-              paramLabel={'Make this field mandatory'}
+              paramLabel={t('editor.form.fieldPopover.makeMandatory', 'Make this field mandatory')}
               paramName={'isMandatory'}
               fxActive={localField.mandatory?.fxActive ?? false}
               fieldMeta={{
                 type: 'toggle',
-                displayName: 'Make editable',
+                displayName: t('editor.form.fieldPopover.makeEditable', 'Make editable'),
               }}
               paramType={'toggle'}
               onChange={(value) => handleFieldChange('mandatory', value)}
@@ -201,12 +211,12 @@ const FieldPopoverContent = ({
                 mode="javascript"
                 lineNumbers={false}
                 type={'fxEditor'}
-                paramLabel={'Visibility'}
+                paramLabel={t('editor.form.fieldPopover.visibility', 'Visibility')}
                 paramName={'visible'}
                 fxActive={localField.visibility?.fxActive ?? false}
                 fieldMeta={{
                   type: 'toggle',
-                  displayName: 'Make editable',
+                  displayName: t('editor.form.fieldPopover.makeEditable', 'Make editable'),
                 }}
                 paramType={'toggle'}
                 onChange={(value) => handleFieldChange('visibility', value)}
@@ -221,7 +231,7 @@ const FieldPopoverContent = ({
             className="tw-w-full tw-rounded-[6px]"
             disabled={field && isEqual(localField, field)}
           >
-            {mode === 'edit' ? 'Save' : 'Add Field'}
+            {mode === 'edit' ? t('globals.save', 'Save') : t('editor.form.fieldPopover.addField', 'Add Field')}
           </Button>
         </div>
       </Popover.Body>

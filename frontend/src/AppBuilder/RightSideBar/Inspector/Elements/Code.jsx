@@ -3,6 +3,8 @@ import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getDefinitionInitialValue } from './utils';
+import { useTranslation } from 'react-i18next';
+import { camelCase } from 'lodash';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
 
@@ -23,6 +25,7 @@ export const Code = ({
   setCodeEditorView,
   customMeta,
 }) => {
+  const { t } = useTranslation();
   const currentState = useCurrentState();
 
   function getInitialValue() {
@@ -38,7 +41,7 @@ export const Code = ({
   const paramMeta = accordian
     ? customMeta ?? componentMeta[paramType]?.[param.name]
     : customMeta ?? componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
+  const displayName = t(`widget.commonProperties.${camelCase(param.name)}`, paramMeta.displayName || param.name);
 
   function handleCodeChanged(value) {
     onChange(param, 'value', value, paramType);

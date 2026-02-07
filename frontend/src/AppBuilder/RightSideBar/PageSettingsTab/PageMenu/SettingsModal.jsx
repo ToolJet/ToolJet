@@ -4,8 +4,10 @@ import { Button } from '@/_ui/LeftSidebar';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 export const SettingsModal = ({ darkMode }) => {
+  const { t } = useTranslation();
   const editingPage = useStore((state) => state.editingPage);
   const showPageEventsModal = useStore((state) => state.showEditPageEventsModal);
   const pinPagesPopover = () => {};
@@ -33,7 +35,7 @@ export const SettingsModal = ({ darkMode }) => {
       >
         <Modal.Header>
           <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>
-            Page Events
+            {t('editor.pageMenu.sections.pageEvents', 'Page events')}
           </Modal.Title>
           <span className="cursor-pointer" size="sm" onClick={handleClose} data-cy={'modal-close-button-page-events'}>
             <svg
@@ -55,7 +57,7 @@ export const SettingsModal = ({ darkMode }) => {
           </span>
         </Modal.Header>
         <Modal.Body onClick={() => pinPagesPopover(true)}>
-          <b data-cy={'page-events-labe'}>Events</b>
+          <b data-cy={'page-events-labe'}>{t('editor.pageMenu.events.title', 'Events')}</b>
           <EventManager
             //!page
             component={{
@@ -67,7 +69,10 @@ export const SettingsModal = ({ darkMode }) => {
             }}
             sourceId={page?.id}
             eventSourceType="page"
-            eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+            eventMetaDefinition={{
+              events: { onPageLoad: { displayName: t('editor.pageMenu.events.onPageLoad', 'On page load') } },
+              name: 'page',
+            }}
             components={components}
             pages={allpages}
             popOverCallback={(showing) => showing}
@@ -81,7 +86,7 @@ export const SettingsModal = ({ darkMode }) => {
             onClick={handleClose}
             data-cy={`page-events-modal-close-button`}
           >
-            <Button.Content title="Close" />
+            <Button.Content title={t('editor.pageMenu.events.close', 'Close')} />
           </Button>
         </Modal.Footer>
       </Modal>

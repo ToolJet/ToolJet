@@ -3,8 +3,10 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDiscarded, id }) => {
+  const { t } = useTranslation();
   const onEvent = useStore((state) => state.eventsSlice.onEvent);
   const tableComponentEvents = useTableStore((state) => state.getTableComponentEvents(id), shallow);
 
@@ -22,7 +24,7 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
         iconWidth="16"
         isTablerIcon={true}
       >
-        {width > 650 ? <span>Discard</span> : ''}
+        {width > 650 ? <span>{t('globals.discard', 'Discard')}</span> : ''}
       </ButtonSolid>
       <ButtonSolid
         variant="primary"
@@ -45,7 +47,7 @@ export const ChangeSetUI = memo(({ width, handleChangesSaved, handleChangesDisca
         iconWidth="16"
         isTablerIcon={true}
       >
-        {width > 650 ? <span>Save changes</span> : ''}
+        {width > 650 ? <span>{t('globals.savechanges', 'Save changes')}</span> : ''}
       </ButtonSolid>
     </>
   );

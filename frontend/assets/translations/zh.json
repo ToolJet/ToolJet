@@ -39,7 +39,41 @@
         "requestBody": "请求体",
         "page": "页面",
         "searchItem": "在 此工作空间中搜索应用",
-        "searchComponents": "搜索组件"
+        "searchComponents": "搜索组件",
+        "execute": "Execute",
+        "Build": "Build",
+        "filterBy": "Filter By",
+        "sortBy": "Sort By",
+        "import": "Import",
+        "remove": "Remove",
+        "addLower": "add",
+        "discard": "Discard",
+        "loading": "Loading...",
+        "workflowsSearchItem": "Search workflows in this workspace",
+        "promote": "Promote",
+        "release": "Release",
+        "or": "OR",
+        "seeMore": "See more",
+        "seeLess": "See less",
+        "app": "App",
+        "label": "Label",
+        "options": "Options",
+        "description": "Description",
+        "noData": "No data",
+        "retry": "Retry",
+        "modules": "Modules",
+        "preview": "Preview",
+        "searchModules": "Search modules",
+        "specType": "Select spec type",
+        "static-error-modal": {
+            "description": "Please try again or contact support.",
+            "title": "Something went wrong"
+        },
+        "workspace-modal": {
+            "continue-btn": "Continue",
+            "wrong-link": "Wrong link",
+            "wrong-link-desc": "This link is invalid or has expired."
+        }
     },
     "errorBoundary": "出现了错误",
     "viewer": "抱歉！此应用正在维护中",
@@ -111,7 +145,10 @@
         "getStartedForFree": "免费开始使用",
         "passwordCharacter": "密码必须至少5个字符",
         "enterFullName": "输入您的全名",
-        "enterNewPassword": "输入新密码"
+        "enterNewPassword": "输入新密码",
+        "newToWorkspace": "New to this workspace?",
+        "name": "Name",
+        "sigin": "Sign in"
     },
     "editor": {
         "preview": "预览",
@@ -134,7 +171,17 @@
             "editVersion": "编辑版本",
             "deleteVersion": "您确定要删除此版本（{{version}}）吗？",
             "enterVersionName": "输入版本名称",
-            "versionAlreadyReleased": "您不能对已发布的版本进行更改。\n如果要进行更改，请创建一个新版本或切换到不同的版本"
+            "versionAlreadyReleased": "您不能对已发布的版本进行更改。\n如果要进行更改，请创建一个新版本或切换到不同的版本",
+            "saveVersion": "Save version",
+            "createDraftVersion": "Create draft version",
+            "versionDescription": "Version description",
+            "enterVersionDescription": "Enter version description",
+            "versionNameHelper": "Version name must be unique and max 25 characters",
+            "versionDescriptionHelper": "Description must be max 500 characters",
+            "emptyNameError": "Version name cannot be empty",
+            "maxDescriptionLengthError": "Version description cannot exceed 500 characters",
+            "maxLengthError": "Version name cannot exceed 25 characters",
+            "updateFailed": "Failed to update version"
         },
         "queries": "查询",
         "inspectComponent": "请选择要检查的组件",
@@ -155,7 +202,8 @@
                         "dataSourceSaved": "数据源已保存"
                     },
                     "error": {
-                        "noEmptyDsName": "数据源名称不能为空"
+                        "noEmptyDsName": "数据源名称不能为空",
+                        "validationFailed": "Validation failed"
                     }
                 },
                 "suggestDataSource": "建议数据源",
@@ -182,8 +230,12 @@
             "events": "事件",
             "transformation": {
                 "transformationToolTip": "可以在查询上启用转换以转换查询结果。ToolJet允许您使用JavaScript和Python两种编程语言转换查询结果",
-                "transformations": "转换"
-            }
+                "transformations": "转换",
+                "enableTransformation": "Enable transformation"
+            },
+            "eventsHandler": "Events handler",
+            "settings": "Settings",
+            "timeout": "Timeout"
         },
         "inspector": {
             "eventManager": {
@@ -208,9 +260,364 @@
                 "addHandler": "新增事件处理程序",
                 "addEventHandler": "+ 添加事件处理程序",
                 "emptyMessage": "此组件没有事件处理程序",
-                "page": "页面"
+                "page": "页面",
+                "openIn": "Open in",
+                "newTab": "New tab",
+                "currentTab": "Current tab",
+                "addNewEvent": "Add new event",
+                "addKeyValueParam": "Add {{parameter}}",
+                "queryParams": "Query params",
+                "appMode": "App mode",
+                "runOnlyIf": "Run only if"
             }
-        }
+        },
+        "previewBox": {
+            "tooLargeToDisplay": "Too large to display: {{count}} more items",
+            "serverVariablesRuntime": "Server variables would be resolved at runtime",
+            "serverVariablesPaid": "Server variables are only available in paid plans",
+            "secretValuesHidden": "Values of secret constants are hidden",
+            "autoFixTitle": "Auto-fix",
+            "autoFixDescription": "Diagnose and resolve errors instantly to keep your apps running smoothly"
+        },
+        "emptyCanvas": {
+            "dragAndDrop": "Drag and drop a component",
+            "chooseComponent": "Choose a component from the right side panel or use our pre-built templates to get started quickly!",
+            "createQuery": "Create a Query",
+            "queryBoxWithSample": "Connect to your data source or use our sample data source to start playing around!",
+            "queryBoxNoSample": "Connect to a data source to be able to create a query",
+            "connectSample": "Connect to sample data source",
+            "shareApp": "Share your application!",
+            "inviteDescription": "Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.",
+            "inviteCollaborators": "Invite collaborators"
+        },
+        "configHandle": {
+            "dynamicHeightEnabled": "Dynamic Height enabled",
+            "dynamicHeightDescription": "Your component expands based on content but won't shrink below the height you set on canvas.",
+            "neverShowAgain": "Never show this again"
+        },
+        "grid": {
+            "moduleEditNotAllowed": "Modules cannot be edited inside an app",
+            "incompatibleChild": "{{child}} is not compatible as a child component of {{parent}}",
+            "components": "Components"
+        },
+        "componentConfig": {
+            "properties": "Component properties",
+            "noComponentSelected": "No component selected",
+            "selectComponentHint": "Click a component on the canvas to view and edit its properties."
+        },
+        "componentsPanel": {
+            "title": "Components",
+            "addNewComponent": "Add new component",
+            "modules": "Modules"
+        },
+        "leftSidebar": {
+            "globalSettings": "Global settings",
+            "debugger": "Debugger",
+            "inspector": "Inspector",
+            "copyPath": "Copy path",
+            "copyValue": "Copy value",
+            "copyOptions": "Copy options"
+        },
+        "saveIndicator": {
+            "savingTooltip": "Saving in progress! Don't close the app yet.",
+            "saveErrorTooltip": "Could not save changes",
+            "saveError": "Could not save changes",
+            "savedTooltip": "Changes saved!"
+        },
+        "queryPanel": {
+            "noQueries": "No queries have been added.",
+            "draft": "Draft",
+            "dataSource": "Data Source",
+            "showSortFilter": "Show sort/filter",
+            "sort": {
+                "nameAsc": "Name: A-Z",
+                "nameDesc": "Name: Z-A",
+                "typeAsc": "Type: A-Z",
+                "typeDesc": "Type: Z-A",
+                "updatedAsc": "Last modified: oldest first",
+                "updatedDesc": "Last modified: newest first"
+            }
+        },
+        "versionManager": {
+            "createDraftFrom": "Create draft from",
+            "selectVersion": "Select version...",
+            "selectVersionHelper": "Select which version to use as a starting point for the draft",
+            "environment": "Environment",
+            "selectEnvironment": "Select environment...",
+            "selectEnvironmentHelper": "Select the environment for this draft version",
+            "draftDescriptionPlaceholder": "Enter draft description...",
+            "draftDescriptionHelper": "Add a description for this draft (max 500 characters)",
+            "createDraftVersion": "Create Draft Version",
+            "creatingDraft": "Creating...",
+            "createDraft": "Create Draft",
+            "versionNameRequired": "Version name is required",
+            "versionNameTooLong": "Version name should not be longer than 25 characters",
+            "versionDescriptionTooLong": "Version description should not be longer than 500 characters",
+            "promoteSuccess": "Draft promoted to version successfully",
+            "promoteError": "Failed to promote draft version",
+            "promoteDraftTitle": "Promote Draft to Version",
+            "versionNamePlaceholder": "e.g., v2.0.0",
+            "versionNameHelper": "Must be unique and max 25 characters",
+            "versionDescription": "Version description",
+            "versionDescriptionPlaceholder": "Enter version description (optional)",
+            "versionDescriptionHelper": "Optional, max 500 characters",
+            "promoteInfo": "This will convert the draft into a finalized version. The version name and description cannot be changed after promotion to staging or production.",
+            "promoting": "Promoting...",
+            "promoteToVersion": "Promote to Version"
+        },
+        "previewSettings": "Preview settings",
+        "layout": "Layout",
+        "layoutDesktop": "Desktop Layout",
+        "layoutMobile": "Mobile Layout",
+        "switchToDesktopLayout": "Switch to desktop layout",
+        "switchToMobileLayout": "Switch to mobile layout",
+        "environment": "Env",
+        "versionNotReleased": "This version has not been released yet",
+        "form": {
+            "columnMapping": {
+                "section": {
+                    "existing": "Existing",
+                    "customFields": "Custom fields",
+                    "new": "New",
+                    "removed": "Removed"
+                },
+                "noMappedColumns": "No mapped columns",
+                "inputLabelPlaceholder": "Input label",
+                "columnName": "Column name",
+                "mappedTo": "Mapped to",
+                "inputLabel": "Input label",
+                "mandatory": "Mandatory?",
+                "noneAvailable": "No {{section}} available",
+                "manageFields": "Manage fields",
+                "mapColumns": "Map columns",
+                "refreshData": "Refresh data",
+                "saving": "Saving",
+                "generating": "Generating",
+                "generateForm": "Generate form"
+            },
+            "fieldPopover": {
+                "placeholder": "Placeholder",
+                "defaultValue": "Default value",
+                "editField": "Edit field",
+                "newCustomField": "New custom field",
+                "component": "Component",
+                "makeMandatory": "Make this field mandatory",
+                "makeEditable": "Make editable",
+                "visibility": "Visibility",
+                "addField": "Add Field"
+            }
+        },
+        "pageSettings": {
+            "sections": {
+                "pagesAndMenu": "Pages and menu",
+                "headerAndNavigation": "Header and navigation",
+                "devices": "Devices"
+            },
+            "panelTitlePagesAndNavigation": "Pages and navigation",
+            "tabs": {
+                "properties": "Properties",
+                "styles": "Styles"
+            },
+            "styleAccordions": {
+                "itemList": "Item list",
+                "container": "Container"
+            },
+            "styles": {
+                "defaultText": "Default text",
+                "defaultIcon": "Default icon",
+                "selectedText": "Selected text",
+                "selectedIcon": "Selected icon",
+                "pillHoverBackground": "Pill hover background",
+                "pillSelectedBackground": "Pill selected background",
+                "pillRadius": "Pill radius",
+                "background": "Background",
+                "border": "Border"
+            },
+            "appHeader": {
+                "sectionTitle": "App header",
+                "showAppHeader": "Show app header",
+                "showLogo": "Show logo",
+                "titleLabel": "Title",
+                "tooltips": {
+                    "hideAppHeaderUpgrade": "You don't have access to hide app header. Upgrade your plan to access this feature.",
+                    "hideLogoUpgrade": "You don't have access to hide logo. Upgrade your plan to access this feature."
+                },
+                "errors": {
+                    "titleEmpty": "Title cannot be empty.",
+                    "titleTooLong": "Title cannot exceed 32 characters."
+                }
+            },
+            "navigation": {
+                "sectionTitle": "Navigation menu",
+                "position": "Position",
+                "style": "Style",
+                "collapsable": "Collapsable",
+                "hideNavigationMenu": "Hide navigation menu",
+                "selectPlaceholder": "Select...",
+                "positionOptions": {
+                    "top": "Top",
+                    "side": "Side"
+                },
+                "collapsableOptions": {
+                    "true": "True",
+                    "false": "False"
+                },
+                "styleOptions": {
+                    "textAndIcon": "Text and icon",
+                    "textOnly": "Text only",
+                    "iconOnly": "Icon only"
+                }
+            },
+            "devices": {
+                "showOnDesktop": "Show on desktop",
+                "showOnMobile": "Show on mobile"
+            }
+        },
+        "pageMenu": {
+            "actions": {
+                "addPage": "Add Page"
+            },
+            "group": "Group",
+            "groupLower": "group",
+            "newPage": "New page",
+            "addNavItemWithUrl": "Add nav item with URL",
+            "addNavItemWithApp": "Add nav item ToolJet app",
+            "addNavGroup": "Add nav group",
+            "noNavGroupsAccess": "You don't have access to nav groups. Upgrade your plan to access this feature.",
+            "noPagePermissionsAccess": "You don't have access to page permissions. Upgrade your plan to access this feature.",
+            "pageAndNav": "Page and nav",
+            "pageHandle": "Page Handle",
+            "more": "More",
+            "selectPlaceholder": "Select...",
+            "deleteFolder": {
+                "title": "Delete folder",
+                "message": "Are you sure you want to delete this folder? This action is irreversible.",
+                "deleteGroupAndPages": "Delete group and pages"
+            },
+            "deletePage": {
+                "title": "Delete Page",
+                "message": "Are you sure you want to delete {{pageName}} page?"
+            },
+            "editPageHandle": {
+                "title": "Edit page handle",
+                "placeholder": "Enter page handle",
+                "warning": "Changing the page handle will break any existing apps that are using this page."
+            },
+            "errors": {
+                "pageHandleEmpty": "Page handle cannot be empty",
+                "pageHandleSame": "Page handle cannot be same as the existing page handle",
+                "noUrlProvided": "No URL provided",
+                "noApplicationSlugProvided": "No application slug provided"
+            },
+            "events": {
+                "title": "Events",
+                "onPageLoad": "On page load",
+                "close": "Close"
+            },
+            "labels": {
+                "pageName": "Page name",
+                "handle": "Handle",
+                "icon": "Icon",
+                "markAsHome": "Mark as home",
+                "disablePage": "Disable page",
+                "url": "URL",
+                "openUrlIn": "Open URL in",
+                "selectApp": "Select app",
+                "openAppIn": "Open app in",
+                "hideThisPageOnNavigation": "Hide this page on navigation",
+                "hideThisItemOnNavigation": "Hide this item on navigation"
+            },
+            "logLabels": {
+                "navigation": "Navigation",
+                "navigationKey": "navigation"
+            },
+            "options": {
+                "editGroupDetails": "Edit group details",
+                "duplicateGroup": "Duplicate group",
+                "deleteGroup": "Delete group",
+                "editPageDetails": "Edit page details",
+                "markHome": "Mark home",
+                "duplicatePage": "Duplicate page",
+                "deletePage": "Delete page",
+                "pagePermission": "Page permission",
+                "rename": "Rename",
+                "showPageOnAppMenu": "Show page on app menu",
+                "hidePageOnAppMenu": "Hide page on app menu",
+                "eventHandlers": "Event Handlers",
+                "enable": "Enable",
+                "disable": "Disable"
+            },
+            "pageTypes": {
+                "tjApp": "TJ app",
+                "url": "URL"
+            },
+            "permissions": {
+                "accessRestricted": "Access restricted",
+                "accessRestrictedToEmail": "Access restricted to {{email}}",
+                "accessRestrictedToUsers": "Access restricted to {{count}} users",
+                "accessRestrictedToGroup": "Access restricted to {{groupName}} group",
+                "accessRestrictedToGroups": "Access restricted to {{count}} groups"
+            },
+            "sections": {
+                "pageEvents": "Page events"
+            },
+            "tooltips": {
+                "goToPage": "Go to page",
+                "duplicateEntity": "Duplicate {{entity}}",
+                "deleteEntity": "Delete {{entity}}",
+                "homePage": "Home page",
+                "disabledPage": "Disabled page",
+                "hiddenNavItem": "Hidden nav item",
+                "hiddenPage": "Hidden page",
+                "hiddenGroup": "Hidden group",
+                "homePageCannotBeDeleted": "Home page can't be deleted"
+            },
+            "toasts": {
+                "pageGroupNameMinLength": "Page group name should have at least 1 character",
+                "pageNameMinLength": "Page name should have at least 1 character",
+                "pageGroupNameMaxLength": "Page group name cannot exceed 32 characters",
+                "pageNameMaxLength": "Page name cannot exceed 32 characters"
+            },
+            "defaultNames": {
+                "page": "Page",
+                "url": "URL",
+                "app": "App",
+                "group": "Group"
+            },
+            "openModes": {
+                "new_tab": "New tab",
+                "same_tab": "Same tab"
+            },
+            "popoverTitles": {
+                "add": {
+                    "default": "New page",
+                    "app": "New nav item with app",
+                    "url": "New nav item with URL",
+                    "group": "New nav group"
+                },
+                "edit": {
+                    "default": "Edit page",
+                    "app": "Edit nav item",
+                    "url": "Edit nav item",
+                    "group": "Edit nav group"
+                }
+            }
+        },
+        "searchPanel": {
+            "find": "Find",
+            "findText": "Find text",
+            "replace": "Replace",
+            "replaceText": "Replace text",
+            "previous": "Previous",
+            "previousMatch": "Previous match",
+            "next": "Next",
+            "nextMatch": "Next match",
+            "replaceAll": "Replace all",
+            "close": "Close search panel"
+        },
+        "appSlug": "App slug",
+        "promote": "Promote",
+        "update": "Update"
     },
     "header": {
         "darkModeToggle": {
@@ -260,7 +667,8 @@
                     "enterLastName": "输入姓氏",
                     "enterEmail": "输入电子邮件",
                     "enterFullName": "输入全名",
-                    "inviteNewUsers": "邀请新用户"
+                    "inviteNewUsers": "邀请新用户",
+                    "selectGroup": "Select group"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -283,7 +691,14 @@
                         "email": "电子邮件",
                         "resource": "资源",
                         "createUpdateDelete": "创建/更新/删除",
-                        "folder": "文件夹"
+                        "folder": "文件夹",
+                        "workflows": "Workflows",
+                        "addWorkflowsToGroup": "Select workflows to add to the group",
+                        "dataSource": "Data sources"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "Delete Group",
+                        "duplicateGroup": "Duplicate Group"
                     }
                 },
                 "manageSSO": {
@@ -298,7 +713,10 @@
                         "loginUrl": "登录URL",
                         "workspaceLogin": "使用此URL直接登录到此工作区",
                         "allowDefaultSso": "允许默认单点登录",
-                        "ssoAuth": "允许用户通过默认单点登录进行身份验证。工作区级别的单点登录可以覆盖默认单点登录配置"
+                        "ssoAuth": "允许用户通过默认单点登录进行身份验证。工作区级别的单点登录可以覆盖默认单点登录配置",
+                        "customLogoutUrl": "Custom logout URL",
+                        "domain": "Domain",
+                        "supportMultidomains": "Support multidomains"
                     },
                     "google": {
                         "title": "Google",
@@ -318,7 +736,10 @@
                         "clientSecret": "客户端密钥",
                         "enterClientSecret": "输入客户端密钥",
                         "encrypted": "已加密",
-                        "redirectUrl": "重定向URL"
+                        "redirectUrl": "重定向URL",
+                        "disabled": "Disabled",
+                        "enabled": "Enabled",
+                        "inherited": "Inherited"
                     },
                     "passwordLogin": "密码登录",
                     "environmentVar": {
@@ -342,9 +763,20 @@
                             "type": "类型",
                             "secret": "机密"
                         }
+                    },
+                    "workspaceLogin": {
+                        "title": "Workspace login"
+                    }
+                },
+                "instanceLogout": {
+                    "title": "Instance logout",
+                    "customLogoutUrl": {
+                        "label": "Custom logout URL",
+                        "helperText": "Set a personalized logout URL for users logging out of this instance."
                     }
                 }
-            }
+            },
+            "workspaceSlug": "Workspace slug"
         },
         "profileSettingPage": {
             "profileSettings": "个人资料设置",
@@ -381,12 +813,17 @@
             "maintenance": "维护",
             "noDeployedVersion": "应用没有已部署的版本",
             "openInAppViewer": "在应用查看器中打开",
-            "removeFromFolder": "从文件夹中移除"
+            "removeFromFolder": "从文件夹中移除",
+            "deleteWorkflow": "Delete workflow",
+            "launchingWorkflowNotAvailable": "Launching workflow is not available",
+            "noReleasedAccess": "No access to released version",
+            "renameApp": "Rename app"
         },
         "blankPage": {
             "welcomeToToolJet": "欢迎来到你的新 ToolJet 工作区",
             "getStartedCreateNewApp": "你可以通过创建新应用或使用 ToolJet 库中的模板创建应用来开始使用",
-            "importApplication": "导入应用"
+            "importApplication": "导入应用",
+            "noAppsCreatedYet": "No apps created yet"
         },
         "foldersSection": {
             "allApplications": "所有应用",
@@ -398,7 +835,8 @@
             "editFolder": "编辑文件夹",
             "deleteFolder": "删除文件夹",
             "folderName": "文件夹名称",
-            "wishToDeleteFolder": "你确定要删除文件夹 {{folderName}} 吗？文件夹内的应用不会被删除"
+            "wishToDeleteFolder": "你确定要删除文件夹 {{folderName}} 吗？文件夹内的应用不会被删除",
+            "filteredData": "No data found matching your search"
         },
         "header": {
             "createNewApplication": "创建新应用",
@@ -420,11 +858,47 @@
         "templateCard": {
             "use": "使用",
             "preview": "预览",
-            "leadGeneretion": "线索生成"
+            "leadGeneretion": "线索生成",
+            "leadGeneration": "Lead generation"
         },
         "templateLibraryModal": {
             "select": "选择模板",
             "createAppfromTemplate": "从模板创建应用"
+        },
+        "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
+        "appsLabel": "APPS",
+        "filterBy": "Filter by",
+        "missingGroups": {
+            "warningTitle": "Warning: Missing user groups for permissions",
+            "description": "Permissions for the following user group(s) won't be applied since they do not exist in this workspace.",
+            "userGroupsLabel": "User groups",
+            "info": "Restricted pages, queries, or components will become accessible to all users or to existing groups with permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after import.",
+            "cancelImport": "Cancel import",
+            "importLimited": "Import with limited permissions"
+        },
+        "renameAppTitle": "Rename {{appType}}",
+        "renameAppAction": "Rename {{appType}}",
+        "renameAppLoading": "Renaming",
+        "modules": {
+            "emptyTitle": "Create reusable groups of components and queries via modules.",
+            "checkGuide": "Check out our guide",
+            "onCreatingModules": "on creating modules.",
+            "notAvailable": "Modules are not available on your current plan.",
+            "createNew": "Create new module"
+        },
+        "exportAppModal": {
+            "fetchVersionsError": "Could not fetch the versions.",
+            "fetchTablesError": "Could not fetch the tables.",
+            "exportSuccessModule": "Module has been exported successfully!",
+            "exportSuccessApp": "App has been exported successfully!",
+            "exportErrorModule": "Could not export module: {{message}}",
+            "exportErrorApp": "Could not export app: {{message}}",
+            "noOtherVersions": "No other versions found",
+            "exportSchema": "Export ToolJet table schema",
+            "exportAll": "Export All",
+            "exportSelectedVersion": "Export selected version",
+            "createdOn": "Created on {{date}}",
+            "loadingVersions": "Loading versions ..."
         }
     },
     "confirmationPage": {
@@ -444,7 +918,8 @@
         "finishAccountSetup": "完成账户设置",
         "acceptInvite": "接受邀请",
         "accountExists": "已有账户？",
-        "and": "和"
+        "and": "和",
+        "signupWithOpenid": "Sign up with"
     },
     "onBoarding": {
         "finishToolJetInstallation": "完成 ToolJet 安装",
@@ -502,7 +977,8 @@
             "documentation": "读取 {{componentMeta}} 的文档",
             "widgetNameEmptyError": "部件名称不能为空",
             "componentNameExistsError": "组件名称已存在",
-            "invalidWidgetName": "无效的部件名称。应该唯一，只包含字母、数字和下划线"
+            "invalidWidgetName": "无效的部件名称。应该唯一，只包含字母、数字和下划线",
+            "structure": "Structure"
         },
         "commonProperties": {
             "visibility": "可见性",
@@ -703,7 +1179,8 @@
             "setColor": "设置颜色",
             "structure": "结构",
             "checkedValues": "已选值",
-            "expandedValues": "展开的值"
+            "expandedValues": "展开的值",
+            "transformation": "Transformation"
         },
         "Table": {
             "displayName": "表格",
@@ -732,7 +1209,45 @@
             "addColumn": "添加列",
             "addNewColumn": "添加新列",
             "noActionMessage": "此表格没有任何操作按钮",
-            "horizontalAlignment": "水平对齐方式"
+            "horizontalAlignment": "水平对齐方式",
+            "cellColor": "Cell color",
+            "textAlignment": "Text alignment",
+            "alignment": "Alignment",
+            "activeColor": "Active color",
+            "underlineColor": "Underline color",
+            "showUnderline": "Show underline",
+            "hover": "Hover",
+            "always": "Always",
+            "selectedColor": "Selected color",
+            "unselectedColor": "Unselected color",
+            "displayText": "Display text",
+            "addFilter": "+ add filter",
+            "clearFilters": "clear filters",
+            "noFiltersYet": "no filters yet.",
+            "deprecatedStyleMessage": "This style will be deprecated in the future releases",
+            "deprecatedColumnTitle": "Deprecating column type",
+            "deprecatedColumnMessage": "This column type is deprecated and will be removed in a future update.  We recommend using the new {{columnLabel}} when creating applications moving forward.",
+            "columnTypes": {
+                "default": "Default",
+                "string": "String",
+                "badge": "Badge",
+                "dropdown": "Dropdown",
+                "singleSelect": "Single select",
+                "multipleBadges": "Multiple badges",
+                "tags": "Tags",
+                "radio": "Radio",
+                "multiselect": "Multiselect",
+                "toggleSwitch": "Toggle switch"
+            },
+            "deciamalPlaces": "Decimal Places",
+            "imageFit": "Image fit",
+            "borderRadius": "Border radius",
+            "decimalPlaces": "Decimal places",
+            "defaultRating": "Default rating",
+            "maxRating": "Maximum rating",
+            "timeFormat": "Time format",
+            "transformationField": "Transformation",
+            "unixTimestamp": "Unix timestamp"
         },
         "Button": {
             "displayName": "按钮",
@@ -828,7 +1343,8 @@
         },
         "Calendar": {
             "displayName": "日历",
-            "description": "显示日历事件"
+            "description": "显示日历事件",
+            "allDay": "All day"
         },
         "Iframe": {
             "displayName": "Iframe",
@@ -900,7 +1416,16 @@
         },
         "PDF": {
             "displayName": "PDF",
-            "description": "嵌入PDF文档"
+            "description": "嵌入PDF文档",
+            "enterPassword": "Enter the password to open this PDF file.",
+            "invalidPassword": "Invalid password. Please try again.",
+            "passwordPromptClosed": "Password prompt closed",
+            "noFile": "No PDF file specified",
+            "previousPage": "Previous page",
+            "nextPage": "Next page",
+            "pageOf": "{{page}} of {{total}}",
+            "download": "Download PDF",
+            "downloadAlt": "Download"
         },
         "Steps": {
             "displayName": "步骤",
@@ -917,6 +1442,20 @@
         "TreeSelect": {
             "displayName": "树状选择",
             "description": "分层项目选择器"
+        },
+        "labels": {
+            "legacy": "Lgcy",
+            "new": "New"
+        },
+        "phoneInput": {
+            "defaultCountry": "Default Country"
+        },
+        "currencyInput": {
+            "defaultCurrency": "Default Currency",
+            "numberFormat": "Number Format"
+        },
+        "icon": {
+            "label": "Icon"
         }
     },
     "leftSidebar": {
@@ -952,7 +1491,8 @@
             "maxWidthOfCanvas": "画布的最大宽度",
             "maxHeightOfCanvas": "画布的最大高度",
             "backgroundColorOfCanvas": "画布背景色",
-            "exportApp": "导出应用"
+            "exportApp": "导出应用",
+            "appMode": "App mode"
         },
         "Back": {
             "text": "返回",
@@ -974,5 +1514,309 @@
             "november": "十一月",
             "december": "十二月"
         }
+    },
+    "planUpgrade": {
+        "contactUs": "To upgrade your plan, please reach out to us at",
+        "appsLimitExceeded": "Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.",
+        "usersLimitExceeded": "Oops! Your current plan has exceeded its users limit. Please upgrade your plan now to create a new user.",
+        "featureNotAvailable": "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.",
+        "appsCount": "Apps count",
+        "usersCount": "Users count",
+        "oidc": "OIDC",
+        "auditLogs": "Audit logs"
+    },
+    "errors": {
+        "groupNameTooLong": "Failed to duplicate group.\nName exceeds 50 characters."
+    },
+    "zendesk": {
+        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Zendesk resources, make sure to select read and write access",
+        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from resources",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read data from resources, modify resources, and more."
+    },
+    "successInfoScreen": {
+        "emailImageAlt": "Email image",
+        "checkYourMail": "Check your mail",
+        "didNotReceiveEmail": "Did not receive an email? Check your spam folder."
+    },
+    "forgotPasswordInfoScreen": {
+        "sentEmailPrefix": "We've sent an email to",
+        "sentEmailSuffix": "with a password reset link. Please click on that link to reset your password.",
+        "backToLogin": "Back to log in"
+    },
+    "signupInfoScreen": {
+        "sentEmailPrefix": "We've sent an email to",
+        "sentEmailSuffix": "with a verification link. Please use that to verify your email address.",
+        "resendCountdown": "Resend verification mail in {{seconds}} s",
+        "resendAction": "Resend verification mail",
+        "editEmail": "Edit email address"
+    },
+    "setupScreenSelfHost": {
+        "logoAlt": "ToolJet logo",
+        "onboardingAlt": "ToolJet onboarding",
+        "greeting": "Hello,",
+        "welcomeTo": "Welcome to",
+        "brandName": "ToolJet!",
+        "subHeader": "Let's set up your workspace to get started with ToolJet",
+        "setupButton": "Set up ToolJet"
+    },
+    "forgotPasswordPage": {
+        "invalidEmail": "Invalid Email",
+        "resetLinkSent": "Please check your email/inbox for the password reset link",
+        "genericError": "Something went wrong, please try again",
+        "newTo": "New to",
+        "enterEmailAddress": "Enter email address",
+        "sendResetLink": "Send a reset link",
+        "contactSuperAdmin": "Contact super admin to reset your password",
+        "checkEmailForResetLink": "Please check your email/inbox for the password reset link",
+        "createAnAccount": "Create an account",
+        "emailAddress": "Email address",
+        "forgotPassword": "Forgot password",
+        "somethingWentWrong": "Something went wrong, please try again"
+    },
+    "basicPlanMigrationBanner": {
+        "prefix": "We will be updating our domain on",
+        "date": "24th November '25",
+        "impact": "which will impact any SSO configured.",
+        "readDocs": "Read docs",
+        "toKnowMore": "to know more."
+    },
+    "permissionDeniedModal": {
+        "defaultWorkspaceName": "My Workspace",
+        "workspaceCreated": "Workspace created successfully",
+        "builderLimitExceeded": "Creating a workspace makes you a builder which exceeds your limit. Contact super admin to know more",
+        "title": "Permission Denied",
+        "description": "You don't have permission to create apps in this workspace. Would you like to create the app in a new workspace?",
+        "createInNewWorkspace": "Create app in a new workspace"
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "Run",
+            "openInWorkflowEditor": "Open in workflow editor"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Welcome to your new ToolJet workspace",
+            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication": "Import an application"
+        },
+        "foldersSection": {
+            "allApplications": "All workflows",
+            "folders": "Folders",
+            "createNewFolder": "+ Create new",
+            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "createFolder": "Create folder",
+            "updateFolder": "Update folder",
+            "editFolder": "Edit folder",
+            "deleteFolder": "Delete folder",
+            "folderName": "Folder name",
+            "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+        },
+        "header": {
+            "createNewApplication": "Create new workflow",
+            "import": "Import",
+            "chooseFromTemplate": "Choose from template"
+        },
+        "pagination": {
+            "showing": "Showing",
+            "of": "of",
+            "to": "to"
+        },
+        "noApplicationFound": "No Applications found",
+        "thisFolderIsEmpty": "This folder is empty",
+        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "change": "Change",
+        "templateCard": {
+            "use": "Use",
+            "preview": "Preview",
+            "leadGeneretion": "Lead generetion"
+        },
+        "templateLibraryModal": {
+            "select": "Select template",
+            "createAppfromTemplate": "Create application from template"
+        }
+    },
+    "tooljetDatabase": {
+        "common": {
+            "noDataFound": "No data found",
+            "continue": "Continue",
+            "areYouSureContinue": "Are you sure you want to continue?"
+        },
+        "columnForm": {
+            "title": "Create a new column",
+            "columnName": "Column name",
+            "dataType": "Data type",
+            "displayTime": "Display time",
+            "defaultValue": "Default value",
+            "setDefaultNull": "Set default value to Null",
+            "openReferencedTable": "Open referenced table",
+            "foreignKeyRelation": "Foreign key relation",
+            "foreignKeyDescription": "Adding a foreign key relation will link this column with a column in an existing table.",
+            "notNull": "NOT NULL",
+            "notNullDescription": "This constraint will restrict entry of NULL values in this column.",
+            "uniqueDescription": "This constraint restricts entry of duplicate values in this column.",
+            "placeholders": {
+                "columnName": "Enter column name",
+                "selectDataType": "Select data type",
+                "selectTimezone": "Select Timezone",
+                "defaultValue": "Enter default value",
+                "autoGenerated": "Auto-generated",
+                "null": "Null",
+                "enterValue": "Enter a value"
+            },
+            "errors": {
+                "columnNameEmpty": "Column name cannot be empty",
+                "dataTypeEmpty": "Data type cannot be empty",
+                "createColumnFailed": "Failed to create a new column in \"{{tableName}}\" table",
+                "defaultRequiredForNotNull": "Default value is required to populate this field in existing rows as NOT NULL constraint is added"
+            },
+            "success": {
+                "columnCreated": "Column created successfully"
+            },
+            "tooltips": {
+                "setDefaultNull": "Set the default value for the column to Null",
+                "serialValuesReadOnly": "Serial data type values cannot be modified",
+                "foreignKeyNotAllowedSerial": "Foreign key relation cannot be created for serial type column",
+                "foreignKeyNotAllowedBoolean": "Foreign key relation cannot be created for boolean type column",
+                "foreignKeyNotAllowedTimestamp": "Foreign key relation cannot be created with this data type",
+                "foreignKeyNotAllowedJsonb": "Foreign key relation cannot be created for jsonb type column",
+                "fillDetailsForForeignKey": "Fill in column details to create a foreign key relation",
+                "uniqueNotAllowedBoolean": "Unique constraint cannot be added for boolean type column",
+                "uniqueNotAllowedTimestamp": "Unique constraint cannot be added for this type column",
+                "uniqueNotAllowedJsonb": "Unique constraint cannot be added for JSON type column"
+            },
+            "confirmDeleteForeignKey": {
+                "title": "Delete foreign key relation",
+                "message": "Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?"
+            },
+            "unique": "UNIQUE"
+        },
+        "editColumnForm": {
+            "primaryKey": "Primary key",
+            "dataTypeReadOnly": "Data type cannot be modified",
+            "confirmDeleteForeignKey": {
+                "title": "Delete foreign key"
+            },
+            "confirmChangeForeignKey": {
+                "title": "Change in foreign key relation",
+                "message": "Updating the foreign key relation will drop the current constraint and add the new one. This will also replace the default value set in the target table columns with those of the source table. Read docs to know more."
+            },
+            "title": "Edit column",
+            "warning": "Editing the column could break queries and apps connected with this table.",
+            "errors": {
+                "validateDefaultFailed": "Failed to validate default value",
+                "editForeignKeyFailed": "Failed to edit foreign key",
+                "fetchColumnsFailed": "Error fetching columns for table \"{{tableName}}\"",
+                "editColumnFailed": "Failed to edit a column in \"{{tableName}}\" table",
+                "deleteForeignKeyFailed": "Failed to delete foreign key"
+            },
+            "success": {
+                "foreignKeyCreated": "Foreign key created successfully",
+                "columnEdited": "Column edited successfully",
+                "foreignKeyDeleted": "Foreign key deleted successfully",
+                "foreignKeyEdited": "Foreign key edited successfully"
+            },
+            "warnings": {
+                "defaultValueChangeNotApplied": "Changing the default value will NOT update the fields having existing default value"
+            },
+            "tooltips": {
+                "disableNotNullForNullDefault": "Disable the NOT NULL constraint to set the default value to Null",
+                "foreignKeyNotAllowedTimestamp": "Foreign key relation cannot be created for this data type",
+                "foreignKeyNotAllowedJsonb": "Foreign key relation cannot be created for JSON data type",
+                "primaryKeyNotNull": "Primary key values cannot be null",
+                "serialNotNull": "Serial data type cannot have null value",
+                "primaryKeyUnique": "Primary key values must be unique",
+                "serialUnique": "Serial data type value must be unique"
+            }
+        },
+        "table": {
+            "tooltips": {
+                "cannotEditPrimaryKey": "Cannot edit primary key values",
+                "serialValuesReadOnly": "Serial type values cannot be modified",
+                "columnReadOnly": "Column cannot be edited or deleted",
+                "compositePrimaryKey": "Composite primary key",
+                "uniqueForCompositePrimaryKey": "Unique constraint will be added to combinations of values of a composite primary key"
+            },
+            "confirmDeleteColumn": {
+                "title": "Delete Column",
+                "message": "Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?",
+                "confirm": "Delete Column"
+            },
+            "deleteColumn": "Delete column",
+            "errors": {
+                "fetchMetadataFailed": "Error fetching metadata for table \"{{tableName}}\"",
+                "fetchTableFailed": "Failed to fetch table \"{{tableName}}\"",
+                "deleteRowsFailed": "Error deleting rows from table \"{{tableName}}\"",
+                "invalidRecordId": "Something went wrong - Record Id is incorrect",
+                "deleteColumnFailed": "Error deleting column \"{{columnName}}\" from table \"{{tableName}}\"",
+                "updateCellFailed": "Failed to create a new column table \"{{tableName}}\""
+            },
+            "success": {
+                "rowsDeleted": "Deleted {{count}} rows from table \"{{tableName}}\"",
+                "columnDeleted": "Deleted {{columnName}} from table \"{{tableName}}\"",
+                "columnEdited": "Column edited successfully"
+            },
+            "confirmDeleteRows": {
+                "message": "Are you sure you want to delete the selected rows?"
+            },
+            "empty": {
+                "filteredDescription": "No data found matching the criteria specified in current filters.",
+                "defaultDescription": "Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.",
+                "filteredTitle": "No results found",
+                "defaultTitle": "No data added yet"
+            }
+        },
+        "tableKeyRelations": {
+            "type": "TYPE",
+            "single": "Single",
+            "source": "SOURCE",
+            "sourceDescription": "The current table on which foreign key constraint is being added",
+            "target": "TARGET",
+            "targetDescription": "The table that contains foreign key column’s reference",
+            "table": "Table",
+            "column": "Column",
+            "actionsTitle": "ACTIONS",
+            "actionsDescription": "What happens to Source table when Target table is modified",
+            "onUpdate": "On update",
+            "onRemove": "On remove",
+            "actions": {
+                "restrict": "RESTRICT",
+                "cascade": "CASCADE",
+                "setNull": "SET NULL",
+                "setDefault": "SET DEFAULT"
+            },
+            "errors": {
+                "fetchTablesFailed": "Failed to fetch tables",
+                "fetchColumnsFailed": "Error fetching columns for table \"{{tableName}}\""
+            }
+        }
+    },
+    "resetPasswordModal": {
+        "title": "Reset password",
+        "success": "Password reset successful",
+        "error": "Password could not be reset. Please try again!",
+        "resetting": "Resetting...",
+        "reset": "Reset",
+        "autoOption": "Automatically generate a password",
+        "autoHelper": "You will be able to view and copy the password in the next step",
+        "manualOption": "Create password",
+        "done": "Done"
+    },
+    "blankPage": {
+        "getStartedCreateNewApp": "Get started by creating a new app",
+        "getStartedCreateNewWorkflow": "Get started by creating a new workflow",
+        "importApplication": "Import application",
+        "importWorkflow": "Import workflow",
+        "welcomeToToolJet": "Welcome to ToolJet"
+    },
+    "createToolJetAccount": "Create ToolJet account",
+    "forgotPasswordInfo": {
+        "backToLogin": "Back to log in",
+        "header": "Check your mail",
+        "info": "Did not receive an email? Check your spam folder.",
+        "message": "We've sent an email with a password reset link."
+    },
+    "Select": "Select",
+    "sharepoint": {
+        "toSharepoint": "Go to SharePoint"
     }
 }

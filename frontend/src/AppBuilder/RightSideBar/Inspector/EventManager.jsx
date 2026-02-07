@@ -621,14 +621,20 @@ export const EventManager = ({
                   component={component}
                 />
                 <div className="d-flex align-items-center justify-content-between mt-3">
-                  <label className="form-label mt-1">Open in</label>
+                  <label className="form-label mt-1">
+                    {t('editor.inspector.eventManager.openIn', 'Open in')}
+                  </label>
                   <ToggleGroup
                     onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
                     defaultValue={event?.windowTarget || 'newTab'}
                     style={{ width: '74%' }}
                   >
-                    <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
-                    <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
+                    <ToggleGroupItem value="newTab">
+                      {t('editor.inspector.eventManager.newTab', 'New tab')}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="currentTab">
+                      {t('editor.inspector.eventManager.currentTab', 'Current tab')}
+                    </ToggleGroupItem>
                   </ToggleGroup>
                 </div>
               </div>

@@ -6,8 +6,10 @@ import { AddEditPagePopup } from './AddNewPagePopup';
 import PageOptions from './PageOptions';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTranslation } from 'react-i18next';
 
 export function AddNewPageMenu({ darkMode }) {
+  const { t } = useTranslation();
   const newPageBtnRef = useRef(null);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
@@ -34,7 +36,7 @@ export function AddNewPageMenu({ darkMode }) {
           setNewPagePopupConfig({ show: true, mode: 'add', type: 'default' });
         }}
       >
-        New page
+        {t('editor.pageMenu.newPage', 'New page')}
       </Button>
 
       <Button
@@ -59,14 +61,14 @@ export function AddNewPageMenu({ darkMode }) {
           <div className="menu-options mb-0">
             <PageOptions
               type="url"
-              text="Add nav item with URL"
+              text={t('editor.pageMenu.addNavItemWithUrl', 'Add nav item with URL')}
               icon="addnavitemurl"
               darkMode={darkMode}
               onClick={() => handleOpenPopup('url')}
             />
             <PageOptions
               type="app"
-              text="Add nav item ToolJet app"
+              text={t('editor.pageMenu.addNavItemWithApp', 'Add nav item ToolJet app')}
               icon="apps"
               darkMode={darkMode}
               onClick={() => handleOpenPopup('app')}
@@ -74,13 +76,16 @@ export function AddNewPageMenu({ darkMode }) {
             <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex disabled licensed-page-option'}`}>
               <PageOptions
                 type="group"
-                text="Add nav group"
+                text={t('editor.pageMenu.addNavGroup', 'Add nav group')}
                 icon="folder"
                 darkMode={darkMode}
                 onClick={() => hasAppPagesAddNavGroupEnabled && handleOpenPopup('group')}
               />
               <LicenseTooltip
-                message={"You don't have access to nav groups. Upgrade your plan to access this feature."}
+                message={t(
+                  'editor.pageMenu.noNavGroupsAccess',
+                  "You don't have access to nav groups. Upgrade your plan to access this feature."
+                )}
                 placement="bottom"
                 show={!hasAppPagesAddNavGroupEnabled}
               >

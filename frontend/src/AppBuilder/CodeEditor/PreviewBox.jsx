@@ -16,6 +16,8 @@ import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
@@ -100,7 +102,12 @@ const sanitizeLargeDataset = (data, callback) => {
         const sizeOfEachElement = estimateSizeOfObject(value);
 
         if (Array.isArray(value) && (data.length > 10 || sizeOfEachElement > SIZE_LIMIT_KB)) {
-          acc[key] = [value[0], `Too large to display: ${value.length - 1} more items`];
+          acc[key] = [
+            value[0],
+            i18next.t('editor.previewBox.tooLargeToDisplay', 'Too large to display: {{count}} more items', {
+              count: value.length - 1,
+            }),
+          ];
         } else {
           acc[key] = sanitize(value);
         }
@@ -124,6 +131,7 @@ export const PreviewBox = ({
   isWorkspaceVariable,
   validationFn,
 }) => {
+  const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
@@ -316,10 +324,10 @@ const RenderResolvedValue = ({
 
   const previewContent = isServerConstant
     ? isServerSideGlobalResolveEnabled
-      ? 'Server variables would be resolved at runtime'
-      : 'Server variables are only available in paid plans'
+      ? t('editor.previewBox.serverVariablesRuntime', 'Server variables would be resolved at runtime')
+      : t('editor.previewBox.serverVariablesPaid', 'Server variables are only available in paid plans')
     : isSecretConstant
-    ? 'Values of secret constants are hidden'
+    ? t('editor.previewBox.secretValuesHidden', 'Values of secret constants are hidden')
     : !withValidation
     ? resolvedValue
     : computeCoersionPreview(resolvedValue, coersionData);
@@ -338,11 +346,17 @@ const RenderResolvedValue = ({
 };
 
 function FixIssueTooltipContent() {
+  const { t } = useTranslation();
   return (
     <>
-      <h5 className="tw-font-medium">Auto-fix</h5>
+      <h5 className="tw-font-medium">{t('editor.previewBox.autoFixTitle', 'Auto-fix')}</h5>
 
-      <p className="tw-text-base tw-mb-0">Diagnose and resolve errors instantly to keep your apps running smoothly</p>
+      <p className="tw-text-base tw-mb-0">
+        {t(
+          'editor.previewBox.autoFixDescription',
+          'Diagnose and resolve errors instantly to keep your apps running smoothly'
+        )}
+      </p>
     </>
   );
 }

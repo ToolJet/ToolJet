@@ -8,8 +8,10 @@ import cx from 'classnames';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { formatPathForCopy } from './utils';
+import { useTranslation } from 'react-i18next';
 
 export const HiddenOptions = (props) => {
+  const { t } = useTranslation();
   const { nodeSpecificFilteredActions, generalActionsFiltered, darkMode, setActionClicked, data } = props;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [showMenu, setShowMenu] = useState(false);
@@ -103,7 +105,7 @@ export const HiddenOptions = (props) => {
                 >
                   <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
 
-                  <span> Copy path</span>
+                  <span> {t('editor.leftSidebar.copyPath', 'Copy path')}</span>
                 </div>
                 <div
                   onClick={(event) => {
@@ -115,7 +117,7 @@ export const HiddenOptions = (props) => {
                   data-cy="inspector-copy-value"
                 >
                   <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
-                  <span> Copy value</span>
+                  <span> {t('editor.leftSidebar.copyValue', 'Copy value')}</span>
                 </div>
               </div>
             </Popover.Body>
@@ -129,7 +131,7 @@ export const HiddenOptions = (props) => {
             ...(showMenu && { backgroundColor: 'var(--button-outline-pressed, rgba(136, 144, 153, 0.18)' }),
           }}
         >
-          <ToolTip message="Copy options" trigger={['hover', 'focus']}>
+          <ToolTip message={t('editor.leftSidebar.copyOptions', 'Copy options')} trigger={['hover', 'focus']}>
             <span
               onClick={(event) => {
                 event.stopPropagation();

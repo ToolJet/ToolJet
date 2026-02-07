@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { ToolTip } from './Components/ToolTip';
+import { useTranslation } from 'react-i18next';
+import { camelCase } from 'lodash';
 
 export const Color = ({
   param,
@@ -11,6 +13,7 @@ export const Color = ({
   cyLabel,
   shouldFlexDirectionBeRow = false,
 }) => {
+  const { t } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
 
   const coverStyles = {
@@ -34,7 +37,7 @@ export const Color = ({
   };
 
   const paramMeta = componentMeta[paramType][param.name] || {};
-  const displayName = paramMeta.displayName || param.name;
+  const displayName = t(`widget.commonProperties.${camelCase(param.name)}`, paramMeta.displayName || param.name);
 
   const decimalToHex = (alpha) => {
     let aHex = Math.round(255 * alpha).toString(16);

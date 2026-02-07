@@ -1,13 +1,14 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
 import { useTranslation } from 'react-i18next';
+import { camelCase } from 'lodash';
 
 export const AlignButtons = ({ param, definition, onChange, paramType, componentMeta }) => {
+  const { t } = useTranslation();
   const initialValue = definition ? definition.value : '';
   const paramMeta = componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
+  const displayName = t(`widget.commonProperties.${camelCase(param.name)}`, paramMeta.displayName || param.name);
   const options = paramMeta.options || {};
-  const { t } = useTranslation();
 
   function handleOptionChanged(event) {
     onChange(param, 'value', event.currentTarget.value, paramType);

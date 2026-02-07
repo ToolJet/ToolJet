@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { CalendarEventPopover } from './CalendarPopover';
 import './Calendar.scss';
 import _ from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 const localizer = momentLocalizer(moment);
 
@@ -40,6 +41,7 @@ export default function Calendar({
   setExposedVariable,
   dataCy,
 }) {
+  const { t } = useTranslation();
   const style = { height, borderRadius: `${styles.borderRadius}px`, overflow: 'hidden' };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
   const events = Array.isArray(properties?.events)
@@ -120,7 +122,11 @@ export default function Calendar({
   }, [JSON.stringify(moment(defaultDate).format('DD-MM-YYYY'))]);
 
   const components = {
-    timeGutterHeader: () => <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>All day</div>,
+    timeGutterHeader: () => (
+      <div style={{ height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+        {t('widget.Calendar.allDay', 'All day')}
+      </div>
+    ),
     week: {
       header: (props) => <div>{moment(props.date).format(styles.weekDateFormat)}</div>,
     },

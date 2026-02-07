@@ -10,8 +10,10 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DefaultCopyIcon } from './DefaultCopyIcon';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { formatPathForCopy } from './utils';
+import { useTranslation } from 'react-i18next';
 
 export const TreeViewHeader = (props) => {
+  const { t } = useTranslation();
   const { path, backFn, darkMode, data, nodeSpecificActions, type, generalActions } = props;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [showMenu, setShowMenu] = useState(false);
@@ -61,7 +63,7 @@ export const TreeViewHeader = (props) => {
           >
             {' '}
             <DefaultCopyIcon height={16} width={16} fill="var(--icon-weak)" />
-            <span> Copy path</span>
+            <span> {t('editor.leftSidebar.copyPath', 'Copy path')}</span>
           </div>
           <div
             onClick={(event) => {
@@ -74,7 +76,7 @@ export const TreeViewHeader = (props) => {
           >
             <SolidIcon width="16" height="16" name="copy" fill="var(--icon-weak)" />
 
-            <span> Copy value</span>
+            <span> {t('editor.leftSidebar.copyValue', 'Copy value')}</span>
           </div>
         </div>
 

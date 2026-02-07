@@ -1,7 +1,9 @@
 import React, { memo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTranslation } from 'react-i18next';
 
 export const EmptyState = memo(() => {
+  const { t } = useTranslation();
   return (
     <div
       className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100"
@@ -17,7 +19,7 @@ export const EmptyState = memo(() => {
           <SolidIcon name="warning" width="16" />
         </div>
       </div>
-      <div className="warning-no-data-text">No data</div>
+      <div className="warning-no-data-text">{t('globals.noData', 'No data')}</div>
     </div>
   );
 });

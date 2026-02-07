@@ -16,6 +16,7 @@ import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import { SelectionRange } from '@codemirror/state';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { useTranslation } from 'react-i18next';
 
 export const handleSearchPanel = (view) => {
   const dom = document.createElement('div');
@@ -24,6 +25,7 @@ export const handleSearchPanel = (view) => {
 };
 
 function SearchPanel({ view }) {
+  const { t } = useTranslation();
   const [searchText, setSearchText] = useState('');
   const [replaceText, setReplaceText] = useState('');
 
@@ -72,44 +74,44 @@ function SearchPanel({ view }) {
         onChange={(e) => setSearchText(e.target.value)}
         onFocus={() => setShortcutEnabled(true)}
         onBlur={() => setShortcutEnabled(false)}
-        placeholder="Find"
+        placeholder={t('editor.searchPanel.find', 'Find')}
         size="small"
         value={searchText}
-        aria-label="Find text"
+        aria-label={t('editor.searchPanel.findText', 'Find text')}
       />
       <InputComponent
         leadingIcon="arrowreturn01"
         onChange={(e) => setReplaceText(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && replaceNext(view)}
-        placeholder="Replace"
+        placeholder={t('editor.searchPanel.replace', 'Replace')}
         size="small"
         value={replaceText}
-        aria-label="Replace text"
+        aria-label={t('editor.searchPanel.replaceText', 'Replace text')}
       />
     </div>
   );
 
   const displaySearchButtons = () => (
     <div className="search-buttons">
-      <ToolTip message={'Previous'}>
+      <ToolTip message={t('editor.searchPanel.previous', 'Previous')}>
         <ButtonComponent
           iconOnly
           leadingIcon="arrowup01"
           onClick={() => findPrevious(view)}
           size="medium"
           variant="ghost"
-          aria-label="Previous match"
+          aria-label={t('editor.searchPanel.previousMatch', 'Previous match')}
         />
       </ToolTip>
       <div className="navbar-seperator"></div>
-      <ToolTip message={'Next'}>
+      <ToolTip message={t('editor.searchPanel.next', 'Next')}>
         <ButtonComponent
           iconOnly
           leadingIcon="arrowdown01"
           onClick={() => findNext(view)}
           size="medium"
           variant="ghost"
-          aria-label="Next match"
+          aria-label={t('editor.searchPanel.nextMatch', 'Next match')}
         />
       </ToolTip>
     </div>
@@ -117,25 +119,25 @@ function SearchPanel({ view }) {
 
   const displayReplaceButtons = () => (
     <div className="replace-buttons">
-      <ToolTip message={'Replace'}>
+      <ToolTip message={t('editor.searchPanel.replace', 'Replace')}>
         <ButtonComponent
           iconOnly
           leadingIcon="replace"
           onClick={() => replaceNext(view)}
           size="medium"
           variant="ghost"
-          aria-label="Replace"
+          aria-label={t('editor.searchPanel.replace', 'Replace')}
         />
       </ToolTip>
       <div className="navbar-seperator"></div>
-      <ToolTip message={'Replace all'}>
+      <ToolTip message={t('editor.searchPanel.replaceAll', 'Replace all')}>
         <ButtonComponent
           iconOnly
           leadingIcon="replaceall"
           onClick={() => replaceAll(view)}
           size="medium"
           variant="ghost"
-          aria-label="Replace all"
+          aria-label={t('editor.searchPanel.replaceAll', 'Replace all')}
         />
       </ToolTip>
       <div className="navbar-seperator"></div>
@@ -145,7 +147,7 @@ function SearchPanel({ view }) {
         onClick={() => closeSearchPanel(view)}
         size="medium"
         variant="ghost"
-        aria-label="Close search panel"
+        aria-label={t('editor.searchPanel.close', 'Close search panel')}
         className="!tw-w-[28px]"
       />
     </div>

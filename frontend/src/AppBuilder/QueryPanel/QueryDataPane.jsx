@@ -226,19 +226,22 @@ export const QueryDataPane = ({ darkMode }) => {
   );
 };
 
-const EmptyDataSource = () => (
-  <div>
-    <div className="text-center">
-      <span
-        className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
-        style={{ width: '32px', height: '32px' }}
-      >
-        <FolderEmpty style={{ height: '16px' }} />
-      </span>
+const EmptyDataSource = () => {
+  const { t } = useTranslation();
+  return (
+    <div>
+      <div className="text-center">
+        <span
+          className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
+          style={{ width: '32px', height: '32px' }}
+        >
+          <FolderEmpty style={{ height: '16px' }} />
+        </span>
+      </div>
+      <span data-cy="label-no-queries">{t('editor.queryPanel.noQueries', 'No queries have been added.')}</span>
     </div>
-    <span data-cy="label-no-queries">No queries have been added. </span>
-  </div>
-);
+  );
+};
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');

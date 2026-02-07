@@ -3,8 +3,10 @@ import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { PencilRuler } from 'lucide-react';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+import { useTranslation } from 'react-i18next';
 
 const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) => {
+  const { t } = useTranslation();
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
@@ -31,7 +33,7 @@ const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) =
           whiteSpace: 'nowrap',
         }}
       >
-        <span style={{ cursor: 'default' }}>Page and nav</span>
+        <span style={{ cursor: 'default' }}>{t('editor.pageMenu.pageAndNav', 'Page and nav')}</span>
       </ConfigHandleButton>
       <ConfigHandleButton
         customStyles={{

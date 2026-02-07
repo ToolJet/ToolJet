@@ -9,8 +9,10 @@ import flags from 'react-phone-number-input/flags';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
+  const { t } = useTranslation();
   const {
     layoutPropertyChanged,
     component,
@@ -65,7 +67,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
     return (
       <div className="mb-2">
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label"> Default Country</label>
+          <label className="form-label">{t('widget.phoneInput.defaultCountry', 'Default Country')}</label>
           <div
             className={cx({
               'hide-fx': !isDefaultCountryFxOn,

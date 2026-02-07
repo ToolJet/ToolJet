@@ -51,6 +51,7 @@ import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import { withTranslation } from 'react-i18next';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -234,8 +235,8 @@ class AppComponent extends React.Component {
           >
             {updateAvailable && (
               <div className="alert alert-info alert-dismissible" role="alert">
-                <h3 className="mb-1">Update available</h3>
-                <p>A new version of ToolJet has been released.</p>
+                <h3 className="mb-1">{this.props.t('app.updateAvailable', 'Update available')}</h3>
+                <p>{this.props.t('app.newVersionReleased', 'A new version of ToolJet has been released.')}</p>
                 <div className="btn-list">
                   <a
                     href="https://docs.tooljet.io/docs/setup/updating"
@@ -243,7 +244,7 @@ class AppComponent extends React.Component {
                     className="btn btn-info"
                     rel="noreferrer"
                   >
-                    Read release notes & update
+                    {this.props.t('app.readReleaseNotes', 'Read release notes & update')}
                   </a>
                   <a
                     onClick={() => {
@@ -252,7 +253,7 @@ class AppComponent extends React.Component {
                     }}
                     className="btn"
                   >
-                    Skip this version
+                    {this.props.t('app.skipVersion', 'Skip this version')}
                   </a>
                 </div>
               </div>
@@ -499,4 +500,4 @@ class AppComponent extends React.Component {
 }
 
 export const App = AppWrapper;
-const AppWithRouter = withRouter(AppComponent);
+const AppWithRouter = withRouter(withTranslation()(AppComponent));

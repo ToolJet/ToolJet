@@ -14,8 +14,10 @@ import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { QueryRenameInput } from './QueryRenameInput';
+import { useTranslation } from 'react-i18next';
 
 export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const { t } = useTranslation();
   const queryNameEleRef = useRef(null);
 
   const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
@@ -142,7 +144,9 @@ export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
                   {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
                 </div>
               </ToolTip>{' '}
-              {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+              {!isQueryRunnable(dataQuery) && (
+                <small className="mx-2 text-secondary">{t('editor.queryPanel.draft', 'Draft')}</small>
+              )}
               {localDs && (
                 <>
                   <a

@@ -12,6 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
+import { useTranslation } from 'react-i18next';
 
 const Caret = memo((props) => {
   return (
@@ -64,6 +65,7 @@ const PageGroupActions = memo(({ onRename, onDelete }) => (
 ));
 
 export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlight, darkMode }) => {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [showPageOptions, toggleShowPageOptions] = useState(false);
   const [showEditPopover, setShowEditPopover] = useState(false);
@@ -162,7 +164,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                 </div>
                 <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
                   {pageVisibility && (
-                    <ToolTip message="Hidden group" placement="bottom">
+                    <ToolTip message={t('editor.pageMenu.tooltips.hiddenGroup', 'Hidden group')} placement="bottom">
                       <div className=" d-flex align-items-center justify-content-center">
                         <EyeDisable fill="var(--icons-default)" className="" width={16} height={16} />
                       </div>
@@ -201,13 +203,13 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                     <Popover id="edit-page-popover" className={`${darkMode && 'dark-theme theme-dark'}`}>
                       <div className="menu-options mb-0">
                         <PageOptions
-                          text="Edit group details"
+                          text={t('editor.pageMenu.options.editGroupDetails', 'Edit group details')}
                           icon="editable"
                           darkMode={darkMode}
                           onClick={() => handleOpenPopup('group', page)}
                         />
                         <PageOptions
-                          text="Duplicate group"
+                          text={t('editor.pageMenu.options.duplicateGroup', 'Duplicate group')}
                           icon="copy"
                           darkMode={darkMode}
                           onClick={(e) => {
@@ -218,7 +220,7 @@ export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlig
                           }}
                         />
                         <PageOptions
-                          text="Delete group"
+                          text={t('editor.pageMenu.options.deleteGroup', 'Delete group')}
                           icon="trash"
                           darkMode={darkMode}
                           onClick={(e) => {

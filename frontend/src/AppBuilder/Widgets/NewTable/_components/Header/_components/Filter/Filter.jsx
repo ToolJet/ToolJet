@@ -168,7 +168,7 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
         {localFilters.length === 0 && (
           <div>
             <center>
-              <span data-cy={`label-no-filters`}>no filters yet.</span>
+              <span data-cy={`label-no-filters`}>{t('widget.Table.noFiltersYet', 'no filters yet.')}</span>
             </center>
           </div>
         )}

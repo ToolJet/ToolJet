@@ -61,7 +61,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
         useCustomStyles={true}
       />
-      <label className="form-label mt-2">Query params</label>
+      <label className="form-label mt-2">{t('editor.inspector.eventManager.queryParams', 'Query params')}</label>
 
       {Array(numberOfQueryParams)
         .fill(0)

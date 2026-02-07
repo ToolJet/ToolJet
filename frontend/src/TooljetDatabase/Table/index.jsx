@@ -32,9 +32,11 @@ import {
   getLocalTimeZone,
   getUTCOffset,
 } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
+import { useTranslation } from 'react-i18next';
 import './styles.scss';
 
 const Table = ({ collapseSidebar }) => {
+  const { t } = useTranslation();
   const {
     organizationId,
     columns,
@@ -121,20 +123,23 @@ const Table = ({ collapseSidebar }) => {
           if (error) {
             toast.error(
               error?.message ??
-                `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[currentIndex].referenced_table_name}"`
+                t('tooljetDatabase.table.errors.fetchTableFailed', {
+                  defaultValue: 'Failed to fetch table "{{tableName}}"',
+                  tableName: foreignKeys?.length > 0 && foreignKeys[currentIndex].referenced_table_name,
+                })
             );
             return reject(error);
           }
           const totalFKRecords = headers['content-range'].split('/')[1] || 0;
 
           if (Array.isArray(data) && data.length > 0) {
-            const dataToCache = data.map((item) => {
-              const [key, _value] = Object.entries(item);
-              return {
-                label: key[1] === null ? 'Null' : key[1],
-                value: key[1] === null ? 'Null' : key[1],
-              };
-            });
+              const dataToCache = data.map((item) => {
+                const [key, _value] = Object.entries(item);
+                return {
+                  label: key[1] === null ? t('tooljetDatabase.columnForm.placeholders.null', 'Null') : key[1],
+                  value: key[1] === null ? t('tooljetDatabase.columnForm.placeholders.null', 'Null') : key[1],
+                };
+              });
             resolve({
               key: foreignKey.column_names[0],
               value: {
@@ -367,7 +372,13 @@ const Table = ({ collapseSidebar }) => {
     if (!isEmpty(selectedTable)) {
       tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
         if (error) {
-          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
+          toast.error(
+            error?.message ??
+              t('tooljetDatabase.table.errors.fetchMetadataFailed', {
+                defaultValue: 'Error fetching metadata for table "{{tableName}}"',
+                tableName: selectedTable.table_name,
+              })
+          );
           return;
         }
 
@@ -686,7 +697,9 @@ const Table = ({ collapseSidebar }) => {
   }, []);
 
   const handleDeleteRow = async () => {
-    const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
+    const shouldDelete = confirm(
+      t('tooljetDatabase.table.confirmDeleteRows.message', 'Are you sure you want to delete the selected rows?')
+    );
     if (shouldDelete) {
       const selectedRows = Object.keys(selectedRowIds).map((key) => rows[key]);
       const primaryKey = columns.find((column) => column?.constraints_type?.is_primary_key);
@@ -700,15 +713,27 @@ const Table = ({ collapseSidebar }) => {
         const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
 
         if (error) {
-          toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
+          toast.error(
+            error?.message ??
+              t('tooljetDatabase.table.errors.deleteRowsFailed', {
+                defaultValue: 'Error deleting rows from table "{{tableName}}"',
+                tableName: selectedTable.table_name,
+              })
+          );
           return;
         }
 
-        toast.success(`Deleted ${selectedRows.length} rows from table "${selectedTable.table_name}"`);
+        toast.success(
+          t('tooljetDatabase.table.success.rowsDeleted', {
+            defaultValue: 'Deleted {{count}} rows from table "{{tableName}}"',
+            count: selectedRows.length,
+            tableName: selectedTable.table_name,
+          })
+        );
         handleRefetchQuery(queryFilters, sortFilters, pageCount, pageSize);
         setSelectedRowIds({});
       } else {
-        toast.error('Something went wrong - Record Id is incorrect');
+        toast.error(t('tooljetDatabase.table.errors.invalidRecordId', 'Something went wrong - Record Id is incorrect'));
       }
     }
   };
@@ -721,11 +746,24 @@ const Table = ({ collapseSidebar }) => {
     }));
     const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
     if (error) {
-      toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
+      toast.error(
+        error?.message ??
+          t('tooljetDatabase.table.errors.deleteColumnFailed', {
+            defaultValue: 'Error deleting column "{{columnName}}" from table "{{tableName}}"',
+            columnName,
+            tableName: selectedTable,
+          })
+      );
       return;
     }
     await fetchTableMetadata();
-    toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+    toast.success(
+      t('tooljetDatabase.table.success.columnDeleted', {
+        defaultValue: 'Deleted {{columnName}} from table "{{tableName}}"',
+        columnName,
+        tableName: selectedTable.table_name,
+      })
+    );
   };
 
   const handleProgressAnimation = (message, status) => {
@@ -776,7 +814,11 @@ const Table = ({ collapseSidebar }) => {
 
     if (error) {
       handleProgressAnimation(
-        error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`,
+        error?.message ??
+          t('tooljetDatabase.table.errors.updateCellFailed', {
+            defaultValue: 'Failed to create a new column table "{{tableName}}"',
+            tableName: selectedTable.table_name,
+          }),
         false
       );
       setEditPopover(false);
@@ -820,7 +862,7 @@ const Table = ({ collapseSidebar }) => {
       errorState: false,
     }));
     cellValue === null ? setNullValue(true) : setNullValue(false);
-    handleProgressAnimation('Column edited successfully', true);
+    handleProgressAnimation(t('tooljetDatabase.table.success.columnEdited', 'Column edited successfully'), true);
     if (dataType === 'timestamp with time zone') return;
     document.getElementById('edit-input-blur').blur();
   };
@@ -945,8 +987,12 @@ const Table = ({ collapseSidebar }) => {
     if (headerGroups.length && headerGroups[0].headers.length) {
       const tableHeaderList = headerGroups[0].headers;
       const { constraints_type = {}, dataType = '' } = tableHeaderList[cellColumnIndex];
-      if (constraints_type.is_primary_key) return 'Cannot edit primary key values';
-      if (dataType === 'serial') return 'Serial type values cannot be modified';
+      if (constraints_type.is_primary_key) {
+        return t('tooljetDatabase.table.tooltips.cannotEditPrimaryKey', 'Cannot edit primary key values');
+      }
+      if (dataType === 'serial') {
+        return t('tooljetDatabase.table.tooltips.serialValuesReadOnly', 'Serial type values cannot be modified');
+      }
       return cellValue || '';
     } else {
       return cellValue || '';
@@ -972,7 +1018,12 @@ const Table = ({ collapseSidebar }) => {
     ).length;
 
     return is_primary_key ? (
-      <ToolTip show message="Column cannot be edited or deleted" placement="bottom" delay={{ show: 0, hide: 100 }}>
+      <ToolTip
+        show
+        message={t('tooljetDatabase.table.tooltips.columnReadOnly', 'Column cannot be edited or deleted')}
+        placement="bottom"
+        delay={{ show: 0, hide: 100 }}
+      >
         <div
           className={cx({
             'header-primaryKey-container':
@@ -989,7 +1040,11 @@ const Table = ({ collapseSidebar }) => {
           </div>
           <div className="d-flex align-items-center">
             <ToolTip
-              message={primaryKeyCount === 1 ? 'Primary key' : 'Composite primary key'}
+              message={
+                primaryKeyCount === 1
+                  ? t('tooljetDatabase.editColumnForm.primaryKey', 'Primary key')
+                  : t('tooljetDatabase.table.tooltips.compositePrimaryKey', 'Composite primary key')
+              }
               placement="top"
               tooltipClassName="tjdb-table-tooltip"
               show={true}
@@ -1009,7 +1064,7 @@ const Table = ({ collapseSidebar }) => {
               message={
                 isMatchingForeignKeyColumn(column.Header) ? (
                   <div className="foreignKey-relation-tooltip">
-                    <span>Foreign key relation</span>
+                    <span>{t('tooljetDatabase.columnForm.foreignKeyRelation', 'Foreign key relation')}</span>
                     <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
                       <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
                       <ArrowRight />
@@ -1052,7 +1107,7 @@ const Table = ({ collapseSidebar }) => {
           message={
             isMatchingForeignKeyColumn(column.Header) ? (
               <div className="foreignKey-relation-tooltip">
-                <span>Foreign key relation</span>
+                <span>{t('tooljetDatabase.columnForm.foreignKeyRelation', 'Foreign key relation')}</span>
                 <div className="d-flex align-item-center justify-content-between mt-2 custom-tooltip-style">
                   <span>{isMatchingForeignKeyColumnDetails(column.Header)?.column_names[0]}</span>
                   <ArrowRight />
@@ -1062,7 +1117,7 @@ const Table = ({ collapseSidebar }) => {
                 </div>
               </div>
             ) : dataType === 'timestamp with time zone' ? (
-              <span>Display time</span>
+              <span>{t('tooljetDatabase.columnForm.displayTime', 'Display time')}</span>
             ) : null
           }
           placement="top"
@@ -1105,9 +1160,17 @@ const Table = ({ collapseSidebar }) => {
   const emptyHeader = Array.from({ length: 5 }, (_, index) => index + 1);
   const emptyTableData = Array.from({ length: 10 }, (_, index) => index + 1);
   const emptyData = filterEnable
-    ? 'No data found matching the criteria specified in current filters.'
-    : 'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.';
-  const emptyMainData = filterEnable ? 'No results found' : 'No data added yet';
+    ? t(
+        'tooljetDatabase.table.empty.filteredDescription',
+        'No data found matching the criteria specified in current filters.'
+      )
+    : t(
+        'tooljetDatabase.table.empty.defaultDescription',
+        'Use Add Row from the menu or directly click on + icon to add a row. You may use the bulk upload option to add multiple rows of data using a csv file.'
+      );
+  const emptyMainData = filterEnable
+    ? t('tooljetDatabase.table.empty.filteredTitle', 'No results found')
+    : t('tooljetDatabase.table.empty.defaultTitle', 'No data added yet');
 
   const footerStyle = {
     borderTop: '1px solid var(--slate5)',
@@ -1478,7 +1541,9 @@ const Table = ({ collapseSidebar }) => {
                                         }}
                                       >
                                         {cellVal === null ? (
-                                          <span className="cell-text-null-input">Null</span>
+                                          <span className="cell-text-null-input">
+                                            {t('tooljetDatabase.columnForm.placeholders.null', 'Null')}
+                                          </span>
                                         ) : cell.column?.dataType === 'boolean' ? (
                                           <div className="d-flex align-items-center justify-content-between">
                                             <div
@@ -1518,15 +1583,6 @@ const Table = ({ collapseSidebar }) => {
                                                 </label>
                                               </div>
                                             </div>
-                                            {/* <ToolTip
-                                              message={'Open referenced table'}
-                                              placement="top"
-                                              tooltipClassName="tjdb-table-tooltip"
-                                            >
-                                              <div className="cursor-pointer">
-                                                {isMatchingForeignKeyColumn(cell.column.Header) && <Maximize />}
-                                              </div>
-                                            </ToolTip> */}
                                           </div>
                                         ) : (
                                           //  : cell.column?.dataType === 'jsonb' ? (
@@ -1560,18 +1616,6 @@ const Table = ({ collapseSidebar }) => {
                                                 nullValue === true || !shouldOpenCellEditMenu(index) ? true : false
                                               }
                                             />
-                                            {/* <ToolTip
-                                              message={'Open referenced table'}
-                                              placement="top"
-                                              tooltipClassName="tjdb-table-tooltip"
-                                            >
-                                              <div className="cursor-pointer">
-                                                {foreignKeys[0]?.column_names?.length > 0 &&
-                                                  foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
-                                                    <Maximize />
-                                                  )}
-                                              </div>
-                                            </ToolTip> */}
                                           </div>
                                         )}
                                       </div>
@@ -1579,7 +1623,9 @@ const Table = ({ collapseSidebar }) => {
                                   ) : (
                                     <>
                                       {cell.value === null ? (
-                                        <span className="cell-text-null">Null</span>
+                                        <span className="cell-text-null">
+                                          {t('tooljetDatabase.columnForm.placeholders.null', 'Null')}
+                                        </span>
                                       ) : cell.column.dataType === 'jsonb' ? (
                                         `{...}`
                                       ) : cell.column.dataType === 'boolean' ? (
@@ -1608,14 +1654,6 @@ const Table = ({ collapseSidebar }) => {
                                           </div>
                                         </div>
                                       ) : (
-                                        //   <ToolTip
-                                        //     message={'Open referenced table'}
-                                        //     placement="top"
-                                        //     tooltipClassName="tjdb-table-tooltip"
-                                        //   >
-                                        //     <div className="cursor-pointer">{isForeignKey && <Maximize />}</div>
-                                        //   </ToolTip>
-                                        // </div>
                                         <div
                                           className={cx({
                                             'foreignkey-cell': isMatchingForeignKeyColumn(cell.column.Header),
@@ -1635,18 +1673,6 @@ const Table = ({ collapseSidebar }) => {
                                                 )
                                               : cell.render('Cell')}
                                           </div>
-                                          {/* <ToolTip
-                                            message={'Open referenced table'}
-                                            placement="top"
-                                            tooltipClassName="tjdb-table-tooltip"
-                                          >
-                                            <div className="cursor-pointer">
-                                              {foreignKeys[0]?.column_names?.length > 0 &&
-                                                foreignKeys[0]?.column_names[0] === cell?.column?.Header && (
-                                                  <Maximize />
-                                                )}
-                                            </div>
-                                          </ToolTip> */}
                                         </div>
                                       )}
                                     </>
@@ -1771,10 +1797,13 @@ const Table = ({ collapseSidebar }) => {
         />
       </Drawer>
       <ConfirmDialog
-        title={'Delete Column'}
+        title={t('tooljetDatabase.table.confirmDeleteColumn.title', 'Delete Column')}
         show={editColumnHeader?.deletePopupModal}
         message={
-          'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
+          t(
+            'tooljetDatabase.table.confirmDeleteColumn.message',
+            'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
+          )
         }
         onConfirm={handleDeleteColumn}
         onCancel={() => {
@@ -1792,8 +1821,8 @@ const Table = ({ collapseSidebar }) => {
             deletePopupModal: false,
           }));
         }}
-        confirmButtonText={'Delete Column'}
-        cancelButtonText={'Cancel'}
+        confirmButtonText={t('tooljetDatabase.table.confirmDeleteColumn.confirm', 'Delete Column')}
+        cancelButtonText={t('globals.cancel', 'Cancel')}
         confirmIcon={<DeleteIcon />}
         footerStyle={footerStyle}
       />

@@ -23,6 +23,7 @@ import { getLocalTimeZone, timeZonesWithOffsets } from '@/AppBuilder/QueryManage
 import defaultStyles from '@/_ui/Select/styles';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+import { useTranslation } from 'react-i18next';
 
 const ColumnForm = ({
   onCreate,
@@ -33,6 +34,7 @@ const ColumnForm = ({
   setReferencedColumnDetails,
   initiator,
 }) => {
+  const { t } = useTranslation();
   const [columnName, setColumnName] = useState('');
   const [defaultValue, setDefaultValue] = useState('');
   const [dataType, setDataType] = useState();
@@ -168,11 +170,11 @@ const ColumnForm = ({
   const handleCreate = async () => {
     const isSerialType = dataType.value === 'serial' ? true : false;
     if (isEmpty(columnName)) {
-      toast.error('Column name cannot be empty');
+      toast.error(t('tooljetDatabase.columnForm.errors.columnNameEmpty', 'Column name cannot be empty'));
       return;
     }
     if (isEmpty(dataType.value)) {
-      toast.error('Data type cannot be empty');
+      toast.error(t('tooljetDatabase.columnForm.errors.dataTypeEmpty', 'Data type cannot be empty'));
       return;
     }
 
@@ -197,10 +199,16 @@ const ColumnForm = ({
     );
     setFetching(false);
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
+      toast.error(
+        error?.message ??
+          t('tooljetDatabase.columnForm.errors.createColumnFailed', {
+            defaultValue: 'Failed to create a new column in "{{tableName}}" table',
+            tableName: selectedTable.table_name,
+          })
+      );
       return;
     }
-    toast.success(`Column created successfully`);
+    toast.success(t('tooljetDatabase.columnForm.success.columnCreated', 'Column created successfully'));
     onCreate && onCreate();
   };
 
@@ -278,18 +286,18 @@ const ColumnForm = ({
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
         <h3 className="" data-cy="create-new-column-header">
-          Create a new column
+          {t('tooljetDatabase.columnForm.title', 'Create a new column')}
         </h3>
       </div>
       <div className="card-body create-drawer-body">
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
-            Column name
+            {t('tooljetDatabase.columnForm.columnName', 'Column name')}
           </div>
           <input
             value={columnName}
             type="text"
-            placeholder="Enter column name"
+            placeholder={t('tooljetDatabase.columnForm.placeholders.columnName', 'Enter column name')}
             className="form-control"
             data-cy="column-name-input-field"
             autoComplete="off"
@@ -306,11 +314,11 @@ const ColumnForm = ({
         </div>
         <div className="column-datatype-selector mb-3 data-type-dropdown-section" data-cy="data-type-dropdown-section">
           <div className="form-label" data-cy="data-type-input-field-label">
-            Data type
+            {t('tooljetDatabase.columnForm.dataType', 'Data type')}
           </div>
           <Select
             //useMenuPortal={false}
-            placeholder="Select data type"
+            placeholder={t('tooljetDatabase.columnForm.placeholders.selectDataType', 'Select data type')}
             value={dataType}
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
@@ -325,11 +333,11 @@ const ColumnForm = ({
             data-cy="timezone-type-dropdown-section"
           >
             <div className="form-label" data-cy="data-type-input-field-label">
-              Display time
+              {t('tooljetDatabase.columnForm.displayTime', 'Display time')}
             </div>
             <Select
               //useMenuPortal={false}
-              placeholder="Select Timezone"
+              placeholder={t('tooljetDatabase.columnForm.placeholders.selectTimezone', 'Select Timezone')}
               value={tzDictionary[timezone]}
               formatOptionLabel={formatOptionLabel}
               options={tzOptions}
@@ -344,17 +352,17 @@ const ColumnForm = ({
         <div className="mb-3 tj-app-input">
           <div className="d-flex align-items-center justify-content-between">
             <div className="form-label" data-cy="default-value-input-field-label">
-              Default value
+              {t('tooljetDatabase.columnForm.defaultValue', 'Default value')}
             </div>
             {foreignKeyDetails?.length > 0 && isForeignKey && (
               <ToolTip
-                message={'Set the default value for the column to Null'}
+                message={t('tooljetDatabase.columnForm.tooltips.setDefaultNull', 'Set the default value for the column to Null')}
                 placement="top"
                 tooltipClassName="tootip-table"
                 show={foreignKeyDetails?.length > 0 && isForeignKey}
               >
                 <div className="d-flex align-items-center custom-gap-4">
-                  <span className="form-label">Set default value to Null</span>
+                  <span className="form-label">{t('tooljetDatabase.columnForm.setDefaultNull', 'Set default value to Null')}</span>
                   <label className={`form-switch`}>
                     <input
                       className="form-check-input"
@@ -377,7 +385,11 @@ const ColumnForm = ({
             )}
           </div>
           <ToolTip
-            message={dataType === 'serial' ? 'Serial data type values cannot be modified' : null}
+            message={
+              dataType === 'serial'
+                ? t('tooljetDatabase.columnForm.tooltips.serialValuesReadOnly', 'Serial data type values cannot be modified')
+                : null
+            }
             placement="top"
             tooltipClassName="tootip-table"
             show={dataType === 'serial'}
@@ -399,7 +411,11 @@ const ColumnForm = ({
                 <input
                   value={defaultValue}
                   type="text"
-                  placeholder={dataType?.value === 'serial' ? 'Auto-generated' : 'Enter default value'}
+                  placeholder={
+                    dataType?.value === 'serial'
+                      ? t('tooljetDatabase.columnForm.placeholders.autoGenerated', 'Auto-generated')
+                      : t('tooljetDatabase.columnForm.placeholders.defaultValue', 'Enter default value')
+                  }
                   className={cx({
                     'form-error':
                       dataType?.value !== 'serial' && isNotNull === true && defaultValue.length <= 0 && rows.length > 0,
@@ -420,7 +436,7 @@ const ColumnForm = ({
                     emptyError={
                       <div className="dd-select-alert-error m-2 d-flex align-items-center">
                         <Information />
-                        No data found
+                        {t('tooljetDatabase.common.noDataFound', 'No data found')}
                       </div>
                     }
                     loader={
@@ -446,17 +462,17 @@ const ColumnForm = ({
                     disabled={dataType === 'serial'}
                     topPlaceHolder={
                       dataType === 'serial'
-                        ? 'Auto-generated'
+                        ? t('tooljetDatabase.columnForm.placeholders.autoGenerated', 'Auto-generated')
                         : foreignKeyDefaultValue?.value === null
-                        ? 'Null'
-                        : 'Enter a value'
+                        ? t('tooljetDatabase.columnForm.placeholders.null', 'Null')
+                        : t('tooljetDatabase.columnForm.placeholders.enterValue', 'Enter a value')
                     }
                     onChange={(value) => {
                       setForeignKeyDefaultValue(value);
                       setDefaultValue(value?.value);
                     }}
                     onAdd={true}
-                    addBtnLabel={'Open referenced table'}
+                    addBtnLabel={t('tooljetDatabase.columnForm.openReferencedTable', 'Open referenced table')}
                     foreignKeys={foreignKeyDetails}
                     setReferencedColumnDetails={setReferencedColumnDetails}
                     scrollEventForColumnValues={true}
@@ -464,14 +480,21 @@ const ColumnForm = ({
                     columnDataType={dataType?.value}
                     isCreateColumn={true}
                   />
-                  {defaultValue === null && <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>Null</p>}
+                  {defaultValue === null && (
+                    <p className={darkMode === true ? 'null-tag-dark' : 'null-tag'}>
+                      {t('tooljetDatabase.columnForm.placeholders.null', 'Null')}
+                    </p>
+                  )}
                 </>
               )}
             </div>
           </ToolTip>
           {isNotNull === true && dataType?.value !== 'serial' && defaultValue?.length <= 0 ? (
             <span className="form-error-message">
-              Default value is required to populate this field in existing rows as NOT NULL constraint is added
+              {t(
+                'tooljetDatabase.columnForm.errors.defaultRequiredForNotNull',
+                'Default value is required to populate this field in existing rows as NOT NULL constraint is added'
+              )}
             </span>
           ) : null}
         </div>
@@ -479,14 +502,29 @@ const ColumnForm = ({
           <ToolTip
             message={
               dataType?.value === 'serial'
-                ? 'Foreign key relation cannot be created for serial type column'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.foreignKeyNotAllowedSerial',
+                    'Foreign key relation cannot be created for serial type column'
+                  )
                 : dataType?.value === 'boolean'
-                ? 'Foreign key relation cannot be created for boolean type column'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.foreignKeyNotAllowedBoolean',
+                    'Foreign key relation cannot be created for boolean type column'
+                  )
                 : dataType?.value === 'timestamp with time zone'
-                ? 'Foreign key relation cannot be created with this data type'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.foreignKeyNotAllowedTimestamp',
+                    'Foreign key relation cannot be created with this data type'
+                  )
                 : isJsonbColumnType
-                ? 'Foreign key relation cannot be created for jsonb type column'
-                : 'Fill in column details to create a foreign key relation'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.foreignKeyNotAllowedJsonb',
+                    'Foreign key relation cannot be created for jsonb type column'
+                  )
+                : t(
+                    'tooljetDatabase.columnForm.tooltips.fillDetailsForForeignKey',
+                    'Fill in column details to create a foreign key relation'
+                  )
             }
             placement="top"
             tooltipClassName="tootip-table"
@@ -521,11 +559,16 @@ const ColumnForm = ({
             </div>
           </ToolTip>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500 tj-switch-text">Foreign key relation</p>
-            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
-              Adding a foreign key relation will link this column with a column in an existing table.
+            <p className="m-0 p-0 fw-500 tj-switch-text">
+              {t('tooljetDatabase.columnForm.foreignKeyRelation', 'Foreign key relation')}
             </p>
-            {foreignKeyDetails?.length > 0 &&
+            <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
+              {t(
+                'tooljetDatabase.columnForm.foreignKeyDescription',
+                'Adding a foreign key relation will link this column with a column in an existing table.'
+              )}
+            </p>
+              {foreignKeyDetails?.length > 0 &&
               isForeignKey &&
               foreignKeyDetails?.map((detail, index) => (
                 <div className="foreignKey-details mt-0" key={index} onClick={() => {}}>
@@ -544,9 +587,6 @@ const ColumnForm = ({
                   </div>
                 </div>
               ))}
-            {/* {foreignKeyDetails?.length > 0 && (
-              <p className="fw-400 secondary-text tj-text-xsm mb-2">Create column to add foreign key relation</p>
-            )} */}
           </div>
         </div>
         <Drawer
@@ -606,9 +646,12 @@ const ColumnForm = ({
             </label>
           </div>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500 tj-switch-text">{'NOT NULL'}</p>
+            <p className="m-0 p-0 fw-500 tj-switch-text">{t('tooljetDatabase.columnForm.notNull', 'NOT NULL')}</p>
             <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
-              This constraint will restrict entry of NULL values in this column.
+              {t(
+                'tooljetDatabase.columnForm.notNullDescription',
+                'This constraint will restrict entry of NULL values in this column.'
+              )}
             </p>
           </div>
         </div>
@@ -616,11 +659,20 @@ const ColumnForm = ({
           <ToolTip
             message={
               dataType?.value === 'boolean'
-                ? 'Unique constraint cannot be added for boolean type column'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedBoolean',
+                    'Unique constraint cannot be added for boolean type column'
+                  )
                 : dataType?.value === 'timestamp with time zone'
-                ? 'Unique constraint cannot be added for this type column'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedTimestamp',
+                    'Unique constraint cannot be added for this type column'
+                  )
                 : isJsonbColumnType
-                ? 'Unique constraint cannot be added for JSON type column'
+                ? t(
+                    'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedJsonb',
+                    'Unique constraint cannot be added for JSON type column'
+                  )
                 : ''
             }
             placement="top"
@@ -642,9 +694,12 @@ const ColumnForm = ({
             </div>
           </ToolTip>
           <div className="col d-flex flex-column">
-            <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
+            <p className="m-0 p-0 fw-500 tj-switch-text">{t('tooljetDatabase.columnForm.unique', 'UNIQUE')}</p>
             <p className="fw-400 secondary-text tj-text-xsm">
-              This constraint restricts entry of duplicate values in this column.
+              {t(
+                'tooljetDatabase.columnForm.uniqueDescription',
+                'This constraint restricts entry of duplicate values in this column.'
+              )}
             </p>
           </div>
         </div>
@@ -663,9 +718,12 @@ const ColumnForm = ({
         initiator={initiator}
       />
       <ConfirmDialog
-        title={'Delete foreign key relation'}
+        title={t('tooljetDatabase.columnForm.confirmDeleteForeignKey.title', 'Delete foreign key relation')}
         show={onDeletePopup}
-        message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
+        message={t(
+          'tooljetDatabase.columnForm.confirmDeleteForeignKey.message',
+          'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'
+        )}
         onConfirm={() => {
           handleDeleteForeignKeyRelationInCreate();
         }}
@@ -678,8 +736,8 @@ const ColumnForm = ({
         onCloseIconClick={() => {
           setOnDeletePopup(false);
         }}
-        confirmButtonText={'Continue'}
-        cancelButtonText={'Cancel'}
+        confirmButtonText={t('tooljetDatabase.common.continue', 'Continue')}
+        cancelButtonText={t('globals.cancel', 'Cancel')}
         // confirmIcon={<DeleteIcon />}
         footerStyle={footerStyle}
       />

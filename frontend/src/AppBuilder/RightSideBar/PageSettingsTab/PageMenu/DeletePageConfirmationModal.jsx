@@ -23,10 +23,13 @@ export function DeletePageConfirmationModal({ darkMode }) {
   const handleConfirm = () => {
     deletePage(editingPage?.id);
   };
-  const message = `Are you sure you want to delete ${editingPage?.name} page?`;
+  const message = t('editor.pageMenu.deletePage.message', {
+    defaultValue: 'Are you sure you want to delete {{pageName}} page?',
+    pageName: editingPage?.name,
+  });
 
-  const cancelButtonText = 'Cancel';
-  const confirmButtonText = 'Yes';
+  const cancelButtonText = t('globals.cancel', 'Cancel');
+  const confirmButtonText = t('globals.yes', 'Yes');
   if (editingPage?.isPageGroup)
     return (
       <Modal
@@ -41,9 +44,16 @@ export function DeletePageConfirmationModal({ darkMode }) {
         backdropClassName={'delete-folder-backdrop'}
       >
         <Modal.Header>
-          <Modal.Title data-cy={'delete-folder-modal'}>Delete folder</Modal.Title>
+          <Modal.Title data-cy={'delete-folder-modal'}>
+            {t('editor.pageMenu.deleteFolder.title', 'Delete folder')}
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this folder? This action is irreversible.</Modal.Body>
+        <Modal.Body>
+          {t(
+            'editor.pageMenu.deleteFolder.message',
+            'Are you sure you want to delete this folder? This action is irreversible.'
+          )}
+        </Modal.Body>
         <Modal.Footer>
           <button
             onClick={() => {
@@ -52,7 +62,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
             className="delete-all-button"
           >
             <Trash width="14" fill="#69727C" />
-            <span>Delete group and pages</span>
+            <span>{t('editor.pageMenu.deleteFolder.deleteGroupAndPages', 'Delete group and pages')}</span>
           </button>
           <button
             onClick={handleClose}
@@ -61,7 +71,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
             }}
             className="delete-all-button"
           >
-            <span>Cancel</span>
+            <span>{t('globals.cancel', 'Cancel')}</span>
           </button>
           <button
             onClick={() => {
@@ -70,7 +80,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
             className="delete-all-button danger"
           >
             <Trash width="15" fill="#fff" />
-            <span>Delete</span>
+            <span>{t('globals.delete', 'Delete')}</span>
           </button>
         </Modal.Footer>
       </Modal>
@@ -88,7 +98,7 @@ export function DeletePageConfirmationModal({ darkMode }) {
       backdropClassName={'delete-page-backdrop'}
     >
       <Modal.Header>
-        <Modal.Title>{'Delete Page'}</Modal.Title>
+        <Modal.Title>{t('editor.pageMenu.deletePage.title', 'Delete Page')}</Modal.Title>
         <span onClick={handleClose}>
           <SolidIcon width="16" fill={'var(--slate12)'} name="remove" className="cursor-pointer" />
         </span>
@@ -97,10 +107,10 @@ export function DeletePageConfirmationModal({ darkMode }) {
       <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
       <Modal.Footer className="mt-3">
         <button className="btn" onClick={handleClose} data-cy={'modal-cancel-button'}>
-          {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
+          {cancelButtonText}
         </button>
         <button className="btn btn-danger" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
-          {confirmButtonText === '' ? t('globals.yes', 'Yes') : confirmButtonText}
+          {confirmButtonText}
         </button>
       </Modal.Footer>
     </Modal>

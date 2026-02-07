@@ -10,6 +10,7 @@ import { formatOptionLabel } from '@/TooljetDatabase/constants';
 import { getLocalTimeZone } from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/util';
 import './styles.scss';
 import defaultStyles from '@/_ui/Select/styles';
+import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line no-unused-vars
 export const UniqueConstraintPopOver = ({
   disabled,
@@ -23,6 +24,7 @@ export const UniqueConstraintPopOver = ({
   tzDictionary,
   tzOptions,
 }) => {
+  const { t } = useTranslation();
   if (disabled) return children;
   const toolTipPlacementStyle = {
     width: '126px',
@@ -62,7 +64,10 @@ export const UniqueConstraintPopOver = ({
             <div className="unique-constraint-info">
               <Information width={16} viewBox="0 0 24 24" fill="var(--indigo9)" />
               <span className="tj-text-xxsm">
-                Unique constraint will be added to combinations of values of a composite primary key
+                {t(
+                  'tooljetDatabase.table.tooltips.uniqueForCompositePrimaryKey',
+                  'Unique constraint will be added to combinations of values of a composite primary key'
+                )}
               </span>
             </div>
           )}
@@ -73,10 +78,10 @@ export const UniqueConstraintPopOver = ({
                 data-cy="timezone-type-dropdown-section"
               >
                 <div className="form-label" data-cy="data-type-input-field-label">
-                  Display time
+                  {t('tooljetDatabase.columnForm.displayTime', 'Display time')}
                 </div>
                 <Select
-                  placeholder="Select Timezone"
+                  placeholder={t('tooljetDatabase.columnForm.placeholders.selectTimezone', 'Select Timezone')}
                   value={tzDictionary[columns[index].configurations.timezone]}
                   styles={{
                     control: (provided, state) => ({
@@ -121,13 +126,22 @@ export const UniqueConstraintPopOver = ({
             <ToolTip
               message={
                 columns[index]?.constraints_type?.is_primary_key === true
-                  ? 'Primary key values must be unique'
+                  ? t('tooljetDatabase.editColumnForm.tooltips.primaryKeyUnique', 'Primary key values must be unique')
                   : columns[index]?.data_type === 'boolean'
-                  ? 'Boolean data type cannot be unique'
+                  ? t(
+                      'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedBoolean',
+                      'Unique constraint cannot be added for boolean type column'
+                    )
                   : columns[index]?.data_type === 'timestamp with time zone'
-                  ? 'Unique constraint cannot be added to this column type'
+                  ? t(
+                      'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedTimestamp',
+                      'Unique constraint cannot be added for this type column'
+                    )
                   : columns[index]?.data_type === 'jsonb'
-                  ? 'JSON cannot cannot have unique constraint'
+                  ? t(
+                      'tooljetDatabase.columnForm.tooltips.uniqueNotAllowedJsonb',
+                      'Unique constraint cannot be added for JSON type column'
+                    )
                   : null
               }
               placement="top"
@@ -171,8 +185,13 @@ export const UniqueConstraintPopOver = ({
                 </label>
 
                 <div>
-                  <div className="tj-text-xsm unique-tag">{'UNIQUE'}</div>
-                  <div className="tj-text-xsm">This constraint restricts entry of duplicate values in this column.</div>
+                  <div className="tj-text-xsm unique-tag">{t('tooljetDatabase.columnForm.unique', 'UNIQUE')}</div>
+                  <div className="tj-text-xsm">
+                    {t(
+                      'tooljetDatabase.columnForm.uniqueDescription',
+                      'This constraint restricts entry of duplicate values in this column.'
+                    )}
+                  </div>
                 </div>
               </div>
             </ToolTip>
@@ -186,7 +205,7 @@ export const UniqueConstraintPopOver = ({
             <DeleteIcon width="14" height="15" />
           </div>
           <div className="text-truncate text-danger delete-column-text" data-cy="delete-column-option">
-            Delete column
+            {t('tooljetDatabase.table.deleteColumn', 'Delete column')}
           </div>
         </div>
       </Popover.Body>

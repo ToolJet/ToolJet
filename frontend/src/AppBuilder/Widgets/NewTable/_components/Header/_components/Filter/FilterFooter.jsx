@@ -1,7 +1,9 @@
 import React, { memo } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useTranslation } from 'react-i18next';
 
 export const FilterFooter = memo(({ addFilter, clearFilters }) => {
+  const { t } = useTranslation();
   return (
     <div className="card-footer d-flex custom-gap-8">
       <ButtonSolid
@@ -12,7 +14,7 @@ export const FilterFooter = memo(({ addFilter, clearFilters }) => {
         customStyles={{ padding: '10px 20px', backgroundColor: 'var(--cc-primary-brand)' }}
         data-cy="button-add-filter"
       >
-        <span>+ add filter</span>
+        <span>{t('widget.Table.addFilter', '+ add filter')}</span>
       </ButtonSolid>
 
       <ButtonSolid
@@ -23,7 +25,7 @@ export const FilterFooter = memo(({ addFilter, clearFilters }) => {
         customStyles={{ padding: '10px 20px' }}
         data-cy="button-clear-filters"
       >
-        <span>clear filters</span>
+        <span>{t('widget.Table.clearFilters', 'clear filters')}</span>
       </ButtonSolid>
     </div>
   );

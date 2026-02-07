@@ -13,7 +13,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { SortableTree } from './PageMenu/Tree/SortableTree';
 import SortableList from '@/_components/SortableList';
 import { PageMenuItem } from './PageMenu/PageMenuItem';
-import { get, startCase, toLower, upperFirst } from 'lodash';
+import { startCase, toLower, upperFirst } from 'lodash';
 import { AddNewPageMenu } from './PageMenu/AddNewPageMenu';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
@@ -27,6 +27,7 @@ import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { appPermissionService } from '@/_services';
+import { useTranslation } from 'react-i18next';
 import './PageMenu/style.scss';
 
 export const PageSettings = () => {
@@ -46,6 +47,7 @@ export const PageSettings = () => {
   const updatePageWithPermissions = useStore((state) => state.updatePageWithPermissions);
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
   const appPagePermissionEnabled = useStore((state) => state.license?.featureAccess?.appPermissionPages);
+  const { t } = useTranslation();
 
   const handleToggle = () => {
     setActiveRightSideBarTab(null);
@@ -74,7 +76,7 @@ export const PageSettings = () => {
         <div key={name} className={cx('d-flex align-items-center justify-content-between mb-3')}>
           <div className={`field`}>
             <OverflowTooltip style={{ width: '120px' }} childrenClassName={'tj-text-xsm color-slate12 mb-2'}>
-              {style.displayName}
+              {t(style.displayNameKey, style.displayName)}
             </OverflowTooltip>
           </div>
           {style.type === 'colorSwatches' && (
@@ -98,7 +100,7 @@ export const PageSettings = () => {
 
   const pagesAndMenuItems = [
     {
-      title: 'Pages and menu',
+      title: t('editor.pageSettings.sections.pagesAndMenu', 'Pages and menu'),
       children: [
         hasAppPagesAddNavGroupEnabled ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} ref={treeRef}>
@@ -120,7 +122,7 @@ export const PageSettings = () => {
 
   const appHeaderMenuItems = [
     {
-      title: 'Header and navigation',
+      title: t('editor.pageSettings.sections.headerAndNavigation', 'Header and navigation'),
       children: [
         <AppHeaderMenu
           pageSettings={pageSettings}
@@ -141,7 +143,7 @@ export const PageSettings = () => {
 
   const devices = [
     {
-      title: 'Devices',
+      title: t('editor.pageSettings.sections.devices', 'Devices'),
       children: [
         <Devices
           pageSettings={pageSettings}
@@ -157,7 +159,9 @@ export const PageSettings = () => {
     <div className="inspector pages-settings">
       <div>
         <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
-          <span className="panel-header-title">Pages and navigation</span>
+          <span className="panel-header-title">
+            {t('editor.pageSettings.panelTitlePagesAndNavigation', 'Pages and navigation')}
+          </span>
           <div className="panel-header-actions">
             <Button
               iconOnly
@@ -172,14 +176,18 @@ export const PageSettings = () => {
         </div>
         <div className={cx({ disabled: shouldFreeze })}>
           <Tabs defaultActiveKey={'properties'} id="page-settings">
-            <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
+            <Tab
+              className="page-selector-panel-body"
+              eventKey="properties"
+              title={t('editor.pageSettings.tabs.properties', 'Properties')}
+            >
               <div className="tj-text-xsm color-slate12 ">
                 <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
                 <Accordion items={appHeaderMenuItems} />
                 {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
-            <Tab eventKey="styles" title="Styles">
+            <Tab eventKey="styles" title={t('editor.pageSettings.tabs.styles', 'Styles')}>
               <div className="tj-text-xsm color-slate12 settings-tab ">
                 <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
               </div>
@@ -208,6 +216,7 @@ export const PageSettings = () => {
 };
 
 const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
+  const { t } = useTranslation();
   const groupedStyles = {};
   for (const key in pagesMeta.styles) {
     const property = pagesMeta.styles[key];
@@ -221,9 +230,13 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
   }
 
   return Object.keys(groupedStyles).map((style) => {
+    const accordionTitles = {
+      itemList: t('editor.pageSettings.styleAccordions.itemList', 'Item list'),
+      container: t('editor.pageSettings.styleAccordions.container', 'Container'),
+    };
     const items = [
       {
-        title: `${upperFirst(toLower(startCase(style)))}`,
+        title: accordionTitles[style] ?? `${upperFirst(toLower(startCase(style)))}`,
         children: Object.entries(groupedStyles[style]).map(([key, value]) => {
           const defaultValue = pagesMeta.definition.styles[key].value;
           return {
@@ -237,6 +250,7 @@ const RenderStyles = React.memo(({ pagesMeta, renderCustomStyles }) => {
 });
 
 export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) => {
+  const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const [appName] = useStore((state) => [state.appStore.modules[moduleId].app.appName], shallow);
   const hasAppPagesHeaderAndLogoEnabled = useStore(
@@ -266,13 +280,13 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
     const newValue = e.target.value.trim();
 
     if (newValue === '') {
-      setError('Title cannot be empty.');
+      setError(t('editor.pageSettings.appHeader.errors.titleEmpty', 'Title cannot be empty.'));
       _setName(name?.trim() ? name : appName);
       return;
     }
 
     if (newValue.length > 32) {
-      setError('Title cannot exceed 32 characters.');
+      setError(t('editor.pageSettings.appHeader.errors.titleTooLong', 'Title cannot exceed 32 characters.'));
       _setName(name?.trim() ? name : appName);
       return;
     }
@@ -288,13 +302,16 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
   return (
     <>
       <div className="section-header pb-2">
-        <div className="title">App header</div>
+        <div className="title">{t('editor.pageSettings.appHeader.sectionTitle', 'App header')}</div>
       </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-          Show app header
+          {t('editor.pageSettings.appHeader.showAppHeader', 'Show app header')}
           <LicenseTooltip
-            message={"You don't have access to hide app header. Upgrade your plan to access this feature."}
+            message={t(
+              'editor.pageSettings.appHeader.tooltips.hideAppHeaderUpgrade',
+              "You don't have access to hide app header. Upgrade your plan to access this feature."
+            )}
             placement="bottom"
             show={!hasAppPagesHeaderAndLogoEnabled}
           >
@@ -317,9 +334,12 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
         <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
-          Show logo
+          {t('editor.pageSettings.appHeader.showLogo', 'Show logo')}
           <LicenseTooltip
-            message={"You don't have access to hide logo. Upgrade your plan to access this feature."}
+            message={t(
+              'editor.pageSettings.appHeader.tooltips.hideLogoUpgrade',
+              "You don't have access to hide logo. Upgrade your plan to access this feature."
+            )}
             placement="bottom"
             show={!hasAppPagesHeaderAndLogoEnabled}
           >
@@ -342,7 +362,7 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
       </div>
       <div className="pb-2">
         <div className="col pb-1">
-          <label className="form-label font-weight-400 mb-0">Title</label>
+          <label className="form-label font-weight-400 mb-0">{t('editor.pageSettings.appHeader.titleLabel', 'Title')}</label>
           <input
             type="text"
             onBlur={handleNameBlur}
@@ -363,24 +383,29 @@ export const AppHeaderMenu = ({ darkMode, pageSettings, pageSettingChanged }) =>
 };
 
 const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }) => {
+  const { t } = useTranslation();
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { disableMenu, position, style, collapsable } = properties ?? {};
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const POSTIONS = [
-    { label: 'Top', value: 'top' },
-    { label: 'Side', value: 'side' },
+    { label: t('editor.pageSettings.navigation.positionOptions.top', 'Top'), value: 'top' },
+    { label: t('editor.pageSettings.navigation.positionOptions.side', 'Side'), value: 'side' },
   ];
 
   const COLLAPSABLE_TOGGLES = [
-    { label: 'True', value: 'true' },
-    { label: 'False', value: 'false' },
+    { label: t('editor.pageSettings.navigation.collapsableOptions.true', 'True'), value: 'true' },
+    { label: t('editor.pageSettings.navigation.collapsableOptions.false', 'False'), value: 'false' },
   ];
 
   const styleOptions = [
-    { label: 'Text and icon', value: 'texticon' },
-    ...(position == 'side' || position == 'top' ? [{ label: 'Text only', value: 'text' }] : []),
-    ...(position !== 'top' ? [{ label: 'Icon only', value: 'icon' }] : []),
+    { label: t('editor.pageSettings.navigation.styleOptions.textAndIcon', 'Text and icon'), value: 'texticon' },
+    ...(position == 'side' || position == 'top'
+      ? [{ label: t('editor.pageSettings.navigation.styleOptions.textOnly', 'Text only'), value: 'text' }]
+      : []),
+    ...(position !== 'top'
+      ? [{ label: t('editor.pageSettings.navigation.styleOptions.iconOnly', 'Icon only'), value: 'icon' }]
+      : []),
   ];
 
   function stringToBoolean(str) {
@@ -392,13 +417,15 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
   return (
     <>
       <div className="section-header pb-2">
-        <div className="title">Navigation menu</div>
+        <div className="title">{t('editor.pageSettings.navigation.sectionTitle', 'Navigation menu')}</div>
       </div>
       <ShowNavigationMenu moduleId={moduleId} darkMode={darkMode} disableMenu={disableMenu} />
       {!isPagesSidebarHidden && (
         <>
           <div className="d-flex justify-content-between align-items-center pb-2">
-            <label className="form-label font-weight-400 mb-0">Position</label>
+            <label className="form-label font-weight-400 mb-0">
+              {t('editor.pageSettings.navigation.position', 'Position')}
+            </label>
             <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
               <ToggleGroup
                 onValueChange={(value) => {
@@ -421,7 +448,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
           </div>
           <div className="pb-2">
             <div className="col d-flex justify-content-between align-items-center">
-              <label className="form-label font-weight-400 mb-0">Style</label>
+              <label className="form-label font-weight-400 mb-0">{t('editor.pageSettings.navigation.style', 'Style')}</label>
               <Select
                 options={styleOptions}
                 value={selectedStyle}
@@ -429,7 +456,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
                   setSelectedStyle(value);
                   pageSettingChanged({ style: value }, 'properties');
                 }}
-                placeholder={'Select...'}
+                placeholder={t('editor.pageSettings.navigation.selectPlaceholder', 'Select...')}
                 useMenuPortal={false}
                 width={'168px'}
                 className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
@@ -438,7 +465,9 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
           </div>
           {position == 'side' && style !== 'text' && style !== 'icon' && (
             <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Collapsable</label>
+              <label className="form-label font-weight-400 mb-0">
+                {t('editor.pageSettings.navigation.collapsable', 'Collapsable')}
+              </label>
               <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
                 <ToggleGroup
                   onValueChange={(value) => {
@@ -463,6 +492,7 @@ const NavigationMenu = ({ moduleId, darkMode, pageSettings, pageSettingChanged }
 };
 
 const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
+  const { t } = useTranslation();
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { showOnDesktop, showOnMobile } = properties ?? {};
   const [_showOnDesktop, _setShowOnDesktop] = useState(showOnDesktop);
@@ -471,7 +501,9 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
   return (
     <>
       <div className=" d-flex justify-content-between align-items-center pb-2">
-        <label className="form-label font-weight-400 mb-0">Show on desktop</label>
+        <label className="form-label font-weight-400 mb-0">
+          {t('editor.pageSettings.devices.showOnDesktop', 'Show on desktop')}
+        </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
@@ -485,7 +517,9 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
         </label>
       </div>
       <div className=" d-flex justify-content-between align-items-center pb-2">
-        <label className="form-label font-weight-400 mb-0">Show on mobile</label>
+        <label className="form-label font-weight-400 mb-0">
+          {t('editor.pageSettings.devices.showOnMobile', 'Show on mobile')}
+        </label>
         <label className={`form-switch`}>
           <input
             className="form-check-input"
@@ -503,6 +537,7 @@ const Devices = ({ darkMode, pageSettingChanged, pageSettings }) => {
 };
 
 const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibility, page, isHomePage }) => {
+  const { t } = useTranslation();
   const [forceCodeBox, setForceCodeBox] = useState(disableMenu?.fxActive);
   const pageSettingChanged = useStore((state) => state.pageSettingChanged);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
@@ -513,7 +548,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
       <div className={cx('d-flex align-items-center justify-content-between')}>
         <div className={`field`}>
           <InspectorTooltip
-            label={'Hide navigation menu'}
+            label={t('editor.pageSettings.navigation.hideNavigationMenu', 'Hide navigation menu')}
             labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
               darkMode && 'color-whitish-darkmode'
             }`}

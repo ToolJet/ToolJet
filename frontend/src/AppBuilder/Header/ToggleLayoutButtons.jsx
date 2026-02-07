@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
 import { Monitor, Smartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ToggleLayoutButtons({
   currentLayout,
@@ -11,6 +12,7 @@ export function ToggleLayoutButtons({
   showFullWidth,
   darkMode,
 }) {
+  const { t } = useTranslation();
   return (
     <div className={cx({ '!tw-w-100': showFullWidth })} data-cy="layout-toggle-container">
       <div
@@ -19,14 +21,17 @@ export function ToggleLayoutButtons({
         aria-orientation="horizontal"
         data-cy="layout-toggle-buttons"
       >
-        <OverlayTrigger placement="bottom" overlay={<Tooltip id="desktop-layout-tooltip">Desktop Layout</Tooltip>}>
+        <OverlayTrigger
+          placement="bottom"
+          overlay={<Tooltip id="desktop-layout-tooltip">{t('editor.layoutDesktop', 'Desktop Layout')}</Tooltip>}
+        >
           <Button
             variant="ghost"
             className={cx({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'desktop',
             })}
             iconOnly
-            aria-label="Switch to desktop layout"
+            aria-label={t('editor.switchToDesktopLayout', 'Switch to desktop layout')}
             aria-selected={currentLayout === 'desktop'}
             tabIndex={currentLayout === 'desktop' ? 0 : -1}
             type="button"
@@ -39,14 +44,17 @@ export function ToggleLayoutButtons({
             <Monitor width="16" height="16" className="tw-text-icon-strong" />
           </Button>
         </OverlayTrigger>
-        <OverlayTrigger placement="bottom" overlay={<Tooltip id="mobile-layout-tooltip">Mobile Layout</Tooltip>}>
+        <OverlayTrigger
+          placement="bottom"
+          overlay={<Tooltip id="mobile-layout-tooltip">{t('editor.layoutMobile', 'Mobile Layout')}</Tooltip>}
+        >
           <Button
             variant="ghost"
             className={cx({
               'tw-pressed tw-bg-button-outline-pressed': currentLayout === 'mobile',
             })}
             iconOnly
-            aria-label="Switch to mobile layout"
+            aria-label={t('editor.switchToMobileLayout', 'Switch to mobile layout')}
             aria-selected={currentLayout === 'mobile'}
             tabIndex={currentLayout === 'mobile' ? 0 : -1}
             type="button"

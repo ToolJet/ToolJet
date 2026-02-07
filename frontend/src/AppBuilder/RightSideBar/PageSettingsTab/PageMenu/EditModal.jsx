@@ -6,8 +6,10 @@ import { EditInput } from './EditInput';
 import { validateKebabCase } from '@/_helpers/utils';
 import _ from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 export const EditModal = ({ darkMode }) => {
+  const { t } = useTranslation();
   const editingPage = useStore((state) => state.editingPage);
   const updatePageHandle = useStore((state) => state.updatePageHandle);
 
@@ -76,7 +78,7 @@ export const EditModal = ({ darkMode }) => {
     >
       <Modal.Header>
         <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'title-edit-page-handle'}>
-          Edit page handle
+          {t('editor.pageMenu.editPageHandle.title', 'Edit page handle')}
         </Modal.Title>
         <span className="cursor-pointer" size="sm" onClick={() => handleClose()}>
           <svg
@@ -112,7 +114,10 @@ export const EditModal = ({ darkMode }) => {
 
         <div className="alert-container">
           <Alert svg="alert-info" cls="page-handler-alert" data-cy={`page-handle-alert-info`}>
-            Changing the page handle will break any existing apps that are using this page.
+            {t(
+              'editor.pageMenu.editPageHandle.warning',
+              'Changing the page handle will break any existing apps that are using this page.'
+            )}
           </Alert>
         </div>
       </Modal.Body>
@@ -124,7 +129,7 @@ export const EditModal = ({ darkMode }) => {
           disabled={isSaving}
           data-cy={'button-cancel'}
         >
-          <Button.Content title="Cancel" />
+          <Button.Content title={t('globals.cancel', 'Cancel')} />
         </Button>
         <Button
           darkMode={darkMode}
@@ -134,7 +139,7 @@ export const EditModal = ({ darkMode }) => {
           isLoading={isSaving}
           data-cy={'button-save'}
         >
-          <Button.Content title="Save" iconSrc="assets/images/icons/save.svg" direction="left" />
+          <Button.Content title={t('globals.save', 'Save')} iconSrc="assets/images/icons/save.svg" direction="left" />
         </Button>
       </Modal.Footer>
     </Modal>

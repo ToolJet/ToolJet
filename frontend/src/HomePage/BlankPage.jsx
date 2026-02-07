@@ -220,7 +220,9 @@ export const BlankPage = function BlankPage({
           <div className="mb-4">
             <EmptyFoldersIllustration />
           </div>
-          <div className="tj-text-md text-secondary">No apps created yet</div>
+          <div className="tj-text-md text-secondary">
+            {t('homePage.blankPage.noAppsCreatedYet', 'No apps created yet')}
+          </div>
         </div>
         <TemplateLibraryModal
           show={showTemplateLibraryModal}

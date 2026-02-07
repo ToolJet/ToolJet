@@ -128,7 +128,7 @@ const SlugInput = () => {
           ) : (
             <div className="d-flex gap-2">
               <div class="spinner-border text-secondary workspace-spinner" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">{t('globals.loading', 'Loading...')}</span>
               </div>
               {`Updating link`}
             </div>

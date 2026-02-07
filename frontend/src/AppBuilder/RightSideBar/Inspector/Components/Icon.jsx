@@ -104,7 +104,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     return (
       <>
         <div className="mb-2 field">
-          <label className="form-label">Icon</label>
+          <label className="form-label">{i18next.t('widget.icon.label', 'Icon')}</label>
         </div>
         <div className="card mb-3">
           <div className="card-body p-0">

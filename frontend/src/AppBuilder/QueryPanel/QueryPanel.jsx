@@ -13,11 +13,13 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import { diff } from 'deep-object-diff';
+import { useTranslation } from 'react-i18next';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
 
 export const QueryPanel = ({ darkMode }) => {
+  const { t } = useTranslation();
   const setQueryPanelHeight = useStore((state) => state.queryPanel.setQueryPanelHeight);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
   const setIsDraggingQueryPane = useStore((state) => state.queryPanel.setIsDraggingQueryPane, shallow);
@@ -185,7 +187,7 @@ export const QueryPanel = ({ darkMode }) => {
               onClick={toggleQueryEditor}
             >
               <span>{isQueryPaneExpanded ? <PanelBottomClose size='14' color='var(--icon-strong)' /> : <PanelBottomOpen size='14' color='var(--icon-strong)' />}</span>
-              <span>Queries</span>
+              <span>{t('editor.queries', 'Queries')}</span>
             </button>
           </div>
         </div>

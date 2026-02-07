@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useTranslation } from 'react-i18next';
 // import { AppEnvironments } from '@/modules/Appbuilder/components';
 // import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 // Lazy load editor-only components to reduce viewer bundle size
@@ -20,6 +21,7 @@ const AppEnvironments = lazy(() =>
 );
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
+  const { t } = useTranslation();
   const appType = useAppType();
   const { setShowUndoRedoBtn, editingVersion } = useStore(
     (state) => ({
@@ -40,7 +42,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
     <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text" data-cy="preview-settings-text">
-          Preview settings
+          {t('editor.previewSettings', 'Preview settings')}
         </span>
         {editingVersion && appType !== 'module' && (
           <Suspense fallback={
@@ -77,7 +79,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
             >
               <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
-                Preview
+                {t('editor.preview', 'Preview')}
               </span>
               <span
                 style={{ marginLeft: '12px', cursor: 'pointer' }}
@@ -92,7 +94,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
         <Navbar.Offcanvas placement="top" className={classNames({ 'dark-theme theme-dark': darkMode })}>
           <Offcanvas.Header>
             <div className="w-100 d-flex align-self-start justify-content-between">
-              <Offcanvas.Title>Preview settings</Offcanvas.Title>
+              <Offcanvas.Title>{t('editor.previewSettings', 'Preview settings')}</Offcanvas.Title>
               <div onClick={() => togglePreviewNavbar(false)} className="cursor-pointer">
                 <Cross fill="var(--slate12)" />
               </div>
@@ -118,7 +120,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
                 })}
                 style={{ backgroundColor: !darkMode && '#fcfcfd' }}
               >
-                <span style={{ marginRight: '24px' }}>Layout</span>
+                <span style={{ marginRight: '24px' }}>{t('editor.layout', 'Layout')}</span>
                 <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} showPreviewBtn={false} />
               </div>
             </Offcanvas.Body>
@@ -134,7 +136,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
       style={{ backgroundColor: 'var(--slate5)', top: showHeader ? '' : '14px' }}
     >
       <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
-        Preview
+        {t('editor.preview', 'Preview')}
       </span>
       <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
         <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">

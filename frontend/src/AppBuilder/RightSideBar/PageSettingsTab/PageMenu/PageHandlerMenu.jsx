@@ -6,8 +6,10 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTranslation } from 'react-i18next';
 
 export const PageHandlerMenu = ({ darkMode }) => {
+  const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const setShowEditingPopover = useStore((state) => state.setShowEditingPopover);
   const setShowPageEventsModal = useStore((state) => state.setShowPageEventsModal);
@@ -93,7 +95,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
               <div className="menu-options mb-0">
                 <Field
                   id="rename-page"
-                  text="Rename"
+                  text={t('editor.pageMenu.options.rename', 'Rename')}
                   iconSrc={'assets/images/icons/input.svg'}
                   closeMenu={() => { }}
                   callback={() => {
@@ -103,7 +105,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 {isDisabled || isHidden ? null : (
                   <Field
                     id="mark-as-home-page"
-                    text="Mark home"
+                    text={t('editor.pageMenu.options.markHome', 'Mark home')}
                     iconSrc={'assets/images/icons/home.svg'}
                     closeMenu={() => { }}
                     callback={() => markAsHomePage(editingPage.id, moduleId)}
@@ -112,7 +114,11 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 {!isDisabled && (
                   <Field
                     id={isHidden ? 'unhide-page' : 'hide-page'}
-                    text={isHidden ? 'Show page on app menu' : 'Hide page on app menu'}
+                    text={
+                      isHidden
+                        ? t('editor.pageMenu.options.showPageOnAppMenu', 'Show page on app menu')
+                        : t('editor.pageMenu.options.hidePageOnAppMenu', 'Hide page on app menu')
+                    }
                     iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
                     closeMenu={() => { }}
                     callback={() => {
@@ -123,7 +129,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 )}
                 <Field
                   id="clone-page"
-                  text="Duplicate page"
+                  text={t('editor.pageMenu.options.duplicatePage', 'Duplicate page')}
                   iconSrc={`assets/images/icons/clone.svg`}
                   closeMenu={closeMenu}
                   callback={() => {
@@ -132,7 +138,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 />
                 <Field
                   id="settings"
-                  text="Event Handlers"
+                  text={t('editor.pageMenu.options.eventHandlers', 'Event Handlers')}
                   customClass={'delete-btn'}
                   iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
                   closeMenu={() => { }}
@@ -142,7 +148,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 />
                 <Field
                   id={isDisabled ? 'enable-page' : 'disable-page'}
-                  text={isDisabled ? 'Enable' : 'Disable'}
+                  text={isDisabled ? t('editor.pageMenu.options.enable', 'Enable') : t('editor.pageMenu.options.disable', 'Disable')}
                   customClass={'delete-btn'}
                   iconSrc={`assets/images/icons/editor/left-sidebar/${isDisabled ? 'file-accept' : 'file-remove'}.svg`}
                   closeMenu={() => { }}
@@ -159,12 +165,15 @@ export const PageHandlerMenu = ({ darkMode }) => {
                   text={() => {
                     return (
                       <ToolTip
-                        message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                        message={t(
+                          'editor.pageMenu.noPagePermissionsAccess',
+                          "You don't have access to page permissions. Upgrade your plan to access this feature."
+                        )}
                         placement="right"
                         show={!hasAppPermissionPages}
                       >
                         <div className="d-flex align-items-center">
-                          <div>Page permission</div>
+                          <div>{t('editor.pageMenu.options.pagePermission', 'Page permission')}</div>
                           {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
                         </div>
                       </ToolTip>
@@ -179,7 +188,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
                 />
                 <Field
                   id="delete-page"
-                  text="Delete page"
+                  text={t('editor.pageMenu.options.deletePage', 'Delete page')}
                   iconSrc={'assets/images/icons/delete.svg'}
                   customClass={isHomePage ? 'delete-btn' : 'field__danger delete-btn'}
                   closeMenu={() => { }}
@@ -198,10 +207,11 @@ export const PageHandlerMenu = ({ darkMode }) => {
 };
 
 const PageHandleField = ({ page, updatePageHandle }) => {
+  const { t } = useTranslation();
   const Label = () => {
     return (
       <label htmlFor="pin" className="form-label" data-cy={`header-page-handle`}>
-        Page Handle
+        {t('editor.pageMenu.pageHandle', 'Page Handle')}
       </label>
     );
   };
