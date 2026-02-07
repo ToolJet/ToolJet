@@ -22,9 +22,14 @@ const ForgotPasswordForm = ({ onSubmit }) => {
   useEffect(() => {
     setIsFormValid(validateEmail(email));
     const emailError =
-      !isDefaultFormEmail && (email.trim() ? (validateEmail(email) ? '' : 'Email is invalid') : 'Email is required');
+      !isDefaultFormEmail &&
+      (email.trim()
+        ? validateEmail(email)
+          ? ''
+          : t('loginSignupPage.invalidEmail', 'Invalid Email')
+        : t('loginSignupPage.emailRequired', 'Email is required'));
     setEmailError(emailError === '' ? '' : emailError);
-  }, [email]);
+  }, [email, isDefaultFormEmail, t]);
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
@@ -84,7 +89,7 @@ const ForgotPasswordForm = ({ onSubmit }) => {
             imgWidth={'25px'}
           >
             <div className="reset-password-info-text" data-cy="reset-password-info-banner">
-              {`Contact ${adminUser} to reset your password`}
+              {t('forgotPasswordPage.contactAdmin', 'Contact {{adminUser}} to reset your password', { adminUser })}
             </div>
           </Alert>
         </div>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './styles.scss';
 
 export const ComponentModuleTab = ({ onChangeTab, hasModuleAccess }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
 
   const handleChangeTab = (tab) => {
@@ -16,7 +18,7 @@ export const ComponentModuleTab = ({ onChangeTab, hasModuleAccess }) => {
           className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
           onClick={() => handleChangeTab(1)}
         >
-          <span>Components</span>
+          <span>{t('editor.componentsPanel.title', 'Components')}</span>
         </button>
         {hasModuleAccess && (
           <button
@@ -24,7 +26,7 @@ export const ComponentModuleTab = ({ onChangeTab, hasModuleAccess }) => {
             onClick={() => handleChangeTab(2)}
             data-cy="button-upload-csv-file"
           >
-            <span>Modules</span>
+            <span>{t('editor.componentsPanel.modules', 'Modules')}</span>
           </button>
         )}
       </div>

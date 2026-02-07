@@ -241,7 +241,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       {isModuleEditor || edition === 'ce' ? (
         <>
           <div className="panel-header">
-            <span className="panel-header-title">Components</span>
+            <span className="panel-header-title">{t('editor.componentsPanel.title', 'Components')}</span>
             <div className="panel-header-actions">
               <Button
                 iconOnly
@@ -260,7 +260,9 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
       ) : (
         <>
           <div className="panel-header">
-            <span className="panel-header-title">Add new component</span>
+            <span className="panel-header-title">
+              {t('editor.componentsPanel.addNewComponent', 'Add new component')}
+            </span>
             <div className="panel-header-actions">
               <Button
                 iconOnly

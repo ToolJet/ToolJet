@@ -4,8 +4,10 @@ import { toast } from 'react-hot-toast';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useTranslation } from 'react-i18next';
 
 const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
+  const { t } = useTranslation();
   const { refreshVersions } = useVersionManagerStore();
 
   const { promoteVersionAction, currentEnvironment } = useStore(
@@ -23,17 +25,24 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
   const handlePromote = async () => {
     // Validation
     if (!versionName.trim()) {
-      toast.error('Version name is required');
+      toast.error(t('editor.versionManager.versionNameRequired', 'Version name is required'));
       return;
     }
 
     if (versionName.trim().length > 25) {
-      toast.error('Version name should not be longer than 25 characters');
+      toast.error(
+        t('editor.versionManager.versionNameTooLong', 'Version name should not be longer than 25 characters')
+      );
       return;
     }
 
     if (versionDescription.trim().length > 500) {
-      toast.error('Version description should not be longer than 500 characters');
+      toast.error(
+        t(
+          'editor.versionManager.versionDescriptionTooLong',
+          'Version description should not be longer than 500 characters'
+        )
+      );
       return;
     }
 
@@ -46,7 +55,7 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
       versionName.trim(),
       versionDescription.trim(),
       () => {
-        toast.success('Draft promoted to version successfully');
+        toast.success(t('editor.versionManager.promoteSuccess', 'Draft promoted to version successfully'));
         setVersionName('');
         setVersionDescription('');
         // Refresh versions in dropdown
@@ -58,7 +67,11 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
       },
       (error) => {
         setIsPromoting(false);
-        toast.error(error?.data?.message || error?.message || 'Failed to promote draft version');
+        toast.error(
+          error?.data?.message ||
+            error?.message ||
+            t('editor.versionManager.promoteError', 'Failed to promote draft version')
+        );
       }
     );
   };
@@ -82,7 +95,7 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
     >
       <Modal.Header closeButton={!isPromoting}>
         <Modal.Title className="tj-text-sm" style={{ fontWeight: 600 }}>
-          Promote Draft to Version
+          {t('editor.versionManager.promoteDraftTitle', 'Promote Draft to Version')}
         </Modal.Title>
       </Modal.Header>
 
@@ -102,7 +115,7 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
               type="text"
               className="form-control tj-text-xsm"
               data-cy="version-name-input-field"
-              placeholder="e.g., v2.0.0"
+              placeholder={t('editor.versionManager.versionNamePlaceholder', 'e.g., v2.0.0')}
               disabled={isPromoting}
               value={versionName}
               onChange={(e) => setVersionName(e.target.value)}
@@ -113,18 +126,23 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
                 fontFamily: 'IBM Plex Sans, sans-serif',
               }}
             />
-            <div className="helper-text">Must be unique and max 25 characters</div>
+            <div className="helper-text">
+              {t('editor.versionManager.versionNameHelper', 'Must be unique and max 25 characters')}
+            </div>
           </div>
 
           {/* Version Description */}
           <div className="mb-3">
             <label htmlFor="versionDescription" className="form-label tj-text-sm" style={{ fontWeight: 500 }}>
-              Version description
+              {t('editor.versionManager.versionDescription', 'Version description')}
             </label>
             <textarea
               className="form-control tj-text-xsm"
               data-cy="version-description-input-field"
-              placeholder="Enter version description (optional)"
+              placeholder={t(
+                'editor.versionManager.versionDescriptionPlaceholder',
+                'Enter version description (optional)'
+              )}
               disabled={isPromoting}
               value={versionDescription}
               onChange={(e) => setVersionDescription(e.target.value)}
@@ -136,7 +154,9 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
                 minHeight: '60px',
               }}
             />
-            <div className="helper-text">Optional, max 500 characters</div>
+            <div className="helper-text">
+              {t('editor.versionManager.versionDescriptionHelper', 'Optional, max 500 characters')}
+            </div>
           </div>
 
           {/* Info Alert */}
@@ -158,8 +178,10 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
               />
             </svg>
             <span>
-              This will convert the draft into a finalized version. The version name and description cannot be changed
-              after promotion to staging or production.
+              {t(
+                'editor.versionManager.promoteInfo',
+                'This will convert the draft into a finalized version. The version name and description cannot be changed after promotion to staging or production.'
+              )}
             </span>
           </div>
         </form>
@@ -173,7 +195,7 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
           className="tj-text-xsm"
           data-cy="cancel-button"
         >
-          Cancel
+          {t('globals.cancel', 'Cancel')}
         </Button>
         <Button
           variant="primary"
@@ -185,10 +207,10 @@ const PromoteDraftModal = ({ show, onClose, draftVersion, appId }) => {
           {isPromoting ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-              Promoting...
+              {t('editor.versionManager.promoting', 'Promoting...')}
             </>
           ) : (
-            'Promote to Version'
+            t('editor.versionManager.promoteToVersion', 'Promote to Version')
           )}
         </Button>
       </Modal.Footer>

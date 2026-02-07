@@ -309,7 +309,9 @@ class ManageAppUsersComponent extends React.Component {
                         {isSlugVerificationInProgress && (
                           <div className="icon-container">
                             <div class="spinner-border text-secondary " role="status">
-                              <span class="visually-hidden">Loading...</span>
+                              <span class="visually-hidden">
+                                {this.props.t('globals.loading', 'Loading...')}
+                              </span>
                             </div>
                           </div>
                         )}
@@ -397,7 +399,12 @@ class ManageAppUsersComponent extends React.Component {
                     </label>
                     <div className="empty-version">
                       <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
-                      <span>This version has not been released yet</span>
+                      <span>
+                        {this.props.t(
+                          'editor.versionNotReleased',
+                          'This version has not been released yet'
+                        )}
+                      </span>
                     </div>
                   </div>
                 )}

@@ -5,10 +5,12 @@ import OnbboardingFromSH from '../OnBoardingForm/OnbboardingFromSH';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import config from 'config';
+import { useTranslation } from 'react-i18next';
 
 function SetupScreenSelfHost({ darkMode }) {
   const [showSelfHostOboarding, setShowSelfHostOboarding] = useState(false);
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
+  const { t } = useTranslation();
   useEffect(() => {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter') {
@@ -30,7 +32,7 @@ function SetupScreenSelfHost({ darkMode }) {
         <div className="sh-setup-banner">
           <div className="onboarding-navbar onboarding-navbar-layout setup-page-navbar">
             <div className="tooljet-nav-logo">
-              <Logo height="23" width="92" alt="tooljet logo" data-cy="page-logo" />
+              <Logo height="23" width="92" alt={t('setupScreenSelfHost.logoAlt', 'ToolJet logo')} data-cy="page-logo" />
             </div>
           </div>
           {/* placeholders for image */}
@@ -39,16 +41,21 @@ function SetupScreenSelfHost({ darkMode }) {
           <div className="sh-setup-card" data-cy="setup-card">
             <img
               src="assets/images/onboardingassets/Illustrations/Dots.svg"
-              alt="tooljet onboarding"
+              alt={t('setupScreenSelfHost.onboardingAlt', 'ToolJet onboarding')}
               loading="lazy"
               data-cy="setup-card-image"
             />
             <h1 data-cy="setup-card-header">
-              Hello,
-              <br /> Welcome to <br />
-              <span>ToolJet!</span>
+              {t('setupScreenSelfHost.greeting', 'Hello,')}
+              <br /> {t('setupScreenSelfHost.welcomeTo', 'Welcome to')} <br />
+              <span>{t('setupScreenSelfHost.brandName', 'ToolJet!')}</span>
             </h1>
-            <p data-cy="setup-card-sub-header">Let’s set up your workspace to get started with ToolJet</p>
+            <p data-cy="setup-card-sub-header">
+              {t(
+                'setupScreenSelfHost.subHeader',
+                "Let's set up your workspace to get started with ToolJet"
+              )}
+            </p>
             <ButtonSolid
               className="sh-setup-button"
               onClick={() => {
@@ -59,7 +66,7 @@ function SetupScreenSelfHost({ darkMode }) {
               }}
               data-cy="setup-tooljet-button"
             >
-              <span>Set up ToolJet</span>
+              <span>{t('setupScreenSelfHost.setupButton', 'Set up ToolJet')}</span>
               <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
             </ButtonSolid>
           </div>

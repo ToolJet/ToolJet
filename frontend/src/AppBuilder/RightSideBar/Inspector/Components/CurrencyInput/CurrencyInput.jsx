@@ -8,8 +8,10 @@ import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import cx from 'classnames';
 import { CurrencyMap } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
+import { useTranslation } from 'react-i18next';
 
 export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
+  const { t } = useTranslation();
   const {
     layoutPropertyChanged,
     component,
@@ -71,7 +73,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
     return (
       <div className="mb-2">
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label"> Default Currency</label>
+          <label className="form-label">{t('widget.currencyInput.defaultCurrency', 'Default Currency')}</label>
           <div
             className={cx({
               'hide-fx': !isDefaultCountryFxOn,
@@ -112,7 +114,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
     return (
       <div className="mb-2">
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label"> Number Format</label>
+          <label className="form-label">{t('widget.currencyInput.numberFormat', 'Number Format')}</label>
           <div
             className={cx({
               'hide-fx': !isNumberFormatFxOn,

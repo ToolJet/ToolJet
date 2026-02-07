@@ -12,8 +12,10 @@ import { staticDataSources } from '../QueryManager/constants';
 import { ToolTip } from '@/_components';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange, clearSelectedDataSources }) => {
+  const { t } = useTranslation();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');
   const closeMenu = () => setShowMenu(false);
   const [action, setAction] = useState();
@@ -108,12 +110,12 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             style={{ height: '315px', overflowY: 'auto' }}
           >
             <div className="color-slate9 px-3 pb-2 w-100">
-              <small data-cy="label-filter-by">Filter By</small>
+              <small data-cy="label-filter-by">{t('globals.filterBy', 'Filter By')}</small>
             </div>
             <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
                 id="filter-by-datasource"
-                text="Data Source"
+                text={t('editor.queryPanel.dataSource', 'Data Source')}
                 callback={handlePageCallback}
                 disabled={dataQueries.length === 0}
                 noMargin
@@ -132,47 +134,47 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             </div>
             <div class="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
-              <small data-cy="label-sort-by">Sort By</small>
+              <small data-cy="label-sort-by">{t('globals.sortBy', 'Sort By')}</small>
             </div>
             <MenuButton
               id="name"
               order="asc"
-              text="Name: A-Z"
+              text={t('editor.queryPanel.sort.nameAsc', 'Name: A-Z')}
               callback={handleSort}
               active={sortBy === 'name' && sortOrder === 'asc'}
             />
             <MenuButton
               id="name"
               order="desc"
-              text="Name: Z-A"
+              text={t('editor.queryPanel.sort.nameDesc', 'Name: Z-A')}
               callback={handleSort}
               active={sortBy === 'name' && sortOrder === 'desc'}
             />
             <MenuButton
               id="kind"
               order="asc"
-              text="Type: A-Z"
+              text={t('editor.queryPanel.sort.typeAsc', 'Type: A-Z')}
               callback={handleSort}
               active={sortBy === 'kind' && sortOrder === 'asc'}
             />
             <MenuButton
               id="kind"
               order="desc"
-              text="Type: Z-A"
+              text={t('editor.queryPanel.sort.typeDesc', 'Type: Z-A')}
               callback={handleSort}
               active={sortBy === 'kind' && sortOrder === 'desc'}
             />
             <MenuButton
               id="updated_at"
               order="asc"
-              text="Last modified: oldest first"
+              text={t('editor.queryPanel.sort.updatedAsc', 'Last modified: oldest first')}
               callback={handleSort}
               active={sortBy === 'updated_at' && sortOrder === 'asc'}
             />
             <MenuButton
               id="updated_at"
               order="desc"
-              text="Last modified: newest first"
+              text={t('editor.queryPanel.sort.updatedDesc', 'Last modified: newest first')}
               callback={handleSort}
               active={sortBy === 'updated_at' && sortOrder === 'desc'}
             />
@@ -199,7 +201,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       }
     >
       <span>
-        <ToolTip message="Show sort/filter" placement="bottom">
+        <ToolTip message={t('editor.queryPanel.showSortFilter', 'Show sort/filter')} placement="bottom">
           <button
             id="query-sort-filter-popover-btn"
             onClick={(e) => {

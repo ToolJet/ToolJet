@@ -5,8 +5,10 @@ import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTranslation } from 'react-i18next';
 
 export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
+  const { t } = useTranslation();
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const activeTab = useStore((state) => state.activeRightSideBarTab, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
@@ -21,16 +23,21 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     return (
       <>
         <div className="empty-configuration-header">
-          <div className="header">Component properties</div>
+          <div className="header">{t('editor.componentConfig.properties', 'Component properties')}</div>
           <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleToggle}>
             <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
           </div>
         </div>
         <div className="d-flex align-items-center justify-content-center no-component-selected">
           <SolidIcon name="cursorclick" width="28" />
-          <div className="tj-text-sm font-weight-500 heading">No component selected</div>
+          <div className="tj-text-sm font-weight-500 heading">
+            {t('editor.componentConfig.noComponentSelected', 'No component selected')}
+          </div>
           <div className="tj-text-xsm sub-heading">
-            Click a component on the canvas to view and edit its properties.
+            {t(
+              'editor.componentConfig.selectComponentHint',
+              'Click a component on the canvas to view and edit its properties.'
+            )}
           </div>
         </div>
       </>

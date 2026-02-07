@@ -6,8 +6,10 @@ import { userService } from '@/_services';
 import EyeHide from '@/../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '@/../assets/images/onboardingassets/Icons/EyeShow';
 import CopyToClipboardComponent from './CopyToClipboard';
+import { useTranslation } from 'react-i18next';
 
 export function ResetPasswordModal({ darkMode = false, closeModal, show, user }) {
+  const { t } = useTranslation();
   const [passwordOption, setPasswordOption] = useState('auto');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -54,15 +56,17 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         const generatedPassword = await userService.generateUserPassword(user.id);
         setGeneratedPassword(generatedPassword?.newPassword);
         setShowPasswordSuccessModal(true);
-        toast.success(`Password reset successful`);
+        toast.success(t('resetPasswordModal.success', 'Password reset successful'));
       } else {
         // Use the manually entered password
         await userService.changeUserPassword(user.id, password);
-        toast.success('Password reset successful');
+        toast.success(t('resetPasswordModal.success', 'Password reset successful'));
         closeModal();
       }
     } catch (error) {
-      const backendMessage = error?.data?.message || 'Password could not be reset. Please try again!';
+      const backendMessage =
+        error?.data?.message ||
+        t('resetPasswordModal.error', 'Password could not be reset. Please try again!');
 
       toast.error(backendMessage);
     } finally {
@@ -84,7 +88,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
             closeModal();
           }
         }}
-        title="Reset password"
+        title={t('resetPasswordModal.title', 'Reset password')}
         headerContent={
           <p style={{ marginBottom: '0px', color: '#687076' }} data-cy="user-email">
             {user?.email}
@@ -93,10 +97,12 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         footerContent={
           <>
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
-              Cancel
+              {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid onClick={handleResetPassword} disabled={isDisabled} data-cy="reset-button">
-              {isLoading ? 'Resetting...' : 'Reset'}
+              {isLoading
+                ? t('resetPasswordModal.resetting', 'Resetting...')
+                : t('resetPasswordModal.reset', 'Reset')}
             </ButtonSolid>
           </>
         }
@@ -114,11 +120,14 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                   style={{ marginRight: '8px', marginBottom: '3px', marginTop: '3px' }}
                   data-cy="automatically-generate-a-password-input"
                 />
-                Automatically generate a password
+                {t('resetPasswordModal.autoOption', 'Automatically generate a password')}
               </label>
               <small>
                 <div style={{ marginLeft: '20px', color: '#687076' }} data-cy="helper-text">
-                  You will be able to view and copy the password in the next step
+                  {t(
+                    'resetPasswordModal.autoHelper',
+                    'You will be able to view and copy the password in the next step'
+                  )}
                 </div>
               </small>
             </div>
@@ -134,7 +143,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                   style={{ marginRight: '8px', marginBottom: '3px', marginTop: '3px' }}
                   data-cy="create-password-input"
                 />
-                Create password
+                {t('resetPasswordModal.manualOption', 'Create password')}
               </label>
               <div style={{ marginLeft: '20px', color: '#687076' }}>
                 {passwordOption === 'manual' && (
@@ -146,7 +155,7 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
                           name="password"
                           type={isPasswordVisible ? 'text' : 'password'}
                           className="tj-text-input"
-                          placeholder={'Enter password'}
+                          placeholder={t('loginSignupPage.enterPassword', 'Enter password')}
                           autoComplete="new-password"
                           data-cy="password-input"
                         />
@@ -205,15 +214,15 @@ export function ResetPasswordModal({ darkMode = false, closeModal, show, user })
         <Modal
           show={true}
           closeModal={closeSuccessModal}
-          title="Reset password"
+          title={t('resetPasswordModal.title', 'Reset password')}
           footerContent={
             <ButtonSolid onClick={closeSuccessModal} data-cy="done-button">
-              Done
+              {t('resetPasswordModal.done', 'Done')}
             </ButtonSolid>
           }
         >
           <label className="form-check-label" data-cy="password-label">
-            Password
+            {t('loginSignupPage.password', 'Password')}
           </label>
           <div className="tj-text-input-icon-wrapper">
             <div className="login-password signup-password-wrapper">

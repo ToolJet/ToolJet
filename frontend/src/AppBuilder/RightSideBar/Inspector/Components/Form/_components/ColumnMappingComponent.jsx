@@ -16,13 +16,14 @@ import { useColumnBuilder, useGroupedColumns, useCheckboxStates } from './hooks/
 import { DropdownProvider } from '@/components/ui/Dropdown/DropdownProvider';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTranslation } from 'react-i18next';
 
 // Constants for section display names
 const SECTION_DISPLAY_NAMES = {
-  existing: 'Existing',
-  isCustomField: 'Custom fields',
-  isNew: 'New',
-  isRemoved: 'Removed',
+  existing: { key: 'editor.form.columnMapping.section.existing', defaultValue: 'Existing' },
+  isCustomField: { key: 'editor.form.columnMapping.section.customFields', defaultValue: 'Custom fields' },
+  isNew: { key: 'editor.form.columnMapping.section.new', defaultValue: 'New' },
+  isRemoved: { key: 'editor.form.columnMapping.section.removed', defaultValue: 'Removed' },
 };
 
 /**
@@ -37,45 +38,62 @@ const EditableIcon = ({ darkMode }) => (
 /**
  * Modal header component
  */
-const ModalHeader = ({ currentStatus, onClose }) => (
-  <div className="column-mapping-modal-header tw-flex tw-p-4 tw-flex-col tw-items-start tw-gap-2 tw-self-stretch tw-border-b bg-white">
-    <div className="tw-flex tw-justify-between tw-items-center tw-w-full" style={{ height: '28px' }}>
-      <h4 className="text-default tw-font-ibmplex tw-font-medium tw-leading-5 tw-m-0">
-        {currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Manage fields' : 'Map columns'}
-      </h4>
-      <button className="tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer hover:tw-opacity-70" onClick={onClose}>
-        <SolidIcon name="remove" width="16" height="16" fill="#6A727C" />
-      </button>
+const ModalHeader = ({ currentStatus, onClose }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="column-mapping-modal-header tw-flex tw-p-4 tw-flex-col tw-items-start tw-gap-2 tw-self-stretch tw-border-b bg-white">
+      <div className="tw-flex tw-justify-between tw-items-center tw-w-full" style={{ height: '28px' }}>
+        <h4 className="text-default tw-font-ibmplex tw-font-medium tw-leading-5 tw-m-0">
+          {currentStatus !== FORM_STATUS.GENERATE_FIELDS
+            ? t('editor.form.columnMapping.manageFields', 'Manage fields')
+            : t('editor.form.columnMapping.mapColumns', 'Map columns')}
+        </h4>
+        <button
+          className="tw-bg-transparent tw-border-0 tw-p-0 tw-cursor-pointer hover:tw-opacity-70"
+          onClick={onClose}
+        >
+          <SolidIcon name="remove" width="16" height="16" fill="#6A727C" />
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * Modal footer component
  */
-const ModalFooter = ({ currentStatus, refreshData, handleSubmit, isSaving, allSectionsEmpty }) => (
-  <div
-    className={`tw-flex ${
-      currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
-    } tw-items-center`}
-  >
-    {currentStatus !== FORM_STATUS.GENERATE_FIELDS && (
-      <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
-        Refresh data
-      </Button>
-    )}
-    <Button
-      variant="primary"
-      onClick={handleSubmit}
-      disabled={isSaving || allSectionsEmpty}
-      leadingIcon={currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'save' : 'plus'}
-      isLoading={isSaving}
-      loaderText={currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Saving' : 'Generating'}
+const ModalFooter = ({ currentStatus, refreshData, handleSubmit, isSaving, allSectionsEmpty }) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      className={`tw-flex ${
+        currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'tw-justify-between' : 'tw-justify-end'
+      } tw-items-center`}
     >
-      {currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'Save' : 'Generate form'}
-    </Button>
-  </div>
-);
+      {currentStatus !== FORM_STATUS.GENERATE_FIELDS && (
+        <Button fill={'#ACB2B9'} leadingIcon={'arrowdirectionloop'} variant="outline" onClick={refreshData}>
+          {t('editor.form.columnMapping.refreshData', 'Refresh data')}
+        </Button>
+      )}
+      <Button
+        variant="primary"
+        onClick={handleSubmit}
+        disabled={isSaving || allSectionsEmpty}
+        leadingIcon={currentStatus !== FORM_STATUS.GENERATE_FIELDS ? 'save' : 'plus'}
+        isLoading={isSaving}
+        loaderText={
+          currentStatus !== FORM_STATUS.GENERATE_FIELDS
+            ? t('editor.form.columnMapping.saving', 'Saving')
+            : t('editor.form.columnMapping.generating', 'Generating')
+        }
+      >
+        {currentStatus !== FORM_STATUS.GENERATE_FIELDS
+          ? t('globals.save', 'Save')
+          : t('editor.form.columnMapping.generateForm', 'Generate form')}
+      </Button>
+    </div>
+  );
+};
 
 /**
  * Loader component
@@ -96,6 +114,7 @@ const LoaderComponent = () => (
 const ColumnMappingRow = React.memo(
   ({ column, onChange, onCheckboxChange, index, darkMode = false, disabled = false, sectionType }) => {
     if (!column) return null;
+    const { t } = useTranslation();
 
     const inputTypeOptions = getInputTypeOptions(darkMode);
 
@@ -149,7 +168,9 @@ const ColumnMappingRow = React.memo(
               <span className="tw-ml-2 data-type">{column.dataType}</span>
             </>
           ) : (
-            <span className="no-mapped-column small-medium">No mapped columns</span>
+            <span className="no-mapped-column small-medium">
+              {t('editor.form.columnMapping.noMappedColumns', 'No mapped columns')}
+            </span>
           )}
         </div>
 
@@ -183,7 +204,7 @@ const ColumnMappingRow = React.memo(
           <Input
             value={column.label}
             onChange={handleLabelChange}
-            placeholder="Input label"
+            placeholder={t('editor.form.columnMapping.inputLabelPlaceholder', 'Input label')}
             size="small"
             disabled={disabled}
           />
@@ -212,6 +233,7 @@ const RenderSection = ({
   sectionDisplayName,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const columnsArray = useMemo(() => {
     return Array.isArray(mappedColumns) ? mappedColumns : [];
   }, [mappedColumns]);
@@ -306,19 +328,25 @@ const RenderSection = ({
           />
         </div>
         <div className="name-column header-column">
-          <span className="text-default small-medium">Column name</span>
+          <span className="text-default small-medium">
+            {t('editor.form.columnMapping.columnName', 'Column name')}
+          </span>
         </div>
         <div className="arrow-column header-column" />
         <div className="mapped-column header-column tw-flex">
           <EditableIcon darkMode={darkMode} />
-          <span className="text-default small-medium">Mapped to</span>
+          <span className="text-default small-medium">{t('editor.form.columnMapping.mappedTo', 'Mapped to')}</span>
         </div>
         <div className="type-column tw-flex-1 header-column tw-flex">
           <EditableIcon darkMode={darkMode} />
-          <span className="text-default small-medium">Input label</span>
+          <span className="text-default small-medium">
+            {t('editor.form.columnMapping.inputLabel', 'Input label')}
+          </span>
         </div>
         <div className="mandatory-column header-column tw-flex tw-justify-end">
-          <span className="text-default small-medium tw-mr-2">Mandatory?</span>
+          <span className="text-default small-medium tw-mr-2">
+            {t('editor.form.columnMapping.mandatory', 'Mandatory?')}
+          </span>
           <div className={cx({ 'tw-invisible': disabled })}>
             <Checkbox
               checked={isAllSelectedMandatory || isIntermediateMandatory}
@@ -412,7 +440,11 @@ const RenderSection = ({
             ))
           )
         ) : (
-          <div className="tw-py-4 tw-text-center tw-text-gray-500">No {sectionDisplayName.toLowerCase()} available</div>
+          <div className="tw-py-4 tw-text-center tw-text-gray-500">
+            {t('editor.form.columnMapping.noneAvailable', 'No {{section}} available', {
+              section: sectionDisplayName.toLowerCase(),
+            })}
+          </div>
         )}
       </div>
     </div>
@@ -431,6 +463,7 @@ const ColumnMappingComponent = ({
   source,
   isDataLoading,
 }) => {
+  const { t } = useTranslation();
   const { resolveReferences, getComponentDefinition, getFormFields } = useStore(
     (state) => ({
       resolveReferences: state.resolveReferences,
@@ -525,9 +558,14 @@ const ColumnMappingComponent = ({
   }, [groupedColumns, onSubmit]);
 
   // Get display name for section type
-  const getSectionDisplayName = useCallback((sectionType) => {
-    return SECTION_DISPLAY_NAMES[sectionType] || '';
-  }, []);
+  const getSectionDisplayName = useCallback(
+    (sectionType) => {
+      const sectionConfig = SECTION_DISPLAY_NAMES[sectionType];
+      if (!sectionConfig) return '';
+      return t(sectionConfig.key, sectionConfig.defaultValue);
+    },
+    [t]
+  );
 
   const allSectionsEmpty = useMemo(() => {
     return Object.values(groupedColumns).every((sectionColumns) => {

@@ -250,14 +250,14 @@ export const PropertiesTabElements = ({
       {column.columnType === 'link' && (
         <>
           <div className="field mb-2 px-3">
-            <label className="form-label">Display text</label>
+            <label className="form-label">{t('widget.Table.displayText', 'Display text')}</label>
             <CodeHinter
               currentState={currentState}
               initialValue={column?.displayText}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={'Display text'}
+              placeholder={t('widget.Table.displayText', 'Display text')}
               onChange={(value) => onColumnItemChange(index, 'displayText', value)}
               componentName={getPopoverFieldSource(column.columnType, 'displayText')}
             />

@@ -25,8 +25,8 @@ export const StylesTabElements = ({
       <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
         <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
           {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
-            ? t('widget.Table.textAlignment', 'Text Alignment')
-            : 'Alignment'}
+            ? t('widget.Table.textAlignment', 'Text alignment')
+            : t('widget.Table.alignment', 'Alignment')}
         </label>
         <ToggleGroup
           onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
@@ -48,9 +48,9 @@ export const StylesTabElements = ({
         <div>
           <div className="field px-3">
             <Color
-              param={{ name: 'Active color' }}
+              param={{ name: t('widget.Table.activeColor', 'Active color') }}
               paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Active color' } } }}
+              componentMeta={{ properties: { color: { displayName: t('widget.Table.activeColor', 'Active color') } } }}
               definition={{ value: column.activeColor || '#3c92dc' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'activeColor', color)}
               shouldFlexDirectionBeRow={true}
@@ -140,7 +140,7 @@ export const StylesTabElements = ({
           {column.columnType !== 'boolean' && (
             <div data-cy={`input-and-label-text-color`} className="field px-3">
               <ProgramaticallyHandleProperties
-                label="Text color"
+                label={t('widget.Table.textColor', 'Text color')}
                 currentState={currentState}
                 index={index}
                 darkMode={darkMode}
@@ -148,14 +148,14 @@ export const StylesTabElements = ({
                 property="textColor"
                 props={column}
                 component={component}
-                paramMeta={{ type: 'colorSwatches', displayName: 'Text color' }}
+              paramMeta={{ type: 'colorSwatches', displayName: t('widget.Table.textColor', 'Text color') }}
                 paramType="properties"
               />
             </div>
           )}
           <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
-              label="Cell color"
+              label={t('widget.Table.cellColor', 'Cell color')}
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -163,7 +163,7 @@ export const StylesTabElements = ({
               property="cellBackgroundColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramMeta={{ type: 'colorSwatches', displayName: t('widget.Table.cellColor', 'Cell color') }}
               paramType="properties"
             />
           </div>
@@ -174,7 +174,7 @@ export const StylesTabElements = ({
         <>
           <div data-cy={`input-and-label-text-color`} className="field px-3">
             <ProgramaticallyHandleProperties
-              label="Text color"
+              label={t('widget.Table.textColor', 'Text color')}
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -182,13 +182,13 @@ export const StylesTabElements = ({
               property="linkColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Text color' }}
+              paramMeta={{ type: 'color', displayName: t('widget.Table.textColor', 'Text color') }}
               paramType="properties"
             />
           </div>
           <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
             <ProgramaticallyHandleProperties
-              label="Underline color"
+                label={t('widget.Table.underlineColor', 'Underline color')}
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -196,7 +196,7 @@ export const StylesTabElements = ({
               property="underlineColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'color', displayName: 'Underline color' }}
+              paramMeta={{ type: 'color', displayName: t('widget.Table.underlineColor', 'Underline color') }}
               paramType="properties"
             />
           </div>
@@ -206,15 +206,15 @@ export const StylesTabElements = ({
               className="field  d-flex custom-gap-12 align-items-center align-self-stretch"
             >
               <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-                Show underline
+                {t('widget.Table.showUnderline', 'Show underline')}
               </label>
               <ToggleGroup
                 onValueChange={(_value) => onColumnItemChange(index, 'underline', _value)}
                 defaultValue={column.underline || 'hover'}
                 style={{ flex: '1 1 0' }}
               >
-                <ToggleGroupItem value="hover">Hover</ToggleGroupItem>
-                <ToggleGroupItem value="always">Always</ToggleGroupItem>
+                <ToggleGroupItem value="hover">{t('widget.Table.hover', 'Hover')}</ToggleGroupItem>
+                <ToggleGroupItem value="always">{t('widget.Table.always', 'Always')}</ToggleGroupItem>
               </ToggleGroup>
             </div>
           </div>
@@ -225,7 +225,7 @@ export const StylesTabElements = ({
         <div className="d-flex flex-column custom-gap-16">
           <div className="field px-3">
             <ProgramaticallyHandleProperties
-              label="Selected color"
+              label={t('widget.Table.selectedColor', 'Selected color')}
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -233,13 +233,13 @@ export const StylesTabElements = ({
               property={column.iconType === 'stars' ? 'selectedBgColorStars' : 'selectedBgColorHearts'}
               props={column}
               component={component}
-              paramMeta={{ type: 'colorSwatches', displayName: 'Selected color' }}
+              paramMeta={{ type: 'colorSwatches', displayName: t('widget.Table.selectedColor', 'Selected color') }}
               paramType="properties"
             />
           </div>
           <div className="field px-3">
             <ProgramaticallyHandleProperties
-              label="Unselected color"
+              label={t('widget.Table.unselectedColor', 'Unselected color')}
               currentState={currentState}
               index={index}
               darkMode={darkMode}
@@ -247,7 +247,7 @@ export const StylesTabElements = ({
               property="unselectedBgColor"
               props={column}
               component={component}
-              paramMeta={{ type: 'colorSwatches', displayName: 'Unselected color' }}
+              paramMeta={{ type: 'colorSwatches', displayName: t('widget.Table.unselectedColor', 'Unselected color') }}
               paramType="properties"
             />
           </div>

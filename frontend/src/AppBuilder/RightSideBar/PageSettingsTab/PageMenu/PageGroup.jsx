@@ -15,6 +15,7 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { useTranslation } from 'react-i18next';
 
 const RenderPage = ({
   page,
@@ -272,6 +273,7 @@ export const RenderPageAndPageGroup = ({
   currentPageId,
   homePageId,
 }) => {
+  const { t } = useTranslation();
   const currentPage = pages.find((page) => page.id === currentPageId);
   const getIsPageHidden = useStore((state) => state.getPagesVisibility); // TODO: rename the getPagesVisibility to getIsPageHidden in state since purpose of the function is to check if the page is hidden
 
@@ -342,7 +344,7 @@ export const RenderPageAndPageGroup = ({
           <NavigationMenuItem>
             <NavigationMenuTrigger indicator={false} className={`more-pages-btn`}>
               <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
-              More
+              {t('editor.pageMenu.more', 'More')}
             </NavigationMenuTrigger>
             <NavigationMenuContent className={`!tw-min-w-full page-menu-popup ${darkMode && 'dark-theme'}`}>
               {overflowLinks.map((page, index) => {

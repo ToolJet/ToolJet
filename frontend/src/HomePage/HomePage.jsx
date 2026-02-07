@@ -1381,7 +1381,7 @@ class HomePageComponent extends React.Component {
             isLoading={importingApp}
             handleClose={() => this.setState({ showMissingGroupsModal: false })}
             confirmBtnProps={{
-              title: 'Import',
+              title: this.props.t('globals.import', 'Import'),
               tooltipMessage: '',
             }}
             className="missing-groups-modal"
@@ -1391,10 +1391,17 @@ class HomePageComponent extends React.Component {
               <div className="flex items-start">
                 <SolidIcon name="warning" width="40px" fill="var(--icon-warning)" />
                 <div>
-                  <div className="header">Warning: Missing user groups for permissions</div>
+                  <div className="header">
+                    {this.props.t(
+                      'homePage.missingGroups.warningTitle',
+                      'Warning: Missing user groups for permissions'
+                    )}
+                  </div>
                   <p className="sub-header">
-                    Permissions for the following user group(s) won’t be applied since they do not exist in this
-                    workspace.
+                    {this.props.t(
+                      'homePage.missingGroups.description',
+                      "Permissions for the following user group(s) won't be applied since they do not exist in this workspace."
+                    )}
                   </p>
                 </div>
               </div>
@@ -1406,7 +1413,7 @@ class HomePageComponent extends React.Component {
                   }`}
                 >
                   <div style={{ color: 'var(--text-placeholder)' }} className="tj-text-xsm font-weight-500">
-                    User groups
+                    {this.props.t('homePage.missingGroups.userGroupsLabel', 'User groups')}
                   </div>
                   <div className="mt-1">
                     {displayedGroups.map((group, idx) => (
@@ -1430,15 +1437,20 @@ class HomePageComponent extends React.Component {
                         name={missingGroupsExpanded ? 'cheveronup' : 'cheverondown'}
                       />
                     </span>
-                    <span class="label">{missingGroupsExpanded ? 'See less' : 'See more'}</span>
+                    <span class="label">
+                      {missingGroupsExpanded
+                        ? this.props.t('globals.seeLess', 'See less')
+                        : this.props.t('globals.seeMore', 'See more')}
+                    </span>
                   </button>
                 )}
               </div>
 
               <p className="info">
-                Restricted pages, queries, or components will become accessible to all users or to existing groups with
-                permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after
-                import.
+                {this.props.t(
+                  'homePage.missingGroups.info',
+                  'Restricted pages, queries, or components will become accessible to all users or to existing groups with permissions. To avoid this, create the missing groups before importing, or reconfigure permissions after import.'
+                )}
               </p>
 
               <div className="mt-6 d-flex justify-between action-btns">
@@ -1447,7 +1459,7 @@ class HomePageComponent extends React.Component {
                   variant={'tertiary'}
                   onClick={() => this.setState({ showMissingGroupsModal: false, isImportingApp: false })}
                 >
-                  Cancel import
+                  {this.props.t('homePage.missingGroups.cancelImport', 'Cancel import')}
                 </ButtonSolid>
                 <ButtonSolid
                   isLoading={importingApp}
@@ -1455,7 +1467,7 @@ class HomePageComponent extends React.Component {
                   onClick={() => this.importFile(fileContent, fileName, true)}
                   className="primary-action"
                 >
-                  Import with limited permissions
+                  {this.props.t('homePage.missingGroups.importLimited', 'Import with limited permissions')}
                 </ButtonSolid>
               </div>
             </div>
@@ -1467,9 +1479,13 @@ class HomePageComponent extends React.Component {
               processApp={this.renameApp}
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
-              title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
-              actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
-              actionLoadingButton={'Renaming'}
+              title={this.props.t('homePage.renameAppTitle', 'Rename {{appType}}', {
+                appType: this.getAppType().toLocaleLowerCase(),
+              })}
+              actionButton={this.props.t('homePage.renameAppAction', 'Rename {{appType}}', {
+                appType: this.getAppType().toLocaleLowerCase(),
+              })}
+              actionLoadingButton={this.props.t('homePage.renameAppLoading', 'Renaming')}
               appType={this.props.appType}
             />
           )}
@@ -1489,7 +1505,7 @@ class HomePageComponent extends React.Component {
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
             darkMode={this.props.darkMode}
-            cancelButtonText="Cancel"
+            cancelButtonText={this.props.t('globals.cancel', 'Cancel')}
           />
 
           <ConfirmDialog
@@ -1873,9 +1889,11 @@ class HomePageComponent extends React.Component {
                       />
                     )}
                     <div className="filter-container">
-                      <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
+                      <span>
+                        {currentFolder?.count ?? meta?.total_count} {this.props.t('homePage.appsLabel', 'APPS')}
+                      </span>
                       <div className="d-flex align-items-center">
-                        <div className="mx-2">Filter by</div>
+                        <div className="mx-2">{this.props.t('homePage.filterBy', 'Filter by')}</div>
                         <FolderFilter
                           disabled={!!appOperations?.isAdding}
                           options={this.state.folders.map((folder) => {
@@ -1928,7 +1946,12 @@ class HomePageComponent extends React.Component {
                     <div className="empty-module-container">
                       <EmptyModuleSvg />
                       <div className="empty-title mt-3" style={{ display: 'block' }}>
-                        <div>Create reusable groups of components and queries via modules.</div>
+                        <div>
+                          {this.props.t(
+                            'homePage.modules.emptyTitle',
+                            'Create reusable groups of components and queries via modules.'
+                          )}
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <a
                             href="https://docs.tooljet.com/docs/app-builder/modules/overview"
@@ -1936,9 +1959,9 @@ class HomePageComponent extends React.Component {
                             className="docs-link"
                             rel="noreferrer"
                           >
-                            Check out our guide
+                            {this.props.t('homePage.modules.checkGuide', 'Check out our guide')}
                           </a>
-                          &nbsp;on creating modules.
+                          &nbsp;{this.props.t('homePage.modules.onCreatingModules', 'on creating modules.')}
                         </div>
                       </div>
 
@@ -1953,11 +1976,14 @@ class HomePageComponent extends React.Component {
                       >
                         <ToolTip
                           show={!moduleEnabled}
-                          message="Modules are not available on your current plan."
+                          message={this.props.t(
+                            'homePage.modules.notAvailable',
+                            'Modules are not available on your current plan.'
+                          )}
                           placement="bottom"
                         >
                           <label style={{ visibility: isImportingApp ? 'hidden' : 'visible' }} data-cy="create-module">
-                            {'Create new module'}
+                            {this.props.t('homePage.modules.createNew', 'Create new module')}
                           </label>
                         </ToolTip>
                       </ButtonSolid>

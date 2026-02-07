@@ -17,15 +17,11 @@ import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
-
-export const PAGE_TYPES = {
-  default: '',
-  app: 'TJ app',
-  url: 'URL',
-};
+import { useTranslation } from 'react-i18next';
 
 export const PageMenuItem = withRouter(
   memo(({ darkMode, page, navigate, treeRef }) => {
+    const { t } = useTranslation();
     const { moduleId } = useModuleContext();
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
@@ -65,6 +61,10 @@ export const PageMenuItem = withRouter(
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
+    const pageTypeLabels = {
+      app: t('editor.pageMenu.pageTypes.tjApp', 'TJ app'),
+      url: t('editor.pageMenu.pageTypes.url', 'URL'),
+    };
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
@@ -175,9 +175,9 @@ export const PageMenuItem = withRouter(
             }
           } else {
             logError(
-              'Navigation',
-              'navigation',
-              { message: 'No URL provided', errorTarget: 'page' },
+              t('editor.pageMenu.logLabels.navigation', 'Navigation'),
+              t('editor.pageMenu.logLabels.navigationKey', 'navigation'),
+              { message: t('editor.pageMenu.errors.noUrlProvided', 'No URL provided'), errorTarget: 'page' },
               { eventType: 'page' },
               {},
               '',
@@ -198,9 +198,12 @@ export const PageMenuItem = withRouter(
             }
           } else {
             logError(
-              'Navigation',
-              'navigation',
-              { message: 'No application slug provided', errorTarget: 'page' },
+              t('editor.pageMenu.logLabels.navigation', 'Navigation'),
+              t('editor.pageMenu.logLabels.navigationKey', 'navigation'),
+              {
+                message: t('editor.pageMenu.errors.noApplicationSlugProvided', 'No application slug provided'),
+                errorTarget: 'page',
+              },
               { eventType: 'page' },
               {},
               '',
@@ -238,32 +241,44 @@ export const PageMenuItem = withRouter(
     };
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
-      if (!permission) return 'Access restricted';
+      if (!permission) return t('editor.pageMenu.permissions.accessRestricted', 'Access restricted');
       const users = permission.users || [];
       const isSingle = permission.type === 'SINGLE';
       const isGroup = permission.type === 'GROUP';
 
-      if (users.length === 0) return 'Access restricted';
+      if (users.length === 0) return t('editor.pageMenu.permissions.accessRestricted', 'Access restricted');
 
       if (isSingle) {
         if (users.length === 1) {
           const email = users[0].user.email;
-          return `Access restricted to ${email}`;
+          return t('editor.pageMenu.permissions.accessRestrictedToEmail', {
+            defaultValue: 'Access restricted to {{email}}',
+            email,
+          });
         } else {
-          return `Access restricted to ${users.length} users`;
+          return t('editor.pageMenu.permissions.accessRestrictedToUsers', {
+            defaultValue: 'Access restricted to {{count}} users',
+            count: users.length,
+          });
         }
       }
 
       if (isGroup) {
         if (users.length === 1) {
-          const groupName = users[0].permissionGroup?.name ?? 'Group';
-          return `Access restricted to ${groupName} group`;
+          const groupName = users[0].permissionGroup?.name ?? t('editor.pageMenu.group', 'Group');
+          return t('editor.pageMenu.permissions.accessRestrictedToGroup', {
+            defaultValue: 'Access restricted to {{groupName}} group',
+            groupName,
+          });
         } else {
-          return `Access restricted to ${users.length} groups`;
+          return t('editor.pageMenu.permissions.accessRestrictedToGroups', {
+            defaultValue: 'Access restricted to {{count}} groups',
+            count: users.length,
+          });
         }
       }
 
-      return 'Access restricted';
+      return t('editor.pageMenu.permissions.accessRestricted', 'Access restricted');
     }
     return (
       <div
@@ -305,11 +320,11 @@ export const PageMenuItem = withRouter(
                     {page.name}
                   </OverflowTooltip>
                   <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
-                    {PAGE_TYPES[page?.type] && ( // If 'page' object has a 'type' property like 'URL'
-                      <span className="page-type-text">{PAGE_TYPES[page?.type]}</span>
+                    {pageTypeLabels[page?.type] && (
+                      <span className="page-type-text">{pageTypeLabels[page?.type]}</span>
                     )}
                     {isHomePage && (
-                      <ToolTip message="Home page" placement="bottom">
+                      <ToolTip message={t('editor.pageMenu.tooltips.homePage', 'Home page')} placement="bottom">
                         <div className=" d-flex align-items-center justify-content-center">
                           <Home fill="var(--icons-default)" className="" width={16} height={16} />
                         </div>
@@ -317,7 +332,7 @@ export const PageMenuItem = withRouter(
                     )}
 
                     {isDisabled && (
-                      <ToolTip message="Disabled page" placement="bottom">
+                      <ToolTip message={t('editor.pageMenu.tooltips.disabledPage', 'Disabled page')} placement="bottom">
                         <div className=" d-flex align-items-center justify-content-center">
                           <Skip fill="var(--icons-default)" className="" width={16} height={16} viewBox="0 0 16 16" />
                         </div>
@@ -325,7 +340,10 @@ export const PageMenuItem = withRouter(
                     )}
                     {isHidden && !isDisabled && (
                       <ToolTip
-                        message={page?.type !== PAGE_TYPES.default ? 'Hidden nav item' : 'Hidden page'}
+                        message={t(
+                          page?.type ? 'editor.pageMenu.tooltips.hiddenNavItem' : 'editor.pageMenu.tooltips.hiddenPage',
+                          page?.type ? 'Hidden nav item' : 'Hidden page'
+                        )}
                         placement="bottom"
                       >
                         <div className=" d-flex align-items-center justify-content-center">
@@ -352,7 +370,7 @@ export const PageMenuItem = withRouter(
                       })}
                     >
                       <div onClick={handlePageSwitch} className="icon-btn">
-                        <ToolTip message="Go to page" placement="bottom">
+                        <ToolTip message={t('editor.pageMenu.tooltips.goToPage', 'Go to page')} placement="bottom">
                           <div className=" d-flex align-items-center justify-content-center">
                             <SolidIcon name="arrowright01" fill="var(--icons-strong)" />
                           </div>
@@ -399,7 +417,7 @@ export const PageMenuItem = withRouter(
                         >
                           <div className="menu-options mb-0">
                             <PageOptions
-                              text="Edit page details"
+                              text={t('editor.pageMenu.options.editPageDetails', 'Edit page details')}
                               icon="editable"
                               darkMode={darkMode}
                               onClick={(e) => {
@@ -408,7 +426,7 @@ export const PageMenuItem = withRouter(
                             />
                             {page?.type === 'default' && (
                               <PageOptions
-                                text="Mark home"
+                                text={t('editor.pageMenu.options.markHome', 'Mark home')}
                                 icon="home"
                                 darkMode={darkMode}
                                 disabled={isHomePage}
@@ -420,7 +438,7 @@ export const PageMenuItem = withRouter(
                               />
                             )}
                             <PageOptions
-                              text="Duplicate page"
+                              text={t('editor.pageMenu.options.duplicatePage', 'Duplicate page')}
                               icon="copy"
                               darkMode={darkMode}
                               onClick={(e) => {
@@ -434,12 +452,12 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message="Home page can't be deleted"
+                                  message={t('editor.pageMenu.tooltips.homePageCannotBeDeleted', "Home page can't be deleted")}
                                   placement="auto"
                                   show={isHomePage}
                                   tooltipClassName="!tw-z-[100000]"
                                 >
-                                  <span>Delete page</span>
+                                  <span>{t('editor.pageMenu.options.deletePage', 'Delete page')}</span>
                                 </ToolTip>
                               }
                               icon="trash"
@@ -456,13 +474,16 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                                  message={t(
+                                    'editor.pageMenu.noPagePermissionsAccess',
+                                    "You don't have access to page permissions. Upgrade your plan to access this feature."
+                                  )}
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"
                                 >
                                   <div className="d-flex align-items-center enterprise-feature">
-                                    <div>Page permission</div>
+                                    <div>{t('editor.pageMenu.options.pagePermission', 'Page permission')}</div>
                                     {!hasAppPermissionPages && <SolidIcon name="enterprisecrown" />}
                                   </div>
                                 </ToolTip>
@@ -508,18 +529,31 @@ export const PageMenuItem = withRouter(
 );
 
 export const AddingPageHandler = ({ darkMode }) => {
+  const { t } = useTranslation();
   const toggleShowAddNewPageInput = useStore((state) => state.toggleShowAddNewPageInput);
   const addNewPage = useStore((state) => state.addNewPage);
   const isPageGroup = useStore((state) => state.isPageGroup);
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
-      toast(`${isPageGroup ? 'Page group' : 'Page'} name should have at least 1 character`, {
+      toast(
+        t(
+          isPageGroup ? 'editor.pageMenu.toasts.pageGroupNameMinLength' : 'editor.pageMenu.toasts.pageNameMinLength',
+          isPageGroup ? 'Page group name should have at least 1 character' : 'Page name should have at least 1 character'
+        ),
+        {
         icon: '⚠️',
-      });
+        }
+      );
     } else if (pageName.trim().length > 32) {
-      toast(`${isPageGroup ? 'Page group' : 'Page'} name cannot exceed 32 characters`, {
+      toast(
+        t(
+          isPageGroup ? 'editor.pageMenu.toasts.pageGroupNameMaxLength' : 'editor.pageMenu.toasts.pageNameMaxLength',
+          isPageGroup ? 'Page group name cannot exceed 32 characters' : 'Page name cannot exceed 32 characters'
+        ),
+        {
         icon: '⚠️',
-      });
+        }
+      );
     } else {
       addNewPage(pageName, _.kebabCase(pageName.toLowerCase()), isPageGroup);
     }

@@ -8,6 +8,7 @@ import { redirectToSwitchOrArchivedAppPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { ERROR_TYPES } from './constants';
+import i18next from 'i18next';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
@@ -23,7 +24,9 @@ export function handleResponse(
   return response.text().then((text) => {
     let modalBody = (
       <>
-        <div data-cy="info-text">To upgrade your plan, please reach out to us at</div>
+        <div data-cy="info-text">
+          {i18next.t('planUpgrade.contactUs', 'To upgrade your plan, please reach out to us at')}
+        </div>
         <div className="form-group my-3">
           <div className="d-flex justify-content-between form-control align-items-center">
             <p className="m-0" id="support-email" data-cy="support-email">
@@ -39,7 +42,10 @@ export function handleResponse(
       // Custom friendly error messages
       if (response.status === 422 && typeof data?.message === 'string') {
         if (data.message.includes('value too long for type character varying(50)')) {
-          data.message = 'Failed to duplicate group.\nName exceeds 50 characters.';
+          data.message = i18next.t(
+            'errors.groupNameTooLong',
+            'Failed to duplicate group.\nName exceeds 50 characters.'
+          );
         }
       }
       if ([401].indexOf(response.status) !== -1) {
@@ -54,30 +60,35 @@ export function handleResponse(
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
         const url = response.url;
+        const isAppsLimit = url.includes('apps') || url.includes('library_apps');
         let message = data?.message ?? '';
         let feature;
 
         if (!message) {
-          if (url.includes('apps')) {
-            message =
-              'Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.';
-            feature = 'Apps count';
-          } else if (url.includes('library_apps')) {
-            message =
-              'Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.';
-            feature = 'Apps count';
+          if (isAppsLimit) {
+            message = i18next.t(
+              'planUpgrade.appsLimitExceeded',
+              'Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.'
+            );
+            feature = i18next.t('planUpgrade.appsCount', 'Apps count');
           } else if (url.includes('users') || url.includes('organization-users')) {
-            message =
-              'Oops! Your current plan has exceeded its users limit. Please upgrade your plan now to create a new user.';
-            feature = 'Users count';
+            message = i18next.t(
+              'planUpgrade.usersLimitExceeded',
+              'Oops! Your current plan has exceeded its users limit. Please upgrade your plan now to create a new user.'
+            );
+            feature = i18next.t('planUpgrade.usersCount', 'Users count');
           } else if (url.includes('oidc')) {
-            message =
-              "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.";
-            feature = 'OIDC';
+            message = i18next.t(
+              'planUpgrade.featureNotAvailable',
+              "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this."
+            );
+            feature = i18next.t('planUpgrade.oidc', 'OIDC');
           } else if (url.includes('audit_logs')) {
-            message =
-              "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.";
-            feature = 'Audit logs';
+            message = i18next.t(
+              'planUpgrade.featureNotAvailable',
+              "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this."
+            );
+            feature = i18next.t('planUpgrade.auditLogs', 'Audit logs');
           }
         }
         const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -85,7 +96,7 @@ export function handleResponse(
         const modalEl = React.createElement(LegalReasonsErrorModal, {
           showModal: true,
           message,
-          body: message.includes('apps') && modalBody,
+          body: isAppsLimit && modalBody,
           feature,
           darkMode,
           edition: edition,

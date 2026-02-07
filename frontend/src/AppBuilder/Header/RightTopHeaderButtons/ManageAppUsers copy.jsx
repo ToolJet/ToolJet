@@ -274,7 +274,9 @@ class ManageAppUsersComponent extends React.Component {
                         {isSlugVerificationInProgress && (
                           <div className="icon-container">
                             <div class="spinner-border text-secondary " role="status">
-                              <span class="visually-hidden">Loading...</span>
+                              <span class="visually-hidden">
+                                {this.props.t('globals.loading', 'Loading...')}
+                              </span>
                             </div>
                           </div>
                         )}

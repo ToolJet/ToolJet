@@ -116,7 +116,7 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
     >
       <Modal.Header closeButton={!isCreating}>
         <Modal.Title className="tj-text-sm" style={{ fontWeight: 600 }}>
-          Create Draft Version
+          {t('editor.versionManager.createDraftVersion', 'Create Draft Version')}
         </Modal.Title>
       </Modal.Header>
 
@@ -130,7 +130,7 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
           {/* Create from Version */}
           <div className="mb-3">
             <label className="form-label tj-text-xsm" data-cy="create-draft-from-label">
-              Create draft from
+              {t('editor.versionManager.createDraftFrom', 'Create draft from')}
             </label>
             <Select
               options={versionOptions}
@@ -139,16 +139,21 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
               useMenuPortal={false}
               width="100%"
               maxMenuHeight={150}
-              placeholder="Select version..."
+              placeholder={t('editor.versionManager.selectVersion', 'Select version...')}
               isDisabled={isCreating}
             />
-            <div className="helper-text">Select which version to use as a starting point for the draft</div>
+            <div className="helper-text">
+              {t(
+                'editor.versionManager.selectVersionHelper',
+                'Select which version to use as a starting point for the draft'
+              )}
+            </div>
           </div>
 
           {/* Environment Selection */}
           <div className="mb-3">
             <label className="form-label tj-text-xsm" data-cy="draft-environment-label">
-              Environment
+              {t('editor.versionManager.environment', 'Environment')}
             </label>
             <Select
               options={environmentOptions}
@@ -156,21 +161,23 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
               onChange={(option) => setSelectedEnvironment(option?.value)}
               useMenuPortal={false}
               width="100%"
-              placeholder="Select environment..."
+              placeholder={t('editor.versionManager.selectEnvironment', 'Select environment...')}
               isDisabled={isCreating}
             />
-            <div className="helper-text">Select the environment for this draft version</div>
+            <div className="helper-text">
+              {t('editor.versionManager.selectEnvironmentHelper', 'Select the environment for this draft version')}
+            </div>
           </div>
 
           {/* Draft Description */}
           <div className="mb-3">
             <label className="form-label tj-text-xsm" data-cy="draft-description-label">
-              Description
+              {t('globals.description', 'Description')}
             </label>
             <textarea
               className="form-control tj-text-xsm"
               data-cy="draft-description-input-field"
-              placeholder="Enter draft description..."
+              placeholder={t('editor.versionManager.draftDescriptionPlaceholder', 'Enter draft description...')}
               disabled={isCreating}
               value={draftDescription}
               onChange={(e) => setDraftDescription(e.target.value)}
@@ -183,7 +190,12 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
                 minHeight: '80px',
               }}
             />
-            <div className="helper-text">Add a description for this draft (max 500 characters)</div>
+            <div className="helper-text">
+              {t(
+                'editor.versionManager.draftDescriptionHelper',
+                'Add a description for this draft (max 500 characters)'
+              )}
+            </div>
           </div>
 
           {/* Info Alert */}
@@ -219,7 +231,7 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
           className="tj-text-xsm"
           data-cy="cancel-button"
         >
-          Cancel
+          {t('globals.cancel', 'Cancel')}
         </Button>
         <Button
           variant="primary"
@@ -231,10 +243,10 @@ const CreateDraftVersionModal1 = ({ show, onClose, appId, versions, environments
           {isCreating ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-              Creating...
+              {t('editor.versionManager.creatingDraft', 'Creating...')}
             </>
           ) : (
-            'Create Draft'
+            t('editor.versionManager.createDraft', 'Create Draft')
           )}
         </Button>
       </Modal.Footer>

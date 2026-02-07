@@ -6,6 +6,7 @@ import _, { isArray } from 'lodash';
 import { flushSync } from 'react-dom';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import {
   individualGroupableProps,
   findChildrenAndGrandchildren,
@@ -60,6 +61,7 @@ const RESIZABLE_CONFIG = {
 export const GRID_HEIGHT = 10;
 
 export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
+  const { t } = useTranslation();
   const { moduleId, isModuleEditor } = useModuleContext();
   const lastGroupDragEventRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
@@ -261,7 +263,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }}
       >
         <span id={id}>
-          <ConfigHandleButton className="no-hover">Components</ConfigHandleButton>
+          <ConfigHandleButton className="no-hover">{t('editor.grid.components', 'Components')}</ConfigHandleButton>
           <Suspense fallback={null}>
             <MentionComponentInChat componentIds={selectedComponents} currentPageComponents={currentPageComponents} />
           </Suspense>
@@ -583,9 +585,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         if (isModuleEditor) {
           setSelectedComponents([]);
         } else if (isParentModuleContainer) {
-          toast.error('Modules cannot be edited inside an app');
+          toast.error(t('editor.grid.moduleEditNotAllowed', 'Modules cannot be edited inside an app'));
         } else if (!isParentChangeAllowed) {
-          toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
+          toast.error(
+            t('editor.grid.incompatibleChild', '{{child}} is not compatible as a child component of {{parent}}', {
+              child: restrictedWidgetsTobeDropped,
+              parent: parentWidgetType,
+            })
+          );
         }
       }
 
@@ -1034,10 +1041,15 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               top = revertPos.top;
 
               if (!isModalToCanvas) {
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+                toast.error(
+                  t('editor.grid.incompatibleChild', '{{child}} is not compatible as a child component of {{parent}}', {
+                    child: dragged.widgetType,
+                    parent: target.widgetType,
+                  })
+                );
               }
               if (isParentModuleContainer) {
-                toast.error('Modules cannot be edited inside an app');
+                toast.error(t('editor.grid.moduleEditNotAllowed', 'Modules cannot be edited inside an app'));
               }
             }
 

@@ -33,7 +33,7 @@ class ForgotPasswordComponent extends React.Component {
     event.preventDefault();
 
     if (!validateEmail(this.state.email)) {
-      this.setState({ emailError: 'Invalid Email' });
+      this.setState({ emailError: this.props.t('forgotPasswordPage.invalidEmail', 'Invalid Email') });
       return;
     }
 
@@ -42,15 +42,24 @@ class ForgotPasswordComponent extends React.Component {
     authenticationService
       .forgotPassword(this.state.email)
       .then(() => {
-        toast.success('Please check your email/inbox for the password reset link', {
-          id: 'toast-forgot-password-confirmation-code',
-        });
+        toast.success(
+          this.props.t(
+            'forgotPasswordPage.resetLinkSent',
+            'Please check your email/inbox for the password reset link'
+          ),
+          {
+            id: 'toast-forgot-password-confirmation-code',
+          }
+        );
         this.setState({ responseShow: true, isLoading: false });
       })
       .catch((res) => {
-        toast.error(res.error || 'Something went wrong, please try again', {
-          id: 'toast-forgot-password-email-error',
-        });
+        toast.error(
+          res.error || this.props.t('forgotPasswordPage.genericError', 'Something went wrong, please try again'),
+          {
+            id: 'toast-forgot-password-email-error',
+          }
+        );
         this.setState({ isLoading: false });
       });
   };
@@ -68,10 +77,10 @@ class ForgotPasswordComponent extends React.Component {
                 {!this.state.responseShow ? (
                   <>
                     <h2 className="common-auth-section-header" data-cy="forgot-password-page-header">
-                      Forgot Password
+                      {this.props.t('loginSignupPage.forgotPassword', 'Forgot Password')}
                     </h2>
                     <p className="common-auth-sub-header" data-cy="forgot-password-sub-header">
-                      New to {this.whiteLabelText}? &nbsp;
+                      {this.props.t('forgotPasswordPage.newTo', 'New to')} {this.whiteLabelText}? &nbsp;
                       <Link
                         to={'/signup'}
                         state={{ from: '/forgot-password' }}
@@ -79,18 +88,18 @@ class ForgotPasswordComponent extends React.Component {
                         style={{ color: this.darkMode && '#3E63DD' }}
                         data-cy="create-an-account-link"
                       >
-                        Create an account
+                        {this.props.t('loginSignupPage.createToolJetAccount', 'Create an account')}
                       </Link>
                     </p>
                     <div className="forgot-input-wrap">
                       <p className="tj-text-input-label" data-cy="email-input-label">
-                        Email address
+                        {this.props.t('loginSignupPage.emailAddress', 'Email address')}
                       </p>
                       <input
                         onChange={this.handleChange}
                         name="email"
                         type="email"
-                        placeholder="Enter email address"
+                        placeholder={this.props.t('forgotPasswordPage.enterEmailAddress', 'Enter email address')}
                         className="tj-text-input"
                         style={{ marginBottom: '0px' }}
                         autoFocus
@@ -114,7 +123,7 @@ class ForgotPasswordComponent extends React.Component {
                           </div>
                         ) : (
                           <>
-                            <span> Send a reset link</span>
+                            <span>{this.props.t('forgotPasswordPage.sendResetLink', 'Send a reset link')}</span>
                             <EnterIcon
                               className="enter-icon-onboard"
                               fill={isLoading || !this.state.email ? (this.darkMode ? '#656565' : ' #D1D5DB') : '#fff'}
@@ -125,7 +134,7 @@ class ForgotPasswordComponent extends React.Component {
                       <div className="separator-onboarding ">
                         <div className="mt-2 separator" data-cy="onboarding-separator">
                           <h2>
-                            <span>OR</span>
+                            <span>{this.props.t('globals.or', 'OR')}</span>
                           </h2>
                         </div>
                       </div>
@@ -146,7 +155,10 @@ class ForgotPasswordComponent extends React.Component {
                           }}
                           data-cy="reset-password-info-banner"
                         >
-                          {'Contact super admin to reset your password'}
+                          {this.props.t(
+                            'forgotPasswordPage.contactSuperAdmin',
+                            'Contact super admin to reset your password'
+                          )}
                         </div>
                       </Alert>
                     </div>

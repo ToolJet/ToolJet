@@ -1,0 +1,1942 @@
+{
+    "globals": {
+        "readDocumentation": "ドキュメントを読む",
+        "cancel": "キャンセル",
+        "save": "保存",
+        "savechanges": "変更を保存",
+        "execute": "実行",
+        "Build": "ビルド",
+        "back": "戻る",
+        "edit": "編集",
+        "search": "検索",
+        "update": "更新",
+        "delete": "削除",
+        "remove": "削除",
+        "add": "追加",
+        "view": "表示",
+        "create": "作成",
+        "enabled": "有効",
+        "disabled": "無効",
+        "yes": "はい",
+        "submit": "送信",
+        "select": "選択",
+        "environmentVar": "ワークスペース定数/変数",
+        "saving": "保存中...",
+        "saveDatasource": "データソースを保存",
+        "authorize": "認可",
+        "connect": "接続",
+        "reconnect": "再接続",
+        "components": "コンポーネント",
+        "send": "送信",
+        "noConnection": "接続できませんでした",
+        "connectionVerified": "接続を確認しました",
+        "left": "左",
+        "center": "中央",
+        "right": "右",
+        "justified": "両端揃え",
+        "host": "ホスト",
+        "operation": "操作",
+        "header": "ヘッダー",
+        "path": "パス",
+        "query": "クエリ",
+        "requestBody": "リクエスト本文",
+        "page": "ページ",
+        "searchItem": "このワークスペース内のアプリを検索",
+        "workflowsSearchItem": "このワークスペース内のワークフローを検索",
+        "searchComponents": "コンポーネントを検索",
+        "promote": "プロモート",
+        "release": "リリース",
+        "filterBy": "フィルター",
+        "sortBy": "並べ替え",
+        "import": "インポート",
+        "addLower": "追加",
+        "discard": "破棄",
+        "loading": "読み込み中...",
+        "or": "または",
+        "seeMore": "もっと表示",
+        "seeLess": "少なく表示",
+        "app": "アプリ",
+        "label": "ラベル",
+        "options": "オプション",
+        "description": "説明",
+        "noData": "データなし",
+        "retry": "再試行",
+        "modules": "モジュール",
+        "preview": "プレビュー",
+        "searchModules": "モジュールを検索",
+        "specType": "仕様タイプを選択",
+        "static-error-modal": {
+            "description": "再試行するかサポートに連絡してください。",
+            "title": "問題が発生しました"
+        },
+        "workspace-modal": {
+            "continue-btn": "続行",
+            "wrong-link": "無効なリンク",
+            "wrong-link-desc": "このリンクは無効か期限切れです。"
+        }
+    },
+    "errorBoundary": "問題が発生しました。",
+    "viewer": "申し訳ありません。このアプリはメンテナンス中です",
+    "app": {
+        "updateAvailable": "更新があります",
+        "newVersionReleased": "ToolJet の新しいバージョンがリリースされました。",
+        "readReleaseNotes": "リリースノートを読んで更新",
+        "skipVersion": "このバージョンをスキップ"
+    },
+    "stripe": "Stripe の OpenAPI 仕様を読み込んでいます。しばらくお待ちください。",
+    "openApi": {
+        "noValidOpenApi": "有効な OpenAPI 仕様がありません。",
+        "selectHost": "ホストを選択",
+        "selectOperation": "操作を選択"
+    },
+    "slack": {
+        "authorize": "認可",
+        "connectToolJetToSlack": "{{whiteLabelText}} は Slack に接続してユーザー一覧表示やメッセージ送信などができます。適切な権限スコープを選択してください。",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "あなたの {{whiteLabelText}} アプリはユーザー一覧の取得とユーザー/チャンネルへのメッセージ送信ができます。",
+        "connectSlack": "Slack に接続"
+    },
+    "googleSheets": {
+        "readOnly": "読み取り専用",
+        "enableReadAndWrite": "Google スプレッドシートを {{whiteLabelText}} アプリで編集する場合は、読み取り/書き込みアクセスを選択してください",
+        "readDataFromSheets": "{{whiteLabelText}} アプリは Google スプレッドシートのデータを読み取りのみできます",
+        "readWrite": "読み取り/書き込み",
+        "readModifySheets": "{{whiteLabelText}} アプリはシートの読み取り、編集などができます。",
+        "toGoogleSheets": "Google Sheets へ"
+    },
+    "zendesk": {
+        "enableReadAndWrite": "Zendesk リソースを {{whiteLabelText}} アプリで変更する場合は、読み取り/書き込みアクセスを選択してください",
+        "readDataFromResources": "{{whiteLabelText}} アプリはリソースの読み取りのみができます",
+        "readModifySheets": "{{whiteLabelText}} アプリはリソースの読み取り、変更などができます。"
+    },
+    "profile": {
+        "profileSettings": "プロフィール設定"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "メール",
+        "enterFullName": "氏名を入力",
+        "enterNewPassword": "新しいパスワードを入力",
+        "name": "名前",
+        "password": "パスワード",
+        "acceptInvite": "招待を承諾",
+        "successfullyVerifiedEmail": "メールの確認が完了しました",
+        "setupTooljet": "{{whiteLabelText}} をセットアップ"
+    },
+    "loginSignupPage": {
+        "forgotPassword": "パスワードを忘れた",
+        "emailAddress": "メールアドレス",
+        "enterEmail": "メールを入力",
+        "dontHaveAccount": "まだアカウントをお持ちではありませんか？",
+        "enterBusinessEmail": "業務用メールを入力",
+        "alreadyHaveAnAccount": "すでにアカウントをお持ちですか？",
+        "resetPassword": "パスワードをリセット",
+        "signIn": "サインイン",
+        "signUp": "サインアップ",
+        "createToolJetAccount": "アカウントを作成",
+        "password": "パスワード",
+        "showPassword": "パスワードを表示",
+        "loginTo": "ログイン",
+        "yourAccount": "あなたのアカウント",
+        "noLoginMethodsEnabled": "このワークスペースではログイン方法が有効化されていません",
+        "emailConfirmLink": "確認リンクがメールに送信されています。ご確認ください",
+        "newPassword": "新しいパスワード",
+        "passwordConfirmation": "パスワード確認",
+        "newToTooljet": "{{whiteLabelText}} は初めてですか？",
+        "newToWorkspace": "このワークスペースは初めてですか？",
+        "enterWorkEmail": "勤務先メールを入力",
+        "enterPassword": "パスワードを入力",
+        "forgot": "忘れた？",
+        "workEmail": "メール",
+        "joinTooljet": "{{whiteLabelText}} に参加",
+        "getStartedForFree": "無料で始める",
+        "passwordCharacter": "パスワードは5文字以上である必要があります",
+        "enterFullName": "氏名を入力",
+        "enterNewPassword": "新しいパスワードを入力",
+        "name": "名前",
+        "sigin": "サインイン",
+        "invalidEmail": "無効なメールアドレス",
+        "emailRequired": "メールアドレスは必須です",
+        "passwordRequired": "パスワードは必須です",
+        "passwordMaxLength": "パスワードは最大100文字までです",
+        "signInToWorkspace": "ワークスペースにサインイン -",
+        "signInWith": "次でサインイン",
+        "backTo": "戻る"
+    },
+    "editor": {
+        "preview": "プレビュー",
+        "share": "共有",
+        "shareModal": {
+            "makeApplicationPublic": "アプリを公開する",
+            "shareableLink": "共有可能なアプリリンク",
+            "copy": "コピー",
+            "embeddableLink": "埋め込みアプリリンク",
+            "manageUsers": "ユーザー"
+        },
+        "appVersionManager": {
+            "version": "バージョン",
+            "currentlyReleased": "現在リリース中",
+            "createVersion": "バージョンを作成",
+            "saveVersion": "バージョンを保存",
+            "createDraftVersion": "下書きバージョンを作成",
+            "versionName": "バージョン名",
+            "versionDescription": "バージョン説明",
+            "createVersionFrom": "バージョンから作成",
+            "save": "保存",
+            "create": "バージョンを作成",
+            "editVersion": "バージョンを編集",
+            "deleteVersion": "このバージョン ({{version}}) を削除してもよろしいですか？",
+            "enterVersionName": "バージョン名を入力",
+            "enterVersionDescription": "バージョン説明を入力",
+            "versionNameHelper": "バージョン名は一意で最大25文字です",
+            "versionDescriptionHelper": "説明は最大500文字です",
+            "versionAlreadyReleased": "すでにリリース済みのバージョンは変更できません。\n 変更する場合は新しいバージョンを作成するか、別のバージョンに切り替えてください。",
+            "emptyNameError": "バージョン名を入力してください",
+            "maxDescriptionLengthError": "バージョン説明は500文字以内です",
+            "maxLengthError": "バージョン名は25文字以内です",
+            "updateFailed": "バージョンの更新に失敗しました"
+        },
+        "queries": "クエリ",
+        "inspectComponent": "検査するコンポーネントを選択してください",
+        "release": "リリース",
+        "searchQueries": "クエリを検索",
+        "createQuery": "クエリを作成",
+        "queryManager": {
+            "general": "一般",
+            "advanced": "詳細",
+            "preview": "プレビュー",
+            "Save": "保存",
+            "selectDatasource": "データソースを選択",
+            "addDatasource": "データソースを追加",
+            "dataSourceManager": {
+                "toast": {
+                    "success": {
+                        "dataSourceAdded": "データソースを追加しました",
+                        "dataSourceSaved": "データソースを保存しました"
+                    },
+                    "error": {
+                        "noEmptyDsName": "データソース名は空にできません",
+                        "validationFailed": "検証に失敗しました"
+                    }
+                },
+                "suggestDataSource": "データソースを提案",
+                "suggestAnIntegration": "連携を提案",
+                "whatLookingFor": "探しているものを教えてください",
+                "noResultFound": "探しているものが見つかりませんか？",
+                "suggest": "提案",
+                "addNewDataSource": "新しいデータソースを追加",
+                "whiteListIP": "データソースが公開されていない場合は、当社の IP アドレスをホワイトリストに追加してください",
+                "copied": "コピーしました",
+                "copy": "コピー",
+                "saving": "保存中",
+                "noResultsFor": "結果がありません",
+                "noteTaken": "ありがとうございます。内容を記録しました！",
+                "goToAllDatasources": "すべてのデータソースへ",
+                "send": "送信"
+            },
+            "runQueryOnApplicationLoad": "アプリ読み込み時にこのクエリを実行",
+            "confirmBeforeQueryRun": "クエリ実行前に確認する",
+            "notificationOnSuccess": "成功時に通知を表示",
+            "successMessage": "成功メッセージ",
+            "queryRanSuccessfully": "クエリが正常に実行されました",
+            "notificationDuration": "通知の表示時間 (秒)",
+            "events": "イベント",
+            "transformation": {
+                "transformationToolTip": "変換はクエリ結果を変換するために有効化できます。ToolJet は JavaScript と Python の2つの言語でクエリ結果を変換できます",
+                "transformations": "変換",
+                "enableTransformation": "変換を有効化"
+            },
+            "eventsHandler": "イベントハンドラー",
+            "settings": "設定",
+            "timeout": "タイムアウト"
+        },
+        "inspector": {
+            "eventManager": {
+                "event": "イベント",
+                "action": "アクション",
+                "debounce": "デバウンス",
+                "actionOptions": "アクションオプション",
+                "message": "メッセージ",
+                "alertType": "アラートタイプ",
+                "url": "URL",
+                "modal": "モーダル",
+                "text": "テキスト",
+                "query": "クエリ",
+                "key": "キー",
+                "value": "値",
+                "type": "タイプ",
+                "fileName": "ファイル名",
+                "data": "データ",
+                "table": "テーブル",
+                "pageIndex": "ページインデックス",
+                "component": "コンポーネント",
+                "addHandler": "新しいイベントハンドラー",
+                "addNewEvent": "新しいイベントを追加",
+                "addEventHandler": "+ イベントハンドラーを追加",
+                "emptyMessage": "この{{componentName}}にはイベントハンドラーがありません",
+                "page": "ページ",
+                "addKeyValueParam": "{{parameter}}を追加",
+                "openIn": "開く場所",
+                "newTab": "新しいタブ",
+                "currentTab": "現在のタブ",
+                "queryParams": "クエリパラメータ",
+                "appMode": "アプリモード",
+                "runOnlyIf": "条件付きで実行"
+            }
+        },
+        "previewBox": {
+            "tooLargeToDisplay": "表示できないほど大きいです。残り {{count}} 件",
+            "serverVariablesRuntime": "サーバー変数は実行時に解決されます",
+            "serverVariablesPaid": "サーバー変数は有料プランのみで利用できます",
+            "secretValuesHidden": "シークレット定数の値は非表示です",
+            "autoFixTitle": "自動修正",
+            "autoFixDescription": "エラーを即座に診断し解決して、アプリを安定稼働させます"
+        },
+        "emptyCanvas": {
+            "dragAndDrop": "コンポーネントをドラッグ＆ドロップ",
+            "chooseComponent": "右側パネルからコンポーネントを選択するか、事前構築テンプレートを使ってすぐに開始できます。",
+            "createQuery": "クエリを作成",
+            "queryBoxWithSample": "データソースに接続するか、サンプルデータソースを使って試してみましょう。",
+            "queryBoxNoSample": "クエリを作成するにはデータソースに接続してください。",
+            "connectSample": "サンプルデータソースに接続",
+            "shareApp": "アプリケーションを共有しましょう！",
+            "inviteDescription": "マルチプレイヤー編集とコメントでユーザーを招待し、リアルタイムに共同作業できます。",
+            "inviteCollaborators": "コラボレーターを招待"
+        },
+        "configHandle": {
+            "dynamicHeightEnabled": "動的高さを有効化",
+            "dynamicHeightDescription": "コンテンツに合わせて拡張しますが、キャンバスで設定した高さより小さくはなりません。",
+            "neverShowAgain": "今後表示しない"
+        },
+        "grid": {
+            "moduleEditNotAllowed": "アプリ内ではモジュールを編集できません",
+            "incompatibleChild": "{{child}} は {{parent}} の子コンポーネントとして互換性がありません",
+            "components": "コンポーネント"
+        },
+        "componentConfig": {
+            "properties": "コンポーネントのプロパティ",
+            "noComponentSelected": "コンポーネントが選択されていません",
+            "selectComponentHint": "キャンバス上のコンポーネントをクリックしてプロパティを表示・編集します。"
+        },
+        "componentsPanel": {
+            "title": "コンポーネント",
+            "addNewComponent": "新しいコンポーネントを追加",
+            "modules": "モジュール"
+        },
+        "leftSidebar": {
+            "globalSettings": "グローバル設定",
+            "debugger": "デバッガー",
+            "inspector": "インスペクター",
+            "copyPath": "パスをコピー",
+            "copyValue": "値をコピー",
+            "copyOptions": "オプションをコピー"
+        },
+        "saveIndicator": {
+            "savingTooltip": "保存中です。アプリを閉じないでください。",
+            "saveErrorTooltip": "変更を保存できませんでした",
+            "saveError": "変更を保存できませんでした",
+            "savedTooltip": "変更を保存しました！"
+        },
+        "queryPanel": {
+            "noQueries": "クエリが追加されていません。",
+            "draft": "下書き",
+            "dataSource": "データソース",
+            "showSortFilter": "並べ替え/フィルターを表示",
+            "sort": {
+                "nameAsc": "名前: A-Z",
+                "nameDesc": "名前: Z-A",
+                "typeAsc": "種類: A-Z",
+                "typeDesc": "種類: Z-A",
+                "updatedAsc": "最終更新: 古い順",
+                "updatedDesc": "最終更新: 新しい順"
+            }
+        },
+        "versionManager": {
+            "createDraftFrom": "下書きを作成元",
+            "selectVersion": "バージョンを選択...",
+            "selectVersionHelper": "下書きの作成元となるバージョンを選択してください",
+            "environment": "環境",
+            "selectEnvironment": "環境を選択...",
+            "selectEnvironmentHelper": "この下書きバージョンの環境を選択してください",
+            "draftDescriptionPlaceholder": "下書きの説明を入力...",
+            "draftDescriptionHelper": "下書きの説明を追加（最大500文字）",
+            "createDraftVersion": "下書きバージョンを作成",
+            "creatingDraft": "作成中...",
+            "createDraft": "下書きを作成",
+            "versionNameRequired": "バージョン名は必須です",
+            "versionNameTooLong": "バージョン名は25文字以内にしてください",
+            "versionDescriptionTooLong": "バージョン説明は500文字以内にしてください",
+            "promoteSuccess": "下書きをバージョンとして昇格しました",
+            "promoteError": "下書きの昇格に失敗しました",
+            "promoteDraftTitle": "下書きをバージョンに昇格",
+            "versionNamePlaceholder": "例: v2.0.0",
+            "versionNameHelper": "一意で最大25文字",
+            "versionDescription": "バージョン説明",
+            "versionDescriptionPlaceholder": "バージョン説明を入力（任意）",
+            "versionDescriptionHelper": "任意、最大500文字",
+            "promoteInfo": "下書きを確定版に変換します。ステージングまたは本番に昇格後は、バージョン名と説明を変更できません。",
+            "promoting": "昇格中...",
+            "promoteToVersion": "バージョンに昇格"
+        },
+        "previewSettings": "プレビュー設定",
+        "layout": "レイアウト",
+        "layoutDesktop": "デスクトップレイアウト",
+        "layoutMobile": "モバイルレイアウト",
+        "switchToDesktopLayout": "デスクトップレイアウトに切り替え",
+        "switchToMobileLayout": "モバイルレイアウトに切り替え",
+        "environment": "環境",
+        "versionNotReleased": "このバージョンはまだリリースされていません",
+        "form": {
+            "columnMapping": {
+                "section": {
+                    "existing": "既存",
+                    "customFields": "カスタムフィールド",
+                    "new": "新規",
+                    "removed": "削除済み"
+                },
+                "noMappedColumns": "マッピングされた列がありません",
+                "inputLabelPlaceholder": "入力ラベル",
+                "columnName": "列名",
+                "mappedTo": "マッピング先",
+                "inputLabel": "入力ラベル",
+                "mandatory": "必須？",
+                "noneAvailable": "{{section}} がありません",
+                "manageFields": "フィールドを管理",
+                "mapColumns": "列をマッピング",
+                "refreshData": "データを更新",
+                "saving": "保存中",
+                "generating": "生成中",
+                "generateForm": "フォームを生成"
+            },
+            "fieldPopover": {
+                "placeholder": "プレースホルダー",
+                "defaultValue": "デフォルト値",
+                "editField": "フィールドを編集",
+                "newCustomField": "新しいカスタムフィールド",
+                "component": "コンポーネント",
+                "makeMandatory": "このフィールドを必須にする",
+                "makeEditable": "編集可能にする",
+                "visibility": "表示",
+                "addField": "フィールドを追加"
+            }
+        },
+        "pageSettings": {
+            "sections": {
+                "pagesAndMenu": "ページとメニュー",
+                "headerAndNavigation": "ヘッダーとナビゲーション",
+                "devices": "デバイス"
+            },
+            "panelTitlePagesAndNavigation": "ページとナビゲーション",
+            "tabs": {
+                "properties": "プロパティ",
+                "styles": "スタイル"
+            },
+            "styleAccordions": {
+                "itemList": "アイテム一覧",
+                "container": "コンテナ"
+            },
+            "styles": {
+                "defaultText": "デフォルトテキスト",
+                "defaultIcon": "デフォルトアイコン",
+                "selectedText": "選択テキスト",
+                "selectedIcon": "選択アイコン",
+                "pillHoverBackground": "ピルのホバー背景",
+                "pillSelectedBackground": "ピルの選択背景",
+                "pillRadius": "ピルの角丸",
+                "background": "背景",
+                "border": "枠線"
+            },
+            "appHeader": {
+                "sectionTitle": "アプリヘッダー",
+                "showAppHeader": "アプリヘッダーを表示",
+                "showLogo": "ロゴを表示",
+                "titleLabel": "タイトル",
+                "tooltips": {
+                    "hideAppHeaderUpgrade": "アプリヘッダーを非表示にする権限がありません。機能を利用するにはプランをアップグレードしてください。",
+                    "hideLogoUpgrade": "ロゴを非表示にする権限がありません。機能を利用するにはプランをアップグレードしてください。"
+                },
+                "errors": {
+                    "titleEmpty": "タイトルを入力してください。",
+                    "titleTooLong": "タイトルは32文字以内です。"
+                }
+            },
+            "navigation": {
+                "sectionTitle": "ナビゲーションメニュー",
+                "position": "位置",
+                "style": "スタイル",
+                "collapsable": "折りたたみ可能",
+                "hideNavigationMenu": "ナビゲーションメニューを非表示",
+                "selectPlaceholder": "選択...",
+                "positionOptions": {
+                    "top": "上",
+                    "side": "側"
+                },
+                "collapsableOptions": {
+                    "true": "有効",
+                    "false": "無効"
+                },
+                "styleOptions": {
+                    "textAndIcon": "テキストとアイコン",
+                    "textOnly": "テキストのみ",
+                    "iconOnly": "アイコンのみ"
+                }
+            },
+            "devices": {
+                "showOnDesktop": "デスクトップで表示",
+                "showOnMobile": "モバイルで表示"
+            }
+        },
+        "pageMenu": {
+            "actions": {
+                "addPage": "ページを追加"
+            },
+            "group": "グループ",
+            "groupLower": "グループ",
+            "newPage": "新しいページ",
+            "addNavItemWithUrl": "URLのナビ項目を追加",
+            "addNavItemWithApp": "ToolJetアプリのナビ項目を追加",
+            "addNavGroup": "ナビグループを追加",
+            "noNavGroupsAccess": "ナビグループへのアクセス権がありません。この機能を利用するにはプランをアップグレードしてください。",
+            "noPagePermissionsAccess": "ページ権限へのアクセスがありません。この機能を利用するにはプランをアップグレードしてください。",
+            "pageAndNav": "ページとナビ",
+            "pageHandle": "ページハンドル",
+            "more": "その他",
+            "selectPlaceholder": "選択...",
+            "deleteFolder": {
+                "title": "フォルダーを削除",
+                "message": "このフォルダーを削除してもよろしいですか？この操作は取り消せません。",
+                "deleteGroupAndPages": "グループとページを削除"
+            },
+            "deletePage": {
+                "title": "ページを削除",
+                "message": "ページ「{{pageName}}」を削除してもよろしいですか？"
+            },
+            "editPageHandle": {
+                "title": "ページハンドルを編集",
+                "placeholder": "ページハンドルを入力",
+                "warning": "ページハンドルを変更すると、このページを使用している既存のアプリが動作しなくなる可能性があります。"
+            },
+            "errors": {
+                "pageHandleEmpty": "ページハンドルを入力してください",
+                "pageHandleSame": "ページハンドルは既存のものと同じにできません",
+                "noUrlProvided": "URLが指定されていません",
+                "noApplicationSlugProvided": "アプリケーションスラッグが指定されていません"
+            },
+            "events": {
+                "title": "イベント",
+                "onPageLoad": "ページ読み込み時",
+                "close": "閉じる"
+            },
+            "labels": {
+                "pageName": "ページ名",
+                "handle": "ハンドル",
+                "icon": "アイコン",
+                "markAsHome": "ホームに設定",
+                "disablePage": "ページを無効化",
+                "url": "URL",
+                "openUrlIn": "URLを開く場所",
+                "selectApp": "アプリを選択",
+                "openAppIn": "アプリを開く場所",
+                "hideThisPageOnNavigation": "ナビゲーションでこのページを非表示",
+                "hideThisItemOnNavigation": "ナビゲーションでこの項目を非表示"
+            },
+            "logLabels": {
+                "navigation": "ナビゲーション",
+                "navigationKey": "navigation"
+            },
+            "options": {
+                "editGroupDetails": "グループの詳細を編集",
+                "duplicateGroup": "グループを複製",
+                "deleteGroup": "グループを削除",
+                "editPageDetails": "ページ詳細を編集",
+                "markHome": "ホームに設定",
+                "duplicatePage": "ページを複製",
+                "deletePage": "ページを削除",
+                "pagePermission": "ページ権限",
+                "rename": "名前を変更",
+                "showPageOnAppMenu": "アプリメニューにページを表示",
+                "hidePageOnAppMenu": "アプリメニューでページを非表示",
+                "eventHandlers": "イベントハンドラー",
+                "enable": "有効化",
+                "disable": "無効化"
+            },
+            "pageTypes": {
+                "tjApp": "TJアプリ",
+                "url": "URL"
+            },
+            "permissions": {
+                "accessRestricted": "アクセス制限",
+                "accessRestrictedToEmail": "{{email}} へのアクセス制限",
+                "accessRestrictedToUsers": "{{count}}人のユーザーにアクセス制限",
+                "accessRestrictedToGroup": "{{groupName}} グループにアクセス制限",
+                "accessRestrictedToGroups": "{{count}}グループにアクセス制限"
+            },
+            "sections": {
+                "pageEvents": "ページイベント"
+            },
+            "tooltips": {
+                "goToPage": "ページへ移動",
+                "duplicateEntity": "{{entity}} を複製",
+                "deleteEntity": "{{entity}} を削除",
+                "homePage": "ホームページ",
+                "disabledPage": "無効なページ",
+                "hiddenNavItem": "非表示のナビ項目",
+                "hiddenPage": "非表示のページ",
+                "hiddenGroup": "非表示のグループ",
+                "homePageCannotBeDeleted": "ホームページは削除できません"
+            },
+            "toasts": {
+                "pageGroupNameMinLength": "ページグループ名は1文字以上必要です",
+                "pageNameMinLength": "ページ名は1文字以上必要です",
+                "pageGroupNameMaxLength": "ページグループ名は32文字以内です",
+                "pageNameMaxLength": "ページ名は32文字以内です"
+            },
+            "defaultNames": {
+                "page": "ページ",
+                "url": "URL",
+                "app": "アプリ",
+                "group": "グループ"
+            },
+            "openModes": {
+                "new_tab": "新しいタブ",
+                "same_tab": "同じタブ"
+            },
+            "popoverTitles": {
+                "add": {
+                    "default": "新しいページ",
+                    "app": "アプリ付きのナビ項目を追加",
+                    "url": "URLのナビ項目を追加",
+                    "group": "新しいナビグループ"
+                },
+                "edit": {
+                    "default": "ページを編集",
+                    "app": "ナビ項目を編集",
+                    "url": "ナビ項目を編集",
+                    "group": "ナビグループを編集"
+                }
+            }
+        },
+        "searchPanel": {
+            "find": "検索",
+            "findText": "検索文字列",
+            "replace": "置換",
+            "replaceText": "置換文字列",
+            "previous": "前へ",
+            "previousMatch": "前の一致",
+            "next": "次へ",
+            "nextMatch": "次の一致",
+            "replaceAll": "すべて置換",
+            "close": "検索パネルを閉じる"
+        },
+        "appSlug": "アプリスラッグ",
+        "promote": "プロモート",
+        "update": "更新"
+    },
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "ライトモードを有効化",
+            "activateDarkMode": "ダークモードを有効化"
+        },
+        "languageSelection": {
+            "changeLanguage": "言語を変更",
+            "searchLanguage": "言語を検索"
+        },
+        "notificationCenter": {
+            "notifications": "通知",
+            "markAllAs": "すべてを次としてマーク",
+            "read": "既読",
+            "un": "未",
+            "youDontHaveany": "通知はありません",
+            "youAreCaughtUp": "すべて確認済みです！",
+            "view": "表示"
+        },
+        "organization": {
+            "addNewWorkSpace": "新しいワークスペースを追加",
+            "loadOrganizations": "組織を読み込む",
+            "createWorkspace": "ワークスペースを作成",
+            "workspaceName": "ワークスペース名",
+            "editWorkspace": "ワークスペースを編集",
+            "menus": {
+                "addWorkspace": "ワークスペースを追加",
+                "instanceLogout": {
+                    "title": "インスタンスログアウト",
+                    "customLogoutUrl": {
+                        "label": "カスタムログアウトURL",
+                        "helperText": "このインスタンスからログアウトするユーザー向けにカスタムログアウトURLを設定します。"
+                    }
+                },
+                "menusList": {
+                    "manageUsers": "ユーザー",
+                    "manageGroups": "グループ",
+                    "manageSso": "SSO",
+                    "manageEnv": "ワークスペース変数"
+                },
+                "manageUsers": {
+                    "usersAndPermission": "ユーザーと権限",
+                    "inviteNewUser": "ユーザーを1人招待",
+                    "inviteUsers": "ユーザーを招待",
+                    "name": "名前",
+                    "email": "メール",
+                    "status": "ステータス",
+                    "archive": "アーカイブ",
+                    "unarchive": "アーカイブ解除",
+                    "addNewUser": "ユーザーを追加",
+                    "emailAddress": "メールアドレス",
+                    "createUser": "ユーザーを作成",
+                    "enterFirstName": "名を入力",
+                    "enterLastName": "姓を入力",
+                    "enterEmail": "メールIDを入力",
+                    "enterFullName": "氏名を入力",
+                    "inviteNewUsers": "新しいユーザーを招待",
+                    "selectGroup": "グループを選択"
+                },
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "ユーザーグループ",
+                        "createNewGroup": "新しいグループを作成",
+                        "updateGroup": "グループを更新",
+                        "addNewGroup": "新しいグループを追加",
+                        "enterName": "グループ名を入力",
+                        "createGroup": "グループを作成",
+                        "name": "名前"
+                    },
+                    "permissionResources": {
+                        "userGroup": "ユーザーグループ",
+                        "apps": "アプリ",
+                        "workflows": "ワークフロー",
+                        "users": "ユーザー",
+                        "permissions": "権限",
+                        "addAppsToGroup": "グループに追加するアプリを選択",
+                        "addWorkflowsToGroup": "グループに追加するワークフローを選択",
+                        "name": "名前",
+                        "addUsersToGroup": "グループに追加するユーザーを選択",
+                        "email": "メール",
+                        "resource": "リソース",
+                        "createUpdateDelete": "作成/更新/削除",
+                        "folder": "フォルダー",
+                        "dataSource": "データソース"
+                    },
+                    "groupOptions": {
+                        "deleteGroup": "グループを削除",
+                        "duplicateGroup": "グループを複製"
+                    }
+                },
+                "manageSSO": {
+                    "manageSso": "SSO",
+                    "generalSettings": {
+                        "title": "一般設定",
+                        "enableSignup": "サインアップを有効化",
+                        "newAccountWillBeCreated": "ユーザーが初めて SSO でサインインする際に新しいアカウントが作成されます",
+                        "allowedDomains": "許可されたドメイン",
+                        "enterDomains": "ドメインを入力",
+                        "supportMultiDomains": "複数ドメインに対応。ドメイン名をカンマ区切りで入力してください。例: tooljet.com,tooljet.io,yourorganization.com",
+                        "loginUrl": "ログインURL",
+                        "workspaceLogin": "このURLでワークスペースに直接ログインできます",
+                        "allowDefaultSso": "デフォルトSSOを許可",
+                        "ssoAuth": "ユーザーがデフォルト SSO で認証できるようにします。デフォルト SSO 設定は\nワークスペースレベルの SSO で上書きできます。",
+                        "customLogoutUrl": "カスタムログアウトURL",
+                        "domain": "ドメイン",
+                        "supportMultidomains": "複数ドメインに対応"
+                    },
+                    "google": {
+                        "title": "Google",
+                        "enabled": "有効",
+                        "disabled": "無効",
+                        "clientId": "クライアントID",
+                        "enterClientId": "クライアントIDを入力",
+                        "redirectUrl": "リダイレクトURL"
+                    },
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "ホスト名",
+                        "enterHostName": "ホスト名を入力",
+                        "requiredGithub": "GitHub がセルフホストの場合に必要です",
+                        "clientId": "クライアントID",
+                        "enterClientId": "クライアントIDを入力",
+                        "clientSecret": "クライアントシークレット",
+                        "enterClientSecret": "クライアントシークレットを入力",
+                        "encrypted": "暗号化済み",
+                        "redirectUrl": "リダイレクトURL",
+                        "disabled": "無効",
+                        "enabled": "有効",
+                        "inherited": "継承"
+                    },
+                    "passwordLogin": "パスワードログイン",
+                    "environmentVar": {
+                        "noEnvConfig": "ワークスペース変数が設定されていません。'新しい変数を追加' ボタンで作成してください",
+                        "envWillBeDeleted": "変数は削除されます。続行しますか？",
+                        "addNewVariable": "新しい変数を追加",
+                        "variableForm": {
+                            "addNewVariable": "新しい変数を追加",
+                            "updatevariable": "変数を更新",
+                            "name": "名前",
+                            "value": "値",
+                            "enterVariableName": "変数名を入力",
+                            "enterValue": "値を入力",
+                            "type": "タイプ",
+                            "enableEncryption": "暗号化を有効化",
+                            "addVariable": "変数を追加"
+                        },
+                        "variableTable": {
+                            "name": "名前",
+                            "value": "値",
+                            "type": "タイプ",
+                            "secret": "シークレット"
+                        }
+                    },
+                    "workspaceLogin": {
+                        "title": "ワークスペースログイン"
+                    }
+                }
+            },
+            "workspaceSlug": "ワークスペーススラッグ"
+        },
+        "profileSettingPage": {
+            "profileSettings": "プロフィール設定",
+            "firstName": "名",
+            "lastName": "姓",
+            "enterFirstName": "名を入力",
+            "enterLastName": "姓を入力",
+            "email": "メールアドレス",
+            "avatar": "アバター",
+            "update": "更新",
+            "profile": "プロフィール",
+            "changePassword": "パスワードを変更",
+            "currentPassword": "現在のパスワード",
+            "newPassword": "新しいパスワード",
+            "confirmNewPassword": "新しいパスワードを確認",
+            "enterCurrentPassword": "現在のパスワードを入力",
+            "enterNewPassword": "新しいパスワードを入力",
+            "inviteUsers": "ユーザーを招待"
+        },
+        "profile": "プロフィール",
+        "logout": "ログアウト"
+    },
+    "homePage": {
+        "appCard": {
+            "changeIcon": "アイコンを変更",
+            "addToFolder": "フォルダーに追加",
+            "move": "移動",
+            "to": "へ",
+            "selectFolder": "フォルダーを選択",
+            "deleteApp": "アプリを削除",
+            "exportApp": "アプリをエクスポート",
+            "cloneApp": "アプリを複製",
+            "launch": "起動",
+            "maintenance": "メンテナンス",
+            "noDeployedVersion": "このアプリにはデプロイ済みバージョンがありません",
+            "openInAppViewer": "アプリビューアで開く",
+            "removeFromFolder": "フォルダーから削除",
+            "deleteWorkflow": "ワークフローを削除",
+            "launchingWorkflowNotAvailable": "ワークフローの起動は利用できません",
+            "noReleasedAccess": "リリース版へのアクセス権がありません",
+            "renameApp": "アプリ名を変更"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "新しい ToolJet ワークスペースへようこそ",
+            "getStartedCreateNewApp": "新しいアプリを作成するか、ToolJet ライブラリのテンプレートから作成して始められます。",
+            "importApplication": "アプリをインポート",
+            "noAppsCreatedYet": "まだアプリが作成されていません"
+        },
+        "foldersSection": {
+            "allApplications": "すべてのアプリ",
+            "folders": "フォルダー",
+            "createNewFolder": "+ 新規作成",
+            "noFolders": "フォルダーが作成されていません。フォルダーを使ってアプリを整理できます",
+            "createFolder": "フォルダーを作成",
+            "updateFolder": "フォルダーを更新",
+            "editFolder": "フォルダーを編集",
+            "deleteFolder": "フォルダーを削除",
+            "folderName": "フォルダー名",
+            "wishToDeleteFolder": "フォルダー {{folderName}} を削除してもよろしいですか？フォルダー内のアプリは削除されません。",
+            "filteredData": "検索条件に一致するデータがありません"
+        },
+        "header": {
+            "createNewApplication": "アプリを作成",
+            "import": "デバイスからインポート",
+            "chooseFromTemplate": "テンプレートから選択"
+        },
+        "pagination": {
+            "showing": "表示中",
+            "of": "／",
+            "to": "〜"
+        },
+        "noApplicationFound": "アプリが見つかりません",
+        "noWorkflowFound": "ワークフローが見つかりません",
+        "thisFolderIsEmpty": "このフォルダーは空です",
+        "nonAccessibleFolderApps": "このフォルダー内のアプリにアクセスできません。",
+        "deleteAppAndData": "アプリ {{appName}} と関連データは完全に削除されます。続行しますか？",
+        "deleteWorkflowAndData": "ワークフロー {{appName}} と関連データは完全に削除されます。続行しますか？",
+        "removeAppFromFolder": "アプリはこのフォルダーから削除されます。続行しますか？",
+        "change": "変更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "プレビュー",
+            "leadGeneretion": "リード獲得",
+            "leadGeneration": "リード獲得"
+        },
+        "templateLibraryModal": {
+            "select": "テンプレートを選択",
+            "createAppfromTemplate": "テンプレートからアプリを作成"
+        },
+        "appsLabel": "アプリ",
+        "filterBy": "フィルター",
+        "missingGroups": {
+            "warningTitle": "警告: 権限用のユーザーグループが不足しています",
+            "description": "以下のユーザーグループはこのワークスペースに存在しないため、権限が適用されません。",
+            "userGroupsLabel": "ユーザーグループ",
+            "info": "制限されたページ/クエリ/コンポーネントがすべてのユーザー、または権限がある既存グループに公開されます。回避するには、インポート前に不足グループを作成するか、インポート後に権限を再設定してください。",
+            "cancelImport": "インポートをキャンセル",
+            "importLimited": "制限された権限でインポート"
+        },
+        "renameAppTitle": "{{appType}} の名前を変更",
+        "renameAppAction": "{{appType}} の名前を変更",
+        "renameAppLoading": "名前を変更中",
+        "modules": {
+            "emptyTitle": "モジュールでコンポーネントとクエリの再利用グループを作成できます。",
+            "checkGuide": "ガイドを見る",
+            "onCreatingModules": "モジュール作成について",
+            "notAvailable": "現在のプランではモジュールを利用できません。",
+            "createNew": "新しいモジュールを作成"
+        },
+        "exportAppModal": {
+            "fetchVersionsError": "バージョンを取得できませんでした。",
+            "fetchTablesError": "テーブルを取得できませんでした。",
+            "exportSuccessModule": "モジュールをエクスポートしました！",
+            "exportSuccessApp": "アプリをエクスポートしました！",
+            "exportErrorModule": "モジュールをエクスポートできませんでした: {{message}}",
+            "exportErrorApp": "アプリをエクスポートできませんでした: {{message}}",
+            "noOtherVersions": "他のバージョンが見つかりません",
+            "exportSchema": "ToolJetテーブルスキーマをエクスポート",
+            "exportAll": "すべてエクスポート",
+            "exportSelectedVersion": "選択したバージョンをエクスポート",
+            "createdOn": "{{date}} 作成",
+            "loadingVersions": "バージョンを読み込み中..."
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "実行",
+            "openInWorkflowEditor": "ワークフローエディタで開く"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "新しい ToolJet ワークスペースへようこそ",
+            "getStartedCreateNewApp": "新しいアプリを作成するか、ToolJet ライブラリのテンプレートから作成して始められます。",
+            "importApplication": "アプリケーションをインポート"
+        },
+        "foldersSection": {
+            "allApplications": "すべてのワークフロー",
+            "folders": "フォルダー",
+            "createNewFolder": "+ 新規作成",
+            "noFolders": "フォルダーが作成されていません。フォルダーを使ってアプリを整理できます",
+            "createFolder": "フォルダーを作成",
+            "updateFolder": "フォルダーを更新",
+            "editFolder": "フォルダーを編集",
+            "deleteFolder": "フォルダーを削除",
+            "folderName": "フォルダー名",
+            "wishToDeleteFolder": "フォルダーを削除してもよろしいですか？フォルダー内のアプリは削除されません。"
+        },
+        "header": {
+            "createNewApplication": "新しいワークフローを作成",
+            "import": "インポート",
+            "chooseFromTemplate": "テンプレートから選択"
+        },
+        "pagination": {
+            "showing": "表示中",
+            "of": "／",
+            "to": "〜"
+        },
+        "noApplicationFound": "アプリが見つかりません",
+        "thisFolderIsEmpty": "このフォルダーは空です",
+        "deleteAppAndData": "アプリと関連データは完全に削除されます。続行しますか？",
+        "removeAppFromFolder": "アプリはこのフォルダーから削除されます。続行しますか？",
+        "change": "変更",
+        "templateCard": {
+            "use": "使用",
+            "preview": "プレビュー",
+            "leadGeneretion": "リード獲得"
+        },
+        "templateLibraryModal": {
+            "select": "テンプレートを選択",
+            "createAppfromTemplate": "テンプレートからアプリを作成"
+        }
+    },
+    "confirmationPage": {
+        "setupAccount": "アカウントを設定",
+        "signupWithGoogle": "Google でサインアップ",
+        "signupWithGitHub": "GitHub でサインアップ",
+        "signupWithOpenid": "でサインアップ",
+        "or": "または",
+        "firstName": "名",
+        "lastName": "姓",
+        "company": "会社",
+        "role": "役割",
+        "pleaseSelect": "選択してください",
+        "password": "パスワード",
+        "confirmPassword": "パスワードを確認",
+        "clickAndAgree": "下のボタンをクリックすると、以下に同意したものとみなされます",
+        "termsAndConditions": "利用規約",
+        "finishAccountSetup": "アカウント設定を完了",
+        "acceptInvite": "招待を承諾",
+        "accountExists": "すでにアカウントをお持ちですか？",
+        "and": "および"
+    },
+    "onBoarding": {
+        "finishToolJetInstallation": "ToolJet のインストールを完了",
+        "organization": "組織",
+        "name": "名前",
+        "email": "メール",
+        "receiveUpdatesFromToolJet": "ToolJet チームから更新情報が届きます（毎月1〜2通、スパムはしません）",
+        "finishSetup": "セットアップを完了",
+        "skip": "スキップ"
+    },
+    "redirectSso": {
+        "upgradingTov1.13.0": "v1.13.0 以降にアップグレードしています。",
+        "fromV1.13.0": "v1.13.0 から導入しました",
+        "multiWorkspace": "マルチワークスペース",
+        "singleSignOnConfig": "シングルサインオン関連の設定はワークスペース変数からデータベースへ移動されました。こちらを参照してください",
+        "link": "リンク",
+        "toConfigureSSO": "SSO を設定するために。",
+        "haveGoogleGithubSSo": "アップグレード前に Google または GitHub の SSO 設定があり、マルチワークスペースを無効にしていた場合、アップグレード時に SSO 設定が移行されます。ただし、SSO プロバイダー側でリダイレクト URL を再設定する必要があります。各 SSO のリダイレクト URL は以下のとおりです。",
+        "isMultiWorkspaceEnabled": "マルチワークスペースを有効にしている場合、アップグレード時に SSO 設定は移行されないため、各ワークスペースで SSO を再設定する必要があります。",
+        "youHaveEnabled": "有効にしています",
+        "setupSsoWorkspace": "パスワードでログインし、ワークスペースで SSO を設定できます",
+        "manageSsoMenu": "SSO メニューを管理。",
+        "youHaveDisabled": "無効にしています",
+        "configureRedirectUrl": "SSO プロバイダー側でリダイレクト URL を設定してください。",
+        "google": "Google",
+        "redirectUrl": "リダイレクトURL:",
+        "gitHub": "GitHub"
+    },
+    "oAuth2": {
+        "pleaseWait": "お待ちください...",
+        "authSuccess": "認証に成功しました。このタブは閉じても大丈夫です。",
+        "authFailed": "認証に失敗しました"
+    },
+    "widgetManager": {
+        "commonlyUsed": "よく使う",
+        "layouts": "レイアウト",
+        "forms": "フォーム",
+        "integrations": "連携",
+        "others": "その他",
+        "noResults": "結果が見つかりません",
+        "tryAdjustingFilterMessage": "検索条件やフィルターを調整して、目的のものを見つけてください。",
+        "clearQuery": "検索条件をクリア"
+    },
+    "widget": {
+        "common": {
+            "properties": "プロパティ",
+            "events": "イベント",
+            "layout": "レイアウト",
+            "devices": "デバイス",
+            "styles": "スタイル",
+            "general": "一般",
+            "validation": "検証",
+            "structure": "構造",
+            "data": "データ",
+            "additionalActions": "追加アクション",
+            "documentation": "{{componentMeta}} のドキュメントを読む",
+            "widgetNameEmptyError": "ウィジェット名は空にできません",
+            "componentNameExistsError": "コンポーネント名は既に存在します",
+            "invalidWidgetName": "無効なウィジェット名です。英数字とアンダースコアのみで一意である必要があります。"
+        },
+        "commonProperties": {
+            "visibility": "表示",
+            "disable": "無効化",
+            "borderRadius": "角丸",
+            "transformation": "変換",
+            "boxShadow": "ボックスシャドウ",
+            "tooltip": "ツールチップ",
+            "showOnDesktop": "デスクトップで表示",
+            "showOnMobile": "モバイルで表示",
+            "showLoadingState": "ロード状態を表示",
+            "backgroundColor": "背景色",
+            "textColor": "テキスト色",
+            "loaderColor": "ローダー色",
+            "defaultValue": "デフォルト値",
+            "placeholder": "プレースホルダー",
+            "label": "ラベル",
+            "title": "タイトル",
+            "code": "コード",
+            "data": "データ",
+            "tableData": "テーブルデータ",
+            "tableColumns": "テーブル列",
+            "loadingState": "ロード状態",
+            "serverSidePagination": "サーバー側ページネーション",
+            "clientSidePagination": "クライアント側ページネーション",
+            "serverSideSearch": "サーバー側検索",
+            "showSearchBox": "検索ボックスを表示",
+            "showDownloadButton": "ダウンロードボタンを表示",
+            "showFilterButton": "フィルターボタンを表示",
+            "showBulkUpdateActions": "更新ボタンを表示",
+            "bulkSelection": "一括選択",
+            "highlightSelectedRow": "選択行を強調表示",
+            "actionButtonRadius": "アクションボタン角丸",
+            "tableType": "テーブルタイプ",
+            "cellSize": "セルサイズ",
+            "setPage": "ページを設定",
+            "page": "ページ",
+            "buttonText": "ボタンテキスト",
+            "click": "クリック",
+            "setText": "テキストを設定",
+            "text": "テキスト",
+            "markerColor": "マーカー色",
+            "showAxes": "軸を表示",
+            "showGridLines": "グリッド線を表示",
+            "chartType": "チャートタイプ",
+            "jsonDescription": "JSON 説明",
+            "usePlotlyJsonSchema": "Plotly JSON スキーマを使用",
+            "padding": "パディング",
+            "hideTitleBar": "タイトルバーを隠す",
+            "hideCloseButton": "閉じるボタンを隠す",
+            "hideOnEscape": "Esc で閉じない",
+            "modalSize": "モーダルサイズ",
+            "open": "開く",
+            "close": "閉じる",
+            "regex": "正規表現",
+            "minLength": "最小長",
+            "maxLength": "最大長",
+            "customValidation": "カスタム検証",
+            "clear": "クリア",
+            "minimumValue": "最小値",
+            "maximumValue": "最大値",
+            "format": "形式",
+            "enableTimeSelection": "時間選択を有効にしますか？",
+            "enableDateSelection": "日付選択を有効にしますか？",
+            "disabledDates": "無効な日付",
+            "minDate": "最小日付",
+            "maxDate": "最大日付",
+            "makeThisFieldMandatory": "このフィールドを必須にする",
+            "setChecked": "チェックを設定",
+            "status": "ステータス",
+            "defaultStatus": "デフォルトステータス",
+            "checkboxColor": "チェックボックス色",
+            "optionValues": "オプション値",
+            "optionLabels": "オプションラベル",
+            "activeColor": "アクティブ色",
+            "selectOption": "オプションを選択",
+            "option": "オプション",
+            "toggleSwitchColor": "トグルスイッチ色",
+            "defaultStartDate": "デフォルト開始日",
+            "defaultEndDate": "デフォルト終了日",
+            "textSize": "文字サイズ",
+            "alignText": "文字揃え",
+            "url": "URL",
+            "alternativeText": "代替テキスト",
+            "zoomButton": "ズームボタン",
+            "borderType": "ボーダータイプ",
+            "imageFit": "画像のフィット",
+            "optionsLoadingState": "オプションのロード状態",
+            "selectedTextColor": "選択時テキスト色",
+            "select": "選択",
+            "deselectOption": "オプションの選択解除",
+            "clearSelections": "選択をクリア",
+            "enableSelectAllOption": "全選択オプションを有効化",
+            "initialLocation": "初期位置",
+            "defaultMarkers": "デフォルトマーカー",
+            "addNewMarkers": "新しいマーカーを追加",
+            "searchForPlaces": "場所を検索",
+            "setLocation": "位置を設定",
+            "latitude": "緯度",
+            "longitude": "経度",
+            "numberOfStars": "星の数",
+            "defaultNoOfSelectedStars": "デフォルトの選択星数",
+            "enableHalfStar": "半星を有効化",
+            "tooltips": "ツールチップ",
+            "starColor": "星の色",
+            "labelColor": "ラベル色",
+            "dividerColor": "区切り線色",
+            "clearFiles": "ファイルをクリア",
+            "instructionText": "説明テキスト",
+            "useDropZone": "ドロップゾーンを使用",
+            "useFilePicker": "ファイルピッカーを使用",
+            "pickMultipleFiles": "複数ファイルを選択",
+            "maxFileCount": "最大ファイル数",
+            "acceptFileTypes": "許可するファイルタイプ",
+            "maxSizeLimitBytes": "最大サイズ制限 (バイト)",
+            "minSizeLimitBytes": "最小サイズ制限 (バイト)",
+            "parseContent": "内容を解析",
+            "fileType": "ファイルタイプ",
+            "dateFormat": "日付形式",
+            "timeFormat": "時刻形式",
+            "displayIn": "表示先",
+            "storeIn": "保存先",
+            "defaultDate": "デフォルト日付",
+            "events": "イベント",
+            "resources": "リソース",
+            "defaultView": "デフォルトビュー",
+            "startTimeOnWeekAndDayView": "週/日ビューの開始時刻",
+            "endTimeOnWeekAndDayView": "週/日ビューの終了時刻",
+            "showToolbar": "ツールバーを表示",
+            "showViewSwitcher": "ビュー切替を表示",
+            "highlightToday": "今日を強調表示",
+            "showPopoverWhenEventIsClicked": "イベントクリック時にポップオーバーを表示",
+            "cellSizeInViewsClassifiedByResource": "リソース別ビューのセルサイズ",
+            "headerDateFormatOnWeekView": "週表示のヘッダー日付形式",
+            "showLineNumber": "行番号を表示",
+            "mode": "モード",
+            "tabs": "タブ",
+            "defaultTab": "デフォルトタブ",
+            "hideTabs": "タブを非表示",
+            "highlightColor": "ハイライト色",
+            "tabWidth": "タブ幅",
+            "setCurrentTab": "現在のタブを設定",
+            "id": "ID",
+            "timerType": "タイマータイプ",
+            "listData": "リストデータ",
+            "rowHeight": "行の高さ",
+            "showBottomBorder": "下枠線を表示",
+            "tags": "タグ",
+            "numberOfPages": "ページ数",
+            "defaultPageIndex": "デフォルトページインデックス",
+            "progress": "進捗",
+            "color": "色",
+            "strokeWidth": "線幅",
+            "counterClockwise": "反時計回り",
+            "circleRatio": "円比率",
+            "colour": "色",
+            "size": "サイズ",
+            "primaryValueLabel": "主値ラベル",
+            "primaryValue": "主値",
+            "hideSecondaryValue": "副値を非表示",
+            "secondaryValueLabel": "副値ラベル",
+            "secondaryValue": "副値",
+            "secondarySignDisplay": "副符号表示",
+            "primaryLabelColour": "主ラベル色",
+            "primaryTextColour": "主テキスト色",
+            "secondaryLabelColour": "副ラベル色",
+            "secondaryTextColour": "副テキスト色",
+            "min": "最小",
+            "max": "最大",
+            "value": "値",
+            "twoHandles": "2つのハンドル",
+            "lineColor": "線の色",
+            "handleColor": "ハンドル色",
+            "trackColor": "トラック色",
+            "timelineData": "タイムラインデータ",
+            "hideDate": "日付を非表示",
+            "svgData": "SVG データ",
+            "rawHtml": "生HTML",
+            "values": "値",
+            "labels": "ラベル",
+            "defaultSelected": "デフォルト選択",
+            "enableMultipleSelection": "複数選択を有効化",
+            "selectedTextColour": "選択時テキスト色",
+            "selectedBackgroundColor": "選択時背景色",
+            "fileUrl": "ファイルURL",
+            "scalePageToWidth": "ページ幅に合わせて拡大縮小",
+            "showPageControls": "ページ操作を表示",
+            "steps": "ステップ",
+            "currentStep": "現在のステップ",
+            "stepsSelectable": "ステップ選択可",
+            "theme": "テーマ",
+            "columns": "列",
+            "cardData": "カードデータ",
+            "enableAddCard": "カード追加を有効化",
+            "width": "幅",
+            "minWidth": "最小幅",
+            "accentColor": "アクセント色",
+            "defaultColor": "デフォルト色",
+            "setColor": "色を設定",
+            "structure": "構造",
+            "checkedValues": "チェック済みの値",
+            "expandedValues": "展開済みの値"
+        },
+        "Table": {
+            "displayName": "テーブル",
+            "description": "ページングされた表形式データを表示",
+            "columnType": "列タイプ",
+            "columnName": "列名",
+            "overflow": "オーバーフロー",
+            "key": "キー",
+            "textColor": "テキスト色",
+            "validation": "検証",
+            "regex": "正規表現",
+            "minLength": "最小長",
+            "maxLength": "最大長",
+            "customRule": "カスタムルール",
+            "values": "値",
+            "labels": "ラベル",
+            "cellBgColor": "セル背景色",
+            "dateDisplayformat": "日付形式",
+            "dateParseformat": "日付",
+            "showTime": "時刻を表示",
+            "makeEditable": "編集可能にする",
+            "buttonText": "ボタンテキスト",
+            "buttonPosition": "ボタン位置",
+            "remove": "削除",
+            "addButton": "+ ボタンを追加",
+            "addColumn": "列を追加",
+            "addNewColumn": "新しい列を追加",
+            "noActionMessage": "このテーブルにはアクションボタンがありません",
+            "horizontalAlignment": "水平方向の配置",
+            "textAlignment": "文字揃え",
+            "deciamalPlaces": "小数点以下桁数",
+            "imageFit": "画像のフィット",
+            "cellColor": "セル色",
+            "alignment": "配置",
+            "activeColor": "アクティブ色",
+            "underlineColor": "下線色",
+            "showUnderline": "下線を表示",
+            "hover": "ホバー",
+            "always": "常に",
+            "selectedColor": "選択色",
+            "unselectedColor": "未選択色",
+            "displayText": "表示テキスト",
+            "addFilter": "+ フィルターを追加",
+            "clearFilters": "フィルターをクリア",
+            "noFiltersYet": "フィルターはまだありません。",
+            "deprecatedStyleMessage": "このスタイルは今後のリリースで非推奨になります",
+            "deprecatedColumnTitle": "列タイプの非推奨化",
+            "deprecatedColumnMessage": "この列タイプは非推奨で、将来の更新で削除されます。今後は新しい{{columnLabel}}の使用を推奨します。",
+            "columnTypes": {
+                "default": "デフォルト",
+                "string": "文字列",
+                "badge": "バッジ",
+                "dropdown": "ドロップダウン",
+                "singleSelect": "単一選択",
+                "multipleBadges": "複数バッジ",
+                "tags": "タグ",
+                "radio": "ラジオ",
+                "multiselect": "複数選択",
+                "toggleSwitch": "トグルスイッチ"
+            },
+            "borderRadius": "角丸",
+            "decimalPlaces": "小数点以下桁数",
+            "defaultRating": "デフォルト評価",
+            "maxRating": "最大評価",
+            "timeFormat": "時刻形式",
+            "transformationField": "変換",
+            "unixTimestamp": "UNIXタイムスタンプ"
+        },
+        "Button": {
+            "displayName": "ボタン",
+            "description": "アクションをトリガー: クエリ、アラート、変数設定など。"
+        },
+        "Chart": {
+            "displayName": "チャート",
+            "description": "データを可視化"
+        },
+        "Modal": {
+            "displayName": "モーダル",
+            "description": "ポップアップウィンドウを表示"
+        },
+        "TextInput": {
+            "displayName": "テキスト入力",
+            "description": "ユーザーのテキスト入力欄"
+        },
+        "NumberInput": {
+            "displayName": "数値入力",
+            "description": "数値入力欄"
+        },
+        "PasswordInput": {
+            "displayName": "パスワード入力",
+            "description": "安全なテキスト入力"
+        },
+        "Datepicker": {
+            "displayName": "日付ピッカー",
+            "description": "日付と時刻を選択"
+        },
+        "Checkbox": {
+            "displayName": "チェックボックス",
+            "description": "単一チェックボックス切替"
+        },
+        "Radio-button": {
+            "displayName": "ラジオボタン",
+            "description": "複数の選択肢から1つ選択"
+        },
+        "ToggleSwitch": {
+            "displayName": "トグルスイッチ",
+            "description": "ユーザーがオン/オフを切り替えるスイッチ"
+        },
+        "Textarea": {
+            "displayName": "テキストエリア",
+            "description": "複数行のテキスト入力"
+        },
+        "DateRangePicker": {
+            "displayName": "日付範囲ピッカー",
+            "description": "日付範囲を選択"
+        },
+        "Text": {
+            "displayName": "テキスト",
+            "description": "テキストまたはHTMLを表示"
+        },
+        "Image": {
+            "displayName": "画像",
+            "description": "画像ファイルを表示"
+        },
+        "Container": {
+            "displayName": "コンテナ",
+            "description": "コンポーネントをグループ化"
+        },
+        "Dropdown": {
+            "displayName": "ドロップダウン",
+            "description": "単一項目の選択"
+        },
+        "Multiselect": {
+            "displayName": "複数選択",
+            "description": "複数項目の選択"
+        },
+        "RichTextEditor": {
+            "displayName": "テキストエディタ",
+            "description": "リッチテキストエディタ"
+        },
+        "Map": {
+            "displayName": "地図",
+            "description": "地図の位置を表示"
+        },
+        "QrScanner": {
+            "displayName": "QRスキャナー",
+            "description": "QRコードをスキャンしてデータを保持"
+        },
+        "StarRating": {
+            "displayName": "評価",
+            "description": "スター評価"
+        },
+        "Divider": {
+            "displayName": "区切り線",
+            "description": "コンポーネント間の区切り"
+        },
+        "FilePicker": {
+            "displayName": "ファイルピッカー",
+            "description": "ファイルピッカー"
+        },
+        "Calendar": {
+            "displayName": "カレンダー",
+            "description": "カレンダーイベントを表示",
+            "allDay": "終日"
+        },
+        "Iframe": {
+            "displayName": "アイフレーム",
+            "description": "外部コンテンツを埋め込む"
+        },
+        "CodeEditor": {
+            "displayName": "コードエディタ",
+            "description": "ソースコードを編集"
+        },
+        "Tabs": {
+            "displayName": "タブ",
+            "description": "タブでコンテンツを整理"
+        },
+        "Timer": {
+            "displayName": "タイマー",
+            "description": "カウントダウンまたはストップウォッチ"
+        },
+        "Listview": {
+            "displayName": "リストビュー",
+            "description": "複数項目を一覧表示"
+        },
+        "Tags": {
+            "displayName": "タグ",
+            "description": "タグラベルを表示"
+        },
+        "Pagination": {
+            "displayName": "ページネーション",
+            "description": "ページを移動"
+        },
+        "CircularProgressbar": {
+            "displayName": "円形プログレスバー",
+            "description": "円形の進捗を表示"
+        },
+        "Spinner": {
+            "displayName": "スピナー",
+            "description": "ロード状態を表示"
+        },
+        "Statistics": {
+            "displayName": "統計",
+            "description": "主要指標を表示"
+        },
+        "RangeSlider": {
+            "displayName": "レンジスライダー",
+            "description": "値の範囲を調整"
+        },
+        "Timeline": {
+            "displayName": "タイムライン",
+            "description": "イベントタイムラインを表示"
+        },
+        "SvgImage": {
+            "displayName": "SVG画像",
+            "description": "SVGグラフィックを表示"
+        },
+        "Html": {
+            "displayName": "HTMLビューア",
+            "description": "HTMLコンテンツを表示"
+        },
+        "VerticalDivider": {
+            "displayName": "縦区切り線",
+            "description": "垂直の区切り線"
+        },
+        "CustomComponent": {
+            "displayName": "カスタムコンポーネント",
+            "description": "React コンポーネントを作成"
+        },
+        "ButtonGroup": {
+            "displayName": "ボタングループ",
+            "description": "ボタンのグループ"
+        },
+        "PDF": {
+            "displayName": "PDFビューア",
+            "description": "PDF ドキュメントを埋め込む",
+            "enterPassword": "このPDFファイルを開くためのパスワードを入力してください。",
+            "invalidPassword": "パスワードが無効です。再試行してください。",
+            "passwordPromptClosed": "パスワード入力を閉じました",
+            "noFile": "PDFファイルが指定されていません",
+            "previousPage": "前のページ",
+            "nextPage": "次のページ",
+            "pageOf": "{{total}}中{{page}}",
+            "download": "PDFをダウンロード",
+            "downloadAlt": "ダウンロード"
+        },
+        "Steps": {
+            "displayName": "ステップ",
+            "description": "ステップ形式のナビゲーション補助"
+        },
+        "KanbanBoard": {
+            "displayName": "カンバンボード",
+            "description": "タスク管理ボード"
+        },
+        "ColorPicker": {
+            "displayName": "カラーピッカー",
+            "description": "パレットから色を選択"
+        },
+        "TreeSelect": {
+            "displayName": "ツリーセレクト",
+            "description": "階層的な項目セレクター"
+        },
+        "labels": {
+            "legacy": "旧",
+            "new": "新規"
+        },
+        "phoneInput": {
+            "defaultCountry": "デフォルト国"
+        },
+        "currencyInput": {
+            "defaultCurrency": "デフォルト通貨",
+            "numberFormat": "数値形式"
+        },
+        "icon": {
+            "label": "アイコン"
+        },
+        "Form": {
+            "displayName": "フォーム",
+            "description": "複数コンポーネントのラッパー"
+        },
+        "PopoverMenu": {
+            "displayName": "ポップオーバーメニュー",
+            "description": "ポップオーバーメニュー"
+        },
+        "EmailInput": {
+            "displayName": "メール入力",
+            "description": "メール入力フィールド"
+        },
+        "TagsInput": {
+            "displayName": "タグ入力",
+            "description": "タグ入力"
+        },
+        "AudioRecorder": {
+            "displayName": "音声レコーダー",
+            "description": "音声レコーダー"
+        },
+        "BoundedBox": {
+            "displayName": "境界ボックス",
+            "description": "境界ボックス"
+        },
+        "Camera": {
+            "displayName": "カメラ",
+            "description": "カメラ"
+        },
+        "Chat": {
+            "displayName": "チャット",
+            "description": "チャット"
+        },
+        "CircularProgressBar": {
+            "displayName": "円形プログレスバー",
+            "description": "円形プログレスバー"
+        },
+        "CurrencyInput": {
+            "displayName": "通貨入力",
+            "description": "通貨入力"
+        },
+        "DatePickerLegacy": {
+            "displayName": "日付ピッカー（レガシー）",
+            "description": "日付ピッカー（レガシー）"
+        },
+        "DatePicker": {
+            "displayName": "日付ピッカー",
+            "description": "日付ピッカー"
+        },
+        "DatetimePicker": {
+            "displayName": "日時ピッカー",
+            "description": "日時ピッカー"
+        },
+        "HorizontalDivider": {
+            "displayName": "水平区切り線",
+            "description": "水平区切り線"
+        },
+        "DropdownLegacy": {
+            "displayName": "ドロップダウン（レガシー）",
+            "description": "ドロップダウン（レガシー）"
+        },
+        "Icon": {
+            "displayName": "アイコン",
+            "description": "アイコン"
+        },
+        "Kanban": {
+            "displayName": "カンバン",
+            "description": "カンバン"
+        },
+        "Link": {
+            "displayName": "リンク",
+            "description": "リンク"
+        },
+        "ModalLegacy": {
+            "displayName": "モーダル（レガシー）",
+            "description": "モーダル（レガシー）"
+        },
+        "ModuleContainer": {
+            "displayName": "モジュールコンテナ",
+            "description": "モジュールコンテナ"
+        },
+        "ModuleViewer": {
+            "displayName": "モジュール",
+            "description": "モジュール"
+        },
+        "MultiselectLegacy": {
+            "displayName": "複数選択（レガシー）",
+            "description": "複数選択（レガシー）"
+        },
+        "PhoneInput": {
+            "displayName": "電話番号入力",
+            "description": "電話番号入力"
+        },
+        "RadioButton": {
+            "displayName": "ラジオボタン",
+            "description": "ラジオボタン"
+        },
+        "RadioButtonLegacy": {
+            "displayName": "ラジオボタン（レガシー）",
+            "description": "ラジオボタン（レガシー）"
+        },
+        "RangeSliderLegacy": {
+            "displayName": "範囲スライダー（レガシー）",
+            "description": "範囲スライダー（レガシー）"
+        },
+        "TimePicker": {
+            "displayName": "時間ピッカー",
+            "description": "時間ピッカー"
+        },
+        "ToggleSwitchLegacy": {
+            "displayName": "トグルスイッチ（レガシー）",
+            "description": "トグルスイッチ（レガシー）"
+        }
+    },
+    "leftSidebar": {
+        "Inspector": {
+            "text": "インスペクター",
+            "tip": "インスペクター"
+        },
+        "Sources": {
+            "text": "ソース",
+            "tip": "データソースを追加または編集",
+            "dataSources": "データソース",
+            "addDataSource": "+ データソースを追加"
+        },
+        "Debugger": {
+            "text": "デバッガー",
+            "tip": "デバッガー",
+            "errors": "エラー",
+            "noErrors": "エラーは見つかりません",
+            "noLogs": "ログが見つかりません",
+            "clear": "クリア"
+        },
+        "Comments": {
+            "text": "コメント",
+            "tip": "コメントの切り替え",
+            "commentBody": "表示するコメントがありません",
+            "typeComment": "ここにコメントを入力"
+        },
+        "Settings": {
+            "text": "トリガー",
+            "tip": "グローバル設定",
+            "hideHeader": "起動したアプリのヘッダーを非表示",
+            "maintenanceMode": "メンテナンスモード",
+            "maxWidthOfCanvas": "キャンバスの最大幅",
+            "maxHeightOfCanvas": "キャンバスの最大高さ",
+            "backgroundColorOfCanvas": "キャンバスの背景",
+            "appMode": "アプリモード",
+            "exportApp": "アプリをエクスポート"
+        },
+        "Back": {
+            "text": "戻る",
+            "tip": "ホームに戻る"
+        }
+    },
+    "datepicker": {
+        "months": {
+            "january": "1月",
+            "february": "2月",
+            "march": "3月",
+            "april": "4月",
+            "may": "5月",
+            "june": "6月",
+            "july": "7月",
+            "august": "8月",
+            "september": "9月",
+            "october": "10月",
+            "november": "11月",
+            "december": "12月"
+        }
+    },
+    "planUpgrade": {
+        "contactUs": "プランをアップグレードするには、こちらまでご連絡ください",
+        "appsLimitExceeded": "現在のプランのアプリ上限を超えています。新しいアプリを作成するにはプランをアップグレードしてください。",
+        "usersLimitExceeded": "現在のプランのユーザー上限を超えています。新しいユーザーを作成するにはプランをアップグレードしてください。",
+        "featureNotAvailable": "現在のプランではこの機能を利用できません。利用するにはプランをアップグレードしてください。",
+        "appsCount": "アプリ数",
+        "usersCount": "ユーザー数",
+        "oidc": "OIDC",
+        "auditLogs": "監査ログ"
+    },
+    "errors": {
+        "groupNameTooLong": "グループの複製に失敗しました。\n名前は50文字以内です。"
+    },
+    "successInfoScreen": {
+        "emailImageAlt": "メール画像",
+        "checkYourMail": "メールを確認してください",
+        "didNotReceiveEmail": "メールが届かない場合は迷惑メールフォルダをご確認ください。"
+    },
+    "forgotPasswordInfoScreen": {
+        "sentEmailPrefix": "次のメールアドレス宛にメールを送信しました：",
+        "sentEmailSuffix": "パスワードリセットリンクが記載されています。リンクをクリックしてパスワードをリセットしてください。",
+        "backToLogin": "ログインに戻る"
+    },
+    "signupInfoScreen": {
+        "sentEmailPrefix": "次の宛先にメールを送信しました:",
+        "sentEmailSuffix": "確認リンクが含まれています。リンクを使用してメールアドレスを確認してください。",
+        "resendCountdown": "{{seconds}}秒後に確認メールを再送できます",
+        "resendAction": "確認メールを再送",
+        "editEmail": "メールアドレスを編集"
+    },
+    "setupScreenSelfHost": {
+        "logoAlt": "ToolJet ロゴ",
+        "onboardingAlt": "ToolJet オンボーディング",
+        "greeting": "こんにちは、",
+        "welcomeTo": "ようこそ",
+        "brandName": "ToolJet!",
+        "subHeader": "ToolJet を始めるためにワークスペースをセットアップしましょう",
+        "setupButton": "ToolJet をセットアップ"
+    },
+    "forgotPasswordPage": {
+        "invalidEmail": "無効なメールアドレス",
+        "resetLinkSent": "パスワードリセット用リンクをメールで送信しました。受信トレイを確認してください",
+        "genericError": "問題が発生しました。もう一度お試しください",
+        "newTo": "はじめてですか",
+        "enterEmailAddress": "メールアドレスを入力",
+        "sendResetLink": "リセットリンクを送信",
+        "contactSuperAdmin": "パスワードをリセットするにはスーパー管理者に連絡してください",
+        "checkEmailForResetLink": "パスワードリセット用リンクをメールで送信しました。受信トレイを確認してください",
+        "createAnAccount": "アカウントを作成",
+        "emailAddress": "メールアドレス",
+        "forgotPassword": "パスワードをお忘れですか",
+        "somethingWentWrong": "問題が発生しました。もう一度お試しください",
+        "contactAdmin": "パスワードをリセットするには{{adminUser}}に連絡してください"
+    },
+    "basicPlanMigrationBanner": {
+        "prefix": "ドメインを以下の日付に更新します：",
+        "date": "2025年11月24日",
+        "impact": "これにより設定済みのSSOに影響があります。",
+        "readDocs": "ドキュメントを読む",
+        "toKnowMore": "詳細はこちら。"
+    },
+    "permissionDeniedModal": {
+        "defaultWorkspaceName": "マイワークスペース",
+        "workspaceCreated": "ワークスペースを作成しました",
+        "builderLimitExceeded": "ワークスペースを作成するとビルダーになり、上限を超えます。詳細はスーパー管理者にお問い合わせください。",
+        "title": "権限がありません",
+        "description": "このワークスペースでアプリを作成する権限がありません。新しいワークスペースで作成しますか？",
+        "createInNewWorkspace": "新しいワークスペースでアプリを作成"
+    },
+    "tooljetDatabase": {
+        "common": {
+            "noDataFound": "データがありません",
+            "continue": "続行",
+            "areYouSureContinue": "続行してもよろしいですか？"
+        },
+        "columnForm": {
+            "title": "新しい列を作成",
+            "columnName": "列名",
+            "dataType": "データ型",
+            "displayTime": "時刻を表示",
+            "defaultValue": "デフォルト値",
+            "setDefaultNull": "デフォルト値をNULLに設定",
+            "openReferencedTable": "参照テーブルを開く",
+            "foreignKeyRelation": "外部キー関係",
+            "foreignKeyDescription": "外部キー関係を追加すると、この列が既存テーブルの列と紐づきます。",
+            "notNull": "NOT NULL（NULL不可）",
+            "notNullDescription": "この制約により、この列へのNULL値の入力が制限されます。",
+            "uniqueDescription": "この制約により、この列への重複値の入力が制限されます。",
+            "placeholders": {
+                "columnName": "列名を入力",
+                "selectDataType": "データ型を選択",
+                "selectTimezone": "タイムゾーンを選択",
+                "defaultValue": "デフォルト値を入力",
+                "autoGenerated": "自動生成",
+                "null": "NULL",
+                "enterValue": "値を入力"
+            },
+            "errors": {
+                "columnNameEmpty": "列名を入力してください",
+                "dataTypeEmpty": "データ型を選択してください",
+                "createColumnFailed": "テーブル「{{tableName}}」に新しい列を作成できませんでした",
+                "defaultRequiredForNotNull": "NOT NULL制約を追加するため、既存行を埋めるデフォルト値が必要です"
+            },
+            "success": {
+                "columnCreated": "列を作成しました"
+            },
+            "tooltips": {
+                "setDefaultNull": "列のデフォルト値をNULLに設定",
+                "serialValuesReadOnly": "シリアル型の値は変更できません",
+                "foreignKeyNotAllowedSerial": "シリアル型の列には外部キー関係を作成できません",
+                "foreignKeyNotAllowedBoolean": "ブール型の列には外部キー関係を作成できません",
+                "foreignKeyNotAllowedTimestamp": "このデータ型では外部キー関係を作成できません",
+                "foreignKeyNotAllowedJsonb": "jsonb型の列には外部キー関係を作成できません",
+                "fillDetailsForForeignKey": "外部キー関係を作成するには列の詳細を入力してください",
+                "uniqueNotAllowedBoolean": "ブール型の列には一意制約を追加できません",
+                "uniqueNotAllowedTimestamp": "この型の列には一意制約を追加できません",
+                "uniqueNotAllowedJsonb": "JSON型の列には一意制約を追加できません"
+            },
+            "confirmDeleteForeignKey": {
+                "title": "外部キー関係を削除",
+                "message": "外部キー関係の削除は取り消せません。続行しますか？"
+            },
+            "unique": "UNIQUE（一意）"
+        },
+        "editColumnForm": {
+            "primaryKey": "主キー",
+            "dataTypeReadOnly": "データ型は変更できません",
+            "confirmDeleteForeignKey": {
+                "title": "外部キーを削除"
+            },
+            "confirmChangeForeignKey": {
+                "title": "外部キー関係の変更",
+                "message": "外部キー関係を更新すると、現在の制約を削除して新しい制約を追加します。これにより、対象テーブル列に設定されたデフォルト値が、元テーブルの値に置き換えられます。詳細はドキュメントを参照してください。"
+            },
+            "title": "列を編集",
+            "warning": "この列を編集すると、関連するクエリやアプリが動作しなくなる可能性があります。",
+            "errors": {
+                "validateDefaultFailed": "デフォルト値の検証に失敗しました",
+                "editForeignKeyFailed": "外部キーの編集に失敗しました",
+                "fetchColumnsFailed": "テーブル「{{tableName}}」の列取得でエラーが発生しました",
+                "editColumnFailed": "テーブル「{{tableName}}」の列編集に失敗しました",
+                "deleteForeignKeyFailed": "外部キーの削除に失敗しました"
+            },
+            "success": {
+                "foreignKeyCreated": "外部キーを作成しました",
+                "columnEdited": "列を編集しました",
+                "foreignKeyDeleted": "外部キーを削除しました",
+                "foreignKeyEdited": "外部キーを編集しました"
+            },
+            "warnings": {
+                "defaultValueChangeNotApplied": "デフォルト値を変更しても、既存のデフォルト値が設定済みのフィールドは更新されません"
+            },
+            "tooltips": {
+                "disableNotNullForNullDefault": "NOT NULL制約を無効にしてデフォルト値をNULLに設定",
+                "foreignKeyNotAllowedTimestamp": "このデータ型では外部キー関係を作成できません",
+                "foreignKeyNotAllowedJsonb": "JSONデータ型では外部キー関係を作成できません",
+                "primaryKeyNotNull": "主キーの値はNULLにできません",
+                "serialNotNull": "シリアル型の値はNULLにできません",
+                "primaryKeyUnique": "主キーの値は一意である必要があります",
+                "serialUnique": "シリアル型の値は一意である必要があります"
+            }
+        },
+        "table": {
+            "tooltips": {
+                "cannotEditPrimaryKey": "主キーの値は編集できません",
+                "serialValuesReadOnly": "シリアル型の値は変更できません",
+                "columnReadOnly": "列は編集または削除できません",
+                "compositePrimaryKey": "複合主キー",
+                "uniqueForCompositePrimaryKey": "複合主キーの値の組み合わせに一意制約が追加されます"
+            },
+            "confirmDeleteColumn": {
+                "title": "列を削除",
+                "message": "列を削除すると関連するクエリやコンポーネントに影響する可能性があります。続行しますか？",
+                "confirm": "列を削除"
+            },
+            "deleteColumn": "列を削除",
+            "errors": {
+                "fetchMetadataFailed": "テーブル「{{tableName}}」のメタデータ取得でエラーが発生しました",
+                "fetchTableFailed": "テーブル「{{tableName}}」の取得に失敗しました",
+                "deleteRowsFailed": "テーブル「{{tableName}}」の行削除でエラーが発生しました",
+                "invalidRecordId": "エラーが発生しました。レコードIDが正しくありません",
+                "deleteColumnFailed": "テーブル「{{tableName}}」の列「{{columnName}}」削除でエラーが発生しました",
+                "updateCellFailed": "テーブル「{{tableName}}」の新しい列の作成に失敗しました"
+            },
+            "success": {
+                "rowsDeleted": "テーブル「{{tableName}}」から{{count}}行を削除しました",
+                "columnDeleted": "テーブル「{{tableName}}」から列「{{columnName}}」を削除しました",
+                "columnEdited": "列を編集しました"
+            },
+            "confirmDeleteRows": {
+                "message": "選択した行を削除してもよろしいですか？"
+            },
+            "empty": {
+                "filteredDescription": "現在のフィルター条件に一致するデータがありません。",
+                "defaultDescription": "メニューの「行を追加」または + アイコンから行を追加できます。CSVファイルを使った一括アップロードで複数行を追加することもできます。",
+                "filteredTitle": "結果が見つかりません",
+                "defaultTitle": "まだデータがありません"
+            }
+        },
+        "tableKeyRelations": {
+            "type": "タイプ",
+            "single": "単一",
+            "source": "ソース",
+            "sourceDescription": "外部キー制約を追加する現在のテーブル",
+            "target": "ターゲット",
+            "targetDescription": "外部キー列が参照するテーブル",
+            "table": "テーブル",
+            "column": "列",
+            "actionsTitle": "アクション",
+            "actionsDescription": "ターゲットテーブル変更時にソーステーブルに起きる動作",
+            "onUpdate": "更新時",
+            "onRemove": "削除時",
+            "actions": {
+                "restrict": "RESTRICT（制限）",
+                "cascade": "CASCADE（連鎖）",
+                "setNull": "SET NULL（NULLに設定）",
+                "setDefault": "SET DEFAULT（既定に設定）"
+            },
+            "errors": {
+                "fetchTablesFailed": "テーブルの取得に失敗しました",
+                "fetchColumnsFailed": "テーブル「{{tableName}}」の列取得でエラーが発生しました"
+            }
+        }
+    },
+    "resetPasswordModal": {
+        "title": "パスワードをリセット",
+        "success": "パスワードをリセットしました",
+        "error": "パスワードをリセットできませんでした。もう一度お試しください。",
+        "resetting": "リセット中...",
+        "reset": "リセット",
+        "autoOption": "パスワードを自動生成",
+        "autoHelper": "次のステップでパスワードを表示・コピーできます",
+        "manualOption": "パスワードを作成",
+        "done": "完了"
+    },
+    "blankPage": {
+        "getStartedCreateNewApp": "新しいアプリを作成して始めましょう",
+        "getStartedCreateNewWorkflow": "新しいワークフローを作成して始めましょう",
+        "importApplication": "アプリケーションをインポート",
+        "importWorkflow": "ワークフローをインポート",
+        "welcomeToToolJet": "ToolJetへようこそ"
+    },
+    "createToolJetAccount": "ToolJet アカウントを作成",
+    "forgotPasswordInfo": {
+        "backToLogin": "ログインに戻る",
+        "header": "メールを確認してください",
+        "info": "メールが届かない場合は迷惑メールフォルダをご確認ください。",
+        "message": "パスワードリセット用のリンクを記載したメールを送信しました。"
+    },
+    "Select": "選択",
+    "sharepoint": {
+        "toSharepoint": "SharePoint へ移動"
+    }
+}

@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { ToolTip } from '@/AppBuilder/RightSideBar/Inspector/Elements/Components/ToolTip';
 import { validateKebabCase } from '@/_helpers/utils';
+import { useTranslation } from 'react-i18next';
 
 export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, isSaving = false }) => {
+  const { t } = useTranslation();
   const [value, set] = useState(pageHandle);
 
   const onChangePageHandleValue = (event) => {
     setError(null);
     const newHandle = event.target.value;
 
-    if (newHandle === '') setError('Page handle cannot be empty');
-    if (newHandle === value) setError('Page handle cannot be same as the existing page handle');
+    if (newHandle === '') setError(t('editor.pageMenu.errors.pageHandleEmpty', 'Page handle cannot be empty'));
+    if (newHandle === value) {
+      setError(
+        t(
+          'editor.pageMenu.errors.pageHandleSame',
+          'Page handle cannot be same as the existing page handle'
+        )
+      );
+    }
     const isValidKebabCase = validateKebabCase(newHandle);
     if (!isValidKebabCase.isValid) {
       setError(isValidKebabCase.error);
@@ -42,7 +51,7 @@ export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, is
       <input
         type="text"
         className={`page-handler-input  form-control form-control-sm ${error ? 'is-invalid' : ''}`}
-        placeholder={'Enter page handle'}
+        placeholder={t('editor.pageMenu.editPageHandle.placeholder', 'Enter page handle')}
         onChange={onChangePageHandleValue}
         value={pageHandle}
         data-cy={'page-handle-input-field'}

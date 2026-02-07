@@ -5,9 +5,11 @@ import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
+import { useTranslation } from 'react-i18next';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
   const { user } = useStore((state) => state.user);
+  const { t } = useTranslation();
 
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
@@ -34,7 +36,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
           setVersionId(currentEditingVersion?.id);
         }
       } catch (error) {
-        toast.error('Could not fetch the versions.', {
+        toast.error(t('homePage.exportAppModal.fetchVersionsError', 'Could not fetch the versions.'), {
           position: 'top-center',
         });
         closeModal();
@@ -76,7 +78,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
         setTables(selectedVersiontable);
       } catch (error) {
-        toast.error('Could not fetch the tables.', {
+        toast.error(t('homePage.exportAppModal.fetchTablesError', 'Could not fetch the tables.'), {
           position: 'top-center',
         });
         closeModal();
@@ -133,13 +135,26 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success(`${app?.type === 'module' ? 'Module' : 'App'} has been exported successfully!`);
+        toast.success(
+          app?.type === 'module'
+            ? t('homePage.exportAppModal.exportSuccessModule', 'Module has been exported successfully!')
+            : t('homePage.exportAppModal.exportSuccessApp', 'App has been exported successfully!')
+        );
         closeModal();
       })
       .catch((error) => {
-        toast.error(`Could not export ${app.type === 'module' ? 'module' : 'app'}: ${error.data.message}`, {
-          position: 'top-center',
-        });
+        toast.error(
+          app.type === 'module'
+            ? t('homePage.exportAppModal.exportErrorModule', 'Could not export module: {{message}}', {
+                message: error?.data?.message,
+              })
+            : t('homePage.exportAppModal.exportErrorApp', 'Could not export app: {{message}}', {
+                message: error?.data?.message,
+              }),
+          {
+            position: 'top-center',
+          }
+        );
         closeModal();
       });
   };
@@ -217,14 +232,16 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 </div>
               ) : (
                 <div className="other-versions" data-cy="other-version-section">
-                  <span data-cy="no-other-versions-found-text">No other versions found</span>
+                  <span data-cy="no-other-versions-found-text">
+                    {t('homePage.exportAppModal.noOtherVersions', 'No other versions found')}
+                  </span>
                 </div>
               )}
             </div>
           </BootstrapModal.Body>
           <div className="tj-version-wrap-sub-footer">
             <input type="checkbox" checked={exportTjDb} onChange={() => setExportTjDb(!exportTjDb)} />
-            <p>Export ToolJet table schema</p>
+            <p>{t('homePage.exportAppModal.exportSchema', 'Export ToolJet table schema')}</p>
           </div>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end align-items-center ">
             <ButtonSolid
@@ -233,14 +250,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               data-cy="export-all-button"
               onClick={() => exportApp(app, null, exportTjDb, allTables)}
             >
-              Export All
+              {t('homePage.exportAppModal.exportAll', 'Export All')}
             </ButtonSolid>
             <ButtonSolid
               className={`import-export-footer-btns ${versionSelectLoading ? 'btn-loading' : ''}`}
               data-cy="export-selected-version-button"
               onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
-              Export selected version
+              {t('homePage.exportAppModal.exportSelectedVersion', 'Export selected version')}
             </ButtonSolid>
           </BootstrapModal.Footer>
         </>
@@ -260,6 +277,7 @@ function InputRadioField({
   setVersionId,
   className,
 }) {
+  const { t } = useTranslation();
   return (
     <span
       key={key}
@@ -283,19 +301,22 @@ function InputRadioField({
         style={{ paddingLeft: '0.75rem' }}
       >
         <span data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-text`}>{versionName}</span>
-        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">{`Created on ${moment(
-          versionCreatedAt
-        ).format('Do MMM YYYY')}`}</span>
+        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">
+          {t('homePage.exportAppModal.createdOn', 'Created on {{date}}', {
+            date: moment(versionCreatedAt).format('Do MMM YYYY'),
+          })}
+        </span>
       </label>
     </span>
   );
 }
 
 function Loader() {
+  const { t } = useTranslation();
   return (
     <BootstrapModal.Body>
       <div className="d-flex justify-content-center align-items-center flex-column" style={{ minHeight: '30vh' }}>
-        <div className="pb-2">Loading versions ...</div>
+        <div className="pb-2">{t('homePage.exportAppModal.loadingVersions', 'Loading versions ...')}</div>
         <div className="spinner-border" role="status"></div>
       </div>
     </BootstrapModal.Body>

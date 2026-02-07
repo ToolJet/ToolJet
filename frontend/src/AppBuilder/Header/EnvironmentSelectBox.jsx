@@ -3,8 +3,10 @@ import { capitalize } from 'lodash';
 import XenvSvg from '@assets/images/icons/x-env.svg';
 import '@/_styles/versions.scss';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { useTranslation } from 'react-i18next';
 
 function EnvironmentSelectBox(props) {
+  const { t } = useTranslation();
   const { options, currentEnv } = props;
   const [showOptions, setShowOptions] = useState(false);
   const ref = useRef(null);
@@ -45,7 +47,7 @@ function EnvironmentSelectBox(props) {
     >
       <div className={`d-inline-flex align-items-center env-header`} onClick={() => setShowOptions(!showOptions)}>
         <XenvSvg />
-        <span className="tj-text-xsm env-switch-text">Env</span>
+        <span className="tj-text-xsm env-switch-text">{t('editor.environment', 'Env')}</span>
         <div data-cy="list-current-env-name">{capitalize(currentEnv.name)}</div>
         <div className={`env-arrow ${showOptions ? 'env-arrow-roate' : ''} `}>
           <svg

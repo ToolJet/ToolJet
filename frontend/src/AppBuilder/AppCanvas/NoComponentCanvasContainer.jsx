@@ -5,8 +5,10 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { getSubpath } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useTranslation } from 'react-i18next';
 
 const NoComponentCanvasContainer = () => {
+  const { t } = useTranslation();
   const sampleDataSource = useStore((state) => state.sampleDataSource, shallow);
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery, shallow);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData, shallow);
@@ -14,8 +16,11 @@ const NoComponentCanvasContainer = () => {
   const expandQueryPaneIfNeeded = useStore((state) => state.queryPanel.expandQueryPaneIfNeeded);
 
   const queryBoxText = sampleDataSource
-    ? 'Connect to your data source or use our sample data source to start playing around!'
-    : 'Connect to a data source to be able to create a query';
+    ? t(
+        'editor.emptyCanvas.queryBoxWithSample',
+        'Connect to your data source or use our sample data source to start playing around!'
+      )
+    : t('editor.emptyCanvas.queryBoxNoSample', 'Connect to a data source to be able to create a query');
 
   const openAddUserWorkspaceSetting = () => {
     const workspaceId = getWorkspaceId();
@@ -42,23 +47,26 @@ const NoComponentCanvasContainer = () => {
             <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
           </div>
           <div className={`title-text`} data-cy="empty-editor-text">
-            Drag and drop a component
+            {t('editor.emptyCanvas.dragAndDrop', 'Drag and drop a component')}
           </div>
           <div className="title-desc">
-            Choose a component from the right side panel or use our pre-built templates to get started quickly!
+            {t(
+              'editor.emptyCanvas.chooseComponent',
+              'Choose a component from the right side panel or use our pre-built templates to get started quickly!'
+            )}
           </div>
         </div>
         <div className="col-md-4 dotted-cont">
           <div className="box-icon">
             <SolidIcon name="datasource" fill="#3E63DD" width="25" />
           </div>
-          <div className={`title-text`}>Create a Query</div>
+          <div className={`title-text`}>{t('editor.emptyCanvas.createQuery', 'Create a Query')}</div>
           <div className="title-desc">{queryBoxText}</div>
           {!!sampleDataSource && !shouldFreeze && (
             <div className="box-link">
               <div className="child">
                 <a className="link-but" onClick={handleConnectSampleDB}>
-                  Connect to sample data source{' '}
+                  {t('editor.emptyCanvas.connectSample', 'Connect to sample data source')}{' '}
                 </a>
               </div>
 
@@ -73,14 +81,17 @@ const NoComponentCanvasContainer = () => {
           <div className="box-icon">
             <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
           </div>
-          <div className={`title-text `}>Share your application!</div>
+          <div className={`title-text `}>{t('editor.emptyCanvas.shareApp', 'Share your application!')}</div>
           <div className="title-desc">
-            Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
+            {t(
+              'editor.emptyCanvas.inviteDescription',
+              'Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.'
+            )}
           </div>
           <div className="box-link">
             <div className="child">
               <a className="link-but" onClick={openAddUserWorkspaceSetting}>
-                Invite collaborators{' '}
+                {t('editor.emptyCanvas.inviteCollaborators', 'Invite collaborators')}{' '}
               </a>
             </div>
             <div>

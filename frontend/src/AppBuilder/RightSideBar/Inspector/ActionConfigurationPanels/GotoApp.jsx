@@ -62,7 +62,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
   console.log(appOptions, 'appOptions');
   return (
     <div className="p-1 go-to-app">
-      <label className="form-label mt-1">App</label>
+      <label className="form-label mt-1">{t('globals.app', 'App')}</label>
       <Select
         options={appOptions}
         search={true}
@@ -78,7 +78,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMod
         className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
         useCustomStyles={true}
       />
-      <label className="form-label mt-2">Query params</label>
+      <label className="form-label mt-2">{t('editor.inspector.eventManager.queryParams', 'Query params')}</label>
 
       {Array(numberOfQueryParams)
         .fill(0)

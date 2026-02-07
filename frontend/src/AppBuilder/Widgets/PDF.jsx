@@ -3,6 +3,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css'; // Required to fix duplicate text appearing at the bottom from the previous page
 import { debounce } from 'lodash';
+import { useTranslation } from 'react-i18next';
 // Constants for password prompt reasons (react-pdf v10 / pdfjs v4)
 const PasswordResponses = {
   NEED_PASSWORD: 1,
@@ -13,6 +14,7 @@ const PasswordResponses = {
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const PDF = React.memo(({ styles, properties, width, height, componentName, dataCy }) => {
+  const { t } = useTranslation();
   const { visibility, boxShadow, borderColor, borderRadius } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
   const [numPages, setNumPages] = useState(null);
@@ -107,12 +109,12 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
 
     switch (reason) {
       case PasswordResponses.NEED_PASSWORD: {
-        const password = prompt('Enter the password to open this PDF file.');
+        const password = prompt(t('widget.PDF.enterPassword', 'Enter the password to open this PDF file.'));
         callbackProxy(password);
         break;
       }
       case PasswordResponses.INCORRECT_PASSWORD: {
-        const password = prompt('Invalid password. Please try again.');
+        const password = prompt(t('widget.PDF.invalidPassword', 'Invalid password. Please try again.'));
         callbackProxy(password);
         break;
       }
@@ -124,7 +126,9 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
     if (isPasswordPromptClosed)
       return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-          <p style={{ marginBottom: '6px' }}>Password prompt closed</p>
+          <p style={{ marginBottom: '6px' }}>
+            {t('widget.PDF.passwordPromptClosed', 'Password prompt closed')}
+          </p>
           <button
             class="pdf-retry-button"
             data-cy="draggable-widget-button3"
@@ -134,7 +138,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
             <div>
               <div>
                 <span>
-                  <p class="tj-text-sm">Retry</p>
+                  <p class="tj-text-sm">{t('globals.retry', 'Retry')}</p>
                 </span>
               </div>
             </div>
@@ -199,7 +203,7 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
           ref={documentRef}
           onScroll={handleScroll}
         >
-          {url === '' ? 'No PDF file specified' : renderPDF()}
+          {url === '' ? t('widget.PDF.noFile', 'No PDF file specified') : renderPDF()}
         </div>
         {!error && !pageLoading && (showDownloadOption || pageControls) && (
           <div
@@ -214,19 +218,22 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
                     disabled={pageNumber <= 1}
                     onClick={() => updatePage(-1)}
                     type="button"
-                    aria-label="Previous page"
+                    aria-label={t('widget.PDF.previousPage', 'Previous page')}
                     style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
                   >
                     ‹
                   </button>
                   <span>
-                    {pageNumber} of {numPages}
+                    {t('widget.PDF.pageOf', '{{page}} of {{total}}', {
+                      page: pageNumber,
+                      total: numPages,
+                    })}
                   </span>
                   <button
                     disabled={pageNumber >= numPages}
                     onClick={() => updatePage(1)}
                     type="button"
-                    aria-label="Next page"
+                    aria-label={t('widget.PDF.nextPage', 'Next page')}
                     style={{ backgroundColor: 'var(--cc-surface1-surface)' }}
                   >
                     ›
@@ -242,12 +249,12 @@ const PDF = React.memo(({ styles, properties, width, height, componentName, data
               >
                 <img
                   src="assets/images/icons/download.svg"
-                  alt="download logo"
+                  alt={t('widget.PDF.downloadAlt', 'Download')}
                   style={downloadIconImgStyle}
                   className="mx-1"
                 />
                 <span className="mx-1" style={{ color: 'var(--cc-primary-text)' }}>
-                  Download PDF
+                  {t('widget.PDF.download', 'Download PDF')}
                 </span>
               </div>
             )}

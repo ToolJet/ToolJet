@@ -5,8 +5,10 @@ import AddPageGroup from '@/_ui/Icon/solidIcons/AddPageGroup';
 import PlusWithBackground from '@/_ui/Icon/solidIcons/PlusWithBackground';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useTranslation } from 'react-i18next';
 
 export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
+  const { t } = useTranslation();
   const [showMenu, setShowMenu] = useState(false);
   const closeMenu = () => {
     setShowMenu(false);
@@ -44,7 +46,7 @@ export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
         }}
       >
         <PlusWithBackground height={15} width={14} />
-        <span className="text">Add</span>
+        <span className="text">{t('globals.add', 'Add')}</span>
       </button>
     );
   }
@@ -66,7 +68,7 @@ export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
                 className="option"
               >
                 <AddPage height={15} width={14} />
-                Page
+                {t('globals.page', 'Page')}
               </div>
               <div
                 onClick={() => {
@@ -76,7 +78,7 @@ export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
                 className="option"
               >
                 <SolidIcon name="addpagegroup" width="14" />
-                Group
+                {t('editor.pageMenu.group', 'Group')}
               </div>
             </div>
           </Popover.Body>
@@ -96,7 +98,7 @@ export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
         }}
       >
         <PlusWithBackground height={15} width={14} />
-        <span className="text">Add</span>
+        <span className="text">{t('globals.add', 'Add')}</span>
       </button>
     </OverlayTrigger>
   );

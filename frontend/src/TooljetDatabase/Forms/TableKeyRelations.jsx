@@ -11,6 +11,7 @@ import _, { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { dataTypes, getColumnDataType } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 function SourceKeyRelation({
   tableName,
@@ -33,6 +34,7 @@ function SourceKeyRelation({
   setOnUpdate,
   onUpdate,
 }) {
+  const { t } = useTranslation();
   const { tables, organizationId, selectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [targetColumnList, setTargetColumnList] = useState([]);
 
@@ -40,7 +42,7 @@ function SourceKeyRelation({
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
     if (error) {
-      toast.error(error?.message ?? 'Failed to fetch tables');
+      toast.error(error?.message ?? t('tooljetDatabase.tableKeyRelations.errors.fetchTablesFailed', 'Failed to fetch tables'));
       return;
     }
 
@@ -100,23 +102,23 @@ function SourceKeyRelation({
     //   value: 'NO ACTION',
     // },
     {
-      name: 'RESTRICT',
-      label: 'RESTRICT',
+      name: t('tooljetDatabase.tableKeyRelations.actions.restrict', 'RESTRICT'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.restrict', 'RESTRICT'),
       value: 'RESTRICT',
     },
     {
-      name: 'CASCADE',
-      label: 'CASCADE',
+      name: t('tooljetDatabase.tableKeyRelations.actions.cascade', 'CASCADE'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.cascade', 'CASCADE'),
       value: 'CASCADE',
     },
     {
-      name: 'SET NULL',
-      label: 'SET NULL',
+      name: t('tooljetDatabase.tableKeyRelations.actions.setNull', 'SET NULL'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.setNull', 'SET NULL'),
       value: 'SET NULL',
     },
     {
-      name: 'SET DEFAULT',
-      label: 'SET DEFAULT',
+      name: t('tooljetDatabase.tableKeyRelations.actions.setDefault', 'SET DEFAULT'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.setDefault', 'SET DEFAULT'),
       value: 'SET DEFAULT',
     },
   ];
@@ -127,23 +129,23 @@ function SourceKeyRelation({
     //   value: 'NO ACTION',
     // },
     {
-      name: 'RESTRICT',
-      label: 'RESTRICT',
+      name: t('tooljetDatabase.tableKeyRelations.actions.restrict', 'RESTRICT'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.restrict', 'RESTRICT'),
       value: 'RESTRICT',
     },
     {
-      name: 'CASCADE',
-      label: 'CASCADE',
+      name: t('tooljetDatabase.tableKeyRelations.actions.cascade', 'CASCADE'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.cascade', 'CASCADE'),
       value: 'CASCADE',
     },
     {
-      name: 'SET NULL',
-      label: 'SET NULL',
+      name: t('tooljetDatabase.tableKeyRelations.actions.setNull', 'SET NULL'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.setNull', 'SET NULL'),
       value: 'SET NULL',
     },
     {
-      name: 'SET DEFAULT',
-      label: 'SET DEFAULT',
+      name: t('tooljetDatabase.tableKeyRelations.actions.setDefault', 'SET DEFAULT'),
+      label: t('tooljetDatabase.tableKeyRelations.actions.setDefault', 'SET DEFAULT'),
       value: 'SET DEFAULT',
     },
   ];
@@ -162,7 +164,13 @@ function SourceKeyRelation({
     if (table_name?.length > 0) {
       tooljetDatabaseService.viewTable(organizationId, table_name).then(({ data = [], error }) => {
         if (error) {
-          toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+          toast.error(
+            error?.message ??
+              t('tooljetDatabase.tableKeyRelations.errors.fetchColumnsFailed', {
+                defaultValue: 'Error fetching columns for table \"{{tableName}}\"',
+                tableName: selectedTable,
+              })
+          );
           return;
         }
 
@@ -242,20 +250,25 @@ function SourceKeyRelation({
     <div className="relations-container">
       <div className="d-flex align-items-center mb-1">
         <Setting width={18} height={18} />
-        <p className="mb-0 source-title">TYPE</p>
-        <div className="single-foreign-key">Single</div>
+        <p className="mb-0 source-title">{t('tooljetDatabase.tableKeyRelations.type', 'TYPE')}</p>
+        <div className="single-foreign-key">{t('tooljetDatabase.tableKeyRelations.single', 'Single')}</div>
       </div>
       <div className="source mt-3">
         <div>
           <div className="d-flex align-items-center mb-1">
             <Source width={18} height={18} />
-            <p className="mb-0 source-title">SOURCE</p>
+            <p className="mb-0 source-title">{t('tooljetDatabase.tableKeyRelations.source', 'SOURCE')}</p>
           </div>
-          <span className="source-description">The current table on which foreign key constraint is being added</span>
+          <span className="source-description">
+            {t(
+              'tooljetDatabase.tableKeyRelations.sourceDescription',
+              'The current table on which foreign key constraint is being added'
+            )}
+          </span>
         </div>
         <TableDetailsDropdown
-          firstColumnName={'Table'}
-          secondColumnName={'Column'}
+          firstColumnName={t('tooljetDatabase.tableKeyRelations.table', 'Table')}
+          secondColumnName={t('tooljetDatabase.tableKeyRelations.column', 'Column')}
           tableList={sourceTable}
           tableColumns={sourceColumns.filter((column) => !isEmpty(column?.value?.trim()))}
           source={true}
@@ -275,13 +288,18 @@ function SourceKeyRelation({
         <div>
           <div className="d-flex align-items-center mb-1">
             <Target width={18} height={18} />
-            <p className="mb-0 source-title">TARGET</p>
+            <p className="mb-0 source-title">{t('tooljetDatabase.tableKeyRelations.target', 'TARGET')}</p>
           </div>
-          <span className="source-description">The table that contains foreign key column’s reference</span>
+          <span className="source-description">
+            {t(
+              'tooljetDatabase.tableKeyRelations.targetDescription',
+              'The table that contains foreign key column’s reference'
+            )}
+          </span>
         </div>
         <TableDetailsDropdown
-          firstColumnName={'Table'}
-          secondColumnName={'Column'}
+          firstColumnName={t('tooljetDatabase.tableKeyRelations.table', 'Table')}
+          secondColumnName={t('tooljetDatabase.tableKeyRelations.column', 'Column')}
           tableList={tableList}
           tableColumns={targetTableColumns}
           source={false}
@@ -304,13 +322,18 @@ function SourceKeyRelation({
         <div>
           <div className="d-flex align-items-center mb-1">
             <Actions width={18} height={18} />
-            <p className="mb-0 source-title">ACTIONS</p>
+            <p className="mb-0 source-title">{t('tooljetDatabase.tableKeyRelations.actionsTitle', 'ACTIONS')}</p>
           </div>
-          <span className="source-description">What happens to Source table when Target table is modified </span>
+          <span className="source-description">
+            {t(
+              'tooljetDatabase.tableKeyRelations.actionsDescription',
+              'What happens to Source table when Target table is modified'
+            )}
+          </span>
         </div>
         <TableDetailsDropdown
-          firstColumnName={'On update'}
-          secondColumnName={'On remove'}
+          firstColumnName={t('tooljetDatabase.tableKeyRelations.onUpdate', 'On update')}
+          secondColumnName={t('tooljetDatabase.tableKeyRelations.onRemove', 'On remove')}
           tableList={onUpdateOptions}
           tableColumns={onDeleteOptions}
           source={false}

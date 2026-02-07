@@ -13,6 +13,7 @@ import { SquareDashedMousePointer, PencilRuler, Lock, VectorSquare, EyeClosed, T
 import Popover from '@/_ui/Popover';
 import DynamicHeightInfo from '@assets/images/dynamic-height-info.svg';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { useTranslation } from 'react-i18next';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('./MentionComponentInChat'));
@@ -35,6 +36,7 @@ export const ConfigHandle = ({
   subContainerIndex,
   isDynamicHeightEnabled,
 }) => {
+  const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -168,9 +170,14 @@ export const ConfigHandle = ({
         <DynamicHeightInfo />
       </div>
       <div className="dynamic-height-info-body">
-        <p className="dynamic-height-info-text-title">Dynamic Height enabled</p>
+        <p className="dynamic-height-info-text-title">
+          {t('editor.configHandle.dynamicHeightEnabled', 'Dynamic Height enabled')}
+        </p>
         <p className="dynamic-height-info-text-description">
-          Your component expands based on content but won&apos;t shrink below the height you set on canvas.
+          {t(
+            'editor.configHandle.dynamicHeightDescription',
+            "Your component expands based on content but won't shrink below the height you set on canvas."
+          )}
         </p>
       </div>
       <div className="dynamic-height-info-button">
@@ -183,7 +190,7 @@ export const ConfigHandle = ({
             setHideDynamicHeightInfo(true);
           }}
         >
-          Never show this again
+          {t('editor.configHandle.neverShowAgain', 'Never show this again')}
         </ButtonComponent>
       </div>
     </div>
