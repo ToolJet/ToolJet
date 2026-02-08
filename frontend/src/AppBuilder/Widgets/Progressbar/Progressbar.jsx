@@ -23,12 +23,11 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
 
   // ===== COMPUTED VALUES =====
   // Calculate font size as percentage of component height (textSize: 1-100, default 26)
-  const validTextSize = textSize >= 1 && textSize <= 100 ? textSize : 26;
+  const validTextSize = textSize >= 1 && textSize <= 50 ? textSize : 26;
   const fontSize = `${(height * validTextSize) / 100}px`;
 
   // Calculate progress bar height as percentage of component height (progressBarThickness: 1-100, default 20)
-  const validProgressBarThickness =
-    progressBarThickness >= 1 && progressBarThickness <= 100 ? progressBarThickness : 20;
+  const validProgressBarThickness = progressBarThickness >= 1 && progressBarThickness <= 50 ? progressBarThickness : 20;
   const barHeight = (height * validProgressBarThickness) / 100;
 
   // ===== STATE MANAGEMENT =====
@@ -119,7 +118,8 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
           width: '100%',
           display: 'flex',
           justifyContent: direction === 'right' ? 'flex-end' : 'flex-start',
-          alignItems: 'center',
+          alignItems: alignment === 'top' ? 'flex-end' : 'center',
+          height: '50%',
           flexShrink: 0,
         }
       : {};
@@ -138,9 +138,10 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   // Progress bar container styles
   const progressBarContainerStyles = {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: alignment === 'top' ? 'flex-start' : 'center',
     flex: 1,
     width: '100%',
+    height: alignment === 'top' ? '50%' : '100%',
   };
 
   // Progress bar wrapper styles

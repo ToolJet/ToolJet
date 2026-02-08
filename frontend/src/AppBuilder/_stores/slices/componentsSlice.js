@@ -2122,14 +2122,13 @@ export const createComponentsSlice = (set, get) => ({
     });
   },
   calculateMoveableBoxHeightWithId: (componentId, currentLayout, stylesDefinition, moduleId = 'canvas') => {
-    const { computeLabelHeight } = get();
     const componentDefinition = get().getComponentDefinition(componentId, moduleId);
     const layoutData = componentDefinition?.layouts?.[currentLayout];
     const componentType = componentDefinition?.component?.component;
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (![...INPUT_COMPONENTS_FOR_FORM, 'ProgressBar'].includes(componentType)) {
+    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
@@ -2150,7 +2149,7 @@ export const createComponentsSlice = (set, get) => ({
 
     if (alignment.value && resolvedAlignment === 'top') {
       if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += computeLabelHeight(componentId, moduleId);
+        newHeight += 20;
       }
     }
     return newHeight;
@@ -2466,17 +2465,5 @@ export const createComponentsSlice = (set, get) => ({
     );
     if (componentExposedProperty !== undefined) return componentExposedProperty;
     return component?.properties?.[fallbackProperty] || component?.styles?.[fallbackProperty];
-  },
-  computeLabelHeight: (componentId, moduleId = 'canvas') => {
-    const { getComponentTypeFromId, getResolvedComponent, currentLayout, getComponentDefinition } = get();
-    const componentType = getComponentTypeFromId(componentId, moduleId);
-    if (componentType === 'ProgressBar') {
-      const resolvedComponent = getResolvedComponent(componentId, undefined, moduleId);
-      const componentDefinition = getComponentDefinition(componentId, moduleId);
-      const textSize = resolvedComponent?.styles?.textSize?.value;
-      const validTextSize = textSize >= 1 && textSize <= 100 ? textSize : 26;
-      return (componentDefinition?.layouts?.[currentLayout]?.height * validTextSize) / 100;
-    }
-    return 20;
   },
 });
