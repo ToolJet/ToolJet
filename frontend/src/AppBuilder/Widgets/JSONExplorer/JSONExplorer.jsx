@@ -170,7 +170,7 @@ export const JSONExplorer = function JSONExplorer(props) {
 
   // ===== MAIN RENDER =====
   return (
-    <div ref={containerRef} className="json-explorer" style={containerComputedStyles}>
+    <div ref={containerRef} className="json-explorer scrollbar-container" style={containerComputedStyles}>
       {exposedVariablesTemporaryState.isLoading ? (
         <Loader width="24" absolute={false} />
       ) : (
