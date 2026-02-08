@@ -33,7 +33,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
-  ) {}
+  ) { }
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
@@ -557,6 +557,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'snowflake',
         'microsoft_graph',
         'hubspot',
+        'xero',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

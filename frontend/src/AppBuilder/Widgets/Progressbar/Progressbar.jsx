@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Label from '@/_ui/Label';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
-
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
   // ===== PROPS DESTRUCTURING =====
   const { labelType, label, progress, visibility, loadingState } = properties;
@@ -19,16 +19,19 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     progressBarThickness,
     boxShadow,
     textSize,
+    padding,
   } = styles;
 
   // ===== COMPUTED VALUES =====
+  const computedHeight = padding !== 'none' ? height - 2 * BOX_PADDING : height;
+
   // Calculate font size as percentage of component height (textSize: 1-100, default 26)
   const validTextSize = textSize >= 1 && textSize <= 50 ? textSize : 26;
-  const fontSize = `${(height * validTextSize) / 100}px`;
+  const fontSize = `${(computedHeight * validTextSize) / 100}px`;
 
   // Calculate progress bar height as percentage of component height (progressBarThickness: 1-100, default 20)
   const validProgressBarThickness = progressBarThickness >= 1 && progressBarThickness <= 50 ? progressBarThickness : 20;
-  const barHeight = (height * validProgressBarThickness) / 100;
+  const barHeight = (computedHeight * validProgressBarThickness) / 100;
 
   // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({

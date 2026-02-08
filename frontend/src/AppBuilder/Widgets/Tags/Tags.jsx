@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
@@ -138,23 +138,23 @@ export const Tags = function Tags({
     pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
       ? {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
-          flexWrap: 'wrap',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
-          alignContent: 'flex-start',
-          alignItems: 'flex-start',
-          margin: '0 -3px -3px 0',
-        }
+        display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+        flexWrap: 'wrap',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        justifyContent: alignment === 'center' ? 'center' : alignment === 'right' ? 'flex-end' : 'flex-start',
+        alignContent: 'flex-start',
+        alignItems: 'flex-start',
+        margin: '0 -3px -3px 0',
+      }
       : {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
-          flexWrap: 'nowrap',
-          overflowX: 'auto',
-          overflowY: 'hidden',
-          whiteSpace: 'nowrap',
-          justifyContent: 'flex-start',
-        }),
+        display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+        flexWrap: 'nowrap',
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        whiteSpace: 'nowrap',
+        justifyContent: 'flex-start',
+      }),
   };
 
   function getTagIcon(tag, tagDataCy) {
@@ -163,16 +163,14 @@ export const Tags = function Tags({
       tag?.iconVisibility?.value !== undefined
         ? tag.iconVisibility.value
         : tag?.iconVisibility !== undefined
-        ? tag.iconVisibility
-        : false;
+          ? tag.iconVisibility
+          : false;
 
     if (!iconName || !iconVisible) return null;
 
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] === undefined ? Icons['IconHome2'] : Icons[iconName];
-
     return (
-      <IconElement
+      <TablerIcon
+        iconName={iconName}
         style={{
           width: size === 'small' ? '12px' : '16px',
           height: size === 'small' ? '12px' : '16px',

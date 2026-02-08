@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
-import { SubContainer } from '../SubContainer';
-import Spinner from '@/_ui/Spinner';
+import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';                                    import Spinner from '@/_ui/Spinner';
 
 export const Container = function Container({
   id,
