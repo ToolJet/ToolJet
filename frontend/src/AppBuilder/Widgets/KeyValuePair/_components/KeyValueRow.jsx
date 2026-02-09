@@ -45,17 +45,7 @@ const KeyValueRow = ({
   maxLabelWidth,
   hasChanges,
 }) => {
-  const {
-    key: fieldKey,
-    name,
-    label,
-    fieldType = 'string',
-    isEditable = false,
-    // Date options
-    dateFormat,
-    showTimeSelect,
-    timeFormat,
-  } = field;
+  const { key: fieldKey, name, label, fieldType = 'string', isEditable = false } = field;
 
   // Local state for edit mode
   const [isEditing, setIsEditing] = useState(false);
@@ -68,7 +58,6 @@ const KeyValueRow = ({
   // Show input if editing is active
   const showInput = canEdit && isEditing;
   const _width = getLabelWidthOfInput('ofComponent', labelWidth);
-
   const isTopAlignment = alignment === 'top';
   const isRightDirection = direction === 'right';
 
@@ -122,24 +111,16 @@ const KeyValueRow = ({
 
     switch (fieldType) {
       case 'string':
-        return <StringField {...commonProps} field={field} />;
+        return <StringField {...commonProps} />;
 
       case 'number':
-        return <NumberField {...commonProps} field={field} />;
+        return <NumberField {...commonProps} />;
 
       case 'text':
-        return <TextField {...commonProps} field={field} />;
+        return <TextField {...commonProps} />;
 
       case 'datepicker':
-        return (
-          <DatepickerField
-            {...commonProps}
-            dateFormat={dateFormat}
-            showTimeSelect={showTimeSelect}
-            timeFormat={timeFormat}
-            field={field}
-          />
-        );
+        return <DatepickerField {...commonProps} />;
 
       case 'select':
         return <SelectField {...commonProps} />;

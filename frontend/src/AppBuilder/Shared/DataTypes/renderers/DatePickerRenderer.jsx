@@ -141,6 +141,8 @@ export const DatePickerRenderer = ({
   const dateInputRef = useRef(null);
   const ref = useRef(null);
   const textRef = useRef(null);
+  // Ref to track if date change was already handled (prevents double-call from onChange + onCalendarClose)
+  const dateChangeHandledRef = useRef(false);
 
   const readOnly = !isEditable;
 
@@ -333,6 +335,8 @@ export const DatePickerRenderer = ({
           })}
           selected={date}
           onChange={(date, e) => {
+            // Mark that date change was handled via picker selection
+            dateChangeHandledRef.current = true;
             setIsInputFocused(false);
             handleDateChange(date);
             e?.stopPropagation();
@@ -366,11 +370,17 @@ export const DatePickerRenderer = ({
           popperProps={{ strategy: 'fixed' }}
           timeIntervals={15}
           timeFormat={isTwentyFourHrFormatEnabled ? 'HH:mm' : 'h:mm aa'}
+          onCalendarOpen={() => {
+            // Reset the flag when calendar opens
+            dateChangeHandledRef.current = false;
+          }}
           onCalendarClose={() => {
-            if (isInputFocused) {
+            // Only handle input date change if onChange wasn't already called
+            if (isInputFocused && !dateChangeHandledRef.current) {
               handleInputDateChange(inputValue);
             }
             setIsInputFocused(false);
+            dateChangeHandledRef.current = false;
           }}
         />
         {isEditable && !isValid && <div className="invalid-feedback-date text-truncate">{validationError}</div>}
