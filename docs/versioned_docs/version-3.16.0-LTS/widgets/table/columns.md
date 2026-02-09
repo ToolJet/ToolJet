@@ -43,6 +43,7 @@ The table component supports the following column types:
 - **[Boolean](#boolean)**
 - **[Image](#image)**
 - **[Link](#link)**
+- **[Rating](#rating)**
 - **[Default](#default-deprecated)** - Deprecated
 - **[Dropdown](#dropdown-deprecated)** - Deprecated
 - **[Multiselect](#multiselect-deprecated)** - Deprecated
@@ -290,7 +291,38 @@ The image column type can be used to display images.
 |:--------------|:----------------|:----------------------|
 | Text Alignment  | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color      | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
+| Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.|
+
+### Rating
+
+The Rating column type displays an interactive star or heart rating within table cells. This is useful for displaying customer reviews, product ratings, priority levels, or any data that can be represented on a numeric scale.
+
+#### Properties
+
+| Property       | Description     | Expected Value |
+|:--------------|:----------------|:----------------------|
+| Column Name | Specify the name to be displayed on the table column header. | String (e.g., `Customer Rating`). |
+| Key | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided. | String (e.g., `rating`). |
+| Transformation | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`. | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`. |
+| Icon | Choose between stars or hearts as the rating icon. | Toggle between `Stars` and `Hearts` (Default: `Stars`). |
+| Make Editable | This option is disabled by default. Enabling it allows the column to be edited by app users. | Enable/disable the toggle button or dynamically configure the setting by clicking on **fx** and entering a logical expression. |
+| Visibility | This option is enabled by default. Disabling it hides the column from the table. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
+#### Options
+
+| Property       | Description     | Expected Value |
+|:--------------|:----------------|:----------------------|
+| Max rating | Sets the maximum number of rating icons to display. | Integer (Default: `5`). |
+| Default rating | Sets the default rating value for cells with empty or null values. | Integer (e.g., `3`). |
+| Allow half rating | Enables half-star or half-heart ratings for more precise values. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression (Default: `false`). |
+
+#### Styles
+
+| Property       | Description     | Configuration Options |
+|:--------------|:----------------|:----------------------|
+| Alignment | Aligns the rating icons within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch. |
+| Selected color | Sets the color for selected (filled) rating icons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code (Default: `#EFB82D` for stars, `#EE5B67` for hearts). |
+| Unselected color | Sets the color for unselected (empty) rating icons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 ### JSON
 
