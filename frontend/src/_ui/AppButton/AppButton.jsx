@@ -2,7 +2,7 @@ import React from 'react';
 import './AppButton.scss';
 import SolidIcon from '../Icon/solidIcons/index';
 import { Spinner } from 'react-bootstrap';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -35,12 +35,6 @@ export const ButtonBase = function ButtonBase(props) {
   const isAnchor = (!!restProps.href || as === 'a') && !disabled;
   const Element = as ? as : isAnchor ? 'a' : 'button';
 
-  const TablerIcon = ({ name, ...props }) => {
-    // eslint-disable-next-line import/namespace
-    const IconElement = Icons[name] === undefined ? Icons['IconHome2'] : Icons[name];
-    return <IconElement {...props} />;
-  };
-
   return (
     <Element
       {...restProps}
@@ -57,7 +51,7 @@ export const ButtonBase = function ButtonBase(props) {
       {!isLoading && leftIcon && (
         <span className="tj-btn-left-icon">
           {isTablerIcon ? (
-            <TablerIcon name={leftIcon} color={fill} size={iconWidth} className={iconCustomClass} />
+            <TablerIcon iconName={leftIcon} color={fill} size={iconWidth} className={iconCustomClass} />
           ) : (
             <SolidIcon
               fill={fill}
@@ -79,7 +73,7 @@ export const ButtonBase = function ButtonBase(props) {
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
           {isTablerIcon ? (
-            <TablerIcon name={rightIcon} color={fill} size={iconWidth} className={iconCustomClass} />
+            <TablerIcon iconName={rightIcon} color={fill} size={iconWidth} className={iconCustomClass} />
           ) : (
             <SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} width={iconWidth} />
           )}

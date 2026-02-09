@@ -2,7 +2,6 @@
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { IconDotsVertical } from '@tabler/icons-react';
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -154,8 +153,9 @@ const RenderPageGroup = ({
         {!labelStyle?.icon?.hidden && (
           <div className="custom-icon">
             <IconElement
-              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
-                }`}
+              className={`tw-h-[16px] tw-w-[16px] tw-text-[var(--nav-item-icon-color)] ${
+                isActive && 'group-data-[state=closed]:!tw-text-[var(--selected-nav-item-icon-color)]'
+              }`}
             />
           </div>
         )}
@@ -229,7 +229,8 @@ const RenderPageGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <TablerIcon iconName='IconChevronUp'
+        <TablerIcon
+          iconName="IconChevronUp"
           size={16}
           color="var(--nav-item-icon-color)"
           className={`cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180`}
