@@ -21,12 +21,13 @@ export function getProjection(items, activeId, overId, dragOffset, indentationWi
     if (activeItem.isPageGroup) {
       return { depth: 0, maxDepth, minDepth, pageGroupId: null };
     }
+
+    let depth = projectedDepth;
     if (projectedDepth > maxDepth) {
       depth = maxDepth;
     } else if (projectedDepth < minDepth) {
       depth = minDepth;
     }
-    let depth = projectedDepth;
 
     if (depth < 1 && !activeItem.isPageGroup) {
       // check if it is intersecting with a page group item

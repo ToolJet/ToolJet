@@ -4,576 +4,583 @@
 // ==========================================
 // Nav Tree Item Wrapper (matches TreeItem.module.css .Wrapper)
 // ==========================================
-.nav-tree-item-wrapper {
-  list-style: none;
-  box-sizing: border-box;
-  padding-left: var(--spacing) !important;
-  margin-bottom: 0;
 
-  &.clone {
-    display: inline-block;
-    pointer-events: none;
-    padding: 0;
-    padding-left: 10px;
-    padding-top: 5px;
+.navigation-inspector{
 
-    .nav-tree-item {
-      --vertical-padding: 5px;
-      padding-right: 24px;
-      border-radius: 4px;
-      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
-    }
-  }
-
-  &.ghost {
-    &.indicator {
-      opacity: 1;
-      position: relative;
-      z-index: 1;
-      margin-bottom: -1px;
-
-      &.remove-border {
-        .nav-tree-item::before {
-          height: 0px !important;
-        }
-      }
-
+  .nav-tree-item-wrapper {
+    list-style: none;
+    box-sizing: border-box;
+    padding-left: var(--spacing) !important;
+    margin-bottom: 0;
+  
+    &.clone {
+      display: inline-block;
+      pointer-events: none;
+      padding: 0;
+      padding-left: 10px;
+      padding-top: 5px;
+  
       .nav-tree-item {
+        --vertical-padding: 5px;
+        padding-right: 24px;
+        border-radius: 4px;
+        box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+      }
+    }
+  
+    &.ghost {
+      &.indicator {
+        opacity: 1;
         position: relative;
-        padding: 0;
-        height: 0px;
-        > * {
-          opacity: 0;
-          height: 0;
+        z-index: 1;
+        margin-bottom: -1px;
+  
+        &.remove-border {
+          .nav-tree-item::before {
+            height: 0px !important;
+          }
+        }
+  
+        .nav-tree-item {
+          position: relative;
+          padding: 0;
+          height: 0px;
+          > * {
+            opacity: 0;
+            height: 0;
+          }
+        }
+  
+        .nav-tree-item::before {
+          content: '';
+          position: absolute;
+          top: 3px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background-color: var(--indigo9, #3D63DC);
         }
       }
-
-      .nav-tree-item::before {
-        content: '';
-        position: absolute;
-        top: 3px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: var(--indigo9, #3D63DC);
+  
+      &:not(.indicator) {
+        opacity: 0.5;
+      }
+  
+      .nav-tree-item > * {
+        box-shadow: none;
+        background-color: transparent;
       }
     }
-
-    &:not(.indicator) {
-      opacity: 0.5;
+  
+    &.disable-interaction {
+      pointer-events: none;
     }
-
-    .nav-tree-item > * {
-      box-shadow: none;
-      background-color: transparent;
-    }
-  }
-
-  &.disable-interaction {
-    pointer-events: none;
-  }
-
-  &.disable-selection {
-    .page-name {
-      user-select: none;
-      -webkit-user-select: none;
+  
+    &.disable-selection {
+      .page-name {
+        user-select: none;
+        -webkit-user-select: none;
+      }
     }
   }
-}
-
-// ==========================================
-// Nav Tree Item (matches TreeItem.module.css .TreeItem)
-// ==========================================
-.nav-tree-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: var(--vertical-padding) 10px;
-  color: var(--text-default);
-  box-sizing: border-box;
-}
-
-// ==========================================
-// Nav Menu Items List Container
-// ==========================================
-.nav-menu-items-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-}
-
-// ==========================================
-// Nav Item Icons
-// ==========================================
-.nav-item-icon {
-  color: var(--icons-default);
-}
-
-.nav-item-chevron {
-  color: var(--icons-default);
-}
-
-// ==========================================
-// Page Menu Item styles (Figma: Interactive list items)
-// Height: 32px, Padding: 7px 8px, Border-radius: 6px
-// Background: var(--interactive-default)
-// ==========================================
-.page-menu-item {
-  height: 32px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  padding: 7px 8px;
-  width: 100%;
-  justify-content: space-between;
-  background-color: var(--interactive-default);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &.highlight {
-    border: 2px solid var(--indigo9, #3D63DC);
+  
+  // ==========================================
+  // Nav Tree Item (matches TreeItem.module.css .TreeItem)
+  // ==========================================
+  .nav-tree-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: var(--vertical-padding) 10px;
+    color: var(--text-default);
+    box-sizing: border-box;
   }
-
-  &.is-selected {
-    background-color: var(--interactive-selected) !important;
+  
+  // ==========================================
+  // Nav Menu Items List Container
+  // ==========================================
+  .nav-menu-items-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
   }
-
-  &:hover:not(.is-selected) {
-    background-color: var(--interactive-hover);
+  
+  // ==========================================
+  // Nav Item Icons
+  // ==========================================
+  .nav-item-icon {
+    color: var(--icons-default);
   }
-
-  // Group items have transparent background (interactive-weak)
-  &.page-group-item {
-    background-color: var(--interactive-weak);
-
+  
+  .nav-item-chevron {
+    color: var(--icons-default);
+  }
+  
+  // ==========================================
+  // Page Menu Item styles (Figma: Interactive list items)
+  // Height: 32px, Padding: 7px 8px, Border-radius: 6px
+  // Background: var(--interactive-default)
+  // ==========================================
+  .page-menu-item {
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 7px 8px;
+    width: 100%;
+    justify-content: space-between;
+    background-color: var(--interactive-default);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  
+    &.highlight {
+      border: 2px solid var(--indigo9, #3D63DC);
+    }
+  
+    &.is-selected {
+      background-color: var(--interactive-selected) !important;
+    }
+  
     &:hover:not(.is-selected) {
       background-color: var(--interactive-hover);
     }
-
-    &:active {
-      background-color: var(--interactive-selected);
+  
+    // Group items have transparent background (interactive-weak)
+    &.page-group-item {
+      background-color: var(--interactive-weak);
+  
+      &:hover:not(.is-selected) {
+        background-color: var(--interactive-hover);
+      }
+  
+      &:active {
+        background-color: var(--interactive-selected);
+      }
     }
-  }
-
-  .page-group-actions {
-    transition: 0.2s ease;
-    opacity: 0;
-    gap: 2px;
-    display: flex;
-    width: unset !important;
-    height: unset !important;
-
-    button {
-      border-radius: 4px;
-      border: 1px solid var(--border-default);
-      background: var(--surfaces-surface-01);
-      width: 20px;
-      height: 20px;
-      padding: 0;
-      box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
-                  0px 1px 1px 0px rgba(48, 50, 51, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-
-  .meta-text {
-    color: var(--text-placeholder);
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 18px;
-    margin-left: 8px;
-    gap: 6px;
-    flex-shrink: 0;
-    margin-right: 6px;
-  }
-
-  button.edit-page-overlay-toggle {
-    opacity: 0;
-  }
-
-  &:hover {
-    button.edit-page-overlay-toggle {
-      opacity: 1;
-    }
-
+  
     .page-group-actions {
-      opacity: 1;
-    }
-  }
-
-  // Left content: icon + label with 6px gap
-  .left {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    flex-shrink: 1;
-    min-width: 0;
-    gap: 6px;
-
-    .main-page-icon-wrapper {
-      flex-shrink: 0;
+      transition: 0.2s ease;
+      opacity: 0;
+      gap: 2px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: unset !important;
+      height: unset !important;
+  
+      button {
+        border-radius: 4px;
+        border: 1px solid var(--border-default);
+        background: var(--surfaces-surface-01);
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+                    0px 1px 1px 0px rgba(48, 50, 51, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
-
-    .page-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text-default);
+  
+    .meta-text {
+      color: var(--text-placeholder);
       font-size: 12px;
       font-style: normal;
       font-weight: 400;
       line-height: 18px;
+      margin-left: 8px;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-right: 6px;
+    }
+  
+    button.edit-page-overlay-toggle {
+      opacity: 0;
+    }
+  
+    &:hover {
+      button.edit-page-overlay-toggle {
+        opacity: 1;
+      }
+  
+      .page-group-actions {
+        opacity: 1;
+      }
+    }
+  
+    // Left content: icon + label with 6px gap
+    .left {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
       flex-shrink: 1;
+      min-width: 0;
+      gap: 6px;
+  
+      .main-page-icon-wrapper {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+      }
+  
+      .page-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-default);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        flex-shrink: 1;
+        min-width: 0;
+      }
+    }
+  }
+  
+  // ==========================================
+  // Action button wrapper (shown on hover)
+  // ==========================================
+  .action-btn-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  
+    .icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid var(--border-default);
+      background: var(--surfaces-surface-01);
+      box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+                  0px 1px 1px 0px rgba(48, 50, 51, 0.1);
+      cursor: pointer;
+  
+      &:hover {
+        background: var(--interactive-hover);
+      }
+    }
+  
+    &.options-opened {
+      opacity: 1;
+    }
+  }
+  
+  .nav-handler:hover,
+  .page-menu-item:hover {
+    .action-btn-wrapper {
+      opacity: 1;
+    }
+  }
+  
+  // ==========================================
+  // Nested Items Container (Figma: pl-16px, gap-16px with dashed line)
+  // ==========================================
+  .nav-nested-items-container {
+    display: flex;
+    gap: 16px;
+    padding-left: 16px;
+    width: 100%;
+  
+    .nav-nested-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 0;
+      align-self: stretch;
+  
+      &::after {
+        content: '';
+        width: 1px;
+        height: 100%;
+        border-left: 1px dashed var(--border-weak);
+      }
+    }
+  
+    .nav-nested-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
       min-width: 0;
     }
   }
+  
+  
+  // ==========================================
+  // Nav Handler Ghost (for DragOverlay)
+  // ==========================================
+  .nav-handler.ghost {
+    background-color: var(--surfaces-surface-02);
+    border-radius: 6px;
+    position: relative;
+    width: 100%;
+    opacity: 0.9;
+    padding: 0 8px;
+  
+    .page-menu-item {
+      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+    }
+  }
+  
+  // ==========================================
+  // Dark Theme Adjustments
+  // ==========================================
+  .dark-theme {
+    .page-menu-item {
+      background-color: var(--interactive-default);
+  
+      &.page-group-item {
+        background-color: var(--interactive-weak);
+      }
+  
+      .left .page-name {
+        color: var(--text-default);
+      }
+    }
+  
+    .nav-handler.ghost {
+      background-color: var(--surfaces-surface-02);
+    }
+  
+    .nav-item-popover {
+      background-color: var(--surfaces-surface-01);
+  
+      .nav-item-popover-header {
+        border-bottom-color: var(--border-weak);
+      }
+  
+      .nav-item-popover-icon-btn {
+        color: var(--icons-default);
+  
+        &:hover {
+          background-color: var(--interactive-hover);
+        }
+      }
+    }
+  
+    .action-btn-wrapper .icon-btn {
+      background: var(--surfaces-surface-02);
+      border-color: var(--border-weak);
+    }
+  }
 }
 
-// ==========================================
-// Action button wrapper (shown on hover)
-// ==========================================
-.action-btn-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-
-  .icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 1px solid var(--border-default);
-    background: var(--surfaces-surface-01);
+  // ==========================================
+  // Edit Popover Styles (Figma: 310px width)
+  // ==========================================
+  .nav-item-popover {
+    border-radius: 8px;
+    background-color: var(--surfaces-surface-01);
     box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
-                0px 1px 1px 0px rgba(48, 50, 51, 0.1);
-    cursor: pointer;
-
-    &:hover {
-      background: var(--interactive-hover);
+                0px 4px 8px 0px rgba(48, 50, 51, 0.1);
+    border: none;
+  
+    .popover-body {
+      padding: 0;
     }
-  }
-
-  &.options-opened {
-    opacity: 1;
-  }
-}
-
-.nav-handler:hover,
-.page-menu-item:hover {
-  .action-btn-wrapper {
-    opacity: 1;
-  }
-}
-
-// ==========================================
-// Nested Items Container (Figma: pl-16px, gap-16px with dashed line)
-// ==========================================
-.nav-nested-items-container {
-  display: flex;
-  gap: 16px;
-  padding-left: 16px;
-  width: 100%;
-
-  .nav-nested-line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 0;
-    align-self: stretch;
-
-    &::after {
-      content: '';
-      width: 1px;
-      height: 100%;
-      border-left: 1px dashed var(--border-weak);
+  
+    .nav-item-popover-container {
+      display: flex;
+      flex-direction: column;
     }
-  }
-
-  .nav-nested-content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-// ==========================================
-// Edit Popover Styles (Figma: 310px width)
-// ==========================================
-.nav-item-popover {
-  border-radius: 8px;
-  background-color: var(--surfaces-surface-01);
-  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
-              0px 4px 8px 0px rgba(48, 50, 51, 0.1);
-  border: none;
-
-  .popover-body {
-    padding: 0;
-  }
-
-  .nav-item-popover-container {
-    display: flex;
-    flex-direction: column;
-  }
-
-  // Header: padding 16px horizontal, 8px vertical
-  .nav-item-popover-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--border-weak);
-
-    .nav-item-popover-header-title {
+  
+    // Header: padding 16px horizontal, 8px vertical
+    .nav-item-popover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border-weak);
+  
+      .nav-item-popover-header-title {
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--text-default);
+      }
+  
+      .nav-item-popover-header-actions {
+        display: flex;
+        align-items: center;
+      }
+    }
+  
+    // Icon buttons in header
+    .nav-item-popover-icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--icons-default);
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+  
+      &:hover {
+        background-color: var(--interactive-hover);
+      }
+  
+      &.nav-item-popover-icon-btn-danger {
+        &:hover {
+          background-color: var(--interactive-dangerHover);
+          color: var(--icons-danger);
+        }
+      }
+    }
+  
+    // Content: padding 16px, gap 16px between sections
+    .nav-item-popover-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px;
+    }
+  
+    // Fields section: gap 8px between fields
+    .nav-item-popover-fields-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  
+    // Toggles section: gap 8px between toggles
+    .nav-item-popover-toggles-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  
+    // Individual field
+    .nav-item-popover-field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+  
+    // Field label
+    .nav-item-popover-field-label {
       font-weight: 500;
       font-size: 12px;
       line-height: 18px;
       color: var(--text-default);
+      padding-left: 2px;
     }
-
-    .nav-item-popover-header-actions {
+  }
+  
+  // ==========================================
+  // Add Menu Popover
+  // ==========================================
+  // Figma: menu/action - padding 8px, border-radius 10px
+  // ==========================================
+  .nav-add-menu-popover {
+    border-radius: 10px;
+    border: 1px solid var(--border-weak);
+    background-color: var(--surfaces-surface-01);
+    box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+                0px 4px 8px 0px rgba(48, 50, 51, 0.1);
+    overflow: hidden;
+  
+    .popover-body {
+      padding: 8px;
+      background-color: var(--surfaces-surface-01);
+      border-radius: 10px;
+    }
+  
+    // Figma: actionlistItem - padding 6px 8px, border-radius 6px, gap 6px
+    .nav-add-menu-option {
       display: flex;
       align-items: center;
-    }
-  }
-
-  // Icon buttons in header
-  .nav-item-popover-icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--icons-default);
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-
-    &:hover {
-      background-color: var(--interactive-hover);
-    }
-
-    &.nav-item-popover-icon-btn-danger {
-      &:hover {
-        background-color: var(--interactive-dangerHover);
-        color: var(--icons-danger);
-      }
-    }
-  }
-
-  // Content: padding 16px, gap 16px between sections
-  .nav-item-popover-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
-
-  // Fields section: gap 8px between fields
-  .nav-item-popover-fields-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  // Toggles section: gap 8px between toggles
-  .nav-item-popover-toggles-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  // Individual field
-  .nav-item-popover-field {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  // Field label
-  .nav-item-popover-field-label {
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--text-default);
-    padding-left: 2px;
-  }
-}
-
-// ==========================================
-// Add Menu Popover
-// ==========================================
-// Figma: menu/action - padding 8px, border-radius 10px
-// ==========================================
-.nav-add-menu-popover {
-  border-radius: 10px;
-  border: 1px solid var(--border-weak);
-  background-color: var(--surfaces-surface-01);
-  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
-              0px 4px 8px 0px rgba(48, 50, 51, 0.1);
-  overflow: hidden;
-
-  .popover-body {
-    padding: 8px;
-    background-color: var(--surfaces-surface-01);
-    border-radius: 10px;
-  }
-
-  // Figma: actionlistItem - padding 6px 8px, border-radius 6px, gap 6px
-  .nav-add-menu-option {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    width: 100%;
-
-    &:hover {
-      background-color: var(--interactive-hover);
-    }
-
-    .nav-add-menu-option-icon {
-      color: var(--icons-default);
-      flex-shrink: 0;
-    }
-
-    // Figma: 12px regular, line-height 18px, text-default
-    .nav-add-menu-option-label {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-default);
-      line-height: 18px;
-    }
-  }
-}
-
-// ==========================================
-// Item Actions Popover (Edit/Delete menu)
-// ==========================================
-.nav-item-actions-popover {
-  min-width: 160px;
-  border-radius: 10px;
-  border: 1px solid var(--border-weak);
-  background-color: var(--surfaces-surface-01);
-  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
-              0px 4px 8px 0px rgba(48, 50, 51, 0.1);
-
-  .popover-body {
-    padding: 8px;
-  }
-
-  .nav-item-action-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-
-    &:hover {
-      background-color: var(--interactive-hover);
-    }
-
-    .nav-item-action-option-icon {
-      color: var(--icons-default);
-    }
-
-    .nav-item-action-option-label {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-default);
-      line-height: 18px;
-    }
-
-    // Danger state (delete option)
-    &.nav-item-action-option-danger {
-      &:hover {
-        background-color: var(--interactive-dangerHover);
-      }
-
-      .nav-item-action-option-icon {
-        color: var(--icons-danger);
-      }
-
-      .nav-item-action-option-label {
-        color: var(--text-danger);
-      }
-    }
-  }
-}
-
-// ==========================================
-// Nav Handler Ghost (for DragOverlay)
-// ==========================================
-.nav-handler.ghost {
-  background-color: var(--surfaces-surface-02);
-  border-radius: 6px;
-  position: relative;
-  width: 100%;
-  opacity: 0.9;
-  padding: 0 8px;
-
-  .page-menu-item {
-    box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
-  }
-}
-
-// ==========================================
-// Dark Theme Adjustments
-// ==========================================
-.dark-theme {
-  .page-menu-item {
-    background-color: var(--interactive-default);
-
-    &.page-group-item {
-      background-color: var(--interactive-weak);
-    }
-
-    .left .page-name {
-      color: var(--text-default);
-    }
-  }
-
-  .nav-handler.ghost {
-    background-color: var(--surfaces-surface-02);
-  }
-
-  .nav-item-popover {
-    background-color: var(--surfaces-surface-01);
-
-    .nav-item-popover-header {
-      border-bottom-color: var(--border-weak);
-    }
-
-    .nav-item-popover-icon-btn {
-      color: var(--icons-default);
-
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      width: 100%;
+  
       &:hover {
         background-color: var(--interactive-hover);
       }
+  
+      .nav-add-menu-option-icon {
+        color: var(--icons-default);
+        flex-shrink: 0;
+      }
+  
+      // Figma: 12px regular, line-height 18px, text-default
+      .nav-add-menu-option-label {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--text-default);
+        line-height: 18px;
+      }
     }
   }
-
-  .action-btn-wrapper .icon-btn {
-    background: var(--surfaces-surface-02);
-    border-color: var(--border-weak);
+  
+  // ==========================================
+  // Item Actions Popover (Edit/Delete menu)
+  // ==========================================
+  .nav-item-actions-popover {
+    min-width: 160px;
+    border-radius: 10px;
+    border: 1px solid var(--border-weak);
+    background-color: var(--surfaces-surface-01);
+    box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+                0px 4px 8px 0px rgba(48, 50, 51, 0.1);
+  
+    .popover-body {
+      padding: 8px;
+    }
+  
+    .nav-item-action-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+  
+      &:hover {
+        background-color: var(--interactive-hover);
+      }
+  
+      .nav-item-action-option-icon {
+        color: var(--icons-default);
+      }
+  
+      .nav-item-action-option-label {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--text-default);
+        line-height: 18px;
+      }
+  
+      // Danger state (delete option)
+      &.nav-item-action-option-danger {
+        &:hover {
+          background-color: var(--interactive-dangerHover);
+        }
+  
+        .nav-item-action-option-icon {
+          color: var(--icons-danger);
+        }
+  
+        .nav-item-action-option-label {
+          color: var(--text-danger);
+        }
+      }
+    }
   }
-}
+  
+

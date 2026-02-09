@@ -61,7 +61,7 @@ const NavItemsList = ({
   }, []);
 
   return (
-    <div data-cy="inspector-navigation-menu-items-list" style={{ marginBottom: '12px' }}>
+    <div className="navigation-inspector" data-cy="inspector-navigation-menu-items-list" style={{ marginBottom: '12px' }}>
       <SortableTree
         menuItems={menuItems}
         darkMode={darkMode}
