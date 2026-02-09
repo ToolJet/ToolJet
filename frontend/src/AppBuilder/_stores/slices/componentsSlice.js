@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,
   checkSubstringRegex,
@@ -801,6 +801,39 @@ export const createComponentsSlice = (set, get) => ({
     });
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+
+    // Pre-populate default exposed values for all components in a single store write.
+    // This prevents 600+ individual set() calls during component mount in RenderWidget
+    // (setDefaultExposedValues will early-return since values already exist).
+    set(
+      (state) => {
+        Object.entries(components).forEach(([componentId, component]) => {
+          const componentType = component.component.component;
+          const parentId = component.component.parent;
+
+          const existing = state.resolvedStore.modules[moduleId].exposedValues.components[componentId];
+          if (existing && Object.keys(existing).length > 0) return;
+
+          const compDef = componentTypeDefinitionMap[componentType];
+          if (!compDef) return;
+
+          // Skip Form/Listview children (same logic as setDefaultExposedValues)
+          if (parentId) {
+            const parentComponent = components[parentId];
+            const parentType = parentComponent?.component?.component;
+            if (['Form', 'Listview'].includes(parentType)) return;
+          }
+
+          const exposedVariables = compDef.exposedVariables || {};
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = {
+            ...exposedVariables,
+            id: componentId,
+          };
+        });
+      },
+      false,
+      'batchSetDefaultExposedValues'
+    );
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components
@@ -1905,7 +1938,9 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
     } = get();
     const dependecies = getDependencies(path, moduleId);
+
     if (dependecies?.length) {
+      const p1 = performance.now();
       dependecies.forEach((dependency) => {
         const itemsLength = getEntityResolvedValueLength(dependency, moduleId);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
@@ -1975,6 +2010,8 @@ export const createComponentsSlice = (set, get) => ({
           }
         }
       });
+
+      console.log('here--- dependecies--- ', performance.now() - p1);
     }
   },
   computePageSettings: (currentPageSettings) => {
