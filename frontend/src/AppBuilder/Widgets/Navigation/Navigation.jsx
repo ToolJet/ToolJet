@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons-react';
@@ -10,6 +10,8 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { useCalculateOverflow } from './hooks/useCalculateOverflow';
+import { findItemById, findParentGroup } from './utils';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
@@ -258,13 +260,6 @@ export const Navigation = function Navigation(props) {
     lastClicked: null,
   });
 
-  // State for visible/overflow items (horizontal mode)
-  const [links, setLinks] = useState({
-    visible: menuItems,
-    overflow: [],
-  });
-
-
   // Deduplicate and filter visible menu items
   const visibleMenuItems = useMemo(() => {
     const seenIds = new Set();
@@ -285,120 +280,15 @@ export const Navigation = function Navigation(props) {
     });
   }, [menuItems]);
 
-  // Calculate overflow for horizontal orientation
-  const calculateOverflow = useCallback(() => {
-    if (!containerRef.current || visibleMenuItems.length === 0) {
-      setLinks({ visible: [], overflow: [] });
-      return;
-    }
-
-    if (orientation !== 'horizontal') {
-      setLinks({ visible: visibleMenuItems, overflow: [] });
-      return;
-    }
-
-    const containerWidth = containerRef.current.offsetWidth;
-    const measuredItems = measurementContainerRef.current?.children
-      ? Array.from(measurementContainerRef.current.children)
-      : [];
-
-    if (measuredItems.length === 0) {
-      setLinks({ visible: visibleMenuItems, overflow: [] });
-      return;
-    }
-
-    const FLEX_GAP = 4;
-    const MORE_BUTTON_WIDTH = 80; // Width reserved for "More" button
-    const CONTAINER_PADDING = parseInt(padding) || 8;
-
-    let currentWidth = CONTAINER_PADDING;
-    const finalVisible = [];
-    const finalOverflow = [];
-
-    for (let i = 0; i < visibleMenuItems.length; i++) {
-      const item = visibleMenuItems[i];
-      const measuredElement = measuredItems.find((el) => el.dataset.id === item.id);
-
-      if (!measuredElement) {
-        finalOverflow.push(item);
-        continue;
-      }
-
-      const itemWidth = measuredElement.offsetWidth;
-      const widthNeeded = itemWidth + (finalVisible.length > 0 ? FLEX_GAP : 0);
-
-      // Calculate if we need space for "More" button
-      const remainingItems = visibleMenuItems.length - (i + 1);
-      const needsMoreButton = remainingItems > 0 || finalOverflow.length > 0;
-      const moreButtonSpace = needsMoreButton ? MORE_BUTTON_WIDTH + FLEX_GAP : 0;
-
-      if (currentWidth + widthNeeded + moreButtonSpace <= containerWidth) {
-        finalVisible.push(item);
-        currentWidth += widthNeeded;
-      } else {
-        finalOverflow.push(item);
-      }
-    }
-
-    // Final check: ensure we have space for More button if there are overflow items
-    while (
-      finalOverflow.length > 0 &&
-      finalVisible.length > 0 &&
-      currentWidth + MORE_BUTTON_WIDTH + FLEX_GAP > containerWidth
-    ) {
-      const lastVisible = finalVisible.pop();
-      const lastMeasured = measuredItems.find((el) => el.dataset.id === lastVisible.id);
-      if (lastMeasured) {
-        currentWidth -= lastMeasured.offsetWidth + (finalVisible.length > 0 ? FLEX_GAP : 0);
-      }
-      finalOverflow.unshift(lastVisible);
-    }
-
-    setLinks({ visible: finalVisible, overflow: finalOverflow });
-  }, [visibleMenuItems, orientation, padding]);
-
-  // Recalculate on resize
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      requestAnimationFrame(calculateOverflow);
-    };
-
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [calculateOverflow]);
-
-  // Recalculate when width changes
-  useEffect(() => {
-    calculateOverflow();
-  }, [width, calculateOverflow]);
-
-  // Helper to find item by ID (including nested items)
-  const findItemById = (items, targetId) => {
-    for (const item of items) {
-      if (item.id === targetId) return item;
-      if (item.isGroup && item.children) {
-        const found = findItemById(item.children, targetId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  // Helper to find parent group of an item
-  const findParentGroup = (items, targetId) => {
-    for (const item of items) {
-      if (item.isGroup && item.children) {
-        if (item.children.some((child) => child.id === targetId)) {
-          return item;
-        }
-        const found = findParentGroup(item.children, targetId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
+  // Overflow calculation for horizontal orientation
+  const links = useCalculateOverflow({
+    containerRef,
+    measurementContainerRef,
+    visibleMenuItems,
+    orientation,
+    padding,
+    width,
+  });
 
   // Handle item click
   const handleItemClick = (item) => {
