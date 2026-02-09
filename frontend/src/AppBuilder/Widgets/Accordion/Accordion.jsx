@@ -9,6 +9,8 @@ import {
 import './accordion.scss';
 import Header from './components/Header';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const Accordion = ({
   id,
@@ -35,6 +37,8 @@ export const Accordion = ({
     isLoading: loadingState,
     isExpanded: true, // State for expanding/collapsing accordion component
   });
+
+  const updateGrid = useStore((state) => state.incrementCanvasUpdater, shallow);
 
   // Helpers
   const updateExposedVariablesState = (key, value) => {
@@ -119,6 +123,14 @@ export const Accordion = ({
       },
     },
   ]);
+
+  // Update grid inside Editor whenever accordion opens
+  useEffect(() => {
+    if (currentMode === 'edit' && exposedVariablesTemporaryState.isExpanded) {
+      updateGrid();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMode, exposedVariablesTemporaryState.isExpanded]);
 
   // Styles
   const contentBgColor = useMemo(() => {
