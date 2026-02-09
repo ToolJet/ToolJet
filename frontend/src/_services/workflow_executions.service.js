@@ -97,7 +97,7 @@ function getPaginatedNodes(executionId, page = 1, perPage = 20) {
   ).then(handleResponse);
 }
 
-function trigger(workflowAppId, params, environmentId, queryId) {
+function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true) {
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     appId: workflowAppId,
@@ -108,6 +108,7 @@ function trigger(workflowAppId, params, environmentId, queryId) {
       : params || {},
     environmentId,
     queryId,
+    syncExecution,
   };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);
@@ -125,6 +126,7 @@ function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
     environmentId,
     injectedState,
     startNodeId,
+    syncExecution: true, // Workflow builder always runs synchronously
   };
 
   const requestOptions = {
