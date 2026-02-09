@@ -32,7 +32,7 @@ export const ReorderableList = ({ componentMeta, darkMode, ...restProps }) => {
     getItemStyle,
     getResolvedValue,
     isDynamicOptionsEnabled,
-  } = useOptionsManager(component, paramUpdated);
+  } = useOptionsManager(component, paramUpdated, 'Card');
 
   // Property organization
   let additionalActions = [];

@@ -59,29 +59,10 @@ export const reorderableListConfig = {
     onChange: { displayName: 'On change' },
   },
   styles: {
-    backgroundColor: {
+    textColor: {
       type: 'colorSwatches',
-      displayName: 'Background',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'var(--cc-surface1-surface)',
-      },
-      accordian: 'Container',
-    },
-    borderRadius: {
-      type: 'numberInput',
-      displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-      accordian: 'Container',
-    },
-    borderColor: {
-      type: 'colorSwatches',
-      displayName: 'Border',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: false,
-      },
-      accordian: 'Container',
+      displayName: 'Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
     },
     padding: {
       type: 'switch',
@@ -95,7 +76,6 @@ export const reorderableListConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -178,10 +158,8 @@ export const reorderableListConfig = {
     },
     events: [],
     styles: {
-      backgroundColor: { value: '' },
+      textColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
-      borderColor: { value: '' },
-      borderRadius: { value: '6' },
     },
   },
 };

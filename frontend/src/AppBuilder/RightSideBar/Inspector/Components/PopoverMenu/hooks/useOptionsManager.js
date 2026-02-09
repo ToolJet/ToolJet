@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const useOptionsManager = (component, paramUpdated) => {
+export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = 'option') => {
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
 
@@ -49,7 +49,7 @@ export const useOptionsManager = (component, paramUpdated) => {
     let currentNumber = options.length + 1;
     let value = currentNumber;
     while (!found) {
-      label = `option${currentNumber}`;
+      label = `${optionLabelPrefix}${currentNumber}`;
       value = currentNumber.toString();
       if (options.find((option) => option.label === label) === undefined) {
         found = true;
