@@ -36,24 +36,25 @@ const Header = (props) => {
 
   const accordionHeaderStyles = useMemo(() => {
     return {
+      maxHeight: `${headerMaxHeight}px`,
       borderTopLeftRadius: `${borderRadius}px`,
       borderTopRightRadius: `${borderRadius}px`,
       ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px`, borderBottomRightRadius: `${borderRadius}px` }),
       ...headerBgColor,
     };
-  }, [borderRadius, isExpanded, headerBgColor]);
+  }, [borderRadius, isExpanded, headerBgColor, headerMaxHeight]);
 
   const accordionHeaderContainerStyles = useMemo(() => {
     return {
       flexShrink: 0,
+      height: '100%',
       padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
-      maxHeight: `${headerMaxHeight}px`,
       borderTopLeftRadius: `${borderRadius}px`,
       borderTopRightRadius: `${borderRadius}px`,
       ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px` }),
       ...headerBgColor,
     };
-  }, [headerMaxHeight, borderRadius, isExpanded, headerBgColor]);
+  }, [borderRadius, isExpanded, headerBgColor]);
 
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const _height = parseInt(newHeight, 10);
