@@ -129,6 +129,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Statistics',
   'StarRating',
   'CircularProgressBar',
+  'ProgressBar',
   'CustomComponent',
   'Html',
   'AudioRecorder',

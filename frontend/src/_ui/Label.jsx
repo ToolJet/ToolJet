@@ -21,6 +21,7 @@ function Label({
   id,
   classes = null,
   style = {},
+  fontSize = '12px',
 }) {
   const { moduleId } = useModuleContext();
   const isViewerMode = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'view', shallow);
@@ -35,7 +36,7 @@ function Label({
             display: 'flex',
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-            fontSize: '12px',
+            fontSize,
             height: defaultAlignment === 'top' && '20px',
             ...style,
           }}
