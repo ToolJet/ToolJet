@@ -78,7 +78,11 @@ export const SelectField = ({
       isEditable={isEditable}
       widgetType="KeyValuePair"
       isFocused={isEditing}
-      setIsFocused={setIsEditing}
+      setIsFocused={(isEditing) => {
+        if (isEditable) {
+          setIsEditing(isEditing);
+        }
+      }}
       autoAssignColors={field?.autoAssignColors}
       isValid={isValid}
       validationError={validationError}
