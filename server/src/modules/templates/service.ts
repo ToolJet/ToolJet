@@ -143,9 +143,8 @@ export class TemplatesService {
         dataSourcesUsedInApps.push(dataSource);
       });
     });
-    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
-      dataSourcesUsedInApps
-    );
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
     return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }

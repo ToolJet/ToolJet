@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
 import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
@@ -30,13 +31,13 @@ if (process.env.OTEL_LOG_LEVEL === 'debug') {
 // Define the trace exporter
 const traceExporter = new OTLPTraceExporter({
   url: OTEL_EXPORTER_OTLP_TRACES,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the metric exporter
 const metricExporter = new OTLPMetricExporter({
   url: OTEL_EXPORTER_OTLP_METRICS,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
+  ...(process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {}),
 });
 
 // Define the log exporter
@@ -278,7 +279,7 @@ const initializeCustomMetrics = () => {
         // Report workspace-level aggregate
         observableResult.observe(users.size, {
           'workspace.id': workspaceId,
-          'metric_type': 'workspace_total',
+          metric_type: 'workspace_total',
         });
 
         // Report individual user metrics
@@ -286,7 +287,7 @@ const initializeCustomMetrics = () => {
           observableResult.observe(1, {
             'workspace.id': workspaceId,
             'user.id': userId,
-            'metric_type': 'per_user',
+            metric_type: 'per_user',
           });
         }
       }
@@ -299,7 +300,7 @@ const initializeCustomMetrics = () => {
       }
       observableResult.observe(totalUniqueUsers.size, {
         'workspace.id': 'all',
-        'metric_type': 'workspace_total',
+        metric_type: 'workspace_total',
       });
     } catch (error) {
       console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
@@ -532,11 +533,7 @@ export const trackUserActivity = (attributes: {
 };
 
 // Helper functions for user metrics tracking
-export const incrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const incrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -546,11 +543,7 @@ export const incrementConcurrentUsers = (attributes: {
   }
 };
 
-export const decrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const decrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -601,9 +594,10 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 function loadEnvVars() {
-  const envFilePath = process.env.NODE_ENV === 'test'
-    ? path.resolve(process.cwd(), '../.env.test')
-    : path.resolve(process.cwd(), '../.env');
+  const envFilePath =
+    process.env.NODE_ENV === 'test'
+      ? path.resolve(process.cwd(), '../.env.test')
+      : path.resolve(process.cwd(), '../.env');
 
   if (fs.existsSync(envFilePath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envFilePath));

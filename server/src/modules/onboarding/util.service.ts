@@ -159,14 +159,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
     await this.userRepository.updateOne(
       existingUser.id,
       {
-        password: params.password, 
+        password: params.password,
         status: USER_STATUS.ACTIVE,
         invitationToken: null,
         ...(params.firstName && { firstName: params.firstName }),
         ...(params.lastName && { lastName: params.lastName }),
       },
       manager
-    ); 
+    );
     existingUser.status = USER_STATUS.ACTIVE;
     existingUser.password = params.password;
   }
@@ -186,10 +186,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const targetOrg = signingUpOrganization || defaultWorkspace;
 
       const organizationUsers = existingUser.organizationUsers || [];
-      
-      const membershipInCurrentOrg = organizationUsers.find(
-        (ou) => ou.organizationId === targetOrg?.id
-      );
+
+      const membershipInCurrentOrg = organizationUsers.find((ou) => ou.organizationId === targetOrg?.id);
 
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.INVITED) {
         throw new NotAcceptableException(
@@ -201,7 +199,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       if (membershipInCurrentOrg?.status === WORKSPACE_USER_STATUS.ACTIVE) {
         throw new NotAcceptableException('Email already exists in this workspace');
       }
-      
 
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
@@ -216,12 +213,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
 
       if (!isCloudEdition && response) {
         if (!existingUser.password) {
-          await this.activateUserWithPassword(
-            existingUser,
-            { password, firstName, lastName },
-            targetOrg,
-            manager
-          );
+          await this.activateUserWithPassword(existingUser, { password, firstName, lastName }, targetOrg, manager);
         }
         if (!targetOrg) {
           throw new NotAcceptableException('No valid workspace found to log into.');
@@ -230,9 +222,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         existingUser.organization = targetOrg;
 
         // DO NOT create org user if already invited
-        let orgUser = organizationUsers.find(
-          ou => ou.organizationId === targetOrg.id
-        );
+        let orgUser = organizationUsers.find((ou) => ou.organizationId === targetOrg.id);
 
         // only create if truly not present
         if (!orgUser) {
@@ -255,8 +245,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           targetOrg.id
         );
       }
-      
-      
+
       const alreadyInvitedUserByAdmin = organizationUsers.find(
         (organizationUser: OrganizationUser) =>
           organizationUser.organizationId === organizationId &&
@@ -539,7 +528,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         lastName: user.lastName,
         role: user.role,
       });
-      
+
       // Auto-activate users for non-cloud editions (skip email verification)
       const edition = getTooljetEdition();
       const isCloudEdition = edition === 'cloud';
@@ -555,7 +544,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         user.status = USER_STATUS.ACTIVE;
         user.invitationToken = null;
       }
-      
+
       if (signingUpOrganization) {
         /* Attach the user and user groups to the organization */
         const organizationUser = await this.organizationUserRepository.createOne(
@@ -565,14 +554,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-        
+
         // Auto-activate organization user for non-cloud editions
         if (!isCloudEdition && organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
           await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);
         }
-        
+
         await this.licenseUserService.validateUser(manager, organizationId);
-        
+
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
           return await this.sessionUtilService.generateLoginResultPayload(
@@ -585,7 +574,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             manager
           );
         }
-        
+
         // Only send verification email for cloud edition
         if (isCloudEdition) {
           this.eventEmitter.emit('emailEvent', {
@@ -631,7 +620,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           user.status = USER_STATUS.ACTIVE;
           user.invitationToken = null;
         }
-        
+
         // Use user's default organization ID if signingUpOrganization is null
         const orgIdForValidation = user.defaultOrganizationId || organizationId;
         if (orgIdForValidation) {
@@ -641,8 +630,9 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         // For non-cloud editions, return login payload to auto-login user
         if (!isCloudEdition && response) {
           const userOrg = await this.organizationRepository.get(user.defaultOrganizationId);
-          if (!userOrg) console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
-          
+          if (!userOrg)
+            console.log('WARNING: userOrg not found for defaultOrganizationId:', user.defaultOrganizationId);
+
           return await this.sessionUtilService.generateLoginResultPayload(
             response,
             user,
@@ -654,7 +644,6 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           );
         }
 
-        
         // Only send verification email for cloud edition
         if (isCloudEdition) {
           this.eventEmitter.emit('emailEvent', {
@@ -841,7 +830,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
         );
         user.status = USER_STATUS.ACTIVE;
         user.invitationToken = null;
-        
+
         // Also activate the organization user for non-cloud editions
         if (organizationUser.status === WORKSPACE_USER_STATUS.INVITED) {
           await this.organizationUsersUtilService.activateOrganization(organizationUser, manager);

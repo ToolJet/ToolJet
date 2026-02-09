@@ -5,7 +5,6 @@ import { EntityManager } from 'typeorm';
 import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Plugin } from 'src/entities/plugin.entity';
-import { PluginsService } from '@modules/plugins/service';
 import { getEnvVars } from './database-config-utils';
 import { validateSync } from 'class-validator';
 import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -46,6 +45,7 @@ async function validateAndUninstallPlugins(nestApp: INestApplicationContext) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   invalidPluginDtos.length > 0 &&
     console.log(
       'Skipping invalid plugins:',
@@ -85,5 +85,4 @@ function sanitizedArray(string: string): string[] {
   return [...new Set(string.split(',').map((p: string) => p.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

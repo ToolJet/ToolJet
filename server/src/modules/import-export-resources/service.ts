@@ -61,7 +61,7 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const appData = await this.appsRepository.findOne({
-        where: { id: exportResourcesDto.app[0].id }
+        where: { id: exportResourcesDto.app[0].id },
       });
       //APP_EXPORT audit
       const auditLogsData = {
@@ -95,6 +95,7 @@ export class ImportExportResourcesService {
           const pages = appParams?.pages;
           const queries = appParams?.dataQueries;
           const components = appParams?.components;
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           (pages?.length || queries?.length || components?.length) &&
             (await this.appImportExportService.checkIfGroupPermissionsExist(
               pages,

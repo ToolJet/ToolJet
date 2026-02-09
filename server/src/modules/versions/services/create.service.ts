@@ -38,9 +38,10 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(

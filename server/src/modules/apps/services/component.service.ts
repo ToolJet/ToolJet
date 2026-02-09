@@ -12,7 +12,7 @@ import { LayoutDimensionUnits } from '../constants';
 import { IComponentsService } from '../interfaces/services/IComponentService';
 import { ACTION_TYPE } from '@modules/app-history/constants';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 @Injectable()
 export class ComponentsService implements IComponentsService {
@@ -562,5 +562,4 @@ export class ComponentsService implements IComponentsService {
       }
     }
   }
-
 }

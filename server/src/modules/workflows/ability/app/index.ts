@@ -1,6 +1,6 @@
 import { Ability, InferSubjects, AbilityBuilder } from '@casl/ability';
 import { FEATURE_KEY } from '../../constants';
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { App } from '@entities/app.entity';
@@ -33,15 +33,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     return App;
   }
 
-  async #findAppFromVersion(appVersionId: string): Promise<App> {
-    if (!appVersionId) throw new ForbiddenException('appVersionId is not available');
-    return (
-      await this.appVersionsRepository.findOneOrFail({
-        where: { id: appVersionId },
-        relations: ['app'],
-      })
-    ).app;
-  }
+  // async #findAppFromVersion(appVersionId: string): Promise<App> {
+  //   if (!appVersionId) throw new ForbiddenException('appVersionId is not available');
+  //   return (
+  //     await this.appVersionsRepository.findOneOrFail({
+  //       where: { id: appVersionId },
+  //       relations: ['app'],
+  //     })
+  //   ).app;
+  // }
 
   protected async defineAbilityFor(
     can: AbilityBuilder<FeatureAbility>['can'],

@@ -40,6 +40,7 @@ async function validateAndInstallPlugins(nestApp: INestApplicationContext) {
 
     if (validationErrors.length === 0) {
       const plugin = await entityManager.findOne(Plugin, { where: { pluginId: pluginDto.id } });
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       plugin ? invalidPluginDtos.push(pluginDto) : validPluginDtos.push(pluginDto);
     } else {
       console.log(`Plugin with ID '${pluginId}' has validation errors:`, validationErrors);
@@ -47,6 +48,7 @@ async function validateAndInstallPlugins(nestApp: INestApplicationContext) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   invalidPluginDtos.length > 0 &&
     console.log(
       'Skipping invalid plugins:',
@@ -74,5 +76,4 @@ function sanitizedArray(string: string): string[] {
   return [...new Set(string.split(',').map((p: string) => p.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

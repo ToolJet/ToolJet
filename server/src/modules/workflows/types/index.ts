@@ -9,7 +9,7 @@ export const WORKFLOW_TRIGGER_TYPE = {
   WEBHOOK: 'webhook',
 } as const;
 
-export type WorkflowTriggerType = typeof WORKFLOW_TRIGGER_TYPE[keyof typeof WORKFLOW_TRIGGER_TYPE];
+export type WorkflowTriggerType = (typeof WORKFLOW_TRIGGER_TYPE)[keyof typeof WORKFLOW_TRIGGER_TYPE];
 
 // Execution metadata interface for job data
 export interface ExecutionMetadata {

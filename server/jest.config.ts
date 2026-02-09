@@ -33,9 +33,7 @@ const config: Config.InitialOptions = {
   },
   runner: 'groups',
   testTimeout: 30000,
-  transformIgnorePatterns: [
-    'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)'],
 };
 
 export default config;

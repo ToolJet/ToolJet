@@ -14,7 +14,10 @@ export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
 export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
-  constructor(protected manager: EntityManager, protected abilityService: AbilityService) {
+  constructor(
+    protected manager: EntityManager,
+    protected abilityService: AbilityService
+  ) {
     super(abilityService);
   }
 

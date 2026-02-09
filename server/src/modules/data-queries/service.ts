@@ -26,7 +26,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) { }
+  ) {}
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -200,7 +200,13 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
+  async runQueryForApp(
+    user: User,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    response: Response,
+    app?: App
+  ) {
     const { resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });

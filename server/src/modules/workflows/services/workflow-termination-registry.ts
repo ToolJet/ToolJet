@@ -7,17 +7,17 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class WorkflowTerminationRegistry {
-    constructor() { }
+  constructor() {}
 
-    async requestTermination(executionId: string): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+  async requestTermination(executionId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
-    async isTerminated(executionId: string): Promise<boolean> {
-        throw new Error('Method not implemented.');
-    }
+  async isTerminated(executionId: string): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
 
-    async clear(executionId: string): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+  async clear(executionId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

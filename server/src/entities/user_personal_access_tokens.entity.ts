@@ -1,12 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  ManyToOne,
-  BaseEntity,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, BaseEntity, JoinColumn } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { PersonalAccessTokenScope } from '@modules/external-apis/constants';

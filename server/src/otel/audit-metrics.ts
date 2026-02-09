@@ -285,9 +285,13 @@ export const initializeAuditLogMetrics = () => {
   console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
   console.log('');
   console.log('⚙️  Configuration:');
-  console.log(`   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`);
+  console.log(
+    `   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`
+  );
   if (process.env.OTEL_INCLUDE_QUERY_TEXT === 'true') {
-    console.log('   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
+    console.log(
+      '   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production'
+    );
   }
 };
 
@@ -303,16 +307,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields) => {
   }
 
   try {
-    const {
-      userId,
-      organizationId,
-      resourceType,
-      actionType,
-      resourceName,
-      resourceId,
-      ipAddress,
-      metadata = {},
-    } = auditLogData;
+    const { userId, organizationId, resourceType, actionType } = auditLogData;
 
     // Prepare common attributes
     const commonAttributes = {
@@ -375,12 +370,21 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields) => {
     }
 
     // Record app lifecycle metrics
-    if (actionType === 'APP_CREATE' || actionType === 'APP_UPDATE' || actionType === 'APP_DELETE' || actionType === 'APP_RELEASE') {
+    if (
+      actionType === 'APP_CREATE' ||
+      actionType === 'APP_UPDATE' ||
+      actionType === 'APP_DELETE' ||
+      actionType === 'APP_RELEASE'
+    ) {
       recordAppLifecycleMetrics(auditLogData);
     }
 
     // Record datasource lifecycle metrics
-    if (actionType === 'DATA_SOURCE_CREATE' || actionType === 'DATA_SOURCE_UPDATE' || actionType === 'DATA_SOURCE_DELETE') {
+    if (
+      actionType === 'DATA_SOURCE_CREATE' ||
+      actionType === 'DATA_SOURCE_UPDATE' ||
+      actionType === 'DATA_SOURCE_DELETE'
+    ) {
       recordDataSourceLifecycleMetrics(auditLogData);
     }
 
@@ -418,7 +422,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   // Only include query text if explicitly enabled (to avoid high cardinality)
   const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
   const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
-  const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
+  const queryText = includeQueryText ? parsedQueryOptions['query'] || '' : '';
   const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
 
   const labels = {

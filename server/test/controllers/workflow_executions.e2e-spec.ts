@@ -42,7 +42,7 @@ const executeWorkflow = async (
       executeUsing: 'app',
       userId: user.id,
       environmentId: options.environmentId,
-      parameters: options.parameters
+      parameters: options.parameters,
     });
 
   if (response.statusCode !== 201) {
@@ -52,10 +52,7 @@ const executeWorkflow = async (
   return response.body.workflowExecution;
 };
 
-const getWorkflowExecutionDetails = async (
-  nestApp: INestApplication,
-  executionId: string
-) => {
+const getWorkflowExecutionDetails = async (nestApp: INestApplication, executionId: string) => {
   const defaultDataSource = nestApp.get<DataSource>(getDataSourceToken('default'));
 
   const workflowExecution = await defaultDataSource
@@ -72,7 +69,7 @@ const getWorkflowExecutionDetails = async (
 
   return {
     execution: workflowExecution,
-    nodes: executionNodes
+    nodes: executionNodes,
   };
 };
 
@@ -86,10 +83,7 @@ const context = setupPolly({
   persisterOptions: {
     fs: {
       // Store recordings as __fixtures__/spec-file-name/*
-      recordingsDir: path.resolve(
-        __dirname,
-        `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`
-      ),
+      recordingsDir: path.resolve(__dirname, `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`),
     },
   },
   recordFailedRequests: true,
@@ -116,7 +110,7 @@ let app: INestApplication;
 beforeAll(async () => {
   app = await createNestAppInstance({
     edition: 'ee',
-    isGetContext: true
+    isGetContext: true,
   });
 });
 
@@ -127,10 +121,12 @@ beforeEach(async () => {
   // External API calls will be recorded
   context.polly.server
     .any()
-    .filter(req => {
+    .filter((req) => {
       const url = new URL(req.url);
       // Pass through localhost and internal calls without recording
-      return url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal');
+      return (
+        url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal')
+      );
     })
     .passthrough();
   // All other requests (external APIs) will be handled by Polly's recording mechanism
@@ -146,7 +142,6 @@ afterAll(async () => {
 });
 
 describe('workflow executions controller', () => {
-
   describe('POST /api/workflow_executions', () => {
     describe('Basic workflow execution', () => {
       it('should execute a simple workflow with start trigger and response', async () => {
@@ -154,7 +149,7 @@ describe('workflow executions controller', () => {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
 
         const nodes: WorkflowNode[] = [
@@ -163,7 +158,7 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'response-1',
@@ -172,11 +167,11 @@ describe('workflow executions controller', () => {
               nodeType: 'response',
               label: 'Response',
               code: 'return { message: "Workflow executed successfully" }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 400, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
         const edges: WorkflowEdge[] = [
@@ -184,23 +179,26 @@ describe('workflow executions controller', () => {
             id: 'edge-1',
             source: 'start-1',
             target: 'response-1',
-            type: 'workflow'
-          }
+            type: 'workflow',
+          },
         ];
 
         const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
           name: 'Basic Workflow',
           nodes,
           edges,
-          queries: []
+          queries: [],
         });
 
         const execution = await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
 
         // Get workflow execution details
-        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+          app,
+          execution.id
+        );
 
         // Verify execution status
         expect(workflowExecution.executed).toBe(true);
@@ -228,7 +226,7 @@ describe('workflow executions controller', () => {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
 
         const nodes: WorkflowNode[] = [
@@ -237,7 +235,7 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'runjs-1',
@@ -245,11 +243,11 @@ describe('workflow executions controller', () => {
             data: {
               idOnDefinition: 'query-runjs-1',
               kind: 'runjs',
-              options: {}
+              options: {},
             },
             position: { x: 350, y: 250 },
             sourcePosition: 'right',
-            targetPosition: 'left'
+            targetPosition: 'left',
           },
           {
             id: 'response-1',
@@ -258,11 +256,11 @@ describe('workflow executions controller', () => {
               nodeType: 'response',
               label: 'Response',
               code: 'return { result: runjs1.data }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 600, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
         const edges: WorkflowEdge[] = [
@@ -270,14 +268,14 @@ describe('workflow executions controller', () => {
             id: 'edge-1',
             source: 'start-1',
             target: 'runjs-1',
-            type: 'workflow'
+            type: 'workflow',
           },
           {
             id: 'edge-2',
             source: 'runjs-1',
             target: 'response-1',
-            type: 'workflow'
-          }
+            type: 'workflow',
+          },
         ];
 
         const queries: WorkflowQuery[] = [
@@ -291,24 +289,27 @@ describe('workflow executions controller', () => {
               const sum = numbers.reduce((acc, val) => acc + val, 0);
               return { sum: sum, numbers: numbers };
             `,
-              parameters: []
-            }
-          }
+              parameters: [],
+            },
+          },
         ];
 
         const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
           name: 'RunJS Workflow',
           nodes,
           edges,
-          queries
+          queries,
         });
 
         const execution = await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
 
         // Get workflow execution details
-        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+          app,
+          execution.id
+        );
 
         // Verify execution status
         expect(workflowExecution.executed).toBe(true);
@@ -341,7 +342,7 @@ describe('workflow executions controller', () => {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
 
         const nodes: WorkflowNode[] = [
@@ -350,7 +351,7 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'restapi-1',
@@ -358,11 +359,11 @@ describe('workflow executions controller', () => {
             data: {
               idOnDefinition: 'query-restapi-1',
               kind: 'restapi',
-              options: {}
+              options: {},
             },
             position: { x: 350, y: 250 },
             sourcePosition: 'right',
-            targetPosition: 'left'
+            targetPosition: 'left',
           },
           {
             id: 'response-1',
@@ -371,11 +372,11 @@ describe('workflow executions controller', () => {
               nodeType: 'response',
               label: 'Response',
               code: 'return { data: restapi1.data }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 600, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
         const edges: WorkflowEdge[] = [
@@ -383,14 +384,14 @@ describe('workflow executions controller', () => {
             id: 'edge-1',
             source: 'start-1',
             target: 'restapi-1',
-            type: 'workflow'
+            type: 'workflow',
           },
           {
             id: 'edge-2',
             source: 'restapi-1',
             target: 'response-1',
-            type: 'workflow'
-          }
+            type: 'workflow',
+          },
         ];
 
         const queries: WorkflowQuery[] = [
@@ -410,24 +411,27 @@ describe('workflow executions controller', () => {
               transformationLanguage: 'javascript',
               enableTransformation: false,
               raw_body: null,
-              arrayValuesChanged: true
-            }
-          }
+              arrayValuesChanged: true,
+            },
+          },
         ];
 
         const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
           name: 'REST API Workflow',
           nodes,
           edges,
-          queries
+          queries,
         });
 
         const execution = await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
 
         // Get workflow execution details
-        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+          app,
+          execution.id
+        );
 
         // Verify execution status
         expect(workflowExecution.executed).toBe(true);
@@ -453,8 +457,8 @@ describe('workflow executions controller', () => {
         expect(restapiResult).toContain('ok');
 
         // Find the user data object in the result array
-        const userData = restapiResult.find((item: any) =>
-          typeof item === 'object' && item !== null && item.hasOwnProperty('id')
+        const userData = restapiResult.find(
+          (item: any) => typeof item === 'object' && item !== null && item.hasOwnProperty('id')
         );
         expect(userData).toBeDefined();
 
@@ -496,7 +500,7 @@ describe('workflow executions controller', () => {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
 
         const setupScript = {
@@ -508,10 +512,11 @@ describe('workflow executions controller', () => {
             min: _.min(numbers),
             sorted: _.sortBy(numbers)
           });
-        `};
+        `,
+        };
 
         const dependencies = {
-          'lodash': '4.17.21'
+          lodash: '4.17.21',
         };
 
         const nodes: WorkflowNode[] = [
@@ -520,7 +525,7 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'runjs-1',
@@ -528,11 +533,11 @@ describe('workflow executions controller', () => {
             data: {
               idOnDefinition: 'query-runjs-lodash',
               kind: 'runjs',
-              options: {}
+              options: {},
             },
             position: { x: 350, y: 250 },
             sourcePosition: 'right',
-            targetPosition: 'left'
+            targetPosition: 'left',
           },
           {
             id: 'response-1',
@@ -541,11 +546,11 @@ describe('workflow executions controller', () => {
               nodeType: 'response',
               label: 'Response',
               code: 'return { result: runjs1.data }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 600, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
         const edges: WorkflowEdge[] = [
@@ -553,14 +558,14 @@ describe('workflow executions controller', () => {
             id: 'edge-1',
             source: 'start-1',
             target: 'runjs-1',
-            type: 'workflow'
+            type: 'workflow',
           },
           {
             id: 'edge-2',
             source: 'runjs-1',
             target: 'response-1',
-            type: 'workflow'
-          }
+            type: 'workflow',
+          },
         ];
 
         const queries: WorkflowQuery[] = [
@@ -573,9 +578,9 @@ describe('workflow executions controller', () => {
               const numbers = [10, 5, 8, 3, 12, 7];
               return processNumbers(numbers);
             `,
-              parameters: []
-            }
-          }
+              parameters: [],
+            },
+          },
         ];
 
         const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -584,17 +589,20 @@ describe('workflow executions controller', () => {
           dependencies,
           nodes,
           edges,
-          queries
+          queries,
         });
 
         await createWorkflowBundle(app, appVersion.id, dependencies);
 
         const execution = await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
 
         // Get workflow execution details
-        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+          app,
+          execution.id
+        );
 
         // Verify execution status
         expect(workflowExecution.executed).toBe(true);
@@ -617,9 +625,9 @@ describe('workflow executions controller', () => {
             sum: 45,
             max: 12,
             min: 3,
-            sorted: [3, 5, 7, 8, 10, 12]
+            sorted: [3, 5, 7, 8, 10, 12],
           },
-          status: "ok"
+          status: 'ok',
         });
 
         // Verify response node contains the lodash results
@@ -635,10 +643,10 @@ describe('workflow executions controller', () => {
               sum: 45,
               max: 12,
               min: 3,
-              sorted: [3, 5, 7, 8, 10, 12]
-            }
+              sorted: [3, 5, 7, 8, 10, 12],
+            },
           },
-          status: "ok"
+          status: 'ok',
         });
       });
 
@@ -647,15 +655,15 @@ describe('workflow executions controller', () => {
           email: 'admin@tooljet.io',
           password: 'password',
           firstName: 'Admin',
-          lastName: 'User'
+          lastName: 'User',
         });
 
         const setupScript = {
-          javascript: `const _ = require('lodash');`
+          javascript: `const _ = require('lodash');`,
         };
 
         const dependencies = {
-          'lodash': '4.17.21'
+          lodash: '4.17.21',
         };
 
         const nodes: WorkflowNode[] = [
@@ -664,7 +672,7 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
+            sourcePosition: 'right',
           },
           {
             id: 'restapi-1',
@@ -672,11 +680,11 @@ describe('workflow executions controller', () => {
             data: {
               idOnDefinition: 'query-restapi-lodash',
               kind: 'restapi',
-              options: {}
+              options: {},
             },
             position: { x: 350, y: 250 },
             sourcePosition: 'right',
-            targetPosition: 'left'
+            targetPosition: 'left',
           },
           {
             id: 'response-1',
@@ -685,11 +693,11 @@ describe('workflow executions controller', () => {
               nodeType: 'response',
               label: 'Response',
               code: 'return { data: restapi1.data }',
-              nodeName: 'response1'
+              nodeName: 'response1',
             },
             position: { x: 600, y: 250 },
-            targetPosition: 'left'
-          }
+            targetPosition: 'left',
+          },
         ];
 
         const edges: WorkflowEdge[] = [
@@ -697,14 +705,14 @@ describe('workflow executions controller', () => {
             id: 'edge-1',
             source: 'start-1',
             target: 'restapi-1',
-            type: 'workflow'
+            type: 'workflow',
           },
           {
             id: 'edge-2',
             source: 'restapi-1',
             target: 'response-1',
-            type: 'workflow'
-          }
+            type: 'workflow',
+          },
         ];
 
         const queries: WorkflowQuery[] = [
@@ -717,7 +725,7 @@ describe('workflow executions controller', () => {
               url: 'https://reqres.in/api/users?page={{ _.toLower("2") }}',
               headers: [
                 ['x-custom-header', '{{ _.startCase("hello world") }}'],
-                ['Accept', 'application/json']
+                ['Accept', 'application/json'],
               ],
               body: [['', '']],
               url_params: [['', '']],
@@ -727,9 +735,9 @@ describe('workflow executions controller', () => {
               transformationLanguage: 'javascript',
               enableTransformation: false,
               raw_body: null,
-              arrayValuesChanged: true
-            }
-          }
+              arrayValuesChanged: true,
+            },
+          },
         ];
 
         const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -738,23 +746,21 @@ describe('workflow executions controller', () => {
           dependencies,
           nodes,
           edges,
-          queries
+          queries,
         });
 
         await createWorkflowBundle(app, appVersion.id, dependencies);
 
         // Observe the actual outbound request to verify template resolution
         const observedRequests: Array<{ url: string; headers: Record<string, any> | undefined }> = [];
-        const captureRoute = context.polly.server
-          .any()
-          .filter((req: any) => {
-            try {
-              const u = new URL(req.url);
-              return u.hostname === 'reqres.in' && u.pathname === '/api/users';
-            } catch (_) {
-              return false;
-            }
-          });
+        const captureRoute = context.polly.server.any().filter((req: any) => {
+          try {
+            const u = new URL(req.url);
+            return u.hostname === 'reqres.in' && u.pathname === '/api/users';
+          } catch (_) {
+            return false;
+          }
+        });
 
         captureRoute.on('request', (req: any) => {
           // Try multiple header access shapes for robustness across adapters
@@ -768,16 +774,19 @@ describe('workflow executions controller', () => {
             } else if (req.headers) {
               headers = req.headers as any;
             }
-          } catch (_) { }
+          } catch (_) {}
           observedRequests.push({ url: req.url, headers });
         });
 
         const execution = await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
 
         // Get workflow execution details
-        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(app, execution.id);
+        const { execution: workflowExecution, nodes: executionNodes } = await getWorkflowExecutionDetails(
+          app,
+          execution.id
+        );
 
         // Verify execution status
         expect(workflowExecution.executed).toBe(true);
@@ -823,11 +832,13 @@ describe('workflow executions controller', () => {
         const parsedUrl = new URL(observedUrl);
         expect(parsedUrl.searchParams.get('page')).toBe('2'); // {{ toLower("2") }} => 2
 
-        const headerVal = observedHeaders && (
-          observedHeaders['x-custom-header'] ||
-          observedHeaders['X-Custom-Header'] ||
-          (typeof (observedHeaders as any).get === 'function' ? (observedHeaders as any).get('x-custom-header') : undefined)
-        );
+        const headerVal =
+          observedHeaders &&
+          (observedHeaders['x-custom-header'] ||
+            observedHeaders['X-Custom-Header'] ||
+            (typeof (observedHeaders as any).get === 'function'
+              ? (observedHeaders as any).get('x-custom-header')
+              : undefined));
         expect(headerVal).toBe('Hello World'); // {{ startCase("hello world") }} => Hello World
       });
     });
@@ -839,7 +850,7 @@ describe('workflow executions controller', () => {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -850,15 +861,15 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
-          }
+            sourcePosition: 'right',
+          },
         ],
         edges: [],
-        queries: []
+        queries: [],
       });
 
       const execution = await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
+        environmentId: appVersion.currentEnvironmentId,
       });
 
       const { tokenCookie } = await authenticateUser(app, user.email);
@@ -879,7 +890,7 @@ describe('workflow executions controller', () => {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -890,15 +901,15 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
-          }
+            sourcePosition: 'right',
+          },
         ],
         edges: [],
-        queries: []
+        queries: [],
       });
 
       const execution = await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
+        environmentId: appVersion.currentEnvironmentId,
       });
 
       const { tokenCookie } = await authenticateUser(app, user.email);
@@ -920,7 +931,7 @@ describe('workflow executions controller', () => {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -931,20 +942,20 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
-          }
+            sourcePosition: 'right',
+          },
         ],
         edges: [],
-        queries: []
+        queries: [],
       });
 
       // Execute workflow twice
       await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
+        environmentId: appVersion.currentEnvironmentId,
       });
 
       await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
+        environmentId: appVersion.currentEnvironmentId,
       });
 
       const { tokenCookie } = await authenticateUser(app, user.email);
@@ -966,7 +977,7 @@ describe('workflow executions controller', () => {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
@@ -977,17 +988,17 @@ describe('workflow executions controller', () => {
             type: 'input',
             data: { nodeType: 'start', label: 'Start trigger' },
             position: { x: 100, y: 250 },
-            sourcePosition: 'right'
-          }
+            sourcePosition: 'right',
+          },
         ],
         edges: [],
-        queries: []
+        queries: [],
       });
 
       // Execute workflow multiple times
       for (let i = 0; i < 3; i++) {
         await executeWorkflow(app, workflow, user, {
-          environmentId: appVersion.currentEnvironmentId
+          environmentId: appVersion.currentEnvironmentId,
         });
       }
 
@@ -1010,7 +1021,7 @@ describe('workflow executions controller', () => {
         email: 'admin@tooljet.io',
         password: 'password',
         firstName: 'Admin',
-        lastName: 'User'
+        lastName: 'User',
       });
 
       const nodes: WorkflowNode[] = [
@@ -1019,7 +1030,7 @@ describe('workflow executions controller', () => {
           type: 'input',
           data: { nodeType: 'start', label: 'Start trigger' },
           position: { x: 100, y: 250 },
-          sourcePosition: 'right'
+          sourcePosition: 'right',
         },
         {
           id: 'runjs-1',
@@ -1027,12 +1038,12 @@ describe('workflow executions controller', () => {
           data: {
             idOnDefinition: 'query-runjs-1',
             kind: 'runjs',
-            options: {}
+            options: {},
           },
           position: { x: 350, y: 250 },
           sourcePosition: 'right',
-          targetPosition: 'left'
-        }
+          targetPosition: 'left',
+        },
       ];
 
       const edges: WorkflowEdge[] = [
@@ -1040,8 +1051,8 @@ describe('workflow executions controller', () => {
           id: 'edge-1',
           source: 'start-1',
           target: 'runjs-1',
-          type: 'workflow'
-        }
+          type: 'workflow',
+        },
       ];
 
       const queries: WorkflowQuery[] = [
@@ -1051,20 +1062,20 @@ describe('workflow executions controller', () => {
           name: 'runjs1',
           options: {
             code: `return { message: "Hello from RunJS" };`,
-            parameters: []
-          }
-        }
+            parameters: [],
+          },
+        },
       ];
 
       const { app: workflow, appVersion } = await createCompleteWorkflow(app, user, {
         name: 'Nodes Test Workflow',
         nodes,
         edges,
-        queries
+        queries,
       });
 
       const execution = await executeWorkflow(app, workflow, user, {
-        environmentId: appVersion.currentEnvironmentId
+        environmentId: appVersion.currentEnvironmentId,
       });
 
       const { tokenCookie } = await authenticateUser(app, user.email);

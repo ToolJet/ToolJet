@@ -77,4 +77,4 @@ module.exports = defineConfig([{
     "@typescript-eslint/no-wrapper-object-types": "error", 
     "@typescript-eslint/no-empty-object-type": "error",
   },
-}, globalIgnores(["**/dist", "**/migrations"])]);
+}, globalIgnores(["**/dist", "**/migrations", "**/test/**"])]);

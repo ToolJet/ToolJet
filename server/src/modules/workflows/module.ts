@@ -190,17 +190,17 @@ export class WorkflowsModule extends SubModule {
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
-        ...(isMainImport ? [
-          WorkflowStreamService,
-          AppsActionsListener,
-          // Only register BullMQ processors and schedule bootstrap when WORKER=true
-          // This allows running dedicated HTTP-only instances and worker instances
-          ...(process.env.WORKER === 'true' ? [
-            WorkflowScheduleProcessor,
-            WorkflowExecutionProcessor,
-            ScheduleBootstrapService,
-          ] : []),
-        ] : []),
+        ...(isMainImport
+          ? [
+              WorkflowStreamService,
+              AppsActionsListener,
+              // Only register BullMQ processors and schedule bootstrap when WORKER=true
+              // This allows running dedicated HTTP-only instances and worker instances
+              ...(process.env.WORKER === 'true'
+                ? [WorkflowScheduleProcessor, WorkflowExecutionProcessor, ScheduleBootstrapService]
+                : []),
+            ]
+          : []),
       ],
       controllers: [
         WorkflowsController,

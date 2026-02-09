@@ -6,6 +6,7 @@ export default class PostgrestQueryBuilder {
   }
 
   order(column: string, value: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.url.get('order')
       ? this.url.set('order', `${this.url.get('order')},${column}.${value}`)
       : this.url.append(`order`, `${column}.${value}`);

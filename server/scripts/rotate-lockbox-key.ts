@@ -59,7 +59,8 @@ class RotationProgress {
   incrementRow(): void {
     this.currentTableRows++;
     if (this.currentTableRows % 10 === 0 || this.currentTableRows === this.currentTableTotal) {
-      const percent = this.currentTableTotal > 0 ? ((this.currentTableRows / this.currentTableTotal) * 100).toFixed(1) : '0.0';
+      const percent =
+        this.currentTableTotal > 0 ? ((this.currentTableRows / this.currentTableTotal) * 100).toFixed(1) : '0.0';
       process.stdout.write(`\r  Progress: ${this.currentTableRows}/${this.currentTableTotal} (${percent}%)`);
     }
   }
@@ -230,25 +231,22 @@ async function promptForOldKey(): Promise<string> {
   });
 
   return new Promise((resolve, reject) => {
-    rl.question(
-      'Please enter the old key: ',
-      (answer) => {
-        rl.close();
-        const key = answer.trim();
+    rl.question('Please enter the old key: ', (answer) => {
+      rl.close();
+      const key = answer.trim();
 
-        if (!key) {
-          reject(new Error('Old key is required'));
-          return;
-        }
-
-        try {
-          validateKeyFormat(key, 'Old master key');
-          resolve(key);
-        } catch (error) {
-          reject(error);
-        }
+      if (!key) {
+        reject(new Error('Old key is required'));
+        return;
       }
-    );
+
+      try {
+        validateKeyFormat(key, 'Old master key');
+        resolve(key);
+      } catch (error) {
+        reject(error);
+      }
+    });
   });
 }
 
@@ -259,18 +257,15 @@ async function promptBackupConfirmation(): Promise<void> {
   });
 
   return new Promise((resolve, reject) => {
-    rl.question(
-      '⚠️  Have you backed up the database? This operation cannot be undone. (yes/no): ',
-      (answer) => {
-        rl.close();
-        if (answer.toLowerCase() === 'yes') {
-          console.log('✓ Backup confirmed');
-          resolve();
-        } else {
-          reject(new Error('Database backup not confirmed. Aborting rotation.'));
-        }
+    rl.question('⚠️  Have you backed up the database? This operation cannot be undone. (yes/no): ', (answer) => {
+      rl.close();
+      if (answer.toLowerCase() === 'yes') {
+        console.log('✓ Backup confirmed');
+        resolve();
+      } else {
+        reject(new Error('Database backup not confirmed. Aborting rotation.'));
       }
-    );
+    });
   });
 }
 
@@ -329,10 +324,18 @@ async function rotateOrgConstants(
       const orgId = constant.organizationConstant.organizationId;
 
       // Decrypt with old key (using orgId as column param)
-      const plainValue = await dualKeyService.decryptWithOldKey('org_environment_constant_values', orgId, constant.value);
+      const plainValue = await dualKeyService.decryptWithOldKey(
+        'org_environment_constant_values',
+        orgId,
+        constant.value
+      );
 
       // Encrypt with new key
-      const newCiphertext = await dualKeyService.encryptWithNewKey('org_environment_constant_values', orgId, plainValue);
+      const newCiphertext = await dualKeyService.encryptWithNewKey(
+        'org_environment_constant_values',
+        orgId,
+        plainValue
+      );
 
       constant.value = newCiphertext;
       await entityManager.save(constant);
@@ -589,5 +592,5 @@ async function testDecryptionWithOldKey(
 }
 
 // Run the script
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
+
 bootstrap();

@@ -11,8 +11,8 @@ import * as semver from 'semver';
 import { BadRequestException } from '@nestjs/common';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 
-const PASSWORD_REGEX =
-  /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
+// eslint-disable-next-line no-useless-escape
+const PASSWORD_REGEX = /^(?=.{12,24}$)[A-Za-z0-9!@#\$%\^&\*\(\)_+\-=\{\}\[\]:;\"',\.\?\/\\\|]+$/;
 
 export function validatePasswordServer(password: string | undefined | null) {
   if (!password) {
@@ -719,9 +719,7 @@ export async function validateSSODomain(
   }
 
   // Fetch instance settings
-  const instanceSettings = await instanceSettingsUtilService.getSettings([
-    INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
-  ]);
+  const instanceSettings = await instanceSettingsUtilService.getSettings([INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS]);
   const instanceAllowedDomains = instanceSettings?.ALLOWED_DOMAINS;
 
   return isValidSSODomain(email, orgDomain, instanceAllowedDomains);

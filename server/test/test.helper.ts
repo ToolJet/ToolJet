@@ -192,8 +192,8 @@ export async function createApplicationVersion(
   const envId = currentEnvironmentId
     ? currentEnvironmentId
     : defaultAppEnvironments.length > 1
-    ? environments.find((env) => env.priority === 1)?.id
-    : environments[0].id;
+      ? environments.find((env) => env.priority === 1)?.id
+      : environments[0].id;
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
@@ -675,8 +675,8 @@ export const generateRedirectUrl = async (
     organizationToken
       ? `${!isOrgInvitation ? `/workspaces/${organizationToken}` : ''}?oid=${current_organization?.id}&`
       : isSSO
-      ? '?'
-      : ''
+        ? '?'
+        : ''
   }${isSSO ? 'source=sso' : ''}`;
 };
 

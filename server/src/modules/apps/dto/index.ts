@@ -3,7 +3,6 @@ import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum 
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
-
 export enum AppBuilderMode {
   AI = 'ai',
   VISUAL = 'visual',

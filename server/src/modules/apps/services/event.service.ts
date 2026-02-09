@@ -234,10 +234,7 @@ export class EventsService implements IEventsService {
    * Bulk create events with its own transaction and history capture
    * Use this when creating events as a standalone operation (not part of a larger batch)
    */
-  async bulkCreateEvents(
-    bulkEventHandlerDto: BulkCreateEventHandlerDto,
-    versionId: string
-  ): Promise<EventHandler[]> {
+  async bulkCreateEvents(bulkEventHandlerDto: BulkCreateEventHandlerDto, versionId: string): Promise<EventHandler[]> {
     const { events: eventHandlers } = bulkEventHandlerDto;
 
     if (!eventHandlers || eventHandlers.length === 0) {

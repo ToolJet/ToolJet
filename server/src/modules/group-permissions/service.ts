@@ -29,7 +29,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     protected readonly groupPermissionsDuplicateService: GroupPermissionsDuplicateService,
     protected readonly roleRepository: RolesRepository,
     protected readonly licenseUtilService: GroupPermissionLicenseUtilService
-  ) { }
+  ) {}
 
   async create(user: User, name: string): Promise<GroupPermissions> {
     const groupPermissionResponse = await this.groupPermissionsUtilService.create(user, name);

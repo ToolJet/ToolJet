@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
-import { EntityManager } from 'typeorm';
 import { ACTION_TYPE } from '@modules/app-history/constants';
-import { RequestContext } from '@modules/request-context/service';
 import { AppVersion } from '@entities/app_version.entity';
-import { APP_TYPES } from '@modules/apps/constants';
-import { dbTransactionWrap } from '@helpers/database.helper';
 import { TransactionLogger } from '@modules/logging/service';
 import { NameResolverRepository } from './repositories/name-resolver.repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
@@ -17,7 +11,7 @@ export class AppHistoryUtilService {
     // @InjectQueue('app-history') protected readonly historyQueue: Queue,
     protected readonly logger: TransactionLogger,
     protected readonly nameResolverRepository: NameResolverRepository
-  ) { }
+  ) {}
 
   async resolveComponentNames(componentIds: string[]): Promise<Record<string, string>> {
     return this.nameResolverRepository.getComponentNames(componentIds);

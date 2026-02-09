@@ -5,7 +5,7 @@ import { AddLogFunction } from '../interfaces/IWorkflowExecutionsService';
 
 @Injectable()
 export class AgentNodeService implements IAgentNodeService {
-  constructor() { }
+  constructor() {}
 
   async executeAgentNode(
     currentNode: WorkflowExecutionNode,
@@ -25,7 +25,7 @@ export class AgentNodeService implements IAgentNodeService {
     response?: any | null,
     executionStartTime?: Date | null,
     terminationRegistry?: any | null,
-    executionId?: string | null,
+    executionId?: string | null
   ): Promise<{
     status: string;
     data: any;

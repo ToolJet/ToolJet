@@ -11,7 +11,7 @@ import { VersionRepository } from '@modules/versions/repository';
 
 @Injectable()
 export class WorkflowAccessGuard implements CanActivate {
-  constructor(private readonly versionRepository: VersionRepository) { }
+  constructor(private readonly versionRepository: VersionRepository) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

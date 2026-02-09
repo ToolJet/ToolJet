@@ -14,10 +14,10 @@ export class LicenseAppsService implements ILicenseAppsService {
     protected readonly licenseCountService: LicenseCountsService
   ) {}
   async getAppsLimit(organizationId: string): Promise<any> {
-    const licenseTerms = await this.licenseTermsService.getLicenseTerms([
-      LICENSE_FIELD.APP_COUNT,
-      LICENSE_FIELD.STATUS,
-    ], organizationId);
+    const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+      [LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return {
         appsCount: generatePayloadForLimits(

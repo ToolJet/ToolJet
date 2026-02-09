@@ -16,7 +16,10 @@ import { Injectable } from '@nestjs/common';
 const jszipInstance = new jszip();
 @Injectable()
 export class PluginsUtilService implements IPluginsUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected readonly configService: ConfigService) {}
+  constructor(
+    protected readonly filesRepository: FilesRepository,
+    protected readonly configService: ConfigService
+  ) {}
   async create(
     createPluginDto: CreatePluginDto,
     version: string,

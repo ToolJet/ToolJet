@@ -7,7 +7,10 @@ import { PAGE_PERMISSION_TYPE } from '../constants';
 
 @Injectable()
 export class PagePermissionsRepository extends Repository<PagePermission> {
-  constructor(private dataSource: DataSource, private readonly pageUsersRepository: PageUsersRepository) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly pageUsersRepository: PageUsersRepository
+  ) {
     super(PagePermission, dataSource.createEntityManager());
   }
 

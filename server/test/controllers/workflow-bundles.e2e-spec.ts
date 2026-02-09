@@ -36,7 +36,7 @@ const waitForBundleReady = async (
 
   while (Date.now() - startTime < timeoutMs) {
     const bundle = await bundleRepo.findOne({
-      where: { appVersionId }
+      where: { appVersionId },
     });
 
     if (bundle) {
@@ -49,7 +49,7 @@ const waitForBundleReady = async (
       // If status is 'building', continue polling
     }
 
-    await new Promise(resolve => setTimeout(resolve, pollInterval));
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
   }
 
   throw new Error(`Bundle generation timed out after ${timeoutMs}ms`);
@@ -84,10 +84,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     persisterOptions: {
       fs: {
         // Store recordings as __fixtures__/spec-file-name/*
-        recordingsDir: path.resolve(
-          __dirname,
-          `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`
-        ),
+        recordingsDir: path.resolve(__dirname, `../__fixtures__/${path.basename(__filename).replace(/\.[tj]s$/, '')}`),
       },
     },
   });
@@ -99,10 +96,12 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     // External API calls (like NPM registry) will be recorded
     context.polly.server
       .any()
-      .filter(req => {
+      .filter((req) => {
         const url = new URL(req.url);
         // Pass through localhost and internal calls without recording
-        return url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal');
+        return (
+          url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal')
+        );
       })
       .passthrough();
     // All other requests (external APIs) will be handled by Polly's recording mechanism
@@ -121,17 +120,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('GET /api/workflows/packages/search', () => {
     it('should search NPM packages with valid query', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -160,8 +163,8 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
             links: expect.any(Object),
             author: expect.any(String),
             keywords: expect.arrayContaining([expect.any(String)]),
-            modified: expectISO8601()
-          })
+            modified: expectISO8601(),
+          }),
         ])
       );
 
@@ -170,17 +173,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should handle scoped packages in search', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -203,8 +210,8 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
             expect.objectContaining({
               name: expect.stringMatching(/^@[a-z0-9-~][a-z0-9-._~]*\/[a-z0-9-~][a-z0-9-._~]*$/), // NPM scoped package pattern
               version: expectSemVer(),
-              description: expect.any(String)
-            })
+              description: expect.any(String),
+            }),
           ])
         );
         expect(response.body[0].name).toContain('@types');
@@ -223,23 +230,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 401,
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         })
       );
     });
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'readonly@tooljet.io',
-        password: 'password',
-        firstName: 'ReadOnly',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: false,
-          workflowCreate: false
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'readonly@tooljet.io',
+          password: 'password',
+          firstName: 'ReadOnly',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: false,
+            workflowCreate: false,
+          },
         }
-      });
+      );
 
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -254,7 +265,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body).toEqual(
         expect.objectContaining({
-          message: 'You do not have permission to access this resource'
+          message: 'You do not have permission to access this resource',
         })
       );
     });
@@ -262,17 +273,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('GET /api/workflows/:workflowId/packages', () => {
     it('should get empty dependencies for new workflow', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -290,7 +305,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       // Validate exact GetPackagesResult structure
       expect(response.body).toEqual(
         expect.objectContaining({
-          dependencies: expect.any(Object)
+          dependencies: expect.any(Object),
         })
       );
 
@@ -299,17 +314,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should get existing dependencies for workflow with packages', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow-with-deps');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -318,9 +337,9 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
       // First, add some dependencies to the workflow
       const dependencies = {
-        'lodash': '4.17.21',
+        lodash: '4.17.21',
         'is-odd': '3.0.1',
-        'uuid': '9.0.0'
+        uuid: '9.0.0',
       };
 
       await request(app.getHttpServer())
@@ -330,11 +349,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         .send({ dependencies });
 
       // Wait for package processing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Re-authenticate to ensure fresh token for GET request
       const refreshedUser = await authenticateUser(app, user.email);
-      
+
       // Now get the dependencies
       const response = await request(app.getHttpServer())
         .get(`/api/workflows/${appVersion.id}/packages`)
@@ -347,16 +366,16 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       // Validate exact GetPackagesResult structure
       expect(response.body).toEqual(
         expect.objectContaining({
-          dependencies: expect.any(Object)
+          dependencies: expect.any(Object),
         })
       );
 
       // Verify the specific dependencies we set
       expect(response.body.dependencies).toEqual(
         expect.objectContaining({
-          'lodash': expectSemVer(),
+          lodash: expectSemVer(),
           'is-odd': expectSemVer(),
-          'uuid': expectSemVer()
+          uuid: expectSemVer(),
         })
       );
 
@@ -373,23 +392,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 401,
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         })
       );
     });
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'readonly@tooljet.io',
-        password: 'password',
-        firstName: 'ReadOnly',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: false,
-          workflowCreate: false
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'readonly@tooljet.io',
+          password: 'password',
+          firstName: 'ReadOnly',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: false,
+            workflowCreate: false,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -405,7 +428,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body).toEqual(
         expect.objectContaining({
-          message: 'You do not have permission to access this resource'
+          message: 'You do not have permission to access this resource',
         })
       );
     });
@@ -413,17 +436,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('PUT /api/workflows/:workflowId/packages', () => {
     it('should update workflow packages and verify entity', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow, {
@@ -453,7 +480,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         expect.objectContaining({
           success: true,
           message: expect.any(String),
-          bundleStatus: expect.stringMatching(/^(building|ready|failed)$/)
+          bundleStatus: expect.stringMatching(/^(building|ready|failed)$/),
         })
       );
 
@@ -477,12 +504,11 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
           error: null,
           status: 'ready',
           createdAt: expect.any(Date),
-          updatedAt: expect.any(Date)
+          updatedAt: expect.any(Date),
         })
       );
 
-      expect(bundleEntity!.bundleSize).toBeGreaterThan(
-        0);
+      expect(bundleEntity!.bundleSize).toBeGreaterThan(0);
       expect(bundleEntity!.generationTimeMs).toBeGreaterThan(0);
       console.log('bundle content:', bundleEntity!.bundleContent);
       expect(bundleEntity!.bundleContent).toContain('is-odd');
@@ -490,17 +516,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should handle invalid dependencies with proper error', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -528,23 +558,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 401,
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         })
       );
     });
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'readonly@tooljet.io',
-        password: 'password',
-        firstName: 'ReadOnly',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: false,
-          workflowCreate: false
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'readonly@tooljet.io',
+          password: 'password',
+          firstName: 'ReadOnly',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: false,
+            workflowCreate: false,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -560,7 +594,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body).toEqual(
         expect.objectContaining({
-          message: 'You do not have permission to access this resource'
+          message: 'You do not have permission to access this resource',
         })
       );
     });
@@ -568,17 +602,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('GET /api/workflows/:workflowId/bundle/status', () => {
     it('should return bundle status with type checking', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -586,7 +624,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       const tokenCookie = loggedUser.tokenCookie;
 
       // First, add dependencies to trigger bundle generation
-      const dependencies = { 'lodash': '4.17.21' };
+      const dependencies = { lodash: '4.17.21' };
       const updateResponse = await request(app.getHttpServer())
         .put(`/api/workflows/${appVersion.id}/packages`)
         .set('tj-workspace-id', user.defaultOrganizationId)
@@ -596,7 +634,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(updateResponse.statusCode).toBe(200);
 
       // Wait a moment for bundle generation to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const response = await request(app.getHttpServer())
         .get(`/api/workflows/${appVersion.id}/bundle/status`)
@@ -613,23 +651,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
           sizeBytes: expect.any(Number),
           generationTimeMs: expect.any(Number),
           dependencies: expect.any(Object),
-          bundleSha: expectSHA256()
+          bundleSha: expectSHA256(),
         })
       );
     });
 
     it('should handle non-existent workflow', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const loggedUser = await authenticateUser(app, user.email);
       const tokenCookie = loggedUser.tokenCookie;
@@ -646,9 +688,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should require authentication', async () => {
-      const response = await request(app.getHttpServer())
-        .get('/api/workflows/fake-id/bundle/status')
-        .send();
+      const response = await request(app.getHttpServer()).get('/api/workflows/fake-id/bundle/status').send();
 
       expect(response.statusCode).toBe(401);
 
@@ -656,23 +696,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 401,
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         })
       );
     });
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'readonly@tooljet.io',
-        password: 'password',
-        firstName: 'ReadOnly',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: false,
-          workflowCreate: false
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'readonly@tooljet.io',
+          password: 'password',
+          firstName: 'ReadOnly',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: false,
+            workflowCreate: false,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -688,7 +732,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body).toEqual(
         expect.objectContaining({
-          message: 'You do not have permission to access this resource'
+          message: 'You do not have permission to access this resource',
         })
       );
     });
@@ -696,17 +740,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('POST /api/workflows/:workflowId/bundle/rebuild', () => {
     it('should rebuild bundle and verify entity consistency', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -739,7 +787,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
         expect.objectContaining({
           success: true,
           message: expect.any(String),
-          bundleStatus: 'building'
+          bundleStatus: 'building',
         })
       );
 
@@ -750,17 +798,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should handle rebuild with no existing bundle', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -777,9 +829,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
     });
 
     it('should require authentication', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/workflows/fake-id/bundle/rebuild')
-        .send();
+      const response = await request(app.getHttpServer()).post('/api/workflows/fake-id/bundle/rebuild').send();
 
       expect(response.statusCode).toBe(401);
 
@@ -787,23 +837,27 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 401,
-          message: 'Unauthorized'
+          message: 'Unauthorized',
         })
       );
     });
 
     it('should return 403 when user lacks workflow edit permissions', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'readonly@tooljet.io',
-        password: 'password',
-        firstName: 'ReadOnly',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: false,
-          workflowCreate: false
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'readonly@tooljet.io',
+          password: 'password',
+          firstName: 'ReadOnly',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: false,
+            workflowCreate: false,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'test-workflow');
       const appVersion = await createApplicationVersion(app, workflow);
@@ -819,7 +873,7 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
       expect(response.statusCode).toBe(403);
       expect(response.body).toEqual(
         expect.objectContaining({
-          message: 'You do not have permission to access this resource'
+          message: 'You do not have permission to access this resource',
         })
       );
     });
@@ -827,17 +881,21 @@ describe('Enterprise Edition - workflow bundle management controller', () => {
 
   describe('Complete workflow package management flow', () => {
     it('should handle full package management workflow with entity verification', async () => {
-      const { user } = await setupOrganizationAndUser(app, {
-        email: 'admin@tooljet.io',
-        password: 'password',
-        firstName: 'Admin',
-        lastName: 'User',
-      }, {
-        workflowPermissions: {
-          isAllEditable: true,
-          workflowCreate: true
+      const { user } = await setupOrganizationAndUser(
+        app,
+        {
+          email: 'admin@tooljet.io',
+          password: 'password',
+          firstName: 'Admin',
+          lastName: 'User',
+        },
+        {
+          workflowPermissions: {
+            isAllEditable: true,
+            workflowCreate: true,
+          },
         }
-      });
+      );
 
       const workflow = await createWorkflowForUser(app, user, 'integration-test-workflow');
       const appVersion = await createApplicationVersion(app, workflow, {
@@ -981,10 +1039,12 @@ describe('Community Edition - workflow bundle management controller', () => {
     // External API calls (like NPM registry) will be recorded
     context.polly.server
       .any()
-      .filter(req => {
+      .filter((req) => {
         const url = new URL(req.url);
         // Pass through localhost and internal calls without recording
-        return url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal');
+        return (
+          url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname.includes('host.docker.internal')
+        );
       })
       .passthrough();
     // All other requests (external APIs) will be handled by Polly's recording mechanism
@@ -1033,7 +1093,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 500,
-          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition'
+          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition',
         })
       );
     });
@@ -1064,7 +1124,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 500,
-          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition'
+          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition',
         })
       );
     });
@@ -1089,8 +1149,8 @@ describe('Community Edition - workflow bundle management controller', () => {
         .set('Cookie', tokenCookie)
         .send({
           dependencies: {
-            'lodash': '4.17.21'
-          }
+            lodash: '4.17.21',
+          },
         });
 
       expect(response.statusCode).toBe(500);
@@ -1099,7 +1159,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 500,
-          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition'
+          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition',
         })
       );
     });
@@ -1130,7 +1190,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 500,
-          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition'
+          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition',
         })
       );
     });
@@ -1161,7 +1221,7 @@ describe('Community Edition - workflow bundle management controller', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 500,
-          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition'
+          message: 'Enterprise feature: NPM package management requires ToolJet Enterprise Edition',
         })
       );
     });

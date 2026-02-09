@@ -2,7 +2,6 @@ import { getEnvVars } from './database-config-utils';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { INestApplicationContext } from '@nestjs/common';
-import { PluginsService } from '@modules/plugins/service';
 import { CreatePluginDto } from '@modules/plugins/dto';
 import * as availablePlugins from 'src/assets/marketplace/plugins.json';
 import { validateSync } from 'class-validator';
@@ -46,6 +45,7 @@ async function validateAndReloadPlugins(nestApp: INestApplicationContext) {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   invalidPluginDtos.length > 0 &&
     console.log(
       'Skipping invalid plugins:',
@@ -84,5 +84,4 @@ function sanitizeArray(pluginsToReload: string): string[] {
   return [...new Set(pluginsToReload.split(',').map((pluginId: string) => pluginId.trim()))];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

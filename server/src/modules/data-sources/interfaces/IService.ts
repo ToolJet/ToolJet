@@ -44,10 +44,5 @@ export interface IDataSourcesService {
     user: User
   ): Promise<void>;
 
-  invokeMethod(
-    dataSource: DataSource,
-    methodName: string,
-    user: User,
-    environmentId: string
-  ): Promise<QueryResult>;
+  invokeMethod(dataSource: DataSource, methodName: string, user: User, environmentId: string): Promise<QueryResult>;
 }

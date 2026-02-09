@@ -4,7 +4,7 @@ import { FEATURE_KEY } from './constants';
 
 @Controller('app-history')
 export class AppHistoryController {
-  constructor() { }
+  constructor() {}
 
   @InitFeature(FEATURE_KEY.LIST_HISTORY)
   @Get('apps/versions/:versionId')

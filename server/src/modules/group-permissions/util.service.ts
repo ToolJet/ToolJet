@@ -37,7 +37,6 @@ import { User } from '@entities/user.entity';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { RequestContext } from '@modules/request-context/service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
-import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class GroupPermissionsUtilService implements IGroupPermissionsUtilService {
@@ -158,12 +157,6 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   async createDefaultGroups(organizationId: string, manager?: EntityManager): Promise<void> {
     const defaultGroups: GroupPermissions[] = [];
-
-    // Check if multi-environment feature is available
-    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-      LICENSE_FIELD.MULTI_ENVIRONMENT,
-      organizationId
-    );
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group
