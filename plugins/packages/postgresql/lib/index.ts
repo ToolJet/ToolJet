@@ -11,6 +11,81 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
 import { isEmpty } from '@tooljet-plugins/common';
+import fs from 'fs';
+import { Client } from 'ssh2';
+import { URL } from 'url';
+import net from 'net';
+
+
+async function createLocalSSHTunnel(sourceOptions: SourceOptions): Promise<{
+  sshClient: Client;
+  server: net.Server;
+  localPort: number;
+}> {
+  return new Promise((resolve, reject) => {
+
+    const ssh = new Client();
+
+    ssh.on('ready', () => {
+
+      const server = net.createServer((localSocket) => {
+
+        ssh.forwardOut(
+          localSocket.remoteAddress || '127.0.0.1',
+          localSocket.remotePort || 0,
+          sourceOptions.host,
+          Number(sourceOptions.port),
+          (err, remoteStream) => {
+            if (err) {
+              console.error('[Tunnel] ❌ forwardOut error:', err.message);
+              localSocket.destroy();
+              return;
+            }
+
+
+            localSocket.pipe(remoteStream).pipe(localSocket);
+
+            remoteStream.on('error', () => {
+              localSocket.destroy();
+            });
+
+            localSocket.on('error', () => {
+              remoteStream.destroy();
+            });
+          }
+        );
+      });
+
+      server.listen(0, '127.0.0.1', () => {
+        const addr = server.address() as net.AddressInfo;
+
+        resolve({
+          sshClient: ssh,
+          server,
+          localPort: addr.port,
+        });
+      });
+    });
+
+    ssh.on('error', (e) => {
+      console.error('[SSH] ❌ SSH error:', e.message);
+      reject(e);
+    });
+
+    ssh.connect({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      password: sourceOptions.ssh_password,
+      privateKey: sourceOptions.ssh_private_key
+        ? Buffer.from(sourceOptions.ssh_private_key)
+        : undefined,
+      passphrase: sourceOptions.ssh_passphrase,
+    });
+  });
+}
+
+
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -62,7 +137,7 @@ export default class PostgresqlQueryService implements QueryService {
           if (this.isSqlParametersUsed(queryOptions)) {
             return await this.handleRawQuery(knexInstance, queryOptions);
           } else {
-            pgPool = knexInstance.client.pool;
+            pgPool = (knexInstance as any).client.pool;
             pgConnection = await pgPool.acquire().promise;
             const query = queryOptions.query;
             let result = { rows: [] };
@@ -94,7 +169,21 @@ export default class PostgresqlQueryService implements QueryService {
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       if (pgPool && pgConnection) pgPool.release(pgConnection);
-      if (!checkCache) await knexInstance.destroy();
+      if (!checkCache && knexInstance) {
+
+        const tunnel = (knexInstance as any).__sshTunnel;
+        await knexInstance.destroy();
+        if (tunnel) {
+          tunnel.server.close();
+          tunnel.sshClient.end();
+        }
+
+
+        if (tunnel) {
+          tunnel.server.close();
+          tunnel.sshClient.end();
+        }
+      }
     }
   }
 
@@ -172,32 +261,49 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    let connectionConfig;
-    if (sourceOptions.connection_type === 'manual') {
+    let connectionConfig: any;
+    let tunnel: Awaited<ReturnType<typeof createLocalSSHTunnel>> | null = null;
+
+    if (sourceOptions.ssh_enabled) {
+      tunnel = await createLocalSSHTunnel(sourceOptions);
+
       connectionConfig = {
+        host: '127.0.0.1',
+        port: tunnel.localPort,
         user: sourceOptions.username,
-        host: sourceOptions.host,
-        database: sourceOptions.database,
         password: sourceOptions.password,
-        port: sourceOptions.port,
+        database: sourceOptions.database,
         ssl: this.getSslConfig(sourceOptions),
-        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
+        ...(this.tooljet_edition !== 'cloud'
+          ? { statement_timeout: this.STATEMENT_TIMEOUT }
+          : {}),
       };
-    } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
+    } else {
       connectionConfig = {
-        connectionString: sourceOptions.connection_string,
-        ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
+        host: sourceOptions.host,
+        port: sourceOptions.port,
+        user: sourceOptions.username,
+        password: sourceOptions.password,
+        database: sourceOptions.database,
+        ssl: this.getSslConfig(sourceOptions),
+        ...(this.tooljet_edition !== 'cloud'
+          ? { statement_timeout: this.STATEMENT_TIMEOUT }
+          : {}),
       };
     }
-    const connectionOptions: Knex.Config = {
+
+    const knexInstance = knex({
       client: 'pg',
       connection: connectionConfig,
-      pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
+      pool: { min: 0, max: 3 },
       acquireConnectionTimeout: 60000,
-      ...this.connectionOptions(sourceOptions),
-    };
+    });
+    // cleanup hook
+    if (tunnel) {
+      (knexInstance as any).__sshTunnel = tunnel;
+    }
 
-    return knex(connectionOptions);
+    return knexInstance;
   }
 
   private getSslConfig(sourceOptions: SourceOptions) {
@@ -228,7 +334,6 @@ export default class PostgresqlQueryService implements QueryService {
       cacheConnectionWithConfiguration(dataSourceId, enhancedCacheKey, connection);
       return connection;
     }
-
     return await this.buildConnection(sourceOptions);
   }
 
