@@ -128,6 +128,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Statistics',
   'StarRating',
   'CircularProgressBar',
+  'ProgressBar',
   'CustomComponent',
   'Html',
   'AudioRecorder',
@@ -571,16 +572,19 @@ export const Inspector = ({
     );
   };
 
-  const renderTabs = () => (
-    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
-      <Tab eventKey="properties" title="Properties">
-        {propertiesTab}
-      </Tab>
-      <Tab eventKey="styles" title="Styles">
-        {stylesTab}
-      </Tab>
-    </Tabs>
-  );
+  const renderTabs = () => {
+    const isContainerOrViewerModule = ['ModuleContainer', 'ModuleViewer'].includes(componentMeta.component);
+    return (
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
+        <Tab eventKey="properties" title="Properties">
+          {propertiesTab}
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
+          {stylesTab}
+        </Tab>
+      </Tabs>
+    );
+  };
 
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
@@ -667,8 +671,12 @@ export const Inspector = ({
                   toggleModal={toggleComponentPermissionModal}
                   darkMode={darkMode}
                   fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                  createPermission={(id, appId, body) =>
+                    appPermissionService.createComponentPermission(appId, id, body)
+                  }
+                  updatePermission={(id, appId, body) =>
+                    appPermissionService.updateComponentPermission(appId, id, body)
+                  }
                   deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
                   onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
                 />

@@ -53,6 +53,7 @@ const sectionConfig = {
       'Text',
       'Tags',
       'CircularProgressBar',
+      'ProgressBar',
       'Timeline',
       'Divider',
       'VerticalDivider',

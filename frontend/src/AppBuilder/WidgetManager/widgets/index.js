@@ -70,6 +70,7 @@ import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
 import { accordionConfig } from './accordion';
+import { progressbarConfig } from './progressbar';
 
 export {
   buttonConfig,
@@ -144,4 +145,5 @@ export {
   cameraConfig,
   tagsInputConfig,
   accordionConfig,
+  progressbarConfig,
 };

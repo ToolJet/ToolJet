@@ -70,6 +70,7 @@ import {
   cameraConfig,
   tagsInputConfig,
   accordionConfig,
+  progressbarConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -139,6 +140,7 @@ export const widgets = [
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,
