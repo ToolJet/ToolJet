@@ -22,6 +22,7 @@ export const KeyValuePair = ({
   darkMode,
   dataCy,
   id,
+  width: widgetWidth,
 }) => {
   const {
     dataSourceSelector,
@@ -65,27 +66,6 @@ export const KeyValuePair = ({
   const containerRef = useRef(null);
   const [maxLabelWidth, setMaxLabelWidth] = useState(0);
 
-  // Calculate max label width when autoLabelWidth is enabled
-  useLayoutEffect(() => {
-    if (!autoLabelWidth || !containerRef.current || alignment === 'top') {
-      setMaxLabelWidth(0);
-      return;
-    }
-
-    // Find all label elements and measure their widths
-    const labels = containerRef.current.querySelectorAll('.key-value-label');
-    let maxWidth = 0;
-    labels.forEach((label) => {
-      const width = label.scrollWidth;
-      if (width > maxWidth) {
-        maxWidth = width;
-      }
-    });
-
-    // Add 1px buffer to account for scrollWidth rounding
-    setMaxLabelWidth(maxWidth + 1);
-  }, [autoLabelWidth, resolvedFields, alignment]);
-
   // Merge original data with edited values
   const currentData = useMemo(() => ({ ...data, ...editedData }), [data, editedData]);
 
@@ -124,6 +104,36 @@ export const KeyValuePair = ({
     fieldDynamicData,
     id,
   });
+
+  // Calculate max label width when autoLabelWidth is enabled
+  useLayoutEffect(() => {
+    if (!autoLabelWidth || !containerRef.current || alignment === 'top') {
+      setMaxLabelWidth(0);
+      return;
+    }
+
+    // Measure the inner <p> element which doesn't have minWidth constraint
+    // This avoids the double visual shift from resetting maxLabelWidth to 0
+    const rafId = requestAnimationFrame(() => {
+      if (!containerRef.current) return;
+
+      const labels = containerRef.current.querySelectorAll('.key-value-label');
+      let maxWidth = 0;
+      labels.forEach((label) => {
+        // Get the inner <p> element's scrollWidth (natural text width)
+        const textElement = label.querySelector('p');
+        const width = textElement ? textElement.scrollWidth : label.scrollWidth;
+        if (width > maxWidth) {
+          maxWidth = width;
+        }
+      });
+
+      // Add 1px buffer to account for scrollWidth rounding
+      setMaxLabelWidth(maxWidth + 1);
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [autoLabelWidth, fields, alignment, widgetWidth]);
 
   if (isLoading) {
     return (
