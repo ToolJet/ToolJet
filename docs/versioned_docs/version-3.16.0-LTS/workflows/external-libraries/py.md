@@ -28,7 +28,7 @@ numpy>=1.24.0
 :::warning
 PyPI does not expose a public search API. You need to know the exact package name and version you want to install. You can look up packages at [pypi.org](https://pypi.org/).
 :::
-
+<!-- 
 ## Bundle Status
 
 After installing or updating packages, ToolJet generates a bundle in the background. The package manager panel displays the current status:
@@ -40,7 +40,7 @@ After installing or updating packages, ToolJet generates a bundle in the backgro
 | **Ready** | The bundle is built and available for all Python nodes in this workflow version. |
 | **Failed** | Bundle generation encountered an error. Check the error message in the panel and try rebuilding. |
 
-You can manually trigger a rebuild by clicking the **Rebuild** button in the package manager panel.
+You can manually trigger a rebuild by clicking the **Rebuild** button in the package manager panel. -->
 
 ## Using Packages in Python Nodes
 
@@ -65,7 +65,7 @@ Packages are available to all Python nodes in the workflow — you don't need to
 1. Open the package manager panel and switch to the **Python** tab.
 2. Edit the requirements list — update versions or remove lines as needed.
 3. Click **Install**. The bundle regenerates automatically with the updated dependency list.
-
+<!-- 
 ## Sandbox and Security
 
 Python nodes execute inside a secure sandbox powered by [NsJail](https://github.com/google/nsjail). The sandbox enforces the following restrictions at runtime:
@@ -79,7 +79,7 @@ Python nodes execute inside a secure sandbox powered by [NsJail](https://github.
 | File creation size | 1 MB |
 | Sub-processes | 5 |
 
-The sandbox prevents user code from accessing environment variables, the host filesystem, or the network. Use datasource nodes to fetch external data before passing it to a Python node.
+The sandbox prevents user code from accessing environment variables, the host filesystem, or the network. Use datasource nodes to fetch external data before passing it to a Python node. -->
 
 ### Self-Hosted Deployments
 
@@ -118,3 +118,12 @@ Deploy ToolJet in **worker mode** on a platform that supports privileged contain
 - **Bundle per workflow version** — each workflow version maintains its own independent set of dependencies.
 - **Prebuilt wheels only** — packages that require C/C++ compilation during installation may not be supported. Pure Python packages and packages with prebuilt manylinux/musllinux wheels work.
 - **No network at runtime** — installed packages that make network calls at import time or runtime will fail inside the sandbox. -->
+
+<br/>
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)
