@@ -140,9 +140,6 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
-  const isAppModeSwitchedToVisualPostLayoutGeneration = useStore(
-    (state) => state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration
-  );
 
   // Used to trigger app refresh flow after restoring app history
   const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
@@ -257,10 +254,6 @@ const useAppData = (
       }
     }
 
-    if (isAppModeSwitchedToVisualPostLayoutGeneration && !moduleMode) {
-      setEditorLoading(true, moduleId);
-    }
-
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
@@ -328,7 +321,7 @@ const useAppData = (
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
         if (setConversation && setDocsConversation) {
-          setConversation(conversation, { appBuilderMode: appData.app_builder_mode });
+          setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
           getCreditBalance();
@@ -381,17 +374,13 @@ const useAppData = (
           sendMessage(state.prompt);
         }
 
-        // TODO: We might remove this later on
         if (initialLoadRef.current) {
-          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id); // TODO: Check if this API call is required at this point or can call it later on
+          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
-        // TODO: Might not need this for new dynamic flow
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
-
           // If the app builder mode is AI
           // - Do not show zero state - if there is some conversation already done or if route state has prompt
           setConversationZeroState(
@@ -563,7 +552,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, isAppModeSwitchedToVisualPostLayoutGeneration]);
+  }, [setApp, setEditorLoading, currentSession]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
