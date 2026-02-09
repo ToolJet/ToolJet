@@ -41,7 +41,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
       case 'joinTable':
         return joinTableOptionsChange;
       default:
-        return () => {};
+        return () => { };
     }
   }, [operation, handleOptionsChange, joinTableOptionsChange]);
 
@@ -216,12 +216,12 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
     const isAnyAggregateTruthyValue = isEmpty(currentAggregates)
       ? false
       : Object.values(currentAggregates).some((aggregate) => {
-          if (aggregate.aggFx && aggregate.column) {
-            return true;
-          } else {
-            return false;
-          }
-        });
+        if (aggregate.aggFx && aggregate.column) {
+          return true;
+        } else {
+          return false;
+        }
+      });
     return !isAnyAggregateTruthyValue;
   };
   const getTableName = (id) => {
@@ -360,9 +360,8 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
           Aggregate
         </label>
         <div
-          className={`field-container col d-flex custom-gap-8 flex-column ${
-            !isEmpty(operationDetails?.aggregates) && 'minw-400-w-400'
-          }`}
+          className={`field-container col d-flex custom-gap-8 flex-column ${!isEmpty(operationDetails?.aggregates) && 'minw-400-w-400'
+            }`}
         >
           {isEmpty(operationDetails?.aggregates || {}) && <NoCondition />}
           {operationDetails?.aggregates &&
@@ -392,11 +391,11 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                       value={
                         operation === 'joinTable'
                           ? constructAggregateValue(
-                              aggregateDetails.column,
-                              'joinTable',
-                              'column',
-                              aggregateDetails?.table_id
-                            )
+                            aggregateDetails.column,
+                            'joinTable',
+                            'column',
+                            aggregateDetails?.table_id
+                          )
                           : constructAggregateValue(aggregateDetails.column, 'listRows', 'column')
                       }
                       options={operation === 'joinTable' ? tableListOptions : columnAccessorsOptions}
@@ -413,6 +412,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
                     }}
                     className="d-flex justify-content-center align-items-center border"
                     onClick={() => handleDeleteAggregate(aggregateKey)}
+                    data-cy="delete-aggregate-button"
                   >
                     <SolidIcon name="trash" width="16" fill="var(--slate9)" />
                   </div>
@@ -439,6 +439,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
               addNewAggregateOption();
             }}
             className={`d-flex justify-content-start width-fit-content`}
+            data-cy="add-condition-button"
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
