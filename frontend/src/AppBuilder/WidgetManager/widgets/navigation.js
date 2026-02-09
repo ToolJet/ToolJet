@@ -126,7 +126,8 @@ export const navigationConfig = {
     },
   },
   exposedVariables: {
-    lastClicked: null,
+    selectedItem: null,
+    previousSelectedItem: null,
     isVisible: true,
     isDisabled: false,
     isLoading: false,

@@ -253,12 +253,22 @@ export const Navigation = function Navigation(props) {
 
   // State
   const [selectedItemId, setSelectedItemId] = useState(null);
-  const [exposedState, setExposedState] = useState({
+  const selectedItemRef = useRef(null);
+  const selectItemRef = useRef(null);
+
+  // Local state bridge for exposed variables — allows both prop changes (sidebar)
+  // and action calls (setVisibility/setLoading) to drive rendering
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
-    isDisabled: disabledState,
-    lastClicked: null,
   });
+
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
 
   // Deduplicate and filter visible menu items
   const visibleMenuItems = useMemo(() => {
@@ -290,10 +300,8 @@ export const Navigation = function Navigation(props) {
     width,
   });
 
-  // Handle item click
-  const handleItemClick = (item) => {
-    if (disabledState) return;
-
+  // Shared selection logic — updates exposed variables and ref
+  const applySelection = (item) => {
     const parentGroup = findParentGroup(menuItems, item.id);
     const index = menuItems.findIndex((mi) => mi.id === item.id);
 
@@ -305,9 +313,18 @@ export const Navigation = function Navigation(props) {
       groupLabel: parentGroup?.label || null,
     };
 
+    const previousSelected = selectedItemRef.current;
+    selectedItemRef.current = clickData;
+
     setSelectedItemId(item.id);
-    setExposedVariable('lastClicked', clickData);
-    setExposedState((prev) => ({ ...prev, lastClicked: clickData }));
+    setExposedVariable('selectedItem', clickData);
+    setExposedVariable('previousSelectedItem', previousSelected);
+  };
+
+  // Handle item click
+  const handleItemClick = (item) => {
+    if (disabledState) return;
+    applySelection(item);
     fireEvent('onClick');
   };
 
@@ -315,30 +332,32 @@ export const Navigation = function Navigation(props) {
   const selectItem = (itemId) => {
     const item = findItemById(menuItems, itemId);
     if (item && !item.isGroup) {
-      setSelectedItemId(itemId);
+      applySelection(item);
     }
   };
+
+  // Keep ref in sync so the mount-time useEffect closure always calls the latest version
+  selectItemRef.current = selectItem;
 
   // Effects for syncing exposed variables
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
       sideEffect: () => {
-        setExposedState((prev) => ({ ...prev, isLoading: loadingState }));
         setExposedVariable('isLoading', loadingState);
+        updateExposedVariablesState('isLoading', loadingState);
       },
     },
     {
       dep: visibility,
       sideEffect: () => {
-        setExposedState((prev) => ({ ...prev, isVisible: visibility }));
         setExposedVariable('isVisible', visibility);
+        updateExposedVariablesState('isVisible', visibility);
       },
     },
     {
       dep: disabledState,
       sideEffect: () => {
-        setExposedState((prev) => ({ ...prev, isDisabled: disabledState }));
         setExposedVariable('isDisabled', disabledState);
       },
     },
@@ -347,24 +366,24 @@ export const Navigation = function Navigation(props) {
   // Initialize exposed variables
   useEffect(() => {
     const exposedVariables = {
-      lastClicked: null,
+      selectedItem: null,
+      previousSelectedItem: null,
       isDisabled: disabledState,
       isVisible: visibility,
       isLoading: loadingState,
       setDisable: async function (value) {
-        setExposedState((prev) => ({ ...prev, isDisabled: !!value }));
         setExposedVariable('isDisabled', !!value);
       },
       setVisibility: async function (value) {
-        setExposedState((prev) => ({ ...prev, isVisible: !!value }));
         setExposedVariable('isVisible', !!value);
+        updateExposedVariablesState('isVisible', !!value);
       },
       setLoading: async function (value) {
-        setExposedState((prev) => ({ ...prev, isLoading: !!value }));
         setExposedVariable('isLoading', !!value);
+        updateExposedVariablesState('isLoading', !!value);
       },
       selectItem: async function (itemId) {
-        selectItem(itemId);
+        selectItemRef.current(itemId);
       },
     };
 
@@ -391,7 +410,7 @@ export const Navigation = function Navigation(props) {
     const bdrColor = borderColor || 'var(--cc-weak-border)';
 
     return {
-      display: visibility ? 'flex' : 'none',
+      display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
       flexDirection: orientation === 'horizontal' ? 'row' : 'column',
       alignItems: orientation === 'horizontal' ? 'center' : 'stretch',
       width: '100%',
@@ -405,10 +424,10 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [visibility, orientation, backgroundColor, borderColor, borderRadius, padding]);
+  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding]);
 
   // Loading state
-  if (loadingState) {
+  if (exposedVariablesTemporaryState.isLoading) {
     return (
       <div
         className={cx('navigation-widget navigation-loading', { 'dark-theme': darkMode })}
