@@ -16,7 +16,7 @@ The Xero Plugin uses OAuth 2.0 authentication and allows you to interact with mu
 - Copy the generated Client ID and Client Secret.
 - In your Xero app settings, add the Redirect URI provided by ToolJet.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/Xero-ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/ClientID-secret.png" alt="Fetching Creds from Xero Developer Portal" />
 
 
 ## Connection
@@ -33,7 +33,7 @@ You can modify the scopes based on your use case.
 
 **⚠️ Ensure the scopes entered here exactly match the scopes configured in your Xero app.**
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-connection.png" alt="Configuring Xero in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/connection.png" alt="Configuring Xero in ToolJet" />
 
 - **Redirect URI**: ToolJet automatically generates a Redirect URI.
 
@@ -70,20 +70,16 @@ ToolJet also supports **manual Tenant ID input** for advanced use cases using th
 Xero in ToolJet supports the following operations:
 
 1. **[Accounts](#accounts)**
-2. **[Contacts](#contacts)**
-3. **[Invoices](#invoices)**
-4. **[Payments](#payments)**
-5. **[Reports](#reports)**
-6. **[Finance](#finance)**
-7. **[Identity](#identity)**
-8. **[Bank Feeds](#bank-feeds)**
-9. **[App Store](#app-store)**
-10. **[Assets](#assets)**
-11. **[Payroll AU](#payroll-au)**
-12. **[Payroll UK](#payroll-uk)**
-13. **[Payroll NZ](#payroll-nz)**
-14. **[Projects](#projects)**
-15. **[Files](#files)**
+2. **[Finance](#finance)**
+3. **[Identity](#identity)**
+4. **[Bank Feeds](#bank-feeds)**
+5. **[App Store](#app-store)**
+6. **[Assets](#assets)**
+7. **[Payroll AU](#payroll-au)**
+8. **[Payroll UK](#payroll-uk)**
+9. **[Payroll NZ](#payroll-nz)**
+10. **[Projects](#projects)**
+11. **[Files](#files)**
 
 ### Accounts
 Manage and retrieve the chart of accounts used for categorizing financial transactions in Xero.
@@ -798,7 +794,6 @@ Upload, retrieve, and attach documents like receipts and invoices to records in 
 ## Example Queries
 
 ### Accounts 
-
 Get Accounts fetches all accounts associated with the selected Xero tenant. 
 
 Operation : GET ` /Accounts`
@@ -808,7 +803,7 @@ Operation : GET ` /Accounts`
 - order : lets you sort the returned accounts by a selected field in ascending or descending order.
 
 <details id="tj-dropdown">
-<summary> **Query Response Example** </summary>
+<summary> **Response Example** </summary>
 ```
 {
   "Id": "05263684-a3fe-48bf-ad06-4fa1835f9df1",
@@ -829,43 +824,87 @@ Operation : GET ` /Accounts`
 ```
 </details>
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-eg-query-getacc.png" alt="Example query in Xero" />
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-get.png" alt="Example query in Xero" />
 
-### Contacts
+### Bank Transactions
+Create Bank Transactions allows you to create one or more bank transactions for the selected Xero tenant.
 
-Get Contacts fetches contacts associated with the selected Xero tenant.
-
-Operation : GET `/Contacts`
+Operation : POST `/BankTransactions`
 
 **Optional Parameters**
-- where  
-- order  
-- IDs  
-- page  
-- includeArchived  
-- summaryOnly  
-- searchTerm  
-- pageSize  
+- summarizeErrors : When set to `true`, validation errors are summarized instead of returning detailed error messages for each transaction.
+- unitdp : Specifies the number of decimal places to use for unit amounts in the transaction (for example, 2 or 4).
 
+**Request Body**
+- Pagination : Used to control pagination behavior in the request payload when applicable.
+- Warnings : An array used to capture any warnings returned during the processing of bank transactions.
+- BankTransation : An array containing one or more bank transaction objects to be created, including details such as transaction type, date, line items, and amounts.
 
 <details id="tj-dropdown">
-<summary>**Query Response Example**</summary>
+<summary> **Response Example** </summary>
 ```
 {
-  "Id": "3411c4a6-3db0-4a32-a4f7-8720c476aaab",
+  "Id": "61609765-4c78-45df-8bdf-d2415c77372b",
   "Status": "OK",
-  "Contacts": [
+  "ProviderName": "app1abc",
+  "DateTimeUTC": "/Date(1770616360380)/",
+  "BankTransactions": [
     {
-      "ContactID": "c1a2b3c4",
-      "Name": "ABC Traders",
-      "EmailAddress": "info@abctraders.com",
-      "ContactStatus": "ACTIVE",
-      "IsCustomer": true,
-      "IsSupplier": false
+      "BankTransactionID": "b2a3f6d9-9c44-4f88-b2d1-0f7d9e6a1234",
+      "Type": "SPEND",
+      "Contact": {
+        "ContactID": "e7a9c1b4-3d55-4a9e-8c22-7f6a8d9c5678",
+        "Name": "Office Supplies Ltd"
+      },
+      "Date": "/Date(1770600000000)/",
+      "LineAmountTypes": "Exclusive",
+      "LineItems": [
+        {
+          "Description": "Stationery purchase",
+          "Quantity": 2,
+          "UnitAmount": 250,
+          "AccountCode": "400",
+          "LineAmount": 500
+        }
+      ],
+      "SubTotal": 500,
+      "TotalTax": 0,
+      "Total": 500,
+      "Status": "AUTHORISED"
     }
   ]
 }
 ```
 </details>
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/xero/xero-eg-query-getcontacts.png" alt="Example query in Xero" />
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-post.png" alt="Example query in Xero" />
+
+### Projects
+Get Projects retrieves projects associated with the selected Xero tenant. This operation supports filtering and pagination to narrow down the results.
+
+Operation : GET `/Projects`
+
+**Optional Parameters**
+- projectIds : A list of specific project IDs to retrieve. When provided, only projects matching these IDs are returned.
+- contactID : Filters projects linked to a specific contact.
+- states : Filters projects based on their current state (for example, `ACTIVE`, `CLOSED`).
+- page : Specifies the page number to retrieve. Used for paginated results.
+- pageSize : Defines the number of projects returned per page.
+
+<details id="tj-dropdown">
+<summary> **Response Example** </summary>
+```
+{
+  "projectIds": [
+    "111-22-33-444-555555"
+  ],
+  "contactID": "aaa-bbb-ccc-dd-ee",
+  "states": "ACTIVE",
+  "page": 1,
+  "pageSize": 20
+}
+```
+</details>
+
+<img className="screenshot-full img-l" src="/img/marketplace/plugins/xero/ex-query-get-proj.png" alt="Example query in Xero" />
+
