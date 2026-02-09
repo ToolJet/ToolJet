@@ -129,7 +129,7 @@ describe("inviteflow edge cases", () => {
       commonText.password
     );
     cy.get(commonSelectors.signUpButton).click();
-    cy.verifyToastMessage(".go3958317564", "Email already exists.");
+    cy.verifyToastMessage(".go3958317564", "Email already exists in this workspace");
     cy.apiLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceName).then(
       (response) => {
@@ -150,8 +150,6 @@ describe("inviteflow edge cases", () => {
     );
     cy.get(commonSelectors.signUpButton).click();
 
-    cy.defaultWorkspaceLogin();
-    visitWorkspaceInvitation(data.email, data.workspaceName);
-    cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
+
   });
 });

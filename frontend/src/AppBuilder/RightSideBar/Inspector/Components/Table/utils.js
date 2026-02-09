@@ -14,6 +14,7 @@ import {
   BadgeTypeIcon,
   TagsTypeIcon,
   RadioTypeIcon,
+  RatingTypeIcon,
 } from './_assets';
 
 export const getColumnIcon = (columnType) => {
@@ -54,6 +55,8 @@ export const getColumnIcon = (columnType) => {
       return BadgeTypeIcon;
     case 'tags':
       return TagsTypeIcon;
+    case 'rating':
+      return RatingTypeIcon;
     default:
       return null;
   }

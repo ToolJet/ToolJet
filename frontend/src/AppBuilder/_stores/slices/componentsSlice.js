@@ -223,7 +223,20 @@ export const createComponentsSlice = (set, get) => ({
       'addNewQueryMapping'
     );
   },
-  clearSelectedComponents: () => set({ selectedComponents: [] }, false, 'clearSelectedComponents'),
+  clearSelectedComponents: () =>
+    set(
+      (state) => {
+        state.selectedComponents = [];
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab =
+            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+              ? RIGHT_SIDE_BAR_TAB.PAGES
+              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
+        }
+      },
+      false,
+      'clearSelectedComponents'
+    ),
 
   renameQueryMapping: (oldName, newName, queryId, moduleId = 'canvas') => {
     set((state) => {
@@ -1218,11 +1231,7 @@ export const createComponentsSlice = (set, get) => ({
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
-            state.selectedComponents = []; // Empty the selected components
-            // Auto-switch to components tab when no components are selected after deletion
-            if (state.isRightSidebarOpen) {
-              state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.COMPONENTS;
-            }
+            get().clearSelectedComponents();
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
@@ -1839,6 +1848,10 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
+    if (components.length === 0) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = components;
@@ -1853,6 +1866,10 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
+    if (!componentId) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
