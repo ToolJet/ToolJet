@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useEffect, useState, useRef, useLayoutEffect } from 'react';
 import cx from 'classnames';
 import { has } from 'lodash';
 import KeyValueRow from './_components/KeyValueRow';
@@ -61,6 +61,31 @@ export const KeyValuePair = ({
   // Local state for editable values (changeSet)
   const [editedData, setEditedData] = useState({});
 
+  // Ref for measuring labels to find max width when autoLabelWidth is enabled
+  const containerRef = useRef(null);
+  const [maxLabelWidth, setMaxLabelWidth] = useState(0);
+
+  // Calculate max label width when autoLabelWidth is enabled
+  useLayoutEffect(() => {
+    if (!autoLabelWidth || !containerRef.current || alignment === 'top') {
+      setMaxLabelWidth(0);
+      return;
+    }
+
+    // Find all label elements and measure their widths
+    const labels = containerRef.current.querySelectorAll('.key-value-label');
+    let maxWidth = 0;
+    labels.forEach((label) => {
+      const width = label.scrollWidth;
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+    });
+
+    // Add 1px buffer to account for scrollWidth rounding
+    setMaxLabelWidth(maxWidth + 1);
+  }, [autoLabelWidth, resolvedFields, alignment]);
+
   // Merge original data with edited values
   const currentData = useMemo(() => ({ ...data, ...editedData }), [data, editedData]);
 
@@ -112,6 +137,7 @@ export const KeyValuePair = ({
 
   return (
     <div
+      ref={containerRef}
       className={cx('key-value-pair-container', {
         'kv-padding-default': padding === 'default',
         'kv-padding-none': padding === 'none',
@@ -138,6 +164,7 @@ export const KeyValuePair = ({
             darkMode={darkMode}
             isDisabled={isDisabled}
             autoLabelWidth={autoLabelWidth}
+            maxLabelWidth={maxLabelWidth}
             hasChanges={has(editedData, field.key)}
           />
         ))}

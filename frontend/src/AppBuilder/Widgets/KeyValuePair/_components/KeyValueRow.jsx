@@ -42,6 +42,7 @@ const KeyValueRow = ({
   darkMode,
   isDisabled,
   autoLabelWidth,
+  maxLabelWidth,
   hasChanges,
 }) => {
   const {
@@ -192,10 +193,12 @@ const KeyValueRow = ({
           direction={direction}
           defaultAlignment={alignment}
           inputId={fieldKey}
+          style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({
               'tw-self-center': alignment !== 'top',
               'tw-flex-shrink-0': alignment === 'top',
+              'key-value-label': true,
             }),
           }}
         />

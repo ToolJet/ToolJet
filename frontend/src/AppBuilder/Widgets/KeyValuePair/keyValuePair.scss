@@ -3,13 +3,13 @@
   height: 100%;
   position: relative;
   
-  &.kv-padding-default {
-    padding: 4px;
-  }
+  // &.kv-padding-default {
+  //   padding: 4px;
+  // }
 
-  &.kv-padding-none {
-    padding: 2px;
-  }
+  // &.kv-padding-none {
+  //   padding: 2px;
+  // }
 
   &.invisible {
     display: none;
@@ -137,11 +137,20 @@
 }
 
 .kv-row-top {
-  .key-value-render-value:not(.kv-value-editing) {
-    margin-left: -8px;
-    width: calc(100% + 8px) !important
+  .key-value-label {
+    height: 100%;
+    padding-left: 8px;
   }
 }
+
+.kv-row-side {
+  .key-value-label {
+    height: 100%;
+    margin-top: 19px; // Half of field height i.e 38px / 2
+  }
+}
+
+
 
 // Value styling
 .key-value-render-value {
@@ -149,14 +158,15 @@
   line-height: 20px;
   color: var(--text-primary);
   word-break: break-word;
+  border: 2px solid transparent;
   min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 8px !important;
+  padding: 6px !important;
   position: relative;
-
+  box-sizing: border-box;
 
 
   &.kv-select,

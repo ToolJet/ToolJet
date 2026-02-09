@@ -127,7 +127,6 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
       if (property === typeProp && !nonEditableTypes.includes(value) && isAllEditable) {
         newItems[index].isEditable = '{{true}}';
       }
-      console.log(newItems, propertyName, 'newItems');
       paramUpdated({ name: propertyName }, 'value', newItems, 'properties', true);
 
       // Update isAllEditable state based on individual changes
