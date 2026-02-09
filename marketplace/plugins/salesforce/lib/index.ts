@@ -50,8 +50,8 @@ export default class Salesforce implements QueryService {
     try {
       switch (operation) {
         case 'soql': {
-          const queryInput = queryOptions.query;
-          result = await conn.query(queryInput);
+          const query = queryOptions.soql_query;
+          result = await conn.query(query);
           break;
         }
         case 'crud': {

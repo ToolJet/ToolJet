@@ -38,7 +38,7 @@
       },
       "query":{
         "label": "Query",
-        "key": "query",
+        "key": "soql_query",
         "type": "codehinter",
         "description": "Write SOQL Query",
         "height": "150px"

@@ -6,8 +6,8 @@ export class UpdateSalesforceQueryoptionsSoqlQueryToQuery1770370074631 implement
         UPDATE data_queries
         SET "options" = (
             CASE 
-                WHEN "options"::jsonb ? 'soql_query' THEN
-                    ("options"::jsonb - 'soql_query' || jsonb_build_object('query', "options"::jsonb->'soql_query'))::json
+                WHEN "options"::jsonb ? 'query' THEN
+                    ("options"::jsonb - 'query' || jsonb_build_object('soql_query', "options"::jsonb->'query'))::json
                 ELSE
                     "options"
             END
@@ -15,7 +15,7 @@ export class UpdateSalesforceQueryoptionsSoqlQueryToQuery1770370074631 implement
         FROM data_sources ds
         WHERE ds.id = data_source_id 
         AND ds.kind = 'salesforce'
-        AND "options"::jsonb ? 'soql_query';`);
+        AND "options"::jsonb ? 'query';`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
