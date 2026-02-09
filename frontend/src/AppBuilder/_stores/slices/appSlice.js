@@ -338,11 +338,11 @@ export const createAppSlice = (set, get) => ({
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
 
   cleanUpStore: (isPageSwitch = false, moduleId) => {
-    const { resetUndoRedoStack, initModules } = get();
+    const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
     resetUndoRedoStack();
+    clearSelectedComponents();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
-      state.selectedComponents = [];
       if (isPageSwitch) {
         state.pageSwitchInProgress = false;
       }

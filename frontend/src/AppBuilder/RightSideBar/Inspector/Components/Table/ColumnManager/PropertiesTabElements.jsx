@@ -18,6 +18,8 @@ import { getColumnIcon } from '../utils';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
 import Icon from '@/_ui/Icon/solidIcons/index';
+import RatingIconToggle from './RatingColumn/RatingIconToggle';
+import RatingColumnProperties from './RatingColumn/RatingColumnProperties';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -101,6 +103,7 @@ export const PropertiesTabElements = ({
             { label: 'JSON', value: 'json' },
             { label: 'Markdown', value: 'markdown' },
             { label: 'HTML', value: 'html' },
+            { label: 'Rating', value: 'rating' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },
@@ -176,6 +179,15 @@ export const PropertiesTabElements = ({
           enablePreview={false}
         />
       </div>
+      {column.columnType === 'rating' && (
+        <div data-cy={`rating-type-field`} className="field px-3 d-flex justify-content-between">
+          <label className="form-label d-flex align-items-center">{'Icon'}</label>
+          <RatingIconToggle
+            value={column.iconType}
+            onChange={(value) => onColumnItemChange(index, 'iconType', value)}
+          />
+        </div>
+      )}
       {column.columnType === 'toggle' && (
         <div className="px-3">
           <EventManager
@@ -354,7 +366,7 @@ export const PropertiesTabElements = ({
         </div>
       </div>
 
-      {['select', 'newMultiSelect', 'datepicker'].includes(column.columnType) && <hr className="mx-0 my-2" />}
+      {['select', 'newMultiSelect', 'datepicker', 'rating'].includes(column.columnType) && <hr className="mx-0 my-2" />}
       {column.columnType === 'datepicker' && (
         <div className="field" style={{ marginTop: '-24px' }}>
           <DatepickerProperties
@@ -366,6 +378,18 @@ export const PropertiesTabElements = ({
             component={component}
           />
         </div>
+      )}
+      {column.columnType === 'rating' && (
+        <RatingColumnProperties
+          column={column}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          onColumnItemChange={onColumnItemChange}
+          getPopoverFieldSource={getPopoverFieldSource}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+        />
       )}
       {['select', 'newMultiSelect'].includes(column.columnType) && (
         <OptionsList

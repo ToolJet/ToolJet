@@ -46,7 +46,7 @@ export class UserRepository extends Repository<User> {
     let whereOptions: FindOptionsWhere<User> | FindOptionsWhere<User>[] = findOptions;
 
     if (options?.searchText) {
-      const searchLower = options.searchText.toLowerCase();
+      const searchLower = options.searchText.trim().toLowerCase();
 
       // Create an array of OR conditions
       whereOptions = [
@@ -54,8 +54,21 @@ export class UserRepository extends Repository<User> {
         { ...findOptions, firstName: ILike(`%${searchLower}%`) },
         { ...findOptions, lastName: ILike(`%${searchLower}%`) },
       ];
-    }
 
+      const parts = searchLower.split(/\s+/);
+
+      if (parts.length > 1) {
+        const firstWord = parts[0];
+        const lastWord = parts.slice(1).join(' ');
+
+        whereOptions.push({
+          ...findOptions,
+          firstName: ILike(`%${firstWord}%`),
+          lastName: ILike(`%${lastWord}%`),
+        });
+      }
+    }
+    
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,

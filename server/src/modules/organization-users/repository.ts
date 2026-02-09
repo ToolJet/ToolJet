@@ -95,15 +95,31 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
       query.orWhere('user.userType = :userType', { userType: USER_TYPE.INSTANCE });
     }
 
-    query.andWhere(
-      new Brackets((qb) => {
-        if (options.searchText) {
-          qb.orWhere('LOWER(user.email) LIKE :email', { email: `%${options.searchText.toLowerCase()}%` })
-            .orWhere('LOWER(user.firstName) LIKE :firstName', { firstName: `%${options.searchText.toLowerCase()}%` })
-            .orWhere('LOWER(user.lastName) LIKE :lastName', { lastName: `%${options.searchText.toLowerCase()}%` });
-        }
-      })
-    );
+    if (options.searchText) {
+      query.andWhere(
+        new Brackets((qb) => {
+          const searchLower = options.searchText.trim().toLowerCase();
+          const parts = searchLower.split(/\s+/); // Handle multiple spaces
+
+          qb.where('LOWER(user.email) LIKE :email', { email: `%${searchLower}%` })
+            .orWhere('LOWER(user.firstName) LIKE :firstName', { firstName: `%${searchLower}%` })
+            .orWhere('LOWER(user.lastName) LIKE :lastName', { lastName: `%${searchLower}%` });
+
+          if (parts.length > 1) {
+            const firstWord = parts[0];
+            const lastWord = parts.slice(1).join(' ');
+
+            qb.orWhere(
+              '(LOWER(user.firstName) LIKE :splitFirstName AND LOWER(user.lastName) LIKE :splitLastName)',
+              { 
+                splitFirstName: `%${firstWord}%`, 
+                splitLastName: `%${lastWord}%` 
+              }
+            );
+          }
+        })
+      );
+    }
 
     if (options.status) {
       const statusCondition = condition === 'and' ? 'andWhere' : 'orWhere';
