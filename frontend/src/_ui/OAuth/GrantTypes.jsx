@@ -101,7 +101,9 @@ const CommonOAuthFields = ({
       )}
       {oauthTypes?.required && oauthTypeOptions && oauthTypeOptions.length > 1 && (
         <div className="col-md-12" data-cy="oauth-type-section">
-          <label className="form-label mt-3" data-cy="oauth-type-label">OAuth type</label>
+          <label className="form-label mt-3" data-cy="oauth-type-label">
+            OAuth type
+          </label>
           <Select
             options={oauthTypeOptions}
             value={options?.oauth_type?.value}
@@ -307,7 +309,7 @@ const AuthorizationCode = ({ authConfig, tokenConfig, workspaceConfig, handlers,
       )}
       {isFieldAllowed('multiple_auth_enabled', 'authorization_code', oauth_configs) && (
         <div data-cy="authentication-required-for-all-users-section">
-          <label className="form-check form-switch my-4" >
+          <label className="form-check form-switch my-4">
             <input
               data-cy="authentication-required-for-all-users-toggle-switch"
               className="form-check-input"
@@ -356,7 +358,9 @@ const OAuthConfiguration = ({
       <div className="row">
         {(!allowed_grant_types || (allowed_grant_types && allowed_grant_types.length > 1)) && (
           <div data-cy="grant-type-section">
-            <label className="form-label mt-3" data-cy="grant-type-label">Grant type</label>
+            <label className="form-label mt-3" data-cy="grant-type-label">
+              Grant type
+            </label>
             <Select
               options={grantTypeOptions()}
               value={grant_type}

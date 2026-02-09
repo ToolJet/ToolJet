@@ -173,7 +173,7 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
               indentationWidth={indentationWidth}
               indicator={indicator}
               collapsed={Boolean(collapsed && children.length)}
-              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => { }}
+              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => {}}
             />
           );
         })}

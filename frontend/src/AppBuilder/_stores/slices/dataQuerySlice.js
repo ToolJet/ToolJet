@@ -353,10 +353,10 @@ export const createDataQuerySlice = (set, get) => ({
               type: queryToClone.permissions[0]?.type,
               ...(queryToClone.permissions[0]?.type === 'GROUP'
                 ? {
-                  groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
-                    (group) => group.permissionGroupsId || group.permission_groups_id
-                  ),
-                }
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
                 : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
             };
             appPermissionService

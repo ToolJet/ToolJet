@@ -84,11 +84,7 @@ function useConfirm() {
               padding: '0.875rem 1.5rem',
             }}
           >
-            <button
-              className="btn"
-              onClick={() => handleConfirm(false)}
-              data-cy={'confirmation-modal-cancel-btn'}
-            >
+            <button className="btn" onClick={() => handleConfirm(false)} data-cy={'confirmation-modal-cancel-btn'}>
               {cancelButtonText === '' ? 'Cancel' : cancelButtonText}
             </button>
             <button

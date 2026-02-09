@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import create from 'zustand';
 import { zustandDevTools } from '@/_stores/utils';
 import useOnboardingStore from '../onboardingStore';

@@ -1,11 +1,6 @@
-import React from "react";
+import React from 'react';
 
-const VerifiedShield = ({
-  fill = "#C1C8CD",
-  width = "25",
-  className = "",
-  viewBox = "0 0 33 33",
-}) => (
+const VerifiedShield = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 33 33' }) => (
   <svg
     width={width}
     height={width}

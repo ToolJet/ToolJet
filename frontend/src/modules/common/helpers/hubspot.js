@@ -1,5 +1,5 @@
 function loadHubspot() {
-    return;
+  return;
 }
 
 export { loadHubspot };

@@ -20,6 +20,7 @@ export default async function generateFile(filename, data, fileType) {
   }
 }
 async function generatePDF(filename, data) {
+  // eslint-disable-next-line import/no-unresolved
   const jsPDFNamespace = await import('jspdf');
   const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace.default;
   const doc = new jsPDF();

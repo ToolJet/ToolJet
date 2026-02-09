@@ -275,8 +275,9 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${(showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-              }`}
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
+              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            }`}
             style={{
               position: 'relative',
               width: '100%',
@@ -456,7 +457,9 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                                  message={
+                                    "You don't have access to page permissions. Upgrade your plan to access this feature."
+                                  }
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"

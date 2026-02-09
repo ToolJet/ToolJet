@@ -35,8 +35,9 @@ export const SidebarItem = forwardRef(
     const content = (
       <Button
         {...rest}
-        className={`${className} ${selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-          } ${icon}-icon`}
+        className={`${className} ${
+          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
+        } ${icon}-icon`}
         onClick={onClick && onClick}
         ref={ref}
         type="button"

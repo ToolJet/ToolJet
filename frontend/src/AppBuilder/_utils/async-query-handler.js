@@ -14,7 +14,7 @@ export class AsyncQueryHandler {
    */
   constructor(options = {}) {
     this.config = {
-      streamSSE: () => { },
+      streamSSE: () => {},
       extractJobId: (response) => response.data?.id,
       // Default implementation that doesn't make assumptions about specific status/type fields
       classifyEventStatus: (data) => {
@@ -27,11 +27,11 @@ export class AsyncQueryHandler {
         };
       },
       callbacks: {
-        onProgress: () => { },
-        onComplete: () => { },
-        onError: () => { },
-        onCancel: () => { },
-        onClose: () => { },
+        onProgress: () => {},
+        onComplete: () => {},
+        onError: () => {},
+        onCancel: () => {},
+        onClose: () => {},
       },
       ...options,
     };

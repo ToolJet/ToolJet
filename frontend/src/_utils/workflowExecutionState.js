@@ -14,7 +14,7 @@ export function getExecutionDisplayState(execution) {
   // Already finished in database - this is the final state
   if (execution.executed) {
     if (execution.status === 'terminated') return 'terminated';
-    if (execution.status === 'failure') return 'failed';  // Backend saves 'failure', not 'failed'
+    if (execution.status === 'failure') return 'failed'; // Backend saves 'failure', not 'failed'
     if (execution.status === 'success') return 'completed';
     // Fallback for legacy data without explicit status
     return 'completed';
@@ -98,21 +98,21 @@ export function getExecutionDisplayConfig(execution) {
       text: 'In Progress...',
       showSpinner: true,
       showCancelButton: true,
-      icon: null
+      icon: null,
     },
     running: {
       state: 'running',
       text: 'In Progress...',
       showSpinner: true,
       showCancelButton: true,
-      icon: null
+      icon: null,
     },
     terminating: {
       state: 'terminating',
       text: 'Terminating...',
       showSpinner: true,
       showCancelButton: false, // Can't terminate a termination
-      icon: null
+      icon: null,
     },
     completed: {
       state: 'completed',
@@ -120,7 +120,7 @@ export function getExecutionDisplayConfig(execution) {
       showSpinner: false,
       showCancelButton: false,
       showTime: true,
-      icon: 'success'
+      icon: 'success',
     },
     failed: {
       state: 'failed',
@@ -128,7 +128,7 @@ export function getExecutionDisplayConfig(execution) {
       showSpinner: false,
       showCancelButton: false,
       showTime: true,
-      icon: 'error'
+      icon: 'error',
     },
     terminated: {
       state: 'terminated',
@@ -136,8 +136,8 @@ export function getExecutionDisplayConfig(execution) {
       showSpinner: false,
       showCancelButton: false,
       showTime: true,
-      icon: 'terminated'
-    }
+      icon: 'terminated',
+    },
   };
 
   return configs[state] || configs.running; // Fallback to running if unknown state
@@ -170,7 +170,7 @@ export function getExecutionStatusText(execution) {
     terminating: 'Terminating',
     completed: 'Completed',
     failed: 'Failed',
-    terminated: 'Terminated'
+    terminated: 'Terminated',
   };
 
   return statusTexts[state] || 'Unknown';

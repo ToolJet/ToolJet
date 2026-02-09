@@ -695,4 +695,4 @@ const TabContent = memo(function TabContent({
     </div>
   );
 },
-  areEqual);
+areEqual);

@@ -46,16 +46,8 @@ export const SidebarDebuggerHeader = ({ darkMode, onClear, onClose, activeTab, o
         </div>
       </div>
       <div className="debugger-tabs-container" role="tablist">
-        <DebuggerTab
-          label="All logs"
-          isActive={activeTab === 'allLog'}
-          onClick={() => onTabChange('allLog')}
-        />
-        <DebuggerTab
-          label="Errors"
-          isActive={activeTab === 'errors'}
-          onClick={() => onTabChange('errors')}
-        />
+        <DebuggerTab label="All logs" isActive={activeTab === 'allLog'} onClick={() => onTabChange('allLog')} />
+        <DebuggerTab label="Errors" isActive={activeTab === 'errors'} onClick={() => onTabChange('errors')} />
       </div>
     </div>
   );

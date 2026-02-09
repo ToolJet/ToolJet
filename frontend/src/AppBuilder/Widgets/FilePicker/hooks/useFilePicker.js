@@ -500,7 +500,7 @@ export const useFilePicker = ({
       const legacySelectedFiles = [];
       const formattedSelectedFiles = [];
 
-      selectedFiles.forEach(file => {
+      selectedFiles.forEach((file) => {
         const { filePath, ...formattedFile } = file;
 
         legacySelectedFiles.push({
@@ -510,10 +510,10 @@ export const useFilePicker = ({
           dataURL: file.base64Data,
           base64Data: file.base64Data,
           parsedData: file.parsedData,
-          filePath: file.filePath
+          filePath: file.filePath,
         });
         formattedSelectedFiles.push(formattedFile);
-      })
+      });
 
       // useExposeState handles: isLoading, isVisible, isDisabled, setVisibility, setLoading, setDisable
       // We manually expose widget-specific items:
