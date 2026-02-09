@@ -353,6 +353,7 @@
                 "widgets/iframe",
                 "widgets/image",
                 "widgets/kanban",
+                "widgets/key-value-pair",
                 "widgets/link",
                 "widgets/listview",
                 "widgets/map",
