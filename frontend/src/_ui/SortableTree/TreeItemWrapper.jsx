@@ -57,7 +57,7 @@ export const TreeItemWrapper = forwardRef(
             ...style,
             width: '100%',
             ...(nested && (nestedStyle || {
-              borderLeft: '1px dashed var(--border-weak)',
+              borderLeft: '1px dashed var(--icon-weak)',
               padding: '0 0 0 16px',
             })),
           }}

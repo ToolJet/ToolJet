@@ -301,7 +301,7 @@
         content: '';
         width: 1px;
         height: 100%;
-        border-left: 1px dashed var(--border-weak);
+        border-left: 1px dashed var(--icon-weak);
       }
     }
   
@@ -316,7 +316,48 @@
   
   
   // ==========================================
+  // Dark Theme Adjustments
+  // ==========================================
+  .dark-theme {
+    .page-menu-item {
+      background-color: var(--interactive-default);
+
+      &.page-group-item {
+        background-color: var(--interactive-weak);
+      }
+
+      .left .page-name {
+        color: var(--text-default);
+      }
+    }
+
+    .nav-item-popover {
+      background-color: var(--surfaces-surface-01);
+
+      .nav-item-popover-header {
+        border-bottom-color: var(--border-weak);
+      }
+
+      .nav-item-popover-icon-btn {
+        color: var(--icons-default);
+
+        &:hover {
+          background-color: var(--interactive-hover);
+        }
+      }
+    }
+
+    .action-btn-wrapper .icon-btn {
+      background: var(--surfaces-surface-02);
+      border-color: var(--border-weak);
+    }
+  }
+}
+
+  // ==========================================
   // Nav Handler Ghost (for DragOverlay)
+  // Rendered via createPortal to document.body,
+  // so these styles MUST be outside .navigation-inspector
   // ==========================================
   .nav-handler.ghost {
     background-color: var(--surfaces-surface-02);
@@ -325,54 +366,74 @@
     width: 100%;
     opacity: 0.9;
     padding: 0 8px;
-  
+
     .page-menu-item {
-      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
-    }
-  }
-  
-  // ==========================================
-  // Dark Theme Adjustments
-  // ==========================================
-  .dark-theme {
-    .page-menu-item {
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 7px 8px;
+      width: 100%;
+      justify-content: space-between;
       background-color: var(--interactive-default);
-  
+      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+
       &.page-group-item {
         background-color: var(--interactive-weak);
       }
-  
-      .left .page-name {
-        color: var(--text-default);
-      }
-    }
-  
-    .nav-handler.ghost {
-      background-color: var(--surfaces-surface-02);
-    }
-  
-    .nav-item-popover {
-      background-color: var(--surfaces-surface-01);
-  
-      .nav-item-popover-header {
-        border-bottom-color: var(--border-weak);
-      }
-  
-      .nav-item-popover-icon-btn {
-        color: var(--icons-default);
-  
-        &:hover {
-          background-color: var(--interactive-hover);
+
+      .left {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-width: 0;
+        gap: 6px;
+
+        .main-page-icon-wrapper {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+        }
+
+        .page-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: var(--text-default);
+          font-size: 12px;
+          font-style: normal;
+          font-weight: 400;
+          line-height: 18px;
+          flex-shrink: 1;
+          min-width: 0;
         }
       }
     }
-  
-    .action-btn-wrapper .icon-btn {
-      background: var(--surfaces-surface-02);
-      border-color: var(--border-weak);
+
+    .nav-item-icon {
+      color: var(--icons-default);
+    }
+
+    &.dark-theme {
+      background-color: var(--surfaces-surface-02);
+
+      .page-menu-item {
+        background-color: var(--interactive-default);
+
+        &.page-group-item {
+          background-color: var(--interactive-weak);
+        }
+
+        .left .page-name {
+          color: var(--text-default);
+        }
+      }
     }
   }
-}
 
   // ==========================================
   // Edit Popover Styles (Figma: 310px width)
