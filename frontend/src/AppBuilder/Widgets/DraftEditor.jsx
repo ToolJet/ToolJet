@@ -2,6 +2,7 @@
 import React from 'react';
 import { Editor, EditorState, RichUtils, getDefaultKeyBinding } from 'draft-js';
 import 'draft-js/dist/Draft.css';
+import '@/_styles/widgets/richtext.scss';
 import { stateFromHTML } from 'draft-js-import-html';
 import { stateToHTML } from 'draft-js-export-html';
 import Loader from '@/ToolJetUI/Loader/Loader';
