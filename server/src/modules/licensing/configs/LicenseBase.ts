@@ -561,8 +561,8 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.promote;
     }
-    if (!this._app || !this._app.features || this._app.features.promote === undefined) {
-    return true;
+    if (this._app?.features?.promote === undefined) {
+      return true;
     }
      return !!this._app?.features?.promote;
   }
@@ -571,7 +571,7 @@ export default class LicenseBase {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.app?.features?.release;
     }
-    if (!this._app || !this._app.features || this._app.features.release === undefined) {
+    if (this._app?.features?.release === undefined) {
     return true;
    }
     return !!this._app?.features?.release;
