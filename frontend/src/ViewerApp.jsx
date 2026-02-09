@@ -13,6 +13,8 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * ViewerApp - Isolated router for viewer routes ONLY
@@ -38,6 +40,12 @@ import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
  */
 const ViewerApp = () => {
   const { isAppDarkMode } = useAppDarkMode();
+  const { updateIsTJDarkMode } = useStore(
+    (state) => ({
+      updateIsTJDarkMode: state.updateIsTJDarkMode,
+    }),
+    shallow
+  );
   const location = useLocation();
   const metadataFetchedRef = useRef(false);
 
@@ -60,6 +68,7 @@ const ViewerApp = () => {
 
   // Simple dark mode switcher for viewer
   const switchDarkMode = (newMode) => {
+    updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 

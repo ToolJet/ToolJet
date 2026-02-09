@@ -302,10 +302,9 @@ export const verifyPageSettingsDisabled = () => {
     "have.text",
     "This version is locked. To make edits, create a draft version."
   );
-  cy.get("#page-settings-tabpane-properties .disabled", {
+  cy.get(".pages-settings .disabled", {
     timeout: 8000,
   }).should("exist");
-  cy.get("#page-settings-tabpane-styles .disabled").should("exist");
   cy.forceClickOnCanvas();
 };
 

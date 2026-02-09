@@ -78,7 +78,7 @@ export const createGridSlice = (set, get) => ({
 
       const movedElement = document.getElementById(componentId);
       const parentElm = movedElement.closest('.real-canvas');
-      if (selectedComponent?.component?.parent && parentElm.clientHeight < top + movedElement.clientHeight) {
+      if (selectedComponent?.component?.parent && parentElm.scrollHeight < top + movedElement.clientHeight) {
         return;
       }
       layouts = {
@@ -487,11 +487,6 @@ export const createGridSlice = (set, get) => ({
       !isGroupDragging
     ) {
       clearSelectedComponents();
-      if (isRightSidebarOpen) {
-        activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
-          ? setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.PAGES)
-          : setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-      }
     }
   },
 });

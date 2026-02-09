@@ -15,6 +15,10 @@ const operationColorMapping = {
   post: 'green',
   delete: 'red',
   put: 'yellow',
+  patch: 'orange',
+  options: 'purple',
+  head: 'cyan',
+  trace: 'pink',
 };
 
 const extractSchemaProperties = (schema) => {
@@ -245,13 +249,14 @@ const ApiEndpointInput = (props) => {
       });
     }
   };
+  const VALID_HTTP_METHODS = new Set(['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace']);
 
   const computeOperationSelectionOptions = () => {
     const paths = specJson?.paths;
     if (isEmpty(paths)) return [];
 
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
-      const operations = Object.keys(paths[path]);
+      const operations = Object.keys(paths[path]).filter((key) => VALID_HTTP_METHODS.has(key));
       const category = path.split('/')[2];
       operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;

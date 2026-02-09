@@ -447,6 +447,17 @@ class TableComponent extends React.Component {
         isDateSelectionEnabled: true,
       };
     }
+    if (item === 'columnType' && value === 'rating') {
+      column = {
+        ...column,
+        maxRating: '5',
+        defaultRating: '0',
+        iconType: 'stars',
+        selectedBgColorStars: '#EFB82D',
+        selectedBgColorHearts: '#EE5B67',
+        unselectedBgColor: 'var(--cc-surface3-surface)',
+      };
+    }
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -689,6 +700,8 @@ class TableComponent extends React.Component {
                               return 'Markdown';
                             case 'html':
                               return 'HTML';
+                            case 'rating':
+                              return 'Rating';
                             default:
                               capitalize(text ?? '');
                           }

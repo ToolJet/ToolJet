@@ -265,6 +265,7 @@ class DataSourceManagerComponent extends React.Component {
       'hubspot',
       'gmail',
       'googlesheetsv2',
+      'xero',
     ];
     const name = selectedDataSource.name;
     const kind = selectedDataSource?.kind;
@@ -975,6 +976,7 @@ class DataSourceManagerComponent extends React.Component {
       'googlecalendar',
       'snowflake',
       'microsoft_graph',
+      'xero',
       'hubspot',
       'gmail',
     ];
