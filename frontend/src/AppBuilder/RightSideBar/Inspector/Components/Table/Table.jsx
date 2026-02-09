@@ -447,6 +447,17 @@ class TableComponent extends React.Component {
         isDateSelectionEnabled: true,
       };
     }
+    if (item === 'columnType' && value === 'rating') {
+      column = {
+        ...column,
+        maxRating: '5',
+        defaultRating: '0',
+        iconType: 'stars',
+        selectedBgColorStars: '#EFB82D',
+        selectedBgColorHearts: '#EE5B67',
+        unselectedBgColor: 'var(--cc-surface3-surface)',
+      };
+    }
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -586,7 +597,7 @@ class TableComponent extends React.Component {
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value) ||
-      resolveReferences(component.component.definition.properties.showBulkSelector.value);
+        resolveReferences(component.component.definition.properties.showBulkSelector.value);
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType);
@@ -689,6 +700,8 @@ class TableComponent extends React.Component {
                               return 'Markdown';
                             case 'html':
                               return 'HTML';
+                            case 'rating':
+                              return 'Rating';
                             default:
                               capitalize(text ?? '');
                           }
@@ -744,8 +757,9 @@ class TableComponent extends React.Component {
                                       showCopyColumnOption={true}
                                       showVisibilityIcon={true}
                                       isColumnVisible={resolveReferences(columnVisibility)}
-                                      className={`${this.state.activeColumnPopoverIndex === index && 'active-column-list'
-                                        }`}
+                                      className={`${
+                                        this.state.activeColumnPopoverIndex === index && 'active-column-list'
+                                      }`}
                                       columnType={item?.columnType}
                                       isDeprecated={checkIfTableColumnDeprecated(item?.columnType)}
                                       Icon={getColumnIcon(item?.columnType)}

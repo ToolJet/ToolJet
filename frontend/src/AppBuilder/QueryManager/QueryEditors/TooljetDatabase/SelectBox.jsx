@@ -249,7 +249,7 @@ function DataSourceSelect({
           setIsLoadingFKDetails(false);
           toast.error(
             error?.message ??
-              `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
+            `Failed to fetch table "${foreignKeys?.length > 0 && foreignKeys[0].referenced_table_name}"`
           );
           return;
         }
@@ -286,21 +286,21 @@ function DataSourceSelect({
     if (scrollPercentage > 90 && !isLoadingFKDetails) {
       isEmpty(searchValue)
         ? fetchForeignKeyDetails(
-            pageNumber,
-            totalRecords,
-            isInitialForeignKeyDataLoaded,
-            searchValue,
-            foreignKeys,
-            organizationId
-          )
+          pageNumber,
+          totalRecords,
+          isInitialForeignKeyDataLoaded,
+          searchValue,
+          foreignKeys,
+          organizationId
+        )
         : fetchForeignKeyDetails(
-            searchPageNumber,
-            totalSearchRecords,
-            isInitialForeignKeySearchDataLoaded,
-            searchValue,
-            foreignKeys,
-            organizationId
-          );
+          searchPageNumber,
+          totalSearchRecords,
+          isInitialForeignKeySearchDataLoaded,
+          searchValue,
+          foreignKeys,
+          organizationId
+        );
     }
   }
 
@@ -400,12 +400,12 @@ function DataSourceSelect({
             isForeignKeyInEditCell
               ? 'tj-scrollbar tjdb-mainCellEdit-scrollbar'
               : foreignKeyAccess
-              ? 'tj-scrollbar tjdb-dashboard-scrollbar'
-              : foreignKeyAccessInRowForm
-              ? 'tj-scrollbar tjdb-rowForm-scrollbar'
-              : isCellEdit
-              ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
-              : 'tj-scrollbar',
+                ? 'tj-scrollbar tjdb-dashboard-scrollbar'
+                : foreignKeyAccessInRowForm
+                  ? 'tj-scrollbar tjdb-rowForm-scrollbar'
+                  : isCellEdit
+                    ? 'tj-scrollbar tjdb-cellEdit-scrollbar'
+                    : 'tj-scrollbar',
         }}
         ref={selectRef}
         controlShouldRenderValue={false}
@@ -475,7 +475,7 @@ function DataSourceSelect({
                           id={props.value}
                           className="me-1"
                           checked={props.isSelected}
-                          // label={`default ${type}`}
+                        // label={`default ${type}`}
                         />
                       </div>
                     )}
@@ -522,9 +522,9 @@ function DataSourceSelect({
                         style={{
                           ...(props.isSelected &&
                             highlightSelected && {
-                              marginRight: '10px',
-                              marginTop: '3px',
-                            }),
+                            marginRight: '10px',
+                            marginTop: '3px',
+                          }),
                         }}
                         onClick={() => {
                           const data = { id: props.data.id, table_name: props.data.value };
@@ -632,12 +632,12 @@ function DataSourceSelect({
               isSelected && highlightSelected
                 ? 'var(--indigo3, #F0F4FF)'
                 : isFocused && !isNested
-                ? 'var(--slate4)'
-                : isDisabled
-                ? 'transparent'
-                : isDisabled && isFocused
-                ? 'var(--slate3, #f1f3f5)'
-                : 'transparent',
+                  ? 'var(--slate4)'
+                  : isDisabled
+                    ? 'transparent'
+                    : isDisabled && isFocused
+                      ? 'var(--slate3, #f1f3f5)'
+                      : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
@@ -648,8 +648,8 @@ function DataSourceSelect({
             },
             ...(isFocused &&
               isNested && {
-                '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
-              }),
+              '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
+            }),
           }),
           group: (style) => ({
             ...style,
@@ -750,6 +750,7 @@ const MenuList = ({
           onScroll={
             scrollEventForColumnValues && props?.handleScrollThrottled ? props.handleScrollThrottled : () => null
           }
+          data-cy="dropdown-select-list-items"
         >
           {children}
           {isLoadingFKDetails && loader ? loader : null}
@@ -768,6 +769,7 @@ const MenuList = ({
             size="md"
             className="w-100"
             onClick={scrollEventForColumnValues ? handleNavigateToReferencedTable : onAdd}
+            data-cy="add-new-button"
           >
             {!foreignKeyAccessInRowForm && '+'} {addBtnLabel || 'Add new'}
             {foreignKeyAccessInRowForm && <Maximize fill={'#3e63dd'} />}
