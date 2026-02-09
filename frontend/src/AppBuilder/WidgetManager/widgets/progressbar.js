@@ -104,7 +104,7 @@ export const progressbarConfig = {
       displayName: 'Size',
       validation: {
         schema: { type: 'number' },
-        defaultValue: 26,
+        defaultValue: 30,
       },
       min: 1,
       max: 50,
@@ -240,7 +240,7 @@ export const progressbarConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
-      textSize: { value: '{{26}}' },
+      textSize: { value: '{{30}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
