@@ -175,7 +175,7 @@ export const Accordion = ({
   return (
     <div
       className={`jet-container ${exposedVariablesTemporaryState.isLoading ? 'jet-container-loading' : ''} ${
-        exposedVariablesTemporaryState.isExpanded ? 'jet-container-expanded' : 'jet-container-collapsed'
+        exposedVariablesTemporaryState.isExpanded ? 'jet-accordion-expanded' : 'jet-accordion-collapsed'
       }`}
       id={id}
       data-disabled={exposedVariablesTemporaryState.isDisabled}
