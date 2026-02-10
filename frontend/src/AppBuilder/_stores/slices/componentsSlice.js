@@ -223,7 +223,20 @@ export const createComponentsSlice = (set, get) => ({
       'addNewQueryMapping'
     );
   },
-  clearSelectedComponents: () => set({ selectedComponents: [] }, false, 'clearSelectedComponents'),
+  clearSelectedComponents: () =>
+    set(
+      (state) => {
+        state.selectedComponents = [];
+        if (state.isRightSidebarOpen) {
+          state.activeRightSideBarTab =
+            state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
+              ? RIGHT_SIDE_BAR_TAB.PAGES
+              : RIGHT_SIDE_BAR_TAB.COMPONENTS;
+        }
+      },
+      false,
+      'clearSelectedComponents'
+    ),
 
   renameQueryMapping: (oldName, newName, queryId, moduleId = 'canvas') => {
     set((state) => {
@@ -1085,11 +1098,7 @@ export const createComponentsSlice = (set, get) => ({
           delete resolvedComponents[id]; // Remove the component from the resolved store
           delete componentsExposedValues[id]; // Remove the component from the exposed values
           if (!skipFormUpdate) {
-            state.selectedComponents = []; // Empty the selected components
-            // Auto-switch to components tab when no components are selected after deletion
-            if (state.isRightSidebarOpen) {
-              state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.COMPONENTS;
-            }
+            get().clearSelectedComponents();
           }
           removeNode(`components.${id}`, moduleId);
           state.showWidgetDeleteConfirmation = false; // Set it to false always
@@ -1361,10 +1370,10 @@ export const createComponentsSlice = (set, get) => ({
       acc[componentId] = {
         ...(hasParentChanged && updateParent
           ? {
-            component: {
-              parent: newParentId,
-            },
-          }
+              component: {
+                parent: newParentId,
+              },
+            }
           : {}),
         layouts: {
           [currentLayout]: {
@@ -1672,6 +1681,10 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
   setSelectedComponents: (components) => {
+    if (components.length === 0) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = components;
@@ -1686,6 +1699,10 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
   setSelectedComponentAsModal: (componentId, moduleId = 'canvas') => {
+    if (!componentId) {
+      get().clearSelectedComponents();
+      return;
+    }
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
@@ -2128,13 +2145,18 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) {
+    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
-    const resolvedLabel = label?.value?.length ?? 0;
+    let resolvedLabel = label?.value?.length ?? 0;
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
+    const labelType = componentDefinition?.component?.definition?.properties?.labelType;
+    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
+    if (resolvedLabelType === 'auto') {
+      resolvedLabel = 1;
+    }
 
     const resolvedAlignment =
       alignment.value === 'top' || alignment.value === 'side'
@@ -2279,6 +2301,13 @@ export const createComponentsSlice = (set, get) => ({
           return {
             ...properties,
             text: {
+              value: `{{components.${componentDefinition.id}.value}}%`,
+            },
+          };
+        } else if (componentType === 'ProgressBar') {
+          return {
+            ...properties,
+            label: {
               value: `{{components.${componentDefinition.id}.value}}%`,
             },
           };

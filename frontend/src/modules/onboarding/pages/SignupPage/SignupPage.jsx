@@ -93,8 +93,8 @@ const SignupPage = ({ configs, organizationId }) => {
                 redirectTo,
                 organizationSlug: current_organization_slug,
               });
-              navigate(redirectPath, { replace: true });
-              navigate(redirectPath, { replace: true });
+              window.location.href = redirectPath;
+              // navigate(redirectPath, { replace: true });
             } catch (error) {
               // Fallback: redirect to home/dashboard
               navigate('/', { replace: true });
