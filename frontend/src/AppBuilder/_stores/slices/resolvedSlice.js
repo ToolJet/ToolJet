@@ -39,6 +39,12 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
   general: {},
 };
 
+// Exposed value batching — collects mutations during initial mount and flushes in a single set() call.
+// This avoids N individual set() calls (each notifying ~9000 subscribers) during component mount.
+let _isBatchingExposedValues = false;
+let _batchedMutations = [];
+let _batchedDependencyPaths = [];
+
 export const createResolvedSlice = (set, get) => ({
   ...initialState,
   initializeResolvedSlice: (moduleId) => {
@@ -52,6 +58,47 @@ export const createResolvedSlice = (set, get) => ({
       'initializeResolvedSlice'
     );
   },
+
+  startExposedValueBatch: () => {
+    _isBatchingExposedValues = true;
+    _batchedMutations = [];
+    _batchedDependencyPaths = [];
+  },
+
+  flushExposedValueBatch: () => {
+    _isBatchingExposedValues = false;
+
+    if (_batchedMutations.length === 0) {
+      _batchedMutations = [];
+      _batchedDependencyPaths = [];
+      return;
+    }
+
+    const mutations = _batchedMutations;
+    const depPaths = _batchedDependencyPaths;
+    _batchedMutations = [];
+    _batchedDependencyPaths = [];
+
+    // Apply all buffered mutations in a single set() call
+    set(
+      (state) => {
+        mutations.forEach((mutation) => mutation(state));
+      },
+      false,
+      'flushExposedValueBatch'
+    );
+
+    // Run dependency updates (deduplicated)
+    const seen = new Set();
+    depPaths.forEach(({ path, moduleId }) => {
+      const key = `${path}|${moduleId}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      get().updateDependencyValues(path, moduleId);
+    });
+  },
+
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -326,6 +373,22 @@ export const createResolvedSlice = (set, get) => ({
     );
   },
   setExposedValue: (componentId, property, value, moduleId = 'canvas') => {
+    // Skip if the value is already set to the same value
+    const existing = get().resolvedStore.modules[moduleId].exposedValues.components?.[componentId]?.[property];
+    if (existing !== undefined && _.isEqual(existing, value)) return;
+
+    if (_isBatchingExposedValues) {
+      _batchedMutations.push((state) => {
+        if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
+          state.resolvedStore.modules[moduleId].exposedValues.components[componentId] = { [property]: value };
+        state.resolvedStore.modules[moduleId].exposedValues.components[componentId][property] = value;
+      });
+      if (typeof value !== 'function') {
+        _batchedDependencyPaths.push({ path: `components.${componentId}.${property}`, moduleId });
+      }
+      return;
+    }
+
     set(
       (state) => {
         if (state.resolvedStore.modules[moduleId].exposedValues.components[componentId] === undefined)
@@ -344,6 +407,22 @@ export const createResolvedSlice = (set, get) => ({
   },
 
   setExposedValues: (id, type, values, moduleId = 'canvas') => {
+    if (_isBatchingExposedValues) {
+      _batchedMutations.push((state) => {
+        Object.entries(values).forEach(([key, value]) => {
+          if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+            state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
+          else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+        });
+      });
+      Object.entries(values).forEach(([key, value]) => {
+        if (typeof value !== 'function') {
+          _batchedDependencyPaths.push({ path: `components.${id}.${key}`, moduleId });
+        }
+      });
+      return;
+    }
+
     const skipKeys = new Set();
     set(
       (state) => {

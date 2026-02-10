@@ -28,7 +28,6 @@ export const createDependencySlice = (set, get) => ({
     if (!get().checkIfDependencyExists(fromPath, toPath, moduleId)) {
       set((state) => {
         state.dependencyGraph.modules[moduleId].graph.addDependency(fromPath, toPath, nodeData);
-        return { ...state };
       });
     }
   },
