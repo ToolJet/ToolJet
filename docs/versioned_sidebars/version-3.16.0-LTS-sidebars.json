@@ -352,6 +352,8 @@
                 "widgets/icon",
                 "widgets/iframe",
                 "widgets/image",
+                "widgets/json-editor",
+                "widgets/json-explorer",
                 "widgets/kanban",
                 "widgets/link",
                 "widgets/listview",
