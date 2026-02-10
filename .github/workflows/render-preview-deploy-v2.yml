@@ -617,7 +617,7 @@ jobs:
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{"port": 80, "protocol": "TCP"}],
-                "plan": "pro",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon"
               }
@@ -1096,7 +1096,7 @@ jobs:
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{"port": 80, "protocol": "TCP"}],
-                "plan": "pro",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon"
               }
