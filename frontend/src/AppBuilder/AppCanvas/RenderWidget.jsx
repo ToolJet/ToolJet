@@ -48,6 +48,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'AudioRecorder',
   'Camera',
   'IFrame',
+  'KeyValuePair',
 ];
 
 const RenderWidget = ({

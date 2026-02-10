@@ -69,6 +69,7 @@ import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
+import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 
 export {
@@ -143,5 +144,6 @@ export {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  keyValuePairConfig,
   progressbarConfig,
 };
