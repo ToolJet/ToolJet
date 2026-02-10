@@ -3,11 +3,13 @@
     border-bottom: 1px solid var(--cc-container-header-divider-color, var(--border-weak, #e4e7eb));
   }
 
-.dynamic-height-target {
-  .canvas-component {
-    .widget-type-container {
-      .sub-canvas {
-        overflow-y: hidden !important;
+.viewer {
+  .dynamic-height-target {
+    .canvas-component {
+      .widget-type-container {
+        .sub-canvas {
+          overflow-y: hidden !important;
+        }
       }
     }
   }
