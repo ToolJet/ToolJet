@@ -22,6 +22,7 @@ export const IFrame = function IFrame({
     isDisabled: disabledState,
     url: source,
   });
+  const [reloadKey, setReloadKey] = useState(0);
 
   // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
@@ -87,6 +88,9 @@ export const IFrame = function IFrame({
         updateExposedVariablesState('isLoading', !!value);
         setExposedVariable('isLoading', !!value);
       },
+      reload: async function () {
+        setReloadKey((prev) => prev + 1);
+      },
     };
 
     setExposedVariables(exposedVariables);
@@ -108,6 +112,7 @@ export const IFrame = function IFrame({
         </div>
       ) : (
         <iframe
+          key={reloadKey}
           width={width - 4}
           height={height}
           src={exposedVariablesTemporaryState.url}
