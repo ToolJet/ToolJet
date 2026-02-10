@@ -85,6 +85,7 @@ const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'))
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
+const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -176,6 +177,7 @@ export const AllComponents = {
   Camera,
   JSONEditor,
   JSONExplorer,
+  KeyValuePair,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;

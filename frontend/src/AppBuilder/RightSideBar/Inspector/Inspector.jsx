@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import '../ComponentManagerTab/styles.scss';
@@ -137,6 +138,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Form',
   'JSONExplorer',
   'JSONEditor',
+  'KeyValuePair',
   'IFrame',
 ];
 
@@ -551,8 +553,6 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -917,6 +917,9 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
+
+      case 'KeyValuePair':
+        return <KeyValuePair {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

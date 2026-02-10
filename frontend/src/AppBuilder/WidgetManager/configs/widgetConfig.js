@@ -71,6 +71,7 @@ import {
   tagsInputConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  keyValuePairConfig,
   progressbarConfig,
 } from '../widgets';
 
@@ -83,6 +84,7 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,

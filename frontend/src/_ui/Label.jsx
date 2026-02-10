@@ -20,6 +20,7 @@ function Label({
   inputId,
   id,
   classes = null,
+  style = {},
   fontSize = '12px',
 }) {
   const { moduleId } = useModuleContext();
@@ -37,6 +38,7 @@ function Label({
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize,
             height: defaultAlignment === 'top' && '20px',
+            ...style,
           }}
           htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste
           className={cn(classes?.labelContainer)}
