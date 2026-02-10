@@ -2145,13 +2145,18 @@ export const createComponentsSlice = (set, get) => ({
     const label = componentDefinition?.component?.definition?.properties?.label;
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
-    if (!INPUT_COMPONENTS_FOR_FORM.includes(componentType)) {
+    if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
       return layoutData?.height;
     }
     const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
-    const resolvedLabel = label?.value?.length ?? 0;
+    let resolvedLabel = label?.value?.length ?? 0;
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
+    const labelType = componentDefinition?.component?.definition?.properties?.labelType;
+    const resolvedLabelType = resolveDynamicValues(labelType?.value + '', getAllExposedValues(moduleId)) ?? 'auto';
+    if (resolvedLabelType === 'auto') {
+      resolvedLabel = 1;
+    }
 
     const resolvedAlignment =
       alignment.value === 'top' || alignment.value === 'side'
@@ -2296,6 +2301,13 @@ export const createComponentsSlice = (set, get) => ({
           return {
             ...properties,
             text: {
+              value: `{{components.${componentDefinition.id}.value}}%`,
+            },
+          };
+        } else if (componentType === 'ProgressBar') {
+          return {
+            ...properties,
+            label: {
               value: `{{components.${componentDefinition.id}.value}}%`,
             },
           };
