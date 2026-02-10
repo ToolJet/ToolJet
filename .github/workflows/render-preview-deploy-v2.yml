@@ -136,7 +136,7 @@ jobs:
                 "disk": {
                   "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -612,7 +612,7 @@ jobs:
                 "disk": {
                   "name": "tooljet-ee-lts-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -1091,7 +1091,7 @@ jobs:
                 "disk": {
                   "name": "tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
