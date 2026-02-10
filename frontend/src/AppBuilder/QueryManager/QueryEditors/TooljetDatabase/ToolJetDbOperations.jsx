@@ -165,7 +165,6 @@ const ToolJetDbOperations = ({
       deleteJoinTableOptions('order_by');
     }
   };
-  const isSelectingTable = useRef(false);
 
 
   useEffect(() => {
@@ -195,10 +194,7 @@ const ToolJetDbOperations = ({
   }, [options['join_table']?.['joins'], tables]);
 
   useEffect(() => {
-    if (selectedTableId && !isSelectingTable.current) {
-      fetchTableInformation(selectedTableId, false, tables);
-    }
-    isSelectingTable.current = false;
+    selectedTableId && fetchTableInformation(selectedTableId, false, tables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId]);
 
@@ -433,7 +429,6 @@ const ToolJetDbOperations = ({
       const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
-        fetchTableInformation(selectedTableInfo.id, false, tableList);
       }
     }
   };
@@ -502,9 +497,7 @@ const ToolJetDbOperations = ({
   };
 
   const handleTableNameSelect = (tableId) => {
-    isSelectingTable.current = true;
     setSelectedTableId(tableId);
-    fetchTableInformation(tableId, true, tables);
     optionchanged('table_id', tableId);
 
     setJoinTableOptions(() => {
