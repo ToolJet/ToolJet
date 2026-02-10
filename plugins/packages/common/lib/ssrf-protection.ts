@@ -318,6 +318,16 @@ export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
  * Main SSRF validation function
  * Validates a URL against SSRF protection rules
  *
+ * This function is called for:
+ * - Initial request URLs (before making the request)
+ * - Redirect URLs (via beforeRedirect hook in getSSRFProtectionOptions)
+ *
+ * Validation checks:
+ * - URL scheme blocking (file://, ftp://, etc. if configured)
+ * - Private IP address blocking (RFC1918, loopback, link-local, cloud metadata)
+ * - URL credentials abuse prevention (e.g., http://169.254.169.254@example.com)
+ * - DNS rebinding protection (if enabled via SSRF_DNS_RESOLUTION_CHECK)
+ *
  * @param urlString - The URL to validate
  * @param options - Optional SSRF protection configuration
  * @throws QueryError if URL fails validation
@@ -470,11 +480,44 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
 
 /**
  * Gets got request options with SSRF protection enabled
- * This includes custom DNS lookup and redirect handling
  *
- * @param options - SSRF protection configuration
+ * This includes:
+ * - Custom DNS lookup to validate resolved IPs before connection
+ * - Redirect validation to prevent SSRF bypass via open redirects
+ *
+ * ## Redirect Protection
+ *
+ * The function implements a `beforeRedirect` hook that validates each redirect URL
+ * before following it. This prevents attackers from bypassing SSRF filters using
+ * open redirect vulnerabilities in allowed domains.
+ *
+ * **Attack scenario prevented:**
+ * ```
+ * // Attacker provides URL that passes initial validation:
+ * http://allowed-domain.com/redirect?target=http://169.254.169.254
+ *
+ * // allowed-domain.com has open redirect vulnerability, responds with:
+ * Location: http://169.254.169.254
+ *
+ * // beforeRedirect hook intercepts and validates redirect URL
+ * // Validation fails (cloud metadata endpoint) and blocks the redirect
+ * ```
+ *
+ * **Validation applied to redirects:**
+ * - Private IP blocking (RFC1918, loopback, link-local)
+ * - Cloud metadata endpoint blocking (AWS, GCP, Azure, etc.)
+ * - Dangerous scheme blocking (if configured)
+ * - DNS rebinding protection (if enabled)
+ *
+ * **Redirect behavior:**
+ * - Allows redirects by default (got's default: maxRedirects = 10)
+ * - Each redirect URL is validated before following
+ * - Blocked redirects throw QueryError with details
+ * - Merges with existing beforeRedirect hooks if present
+ *
+ * @param options - SSRF protection configuration (uses env vars if not provided)
  * @param existingOptions - Existing got options to merge with
- * @returns Partial got options object with SSRF protection
+ * @returns Got options object with SSRF protection configured
  */
 export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existingOptions?: any): any {
   const config = options || getSSRFConfig();
@@ -490,7 +533,9 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
     dnsLookup: createSSRFSafeLookup(config),
   };
 
-  // Merge hooks properly to avoid overwriting existing hooks
+  // Redirect validation hook - prevents SSRF bypass via open redirects
+  // This validates redirect URLs using the same SSRF rules as the initial request,
+  // blocking attacks where an allowed domain redirects to a private IP/endpoint
   const beforeRedirectHook = async (options: any, response: any) => {
     // Validate redirect URL
     const redirectUrl = response.headers.location;
@@ -525,6 +570,21 @@ export function getSSRFProtectionOptions(options?: SSRFProtectionOptions, existi
 
   return ssrfOptions;
 }
+
+/**
+ * Example: SSRF protection with redirect validation
+ *
+ * Usage in plugin:
+ * ```typescript
+ * const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+ * const response = await got(url, finalOptions);
+ * ```
+ *
+ * Behavior:
+ * - If url redirects to private IP, beforeRedirect hook blocks it
+ * - Example blocked redirect: http://allowed.com/redirect -> http://169.254.169.254
+ * - Error thrown: "Redirect blocked by SSRF protection"
+ */
 
 /**
  * Synchronous version of URL validation (without DNS resolution)
