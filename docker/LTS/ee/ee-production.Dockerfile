@@ -184,7 +184,7 @@ RUN useradd --create-home --home-dir /home/appuser appuser
 # Copy nsjail and Python runtime from builder
 COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
 RUN chmod 755 /usr/local/bin/nsjail && \
-    setcap cap_sys_admin,cap_net_admin,cap_sys_ptrace+ep /usr/local/bin/nsjail
+    setcap cap_sys_admin,cap_net_admin,cap_sys_ptrace,cap_setuid,cap_setgid+ep /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
 COPY --from=builder /opt/python-runtime /opt/python-runtime
