@@ -82,22 +82,11 @@ export const getPostSignupRedirectPath = ({
   const hasRedirect = Boolean(redirectTo);
   const hasSlug = Boolean(organizationSlug);
 
-  // ✅ EXACT allowed route
-  const isApplicationsRootWithId =
-    /^\/applications\/[^/]+$/.test(redirectTo || '');
-
-  // ❌ Any deeper application route is restricted
-  const isRestrictedApplicationRoute =
-    /^\/applications\/[^/]+\/.+/.test(redirectTo || '');
+  const isApplicationRoute = /^\/applications\//.test(redirectTo || '');
 
   if (hasRedirect) {
-    // 🚫 Restricted routes
-    if (isRestrictedApplicationRoute && !isApplicationsRootWithId) {
-      return '/error/restricted';
-    }
 
-    // ✅ Allowed: /applications/:id (NO workspace slug)
-    if (isApplicationsRootWithId) {
+    if (isApplicationRoute) {
       return redirectTo;
     }
 

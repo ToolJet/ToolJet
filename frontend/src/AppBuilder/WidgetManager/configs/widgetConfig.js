@@ -69,6 +69,7 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  progressbarConfig,
   navigationConfig,
 } from '../widgets';
 
@@ -139,6 +140,7 @@ export const widgets = [
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,
