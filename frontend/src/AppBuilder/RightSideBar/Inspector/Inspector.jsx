@@ -128,6 +128,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Statistics',
   'StarRating',
   'CircularProgressBar',
+  'ProgressBar',
   'CustomComponent',
   'Html',
   'AudioRecorder',
@@ -572,16 +573,19 @@ export const Inspector = ({
     );
   };
 
-  const renderTabs = () => (
-    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
-      <Tab eventKey="properties" title="Properties">
-        {propertiesTab}
-      </Tab>
-      <Tab eventKey="styles" title="Styles">
-        {stylesTab}
-      </Tab>
-    </Tabs>
-  );
+  const renderTabs = () => {
+    const isContainerOrViewerModule = ['ModuleContainer', 'ModuleViewer'].includes(componentMeta.component);
+    return (
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
+        <Tab eventKey="properties" title="Properties">
+          {propertiesTab}
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
+          {stylesTab}
+        </Tab>
+      </Tabs>
+    );
+  };
 
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>

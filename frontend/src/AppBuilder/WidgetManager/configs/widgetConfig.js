@@ -71,6 +71,7 @@ import {
   tagsInputConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  progressbarConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -139,6 +140,7 @@ export const widgets = [
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,

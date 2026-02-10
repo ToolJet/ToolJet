@@ -67,6 +67,7 @@ import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
+import { progressbarConfig } from './progressbar';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { jsonExplorerConfig } from './jsonExplorer';
@@ -141,6 +142,7 @@ const widgets = {
   moduleContainerConfig,
   moduleViewerConfig,
   popoverMenuConfig,
+  progressbarConfig,
   audioRecorderConfig,
   cameraConfig,
   jsonExplorerConfig,

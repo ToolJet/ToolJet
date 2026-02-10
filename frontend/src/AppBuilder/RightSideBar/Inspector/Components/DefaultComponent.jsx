@@ -49,6 +49,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TagsInput',
   'JSONExplorer',
   'JSONEditor',
+  'ProgressBar',
   'IFrame',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
@@ -73,6 +74,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   StarRating: 'Data',
   CircularProgressBar: 'Data',
   Kanban: 'Board configuration',
+  ProgressBar: 'Data',
   AudioRecorder: 'Content',
   Camera: 'Content',
   JSONExplorer: 'Data',
@@ -184,6 +186,7 @@ export const baseComponentProperties = (
       'StarRating',
       'CircularProgressBar',
       'Kanban',
+      'ProgressBar',
       'AudioRecorder',
       'Camera',
       'JSONExplorer',

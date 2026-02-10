@@ -54,6 +54,7 @@ import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { ProgressBar } from '@/AppBuilder/Widgets/Progressbar/Progressbar';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
 import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
 import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
@@ -169,6 +170,7 @@ export const AllComponents = {
   ModalV2,
   ModuleContainer,
   ModuleViewer,
+  ProgressBar,
   TagsInput,
   AudioRecorder,
   Camera,

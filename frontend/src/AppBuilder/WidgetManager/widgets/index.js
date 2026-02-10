@@ -71,6 +71,8 @@ import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
+import { progressbarConfig } from './progressbar';
+
 export {
   buttonConfig,
   tableConfig,
@@ -145,4 +147,5 @@ export {
   tagsInputConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  progressbarConfig,
 };
