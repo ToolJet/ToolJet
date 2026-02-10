@@ -8,7 +8,7 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   query: string;
-  pagination: string;
+  pagination?: number;
   queryExecutionId: string;
   nextToken: string;
 };
