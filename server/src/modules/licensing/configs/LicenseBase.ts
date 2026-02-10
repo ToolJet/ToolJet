@@ -49,6 +49,9 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isGoogle: boolean;
+  private _isGithub: boolean;
+  private _isObservability: object;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -115,6 +118,7 @@ export default class LicenseBase {
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
     this._isCustomGroups = this.getPermissionValue('customGroups');
+    this._isObservability = licenseData?.observability;
 
     // Features
     this._isAuditLogs = this.getFeatureValue('auditLogs');
@@ -122,6 +126,8 @@ export default class LicenseBase {
     this._isOidc = this.getFeatureValue('oidc');
     this._isLdap = this.getFeatureValue('ldap');
     this._isSAML = this.getFeatureValue('saml');
+    this._isGoogle = this.getFeatureValue('google');
+    this._isGithub = this.getFeatureValue('github');
     this._isCustomStyling = this.getFeatureValue('customStyling');
     this._isWhiteLabelling = this.getFeatureValue('whiteLabelling');
     this._isAppWhiteLabelling = this.getFeatureValue('appWhiteLabelling');
@@ -215,6 +221,16 @@ export default class LicenseBase {
       return true; //Not passed set to true for older licenses and trial
     }
     return !!this._app['pages']?.enabled;
+  }
+
+  public get appPagesLimit(): number | string {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.pages?.count || 5;
+    }
+    if (!this._app || this._app['pages']?.count === undefined) {
+      return ''; //Not passed set to infinite for older licenses and trial
+    }
+    return this._app['pages']?.count;
   }
 
   public get appPagesHeaderAndLogoEnabled(): boolean {
@@ -362,6 +378,30 @@ export default class LicenseBase {
     return this._isLdap;
   }
 
+  public get google(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.google;
+    }
+    return this._isGoogle;
+  }
+
+  public get github(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.github;
+    }
+    return this._isGithub;
+  }
+
+  public get observabilityEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS?.observability?.enabled;
+    }
+    if (!this._isObservability) {
+      return true; //Not passed set to true for older licenses and trial
+    }
+    return !!this._isObservability['enabled'];
+  }
+
   public get gitSync(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.gitSync;
@@ -491,9 +531,15 @@ export default class LicenseBase {
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
+      appPagesLimit: this.appPagesLimit,
       workflowsEnabled: this.getWorkflowsEnabled(),
       promote: this.canPromote, 
       release: this.canRelease,   
+      google: this.google,
+      github: this.github,
+      externalApis: this.externalApis,
+      scim: this.scim,
+      observabilityEnabled: this.observabilityEnabled,
     };
   }
 
