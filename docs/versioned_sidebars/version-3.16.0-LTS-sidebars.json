@@ -364,6 +364,7 @@
                 "widgets/pdf",
                 "widgets/phone-input",
                 "widgets/popover-menu",
+                "widgets/progress-bar",
                 "widgets/qr-scanner",
                 "widgets/radio-button-v2",
                 "widgets/range-slider",
