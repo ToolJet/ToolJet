@@ -165,6 +165,8 @@ const ToolJetDbOperations = ({
       deleteJoinTableOptions('order_by');
     }
   };
+  const isSelectingTable = useRef(false);
+
 
   useEffect(() => {
     fetchTables();
@@ -193,7 +195,9 @@ const ToolJetDbOperations = ({
   }, [options['join_table']?.['joins'], tables]);
 
   useEffect(() => {
-    selectedTableId && fetchTableInformation(selectedTableId, false, tables);
+    if (selectedTableId && !isSelectingTable.current) {
+      fetchTableInformation(selectedTableId, false, tables);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId]);
 
@@ -497,6 +501,7 @@ const ToolJetDbOperations = ({
   };
 
   const handleTableNameSelect = (tableId) => {
+    isSelectingTable.current = true;
     setSelectedTableId(tableId);
     fetchTableInformation(tableId, true, tables);
     optionchanged('table_id', tableId);
@@ -525,6 +530,8 @@ const ToolJetDbOperations = ({
         fields: [],
       };
     });
+
+     setTimeout(() => { isSelectingTable.current = false; }, 0);
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
