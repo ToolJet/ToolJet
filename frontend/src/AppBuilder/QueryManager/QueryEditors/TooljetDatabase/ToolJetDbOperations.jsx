@@ -198,6 +198,7 @@ const ToolJetDbOperations = ({
     if (selectedTableId && !isSelectingTable.current) {
       fetchTableInformation(selectedTableId, false, tables);
     }
+    isSelectingTable.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId]);
 
@@ -531,7 +532,6 @@ const ToolJetDbOperations = ({
       };
     });
 
-     setTimeout(() => { isSelectingTable.current = false; }, 0);
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
