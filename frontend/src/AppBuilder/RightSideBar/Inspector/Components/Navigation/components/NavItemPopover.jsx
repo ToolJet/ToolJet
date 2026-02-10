@@ -41,7 +41,7 @@ const NavItemPopover = forwardRef(
         ref={ref}
         {...restProps}
         style={{ ...restProps.style, width: '310px' }}
-        className={`${darkMode && 'dark-theme theme-dark'} nav-item-popover ${restProps.className || ''}`}
+        className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-popover ${restProps.className || ''}`}
       >
         <div
           className="nav-item-popover-container"

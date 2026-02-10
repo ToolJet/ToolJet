@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -67,15 +67,15 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
             >
               <Popover
                 style={{ zIndex: '99999' }}
-                className={`${darkMode && 'dark-theme theme-dark'} nav-item-actions-popover`}
+                className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-actions-popover`}
               >
                 <Popover.Body className="p-2">
                   <div className="nav-item-action-option" onClick={(e) => { e.stopPropagation(); handleEdit(); }}>
-                    <Icons.IconPencil size={16} stroke={1.5} className="nav-item-action-option-icon" />
+                    <TablerIcon iconName="IconPencil" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Edit group</span>
                   </div>
                   <div className="nav-item-action-option nav-item-action-option-danger" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
-                    <Icons.IconTrash size={16} stroke={1.5} className="nav-item-action-option-icon" />
+                    <TablerIcon iconName="IconTrash" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Delete group</span>
                   </div>
                 </Popover.Body>

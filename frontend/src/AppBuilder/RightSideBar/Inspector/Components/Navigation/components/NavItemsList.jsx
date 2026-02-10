@@ -10,7 +10,7 @@ const AddMenuPopover = React.forwardRef(({ onAddItem, onAddGroup, onClose, darkM
       ref={ref}
       {...props}
       style={{ ...props.style, width: buttonWidth ? `${buttonWidth}px` : 'auto', maxWidth: 'none' }}
-      className={`${darkMode && 'dark-theme theme-dark'} nav-add-menu-popover`}
+      className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-add-menu-popover`}
     >
       <Popover.Body>
         <div

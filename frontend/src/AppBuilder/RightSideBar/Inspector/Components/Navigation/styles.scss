@@ -627,18 +627,9 @@
         line-height: 18px;
       }
   
-      // Danger state (delete option)
       &.nav-item-action-option-danger {
-        &:hover {
-          background-color: var(--interactive-dangerHover);
-        }
-  
         .nav-item-action-option-icon {
           color: var(--icons-danger);
-        }
-  
-        .nav-item-action-option-label {
-          color: var(--text-danger);
         }
       }
     }

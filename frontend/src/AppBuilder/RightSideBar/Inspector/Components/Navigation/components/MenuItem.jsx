@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import classNames from 'classnames';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -14,14 +14,6 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
   const moreBtnRef = useRef(null);
 
   const isEditing = showEditPopover || showActionsPopover;
-
-  const getIconComponent = () => {
-    const iconName = item?.icon?.value || 'IconFile';
-    const IconComponent = Icons?.[iconName] ?? Icons?.['IconFile'];
-    return IconComponent;
-  };
-
-  const IconComponent = getIconComponent();
 
   const handleEdit = () => {
     setShowActionsPopover(false);
@@ -46,7 +38,7 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
       >
         <div className="left">
           <div className="main-page-icon-wrapper">
-            <IconComponent size={20} stroke={1.5} className="nav-item-icon" />
+            <TablerIcon iconName={item?.icon?.value || 'IconFile'} fallbackIcon="IconFile" size={20} stroke={1.5} className="nav-item-icon" />
           </div>
           <OverflowTooltip childrenClassName="page-name">
             {getSafeRenderableValue(getResolvedValue?.(item?.label) ?? item?.label)}
@@ -76,15 +68,15 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
             >
               <Popover
                 style={{ zIndex: '99999' }}
-                className={`${darkMode && 'dark-theme theme-dark'} nav-item-actions-popover`}
+                className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-actions-popover`}
               >
                 <Popover.Body className="p-2">
                   <div className="nav-item-action-option" onClick={(e) => { e.stopPropagation(); handleEdit(); }}>
-                    <Icons.IconPencil size={16} stroke={1.5} className="nav-item-action-option-icon" />
+                    <TablerIcon iconName="IconPencil" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Edit menu item</span>
                   </div>
                   <div className="nav-item-action-option nav-item-action-option-danger" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
-                    <Icons.IconTrash size={16} stroke={1.5} className="nav-item-action-option-icon" />
+                    <TablerIcon iconName="IconTrash" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Delete nav item</span>
                   </div>
                 </Popover.Body>

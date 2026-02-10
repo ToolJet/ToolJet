@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import cx from 'classnames';
-// eslint-disable-next-line import/no-unresolved
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import {
   NavigationMenu,
@@ -19,11 +18,7 @@ const RenderNavItem = ({
   item,
   isSelected,
   onItemClick,
-  styles,
   displayStyle,
-  orientation,
-  isNested = false,
-  isInOverflow = false,
 }) => {
   const isVisible = typeof item.visible === 'object' ? item.visible.value !== '{{true}}' : item.visible !== true;
   const isDisabled = typeof item.disable === 'object'
@@ -32,7 +27,6 @@ const RenderNavItem = ({
 
   if (!isVisible) return null;
 
-  const IconElement = Icons[item.icon?.value || item.icon] || Icons.IconFile;
   const showIcon = displayStyle !== 'textOnly' && item.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
 
@@ -51,7 +45,9 @@ const RenderNavItem = ({
     >
       {showIcon && (
         <div className="custom-icon" data-cy={`nav-icon-${item.id}`}>
-          <IconElement
+          <TablerIcon
+            iconName={item.icon?.value || item.icon}
+            fallbackIcon="IconFile"
             color={iconColor}
             style={{
               width: '16px',
@@ -80,7 +76,6 @@ const RenderNavGroup = ({
   displayStyle,
   orientation,
   darkMode,
-  isInOverflow = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -91,7 +86,6 @@ const RenderNavGroup = ({
 
   if (!isVisible) return null;
 
-  const IconElement = Icons[group.icon?.value || group.icon] || Icons.IconFolder;
   const showIcon = displayStyle !== 'textOnly' && group.iconVisibility !== false;
   const showLabel = displayStyle !== 'iconOnly';
 
@@ -113,7 +107,9 @@ const RenderNavGroup = ({
     <div className="group-info">
       {showIcon && (
         <div className="custom-icon">
-          <IconElement
+          <TablerIcon
+            iconName={group.icon?.value || group.icon}
+            fallbackIcon="IconFolder"
             style={{
               width: '16px',
               height: '16px',
@@ -143,7 +139,8 @@ const RenderNavGroup = ({
           data-cy={`nav-group-${group.id}`}
         >
           <TriggerBody />
-          <Icons.IconChevronUp
+          <TablerIcon
+            iconName="IconChevronUp"
             size={16}
             className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
           />
@@ -187,7 +184,8 @@ const RenderNavGroup = ({
         aria-expanded={isExpanded}
       >
         <TriggerBody />
-        <Icons.IconChevronUp
+        <TablerIcon
+          iconName="IconChevronUp"
           size={16}
           className="nav-chevron cursor-pointer tw-flex-shrink-0 tw-transition tw-duration-200 group-data-[state=closed]:tw-rotate-180"
         />
@@ -214,12 +212,10 @@ const RenderNavGroup = ({
 
 export const Navigation = function Navigation(props) {
   const {
-    height,
     width,
     properties,
     styles,
     fireEvent,
-    id,
     dataCy,
     setExposedVariable,
     setExposedVariables,
@@ -481,7 +477,7 @@ export const Navigation = function Navigation(props) {
             {links.overflow.length > 0 && (
               <NavigationMenuItem>
                 <NavigationMenuTrigger indicator={false} className="more-pages-btn">
-                  <Icons.IconDotsVertical size={16} color="var(--nav-item-icon-color)" />
+                  <TablerIcon iconName="IconDotsVertical" size={16} color="var(--nav-item-icon-color)" />
                   More
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className={cx('!tw-min-w-full page-menu-popup', { 'dark-theme': darkMode })}>
