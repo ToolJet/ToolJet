@@ -6,6 +6,8 @@ import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 /**
  * KeyValuePair Widget
@@ -23,6 +25,11 @@ export const KeyValuePair = ({
   dataCy,
   id,
   width: widgetWidth,
+  height,
+  adjustComponentPositions,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
 }) => {
   const {
     dataSourceSelector,
@@ -33,6 +40,7 @@ export const KeyValuePair = ({
     loadingState = false,
     visibility = true,
     disabledState = false,
+    dynamicHeight = false,
   } = properties;
 
   const data = dataSourceSelector === 'rawJson' ? properties?.data : dataSourceSelector;
@@ -65,6 +73,22 @@ export const KeyValuePair = ({
   // Ref for measuring labels to find max width when autoLabelWidth is enabled
   const containerRef = useRef(null);
   const [maxLabelWidth, setMaxLabelWidth] = useState(0);
+
+  // Dynamic height support
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width: widgetWidth,
+    visibility: isVisible,
+    subContainerIndex,
+  });
 
   // Merge original data with edited values
   const currentData = useMemo(() => ({ ...data, ...editedData }), [data, editedData]);
@@ -153,11 +177,12 @@ export const KeyValuePair = ({
         'kv-padding-none': padding === 'none',
         invisible: !isVisible,
         'dark-mode': darkMode,
+        [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
       data-cy={dataCy}
       id={`component-${id}`}
     >
-      <div className="key-value-pair-content">
+      <div className="key-value-pair-content" style={{ overflowY: isDynamicHeightEnabled ? 'hidden' : 'auto' }}>
         {resolvedFields.map((field, index) => (
           <KeyValueRow
             componentId={id}

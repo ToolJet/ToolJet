@@ -54,6 +54,15 @@ export const keyValuePairConfig = {
           "[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]",
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -369,6 +378,7 @@ export const keyValuePairConfig = {
       fieldDynamicData: {
         value: "{{[{name: 'Name', key: 'name'}, {name: 'Email', key: 'email'}, {name: 'Website', key: 'website'}]}}",
       },
+      dynamicHeight: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
