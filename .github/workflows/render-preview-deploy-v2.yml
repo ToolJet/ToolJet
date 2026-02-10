@@ -3,6 +3,8 @@ name: Render Preview Deploy (DockerHub-based)
 on:
   pull_request:
     types: [labeled, unlabeled, closed, synchronize]
+  pull_request_target:
+    types: [labeled, unlabeled]
 
 env:
   PR_NUMBER: ${{ github.event.pull_request.number }}

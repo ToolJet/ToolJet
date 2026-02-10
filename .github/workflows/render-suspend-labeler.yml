@@ -6,73 +6,23 @@ on:
 
 permissions:
   issues: write
-  pull-requests: write
 
 jobs:
   label-stale-ce-deploys:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
     steps:
-    - name: Check for stale CE labels
+    - uses: akshaysasidrn/stale-label-fetch@v1.1
       id: stale-label
-      uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const STALE_TIME_SECONDS = 86400; // 24 hours
-          const STALE_TIME_MS = STALE_TIME_SECONDS * 1000;
-          const now = new Date();
-          const staleNumbers = [];
-          
-          // Get all open PRs
-          const { data: pullRequests } = await github.rest.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            per_page: 100
-          });
-          
-          for (const pr of pullRequests) {
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number
-            });
-            
-            const hasActiveLabel = labels.some(l => l.name === 'active-ce-review-app');
-            const hasSuspendLabel = labels.some(l => l.name === 'suspend-ce-review-app');
-            
-            if (hasActiveLabel && !hasSuspendLabel) {
-              // Get timeline to find when the active label was added
-              const { data: timeline } = await github.rest.issues.listEventsForTimeline({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                per_page: 100
-              });
-              
-              const labelEvents = timeline
-                .filter(event => event.event === 'labeled' && event.label?.name === 'active-ce-review-app')
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              
-              if (labelEvents.length > 0) {
-                const labelAddedAt = new Date(labelEvents[0].created_at);
-                const ageMs = now - labelAddedAt;
-                
-                if (ageMs >= STALE_TIME_MS) {
-                  staleNumbers.push(pr.number);
-                }
-              }
-            }
-          }
-          
-          core.setOutput('stale-numbers', staleNumbers.join(','));
-          return staleNumbers.join(',');
-          
+        stale-label: 'active-ce-review-app'
+        stale-time: '86400'
+        type: 'pull_request'
     - name: Get stale numbers
       run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
-      
     - name: Add suspend label
-      if: steps.stale-label.outputs.stale-numbers != ''
       uses: actions/github-script@v6
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
@@ -86,7 +36,7 @@ jobs:
           console.log(`Adding suspend labels for: ${prNumbers}`)
 
           for (const prNumber of prNumbers) {
-            await github.rest.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -96,68 +46,19 @@ jobs:
 
   label-stale-ee-deploys:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
     steps:
-    - name: Check for stale EE labels
+    - uses: akshaysasidrn/stale-label-fetch@v1.1
       id: stale-label
-      uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const STALE_TIME_SECONDS = 86400; // 24 hours
-          const STALE_TIME_MS = STALE_TIME_SECONDS * 1000;
-          const now = new Date();
-          const staleNumbers = [];
-          
-          // Get all open PRs
-          const { data: pullRequests } = await github.rest.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            per_page: 100
-          });
-          
-          for (const pr of pullRequests) {
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number
-            });
-            
-            const hasActiveLabel = labels.some(l => l.name === 'active-ee-review-app');
-            const hasSuspendLabel = labels.some(l => l.name === 'suspend-ee-review-app');
-            
-            if (hasActiveLabel && !hasSuspendLabel) {
-              // Get timeline to find when the active label was added
-              const { data: timeline } = await github.rest.issues.listEventsForTimeline({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                per_page: 100
-              });
-              
-              const labelEvents = timeline
-                .filter(event => event.event === 'labeled' && event.label?.name === 'active-ee-review-app')
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              
-              if (labelEvents.length > 0) {
-                const labelAddedAt = new Date(labelEvents[0].created_at);
-                const ageMs = now - labelAddedAt;
-                
-                if (ageMs >= STALE_TIME_MS) {
-                  staleNumbers.push(pr.number);
-                }
-              }
-            }
-          }
-          
-          core.setOutput('stale-numbers', staleNumbers.join(','));
-          return staleNumbers.join(',');
-          
+        stale-label: 'active-ee-review-app'
+        stale-time: '86400'
+        type: 'pull_request'
     - name: Get stale numbers
       run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
-      
     - name: Add suspend label
-      if: steps.stale-label.outputs.stale-numbers != ''
       uses: actions/github-script@v6
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
@@ -171,7 +72,7 @@ jobs:
           console.log(`Adding suspend labels for: ${prNumbers}`)
 
           for (const prNumber of prNumbers) {
-            await github.rest.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -181,68 +82,19 @@ jobs:
 
   label-stale-ee-lts-deploys:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
     steps:
-    - name: Check for stale EE LTS labels
+    - uses: akshaysasidrn/stale-label-fetch@v1.1
       id: stale-label
-      uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const STALE_TIME_SECONDS = 86400; // 24 hours
-          const STALE_TIME_MS = STALE_TIME_SECONDS * 1000;
-          const now = new Date();
-          const staleNumbers = [];
-          
-          // Get all open PRs
-          const { data: pullRequests } = await github.rest.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            per_page: 100
-          });
-          
-          for (const pr of pullRequests) {
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number
-            });
-            
-            const hasActiveLabel = labels.some(l => l.name === 'active-ee-lts-review-app');
-            const hasSuspendLabel = labels.some(l => l.name === 'suspend-ee-lts-review-app');
-            
-            if (hasActiveLabel && !hasSuspendLabel) {
-              // Get timeline to find when the active label was added
-              const { data: timeline } = await github.rest.issues.listEventsForTimeline({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                per_page: 100
-              });
-              
-              const labelEvents = timeline
-                .filter(event => event.event === 'labeled' && event.label?.name === 'active-ee-lts-review-app')
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              
-              if (labelEvents.length > 0) {
-                const labelAddedAt = new Date(labelEvents[0].created_at);
-                const ageMs = now - labelAddedAt;
-                
-                if (ageMs >= STALE_TIME_MS) {
-                  staleNumbers.push(pr.number);
-                }
-              }
-            }
-          }
-          
-          core.setOutput('stale-numbers', staleNumbers.join(','));
-          return staleNumbers.join(',');
-          
+        stale-label: 'active-ee-lts-review-app'
+        stale-time: '86400'
+        type: 'pull_request'
     - name: Get stale numbers
       run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
-      
     - name: Add suspend label
-      if: steps.stale-label.outputs.stale-numbers != ''
       uses: actions/github-script@v6
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
@@ -256,7 +108,7 @@ jobs:
           console.log(`Adding suspend labels for EE LTS: ${prNumbers}`)
 
           for (const prNumber of prNumbers) {
-            await github.rest.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -266,68 +118,19 @@ jobs:
 
   label-stale-ee-pre-release-deploys:
     runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
     steps:
-    - name: Check for stale EE Pre-release labels
+    - uses: akshaysasidrn/stale-label-fetch@v1.1
       id: stale-label
-      uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const STALE_TIME_SECONDS = 86400; // 24 hours
-          const STALE_TIME_MS = STALE_TIME_SECONDS * 1000;
-          const now = new Date();
-          const staleNumbers = [];
-          
-          // Get all open PRs
-          const { data: pullRequests } = await github.rest.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            per_page: 100
-          });
-          
-          for (const pr of pullRequests) {
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number
-            });
-            
-            const hasActiveLabel = labels.some(l => l.name === 'active-ee-pre-release-review-app');
-            const hasSuspendLabel = labels.some(l => l.name === 'suspend-ee-pre-release-review-app');
-            
-            if (hasActiveLabel && !hasSuspendLabel) {
-              // Get timeline to find when the active label was added
-              const { data: timeline } = await github.rest.issues.listEventsForTimeline({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                per_page: 100
-              });
-              
-              const labelEvents = timeline
-                .filter(event => event.event === 'labeled' && event.label?.name === 'active-ee-pre-release-review-app')
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              
-              if (labelEvents.length > 0) {
-                const labelAddedAt = new Date(labelEvents[0].created_at);
-                const ageMs = now - labelAddedAt;
-                
-                if (ageMs >= STALE_TIME_MS) {
-                  staleNumbers.push(pr.number);
-                }
-              }
-            }
-          }
-          
-          core.setOutput('stale-numbers', staleNumbers.join(','));
-          return staleNumbers.join(',');
-          
+        stale-label: 'active-ee-pre-release-review-app'
+        stale-time: '86400'
+        type: 'pull_request'
     - name: Get stale numbers
       run: echo "Matched PR numbers - ${{ steps.stale-label.outputs.stale-numbers }}"
-      
     - name: Add suspend label
-      if: steps.stale-label.outputs.stale-numbers != ''
       uses: actions/github-script@v6
       env:
         STALE_NUMBERS: ${{ steps.stale-label.outputs.stale-numbers }}
@@ -341,7 +144,7 @@ jobs:
           console.log(`Adding suspend labels for EE Pre-release: ${prNumbers}`)
 
           for (const prNumber of prNumbers) {
-            await github.rest.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
