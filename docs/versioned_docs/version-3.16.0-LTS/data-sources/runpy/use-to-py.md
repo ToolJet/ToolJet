@@ -4,7 +4,7 @@ title: "Translating JavaScript Objects to Python in RunPy"
 ---
 <div style={{paddingBottom:'24px'}}>
 
-This guide demonstrates the utilization of the `to_py()` function in *RunPy* queries for converting JavaScript objects into their corresponding Python representations.
+This guide demonstrates the utilization of the **`to_py()`** function in RunPy queries to convert JavaScript objects into their corresponding Python representations. It enables seamless interoperability between ToolJet components, JavaScript-based queries, and Python logic. Using `to_py()`, structured data such as objects and arrays can be safely accessed and processed within Python code.
 
 </div>
 
@@ -36,7 +36,7 @@ import pyodide # Import the Pyodide library
 def to_py(js_object): # Define a function to convert JavaScript objects to Python dictionaries
   return dict(js_object) # Convert the JavaScript object to a Python dictionary
 
-my_js_object = {"name": "John", "age": 25, "country": "USA"} # Create a JavaScript object
+my_js_object = {"name": "Sam", "age": 28, "country": "India"} # Create a JavaScript object
 
 my_py_dict = to_py(my_js_object) # Convert the JavaScript object to a Python dictionary
 
@@ -47,7 +47,9 @@ In this example, a JavaScript object `my_js_object` is created using the `Object
 
 The output will be:
 ```json
-{'name': 'John', 'age': 25, 'country': 'USA'}
+name:"Sam"
+age:28
+country:"India"
 ```
 
 By leveraging to_py(), JavaScript objects can seamlessly transition into Python representations, allowing for manipulation using Python code within the Pyodide environment.
@@ -68,8 +70,39 @@ Both **to_js()** and **to_py()** functions offer a convenient means to exchange 
 
 - To maintain consistency between JSON and Raw representations, the `to_js()` function provided by Pyodide can explicitly convert Python dictionaries to JavaScript objects. This ensures alignment between representations and guarantees that the data is in the desired format.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/to_py/topy.gif" alt="Print data from multiple tabs" />
-</div>
+## Example Query 
+This example demonstrates how to use a RunPy query to perform calculations based on user input from UI components and return structured data that can be consumed by other components.
+
+**Scenario: Calculate total cost from user input.**
+
+In this scenario, the application collects a quantity and price from the user and computes the total cost using Python logic.
+
+**Step 1:**  Add the following components to the canvas:
+- Quantity – Number Input component with the name `quantity_input`
+- Price – Number Input component with the name `price_input`
+
+ Then bind the UI with this code for the result.
+
+```yaml
+{{queries.runpy1.data}}
+```
+
+**Step 2:** RunPy query configuration
+Create a Run Python Code query and add the following code:
+
+```python
+quantity = int(components.quantity_input.value or 0)
+price = int(components.price_input.value or 0)
+
+total = quantity * price
+
+{
+  "quantity": quantity,
+  "price": price,
+  "total": total
+}
+```
+
+<img style={{ marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/to_py/example.png" alt="Appwrite update" />
 
 </div>
