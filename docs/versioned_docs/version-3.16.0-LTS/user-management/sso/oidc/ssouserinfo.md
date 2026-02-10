@@ -34,3 +34,20 @@ The exposed variables may vary depending on the identity provider. You can view 
 | `access_token` | OAuth 2.0 access token for the current user session, used to authenticate requests to connected datasources. |
 | `id_token` | Encoded ID token containing user identity claims in JWT format. |
 | `id_token_decrypted` | Decrypted contents of the ID token, useful for accessing detailed user claims. |
+
+
+
+### Custom OIDC Claims Support
+ToolJet supports custom OIDC claims provided by the Identity Provider during login.
+
+Any user attributes or custom claims (such as branch, location, or department) that are included by the IdP in the ID token, UserInfo response, or access token and exposed via configured scopes and claims will be available in ToolJet after successful authentication.
+
+These claims can be accessed within the App Builder using:
+```js
+{{globals.currentUser.ssoUserInfo.<claim_name>}}
+```
+:::note
+Custom attributes must be explicitly configured in the Identity Provider to be included in the OIDC token or UserInfo response.
+:::
+
+    <img className="screenshot-full img-s" src="/img/user-management/sso/oidc/ssouserinfo/ssouserinfo.png" alt="SSO User Info" />
