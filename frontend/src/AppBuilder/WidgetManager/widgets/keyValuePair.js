@@ -63,6 +63,14 @@ export const keyValuePairConfig = {
       },
       section: 'additionalActions',
     },
+    showUpdateActions: {
+      type: 'toggle',
+      displayName: 'Show update buttons',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -91,6 +99,8 @@ export const keyValuePairConfig = {
   },
   events: {
     onSaveKeyValuePairChanges: { displayName: 'Save changes' },
+    onFieldValueChanged: { displayName: 'Field value changed' },
+    onCancelKeyValuePairChanges: { displayName: 'Cancel changes' },
   },
   styles: {
     // Label section
@@ -384,6 +394,7 @@ export const keyValuePairConfig = {
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       fieldDeletionHistory: { value: [] },
+      showUpdateActions: { value: '{{true}}' },
     },
     events: [],
     styles: {

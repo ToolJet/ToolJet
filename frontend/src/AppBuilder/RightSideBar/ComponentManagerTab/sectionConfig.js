@@ -9,7 +9,7 @@ const sectionConfig = {
   },
   data: {
     title: 'Data',
-    valueSet: new Set(['Table', 'Chart']),
+    valueSet: new Set(['Table', 'Chart', 'KeyValuePair']),
   },
   layouts: {
     title: 'Layouts',

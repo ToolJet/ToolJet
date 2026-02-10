@@ -41,6 +41,7 @@ export const KeyValuePair = ({
     visibility = true,
     disabledState = false,
     dynamicHeight = false,
+    showUpdateActions = true,
   } = properties;
 
   const data = dataSourceSelector === 'rawJson' ? properties?.data : dataSourceSelector;
@@ -96,14 +97,19 @@ export const KeyValuePair = ({
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
   // Handle field value changes
-  const handleValueChange = useCallback((fieldKey, newValue) => {
-    setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
-  }, []);
+  const handleValueChange = useCallback(
+    (fieldKey, newValue) => {
+      setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
+      fireEvent('onFieldValueChanged');
+    },
+    [fireEvent]
+  );
 
   // Discard changes - reset to original data
   const discardChanges = useCallback(() => {
     setEditedData({});
-  }, []);
+    fireEvent('onCancelKeyValuePairChanges');
+  }, [fireEvent]);
 
   // Save changes
   const saveChanges = useCallback(() => {
@@ -206,7 +212,7 @@ export const KeyValuePair = ({
       </div>
 
       {/* ChangeSet Popover */}
-      {hasChanges && (
+      {showUpdateActions && hasChanges && (
         <div className="kv-changeset-popover">
           <div className="kv-changeset-content">
             <div className="kv-changeset-actions">
