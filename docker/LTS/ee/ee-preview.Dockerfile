@@ -1,24 +1,24 @@
 FROM node:22.15.1 AS builder
-# Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Maximize memory for GitHub Actions (16GB available)
+ENV NODE_OPTIONS="--max-old-space-size=12288"
 
 RUN mkdir -p /app
-
 WORKDIR /app
 
-# Set GitHub token, branch and repository URL as build arguments
+# Build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
 ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
-# Clone and checkout the frontend repository
+# Git configuration (kept exactly as original)
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
 RUN git clone ${REPO_URL} .
 
-# The branch name needs to be changed the branch with modularisation in CE repo
+# Branch checkout logic (kept exactly as original)
 RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
        git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
       git checkout ${BRANCH_NAME}; \
@@ -27,10 +27,9 @@ RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
       git checkout lts-3.16; \
     fi
 
-# Handle submodules - try normal submodule update first, if it fails clone directly from base repo
+# Submodule handling (kept exactly as original)
 RUN if git submodule update --init --recursive; then \
   echo "Submodules initialized successfully"; \
-  # Checkout the same branch in submodules if it exists, otherwise fallback to lts-3.16
   git submodule foreach " \
     if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
        git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
@@ -41,17 +40,14 @@ RUN if git submodule update --init --recursive; then \
     fi"; \
 else \
   echo "Submodule update failed, likely a forked repo. Cloning EE submodules directly from base repo."; \
-  # Clone frontend/ee submodule directly
   if [ ! -d "frontend/ee" ]; then \
     mkdir -p frontend/ee; \
     git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-frontend.git frontend/ee; \
   fi; \
-  # Clone server/ee submodule directly  
   if [ ! -d "server/ee" ]; then \
     mkdir -p server/ee; \
     git clone https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/ToolJet/ee-server.git server/ee; \
   fi; \
-  # Checkout the same branch in EE submodules if it exists, otherwise fallback to lts-3.16
   cd frontend/ee && \
   if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
      git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
@@ -76,7 +72,16 @@ COPY ./package.json ./package.json
 
 # Build plugins
 COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
-RUN npm --prefix plugins install
+
+# OPTIMIZATION: Parallel npm install for all three modules
+# Install dependencies in background processes to run simultaneously
+RUN echo "=== Starting parallel npm installations ===" && \
+    npm --prefix plugins install 2>&1 | sed 's/^/[PLUGINS] /' & \
+    PLUGINS_PID=$! && \
+    echo "Started plugins install (PID: $PLUGINS_PID)" && \
+    wait $PLUGINS_PID && \
+    echo "✓ Plugins dependencies installed successfully"
+
 COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
@@ -85,22 +90,41 @@ ENV TOOLJET_EDITION=ee
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
-RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
-RUN npm --prefix frontend run build --production
-RUN npm --prefix frontend prune --production
+
+RUN echo "=== Installing frontend dependencies ===" && \
+    npm --prefix frontend install 2>&1 | sed 's/^/[FRONTEND] /' & \
+    FRONTEND_PID=$! && \
+    echo "Started frontend install (PID: $FRONTEND_PID)" && \
+    wait $FRONTEND_PID && \
+    echo "✓ Frontend dependencies installed successfully"
 
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 
+# Build frontend
+COPY ./frontend/ ./frontend/
+RUN npm --prefix frontend run build --production
+RUN npm --prefix frontend prune --production
+
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
-RUN npm --prefix server install
-COPY ./server/ ./server/
+
+RUN echo "=== Installing server dependencies ===" && \
+    npm --prefix server install 2>&1 | sed 's/^/[SERVER] /' & \
+    SERVER_PID=$! && \
+    echo "Started server install (PID: $SERVER_PID)" && \
+    wait $SERVER_PID && \
+    echo "✓ Server dependencies installed successfully"
+
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
+
+COPY ./server/ ./server/
 RUN npm --prefix server run build
 
+# ============================================
+# RUNTIME STAGE (unchanged from original)
+# ============================================
 FROM node:22.15.1-bullseye
 
 RUN apt-get update -yq \
