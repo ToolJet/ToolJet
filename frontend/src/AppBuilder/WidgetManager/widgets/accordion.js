@@ -126,7 +126,7 @@ export const accordionConfig = {
       displayName: 'Divider',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'var(--cc-default-border)',
+        defaultValue: 'var(--cc-weak-border)',
       },
       accordian: 'header',
     },
@@ -207,7 +207,7 @@ export const accordionConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       chevronIconColor: { value: 'var(--cc-default-icon)' },
-      headerDividerColor: { value: 'var(--cc-default-border)' },
+      headerDividerColor: { value: 'var(--cc-weak-border)' },
       borderRadius: { value: '6' },
       borderColor: { value: 'var(--cc-weak-border)' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
