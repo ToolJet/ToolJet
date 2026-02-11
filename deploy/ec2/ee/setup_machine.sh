@@ -60,6 +60,12 @@ retry_apt_update() {
 retry_apt_update
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl
 
+# Fix CVE-2025-15467: Update OpenSSL packages to patched versions
+echo "Updating OpenSSL packages to fix CVE-2025-15467..."
+sudo apt-get -y install --only-upgrade openssl libssl3 libssl-dev 2>/dev/null || true
+echo "OpenSSL packages updated. Current versions:"
+dpkg -l | grep -E "openssl|libssl" | grep -E "^ii" | awk '{printf "%-20s %s\n", $2, $3}'
+
 # Add PostgreSQL official APT repository
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -82,6 +88,13 @@ echo "deb http://openresty.org/package/ubuntu jammy main" > openresty.list
 sudo mv openresty.list /etc/apt/sources.list.d/
 retry_apt_update
 sudo apt-get -y install --no-install-recommends openresty
+
+# CVE-2025-15467: Attempt to upgrade openresty-openssl3 to latest available version
+echo "Checking for openresty-openssl3 updates (CVE-2025-15467 mitigation)..."
+sudo apt-get -y install --only-upgrade openresty-openssl3 || true
+echo "OpenResty OpenSSL version installed:"
+dpkg -l | grep openresty-openssl3 | grep -E "^ii" | awk '{printf "%-25s %s\n", $2, $3}'
+echo "WARNING: CVE-2025-15467 requires OpenSSL 3.5.5+, 3.4.4+, or 3.0.19+. Verify installed version meets requirements."
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
      libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev \
@@ -140,6 +153,13 @@ sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 
 # Start and enable Redis service
 sudo systemctl daemon-reload
+
+# Final security update: Ensure OpenSSL packages are at latest patched version (CVE-2025-15467)
+echo "Final check: Updating OpenSSL packages..."
+retry_apt_update
+sudo apt-get -y install --only-upgrade openssl libssl3 libssl-dev
+echo "OpenSSL package versions after update:"
+dpkg -l | grep -E "openssl|libssl" | grep -E "^ii" | awk '{printf "%-20s %s\n", $2, $3}'
 
 # Clean up APT cache
 sudo apt-get clean

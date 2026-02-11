@@ -20,6 +20,7 @@ export const TableContainer = ({
   setExposedVariables,
   hasDataChanged,
   tableBodyRef,
+  loadingState,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -171,6 +172,7 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         lastClickedRowRef={lastClickedRowRef}
+        loadingState={loadingState}
       />
       <Footer
         id={id}

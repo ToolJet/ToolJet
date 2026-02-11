@@ -62,6 +62,7 @@ import { IOnboardingService } from './interfaces/IService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 @Injectable()
 export class OnboardingService implements IOnboardingService {
   constructor(
@@ -80,6 +81,24 @@ export class OnboardingService implements IOnboardingService {
     protected readonly metadataUtilService: MetadataUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
+
+  private async getDefaultOrOldestWorkspaceOfInstance(
+    manager: EntityManager
+  ): Promise<Organization | null> {
+    const defaultWorkspace = await manager.findOne(Organization, {
+      where: { isDefault: true },
+    });
+
+    if (defaultWorkspace) {
+      return defaultWorkspace;
+    }
+    const [oldestWorkspace] = await manager.find(Organization, {
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+
+    return oldestWorkspace || null;
+  }
 
   async signup(appSignUpDto: AppSignupDto, response?: Response) {
     const { name, email, password, organizationId, redirectTo } = appSignUpDto;
@@ -131,7 +150,8 @@ export class OnboardingService implements IOnboardingService {
       const userParams = { email, password, firstName, lastName };
 
       // Find the default workspace
-      const defaultWorkspace = await this.organizationRepository.getDefaultWorkspaceOfInstance();
+      const defaultWorkspace = await this.getDefaultOrOldestWorkspaceOfInstance(manager);
+
 
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
@@ -141,10 +161,18 @@ export class OnboardingService implements IOnboardingService {
           userParams,
           redirectTo,
           defaultWorkspace,
-          manager
+          manager,
+          response
         );
       } else {
         if (defaultWorkspace && !signingUpOrganization) {
+          const edition = getTooljetEdition();
+          const isCE = edition === 'ce'; 
+          if (isCE && !defaultWorkspace.enableSignUp) {
+            throw new ForbiddenException(
+              'Signup is disabled for the default workspace. Please contact the workspace admin.'
+            );
+          }
           return await this.onboardingUtilService.createUserInDefaultWorkspace(
             userParams,
             defaultWorkspace,
@@ -748,7 +776,7 @@ export class OnboardingService implements IOnboardingService {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        { name: workspaceName || 'My workspace', slug: workspaceSlug },
+        { name: workspaceName || 'My workspace', slug: workspaceSlug, isDefault: true },
         null,
         manager
       );

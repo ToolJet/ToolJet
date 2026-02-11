@@ -46,6 +46,7 @@ export function defineDataQueryAppAbility(
       [
         FEATURE_KEY.GET,
         FEATURE_KEY.UPDATE,
+        FEATURE_KEY.UPDATE_DATA_SOURCE,
         FEATURE_KEY.UPDATE_ONE,
         FEATURE_KEY.RUN_EDITOR,
         FEATURE_KEY.RUN_VIEWER,
@@ -63,6 +64,7 @@ export function defineDataQueryAppAbility(
       [
         FEATURE_KEY.GET,
         FEATURE_KEY.UPDATE,
+        FEATURE_KEY.UPDATE_DATA_SOURCE,
         FEATURE_KEY.UPDATE_ONE,
         FEATURE_KEY.RUN_EDITOR,
         FEATURE_KEY.RUN_VIEWER,

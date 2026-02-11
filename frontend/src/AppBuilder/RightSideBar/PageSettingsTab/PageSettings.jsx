@@ -36,7 +36,6 @@ export const PageSettings = () => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const isVersionReleased = useStore((state) => state.isVersionReleased);
   const switchPage = useStore((state) => state.switchPage);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
@@ -157,7 +156,7 @@ export const PageSettings = () => {
   return (
     <div className="inspector pages-settings">
       <div>
-        <div className={`panel-header ${isVersionReleased && 'disabled'}`}>
+        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
           <span className="panel-header-title">Pages and navigation</span>
           <div className="panel-header-actions">
             <Button
@@ -171,42 +170,38 @@ export const PageSettings = () => {
             />
           </div>
         </div>
-        <div>
+        <div className={cx({ disabled: shouldFreeze })}>
           <Tabs defaultActiveKey={'properties'} id="page-settings">
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 ">
-                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
-                  <Accordion items={appHeaderMenuItems} />
-                  {/* <Accordion items={devices} /> */}
-                </div>
+              <div className="tj-text-xsm color-slate12 ">
+                <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                <Accordion items={appHeaderMenuItems} />
+                {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
             <Tab eventKey="styles" title="Styles">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 settings-tab ">
-                  <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
-                </div>
+              <div className="tj-text-xsm color-slate12 settings-tab ">
+                <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
               </div>
             </Tab>
           </Tabs>
-          <DeletePageConfirmationModal darkMode={darkMode} />
-          {appPagePermissionEnabled && (
-            <AppPermissionsModal
-              modalType="page"
-              resourceId={editingPageId}
-              resourceName={editingPageName}
-              showModal={showPagePermissionModal}
-              toggleModal={togglePagePermissionModal}
-              darkMode={darkMode}
-              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
-            />
-          )}
         </div>
+        <DeletePageConfirmationModal darkMode={darkMode} />
+        {appPagePermissionEnabled && (
+          <AppPermissionsModal
+            modalType="page"
+            resourceId={editingPageId}
+            resourceName={editingPageName}
+            showModal={showPagePermissionModal}
+            toggleModal={togglePagePermissionModal}
+            darkMode={darkMode}
+            fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+            createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+            updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+            deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+          />
+        )}
       </div>
     </div>
   );
