@@ -63,7 +63,7 @@ export const reorderableListConfig = {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
-      accordian: 'Container',
+      accordian: 'Text',
     },
     padding: {
       type: 'switch',
@@ -77,7 +77,7 @@ export const reorderableListConfig = {
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
       ],
-      accordian: 'Container',
+      accordian: 'Text',
     },
   },
   exposedVariables: {
