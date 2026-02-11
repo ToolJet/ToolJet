@@ -5,8 +5,6 @@ title: Athena
 
 ToolJet can connect to **Amazon Athena** which is an interactive query service that makes it easy to analyze data in Amazon S3 using standard SQL.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Amazon Athena** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
@@ -23,15 +21,7 @@ ToolJet requires the following to connect to your Athena.
 You can also configure for **[additional optional parameters](https://github.com/ghdna/athena-express)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-connection-v3.png" alt="Athena connection" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Amazon Athena
 
@@ -41,20 +31,12 @@ You can also configure for **[additional optional parameters](https://github.com
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
-Refer amazon athena docs here for more info: [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
+Refer [Amazon Athena documentation](https://docs.aws.amazon.com/athena/latest/ug/what-is.html) for more information.
 :::
-
-<div style={{textAlign: 'center'}}>
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-query-v3.png" alt="Athena Query" />
 
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Basic Queries
+## SQL Query Examples
 
 ### Creating Table 
 
@@ -67,7 +49,7 @@ CREATE EXTERNAL TABLE student (
 )  LOCATION 's3://athena-express-akiatfa53s-2026/';
 ```
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-create.png" alt="Athena connection" />
 
 ### Inserting to Table
 
@@ -78,7 +60,7 @@ INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-insert.png" alt="Athena connection" />
 
 ### Select Operation
 
@@ -88,7 +70,7 @@ This query retrieves all records from the *student* table where the age of the s
 SELECT * from student WHERE AGE=1
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-select.png" alt="Athena connection" />
 
 ### List Tables
 
@@ -99,5 +81,3 @@ SHOW TABLES
 ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/athena/athena-list.png" alt="Athena connection" />
-
-</div>

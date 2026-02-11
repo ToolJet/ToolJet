@@ -5,8 +5,6 @@ title: Baserow
 
 ToolJet can connect to your Baserow account to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Baserow** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -17,28 +15,16 @@ ToolJet requires the following to connect to Baserow:
 - **Host**
 - **Base URL**
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-connection.png" alt="Baserow intro" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Baserow
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **Baserow** datasource added in previous step.
+2. Select the **Baserow** data source added in previous step.
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-listops.png" alt="Query Operations of Baserow" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -288,5 +274,3 @@ This query lists all the rows in a table.
 <img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-deleterow.png" alt="Baserow delete" />
 
 While deleting a row, the response will be either success or failure from Baserow.
-
-</div>
