@@ -22,9 +22,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Database Name**
 - **Protocol**
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/clickhouse/connection-v3.png" alt="ClickHouse connection" />
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/connection-v3.png" alt="ClickHouse connection" />
 
 ## Querying ClickHouse
 
@@ -36,10 +34,6 @@ ToolJet requires the following to connect to your ClickHouse Database:
 :::info
 For more details on clickhouse visit [Clickhouse Docs](https://clickhouse.com/docs/en/quick-start).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -165,5 +159,3 @@ Use this operation for inserting array of objects.
 ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-arrayobjq.png" alt="ClickHouse Insert array of objects operation" />
-
-</div>
