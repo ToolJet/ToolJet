@@ -20,20 +20,12 @@ To connect to your Elasticsearch cluster, the following details are required:
 - **Username**
 - **Password**
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/connection-v4.png" alt="Elasticsearch Connection" />
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/connection-v4.png" alt="Elasticsearch Connection" />
 
 ToolJet also supports SSL certificate-based connections:
 
 -  CA certificate
 -  Client certificate
-
-<div style={{textAlign: 'center'}}>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Elasticsearch
 
@@ -43,10 +35,6 @@ ToolJet also supports SSL certificate-based connections:
 :::tip
 Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -79,9 +67,7 @@ This operation executes a search query and returns matching search hits. For mor
 
 - **Scroll**: Scroll time.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/search-query.png" alt="Elastic search" style={{marginBottom:'15px'}} />
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/search-query.png" alt="Elastic search" />
 
 #### Example:
 
@@ -100,9 +86,7 @@ This operation adds a JSON document to the specified index or data stream. For m
 - **Index**: The name of the index to add the document to
 - **Body**: The document body in JSON format
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/index-query.png" alt="Elastic index" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/index-query.png" alt="Elastic index"/>
 
 #### Example:
 
@@ -126,9 +110,7 @@ This operation retrieves the specified JSON document from the index. For more de
 - **Index**: The name of the index to get the document from
 - **Id**: The ID of the document to retrieve
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-a-doc-query.png"  alt="Elastic get document" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-a-doc-query.png"  alt="Elastic get document"/>
 
 #### Example:
 
@@ -147,9 +129,7 @@ This operation updates a document using the specified script. For more details, 
 - **Id**: The ID of the document to update
 - **Body**: The update script or partial document in JSON format
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/update-query.png" alt="Elastic update" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/update-query.png" alt="Elastic update"/>
 
 #### Example:
 
@@ -176,9 +156,7 @@ This operation removes a JSON document from the specified index. For more detail
 - **Index**: The name of the index containing the document
 - **Id**: The ID of the document to delete
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/delete-query.png" alt="Elastic delete" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/delete-query.png" alt="Elastic delete"/>
 
 #### Example:
 
@@ -195,9 +173,7 @@ This operation performs multiple index/update/delete operations in a single API 
 
 - **Operations**: The bulk operations to perform in JSON format
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/bulk-operation.png" alt="Elastic bulk" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/bulk-operation.png" alt="Elastic bulk"/>
 
 #### Example:
 
@@ -228,9 +204,7 @@ This operation returns the number of matches for a search query. For more detail
 
 - **Query**: The query to filter documents in JSON format
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/countdoc-query.png" alt="Elastic count" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/countdoc-query.png" alt="Elastic count"/>
 
 #### Example:
 
@@ -247,9 +221,7 @@ This operation checks if a document exists in an index. For more details, see th
 - **Index**: The name of the index to check for document existence
 - **Id**: The ID of the document to check
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/check-query.png" alt="Elastic exists" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/check-query.png" alt="Elastic exists"/>
 
 #### Example:
 
@@ -266,9 +238,7 @@ This operation retrieves multiple documents in a single request. For more detail
 
 - **Operations**: The multi-get operations to perform in JSON format
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/multi-get-query.png" alt="Elastic multi get" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/multi-get-query.png" alt="Elastic multi get"/>
 
 #### Example:
 
@@ -291,9 +261,7 @@ This operation retrieves large numbers of results from a single search request. 
 - **Scroll ID**: The scroll ID for the search
 - **Scroll**: The scroll time
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/scroll-query.png" alt="Elastic scroll" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/scroll-query.png" alt="Elastic scroll"/>
 
 #### Example:
 
@@ -310,9 +278,7 @@ This operation clears the search context for a scroll. For more details, see the
 
 - **Scroll ID**: The scroll ID to clear
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/clear-scroll-query.png" alt="Elastic clear scroll" style={{marginBottom:'15px'}}/>
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/clear-scroll-query.png" alt="Elastic clear scroll"/>
 
 #### Example:
 
@@ -324,12 +290,10 @@ Scroll ID: DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAAOWQWYm9vbDItY1NCOUExal9TcTBjeUEyZw
 
 This operation provides a compact, column-aligned view of indices in a cluster. For more details, see the Elasticsearch cat indices guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/cat-indices.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-indices-query.png" alt="Elastic cat indices" />
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-indices-query.png" alt="Elastic cat indices" />
 
-  <details id="tj-dropdown">
-  <summary>**Response Example**</summary>
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
 ```json
 {
   "body": [
@@ -418,12 +382,10 @@ This operation provides a compact, column-aligned view of indices in a cluster. 
 
 This operation retrieves the status of the cluster’s health. For more details, see the Elasticsearch cluster health guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-cluster-query.png" alt="Elastic cluster health" />
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/elasticsearch/get-cluster-query.png" alt="Elastic cluster health" />
 
-  <details id="tj-dropdown">
-  <summary>**Response Example**</summary>
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
 ```json
 {
   "body": {
@@ -486,5 +448,3 @@ This operation retrieves the status of the cluster’s health. For more details,
 }
 ```
 </details>
-
-</div>
