@@ -40,14 +40,14 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
       return;
     }
 
-    // Non-blocking initialization using setImmediate (same pattern as SslBootstrapService)
-    setImmediate(() => {
+    // Non-blocking initialization - stagger with other SSL services to prevent database lock contention
+    setTimeout(() => {
       this.initializeAsync().catch((error) => {
         this.logger.warn(`SSL server initialization skipped: ${error.message}`);
         this.logger.log('App will continue with HTTP only - this is normal during initial setup');
         this.logger.log('Configure SSL via Settings → SSL Configuration to enable HTTPS');
       });
-    });
+    }, 300); // Run after SslBootstrapService and SslCertificateLifecycleService
   }
 
   /**
