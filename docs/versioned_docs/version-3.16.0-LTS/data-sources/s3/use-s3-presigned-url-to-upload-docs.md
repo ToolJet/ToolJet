@@ -4,22 +4,20 @@ title: Use S3 Signed URL to Upload Documents
 ---
 <div style={{paddingBottom:'24px'}}>
 
-In this how-to guide, we will upload documents to S3 buckets using the **S3 signed URL** from a ToolJet application.
+In this guide, we will walk through uploading documents to AWS S3 buckets using the **S3 signed URL** from a ToolJet application. This also gives tips on how signed URLs work, security considerations, and client-side upload examples.
 
 For this guide, we are going to use one of the existing templates on ToolJet: **S3 File explorer**
 
 </div>
-
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Create an App Using Templates
 
 - On ToolJet Dashboard, click on the ellipses on the right of the **Create new app** button, from the dropdown choose the **Choose from template** option. Select **AWS S3 file explorer** and click on the **Create application from template**.
 
-
 <div style={{textAlign: 'left'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/template-v2.png" alt="Use S3 pre-signed URL to upload documents: Choose template" width="700"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/template-v2.png" alt="Use S3 pre-signed URL to upload documents: Choose template" width="700"/>
 
 </div>  
 
@@ -31,7 +29,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
 <div style={{textAlign: 'left'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/s3connect-v2.png" alt="Use S3 pre-signed URL to upload documents: add datasource"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/how-to/uses3presignedurl/connection-v3.png" alt="S3 add datasource"/>
 
 </div>
 
@@ -45,7 +43,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/getbuckets-v2.png" alt="Use S3 pre-signed URL to upload documents: getBuckets query"/>
+  <img style={{  marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/list-bucket-v3.png" alt="Use S3 pre-signed URL to upload documents: getBuckets query"/>
 
   </div>
 
@@ -55,7 +53,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/dropdown-v2.png" alt="Use S3 pre-signed URL to upload documents: loading buckets"/>
+  <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/dropdown-v3.png" alt="Use S3 pre-signed URL to upload documents: loading buckets"/>
 
   </div>
 
@@ -71,7 +69,7 @@ Check the [AWS S3 data source reference](/docs/data-sources/s3) to learn more ab
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/fetchfiles-v2.png" alt="Use S3 pre-signed URL to upload documents: list objects in a bucket"/>
+  <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/get-signed-url-v3.png" alt="Use S3 pre-signed URL to upload documents: list objects in a bucket"/>
 
   </div>
 
@@ -93,7 +91,7 @@ After setting up the parameters, click **Run** to run the query, and the URL can
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/get-signed-url.png" alt="Use S3 pre-signed URL to upload documents: get signed URL"/>
+  <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/fetch-files-v3.png" alt="S3 get signed URL"/>
 
   </div>
 
@@ -101,7 +99,7 @@ After setting up the parameters, click **Run** to run the query, and the URL can
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Upload Objects to the Bucket
+## Upload Objects to the Bucket 
 
 The `Upload Object` operation allows users to select a bucket and then upload their chosen data into that bucket. To upload objects in a bucket, follow the steps below:
 
@@ -125,13 +123,39 @@ Once the query has been created, choose the desired bucket, click on the **Uploa
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
+## Upload Objects via Custom S3 Presigned URLs
+
+This method uploads files **directly from the client** to S3 using a **temporary signed URL**.
+
+**When to use this method:**
+- You want better performance for large files
+- You need temporary upload access
+- You don’t want files to pass through ToolJet servers
+- You want to expose upload capability to external clients
+
+```javascript
+const file = components.filepicker1.file[0];
+
+await fetch(presignedUrlQuery.data.url, {
+  method: "PUT",
+  headers: {
+    "Content-Type": file.type,
+  },
+  body: file.blob,
+});
+
+return "Upload successful";
+```
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/presigned-url-s3.png" alt="S3 get signed URL"/>
+
 ## Access the Signed URL
 
 After uploading the file to your bucket, in the files table, click on the **Copy signed URL** button from the **Actions** section of the table, which will copy the URL on the clipboard. You can go to another tab and paste the URL to open the file on the browser.
 
   <div style={{textAlign: 'center'}}>
 
-  <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/how-to/uses3presignedurl/access-signed-url.png" alt="Use S3 pre-signed URL to upload documents: access signed URL"/>
+  <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/uses3presignedurl/signed-url-v3.png" alt="S3 access signed URL"/>
 
   </div>
 
