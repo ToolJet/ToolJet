@@ -62,6 +62,16 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
     <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/app-permission.png" alt="Create Custom Group" />
 
+:::info
+**Preview access is environment-specific.**
+
+For end-users, preview versions of an app (Development or Staging) are accessible only if the corresponding environment is explicitly selected while configuring **Granular access > Apps** permissions.
+
+If no preview environment is selected, end-users will be limited to the **Released app** and will not be able to access preview URLs.
+:::
+
+
+
 ### Data Sources
 
 - **Configure**: Users in the group can access and edit the configuration details of the selected data sources. This permission should be given to the admin users who needs to configure the data source.
