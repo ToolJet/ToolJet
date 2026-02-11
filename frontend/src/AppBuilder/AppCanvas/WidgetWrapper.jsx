@@ -34,6 +34,18 @@ const WidgetWrapper = memo(
     // Use full indices array for resolved component lookups, keep subContainerIndex for DOM/layout
     const resolveIndex = indices ?? subContainerIndex;
 
+    // Derive nearest ListView ancestor ID and effective row index from contextPath (no store access needed)
+    const nearestListviewId = useMemo(() => {
+      if (contextPath.length === 0) return null;
+      return contextPath[contextPath.length - 1].containerId;
+    }, [contextPath]);
+
+    const effectiveSubContainerIndex = useMemo(() => {
+      if (subContainerIndex != null) return subContainerIndex;
+      if (contextPath.length > 0) return contextPath[contextPath.length - 1].index;
+      return null;
+    }, [subContainerIndex, contextPath]);
+
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
@@ -181,6 +193,8 @@ const WidgetWrapper = memo(
             inCanvas={inCanvas}
             subContainerIndex={subContainerIndex}
             resolveIndex={resolveIndex}
+            nearestListviewId={nearestListviewId}
+            effectiveSubContainerIndex={effectiveSubContainerIndex}
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}

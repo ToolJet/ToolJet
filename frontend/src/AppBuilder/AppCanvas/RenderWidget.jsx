@@ -55,6 +55,8 @@ const RenderWidget = ({
   componentType,
   subContainerIndex,
   resolveIndex,
+  nearestListviewId,
+  effectiveSubContainerIndex,
   onOptionChange,
   onOptionsChange,
   widgetWidth,
@@ -100,6 +102,7 @@ const RenderWidget = ({
     shallow
   );
   const parentId = component?.parent;
+
   // Compute outer indices for this component's parent's custom resolvables
   // resolveIndex = [outerIdx, middleIdx, innerIdx] → parentOuterIndices = [outerIdx, middleIdx]
   // The last index is the immediate parent's row index (subContainerIndex)
@@ -109,7 +112,8 @@ const RenderWidget = ({
   }, [resolveIndex]);
 
   const customResolvables = useStore((state) => {
-    let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[parentId];
+    const lookupId = nearestListviewId || parentId;
+    let base = state.resolvedStore.modules[moduleId]?.customResolvables?.[lookupId];
     if (!base) return base;
     // Navigate through outer indices to reach the correct nested level
     for (let i = 0; i < parentOuterIndices.length; i++) {
@@ -147,11 +151,11 @@ const RenderWidget = ({
       validateWidget({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
-        customResolveObjects: customResolvables?.[subContainerIndex] ?? {},
+        customResolveObjects: customResolvables?.[effectiveSubContainerIndex] ?? {},
         componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validateWidget, customResolvables, subContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
+    [validateWidget, customResolvables, effectiveSubContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
   );
 
   const resetComponent = useCallback(() => {
@@ -184,10 +188,10 @@ const RenderWidget = ({
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {
-      fireEvent(eventName, id, moduleId, customResolvables?.[subContainerIndex] ?? {}, options);
+      fireEvent(eventName, id, moduleId, customResolvables?.[effectiveSubContainerIndex] ?? {}, options);
       return Promise.resolve();
     },
-    [fireEvent, id, customResolvables, subContainerIndex, moduleId]
+    [fireEvent, id, customResolvables, effectiveSubContainerIndex, moduleId]
   );
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);

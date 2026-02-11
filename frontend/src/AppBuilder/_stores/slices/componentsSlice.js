@@ -296,7 +296,7 @@ export const createComponentsSlice = (set, get) => ({
   ) => {
     const {
       getCustomResolvableReference,
-      checkIfParentIsListviewOrKanban,
+      findNearestListviewAncestor,
       getCustomResolvables,
       setAllValueToComponent,
       getComponentDefinition,
@@ -305,28 +305,29 @@ export const createComponentsSlice = (set, get) => ({
     let customResolvables = {};
     const parentId = component?.parent;
     const componentDetails = { componentId, paramType, property };
-    let index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+    const nearestListviewId = findNearestListviewAncestor(parentId, moduleId);
+    let index = nearestListviewId ? 0 : null;
     if (index !== null) {
       // For nested ListViews, we need to build parentIndices by walking up the ancestor chain.
       // ListView parent IDs don't contain row indices - the row info is only available at render time.
       // At drop time, we use index 0 for each ListView ancestor as a default for initial resolution.
       const parentIndices = [];
-      const baseParentId = getBaseParentId(parentId);
-      const parentDef = getComponentDefinition(baseParentId, moduleId);
 
-      // Walk up the ancestor chain starting from the parent's parent
-      let ancestorId = parentDef?.component?.parent;
+      // Walk up the ancestor chain starting from the nearest ListView's parent
+      const nearestDef = getComponentDefinition(nearestListviewId, moduleId);
+      let ancestorId = nearestDef?.component?.parent;
       while (ancestorId) {
-        const baseAncestorId = getBaseParentId(ancestorId);
-        if (checkIfParentIsListviewOrKanban(baseAncestorId, moduleId)) {
+        const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
+        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+        const ancestorType = ancestorDef?.component?.component;
+        if (ancestorType === 'Listview') {
           // Add 0 at the beginning for each ListView ancestor (outer-most first)
           parentIndices.unshift(0);
         }
-        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         ancestorId = ancestorDef?.component?.parent;
       }
 
-      customResolvables = getCustomResolvables(parentId, null, moduleId, parentIndices);
+      customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
     }
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
@@ -469,13 +470,13 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
       getAllExposedValues,
       getCustomResolvables,
-      checkIfParentIsListviewOrKanban,
+      findNearestListviewAncestor,
       getComponentDefinition,
       getBaseParentId,
     } = get();
 
     let shouldResolve = false;
-    const isInListviewOrKanban = checkIfParentIsListviewOrKanban(parentId, moduleId);
+    const isInListview = !!findNearestListviewAncestor(parentId, moduleId);
 
     if (
       typeof unResolvedValue === 'string' &&
@@ -486,8 +487,8 @@ export const createComponentsSlice = (set, get) => ({
       shouldResolve = true;
     }
 
-    if (!isInListviewOrKanban) {
-      // Not in a ListView/Kanban - simple case
+    if (!isInListview) {
+      // Not in a ListView - simple case
       const resolvedValue = shouldResolve
         ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
         : value;
@@ -495,7 +496,7 @@ export const createComponentsSlice = (set, get) => ({
       return;
     }
 
-    // Component is inside a ListView/Kanban - need to handle N-level nesting
+    // Component is inside a ListView - need to handle N-level nesting
     // Build the parent hierarchy to find all ListView ancestors
     const listviewAncestors = [];
     let currentParentId = parentId;
@@ -503,7 +504,7 @@ export const createComponentsSlice = (set, get) => ({
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
-      if (parentType === 'Listview' || parentType === 'Kanban') {
+      if (parentType === 'Listview') {
         listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
       }
       currentParentId = parentDef?.component?.parent;
@@ -1636,7 +1637,7 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
       setResolvedComponent,
       saveComponentPropertyChanges,
-      checkIfParentIsListviewOrKanban,
+      findNearestListviewAncestor,
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
@@ -1652,7 +1653,8 @@ export const createComponentsSlice = (set, get) => ({
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
-      const index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+      const nearestListviewId = findNearestListviewAncestor(parentId, moduleId);
+      const index = nearestListviewId ? 0 : null;
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
@@ -1668,7 +1670,7 @@ export const createComponentsSlice = (set, get) => ({
       );
 
       if (index !== null) {
-        const customResolvables = getCustomResolvables(parentId, null);
+        const customResolvables = getCustomResolvables(nearestListviewId, null);
         const length = Object.keys(customResolvables).length;
         const limit = length === 0 ? 1 : length;
         for (let i = 0; i < limit; i++) {
@@ -2187,9 +2189,12 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
-    const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency } = get();
+    const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency, findNearestListviewAncestor } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     const parentId = getParentIdFromDependency(dependency, moduleId);
+    // Walk up to find the nearest ListView ancestor for customResolvables lookup
+    const nearestListviewId = parentId ? findNearestListviewAncestor(parentId, moduleId) : null;
+    const resolvableParentId = nearestListviewId || parentId;
     const unResolvedValue = getNodeData(dependency, moduleId);
     const shouldValidate = entityType === 'components' && entityId;
 
@@ -2199,7 +2204,7 @@ export const createComponentsSlice = (set, get) => ({
       const resolvedValue = resolveDynamicValues(
         unResolvedValue,
         getAllExposedValues(moduleId),
-        getCustomResolvables(parentId, i, moduleId, parentIndices), // passing the parent ID and index to get the custom resolvables of the child
+        getCustomResolvables(resolvableParentId, i, moduleId, parentIndices), // passing the nearest ListView ID and index to get the custom resolvables of the child
         false,
         []
       );
@@ -2314,23 +2319,16 @@ export const createComponentsSlice = (set, get) => ({
     return data?.length;
   },
 
-  // Check if the value contains any customResolvables like listItem or cardData and return the entityType, entityNameOrId, entityKey
+  // Check if the value contains listItem customResolvable and return the entityType, entityNameOrId, entityKey
   getCustomResolvableReference: (value, parentId, moduleId) => {
-    const { getParentComponentType, getBaseParentId } = get();
-    const parentComponentType = getParentComponentType(parentId, moduleId);
-    // Use base parent ID (strip row suffix) for the dependency path
-    const baseParentId = getBaseParentId(parentId);
+    const { findNearestListviewAncestor } = get();
+    const nearestAncestorId = findNearestListviewAncestor(parentId, moduleId);
+    if (!nearestAncestorId) return null;
     if (
-      (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
+      (value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
       value === '{{listItem}}'
     ) {
-      return { entityType: 'components', entityNameOrId: baseParentId, entityKey: 'listItem' };
-    } else if (
-      parentComponentType === 'Kanban' &&
-      value.includes('cardData') &&
-      checkSubstringRegex(value, 'cardData')
-    ) {
-      return { entityType: 'components', entityNameOrId: baseParentId, entityKey: 'cardData' };
+      return { entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' };
     }
     return null;
   },
@@ -2342,6 +2340,21 @@ export const createComponentsSlice = (set, get) => ({
       return true;
     }
     return false;
+  },
+
+  // Walk up from startParentId through component.parent links to find the nearest Listview ancestor.
+  // Returns the base UUID of that ancestor, or null if none found.
+  findNearestListviewAncestor: (startParentId, moduleId) => {
+    const { getBaseParentId, getComponentDefinition } = get();
+    let currentId = startParentId;
+    while (currentId) {
+      const baseId = getBaseParentId(currentId) || currentId;
+      const def = getComponentDefinition(baseId, moduleId);
+      if (!def) return null;
+      if (def.component?.component === 'Listview') return baseId;
+      currentId = def.component?.parent;
+    }
+    return null;
   },
 
   replaceIdsWithName: (input, moduleId = 'canvas') => {
