@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import '../ComponentManagerTab/styles.scss';
@@ -128,12 +129,16 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Statistics',
   'StarRating',
   'CircularProgressBar',
+  'ProgressBar',
   'CustomComponent',
   'Html',
   'AudioRecorder',
   'Camera',
   'CodeEditor',
   'Form',
+  'JSONExplorer',
+  'JSONEditor',
+  'KeyValuePair',
   'IFrame',
 ];
 
@@ -548,8 +553,6 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
-  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const renderAppNameInput = () => {
     if (isModuleContainer) {
       return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
@@ -570,16 +573,19 @@ export const Inspector = ({
     );
   };
 
-  const renderTabs = () => (
-    <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
-      <Tab eventKey="properties" title="Properties">
-        {propertiesTab}
-      </Tab>
-      <Tab eventKey="styles" title="Styles">
-        {stylesTab}
-      </Tab>
-    </Tabs>
-  );
+  const renderTabs = () => {
+    const isContainerOrViewerModule = ['ModuleContainer', 'ModuleViewer'].includes(componentMeta.component);
+    return (
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
+        <Tab eventKey="properties" title="Properties">
+          {propertiesTab}
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
+          {stylesTab}
+        </Tab>
+      </Tabs>
+    );
+  };
 
   return (
     <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
@@ -666,8 +672,12 @@ export const Inspector = ({
                   toggleModal={toggleComponentPermissionModal}
                   darkMode={darkMode}
                   fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
-                  createPermission={(id, appId, body) => appPermissionService.createComponentPermission(appId, id, body)}
-                  updatePermission={(id, appId, body) => appPermissionService.updateComponentPermission(appId, id, body)}
+                  createPermission={(id, appId, body) =>
+                    appPermissionService.createComponentPermission(appId, id, body)
+                  }
+                  updatePermission={(id, appId, body) =>
+                    appPermissionService.updateComponentPermission(appId, id, body)
+                  }
                   deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
                   onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
                 />
@@ -907,6 +917,9 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
+
+      case 'KeyValuePair':
+        return <KeyValuePair {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
