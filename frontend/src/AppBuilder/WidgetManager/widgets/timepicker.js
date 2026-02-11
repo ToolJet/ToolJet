@@ -51,6 +51,12 @@ export const timePickerConfig = {
         defaultValue: '00:00',
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -79,12 +85,6 @@ export const timePickerConfig = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
-    },
-    showClearBtn: {
-      type: 'toggle',
-      displayName: 'Show clear button',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
     },
   },
   events: {

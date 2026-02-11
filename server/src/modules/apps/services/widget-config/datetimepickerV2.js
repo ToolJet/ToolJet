@@ -79,7 +79,12 @@ export const datetimePickerV2Config = {
         defaultValue: '01/01/2022',
       },
     },
-
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -108,12 +113,6 @@ export const datetimePickerV2Config = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
-    },
-    showClearBtn: {
-      type: 'toggle',
-      displayName: 'Show clear button',
-      validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
     },
   },
   events: {

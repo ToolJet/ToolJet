@@ -57,7 +57,7 @@ export const datepickerConfig = {
     },
     showClearBtn: {
       type: 'toggle',
-      displayName: 'Show clear button',
+      displayName: 'Enable clear button',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
     },
   },
