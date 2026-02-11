@@ -43,8 +43,9 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
     // Non-blocking initialization using setImmediate (same pattern as SslBootstrapService)
     setImmediate(() => {
       this.initializeAsync().catch((error) => {
-        this.logger.error('Failed to initialize SSL server manager:', error.message);
-        this.logger.error('App will continue with HTTP only');
+        this.logger.warn(`SSL server initialization skipped: ${error.message}`);
+        this.logger.log('App will continue with HTTP only - this is normal during initial setup');
+        this.logger.log('Configure SSL via Settings → SSL Configuration to enable HTTPS');
       });
     });
   }
@@ -70,7 +71,7 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
       this.isInitialized = true;
       this.logger.log('SSL Server Manager initialized successfully');
     } catch (error) {
-      this.logger.error('Error during SSL server initialization:', error.message);
+      this.logger.warn(`SSL server initialization error: ${error.message}`);
       throw error;
     }
   }
