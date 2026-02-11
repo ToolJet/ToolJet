@@ -53,6 +53,7 @@ import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-re
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
+import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
@@ -176,6 +177,7 @@ export class AppModule implements OnModuleInit {
         SessionScheduler,
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
+        CustomDomainStatusScheduler,
       ],
     };
   }
