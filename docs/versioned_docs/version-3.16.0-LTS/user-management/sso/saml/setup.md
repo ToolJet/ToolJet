@@ -50,3 +50,19 @@ Role Required: **Admin** <br/>
 3. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
 
 4. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
+
+## Custom SAML Attribute Support
+
+ToolJet supports custom SAML attributes provided by the Identity Provider during login.
+
+Any user attributes (such as branch, location, or department) that are included by the IdP in the SAML assertion will be available in ToolJet after successful authentication.
+
+These attributes can be accessed within the App Builder using:
+
+```js
+{{globals.currentUser.ssoUserInfo.<attribute_name>}}
+```
+
+:::note
+Custom attributes must be explicitly configured in the Identity Provider to be included in the SAML assertion.
+:::
