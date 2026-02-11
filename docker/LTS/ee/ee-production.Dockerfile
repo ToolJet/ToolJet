@@ -159,13 +159,6 @@ COPY --from=builder --chown=appuser:0 /app/server/dist ./app/server/dist
 COPY --from=builder --chown=appuser:0 /app/server/ee/ai/assets ./app/server/ee/ai/assets
 COPY ./docker/LTS/ee/ee-entrypoint.sh ./app/server/ee-entrypoint.sh
 
-# Copy nginx configuration templates for SSL/HTTPS support
-# Certificate management is now fully handled by TypeScript services in NestJS:
-#   - SslBootstrapService starts nginx on application bootstrap
-#   - NginxConfigurationService generates nginx configs based on SSL state
-#   - CertificateAcquisitionService handles on-demand certificate acquisition
-COPY ./docker/LTS/ee/ssl/ /app/server/ssl/
-
 # Set group write permissions for frontend build files to support RedHat arbitrary user assignment
 RUN chmod -R g+w /app/frontend/build
 
