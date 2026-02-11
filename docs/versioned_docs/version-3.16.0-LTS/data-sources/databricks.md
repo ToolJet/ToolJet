@@ -5,8 +5,6 @@ title: Databricks
 
 Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses directly using SQL queries.
 
-<div style={{paddingTop:'5px'}}>
-
 ## Configuration
 
 ToolJet's Databricks integration relies on a configuration form that supports the following parameters:
@@ -26,20 +24,11 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 ### Setup
 
 - Navigate to your Databricks workspace, select the desired SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
-
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
-
+    <img className="screenshot-full img-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
 - To generate a personal access token, access your Databricks User Settings, select the Developer tab, click Manage under Access Tokens, and then click on the **Generate New Token** button.
-
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
-
+    <img className="screenshot-full img-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
 - Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
-
-<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-l" src="/img/datasource-reference/databricks/connection-v3.png" alt="Databricks: Connection" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+    <img className="screenshot-full img-full" src="/img/datasource-reference/databricks/connection-v3.png" alt="Databricks: Connection" />
 
 ## Querying Databricks
 
@@ -51,10 +40,6 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 :::tip
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/app-builder/custom-code/transform-data)
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Queries
 
@@ -123,5 +108,3 @@ WHERE customer_id = 1001;
 ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/databricks/delete-data-query.png" alt="Databricks: Delete Data Query" style={{marginBottom:'15px'}}/>
-
-</div>
