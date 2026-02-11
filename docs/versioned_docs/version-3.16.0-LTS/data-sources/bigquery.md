@@ -84,13 +84,13 @@ This operation returns the data based on the **Query**.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-query-v3.png" alt="BQ query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-query-v3.png" alt="BQ query"/>
 
 ### List Datasets
 
 This operation returns the list of datasets.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-datasets.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-datasets.png" alt="BQ list datasets"/>
 
 ### List Tables
 
@@ -100,7 +100,7 @@ This operation returns the list of tables within a dataset.
 
 - **Dataset ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-tables.png" alt="BQ list tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-tables.png" alt="BQ list tables"/>
 
 ### Create Table
 
@@ -125,7 +125,7 @@ This operation is used to delete a table.
 - **Table ID**
 - **Dataset ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-table-v3.png" alt="BQ delete tables" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-table-v3.png" alt="BQ delete tables"/>
 
 ### Create View
 
@@ -141,7 +141,7 @@ This operation is used to create a view.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-create-view.png" alt="BQ create view" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-create-view.png" alt="BQ create view"/>
 
 ### Insert Record
 
@@ -153,7 +153,7 @@ This operation is used to insert a record.
 - **Dataset ID**
 - **Rows**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v3.png" alt="BQ insert" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v3.png" alt="BQ insert"/>
 
 ### Delete Record
 

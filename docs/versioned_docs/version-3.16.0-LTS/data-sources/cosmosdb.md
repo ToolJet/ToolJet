@@ -20,13 +20,7 @@ ToolJet requires the following to connect to your Cosmos DB.
 You can find the endpoint and key in the **[Azure Portal](https://portal.azure.com/)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/connection-v3.png" alt="Connection - CosmosDB"/>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying CosmoDB
 
@@ -36,10 +30,6 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/listops-v3.png" alt="Supported operations - CosmosDB"/>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Queries
 
@@ -54,7 +44,7 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 This query lists all the databases in a Cosmos DB.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/list-db-op.png" alt="list db query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/list-db-op.png" alt="list db query"/>
 
 ### List Containers
 
@@ -63,7 +53,7 @@ This query lists all the containers of a database in a Cosmos DB.
 #### Required Parameter
 - **Database**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/list-container-op.png" alt="list container query " style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/list-container-op.png" alt="list container query "/>
 
 
 ### Read Item
@@ -75,7 +65,7 @@ To read a single item from a container of a database in a Cosmos DB, use the fol
 - **Container**
 - **Item ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/read-item-op.png" alt="read item query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/read-item-op.png" alt="read item query"/>
 
 ### Insert Items
 
@@ -86,7 +76,7 @@ This query inserts one or more items in a container of a database in a Cosmos DB
 - **Container**
 - **Items**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/insert-op.png" alt="insert item query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/insert-op.png" alt="insert item query"/>
 
 #### Example
 
@@ -109,7 +99,7 @@ To delete an item from a container of a database in a Cosmos DB, use the followi
 - **Item ID**
 - **Partition Key**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/delete-op.png" alt="delete item query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/delete-op.png" alt="delete item query"/>
 
 ### Query Database
 
@@ -120,11 +110,9 @@ To query documents from a container of a database in a Cosmos DB using SQL-like 
 - **Container**
 - **Query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/query-db-op.png" alt="query database querying" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/cosmosdb/query-db-op.png" alt="query database querying"/>
 
 #### Example
 ```yaml
 SELECT * FROM c WHERE c.age > 20 AND c.age <= 30
 ```
-
-</div>

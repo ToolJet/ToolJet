@@ -5,8 +5,6 @@ title: Cloud Firestore
 
 ToolJet can connect to **Cloud Firestore** databases to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
@@ -19,10 +17,6 @@ For generating a private key check out **[Firestore's official documentation](ht
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-connection.png"  alt="cloud firestore connection"/>
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying Firestore
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -33,10 +27,6 @@ For generating a private key check out **[Firestore's official documentation](ht
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -56,7 +46,7 @@ Use this operation to get the data in a document.
 
 - **Path**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-get-doc.png" alt="firestore get" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-get-doc.png" alt="firestore get"/>
 
 ### Query Collection
 
@@ -115,7 +105,7 @@ Use this operation for updating the existing document in a collection. Also, it 
 }
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-update-doc.png" alt="firestore update" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-update-doc.png" alt="firestore update" />
 
 ### Set Document
 
@@ -135,7 +125,7 @@ This operation replaces your chosen object with the value that you provide. So i
 }
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-set-doc.png" alt="firestore set" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-set-doc.png" alt="firestore set" />
 
 ### Bulk Update Using Document ID
 
@@ -147,7 +137,7 @@ Use this operation for bulk updating documents.
 - **Key for document ID**
 - **Records**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-bulk-update.png" alt="firestore bulk" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-bulk-update.png" alt="firestore bulk" />
 
 ### Delete Document
 
@@ -157,11 +147,7 @@ Use this operation for deleting a document in a collection.
 
 - **Path**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-del-doc.png" alt="firestore delete"/>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/firestore/cf-del-doc.png" alt="firestore delete"/>
 
 ## Transforming Firestore Query Result for Table Widget
 
@@ -170,5 +156,3 @@ The Firestore query result is in the form of object so we’ll need to transform
 ```js
 return (data = Array(data));
 ```
-
-</div>
