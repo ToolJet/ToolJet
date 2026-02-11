@@ -145,42 +145,33 @@ async function bootstrap() {
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
-    // Check if native HTTPS is enabled
-    const enableNativeHttps = process.env.ENABLE_NATIVE_HTTPS === 'true';
+    // Native HTTPS is now the default - always set up dual HTTP/HTTPS server infrastructure
+    // HTTPS server will start based on database SSL configuration
+    appLogger.log('Setting up dual HTTP/HTTPS server infrastructure...');
 
-    if (enableNativeHttps) {
-      appLogger.log('Native HTTPS enabled - setting up dual HTTP/HTTPS servers...');
+    // Setup ACME challenge middleware for certificate acquisition
+    const expressInstance = app.getHttpAdapter().getInstance();
+    expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
+    appLogger.log('✅ ACME challenge middleware registered');
 
-      // Setup ACME challenge middleware for certificate acquisition
-      const expressInstance = app.getHttpAdapter().getInstance();
-      expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
-      appLogger.log('✅ ACME challenge middleware registered');
+    // Determine ports
+    const httpPort = port; // Use existing PORT env var for HTTP
+    const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
 
-      // Determine ports
-      const httpPort = port; // Use existing PORT env var for HTTP
-      const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
+    // Get SSL server manager and initialize both HTTP and HTTPS servers
+    const sslServerManager = app.get(SslServerManagerService);
+    await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
 
-      // Get SSL server manager and initialize both HTTP and HTTPS servers
-      const sslServerManager = app.get(SslServerManagerService);
-      await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
+    // Store HTTP server reference for shutdown (from SslServerManagerService)
+    (app as any).httpServer = sslServerManager.getHttpServer();
 
-      // Store HTTP server reference for shutdown (from SslServerManagerService)
-      (app as any).httpServer = sslServerManager.getHttpServer();
+    // Setup HTTP to HTTPS redirect middleware (after SSL manager initialization)
+    const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
+    expressInstance.use((req, res, next) => httpToHttpsRedirect.use(req, res, next));
+    appLogger.log('✅ HTTP to HTTPS redirect middleware registered');
 
-      // Setup HTTP to HTTPS redirect middleware (after SSL manager initialization)
-      const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
-      expressInstance.use((req, res, next) => httpToHttpsRedirect.use(req, res, next));
-      appLogger.log('✅ HTTP to HTTPS redirect middleware registered');
-
-      appLogger.log('Native HTTPS setup complete - SSL server will be managed by SslServerManagerService');
-      logStartupInfo(configService, appLogger);
-    } else {
-      // Legacy approach (ENABLE_NATIVE_HTTPS not enabled)
-      appLogger.log(`Starting server on ${listen_addr}:${port}...`);
-      await app.listen(port, listen_addr, async function () {
-        logStartupInfo(configService, appLogger);
-      });
-    }
+    appLogger.log('Dual server setup complete - SSL state will be managed by SslServerManagerService');
+    logStartupInfo(configService, appLogger);
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);

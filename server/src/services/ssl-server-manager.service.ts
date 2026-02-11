@@ -31,21 +31,16 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
   /**
    * OnApplicationBootstrap: Runs after NestJS is fully initialized
-   * Non-blocking: uses setImmediate() to avoid blocking app startup
+   * Non-blocking: uses setTimeout() to avoid blocking app startup
    */
   async onApplicationBootstrap(): Promise<void> {
-    // Only initialize if native HTTPS is enabled
-    if (process.env.ENABLE_NATIVE_HTTPS !== 'true') {
-      this.logger.log('Native HTTPS disabled - skipping SSL server manager initialization');
-      return;
-    }
-
+    // SSL Server Manager always initializes - HTTPS server starts based on database configuration
     // Non-blocking initialization - stagger with other SSL services to prevent database lock contention
     setTimeout(() => {
       this.initializeAsync().catch((error) => {
         this.logger.warn(`SSL server initialization skipped: ${error.message}`);
         this.logger.log('App will continue with HTTP only - this is normal during initial setup');
-        this.logger.log('Configure SSL via Settings → SSL Configuration to enable HTTPS');
+        this.logger.log('Configure SSL via Settings → SSL/TLS to enable HTTPS');
       });
     }, 300); // Run after SslBootstrapService and SslCertificateLifecycleService
   }
@@ -63,7 +58,9 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
       // Determine current state
       const state = this.determineState(sslConfig);
-      this.logger.log(`SSL state: ${state}`);
+
+      // Log state with actionable guidance
+      this.logStateGuidance(state, sslConfig);
 
       // Transition to appropriate state
       await this.transitionTo(state);
@@ -73,6 +70,39 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
     } catch (error) {
       this.logger.warn(`SSL server initialization error: ${error.message}`);
       throw error;
+    }
+  }
+
+  /**
+   * Log current SSL state with actionable user guidance
+   */
+  private logStateGuidance(state: SslServerState, sslConfig: any): void {
+    switch (state) {
+      case SslServerState.HTTP_ONLY_DISABLED:
+        this.logger.log('[SSL State] HTTP_ONLY_DISABLED');
+        this.logger.log('  → SSL not enabled in database');
+        this.logger.log('  → Action: Enable SSL via Settings → SSL/TLS');
+        break;
+
+      case SslServerState.HTTP_ONLY_PENDING:
+        this.logger.log('[SSL State] HTTP_ONLY_PENDING');
+        if (!sslConfig.domain) {
+          this.logger.log('  → No domain configured');
+          this.logger.log('  → Action: Configure domain in Settings → SSL/TLS');
+        } else if (!this.checkCertificateExists(sslConfig.domain)) {
+          this.logger.log('  → Certificate not acquired yet');
+          this.logger.log('  → Action: Click "Acquire Certificate" in SSL settings');
+        } else {
+          this.logger.log('  → Certificate domain does not match TOOLJET_HOST');
+          this.logger.log(`  → Action: Update TOOLJET_HOST to https://${sslConfig.domain} and restart`);
+        }
+        break;
+
+      case SslServerState.HTTPS_ACTIVE:
+        this.logger.log('[SSL State] HTTPS_ACTIVE ✅');
+        this.logger.log(`  → HTTPS will start on port ${this.httpsPort}`);
+        this.logger.log('  → HTTP requests will redirect to HTTPS');
+        break;
     }
   }
 
@@ -122,23 +152,32 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
    * Determine SSL state from configuration
    */
   determineState(sslConfig: any): SslServerState {
+    // Step 1: Check if SSL enabled in database
     if (!sslConfig.enabled) {
       return SslServerState.HTTP_ONLY_DISABLED;
     }
 
-    // SSL enabled - check if certificate exists
-    const domain = sslConfig.domain || this.extractDomainFromTooljetHost();
+    // Step 2: Validate domain
+    const domain = sslConfig.domain;
     if (!domain) {
-      this.logger.warn('No domain configured - SSL enabled but certificate pending');
+      this.logger.warn('No domain configured in SSL settings');
       return SslServerState.HTTP_ONLY_PENDING;
     }
 
+    // Step 3: Validate certificate exists
     const certificateExists = this.checkCertificateExists(domain);
     if (!certificateExists) {
       this.logger.log(`Certificate not yet acquired for ${domain}`);
       return SslServerState.HTTP_ONLY_PENDING;
     }
 
+    // Step 4: Validate certificate domain matches TOOLJET_HOST
+    if (!this.validateCertificateDomainMatchesTooljetHost(domain)) {
+      this.logger.warn('Certificate domain does not match TOOLJET_HOST - HTTPS will not start');
+      return SslServerState.HTTP_ONLY_PENDING;
+    }
+
+    // All conditions met - activate HTTPS
     return SslServerState.HTTPS_ACTIVE;
   }
 
@@ -329,6 +368,29 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
     } catch {
       return '';
     }
+  }
+
+  /**
+   * Validate that certificate domain matches TOOLJET_HOST domain
+   * This ensures HTTPS only activates when domains are aligned
+   */
+  private validateCertificateDomainMatchesTooljetHost(certDomain: string): boolean {
+    const tooljetHostDomain = this.extractDomainFromTooljetHost();
+
+    if (!tooljetHostDomain) {
+      this.logger.warn('TOOLJET_HOST not configured - cannot validate domain match');
+      this.logger.warn('Set TOOLJET_HOST to enable HTTPS');
+      return false;
+    }
+
+    if (certDomain !== tooljetHostDomain) {
+      this.logger.warn(`Certificate domain (${certDomain}) does not match TOOLJET_HOST domain (${tooljetHostDomain})`);
+      this.logger.warn(`Update TOOLJET_HOST to https://${certDomain} and restart to activate HTTPS`);
+      return false;
+    }
+
+    this.logger.log(`✅ Certificate domain matches TOOLJET_HOST: ${certDomain}`);
+    return true;
   }
 
   /**
