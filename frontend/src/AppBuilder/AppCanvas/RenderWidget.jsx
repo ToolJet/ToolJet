@@ -207,8 +207,8 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
@@ -216,9 +216,9 @@ const RenderWidget = ({
             text: inCanvas
               ? `${
                   SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -234,7 +234,7 @@ const RenderWidget = ({
             !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
               ? 'disabled'
               : ''
-            }`} //required for custom CSS
+          }`} //required for custom CSS
         >
           <TrackedSuspense fallback={null}>
             <ComponentToRender
