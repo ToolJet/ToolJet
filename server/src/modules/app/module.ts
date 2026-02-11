@@ -64,6 +64,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ScimModule } from '@modules/scim/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
@@ -138,6 +139,7 @@ export class AppModule implements OnModuleInit {
       await InMemoryCacheModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
+      await CustomDomainsModule.register(configs, true),
     ];
 
     const conditionalImports = [];

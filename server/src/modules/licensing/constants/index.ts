@@ -133,6 +133,7 @@ export enum LICENSE_FIELD {
   APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
   APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
   APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
+  CUSTOM_DOMAINS = 'customDomainsEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
