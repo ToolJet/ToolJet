@@ -9,6 +9,14 @@ import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import * as Sentry from '@sentry/nestjs';
+import { DataSource } from 'typeorm';
+
+/**
+ * In-memory cache for allowed CORS origins from custom domains.
+ * Key: 'custom_domains', Value: { origins: Set<string>, timestamp: number }
+ */
+const corsOriginCache = new Map<string, { origins: Set<string>; timestamp: number }>();
+const CORS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Creates a logger instance with a specific context
@@ -204,6 +212,44 @@ export function initSentry(logger: any, configService: ConfigService) {
 }
 
 /**
+ * Fetches active custom domain origins from the database and updates the cache.
+ * Returns a Set of allowed origins (e.g., "https://app.company.com").
+ */
+async function fetchCustomDomainOrigins(dataSource: DataSource, logger: any): Promise<Set<string>> {
+  try {
+    const rows: { domain: string }[] = await dataSource.query(
+      `SELECT domain FROM custom_domains WHERE status = 'active'`
+    );
+    const origins = new Set<string>();
+    for (const row of rows) {
+      // Custom domains are stored as bare hostnames; build https origins
+      origins.add(`https://${row.domain}`);
+    }
+    logger.log(`Loaded ${origins.size} active custom domain origin(s) into CORS cache`);
+    return origins;
+  } catch (error) {
+    logger.error('Failed to fetch custom domains for CORS:', error);
+    return new Set<string>();
+  }
+}
+
+/**
+ * Returns cached custom-domain origins, refreshing if the cache is stale or empty.
+ */
+async function getAllowedCustomOrigins(dataSource: DataSource, logger: any): Promise<Set<string>> {
+  const cached = corsOriginCache.get('custom_domains');
+  const now = Date.now();
+
+  if (cached && now - cached.timestamp < CORS_CACHE_TTL_MS) {
+    return cached.origins;
+  }
+
+  const origins = await fetchCustomDomainOrigins(dataSource, logger);
+  corsOriginCache.set('custom_domains', { origins, timestamp: now });
+  return origins;
+}
+
+/**
  * Sets up security headers including CORS and CSP
  */
 export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService, logger: any) {
@@ -213,13 +259,53 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     const host = new URL(tooljetHost);
     const domain = host.hostname;
+    const corsWildcard = configService.get<string>('ENABLE_CORS') === 'true';
 
     logger.log(`Configuring CORS for domain: ${domain}`);
-    logger.log(`CORS enabled: ${configService.get<string>('ENABLE_CORS') === 'true'}`);
+    logger.log(`CORS wildcard enabled: ${corsWildcard}`);
 
-    // Enable CORS
+    // Lazily capture the DataSource so we can query custom_domains on each request
+    let dataSource: DataSource | null = null;
+    const getDataSource = (): DataSource => {
+      if (!dataSource) {
+        dataSource = app.get<DataSource>(DataSource);
+      }
+      return dataSource;
+    };
+
+    // Enable CORS with a dynamic origin function
     app.enableCors({
-      origin: configService.get<string>('ENABLE_CORS') === 'true' || tooljetHost,
+      origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
+        // Allow requests with no origin (same-origin, server-to-server, curl, etc.)
+        if (!requestOrigin) {
+          return callback(null, true);
+        }
+
+        // If ENABLE_CORS is true, allow all origins
+        if (corsWildcard) {
+          return callback(null, true);
+        }
+
+        // Always allow the default TOOLJET_HOST origin
+        if (requestOrigin === tooljetHost) {
+          return callback(null, true);
+        }
+
+        // Check custom domains (async lookup with cache)
+        getAllowedCustomOrigins(getDataSource(), logger)
+          .then((allowedOrigins) => {
+            if (allowedOrigins.has(requestOrigin)) {
+              return callback(null, true);
+            }
+
+            logger.warn(`CORS: Rejected origin ${requestOrigin}`);
+            return callback(null, false);
+          })
+          .catch((error) => {
+            logger.error('CORS origin check failed, falling back to deny:', error);
+            return callback(null, false);
+          });
+      },
       credentials: true,
       maxAge: 86400,
     });

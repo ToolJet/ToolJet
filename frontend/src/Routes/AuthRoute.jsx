@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { getPathname, getRedirectURL } from '@/_helpers/routes';
+import { getPathname, getRedirectURL, isCustomDomain } from '@/_helpers/routes';
 import { authenticationService, loginConfigsService, sessionService } from '@/_services';
+import { customDomainService } from '@/_services/custom-domain.service';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   resetToDefaultWhiteLabels,
@@ -60,7 +61,17 @@ export const AuthRoute = ({ children }) => {
     const shouldGetConfigs = !isSuperAdminLogin;
     authenticationService.deleteAllAuthCookies();
     if (shouldGetConfigs) {
-      fetchOrganizationDetails();
+      // If on a custom domain and no org slug from URL params, resolve domain first
+      if (!organizationSlug && isCustomDomain()) {
+        customDomainService
+          .resolveCustomDomain(window.location.hostname)
+          .then((resolved) => {
+            fetchOrganizationDetails(resolved?.organizationSlug || resolved?.organizationId);
+          })
+          .catch(() => fetchOrganizationDetails());
+      } else {
+        fetchOrganizationDetails();
+      }
     } else {
       setGettingConfig(false);
     }
@@ -78,8 +89,8 @@ export const AuthRoute = ({ children }) => {
     setFaviconAndTitle(location);
   };
 
-  const fetchOrganizationDetails = () => {
-    loginConfigsService.getOrganizationConfigs(organizationSlug).then(
+  const fetchOrganizationDetails = (resolvedSlug) => {
+    loginConfigsService.getOrganizationConfigs(resolvedSlug || organizationSlug).then(
       (configs) => {
         setOrganizationId(configs.id);
         setConfigs(configs);

@@ -6,11 +6,13 @@ import {
   getPathname,
   getRedirectToWithParams,
   redirectToErrorPage,
+  isCustomDomain,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
+import { customDomainService } from '@/_services/custom-domain.service';
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -22,9 +24,20 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
     CASE-4. If the page is app viewer and there is no valid session. consider the app is public 
 */
 
-export const authorizeWorkspace = () => {
+export const authorizeWorkspace = async () => {
   /* Default APIs */
-  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+
+  // Resolve custom domain to workspace slug if on a custom domain
+  if (!workspaceIdOrSlug && isCustomDomain()) {
+    try {
+      const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
+      workspaceIdOrSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+    } catch (e) {
+      // Custom domain resolution failed - fall through to normal flow
+    }
+  }
+
   // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({
