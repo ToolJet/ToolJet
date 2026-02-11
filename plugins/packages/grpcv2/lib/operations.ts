@@ -165,7 +165,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
         currentDir = path.dirname(currentDir);
       }
 
-      packageDefinition = await protoLoader.load([protoFile], {
+      packageDefinition = protoLoader.loadSync([protoFile], {
         keepCase: true,
         longs: String,
         enums: String,
@@ -199,7 +199,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
         currentDir = path.dirname(currentDir);
       }
 
-      packageDefinition = await protoLoader.load([targetFile], {
+      packageDefinition = protoLoader.loadSync([targetFile], {
         keepCase: true,
         longs: String,
         enums: String,
@@ -425,7 +425,7 @@ export const discoverServicesIndividually = async (
       }
 
       // Load THIS file only (not all files together)
-      const packageDefinition = await protoLoader.load(
+      const packageDefinition = protoLoader.loadSync(
         [protoFile], // Single file array
         {
           keepCase: true,
