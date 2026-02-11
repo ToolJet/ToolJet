@@ -227,6 +227,7 @@ describe('Custom Domains API (Cloud edition)', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body.organizationId).toBe(user.defaultOrganizationId);
+      expect(response.body).toHaveProperty('organizationSlug');
     });
 
     it('should return 404 for unknown domain', async () => {
