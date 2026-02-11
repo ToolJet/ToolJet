@@ -69,6 +69,10 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
+  progressbarConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -80,6 +84,7 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
@@ -137,12 +142,14 @@ export const widgets = [
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -156,6 +163,7 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,

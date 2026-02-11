@@ -1,6 +1,5 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NoListItem from '../NoListItem';
@@ -11,6 +10,7 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { resolveReferences } from '@/_helpers/utils';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { unset } from 'lodash';
+
 export const OptionsList = ({
   column,
   props,
@@ -21,11 +21,13 @@ export const OptionsList = ({
   setColumnPopoverRootCloseBlocker,
   onColumnItemChange,
   component,
+  paramToUpdate,
 }) => {
   const items = [];
 
   const recordOptions = (startIndex, endIndex) => {
-    const columns = props.component.component.definition.properties.columns;
+    const columns =
+      props.component.component.definition.properties.columns || props.component.component.definition.properties.fields;
     const column = columns.value[index];
     const options = column.options;
     const [removed] = options.splice(startIndex, 1);
@@ -33,7 +35,7 @@ export const OptionsList = ({
     column.options = options;
     const newColumns = columns.value;
     newColumns[index] = column;
-    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+    props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
   };
 
   const onDragEnd = async ({ source, destination }) => {
@@ -52,18 +54,20 @@ export const OptionsList = ({
   };
 
   const createNewOption = () => {
-    const columns = props.component.component.definition.properties.columns;
+    const columns =
+      props.component.component.definition.properties.columns || props.component.component.definition.properties.fields;
     const column = columns.value[index];
     const options = column.options || [];
     options.push({ label: 'one', value: '1' });
     column.options = options;
     const newColumns = columns.value;
     newColumns[index] = column;
-    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+    props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
   };
 
   const deleteOption = (option, optionIndex) => {
-    const columns = props.component.component.definition.properties.columns;
+    const columns =
+      props.component.component.definition.properties.columns || props.component.component.definition.properties.fields;
     const column = columns.value[index];
     const options = column.options;
     const deletedOption = options.splice(optionIndex, 1);
@@ -86,23 +90,27 @@ export const OptionsList = ({
     }
     const newColumns = columns.value;
     newColumns[index] = column;
-    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+    props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
   };
 
   const selectPopover = (option, optionIndex) => {
     const handleSelectOption = (option, optionIndex, value, index, optionItemChanged) => {
-      const columns = props.component.component.definition.properties.columns;
+      const columns =
+        props.component.component.definition.properties.columns ||
+        props.component.component.definition.properties.fields;
       const column = columns.value[index];
       const options = column.options;
       options[optionIndex][optionItemChanged] = value;
       column.options = options;
       const newColumns = columns.value;
       newColumns[index] = column;
-      props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+      props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
     };
 
     const handleDefaultOptionSelection = (optionIndex, property, value) => {
-      const columns = props.component.component.definition.properties.columns;
+      const columns =
+        props.component.component.definition.properties.columns ||
+        props.component.component.definition.properties.fields;
       const column = columns.value[index];
       const options = column.options;
       options[optionIndex][property] = value;
@@ -140,7 +148,7 @@ export const OptionsList = ({
       const newColumns = columns.value;
       newColumns[index] = column;
 
-      props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+      props.paramUpdated({ name: paramToUpdate }, 'value', newColumns, 'properties', true);
     };
 
     const handleOptionColorChange = (index, property, value) => {
