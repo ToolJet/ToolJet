@@ -70,6 +70,7 @@ import {
   cameraConfig,
   tagsInputConfig,
   progressbarConfig,
+  navigationConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -121,6 +122,7 @@ export const widgets = [
   daterangepickerConfig,
 
   //Navigation
+  navigationConfig,
   linkConfig,
   stepsConfig,
   paginationConfig,

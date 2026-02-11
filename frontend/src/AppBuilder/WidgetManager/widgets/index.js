@@ -70,6 +70,7 @@ import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
 import { progressbarConfig } from './progressbar';
+import { navigationConfig } from './navigation';
 
 export {
   buttonConfig,
@@ -144,4 +145,5 @@ export {
   cameraConfig,
   tagsInputConfig,
   progressbarConfig,
+  navigationConfig,
 };

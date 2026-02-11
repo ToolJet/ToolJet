@@ -56,6 +56,7 @@ import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { ProgressBar } from '@/AppBuilder/Widgets/Progressbar/Progressbar';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
+import { Navigation } from '@/AppBuilder/Widgets/Navigation';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
@@ -172,6 +173,7 @@ export const AllComponents = {
   TagsInput,
   AudioRecorder,
   Camera,
+  Navigation,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;

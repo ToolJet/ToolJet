@@ -70,6 +70,7 @@ import { popoverMenuConfig } from './popoverMenu';
 import { progressbarConfig } from './progressbar';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
+import { navigationConfig } from './navigation';
 
 const widgets = {
   buttonConfig,
@@ -144,6 +145,7 @@ const widgets = {
   progressbarConfig,
   audioRecorderConfig,
   cameraConfig,
+  navigationConfig,
 };
 
 const universalProps = {
