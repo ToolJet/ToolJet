@@ -60,14 +60,6 @@ export const createAppVersionSlice = (set, get) => ({
   setAppVersionPromoted: (value) => set(() => ({ isAppVersionPromoted: value }), false, 'setAppVersionPromoted'),
 
   getShouldFreeze: (skipIsEditorFreezedCheck = false) => {
-    // console.log(
-    //   'getShouldFreeze',
-    //   get().isVersionReleased || get().isEditorFreezed || get().selectedVersion?.id === get().releasedVersionId,
-    //   get().isVersionReleased,
-    //   get().isEditorFreezed,
-    //   get().selectedVersion?.id,
-    //   get().releasedVersionId
-    // );
     return (
       get().isVersionReleased ||
       (!skipIsEditorFreezedCheck && get().isEditorFreezed) ||
