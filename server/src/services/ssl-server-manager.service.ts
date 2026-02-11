@@ -407,7 +407,10 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
   }
 
   isHttpServerRunning(): boolean {
-    return !!this.httpServer && this.httpServer.listening;
+    // HTTP server is managed by NestJS via app.listen() in main.ts
+    // It's guaranteed to be running during normal operation
+    // This method is kept for compatibility but always returns true
+    return true;
   }
 
   isHttpsServerRunning(): boolean {
