@@ -59,7 +59,7 @@ For SAML based SSO, these values originate as SAML attributes included in the SA
 
 You can access these variables using:
 ```js
-    {{globals.currentUser.ssoUserInfo.<variable_name>}}
+{{globals.currentUser.ssoUserInfo.<variable_name>}}
 ```
 
 :::note
