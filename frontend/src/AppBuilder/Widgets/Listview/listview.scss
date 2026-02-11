@@ -1,8 +1,10 @@
-.dynamic-height-target {
-    .canvas-component {
-        .list-item  {
-            .sub-canvas {
-                overflow-y: hidden !important;
+.viewer {
+    .dynamic-height-target {
+        .canvas-component {
+            .list-item  {
+                .sub-canvas {
+                    overflow-y: hidden !important;
+                }
             }
         }
     }
