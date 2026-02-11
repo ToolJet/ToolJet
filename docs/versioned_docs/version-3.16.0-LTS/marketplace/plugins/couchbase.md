@@ -17,20 +17,15 @@ To connect with Couchbase, you will need the following credentials. Which you ca
 - **Username**
 - **Password**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/connection-v2.png" alt="Configuring Couchbase in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/couchbase/connection-v2.png" alt="Configuring Couchbase in ToolJet" />
 
 ### Connecting to Data API endpoint in ToolJet
 
 To connect ToolJet with the Couchbase Data API, you must first enable the Data API access and configure authentication properly.
 
-- **Configure Allowed IP Addresses**
-For public connections, you must allow the IP address from which ToolJet will send requests. Add the required IP or CIDR block under Allowed IP Addresses.
-
-- **Set Up Cluster Access Credentials**
-Create or use existing cluster credentials to authenticate Data API requests.
-
-- **Retrieve the Data API Endpoint URL**
-Once enabled, Couchbase displays the Data API endpoint URL, which can be used as the base URL in ToolJet.
+- **Configure Allowed IP Addresses**: For public connections, you must allow the IP address from which ToolJet will send requests. Add the required IP or CIDR block under Allowed IP Addresses.
+- **Set Up Cluster Access Credentials**: Create or use existing cluster credentials to authenticate Data API requests.
+- **Retrieve the Data API Endpoint URL**: Once enabled, Couchbase displays the Data API endpoint URL, which can be used as the base URL in ToolJet.
 
 
 ## Supported Operations
