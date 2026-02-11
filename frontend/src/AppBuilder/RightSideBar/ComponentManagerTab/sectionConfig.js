@@ -60,6 +60,7 @@ const sectionConfig = {
       'Spinner',
       'Statistics',
       'Timer',
+      'JSONExplorer',
     ]),
   },
   custom: {
@@ -68,7 +69,7 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat']),
+    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat', 'JSONEditor']),
   },
   legacy: {
     title: 'Legacy',

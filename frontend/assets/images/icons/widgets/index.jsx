@@ -68,6 +68,8 @@ import AudioRecorder from './audiorecorder.jsx';
 import Camera from './camera.jsx';
 import TagsInput from './tagsinput.jsx';
 import Accordion from './accordion.jsx';
+import JSONExplorer from './jsonexplorer.jsx';
+import JSONEditor from './jsoneditor.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -231,6 +233,10 @@ const WidgetIcon = (props) => {
       return <Camera {...props} />;
     case 'accordion':
       return <Accordion {...props} />;
+    case 'jsonexplorer':
+      return <JSONExplorer {...props} />;
+    case 'jsoneditor':
+      return <JSONEditor {...props} />;
     default:
       return <BoundedBox {...props} />;
   }

@@ -402,6 +402,7 @@ export const createEventsSlice = (set, get) => ({
           'onImageSave',
           'onExpand',
           'onCollapse',
+          'onSaveKeyValuePairChanges',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
