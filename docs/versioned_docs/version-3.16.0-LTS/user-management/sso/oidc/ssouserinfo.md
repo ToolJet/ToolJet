@@ -37,10 +37,10 @@ The exposed variables may vary depending on the identity provider. You can view 
 
 
 
-### Custom OIDC Claims Support
-ToolJet supports custom OIDC claims provided by the Identity Provider during login.
+### Custom SSO Variables (OIDC Claims)
+ToolJet allows you to use custom SSO variables provided by your Identity Provider (IdP) during login.
 
-Any user attributes or custom claims (such as branch, location, or department) that are included by the IdP in the ID token, UserInfo response, or access token and exposed via configured scopes and claims will be available in ToolJet after successful authentication.
+Any custom claims (such as branch, location, or department) that are configured in your IdP and included in the authentication response will be available in ToolJet after successful login.
 
 These claims can be accessed within the App Builder using:
 ```js
