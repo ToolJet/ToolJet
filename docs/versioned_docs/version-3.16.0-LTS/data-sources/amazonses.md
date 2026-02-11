@@ -5,8 +5,6 @@ title: Amazon SES
 
 ToolJet can connect to your Amazon SES account to send emails.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Amazon SES** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -22,15 +20,7 @@ You may also select **AWS Instance Credentials** or **AWS ARN Role** as authenti
 
 **Note:** It is recommended to create a new IAM user for the database so that you can control the access levels of ToolJet.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/amazonses/connection-v2.png" alt="Amazon SES" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying Amazon SES
 
@@ -40,10 +30,6 @@ You may also select **AWS Instance Credentials** or **AWS ARN Role** as authenti
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/amazonses/awsSES-listops.png" alt="Amazon SES" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operation
 
@@ -75,5 +61,3 @@ For example: `admin@tooljet.io`
 :::tip
 **Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field.
 :::
-
-</div>

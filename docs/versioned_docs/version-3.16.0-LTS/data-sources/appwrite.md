@@ -5,8 +5,6 @@ title: Appwrite
 
 ToolJet can connect to appwrite database to read/write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the Appwrite data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard.
@@ -24,15 +22,7 @@ You'll find the Secret Key and other credentials on your Appwrite's project sett
 You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/appwrite/appwrite-connection.png" alt="Appwrite intro"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/appwrite/appwrite-connection.png" alt="Appwrite intro"/>
 
 ## Querying Appwrite
 
@@ -41,19 +31,11 @@ You should also set the scope for access to a particular resource. Learn more ab
 3. Select the operation you want to perform.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-querying.png" alt="Appwrite intro"/>
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-querying.png" alt="Appwrite intro"/>
 
 :::tip
 Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/app-builder/custom-code/transform-data).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -80,11 +62,7 @@ This operation is used to get a list of all the user documents.
 - **Operator**
 - **Value**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-listdoc.png" alt="Appwrite List" />
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-listdoc.png" alt="Appwrite List" />
 
 ### Get Document
 
@@ -95,11 +73,7 @@ Use this operation to get a document from a collection by its unique ID.
 - **Collection ID**
 - **Document ID**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-getdoc.png" alt="Appwrite get" />
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-getdoc.png" alt="Appwrite get" />
 
 ### Add Document to Collection
 
@@ -110,11 +84,7 @@ Use this operation to create a new document in a collection.
 - **Collection ID**
 - **Body**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-adddoc.png" alt="Appwrite add" />
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-adddoc.png" alt="Appwrite add" />
 
 ### Update Document
 
@@ -126,11 +96,7 @@ Use this operation to update a document.
 - **Document ID**
 - **Body**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-updatedoc.png" alt="Appwrite update" />
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-updatedoc.png" alt="Appwrite update" />
 
 ### Delete Document
 
@@ -141,10 +107,4 @@ Use this operation for deleting a document in the collection.
 - **Collection ID**
 - **Document ID**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-deldoc.png" alt="Appwrite delete"/>
-
-</div>
-
-</div>
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/appwrite/appwrite-deldoc.png" alt="Appwrite delete"/>
