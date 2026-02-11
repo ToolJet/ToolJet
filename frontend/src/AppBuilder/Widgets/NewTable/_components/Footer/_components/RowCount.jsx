@@ -10,8 +10,8 @@ export const RowCount = memo(({ dataLength, id }) => {
   return (
     <span
       data-cy={`footer-number-of-records`}
-      className="font-weight-500"
-      style={{ color: 'var(--cc-table-record-text-color)' }}
+      className="font-weight-400"
+      style={{ color: 'var(--cc-primary-text)' }}
     >
       {clientSidePagination && !serverSidePagination && `${dataLength} Records`}
       {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}

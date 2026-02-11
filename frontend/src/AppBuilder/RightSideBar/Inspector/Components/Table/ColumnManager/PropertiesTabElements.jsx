@@ -320,7 +320,8 @@ export const PropertiesTabElements = ({
           </div>
           {(column?.fxActiveFields?.includes('isEditable') || resolveReferences(column?.isEditable)) && (
             <ValidationProperties
-              column={column}
+              item={column}
+              itemType={column?.columnType}
               index={index}
               darkMode={darkMode}
               currentState={currentState}
@@ -400,6 +401,7 @@ export const PropertiesTabElements = ({
           currentState={currentState}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          paramToUpdate={'columns'}
           component={component}
           onColumnItemChange={onColumnItemChange}
         />
