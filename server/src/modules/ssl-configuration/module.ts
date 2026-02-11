@@ -27,13 +27,16 @@ export class SslConfigurationModule extends SubModule {
       ]
     );
 
-    // Conditionally exclude lifecycle services during migrations
+    // Include all services in providers array
+    // The lifecycle services have their own guards to check if SSL is enabled
     const providers = [
       SslConfigurationService,
       AcmeClientService,
       SslServerManagerService,
       CertificateAcquisitionService,
       SslBootstrapService,
+      SslCertificateLifecycleService,
+      SslCertificateRenewalScheduler,
     ];
 
     const exports = [
@@ -42,14 +45,9 @@ export class SslConfigurationModule extends SubModule {
       SslServerManagerService,
       CertificateAcquisitionService,
       SslBootstrapService,
+      SslCertificateLifecycleService,
+      SslCertificateRenewalScheduler,
     ];
-
-    // Only include lifecycle services during normal runtime (not migrations)
-    if (!configs?.IS_GET_CONTEXT) {
-      providers.push(SslCertificateLifecycleService);
-      providers.push(SslCertificateRenewalScheduler);
-      exports.push(SslCertificateLifecycleService);
-    }
 
     return {
       module: SslConfigurationModule,
