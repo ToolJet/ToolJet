@@ -283,6 +283,7 @@ module.exports = {
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
       indexName: 'tooljet',
       contextualSearch: true,
+      insights: true,
       externalUrlRegex: 'external\\.com|domain\\.com',
     },
   },
