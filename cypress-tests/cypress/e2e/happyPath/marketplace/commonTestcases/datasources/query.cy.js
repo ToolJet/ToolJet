@@ -1,21 +1,58 @@
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { postgresQueryConfig } from "Constants/constants/queryPanel/postgres";
 import { restapiQueryConfig } from "Constants/constants/queryPanel/restapi";
+import { fake } from "Fixtures/fake";
+import { dsCommonSelector } from "Selectors/marketplace/common";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { postgresUIConfig, postgresFormConfig } from "Constants/constants/marketplace/datasources/postgres";
+
 
 describe('Query', () => {
+    const data = {};
+    data.dataSourceName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.appName = `${fake.companyName}-App`;
+    const postgresqlDataSourceName = `cypress-${data.dataSourceName}-postgresql`;
     beforeEach(() => {
         cy.apiLogin();
-    })
+    });
 
     it('should verify PostgreSQL query editor', () => {
-        cy.visit('http://localhost:8082/mys-workspace/apps/957bb37c-d21f-4067-88f1-63e02cba133e');
-        cy.get('[data-cy="list-query-postgresql1"]').click();
-        verifyConnectionFormUI(postgresQueryConfig.defaultFields);
-    })
 
-    it.only('should verify REST API query editor', () => {
-        cy.visit('http://localhost:8082/mys-workspace/apps/957bb37c-d21f-4067-88f1-63e02cba133e');
-        cy.get('[data-cy="list-query-restapi1"]').click();
-        verifyConnectionFormUI(restapiQueryConfig.defaultFields);
-    })
-})
+        cy.apiCreateDataSource(
+            `${Cypress.env("server_host")}/api/data-sources`,
+            `${postgresqlDataSourceName}`,
+            "postgresql",
+            [
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "host", value: Cypress.env("pg_host"), encrypted: false },
+                { key: "port", value: 5432, encrypted: false },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+                { key: "username", value: Cypress.env("pg_user"), encrypted: false },
+                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
+                { key: "connection_string", value: null, encrypted: true },
+            ]
+        );
+
+        cy.apiCreateApp(data.appName);
+        cy.apiAddQueryToApp({
+            queryName: "table-creation",
+            options: {
+                mode: "sql",
+                transformationLanguage: "javascript",
+                enableTransformation: false,
+            },
+            dataSourceName: postgresqlDataSourceName,
+            dsKind: "postgresql",
+        });
+        cy.openApp();
+
+        cy.get('[data-cy="list-query-table-creation"]').click();
+        verifyConnectionFormUI(postgresQueryConfig.defaultFields);
+    });
+
+});
