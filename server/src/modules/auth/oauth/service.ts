@@ -112,7 +112,8 @@ export class OauthService implements IOAuthService {
       // Should obtain organization configs
       throw new UnauthorizedException();
     }
-    const { enableSignUp, domain } = organization;
+    const domain = organization?.domain;
+    const enableSignUp = typeof organization?.id === 'undefined' ? true : !!organization.enableSignUp;
     const { sso, configs } = ssoConfigs;
     const { token } = ssoResponse;
 

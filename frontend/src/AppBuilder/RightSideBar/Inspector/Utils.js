@@ -69,7 +69,8 @@ export function renderCustomStyles(
     componentConfig.component == 'CurrencyInput' ||
     componentConfig.component == 'DaterangePicker' ||
     componentConfig.component == 'StarRating' ||
-    componentConfig.component == 'PopoverMenu'
+    componentConfig.component == 'PopoverMenu' ||
+    componentConfig.component == 'ProgressBar'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -169,7 +170,8 @@ export function renderElement(
     componentConfig.component == 'RangeSliderV2' ||
     componentConfig.component == 'Statistics' ||
     componentConfig.component == 'Table' ||
-    componentConfig.component == 'CircularProgressBar'
+    componentConfig.component == 'CircularProgressBar' ||
+    componentConfig.component == 'ProgressBar'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

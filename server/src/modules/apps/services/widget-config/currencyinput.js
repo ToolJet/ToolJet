@@ -322,6 +322,7 @@ export const currencyinputConfig = {
       isCountryChangeEnabled: { value: '{{true}}' },
       showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
+      numberFormat: { value: 'us' },
       showClearBtn: { value: '{{false}}' },
     },
     events: [],
