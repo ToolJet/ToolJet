@@ -1,3 +1,4 @@
+
 export const verifyElemtsNoGds = (option) => {
   cy.get('[data-cy="label-select-datasource"]').verifyVisibleElement(
     "have.text",
@@ -48,3 +49,45 @@ export const verifyElemtsNoGds = (option) => {
 };
 
 export const verifyElemtsWithGds = (option) => { };
+
+
+const validateLabel = (fieldName) => {
+  cy.get(dsCommonSelector.labelFieldName(fieldName)).verifyVisibleElement("have.text", fieldName);
+};
+
+
+
+
+export const verifyConnectionFormUI = (fields) => {
+  fields.forEach((field) => {
+    switch (field.type) {
+      case 'input':
+        verifyInputFieldUI(field);
+        break;
+      case 'encrypted':
+      case 'password':
+        verifyEncryptedFieldUI(field);
+        break;
+      case 'dropdown':
+        verifyDropdownFieldUI(field);
+        break;
+      case 'toggle':
+        verifyToggleFieldUI(field);
+        break;
+      case 'radio':
+        verifyRadioButtonFieldUI(field);
+        break;
+      case 'keyValue':
+        verifyKeyValueFieldUI(field);
+        break;
+      case 'checkbox':
+        verifyCheckboxFieldUI(field);
+        break;
+      case 'codeMirror':
+        fillDataOnCodeMirrorInput(field.selector, field.data);
+        break;
+      default:
+        throw new Error(`Unsupported field type: ${field.type}`);
+    }
+  });
+};
