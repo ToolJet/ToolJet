@@ -1,5 +1,5 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { datasourceService } from '@/_services';
 import { capitalize } from 'lodash';
@@ -26,6 +26,28 @@ const OAuthWrapper = ({
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
+  const [initialOptions, setInitialOptions] = useState(null);
+  useEffect(() => {
+    if (selectedDataSource?.id && !initialOptions) {
+      setInitialOptions(options);
+    }
+  }, [selectedDataSource?.id, options, initialOptions]);
+
+  const hasFieldsChanged = () => {
+    if (!selectedDataSource?.id || !initialOptions) {
+      return true; 
+    }
+
+    const optionKeys = Object.keys(options || {});
+    for (const key of optionKeys) {
+      const currentValue = options[key]?.value;
+      const initialValue = initialOptions[key]?.value;
+      if (currentValue !== initialValue) {
+        return true;
+      }
+    }
+    return false;
+  };
   const needConnectionButton =
     selectedDataSource.kind !== 'openapi' &&
     options?.auth_type?.value === 'oauth2' &&
@@ -183,10 +205,33 @@ const OAuthWrapper = ({
                 {t('globals.readDocumentation', 'Read documentation')}
               </a>
             </div>
-            <div className="col-auto row">
-              <center>
-                {authStatus === 'waiting_for_token' && (
-                  <div>
+            <div className="col-auto d-flex gap-2">
+              {selectedDataSource?.kind === 'googlesheetsv2' ? (
+                <>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <Button
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      disabled={isSaving}
+                      onClick={() => authorizeWithProvider()}
+                    >
+                      {t(
+                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
+                        `Connect to ${dataSourceNameCapitalize}`
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    className={`m2 ${isSaving ? ' loading' : ''}`}
+                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    onClick={() => saveDataSource()}
+                    variant={localStorage.getItem('OAuthCode') ? 'primary' : 'tertiary'}
+                  >
+                    {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {authStatus === 'waiting_for_token' && (
                     <Button
                       className={`m2 ${isSaving ? ' loading' : ''}`}
                       disabled={isSaving}
@@ -194,22 +239,22 @@ const OAuthWrapper = ({
                     >
                       {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
                     </Button>
-                  </div>
-                )}
+                  )}
 
-                {(!authStatus || authStatus === 'waiting_for_url') && (
-                  <Button
-                    className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
-                    disabled={isSaving}
-                    onClick={() => authorizeWithProvider()}
-                  >
-                    {t(
-                      `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                      `Connect to ${dataSourceNameCapitalize}`
-                    )}
-                  </Button>
-                )}
-              </center>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <Button
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      disabled={isSaving}
+                      onClick={() => authorizeWithProvider()}
+                    >
+                      {t(
+                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
+                        `Connect to ${dataSourceNameCapitalize}`
+                      )}
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           </>
         </Modal.Footer>

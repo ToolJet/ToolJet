@@ -1,0 +1,16 @@
+.table-rating-column-inspector-toggle {
+   .ToggleGroup {
+    width: 100%;
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+   }
+   .toggle-item {
+        padding: 5px;
+   }
+   .ToggleGroupItem[data-state=on] .toggle-item {
+        width: 100%;
+        height: 100%;
+   }
+}

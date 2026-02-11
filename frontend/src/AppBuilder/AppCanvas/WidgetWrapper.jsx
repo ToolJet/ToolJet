@@ -55,6 +55,15 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
+    // Dont remove this is being used to re-render the height calculations
+    const label = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
+    );
+    // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
+    // eslint-disable-next-line no-unused-vars
+    const textSize = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles?.textSize
+    );
 
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
     const canShowInCurrentLayout = useStore((state) => {

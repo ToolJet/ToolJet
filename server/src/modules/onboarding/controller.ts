@@ -47,8 +47,8 @@ export class OnboardingController implements IOnboardingController {
   @InitFeature(FEATURE_KEY.SIGNUP)
   @UseGuards(SignupDisableGuard, UserCountGuard, FirstUserSignupDisableGuard, FeatureAbilityGuard)
   @Post('signup')
-  async signup(@Body() appSignupDto: AppSignupDto) {
-    return this.onboardingService.signup(appSignupDto);
+  async signup(@Body() appSignupDto: AppSignupDto, @Res({ passthrough: true }) response: Response) {
+    return this.onboardingService.signup(appSignupDto, response);
   }
 
   @InitFeature(FEATURE_KEY.ACCEPT_INVITE)

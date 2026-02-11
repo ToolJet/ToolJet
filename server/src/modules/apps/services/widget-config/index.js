@@ -67,7 +67,12 @@ import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
-
+import { keyValuePairConfig } from './keyValuePair';
+import { progressbarConfig } from './progressbar';
+import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
+import { jsonExplorerConfig } from './jsonExplorer';
+import { jsonEditorConfig } from './jsonEditor';
 const widgets = {
   buttonConfig,
   tableConfig,
@@ -137,7 +142,13 @@ const widgets = {
   chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
-  popoverMenuConfig
+  popoverMenuConfig,
+  keyValuePairConfig,
+  progressbarConfig,
+  audioRecorderConfig,
+  cameraConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
 };
 
 const universalProps = {

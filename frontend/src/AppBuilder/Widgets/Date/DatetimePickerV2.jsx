@@ -1,7 +1,50 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment-timezone';
-import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
+// import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
+
+
+
+export const TIMEZONE_OPTIONS = [
+  { name: 'UTC', value: 'Etc/UTC' },
+  { name: '-12:00', value: 'Etc/GMT+12' },
+  { name: '-11:00', value: 'Etc/GMT+11' },
+  { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:00', value: 'America/Anchorage' },
+  { name: '-08:00', value: 'America/Santa_Isabel' },
+  { name: '-07:00', value: 'America/Chihuahua' },
+  { name: '-06:00', value: 'America/Guatemala' },
+  { name: '-05:00', value: 'America/Bogota' },
+  { name: '-04:00', value: 'America/Halifax' },
+  { name: '-03:30', value: 'America/St_Johns' },
+  { name: '-03:00', value: 'America/Sao_Paulo' },
+  { name: '-02:00', value: 'Etc/GMT+2' },
+  { name: '-01:00', value: 'Atlantic/Cape_Verde' },
+  { name: '+00:00', value: 'UTC' },
+  { name: '+01:00', value: 'Europe/Berlin' },
+  { name: '+02:00', value: 'Africa/Gaborone' },
+  { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+04:00', value: 'Asia/Muscat' },
+  { name: '+04:30', value: 'Asia/Kabul' },
+  { name: '+05:00', value: 'Asia/Tashkent' },
+  { name: '+05:30', value: 'Asia/Colombo' },
+  { name: '+05:45', value: 'Asia/Kathmandu' },
+  { name: '+06:00', value: 'Asia/Almaty' },
+  { name: '+06:30', value: 'Asia/Yangon' },
+  { name: '+07:00', value: 'Asia/Bangkok' },
+  { name: '+08:00', value: 'Asia/Makassar' },
+  { name: '+09:00', value: 'Asia/Seoul' },
+  { name: '+09:30', value: 'Australia/Darwin' },
+  { name: '+10:00', value: 'Pacific/Chuuk' },
+  { name: '+11:00', value: 'Pacific/Pohnpei' },
+  { name: '+12:00', value: 'Etc/GMT-12' },
+  { name: '+13:00', value: 'Pacific/Auckland' },
+];
+
+export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
+  acc[curr.name] = curr.value;
+  return acc;
+}, {});
 
 import {
   convertToIsoWithTimezoneOffset,
@@ -99,10 +142,10 @@ export const DatetimePickerV2 = ({
     const unixTimestamp = isISOString
       ? moment(date).valueOf()
       : getUnixTimeFromParsedDate(
-          date,
-          propStoreTimezone ? propStoreTimezone : storeTimezone,
-          format ? format : displayFormat
-        );
+        date,
+        propStoreTimezone ? propStoreTimezone : storeTimezone,
+        format ? format : displayFormat
+      );
     const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);

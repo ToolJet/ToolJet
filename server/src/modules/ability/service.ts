@@ -85,7 +85,8 @@ export class AbilityService extends IAbilityService {
 
       const { resources } = resourcePermissionsObject;
       if (resources) {
-        if (resources.some((item) => item.resource === MODULES.APP)) {
+        // Load app permissions for both MODULES.APP and MODULES.MODULES since modules use app permissions
+        if (resources.some((item) => item.resource === MODULES.APP || item.resource === MODULES.MODULES)) {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
             appsGranularPermissions,

@@ -254,7 +254,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
               'www.googletagmanager.com',
             ].concat(cspWhitelistedDomains),
             'object-src': ["'self'", 'data:'],
-            'media-src': ["'self'", 'data:'],
+            'media-src': ["'self'", 'data:', 'blob:'],
             'default-src': [
               'maps.googleapis.com',
               'storage.googleapis.com',
@@ -284,13 +284,22 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
 
     // Custom headers middleware
     app.use((req, res, next) => {
-      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
+      res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(self), microphone=(self)');
       res.setHeader('X-Powered-By', 'ToolJet');
 
+      // Cache strategy:
+      //  - API responses: never cache (dynamic data)
+      //  - Static assets (js, css, images, fonts): cache forever (filenames include content hashes,
+      //    so a new deployment produces new filenames and the old cached files are simply unused)
+      //  - SPA routes & index.html: always revalidate with the server. index.html is the entry point
+      //    that references chunk filenames — if it's stale, the browser requests old chunks that no
+      //    longer exist, causing ChunkLoadError and a stuck loading screen.
       if (req.path.startsWith(`${subPath || '/'}api/`)) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      } else {
+      } else if (/\.\w{2,}$/.test(req.path) && !/\.html?$/.test(req.path)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
       }
 
       return next();

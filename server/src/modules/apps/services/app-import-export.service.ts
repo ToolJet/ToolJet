@@ -90,7 +90,8 @@ type NewRevampedComponent =
   | 'CircularProgressBar'
   | 'Html'
   | 'Chat'
-  | 'CurrencyInput';
+  | 'CurrencyInput'
+  | 'IFrame';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -125,7 +126,8 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'CircularProgressBar',
   'Html',
   'Chat',
-  'CurrencyInput'
+  'CurrencyInput',
+  'IFrame',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
@@ -2726,6 +2728,10 @@ function migrateProperties(
         }
         delete styles.highlightColor;
       }
+
+      if (!styles.commonBackgroundColor) {
+        styles.commonBackgroundColor = { value: 'var(--cc-surface1-surface)' };
+      }
     }
 
     // Image
@@ -2827,6 +2833,9 @@ function migrateProperties(
     if (componentType === 'CurrencyInput') {
       if (properties.showFlag == undefined) {
         properties.showFlag = { value: true };
+      }
+      if (properties.numberFormat == undefined) {
+        properties.numberFormat = { value: 'us' };
       }
     }
   }
