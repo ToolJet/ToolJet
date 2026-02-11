@@ -145,33 +145,28 @@ async function bootstrap() {
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
-    // Native HTTPS is now the default - always set up dual HTTP/HTTPS server infrastructure
-    // HTTPS server will start based on database SSL configuration
-    appLogger.log('Setting up dual HTTP/HTTPS server infrastructure...');
-
-    // Setup ACME challenge middleware for certificate acquisition
+    // Setup ACME challenge middleware (always available for certificate acquisition)
     const expressInstance = app.getHttpAdapter().getInstance();
     expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
-    appLogger.log('✅ ACME challenge middleware registered');
 
-    // Determine ports
-    const httpPort = port; // Use existing PORT env var for HTTP
+    // Initialize SSL server manager (stores Express app for HTTPS management)
+    const httpPort = port;
     const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
-
-    // Get SSL server manager and initialize both HTTP and HTTPS servers
     const sslServerManager = app.get(SslServerManagerService);
     await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
 
-    // Store HTTP server reference for shutdown (from SslServerManagerService)
-    (app as any).httpServer = sslServerManager.getHttpServer();
-
-    // Setup HTTP to HTTPS redirect middleware (after SSL manager initialization)
+    // Setup HTTP to HTTPS redirect middleware (will activate when HTTPS is running)
     const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
     expressInstance.use((req, res, next) => httpToHttpsRedirect.use(req, res, next));
-    appLogger.log('✅ HTTP to HTTPS redirect middleware registered');
 
-    appLogger.log('Dual server setup complete - SSL state will be managed by SslServerManagerService');
-    logStartupInfo(configService, appLogger);
+    appLogger.log('✅ SSL middleware registered (ACME challenge + HTTP-to-HTTPS redirect)');
+
+    // Start HTTP server using standard NestJS approach
+    // SslServerManagerService will handle HTTPS separately when SSL is configured
+    appLogger.log(`Starting HTTP server on ${listen_addr}:${port}...`);
+    await app.listen(port, listen_addr, async function () {
+      logStartupInfo(configService, appLogger);
+    });
   } catch (error) {
     logger.error('❌ Failed to bootstrap application:', error);
     process.exit(1);
@@ -182,20 +177,8 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
     try {
-      // Close HTTP server if native HTTPS is enabled
-      const httpServer = (app as any).httpServer;
-      if (httpServer) {
-        await new Promise<void>((resolve) => {
-          httpServer.close(() => {
-            logger.log('HTTP server closed');
-            resolve();
-          });
-        });
-      }
-
+      // Close NestJS app (handles HTTP server and all cleanup via OnModuleDestroy)
       // SslServerManagerService will handle HTTPS shutdown via OnModuleDestroy
-
-      // Close NestJS app (handles cleanup via OnModuleDestroy)
       await app.close();
       logger.log('✅ Application closed successfully');
       process.exit(0);

@@ -107,8 +107,9 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
   }
 
   /**
-   * Initialize HTTP and optionally HTTPS servers
-   * Called from main.ts with Express instance and port configuration
+   * Initialize SSL server manager with Express app and port configuration
+   * HTTP server is managed by NestJS via app.listen()
+   * This method only stores configuration for HTTPS server management
    */
   async initialize(
     expressApp: any,
@@ -120,32 +121,19 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
     this.httpsPort = httpsPort;
     this.listenAddr = listenAddr;
 
-    this.logger.log(`Initializing servers - HTTP: ${httpPort}, HTTPS: ${httpsPort}`);
-
-    // Create HTTP server (always running)
-    this.httpServer = http.createServer(expressApp);
-
-    await new Promise<void>((resolve, reject) => {
-      this.httpServer!.listen(httpPort, listenAddr, () => {
-        this.logger.log(`✅ HTTP server listening on ${listenAddr}:${httpPort}`);
-        resolve();
-      });
-
-      this.httpServer!.on('error', (error) => {
-        this.logger.error(`HTTP server error: ${error.message}`);
-        reject(error);
-      });
-    });
-
     // Store Express app for HTTPS server creation
     (this as any).expressApp = expressApp;
+
+    this.logger.log(`SSL Server Manager configured - HTTP: ${httpPort}, HTTPS: ${httpsPort}`);
+    this.logger.log('HTTP server is managed by NestJS, HTTPS will be managed based on SSL configuration');
   }
 
   /**
    * Get HTTP server instance for shutdown handling
+   * Returns null as HTTP server is now managed by NestJS
    */
   getHttpServer(): http.Server | null {
-    return this.httpServer || null;
+    return null;
   }
 
   /**
@@ -395,6 +383,7 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
   /**
    * Graceful shutdown on module destroy
+   * Only closes HTTPS server (HTTP server is managed by NestJS)
    */
   async onModuleDestroy(): Promise<void> {
     this.logger.log('SSL Server Manager shutting down...');
@@ -404,16 +393,6 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
       await new Promise<void>((resolve) => {
         this.httpsServer!.close(() => {
           this.logger.log('HTTPS server closed');
-          resolve();
-        });
-      });
-    }
-
-    // Close HTTP server
-    if (this.httpServer) {
-      await new Promise<void>((resolve) => {
-        this.httpServer!.close(() => {
-          this.logger.log('HTTP server closed');
           resolve();
         });
       });
