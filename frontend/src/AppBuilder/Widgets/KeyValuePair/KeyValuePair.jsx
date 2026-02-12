@@ -122,8 +122,9 @@ export const KeyValuePair = ({
     setExposedVariables({
       data,
       changeSet: editedData,
+      resetChanges: discardChanges,
     });
-  }, [data, editedData, setExposedVariables]);
+  }, [data, editedData, setExposedVariables, discardChanges]);
 
   // Auto-generate fields using custom hook
   const resolvedFields = useAutoGenerateFields({
