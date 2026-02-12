@@ -138,7 +138,14 @@ export const PhoneInput = (props) => {
       defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
-  const hasValue = value !== '' && value !== null && value !== undefined;
+  const countryCode = getCountryCallingCodeSafe(country);
+  const hasValue = (() => {
+    if (value === '' || value === null || value === undefined) return false;
+    if (!countryCode) return true;
+    const normalizedValue = `${value}`.trim();
+    const strippedValue = normalizedValue.replace(new RegExp(`^\\+${countryCode}`), '').trim();
+    return strippedValue.length > 0;
+  })();
   const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const clearButtonRight =
     direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
