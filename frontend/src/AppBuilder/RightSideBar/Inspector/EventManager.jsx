@@ -311,8 +311,7 @@ export const EventManager = ({
   }
 
   const fetchApps = async (page) => {
-    const { apps } = await appService.getAll(page);
-
+    const { apps } = await appService.getAllAddableApps();
     updateState({
       apps: apps.map((app) => ({
         id: app.id,
