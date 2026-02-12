@@ -5,8 +5,6 @@ title: WooCommerce
 
 ToolJet can connect to WooCommerce databases to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the WooCommerce data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose WooCommerce as the data source.
@@ -23,10 +21,6 @@ ToolJet requires the following to connect to WooCommerce
 NOTE: For generating keys visit admin dashboard of woocommerce , more info: https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript#authentication
 :::
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying WooCommerce
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -37,10 +31,6 @@ NOTE: For generating keys visit admin dashboard of woocommerce , more info: http
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## List Resources
 
@@ -57,7 +47,7 @@ Query results can be transformed using transformations. Read our transformations
 - **Create customer** : Creates a new customer account in WooCommerce.
 - **Retrieve customer** : Fetches detailed information of a specific customer by ID.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/customer-query.png" alt="Woocommerce customer querying" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/customer-query.png" alt="Woocommerce customer querying"  />
 
 ### Product
 
@@ -81,7 +71,7 @@ Query results can be transformed using transformations. Read our transformations
 - **Create order** : Creates a new order in the WooCommerce store.
 - **Retrieve order** : Fetches detailed information of a specific order by ID.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/order-query.png" alt="Woocommerce order querying" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/order-query.png" alt="Woocommerce order querying"  />
 
 ### Coupon
 
@@ -90,10 +80,8 @@ Query results can be transformed using transformations. Read our transformations
 - **List coupon** : Retrieves a list of all discount coupons available in the store.
 - **Create coupon** : Creates a new discount coupon in WooCommerce.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/coupon-query.png" alt="Woocommerce coupon querying" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/woocommerce/coupon-query.png" alt="Woocommerce coupon querying"  />
 
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
 :::
-
-</div>

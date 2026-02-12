@@ -5,8 +5,6 @@ title: TypeSense
 
 ToolJet can connect to your TypeSense deployment to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the Typesense data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Typesense as the data source.
@@ -24,10 +22,6 @@ ToolJet requires the following to connect to TypeSense deployment:
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/typesense/connect-v2.png" alt="typesense connect" />
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying TypeSense
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -38,10 +32,6 @@ ToolJet requires the following to connect to TypeSense deployment:
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -138,5 +128,3 @@ Delete a document from collection by providing the `Id` of the document. Check o
 :::tip
 Make sure that you supply JSON strings instead of JavaScript objects for any document or schema that is being passed to the server, in any of the above operations.
 :::
-
-</div>
