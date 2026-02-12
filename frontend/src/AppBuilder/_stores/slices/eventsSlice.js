@@ -1113,7 +1113,6 @@ export const createEventsSlice = (set, get) => ({
             modal = key;
           }
         }
-
         const event = {
           actionId: 'show-modal',
           modal,
@@ -1302,6 +1301,20 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const scrollToComponent = (componentName, moduleId = 'canvas') => {
+        let componentId = '';
+        for (const [key, value] of currentComponents) {
+          if (value.component.name === componentName) {
+            componentId = key;
+          }
+        }
+        const event = {
+          actionId: 'scroll-to-component',
+          componentId,
+        };
+        return executeAction(event, mode, {}, moduleId);
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1326,6 +1339,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        scrollToComponent,
       };
     },
     // Selectors
