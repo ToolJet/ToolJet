@@ -5,8 +5,6 @@ title: SMTP
 
 The SMTP datasource facilitates the connection between ToolJet applications and email servers, enabling the apps to send emails.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the SMTP data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose SMTP as the data source.
@@ -27,25 +25,18 @@ The SMTP configuration details like host and port can usually be obtained from y
     - **Port**: 587 or 465 (SSL)
     - **Username**: Your Full Gmail Address
     - **Password**: Your Gmail Password
-
 - **Yahoo Mail**
     - **Host**: smtp.mail.yahoo.com
     - **Port**: 465 (SSL)
     - **Username**: Your Yahoo Email Address
     - **Password**: Your Yahoo Mail Password
-
 - **Outlook.com/Hotmail**
     - **Host**: smtp.office365.com
     - **Port**: 587 or 465 (SSL)
     - **Username**: your Outlook.com/Hotmail email address
     - **Password**: your Outlook.com/Hotmail password.
 
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/smtp/connect-v2.png" alt="smtp connect" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying SMTP
 
@@ -70,5 +61,3 @@ To create a query for sending an email, follow these steps:
     - For instance, you can set the `Attachments` field value to `{{ components.filepicker1.file }}` or pass an object `{{[{ name: "filename.jpg", dataURL: " " }]}}` to include attachments.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/smtp/querying-v3.png" alt="smtp cquerying" />
-
-</div>
