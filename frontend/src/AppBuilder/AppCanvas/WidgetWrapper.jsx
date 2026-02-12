@@ -81,6 +81,11 @@ const WidgetWrapper = memo(
     const label = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
     );
+    // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
+    // eslint-disable-next-line no-unused-vars
+    const textSize = useStore(
+      (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles?.textSize
+    );
 
     const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
