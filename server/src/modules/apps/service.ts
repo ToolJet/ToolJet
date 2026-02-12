@@ -316,7 +316,14 @@ export class AppsService implements IAppsService {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
       }
 
-      if (type === 'module' && !isGetAll) {
+      if (isGetAll) {
+        const response = {
+          apps,
+        };
+        return decamelizeKeys(response);
+      }
+
+      if (type === 'module') {
         await Promise.all(
           apps.map(async (app) => {
             const appVersionId = app?.appVersions?.[0]?.id;
