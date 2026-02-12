@@ -955,6 +955,68 @@ export const EventManager = ({
                 darkMode={darkMode}
               />
             )}
+            {event.actionId === 'scroll-to-component' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.component', 'Component')}</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={getComponentOptions()}
+                      value={event.componentId}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'componentId', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Scroll</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={[
+                        { name: 'Smooth', value: 'smooth' },
+                        { name: 'Instant', value: 'instant' },
+                      ]}
+                      value={event.scrollBehavior ?? 'smooth'}
+                      search={false}
+                      onChange={(value) => handlerChanged(index, 'scrollBehavior', value)}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-3 p-2">Align</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={[
+                        { name: 'Nearest', value: 'nearest' },
+                        { name: 'Start', value: 'start' },
+                        { name: 'Center', value: 'center' },
+                        { name: 'End', value: 'end' },
+                      ]}
+                      value={event.scrollBlock ?? 'nearest'}
+                      search={false}
+                      onChange={(value) => handlerChanged(index, 'scrollBlock', value)}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">

@@ -52,6 +52,16 @@ export const ActionTypes = [
     group: 'control-component',
   },
   {
+    name: 'Scroll to component',
+    id: 'scroll-to-component',
+    options: [
+      { name: 'componentId', type: 'text', default: '' },
+      { name: 'scrollBehavior', type: 'text', default: 'smooth' },
+      { name: 'scrollBlock', type: 'text', default: 'nearest' },
+    ],
+    group: 'control-component',
+  },
+  {
     name: 'Switch page',
     id: 'switch-page',
     options: [{ name: 'page', type: 'text', default: '' }],
@@ -150,5 +160,5 @@ export const ActionTypes = [
     id: 'toggle-app-mode',
     options: [{ name: 'appMode', type: 'text', default: '' }],
     group: 'other',
-  }
+  },
 ];

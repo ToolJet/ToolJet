@@ -901,6 +901,27 @@ export const createEventsSlice = (set, get) => ({
               return Promise.reject(error);
             }
           }
+          case 'scroll-to-component': {
+            try {
+              const componentId = event.componentId;
+              if (!componentId) {
+                throw new Error('No component selected for scroll-to-component action.');
+              }
+              const element = document.getElementById(componentId);
+              if (!element) {
+                throw new Error('Component element not found in DOM.');
+              }
+              const behavior = event.scrollBehavior || 'smooth';
+              const block = event.scrollBlock || 'nearest';
+              element.scrollIntoView({ behavior, block });
+              return Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('scroll_to_component', 'scroll-to-component', error, eventObj, {
+                eventId: event.eventId,
+              });
+              return Promise.reject(error);
+            }
+          }
           case 'toggle-app-mode': {
             const {
               updateIsTJDarkMode,
