@@ -5,21 +5,19 @@ title: MySQL
 
 ToolJet can connect to MySQL databases to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard. ToolJet supports both **Static** and **Dynamic** MySQL connections. Along with configuring fixed connection details at the datasource level, you can also define certain connection parameters dynamically from the query builder at runtime.
 
 ### Static Connection
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/connection-v4.png" alt="MySQL data source"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/connection-v4.png" alt="MySQL data source"/>
 
 ### Dynamic Connection 
 
 Dynamic connection allows specific MySQL connection parameters to be provided at runtime from the query builder, enabling flexible and dynamic database access.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/query-host.png" alt="mysql dynamic host"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/query-host.png" alt="mysql dynamic host"/>
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -48,10 +46,6 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying in SQL Mode
 
 SQL mode can be used to query MySQL database using SQL queries.
@@ -67,7 +61,7 @@ SQL mode can be used to query MySQL database using SQL queries.
 SELECT * FROM users
 ```
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/query-sql.png" alt="mysql querying"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/query-sql.png" alt="mysql querying"/>
 
 ### Parameterized Queries
 
@@ -78,7 +72,7 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/param-query-v2.png" alt="mysql parameter querying"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/param-query-v2.png" alt="mysql parameter querying"/>
 
 ##### Example:
 
@@ -122,7 +116,7 @@ GUI mode can be used to query MySQL database without writing queries.
 5. In the editor enter the records in the form of an array of objects.
 6. Click on the **Run** button to run the query.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/mysql/gui-query.png" alt="mysql GUI querying"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mysql/gui-query.png" alt="mysql GUI querying"/>
 
 **Example:**
 
@@ -130,12 +124,6 @@ GUI mode can be used to query MySQL database without writing queries.
 {{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}
 ```
 
-<div style={{textAlign: 'center'}}>
-
-</div>
-
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/beta/app-builder/custom-code/transform-data).
+Query results can be transformed using transformations. Learn more about transformations [here](/docs/app-builder/custom-code/transform-data).
 :::
-
-</div>
