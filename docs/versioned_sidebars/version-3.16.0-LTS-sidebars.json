@@ -355,6 +355,7 @@
                 "widgets/json-editor",
                 "widgets/json-explorer",
                 "widgets/kanban",
+                "widgets/key-value-pair",
                 "widgets/link",
                 "widgets/listview",
                 "widgets/map",
