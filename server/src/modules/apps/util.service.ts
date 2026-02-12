@@ -400,7 +400,7 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        isGetAll ? ['id', 'name', 'isPublic'] : undefined,
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
         type
       );
 
