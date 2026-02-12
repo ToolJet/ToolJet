@@ -971,6 +971,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               container.contains(e.inputEvent.target)
             );
           }
+
+          if (box?.component?.component === 'KeyValuePair') {
+            const handleContainers = e.target.querySelectorAll('.kv-editable');
+            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+              container.contains(e.inputEvent.target)
+            );
+          }
+
           if (
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
             isDragOnInnerElement
