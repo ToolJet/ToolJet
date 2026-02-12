@@ -134,7 +134,7 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter collection"
       },
-      "document": {
+      "documents": {
         "label": "Documents",
         "key": "documents",
         "type": "codehinter",

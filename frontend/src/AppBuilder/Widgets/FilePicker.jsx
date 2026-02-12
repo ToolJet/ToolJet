@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import FilePickerComponent from '@/AppBuilder/Widgets/FilePicker/FilePicker';
 
 // This component now acts as a wrapper, passing props to the new implementation
-export const FilePicker = (props) => {
+const FilePicker = (props) => {
   return <FilePickerComponent {...props} />;
 };
 
@@ -31,3 +31,5 @@ FilePicker.propTypes = {
   All the original logic (hooks, state, helper functions, effects, rendering)
   has been moved to frontend/src/AppBuilder/Widgets/FilePicker/FilePicker.jsx
 */
+
+export default FilePicker;
