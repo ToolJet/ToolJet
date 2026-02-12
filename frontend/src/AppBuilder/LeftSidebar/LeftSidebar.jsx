@@ -34,7 +34,6 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
-  isUserInZeroToOneFlow,
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
@@ -85,11 +84,6 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
-    if (isUserInZeroToOneFlow) {
-      setPopoverContentHeight(((window.innerHeight - APP_HEADER_HEIGHT) / window.innerHeight) * 100);
-      return;
-    }
-
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
@@ -100,7 +94,7 @@ export const BaseLeftSidebar = ({
       setPopoverContentHeight(100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
+  }, [queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
@@ -117,7 +111,7 @@ export const BaseLeftSidebar = ({
           />
         );
       case 'tooljetai':
-        return renderAIChat({ darkMode, isUserInZeroToOneFlow });
+        return renderAIChat({ darkMode });
       case 'apphistory':
         return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
       case 'debugger':
@@ -185,34 +179,30 @@ export const BaseLeftSidebar = ({
           handleSelectedSidebarItem,
         })}
 
-        {!isUserInZeroToOneFlow && (
-          <>
-            {renderCommonItems()}
-            {/* App history temporarily disabled: setup is incomplete in cloud environment and caused a prod bug.
+        {renderCommonItems()}
+        {/* App history temporarily disabled: setup is incomplete in cloud environment and caused a prod bug.
                 TODO: Re-enable queueing only after the setup flow is finished and validated end-to-end in cloud environment. */}
-            {/* <AppHistoryIcon
+        {/* <AppHistoryIcon
               darkMode={darkMode}
               selectedSidebarItem={selectedSidebarItem}
               handleSelectedSidebarItem={handleSelectedSidebarItem}
               setSideBarBtnRefs={setSideBarBtnRefs}
             /> */}
-            <SidebarItem
-              icon="settings"
-              selectedSidebarItem={selectedSidebarItem}
-              darkMode={darkMode}
-              // eslint-disable-next-line no-unused-vars
-              onClick={(e) => handleSelectedSidebarItem('settings')}
-              className={`left-sidebar-item  left-sidebar-layout`}
-              badge={true}
-              tip="Settings"
-              ref={setSideBarBtnRefs('settings')}
-              isModuleEditor={isModuleEditor}
-              data-cy="left-sidebar-settings-button"
-            >
-              <Bolt width="16" height="16" className="tw-text-icon-strong" />
-            </SidebarItem>
-          </>
-        )}
+        <SidebarItem
+          icon="settings"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('settings')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          tip="Settings"
+          ref={setSideBarBtnRefs('settings')}
+          isModuleEditor={isModuleEditor}
+          data-cy="left-sidebar-settings-button"
+        >
+          <Bolt width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
       </>
     );
   };

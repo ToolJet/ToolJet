@@ -256,7 +256,7 @@ export const createPageMenuSlice = (set, get) => {
         });
       }
     },
-    deletePage: async (pageId) => {
+    deletePage: async (pageId, { saveAfterAction = true } = {}) => {
       const { getAppId, getHomePageId, currentVersionId } = get();
       const appId = getAppId('canvas');
       const homePageId = getHomePageId('canvas');
@@ -280,7 +280,11 @@ export const createPageMenuSlice = (set, get) => {
         state.showEditingPopover = false;
         state.editingPage = null;
       });
-      await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+
+      if (saveAfterAction) {
+        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+      }
+
       toast.success('Page deleted successfully');
     },
     /*
