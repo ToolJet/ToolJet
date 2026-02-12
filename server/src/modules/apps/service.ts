@@ -298,7 +298,7 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, isGetAll } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -313,14 +313,16 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
       }
 
-      if (type === 'module') {
-        for (const app of apps) {
-          const appVersionId = app?.appVersions?.[0]?.id;
-          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
-        }
+      if (type === 'module' && !isGetAll) {
+        await Promise.all(
+          apps.map(async (app) => {
+            const appVersionId = app?.appVersions?.[0]?.id;
+            app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
+          })
+        );
       }
 
       const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);

@@ -373,7 +373,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -400,22 +400,23 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        undefined,
+        isGetAll ? ['id', 'name', 'isPublic'] : undefined,
         type
       );
 
       // Eagerly load appVersions for modules
-      if (type === APP_TYPES.MODULE) {
+      if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
 
-      if (page) {
-        return await viewableAppsQb
-          .take(9)
-          .skip(9 * (page - 1))
-          .getMany();
+      if (isGetAll) {
+        return await viewableAppsQb.getMany();
       }
-      return await viewableAppsQb.getMany();
+
+      return await viewableAppsQb
+        .take(9)
+        .skip(9 * (page - 1))
+        .getMany();
     });
   }
 
@@ -429,11 +430,14 @@ export class AppsUtilService implements IAppsUtilService {
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
-      .innerJoin('apps.user', 'user')
-      .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    if (type === APP_TYPES.MODULE) {
+    // Only add user fields if not using custom select
+    if (!select) {
+      viewableAppsQb.innerJoin('apps.user', 'user').addSelect(['user.firstName', 'user.lastName']);
+    }
+
+    if (type === APP_TYPES.MODULE && !select) {
       viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 

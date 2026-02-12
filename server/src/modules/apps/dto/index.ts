@@ -3,11 +3,11 @@ import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum 
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
-
 export enum AppBuilderMode {
   AI = 'ai',
   VISUAL = 'visual',
 }
+
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
@@ -129,6 +129,10 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isGetAll: boolean;
 }
 
 export class VersionReleaseDto {
