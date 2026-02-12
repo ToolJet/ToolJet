@@ -47,7 +47,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   return (
     <div className="row tj-db-field-wrapper">
       <div className="tab-content-wrapper d-flex tooljetdb-worflow-operations" style={{ marginTop: '16px' }}>
-        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="label-columns">
           Columns
         </label>
 
@@ -74,6 +74,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
               size="sm"
               onClick={addNewColumnOptionsPair}
               className="d-flex justify-content-start width-fit-content"
+              data-cy="button-add-column"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

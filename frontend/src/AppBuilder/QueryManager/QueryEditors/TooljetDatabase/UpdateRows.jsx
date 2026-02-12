@@ -144,6 +144,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
               size="sm"
               onClick={addNewColumnOptionsPair}
               className="d-flex justify-content-start width-fit-content cursor-pointer"
+              data-cy="add-column-button"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
