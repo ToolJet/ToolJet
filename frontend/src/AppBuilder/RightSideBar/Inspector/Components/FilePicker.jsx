@@ -101,7 +101,7 @@ const getPropertiesBySection = (propertiesMeta) => {
   for (const [key, value] of Object.entries(propertiesMeta)) {
     if (value?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (value?.accordian === 'Data') {
+    } else if (value?.accordian === 'Data' || key === 'parseContent') {
       dataProperties.push(key);
     } else {
       properties.push(key);
@@ -115,13 +115,13 @@ const getConditionalAccordionItems = (component, renderCustomElement) => {
   const parseFileType = resolveReferences(
     component.component.definition.properties.parseFileType?.value ?? 'auto-detect'
   );
+  const isFileInput = component.component.component === 'FileInput';
 
-  const options = ['parseContent'];
-  let renderOptions = options.map((option) => renderCustomElement(option));
+  let renderOptions = [];
 
   const conditionalOptions = [
     { name: 'parseFileType', condition: parseContent },
-    { name: 'delimiter', condition: parseContent && parseFileType === 'csv' },
+    { name: 'delimiter', condition: !isFileInput && parseContent && parseFileType === 'csv' },
   ];
   conditionalOptions.forEach(({ name, condition }) => {
     if (condition) renderOptions.push(renderCustomElement(name));
@@ -158,7 +158,7 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
   // console.log('validations', validations, enableMultipleValue, component.component.definition.properties.enableMultiple?.value, enableMultipleFxActive);
 
   const { additionalActions, dataProperties } = getPropertiesBySection(componentMeta?.properties);
-  const filteredProperties = [...dataProperties];
+  const filteredProperties = dataProperties.filter((property) => !['parseFileType', 'delimiter'].includes(property));
 
   const accordionItems = baseComponentProperties(
     filteredProperties,
