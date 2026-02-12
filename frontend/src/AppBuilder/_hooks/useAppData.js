@@ -121,7 +121,6 @@ const useAppData = (
   const detectThemeChange = useStore((state) => state.detectThemeChange);
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
-  const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
   const sendMessage = useStore((state) => state.ai?.sendMessage);
   const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
   const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
@@ -370,7 +369,6 @@ const useAppData = (
         ) {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          setConversationZeroState(true);
           sendMessage(state.prompt);
         }
 
@@ -381,11 +379,6 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          // If the app builder mode is AI
-          // - Do not show zero state - if there is some conversation already done or if route state has prompt
-          setConversationZeroState(
-            state?.prompt ? true : Boolean(appData.ai_conversation?.aiConversationMessages?.length)
-          );
         }
 
         if (!moduleMode) {
