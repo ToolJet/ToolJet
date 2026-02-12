@@ -5,17 +5,11 @@ title: SOAP API
 
 ToolJet can establish connections with SOAP APIs using its REST API integration.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Setting up a SOAP API Data Source
 
 To establish a connection with a SOAP API data source, you will need to add a REST API data source, as ToolJet handles SOAP APIs using REST API configurations.
 
 You can refer to [REST API Configuration Documentation](/docs/data-sources/restapi/) for more information.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Querying SOAP API
 
@@ -36,7 +30,7 @@ You can also transform the query results using the **[Transformations](/docs/app
 
 **API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post.png" alt="SOAP API Headers" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post.png" alt="SOAP API Headers" />
 
 **Request Body Example:**
 
@@ -52,12 +46,10 @@ You can also transform the query results using the **[Transformations](/docs/app
 </soapenv:Envelope>
 ```
 
-<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post-body.png" alt="SOAP API Headers" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/soap-api/post-body.png" alt="SOAP API Headers" />
 
 **Additional Notes:**
 
 - SOAP APIs typically use the POST method. Using a different method can cause errors.
 - Ensure that you have added Content-Type: text/xml header. The server requires the correct header to interpret the request as SOAP.
 - Include the SOAPAction header if specified in the API documentation.
-
-</div>

@@ -5,8 +5,6 @@ title: Oracle DB
 
 ToolJet can connect to Oracle databases to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -49,10 +47,6 @@ The instant client version affects which Oracle Database versions you can connec
 - Oracle Instant Client 21.10 is compatible with Oracle Database 11.2 and later versions.
 - Oracle Instant Client 11.2 is compatible with Oracle Database 10.2 and later versions.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying Oracle DB
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -60,22 +54,18 @@ The instant client version affects which Oracle Database versions you can connec
 3. Select the desired query mode.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Supported Operations
 
 - **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
 - **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="OracleDB supported operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="OracleDB supported operations"/>
 
 ### SQL mode
 
 SQL mode can be used to write raw SQL queries.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/sql-query.png" alt="sql mode querying" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/sql-query.png" alt="sql mode querying"/>
 
 ```sql
 SELECT first_name, last_name, email
@@ -93,7 +83,7 @@ GUI mode can be used to query Oracle database without writing queries.
 3. Enter the **Table** name and **Primary key** column name.
 4. In the editor, enter the records in the form of an array of objects.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/gui-query.png" alt="gui mode querying" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/gui-query.png" alt="gui mode querying"/>
 
 ```json
 [
@@ -109,7 +99,5 @@ GUI mode can be used to query Oracle database without writing queries.
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
+Query results can be transformed using transformations. Read our transformation documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
