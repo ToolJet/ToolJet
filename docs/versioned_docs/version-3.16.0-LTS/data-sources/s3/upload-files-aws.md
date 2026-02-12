@@ -17,7 +17,7 @@ Once you have successfully added the AWS data source, build a basic UI using the
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/ui.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/ui.png" alt="AWS S3" />
 
 </div>
 
@@ -38,27 +38,27 @@ We'll create the following queries:
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### getBuckets
+### get_buckets
 
-This query will fetch the list of all the buckets in your S3. Just create a new query, select AWS S3 data source, and choose **List buckets** operation. Name the query **getBuckets** and click **Save**.
+This query will fetch the list of all the buckets in your S3. Just create a new query, select AWS S3 data source, and choose **List buckets** operation. Name the query **get_buckets** and click **Save**.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/getBuckets.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/get-query.png" alt="AWS S3" />
 
 </div>
 
 Now, let's edit the properties of **dropdown** widget.
 
 - **Label**: Set the label as Bucket.
-- **Option values**: Set option values as `{{queries.getBuckets.data.Buckets.map(bucket => bucket['Name'])}}`. We're mapping the data returned by the query as the returned data is array of objects.
-- **Option label**: Set option values as `{{queries.getBuckets.data.Buckets.map(bucket => bucket['Name'])}}`. This will display the same option label as option values.
+- **Option values**: Set option values as `{{queries.get_buckets.data.Buckets.map(bucket => bucket['Name'])}}`. We're mapping the data returned by the query as the returned data is array of objects.
+- **Option label**: Set option values as `{{queries.get_buckets.data.Buckets.map(bucket => bucket['Name'])}}`. This will display the same option label as option values.
 
-You can later add an event handler for running the **listObject** query whenever an option is selected from the dropdown.
+You can later add an event handler for running the **list_object** query whenever an option is selected from the dropdown.
 
 <div style={{textAlign: 'left'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/dropdown.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/action-button.png" alt="AWS S3" />
 
 </div>
 
@@ -66,18 +66,18 @@ You can later add an event handler for running the **listObject** query whenever
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### listObjects
+### list_objects
 
 This query will list all the objects inside the selected Bucket in dropdown. Select **List objects in a bucket** operation, enter `{{components.dropdown1.value}}` in the Bucket field - this will dynamically get the field value from the selected option in dropdown.
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/listObjects.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/list-query.png" alt="AWS S3" />
 
 </div>
 
 Edit the properties of **table** widget:
-- **Table data**: `{{queries.listObjects.data['Contents']}}`
+- **Table data**: `{{queries.list_objects.data['Contents']}}`
 - **Add Columns**:
   - **Key**: Set the **Column Name** to `Key` and **Key** to `Key`
   - **Last Modified**: Set the **Column Name** to `Last Modified` and **Key** to `LastModified`
@@ -100,7 +100,7 @@ Create a new query and select **Signed URL for download** operation. In the Buck
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/download.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/download-query.png" alt="AWS S3" />
 
 </div>
 
@@ -110,7 +110,7 @@ Edit the **properties** of the table, add a Event handler for running the `downl
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### uploadToS3
+### upload_to_S3
 
 Create a new query, select the **Upload object** operation. Enter the following values in their respective fields:
 - **Bucket**: `{{components.dropdown1.value}}`
@@ -121,7 +121,7 @@ Create a new query, select the **Upload object** operation. Enter the following 
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - How To - Upload files on AWS S3 bucket](/img/how-to/upload-files-aws/uploadToS3.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/upload-query.png" alt="AWS S3" />
 
 </div>
 
@@ -153,7 +153,8 @@ Click on the widget handle to edit the file picker properties:
 
 <div style={{textAlign: 'left'}}>
 
-![ToolJet - How To - Upload files using GCS](/img/how-to/upload-files-gcs/config-filepicker.png)
+<img className="screenshot-full img-full" src="/img/how-to/upload-files-aws/filepicker-property
+.png" alt="AWS S3" />
 
 </div>
 
