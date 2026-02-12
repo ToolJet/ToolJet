@@ -1,7 +1,10 @@
 import { QueryResult, QueryService, ConnectionTestResult, QueryError, getAuthUrl, getRefreshedToken } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, GrpcService, GrpcOperationError, GrpcClient, toError } from './types';
 import * as grpc from '@grpc/grpc-js';
+import * as os from 'os';
+import * as path from 'path';
 import JSON5 from 'json5';
+import { isEmpty } from 'lodash';
 import {
   buildReflectionClient,
   buildProtoFileClient,
@@ -9,6 +12,8 @@ import {
   discoverServicesUsingReflection,
   discoverServicesUsingProtoUrl,
   discoverServicesUsingFilesystem,
+  discoverServiceNamesFromFilesystem,
+  discoverMethodsForSelectedServices,
   loadProtoFromRemoteUrl,
   extractServicesFromGrpcPackage,
   executeGrpcMethod
@@ -63,9 +68,35 @@ export default class Grpcv2QueryService implements QueryService {
           services = extractServicesFromGrpcPackage(grpcObject);
           break;
 
-        case 'import_protos_from_filesystem':
-          services = await discoverServicesUsingFilesystem(sourceOptions);
-          break;
+        case 'import_protos_from_filesystem': {
+          const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+          const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
+
+          if (serviceNames.length === 0) {
+            return { status: 'failed', message: 'No services found in proto files' };
+          }
+
+          // Build a full client for just the first service to verify connectivity
+          const firstServiceName = serviceNames[0];
+          const client = await buildFilesystemClient(sourceOptions, firstServiceName);
+
+          const deadline = new Date();
+          deadline.setSeconds(deadline.getSeconds() + 60);
+          await new Promise<void>((resolve, reject) => {
+            client.waitForReady(deadline, (error: any) => {
+              if (error) reject(new Error(`Cannot connect to host: ${error.message}`));
+              else resolve();
+            });
+          });
+
+          let message = `Successfully connected. Found ${serviceNames.length} service(s)`;
+          if (failures.length > 0) {
+            message += `. Note: ${failures.length} proto file(s) skipped due to errors`;
+          }
+          message += '.';
+
+          return { status: 'ok', message };
+        }
 
         default:
           return {
@@ -138,9 +169,16 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
-  async invokeMethod(methodName: string, ...args: any[]): Promise<QueryResult> {
+  async invokeMethod(
+    methodName: string,
+    context: { user?: any; app?: any },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<QueryResult> {
     const methodMap: Record<string, Function> = {
-      'discoverServices': this.discoverServices.bind(this)
+      'discoverServices': this.discoverServices.bind(this),
+      'discoverServiceNames': this.discoverServiceNames.bind(this),
+      'discoverMethodsForServices': this.discoverMethodsForServices.bind(this),
     };
 
     const method = methodMap[methodName];
@@ -152,7 +190,7 @@ export default class Grpcv2QueryService implements QueryService {
       );
     }
 
-    return await method(...args);
+    return await method(sourceOptions, args);
   }
 
   private async discoverServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
@@ -185,6 +223,79 @@ export default class Grpcv2QueryService implements QueryService {
         grpcCode: 0,
         grpcStatus: 'UNKNOWN',
         errorType: 'QueryError'
+      });
+    }
+  }
+
+  /**
+   * Resolves the filesystem proto directory and glob pattern from source options,
+   * falling back to ~/protos and **\/*.proto respectively.
+   */
+  private resolveFilesystemConfig(sourceOptions: SourceOptions): { directory: string; pattern: string } {
+    const directory = isEmpty(sourceOptions.proto_files_directory)
+      ? path.join(os.homedir(), 'protos')
+      : sourceOptions.proto_files_directory;
+    const pattern = isEmpty(sourceOptions.proto_files_pattern)
+      ? '**/*.proto'
+      : sourceOptions.proto_files_pattern;
+    return { directory, pattern };
+  }
+
+  /**
+   * Lightweight service name discovery for filesystem mode.
+   * Uses protobufjs.parse() (~30KB/file vs 500KB with proto-loader) to scan
+   * proto files and return just service names without heavy gRPC objects.
+   */
+  private async discoverServiceNames(sourceOptions: SourceOptions): Promise<QueryResult> {
+    try {
+      const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+
+      const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
+
+      if (failures.length > 0) {
+        console.warn(`[gRPC] Discovered ${serviceNames.length} services. ${failures.length} file(s) skipped.`);
+      }
+
+      return {
+        status: 'ok',
+        data: serviceNames.map((name) => ({ label: name, value: name })),
+      };
+    } catch (error: unknown) {
+      // Return empty list instead of failing — directory may not exist yet
+      // or may not have proto files. The UI will show an empty selector.
+      return { status: 'ok', data: [] };
+    }
+  }
+
+  /**
+   * Discovers methods for a specific set of selected services.
+   * For filesystem mode, only parses the proto files containing those services.
+   */
+  private async discoverMethodsForServices(sourceOptions: SourceOptions, args?: { serviceNames?: string[] }): Promise<QueryResult> {
+    try {
+      this.validateSourceOptionsForDiscovery(sourceOptions);
+
+      const serviceNames = args?.serviceNames;
+      if (!serviceNames || serviceNames.length === 0) {
+        return { status: 'ok', data: [] };
+      }
+
+      if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
+        const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
+        const { services } = await discoverMethodsForSelectedServices(directory, pattern, serviceNames);
+        return { status: 'ok', data: services };
+      }
+
+      // For reflection/URL modes, do full discovery and filter
+      const allServices = await this.discoverServices(sourceOptions);
+      const selectedSet = new Set(serviceNames);
+      const filtered = allServices.filter((s) => selectedSet.has(s.name));
+      return { status: 'ok', data: filtered };
+    } catch (error: unknown) {
+      if (error instanceof QueryError) throw error;
+      const err = toError(error);
+      throw new QueryError('Method discovery failed', err.message, {
+        grpcCode: 0, grpcStatus: 'UNKNOWN', errorType: 'QueryError'
       });
     }
   }
