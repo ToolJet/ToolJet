@@ -17,7 +17,6 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { DataQueriesUtilService as DataQueriesUtilServiceBase } from '@modules/data-queries/util.service';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -32,7 +31,6 @@ export class AiModule extends SubModule {
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
-    const { DataQueriesUtilService } = await import(`${importPath}/data-queries/util.service`);
 
     return {
       module: AiModule,
@@ -50,10 +48,6 @@ export class AiModule extends SubModule {
         AiUtilService,
         AgentsService,
         ComponentsService,
-        {
-          provide: DataQueriesUtilServiceBase,
-          useClass: DataQueriesUtilService,
-        },
         // ImportExportResourcesService,
         AiConversationRepository,
         VersionRepository,
