@@ -293,7 +293,7 @@ After completing the PostgreSQL backup, follow the steps below to upgrade to the
    ```bash
    docker compose down
    ```
-   This will stop and remove the running containers while preserving your volumes and data.
+   This will stop the running containers while preserving your volumes and data.
 
 2. **Get the Latest LTS Tag from Docker Hub**  
    You can visit the official [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page to get the latest image tag.
