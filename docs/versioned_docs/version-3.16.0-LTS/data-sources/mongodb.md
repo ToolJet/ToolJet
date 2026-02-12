@@ -5,8 +5,6 @@ title: MongoDB
 
 The MongoDB data source in ToolJet allows you to connect your applications directly to MongoDB databases and perform operations on collections using queries. It supports database actions such as reading, inserting, updating, and deleting documents, enabling you to work with structured and semi-structured data efficiently. This data source is ideal for building applications that require flexible schemas and fast iteration over evolving data models.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Manual Connection
 
 To establish a manual connection with the **MongoDB** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
@@ -47,10 +45,6 @@ ToolJet requires the following to connect to your MongoDB.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Connect Using Connecting String
 
 You can also use a **Connection String** by switching the method from the dropdown. You will be prompted to enter the details of your MongoDB connection.
@@ -69,10 +63,6 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 
 **Note:** Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying MongoDB
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
@@ -84,8 +74,6 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -112,7 +100,7 @@ Query results can be transformed using transformations. Read our transformations
 
 Returns list of collections
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-listcollections.png" alt="ToolJet - Mongo DB List Collection" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-listcollections.png" alt="ToolJet - Mongo DB List Collection"/>
 
 ### Find One
 
@@ -127,7 +115,7 @@ Return a document which satisfy the given filter and options. [Reference](https:
 - **Filter**
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findone.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findone.png" alt="ToolJet - Mongo DB Find One"/>
 
 ### Find Many
 
@@ -142,7 +130,7 @@ Return list of documents which satisfy the given filter and options. [Reference]
 - **Filter**
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findmany.png" alt="ToolJet - Mongo DB Find Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findmany.png" alt="ToolJet - Mongo DB Find Many"/>
 
 ### Total Count
 
@@ -156,7 +144,7 @@ Returns an estimation of the number of documents in the collection based on coll
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-totalcount.png" alt="ToolJet - Mongo DB Total Count" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-totalcount.png" alt="ToolJet - Mongo DB Total Count"/>
 
 ### Count
 
@@ -171,7 +159,7 @@ Returns the number of documents based on the filter. [Reference](https://mongodb
 - **Filter**
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-count.png" alt="ToolJet - Mongo DB Count" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-count.png" alt="ToolJet - Mongo DB Count"/>
 
 ### Distinct
 
@@ -187,7 +175,7 @@ Retrieve a list of distinct values for a field based on the filter. [Reference](
 - **Filter**
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-distinct.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-distinct.png" alt="ToolJet - Mongo DB Find One"/>
 
 ### Insert One
 
@@ -202,7 +190,7 @@ Insert a document. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertone.png" alt="ToolJet - Mongo DB Insert One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertone.png" alt="ToolJet - Mongo DB Insert One"/>
 
 #### Example:
 
@@ -226,7 +214,7 @@ Insert list of documents. [Reference](https://docs.mongodb.com/drivers/node/v4.0
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertmany.png" alt="ToolJet - Mongo DB Insert Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-insertmany.png" alt="ToolJet - Mongo DB Insert Many"/>
 
 #### Example
 
@@ -257,7 +245,7 @@ Update a document based on the filter. [Reference](https://docs.mongodb.com/driv
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updateone.png" alt="ToolJet - Mongo DB Update One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updateone.png" alt="ToolJet - Mongo DB Update One"/>
 
 #### Example
 
@@ -293,7 +281,7 @@ Update many documents based on the filter. [Reference](https://docs.mongodb.com/
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updatemany.png" alt="ToolJet - Mongo DB Update Many" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-updatemany.png" alt="ToolJet - Mongo DB Update Many"/>
 
 #### Example
 
@@ -329,7 +317,7 @@ Replace a document based on filter. [Reference](https://docs.mongodb.com/drivers
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-replaceone.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-replaceone.png" alt="ToolJet - Mongo DB Find One"/>
 
 #### Example
 
@@ -365,7 +353,7 @@ If your application requires the document after updating, use this instead of **
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenupdate.png" alt="ToolJet - Mongo DB Find One and Update" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenupdate.png" alt="ToolJet - Mongo DB Find One and Update"/>
 
 #### Example
 
@@ -401,7 +389,7 @@ If your application requires the document after updating, use this instead of **
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenreplace.png" alt="ToolJet - Mongo DB Find One and Replace" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonenreplace.png" alt="ToolJet - Mongo DB Find One and Replace"/>
 
 #### Example
 
@@ -436,7 +424,7 @@ If your application requires the document after deleting, use this instead of **
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonendelete.png" alt="ToolJet - Mongo DB Find One and Delete" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-findonendelete.png" alt="ToolJet - Mongo DB Find One and Delete"/>
 
 #### Example
 
@@ -459,7 +447,7 @@ Aggregation operations are expressions you can use to produce reduced and summar
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-aggregate.png" alt="ToolJet - Mongo DB Aggregate" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-aggregate.png" alt="ToolJet - Mongo DB Aggregate"/>
 
 #### Example
 
@@ -494,7 +482,7 @@ Delete a record based on the filter. [Reference](https://docs.mongodb.com/driver
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deleteone.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deleteone.png" alt="ToolJet - Mongo DB Find One"/>
 
 #### Example
 
@@ -517,7 +505,7 @@ Delete many records based on the filter. [Reference](https://docs.mongodb.com/dr
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deletemany.png" alt="ToolJet - Mongo DB Find One" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-deletemany.png" alt="ToolJet - Mongo DB Find One"/>
 
 #### Example
 
@@ -540,7 +528,7 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 
 - **Option**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-bulkops.png" alt="ToolJet - Mongo DB Bulk Operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/mdb-bulkops.png" alt="ToolJet - Mongo DB Bulk Operations"/>
 
 #### Example
 
@@ -576,10 +564,6 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 ]
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Dynamic Queries
 
 Dynamic queries in MongoDB can be used to create flexible and parameterized queries.
@@ -597,7 +581,3 @@ Dynamic queries in MongoDB can be used to create flexible and parameterized quer
 ```
 
 Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types.
-
-</div>
-
-</div>
