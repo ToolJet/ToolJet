@@ -132,7 +132,8 @@ export const reorderableListConfig = {
     properties: {
       advanced: { value: '{{false}}' },
       schema: {
-        value: '{{[{"label":"Card1","value":"1"},{"label":"Card2","value":"2"},{"label":"Card3","value":"3"}]}}',
+        value:
+          '{{[{"label":"Card1","value":"1", "format": "plain"},{"label":"Card2","value":"2", "format": "plain"},{"label":"Card3","value":"3", "format": "plain"}]}}',
       },
       options: {
         value: [
