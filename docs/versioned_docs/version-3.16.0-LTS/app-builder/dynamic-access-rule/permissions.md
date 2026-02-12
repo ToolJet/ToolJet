@@ -29,10 +29,10 @@ In ToolJet you can configure dynamic access rules to build secure, role-based ap
 
 | <div style={{ width:"150px"}}> Permission Level </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"200px"}}> Use When </div> |
 |:----------------|:------------|:---------|
-| [Page Level](page-level-permissions) | Control which users can access specific pages in your application | Entire page should be hidden from certain roles |
-| [Query Level](query-level-permissions) | Restrict which users can execute particular queries or API calls | Sensitive data operations need protection |
-| [Component Level](component-level-permissions) | Hide or show specific UI components based on access permission | Users can view a page but shouldn't interact with all elements |
-| [Row Level Security](row-level-security) | Control which records a user can see or interact with in database queries | Different users need access to different subsets of data from the same table |
+| [Page Level](/docs/app-builder/dynamic-access-rule/page-level) | Control which users can access specific pages in your application | Entire page should be hidden from certain roles |
+| [Query Level](/docs/app-builder/dynamic-access-rule/query-level) | Restrict which users can execute particular queries or API calls | Sensitive data operations need protection |
+| [Component Level](/docs/app-builder/dynamic-access-rule/component-level) | Hide or show specific UI components based on access permission | Users can view a page but shouldn't interact with all elements |
+| [Row Level Security](/docs/app-builder/dynamic-access-rule/row-level-security) | Control which records a user can see or interact with in database queries | Different users need access to different subsets of data from the same table |
 
 <br/>
 ---

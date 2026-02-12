@@ -85,7 +85,7 @@ The Jenkins pipeline should include several stages corresponding to various git 
 | **SYNC_FROM_GIT** | Pulls the latest changes from GitHub into the specified ToolJet app. |
 | **DEPLOY** | Deploys the app to the target environment. |
 
-Each of these actions maps to a specific REST API call handled within the pipeline functions like `setupGitConfig()`, `pushToGit()`, `syncFromGit()`, and `deployApp()`. Click [here](/docs/development-lifecycle/CI/CD/example#jenkins-pipeline-for-tooljet-git-sync) to see the full Jenkins file code snippet.
+Each of these actions maps to a specific REST API call handled within the pipeline functions like `setupGitConfig()`, `pushToGit()`, `syncFromGit()`, and `deployApp()`. Click [here](/docs/development-lifecycle/cicd/example#3-jenkins-pipeline-setup-with-git-sync-operations) to see the full Jenkins file code snippet.
 
 ## 5. Pipeline Example Flow 
 
