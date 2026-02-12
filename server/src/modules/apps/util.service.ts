@@ -430,14 +430,11 @@ export class AppsUtilService implements IAppsUtilService {
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
+      .innerJoin('apps.user', 'user')
+      .addSelect(['user.firstName', 'user.lastName'])
       .where('apps.organizationId = :organizationId', { organizationId: user.organizationId });
 
-    // Only add user fields if not using custom select
-    if (!select) {
-      viewableAppsQb.innerJoin('apps.user', 'user').addSelect(['user.firstName', 'user.lastName']);
-    }
-
-    if (type === APP_TYPES.MODULE && !select) {
+    if (type === APP_TYPES.MODULE) {
       viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'versions');
     }
 
