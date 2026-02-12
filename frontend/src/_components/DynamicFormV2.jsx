@@ -61,16 +61,6 @@ const DynamicFormV2 = ({
   const manuallyEditedFieldsRef = React.useRef(new Set());
   const skipNextAutoFillRef = React.useRef(false);
 
-  // const getSortedKeys = (obj) => {
-  //   if (!obj || typeof obj !== 'object') return [];
-  //   return Object.keys(obj)
-  //     .filter((key) => key !== 'order') // Exclude the 'order' key itself
-  //     .sort((a, b) => {
-  //       const orderA = obj[a]?.order ?? Number.MAX_SAFE_INTEGER;
-  //       const orderB = obj[b]?.order ?? Number.MAX_SAFE_INTEGER;
-  //       return orderA - orderB;
-  //     });
-  // };
   const getSortedKeys = (obj) => {
     if (!obj || typeof obj !== 'object') return [];
 
