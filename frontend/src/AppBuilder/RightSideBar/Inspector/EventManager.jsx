@@ -958,7 +958,7 @@ export const EventManager = ({
             {event.actionId === 'scroll-to-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.component', 'Component')}</div>
+                  <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
@@ -975,14 +975,15 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">Scroll</div>
+                <div className="row mt-2">
+                  <div className="col-3 p-1">Behaviour</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={[
                         { name: 'Smooth', value: 'smooth' },
                         { name: 'Instant', value: 'instant' },
+                        { name: 'Auto', value: 'auto' },
                       ]}
                       value={event.scrollBehavior ?? 'smooth'}
                       search={false}
@@ -994,8 +995,8 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">Align</div>
+                <div className="row mt-2">
+                  <div className="col-3 p-1">Block</div>
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
