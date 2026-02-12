@@ -11,7 +11,6 @@ import {
   buildFilesystemClient,
   discoverServicesUsingReflection,
   discoverServicesUsingProtoUrl,
-  discoverServicesUsingFilesystem,
   discoverServiceNamesFromFilesystem,
   discoverMethodsForSelectedServices,
   loadProtoFromRemoteUrl,
@@ -179,6 +178,12 @@ export default class Grpcv2QueryService implements QueryService {
     return await method(sourceOptions, args);
   }
 
+  /**
+   * Full service + method discovery for reflection and proto URL modes.
+   * Filesystem mode uses a separate two-phase flow:
+   *   1. discoverServiceNames — lightweight name scan on DS config page
+   *   2. discoverMethodsForServices — scoped method loading in query manager
+   */
   private async discoverServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
     try {
       this.validateSourceOptionsForDiscovery(sourceOptions);
@@ -190,13 +195,11 @@ export default class Grpcv2QueryService implements QueryService {
         case 'import_proto_file':
           return await discoverServicesUsingProtoUrl(sourceOptions);
 
-        case 'import_protos_from_filesystem':
-          return await discoverServicesUsingFilesystem(sourceOptions);
-
         default:
           throw new GrpcOperationError(
             `Unsupported proto_files option: ${sourceOptions.proto_files}. ` +
-            `Supported options are: 'server_reflection', 'import_proto_file', 'import_protos_from_filesystem'`
+            `Use 'server_reflection' or 'import_proto_file'. ` +
+            `Filesystem mode uses discoverServiceNames + discoverMethodsForServices instead.`
           );
       }
     } catch (error: unknown) {
