@@ -11,21 +11,18 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 export const ReorderableList = (props) => {
   const { properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, darkMode } = props;
 
-  const { backgroundColor, borderColor, borderRadius } = styles;
+  const { textColor } = styles;
 
   const { loadingState, disabledState, visibility, options, advanced, schema } = properties;
 
-  // Get the options based on dynamic or static mode
   const transformedOptions = advanced ? schema : options;
 
-  // ===== STATE MANAGEMENT =====
   const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
     isLoading: loadingState,
     isVisible: visibility,
     isDisabled: disabledState || loadingState,
   });
 
-  // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prevState) => ({
       ...prevState,
@@ -33,7 +30,6 @@ export const ReorderableList = (props) => {
     }));
   };
 
-  // State management
   const [currentOptions, setCurrentOptions] = useState([]);
 
   // Ref for portal container
@@ -53,12 +49,12 @@ export const ReorderableList = (props) => {
     };
   }, [id]);
 
-  // Format options to expose (label and value only)
   const formatOptions = (opts) => {
     return Array.isArray(opts)
       ? opts.map((option) => ({
           label: option.label,
           value: option.value,
+          format: option.format || 'plain',
         }))
       : [];
   };
@@ -88,7 +84,6 @@ export const ReorderableList = (props) => {
     fireEvent('onChange');
   };
 
-  // ===== EFFECTS =====
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
@@ -158,12 +153,9 @@ export const ReorderableList = (props) => {
   // Compute container styles
   const containerStyle = {
     display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none',
-    backgroundColor: backgroundColor,
     height: '100%',
     width: '100%',
     overflow: 'auto',
-    border: `1px solid ${borderColor || 'transparent'}`,
-    borderRadius: `${borderRadius}px`,
   };
 
   const hasNoOptions = !currentOptions || currentOptions.length === 0;
@@ -190,33 +182,30 @@ export const ReorderableList = (props) => {
   };
 
   // Render draggable item - uses portal when dragging to avoid transform issues
-  const renderDraggableItem = useCallback(
-    (item, _index) => (provided, snapshot) => {
-      const itemContent = (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className={cx('reorderable-list-item', { 'is-dragging': snapshot.isDragging })}
-          style={{
-            ...provided.draggableProps.style,
-            // backgroundColor: snapshot.isDragging ? 'var(--interactive-overlays-fill-hover)' : 'transparent',
-          }}
-          role="listitem"
-        >
-          {renderLabel(item.label || item.value, item.format)}
-        </div>
-      );
+  const renderDraggableItem = (item, _index) => (provided, snapshot) => {
+    const itemContent = (
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        className={cx('reorderable-list-item', { 'is-dragging': snapshot.isDragging })}
+        style={{
+          ...provided.draggableProps.style,
+          color: textColor,
+        }}
+        role="listitem"
+      >
+        {renderLabel(item.label || item.value, item.format)}
+      </div>
+    );
 
-      // When dragging, render in portal to escape parent transforms
-      if (snapshot.isDragging && portalRef.current) {
-        return createPortal(itemContent, portalRef.current);
-      }
+    // // When dragging, render in portal to escape parent transforms
+    if (snapshot.isDragging && portalRef.current) {
+      return createPortal(itemContent, portalRef.current);
+    }
 
-      return itemContent;
-    },
-    [darkMode]
-  );
+    return itemContent;
+  };
 
   return (
     <div
