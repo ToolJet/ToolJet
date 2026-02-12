@@ -99,7 +99,7 @@ export const keyValuePairConfig = {
   },
   events: {
     onSaveKeyValuePairChanges: { displayName: 'Save changes' },
-    onFieldValueChanged: { displayName: 'Field value changed' },
+    onFieldValueChanged: { displayName: 'Field edited' },
     onCancelKeyValuePairChanges: { displayName: 'Cancel changes' },
   },
   styles: {
