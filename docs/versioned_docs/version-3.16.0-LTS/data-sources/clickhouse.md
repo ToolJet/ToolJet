@@ -21,15 +21,8 @@ ToolJet requires the following to connect to your ClickHouse Database:
 - **Port**
 - **Database Name**
 - **Protocol**
-- **Use Post**
-- **Trim Query**
-- **Use Gzip**
-- **Debug**
-- **Raw**
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection-v2.png" alt="ClickHouse connection" />
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/connection-v3.png" alt="ClickHouse connection" />
 
 ## Querying ClickHouse
 
@@ -41,10 +34,6 @@ ToolJet requires the following to connect to your ClickHouse Database:
 :::info
 For more details on clickhouse visit [Clickhouse Docs](https://clickhouse.com/docs/en/quick-start).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -63,7 +52,7 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 SELECT * from test array;
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/select-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-selectq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
 
 #### CREATE: 
 
@@ -78,7 +67,7 @@ CREATE TABLE test array3 (
 )ENGINE=MergeTree () ORDER BY(str)
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-createq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
 
 #### ALTER TABLE (add column)
 
@@ -86,28 +75,28 @@ CREATE TABLE test array3 (
 ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-alterq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
 #### SELECT WITH WHERE CLAUSE
 ```sql
 SELECT * FROM test array1 WHERE str='Somethingl...'
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-selectwclauseq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
 #### UPDATE
 ```sql
 ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/update-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-updateq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
 #### DELETE
 ```sql
 ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-deleteq.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
 #### NORMAL INSERT
 
@@ -120,7 +109,7 @@ CREATE TABLE test array4 (
 )ENGINE=MergeTree () ORDER BY (name)
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1-v2.png" alt="ClickHouse SQL Statement operation" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-normalInsertq.png" alt="ClickHouse SQL Statement operation" />
 
 #### Step 2 - Insert
 
@@ -128,10 +117,11 @@ CREATE TABLE test array4 (
 INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step2-v2.png" alt="ClickHouse SQL Statement operation" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-insertq.png" alt="ClickHouse SQL Statement operation" />
 
-:::info
+
 **Giving Primary Key**
+
 ```sql
 CREATE TABLE db.table_name
 (
@@ -140,16 +130,15 @@ CREATE TABLE db.table_name
 )
 ENGINE = engine;
 
-OR 
-	
+OR
+ 	
 CREATE TABLE db.table_name
 (
-	name1 type1, name2 type2, ...
+	name1 type1, name2 type2, ...,
 )
 ENGINE = engine
 PRIMARY KEY(expr1[, expr2,...]);
 ```
-:::
 
 ### Insert Array of Objects
 
@@ -169,6 +158,4 @@ Use this operation for inserting array of objects.
 ]
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray-v2.png" alt="ClickHouse Insert array of objects operation" />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/clickhouse/clickhouse-arrayobjq.png" alt="ClickHouse Insert array of objects operation" />
