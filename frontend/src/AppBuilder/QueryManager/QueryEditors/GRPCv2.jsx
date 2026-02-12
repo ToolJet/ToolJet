@@ -350,7 +350,21 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setIsLoadingServices(showLoading);
 
     try {
-      const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
+      // Use selected services if configured (lightweight path for large repos)
+      const selectedServices = selectedDataSource?.options?.selected_services?.value;
+      const hasSelectedServices = Array.isArray(selectedServices) && selectedServices.length > 0;
+
+      let result;
+      if (hasSelectedServices) {
+        result = await dataqueryService.invoke(
+          selectedDataSource.id,
+          'discoverMethodsForServices',
+          currentEnvironment?.id,
+          { serviceNames: selectedServices }
+        );
+      } else {
+        result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
+      }
 
       if (result.status === 'failed') {
         console.error('Failed to discover services:', result.errorMessage);

@@ -16,6 +16,7 @@ const DynamicSelector = ({
   selectedDataSource,
   currentAppEnvironmentId = '',
   optionsChanged,
+  optionchanged,
   options = {},
   label,
   description,
@@ -26,6 +27,8 @@ const DynamicSelector = ({
   propertyKey,
   value,
   fxEnabled = false,
+  isMulti = false,
+  autoFetch = false,
 }) => {
   const isDependentField = dependsOn?.length > 0;
 
@@ -89,6 +92,12 @@ const DynamicSelector = ({
       const items = payload?.data || [];
       setFetchedData(items);
       validateSelectedValue(items);
+
+      // When autoFetch is enabled, skip persisting cache to options
+      // to avoid triggering "Unsaved Changes" on mount
+      if (autoFetch) {
+        return;
+      }
 
       if (isDependentField) {
         // Store in cache based on dependency value
@@ -170,6 +179,16 @@ const DynamicSelector = ({
       setIsLoading(false);
     }
   };
+
+  // Auto-fetch on mount when autoFetch is enabled
+  useEffect(() => {
+    if (!autoFetch || isDependentField || !selectedDataSource?.id) {
+      return;
+    }
+
+    // Always fetch fresh data for autoFetch — don't use stale cache
+    handleFetch();
+  }, [selectedDataSource?.id, currentAppEnvironmentId]);
 
   // Check queryOptions for cached value on mount
   useEffect(() => {
@@ -274,10 +293,20 @@ const DynamicSelector = ({
   }, [compositeDependencyKey]);
 
   const handleSelectionChange = (selectedOption) => {
-    const selectedValue = selectedOption?.value ?? selectedOption;
-
     // Clear no access error since user is making a new valid selection
     setNoAccessError(false);
+
+    if (isMulti) {
+      const selectedValues = selectedOption ? selectedOption.map((item) => item.value) : [];
+      if (typeof optionchanged === 'function') {
+        optionchanged(propertyKey, selectedValues);
+      } else {
+        optionsChanged({ ...options, [propertyKey]: selectedValues });
+      }
+      return;
+    }
+
+    const selectedValue = selectedOption?.value ?? selectedOption;
 
     // Update the options based on the new selection
     const updatedOptions = {
@@ -311,6 +340,15 @@ const DynamicSelector = ({
   // Get the current selected value to display
   const getCurrentValue = () => {
     const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
+
+    if (isMulti) {
+      const values = Array.isArray(currentValue) ? currentValue : [];
+      return values.map((v) => {
+        const found = fetchedData.find((opt) => String(opt.value) === String(v));
+        return found || { value: v, label: v };
+      });
+    }
+
     if (!currentValue) return null;
 
     // If we have fetched data, try to find the matching option
@@ -333,6 +371,23 @@ const DynamicSelector = ({
   const validateSelectedValue = (cachedData) => {
     const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
 
+    if (isMulti) {
+      const values = Array.isArray(currentValue) ? currentValue : [];
+      if (values.length === 0) {
+        setNoAccessError(false);
+        return;
+      }
+      if (!cachedData?.length) {
+        setNoAccessError(true);
+        return;
+      }
+      const allHaveAccess = values.every((v) =>
+        cachedData.some((option) => String(option.value) === String(v))
+      );
+      setNoAccessError(!allHaveAccess);
+      return;
+    }
+
     if (!currentValue) {
       setNoAccessError(false);
       return;
@@ -351,8 +406,86 @@ const DynamicSelector = ({
     }
   };
 
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const multiSelectStyles = useMemo(
+    () => ({
+      control: (provided, state) => ({
+        ...provided,
+        minHeight: 32,
+        height: 'auto',
+        border: '1px solid var(--slate7)',
+        boxShadow: 'none',
+        backgroundColor: state.isDisabled
+          ? darkMode ? '#1f2936' : '#f4f6fa'
+          : darkMode ? '#2b3547'
+          : state.menuIsOpen ? '#F1F3F5' : '#fff',
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: darkMode ? '' : '#F8F9FA',
+          border: '1px solid hsl(0, 0%, 80%)',
+        },
+      }),
+      valueContainer: (provided) => ({
+        ...provided,
+        padding: '2px 8px',
+        flexWrap: 'wrap',
+      }),
+      indicatorSeparator: () => ({ display: 'none' }),
+      input: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#232e3c',
+        margin: 0,
+        padding: '2px 0',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#2b3547' : '#fff',
+        color: darkMode ? '#fff' : '#232e3c',
+        cursor: 'pointer',
+        ':hover': { backgroundColor: darkMode ? '#323C4B' : '#d8dce9' },
+        minHeight: 36,
+        padding: '8px 12px',
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '12px',
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#808080',
+        fontSize: '12px',
+      }),
+      multiValue: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#3e4a5c' : '#E8EDFF',
+        borderRadius: 4,
+      }),
+      multiValueLabel: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#232e3c',
+        fontSize: '12px',
+      }),
+      multiValueRemove: (provided) => ({
+        ...provided,
+        color: darkMode ? '#a0aec0' : '#6e7b8b',
+        borderRadius: '50%',
+        padding: '0 4px',
+        ':hover': {
+          backgroundColor: 'transparent',
+          color: darkMode ? '#fff' : '#E54D2E',
+        },
+      }),
+      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    }),
+    [darkMode]
+  );
+
   return (
-    <div className="dynamic-selector-container">
+    <div className="dynamic-selector-container" onKeyDown={isMulti ? (e) => e.key === 'Escape' && e.stopPropagation() : undefined}>
       <div className="d-flex align-items-center gap-2 mb-1">
         <div className="flex-grow-1">
           {isFxMode ? (
@@ -376,12 +509,15 @@ const DynamicSelector = ({
                 options={fetchedData}
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
-                placeholder={`Select ${label ?? ''}`}
+                placeholder={isMulti ? (isLoading ? 'Discovering...' : `Select ${label ?? ''}`) : `Select ${label ?? ''}`}
                 isDisabled={disabled || (isDependentField && !depsReady)}
-                isLoading={isLoading}
+                isLoading={isMulti ? (isLoading && getCurrentValue().length === 0) : isLoading}
                 useMenuPortal={disableMenuPortal ? false : !!queryName}
-                styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
-                useCustomStyles={!!computeSelectStyles}
+                styles={isMulti ? multiSelectStyles : (computeSelectStyles ? computeSelectStyles('100%') : {})}
+                useCustomStyles={isMulti || !!computeSelectStyles}
+                isMulti={isMulti}
+                closeMenuOnSelect={isMulti ? false : undefined}
+                components={isMulti ? { DropdownIndicator: null, ClearIndicator: null } : undefined}
               />
             </div>
           )}
@@ -393,7 +529,7 @@ const DynamicSelector = ({
           </div>
         )}
 
-        {!dependsOn.length && (
+        {!dependsOn.length && !autoFetch && (
           <ButtonSolid
             variant="tertiary"
             size="sm"
