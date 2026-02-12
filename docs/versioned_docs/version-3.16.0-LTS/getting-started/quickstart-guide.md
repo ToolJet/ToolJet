@@ -25,7 +25,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 <br/>
 
 - Click on the **Create new app** button on the dashboard. Name your application as "Employee Directory".
-- Click and drag a **[Table](/docs/widgets/table)** component on the canvas. Optionally, you can also design a header by adding more components.
+- Click and drag a **[Table](/docs/widgets/table/)** component on the canvas. Optionally, you can also design a header by adding more components.
 
 </div>
 
