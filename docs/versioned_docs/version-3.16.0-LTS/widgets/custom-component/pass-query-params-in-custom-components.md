@@ -3,9 +3,9 @@ id: pass-query-params-in-custom-components
 title: Pass Query Parameters in Custom Components
 ---
 
-In this guide, you’ll learn how to trigger a query with dynamic parameters from inside a Custom Component.
+In this guide, you'll learn how to trigger a query with dynamic parameters from inside a Custom Component.
 
-We’ll use a simple example: fetching a specific Todo item by passing its `id` as a parameter.
+We'll use a simple example: fetching a specific Todo item by passing its `id` as a parameter.
 
 1. **Create the Query**  
     First, create a REST API query and rename it to `getIndividualTodo` and add a parameter named `id`.
