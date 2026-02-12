@@ -22,7 +22,7 @@ Through Global Settings, you can customize the following properties of the **Can
 
 ## Building the User Interface
 
-To build the user interface, components can be dragged from the [Components Library](/docs/app-builder/building-ui/component-library) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
+To build the user interface, components can be dragged from the [Components Library](/docs/app-builder/building-ui/component-library/) on the right. Use the Component Handle to reposition a component. A component can be resized from any of its edges or corners.
 
 <img className="screenshot-full img-full" src="/img/app-builder/canvas/drag.gif" alt="App Builder: Canvas"/>
 
@@ -34,7 +34,7 @@ ToolJet's Canvas provides a grid background, smart snapping, and visual markers 
 
 ## Creating Layout
 
-In ToolJet, components can be grouped using a Layout component such as a **[Container](/docs/widgets/container)** or a **[Form](/docs/widgets/form)**. You can drag and drop the relevant components into the layout components on the canvas to create a section.
+In ToolJet, components can be grouped using a Layout component such as a **[Container](/docs/widgets/container/)** or a **[Form](/docs/widgets/form/)**. You can drag and drop the relevant components into the layout components on the canvas to create a section.
 
 <img className="screenshot-full img-m" src="/img/app-builder/canvas/form.png" alt="App Builder: Canvas"/>
 
@@ -65,5 +65,5 @@ Components on the canvas can be cloned using **Cmd/Ctrl + D**. Unlike copy and p
 <br/><br/>
 
 :::note
-For additional shortcuts, refer to the [Keyboard Shortcuts Guide](/docs/tutorial/keyboard-shortcuts).
+For additional shortcuts, refer to the [Keyboard Shortcuts Guide](/docs/tutorial/keyboard-shortcuts/).
 :::
