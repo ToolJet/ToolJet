@@ -53,13 +53,13 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   // Test connection verifies:
-  // - Reflection/URL: discovers services, then checks TCP connectivity via waitForReady
+  // - All modes: discovers services, then checks TCP connectivity via waitForReady
   //   (channel-level check only — does not verify service existence or proto compatibility)
-  // - Filesystem: validates that proto files can be parsed and contain services
-  //   (no TCP check — there may be no server URL configured yet)
+  // - Filesystem additionally validates that proto files can be parsed
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       let services: GrpcService[];
+      let parseFailures: Array<{ file: string; error: string }> = [];
 
       switch (sourceOptions.proto_files) {
         case 'server_reflection':
@@ -80,12 +80,9 @@ export default class Grpcv2QueryService implements QueryService {
             return { status: 'failed', message: 'No services found in proto files' };
           }
 
-          let message = `Found ${serviceNames.length} service(s) in proto files`;
-          if (failures.length > 0) {
-            message += `. ${failures.length} file(s) skipped due to parse errors`;
-          }
-
-          return { status: 'ok', message };
+          services = serviceNames.map(name => ({ name, methods: [] }));
+          parseFailures = failures;
+          break;
         }
 
         default:
@@ -102,7 +99,7 @@ export default class Grpcv2QueryService implements QueryService {
         };
       }
 
-      return await this.checkFirstServiceConnection(sourceOptions, services);
+      return await this.checkFirstServiceConnection(sourceOptions, services, parseFailures.length > 0 ? parseFailures : undefined);
     } catch (error) {
       return {
         status: 'failed',
