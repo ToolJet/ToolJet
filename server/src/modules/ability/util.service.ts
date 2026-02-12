@@ -112,6 +112,7 @@ export class AbilityUtilService {
           item.resource === MODULES.APP || item.resource === MODULES.WORKFLOWS || item.resource === MODULES.MODULES
       );
       const dataSourcesResourcesList = resources.filter((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE);
+      const foldersResourcesList = resources.filter((item) => item.resource === MODULES.FOLDER);
 
       if (appsAndWorkflowResourcesList?.length) {
         this.addAppsAndWorkflowPermissionsTOQuery(query, appsAndWorkflowResourcesList);
@@ -119,9 +120,25 @@ export class AbilityUtilService {
       if (dataSourcesResourcesList?.length) {
         this.addDataSourcesPermissionsTOQuery(query, dataSourcesResourcesList);
       }
+      if (foldersResourcesList?.length) {
+        this.addFolderPermissionsToQuery(query);
+      }
     }
 
     return query;
+  }
+
+  private addFolderPermissionsToQuery(query: SelectQueryBuilder<GroupPermissions>) {
+    query
+      .leftJoin('granularPermissions.foldersGroupPermissions', 'foldersGroupPermissions')
+      .leftJoin('foldersGroupPermissions.groupFolders', 'groupFolders')
+      .addSelect([
+        'foldersGroupPermissions.id',
+        'foldersGroupPermissions.canEditFolder',
+        'foldersGroupPermissions.canEditApps',
+        'foldersGroupPermissions.canViewApps',
+        'groupFolders.folderId',
+      ]);
   }
 
   private addDataSourcesPermissionsTOQuery(

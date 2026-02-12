@@ -21,6 +21,7 @@ export class FoldersService implements IFoldersService {
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user?.organizationId,
+            createdBy: user?.id, // Set the creator
             type,
           })
         );
