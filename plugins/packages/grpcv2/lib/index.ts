@@ -52,6 +52,11 @@ export default class Grpcv2QueryService implements QueryService {
     }
   }
 
+  // Test connection verifies:
+  // - Reflection/URL: discovers services, then checks TCP connectivity via waitForReady
+  //   (channel-level check only — does not verify service existence or proto compatibility)
+  // - Filesystem: validates that proto files can be parsed and contain services
+  //   (no TCP check — there may be no server URL configured yet)
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       let services: GrpcService[];
