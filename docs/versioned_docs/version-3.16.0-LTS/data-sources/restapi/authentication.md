@@ -39,7 +39,7 @@ ToolJet’s REST API data source supports Bearer Token as the authentication typ
 
    2. **Client Certificate**: Requires a client certificate to authenticate with the server. **client.key**, **client.crt**, and **server.crt** files are the certificate files that are used to authenticate with the server. Copy the content of **client.key** file and paste it in the **Client Key** field. Copy the content of **client.crt** file and paste it in the **Client Cert** field. Copy the content of **server.crt** file and paste it in the **CA Cert** field.
 
-   <img className="screenshot-full img-l" src="/img/datasource-reference/rest-api/auth-bearer-certs.png" alt="ToolJet - Data source - REST API" />
+   <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/auth-bearer-certs.png" alt="ToolJet - Data source - REST API" />
 
 7. Once you have configured the REST API data source, click on the **Save** button.
 
@@ -47,11 +47,7 @@ ToolJet’s REST API data source supports Bearer Token as the authentication typ
 
 Create a query to make a `GET` request to the URL, and it will return a success message if the token is valid.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/auth-get-url.png" alt="ToolJet - Data source - REST API" />
-
-</div>
 
 ## OAuth 2.0 Authentication
 
@@ -76,11 +72,11 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
    1. `https://app.tooljet.com/oauth2/authorize` (if you’re using ToolJet cloud)
    2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 
-<img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/callback-url.png" alt="ToolJet - How To - REST API CallBack URL in OAuth 2.0" style={{marginBottom:'15px'}}/>
+<img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/callback-url.png" alt="ToolJet - How To - REST API CallBack URL in OAuth 2.0"/>
 
 6. Now save and then you’ll get the **Client ID and Client secret** for your application.
 
-<img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" style={{marginBottom:'15px'}}/>
+<img class="screenshot-full img-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
 
 ### Configuring ToolJet Application with Google's OAuth 2.0 API
 

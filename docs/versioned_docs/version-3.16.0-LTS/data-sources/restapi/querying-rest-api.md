@@ -31,15 +31,11 @@ To receive the string `"undefined"` instead of an actual `undefined` value, it m
 Example: `"address": "{{components.table1.selectedRow?.address ?? 'undefined'}}"`
 :::
 
-<div style={{paddingTop:'24px'}}>
-
 ### Additional header
 
 Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is added to the request, the value of the header will be the IP address of the user who is logged in to the ToolJet application. This header can be used to identify the user who is making the request to the REST API.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/request-header.png" alt="REST API - additional header querying"/>
-
-</div>
 
 ## Request/Content Types
 
@@ -53,7 +49,7 @@ For example, to send a **multipart/form-data** body, you can add the following h
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/rest-api/form-headers.png" alt="REST API query headers" />
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/rest-api/form-body.png" alt="REST API query body" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/form-body.png" alt="REST API query body" />
 <br/><br/>
 
 :::info Handling OAuth Token via REST API
@@ -104,7 +100,7 @@ The JSON response can be easily loaded on the components like **table** and **li
 
 You can also use JS methods like **map** to load data on components like **dropdown** using **`{{queries.restapi1.data.map(i => i.title)}}`**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/dropdown-query.png" alt="REST API dropdown component mapping " style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/dropdown-query.png" alt="REST API dropdown component mapping " />
 
 <details id="tj-dropdown">
 <summary>**Example base64 response**</summary>

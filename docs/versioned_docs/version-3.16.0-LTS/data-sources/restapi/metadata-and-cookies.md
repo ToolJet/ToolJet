@@ -96,9 +96,7 @@ To add cookies:
 
 You can use both static values and dynamic values for cookie values.
 
-<div style={{textAlign: 'center'}}>
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/cookies-query.png" alt="ToolJet - Query Builder - REST API Cookies" />
-</div>
 
 :::info
 Query-specific cookies will override data source level cookies with the same name for that particular query.
