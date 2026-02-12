@@ -5,7 +5,7 @@ title: Enable/Disable a Component Using Current User's Property
 
 ToolJet provides several **exposed variables** that can be accessed within components and queries. One of these exposed variables is globals, which provides access to the currently logged-in user’s information at globals.currentUser.
 
-To explore the exposed variables, click the **[Inspector](/docs/app-builder/left-sidebar/#inspector)** icon on the left sidebar.
+To explore the exposed variables, click the **Inspector** icon on the left sidebar.
 
 ## Exposed Variables under globals.currentUser
 
