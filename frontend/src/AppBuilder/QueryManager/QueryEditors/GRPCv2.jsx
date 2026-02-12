@@ -350,9 +350,14 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setIsLoadingServices(showLoading);
 
     try {
-      // Use selected services if configured (lightweight path for large repos)
+      const protoMode = selectedDataSource?.options?.proto_files?.value;
       const selectedServices = selectedDataSource?.options?.selected_services?.value;
       const hasSelectedServices = Array.isArray(selectedServices) && selectedServices.length > 0;
+
+      // Filesystem mode requires at least one service selected in DS config
+      if (protoMode === 'import_protos_from_filesystem' && !hasSelectedServices) {
+        throw new Error('Please select at least one service in the data source configuration');
+      }
 
       let result;
       if (hasSelectedServices) {
