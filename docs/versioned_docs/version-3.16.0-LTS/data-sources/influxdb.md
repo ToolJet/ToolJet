@@ -5,8 +5,6 @@ title: InfluxDB
 
 ToolJet can connect to InfluxDB databases to read and write data. Use the Token authentication scheme to authenticate to the InfluxDB API. For more info visit [InfluxDB docs](https://docs.influxdata.com/).
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 ToolJet connects to InfluxDB using :
@@ -20,15 +18,7 @@ ToolJet connects to InfluxDB using :
 For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/).
 :::
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/influxauth-v3.png" alt="influx auth" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Queries
 
@@ -44,9 +34,7 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 - **[Update a bucket](#update-a-bucket)**
 - **[Delete a bucket](#delete-a-bucket)**
 
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/listops-v4.png" alt="influx operations" style={{marginBottom:'15px'}}/>
-
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/listops-v4.png" alt="influx operations"/>
 
 ### Write Data 
 
@@ -62,7 +50,7 @@ This operation writes data to a bucket.
 
 - **Precision**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/write-query.png" alt="write query operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/write-query.png" alt="write query operations"/>
 
 #### Example
 
@@ -78,7 +66,7 @@ Retrieves data from InfluxDB buckets.
 - **Organization name or ID**
 - **Flux query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/query-data.png" alt="query data operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/query-data.png" alt="query data operations"/>
 
 #### Example
 
@@ -96,7 +84,7 @@ This operation analyzes flux query and generates a query specification.
 
 - **Query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/generate-ast-query.png" alt="generate query operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/generate-ast-query.png" alt="generate query operations"/>
 
 #### Example
 
@@ -113,7 +101,7 @@ from(bucket: "website_metrics")
 
 This query retrieve query suggestions.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-query.png" alt="retrieve operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-query.png" alt="retrieve operations"/>
 
 ### Retrieve Query Suggestions for a Branching Suggestion 
 
@@ -122,7 +110,7 @@ This operation retrieve query suggestions for a branching suggestion.
 #### Required Parameters:
 - **Name**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-branching.png" alt="retrieve operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-branching.png" alt="retrieve operations"/>
 
 ### Analyze a Flux Query 
 
@@ -132,7 +120,7 @@ This Analyzes a Flux query.
 
 - **Query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/analyze-flux.png" alt="analyze query operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/analyze-flux.png" alt="analyze query operations"/>
 
 #### Example
 ```yaml
@@ -146,7 +134,7 @@ from(bucket: "sensor_data")
 
 This operation lists all the buckets in a database.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/list-bucket.png" alt="list operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/list-bucket.png" alt="list operations"/>
 
 ### Create a Bucket 
 
@@ -156,7 +144,7 @@ This operation creates a bucket in database.
 
 - **Query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/create-bucket.png" alt="create operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/create-bucket.png" alt="create operations"/>
 
 #### Example
 ```yaml
@@ -182,7 +170,7 @@ This operation retrieve a bucket in a database.
 #### Required Parameters:
 - **Bucket ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-bucket.png" alt="retrieve operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/retrieve-bucket.png" alt="retrieve operations"/>
 
 ### Update a Bucket
 
@@ -192,7 +180,7 @@ This operaition updates the bucket in database.
 - **Bucket ID**
 - **Query**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/update-bucket.png" alt="update operations" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/update-bucket.png" alt="update operations"/>
 
 #### Example
 ```yaml
@@ -213,6 +201,4 @@ This operation delete the bucket in database.
 #### Required Parameters:
 - **Bucket ID**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/delete-bucket.png" alt="delete operations" style={{marginBottom:'15px'}}/>
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/influxdb/delete-bucket.png" alt="delete operations"/>

@@ -9,8 +9,6 @@ ToolJet can connect to your Mailgun account to send emails.
 The Mailgun API Datasource supports for interaction with the mail endpoint of the [Mailgun API](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1).
 :::
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Mailgun** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
@@ -23,10 +21,6 @@ ToolJet requires the following to connect to your Mailgun:
 :::tip
 Mailgun API key is required to create an Mailgun datasource on ToolJet. You can generate API key by visiting [Mailgun account page](https://app.mailgun.com/app/account/security/api_keys).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -59,5 +53,3 @@ For example: `admin@tooljet.io`
 
 **Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
 :::
-
-</div>
