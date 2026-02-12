@@ -11,8 +11,10 @@ ToolJet manages **request headers** and **boundary** conditions internally, remo
 ## Supported File Types
 
 ToolJet supports the following file types when using `multipart/form-data` in REST API queries:
-
- **All file types** when `accept="*"` is configured in the File Picker widget ( that includes image, pdf, zip etc.,).
+- **Image Files** 
+- **PDF Files**
+- **ZIP Files** and also 
+- **All file types** when `accept="*"` is configured in the File Picker widget ( that includes image, pdf, zip etc.,).
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/file-picker-UI.png" alt="REST api file type " />
 
