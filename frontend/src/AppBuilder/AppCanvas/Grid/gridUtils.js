@@ -3,6 +3,10 @@ import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -417,20 +421,6 @@ export function hideGridLines() {
   });
 }
 
-export function showGridLinesOnSlot(slotId) {
-  var canvasElm = document.getElementById(`canvas-${slotId}`);
-
-  canvasElm.classList.remove('hide-grid');
-  canvasElm.classList.add('show-grid');
-}
-
-export function hideGridLinesOnSlot(slotId) {
-  var canvasElm = document.getElementById(`canvas-${slotId}`);
-
-  canvasElm.classList.remove('show-grid');
-  canvasElm.classList.add('hide-grid');
-}
-
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
 let previousActiveCanvas = null;
@@ -719,4 +709,12 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
   } else if (moveableControlBoxClassList?.contains('moveable-dynamic-height') && !hasDynamicHeight) {
     moveableControlBoxClassList?.remove('moveable-dynamic-height');
   }
+};
+
+export const isDroppingRestrictedWidget = (target, dragged) => {
+  const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
+  const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+
+  const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
+  return restrictedWidgets.includes(dragged.widgetType);
 };

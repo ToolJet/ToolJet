@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 import GitSyncManager from '../GitSyncManager';
 import LifecycleCTAButton from '../LifecycleCTAButton';
 import useStore from '@/AppBuilder/_stores/store';
-import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
+import PromoteReleaseButton from '@/modules/Appbuilder/components/PromoteReleaseButton';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const RightTopHeaderButtons = ({ isModuleEditor }) => {
