@@ -69,16 +69,13 @@ export default class Grpcv2QueryService implements QueryService {
           break;
 
         case 'import_protos_from_filesystem': {
-          const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
-          const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
-
-          if (serviceNames.length === 0) {
-            return { status: 'failed', message: 'No services found in proto files' };
+          const selectedServices = sourceOptions.selected_services;
+          if (!Array.isArray(selectedServices) || selectedServices.length === 0) {
+            return { status: 'failed', message: 'Please select at least one service before testing the connection' };
           }
 
-          // Build a full client for just the first service to verify connectivity
-          const firstServiceName = serviceNames[0];
-          const client = await buildFilesystemClient(sourceOptions, firstServiceName);
+          // Build a client for the first selected service to verify connectivity
+          const client = await buildFilesystemClient(sourceOptions, selectedServices[0]);
 
           const deadline = new Date();
           deadline.setSeconds(deadline.getSeconds() + 60);
@@ -89,13 +86,10 @@ export default class Grpcv2QueryService implements QueryService {
             });
           });
 
-          let message = `Successfully connected. Found ${serviceNames.length} service(s)`;
-          if (failures.length > 0) {
-            message += `. Note: ${failures.length} proto file(s) skipped due to errors`;
-          }
-          message += '.';
-
-          return { status: 'ok', message };
+          return {
+            status: 'ok',
+            message: `Successfully connected. Testing with ${selectedServices.length} selected service(s).`
+          };
         }
 
         default:
