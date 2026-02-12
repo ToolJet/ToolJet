@@ -1,4 +1,5 @@
 import knex, { Knex } from 'knex';
+import fs from 'fs';
 import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
@@ -10,6 +11,75 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
+import { Client } from 'ssh2';
+
+function createSSHStream(
+  sourceOptions: SourceOptions
+): Promise<{ client: Client; stream: NodeJS.ReadWriteStream }> {
+  return new Promise((resolve, reject) => {
+    const sshClient = new Client();
+
+    sshClient.on('ready', () => {
+      sshClient.forwardOut(
+        '127.0.0.1', // source address (not important)
+        0,           // source port
+        sourceOptions.host,        // DB host from SSH server POV
+        Number(sourceOptions.port),// DB port
+        (err, stream) => {
+          if (err) {
+            sshClient.end();
+            return reject(err);
+          }
+          stream.on('error', (streamErr) => {
+            console.error('SSH stream error (suppressed):', streamErr.message);
+          });
+
+          stream.on('close', () => {
+            setImmediate(() => {
+              try {
+                if (sshClient) {
+                  sshClient.destroy(); // Use destroy instead of end for immediate cleanup
+                }
+              } catch (e) {
+                console.error('Error closing SSH client (suppressed):', e.message);
+              }
+            });
+          });
+
+          resolve({ client: sshClient, stream });
+        }
+      );
+    });
+
+    sshClient.on('error', (err) => {
+      reject(err);
+    });
+
+    sshClient.on('end', () => {
+        console.log('SSH connection ended');
+      });
+
+   sshClient.on('close', () => {
+        console.log('SSH connection closed');
+      });
+
+ 
+    sshClient.connect({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      ...(sourceOptions.ssh_auth_type === 'password'
+        ? { password: sourceOptions.ssh_password }
+        : {
+            privateKey: fs.readFileSync('/home/abhijeet/projects/tooljet/plugins/packages/mysql/lib/testing_key.pem'),
+            passphrase: sourceOptions.ssh_passphrase,
+          }),
+      readyTimeout: 20000,
+      keepaliveInterval: 10000,
+    });
+  });
+}
+
 
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;
@@ -104,9 +174,15 @@ export default class MysqlQueryService implements QueryService {
 
   private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
     if (isEmpty(query)) throw new Error('Query is empty');
+    try{
+          const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT);
+          return result;
 
-    const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT);
-    return result;
+    }
+    catch(err){
+      throw err;
+    }
+    
   }
 
   private connectionOptions(sourceOptions: SourceOptions) {
@@ -118,43 +194,64 @@ export default class MysqlQueryService implements QueryService {
     return connectionOptions;
   }
 
-  private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-  const props = sourceOptions.socket_path
-    ? { socketPath: sourceOptions.socket_path }
-    : {
-        host: sourceOptions.host,
-        port: +sourceOptions.port,
-      };
-
-    const shouldUseSSL = sourceOptions.ssl_enabled;
-    let sslObject: any = null;
-
-if (shouldUseSSL) {
-  sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
+ private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
   
-  if (sourceOptions.ssl_certificate === 'ca_certificate') {
-    sslObject.ca = sourceOptions.ca_cert;
-  } else if (sourceOptions.ssl_certificate === 'self_signed') {
-    sslObject.ca = sourceOptions.root_cert;
-    sslObject.key = sourceOptions.client_key;
-    sslObject.cert = sourceOptions.client_cert;
-  }
-}
+  const shouldUseSSL = sourceOptions.ssl_enabled;
+  let sslObject: any = null;
 
-  const config: Knex.Config = {
-    client: 'mysql2',
-    connection: {
-      ...props,
+  if (shouldUseSSL) {
+    sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
+    
+    if (sourceOptions.ssl_certificate === 'ca_certificate') {
+      sslObject.ca = sourceOptions.ca_cert;
+    } else if (sourceOptions.ssl_certificate === 'self_signed') {
+      sslObject.ca = sourceOptions.root_cert;
+      sslObject.key = sourceOptions.client_key;
+      sslObject.cert = sourceOptions.client_cert;
+    }
+  }
+
+  let connectionConfig: any ;
+
+  if (sourceOptions.ssh_enabled) {
+    connectionConfig = async () => {
+      const ssh = await createSSHStream(sourceOptions);
+      return {
+        stream: ssh.stream,
+        user: sourceOptions.username,
+        password: sourceOptions.password,
+        database: sourceOptions.database,
+        multipleStatements: true,
+        ...(shouldUseSSL ? { ssl: sslObject } : {}),
+      };
+    };
+  }else {
+    connectionConfig = {
       user: sourceOptions.username,
+      host: sourceOptions.host,
+      port: Number(sourceOptions.port),
       password: sourceOptions.password,
       database: sourceOptions.database,
       multipleStatements: true,
       ...(shouldUseSSL ? { ssl: sslObject } : {}),
-    },
+    };
+    
+    if (sourceOptions.socket_path) {
+      connectionConfig.socketPath = sourceOptions.socket_path;
+    }
+  }
+
+  const config: Knex.Config = {
+    client: 'mysql2',
+    connection: connectionConfig,
     ...this.connectionOptions(sourceOptions),
   };
 
-  return knex(config);
+  const knexInstance = knex(config);
+
+
+
+  return knexInstance;
 }
 
   async getConnection(
