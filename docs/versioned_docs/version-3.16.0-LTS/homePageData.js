@@ -111,7 +111,7 @@ export const dataCards = [
         title: "Transformation",
         color: "text-blue-500",
         content: "Leverage ToolJet's transformation capabilities to manipulate and format data from various sources with ease.",
-        href: "/docs/tutorial/transformations/"
+        href: "/docs/app-builder/connecting-with-data-sources/transforming-data/"
     }
 ];
 

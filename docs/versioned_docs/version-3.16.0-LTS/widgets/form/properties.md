@@ -22,7 +22,7 @@ Choose how the form should be generated and manage all input fields from a singl
 - Using the Form Property Panel
 - By Dragging Components into the Form
 
-Refer to the [Generate Form](/docs/widgets/form/form) guide for more details.
+Refer to the [Generate Form](/docs/widgets/form/) guide for more details.
 
 ## Events
 
