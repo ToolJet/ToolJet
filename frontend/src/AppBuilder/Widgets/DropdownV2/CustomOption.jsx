@@ -12,13 +12,13 @@ const CustomOption = (props) => {
         ...props.innerProps,
       }}
     >
-      <div className="cursor-pointer">
+      <div className="cursor-pointer tw-flex tw-min-w-0 tw-w-full">
         {props.isSelected && (
-          <span style={{ maxHeight: '20px', marginRight: '8px', marginLeft: '-28px' }}>
+          <span className="tw-shrink-0" style={{ maxHeight: '20px', marginRight: '8px', marginLeft: '-28px' }}>
             <CheckMark width={'20'} fill={'var(--cc-primary-brand)'} />
           </span>
         )}
-        <span style={{ color: 'unset', wordBreak: 'break-all' }}>
+        <span className="tw-min-w-0 tw-flex-1 tw-truncate" style={{ color: 'unset' }}>
           {highlightText(props.label?.toString(), props.selectProps.inputValue)}
         </span>
       </div>

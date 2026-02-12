@@ -354,7 +354,8 @@ export const DropdownV2 = ({
       }, 0);
 
       const paddingAllowance = 44; // matches option horizontal padding/spacing
-      const computed = Math.ceil(maxLabelWidth + paddingAllowance);
+      const measurementBuffer = 24; // buffer so canvas measureText vs actual render don't cause ellipsis
+      const computed = Math.ceil(maxLabelWidth + paddingAllowance + measurementBuffer);
       const capped = Math.min(computed, 520);
       return Number.isFinite(capped) ? `${capped}px` : null;
     } catch (_e) {
@@ -372,7 +373,15 @@ export const DropdownV2 = ({
     }
 
     if (menuWidthMode === 'matchContent' && menuContentWidth) {
-      return { width: menuContentWidth, maxWidth: 'min(520px, calc(100vw - 24px))' };
+      const contentPx = Number.parseFloat(menuContentWidth) || 0;
+      const triggerPx = triggerWidth != null && Number.isFinite(triggerWidth) ? triggerWidth : 0;
+      const effectivePx = Math.max(contentPx, triggerPx);
+      const widthStr = effectivePx > 0 ? `${effectivePx}px` : menuContentWidth;
+      return {
+        width: widthStr,
+        minWidth: widthStr,
+        maxWidth: 'min(520px, calc(100vw - 24px))',
+      };
     }
 
     if (menuWidthMode === 'custom' && customWidth) {
@@ -476,7 +485,7 @@ export const DropdownV2 = ({
         : menuBackgroundColor || 'var(--cc-surface1-surface)',
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
-      padding: '8px 6px 8px 38px',
+      padding: _state.isSelected ? '8px 6px 8px 38px' : '8px 6px 8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
         backgroundColor: _state.isDisabled
