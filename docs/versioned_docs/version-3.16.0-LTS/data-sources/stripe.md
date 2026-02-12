@@ -9,8 +9,6 @@ ToolJet can connect to your Stripe account to read or write customers' and payme
 Check out the **[Stripe Refund App tutorial](https://blog.tooljet.com/build-a-stripe-refund-tool-using-low-code/)**
 :::
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the Stripe data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Stripe as the data source.
@@ -25,10 +23,6 @@ You can obtain the Stripe API keys from your Stripe dashboard. From the dashboar
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/stripe/dashboard-stripe.png" alt="ToolJet - Data source - Stripe"/>
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Querying Stripe
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -39,10 +33,6 @@ You can obtain the Stripe API keys from your Stripe dashboard. From the dashboar
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/app-builder/custom-code/transform-data)**
 :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -196,5 +186,3 @@ You can check out the some of the operations mentioned below. All the operations
 | **Method** | **Endpoint**                              | **Description**                  |
 | ---------- | ----------------------------------------- | -------------------------------- |
 | GET        | `/v1/application_fees/{fee}/refunds/{id}` | Retrieve specific refund details |
-
-</div>
