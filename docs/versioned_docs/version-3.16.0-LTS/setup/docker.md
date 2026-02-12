@@ -280,7 +280,42 @@ Before starting the upgrade process, perform a **comprehensive backup of your Po
 Ensure both databases are included in your backup before proceeding with the upgrade.
 :::
 
-- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+:::warning Critical
+Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+:::
+
+### Upgrade Steps
+
+After completing the PostgreSQL backup, follow the steps below to upgrade to the latest LTS version:
+
+1. **Stop the Running Containers**  
+   Run the following command on your server (in the directory where your *docker-compose.yml* file is located):
+   ```bash
+   docker compose down
+   ```
+   This will stop and remove the running containers while preserving your volumes and data.
+
+2. **Get the Latest LTS Tag from Docker Hub**  
+   You can visit the official [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page to get the latest image tag.
+   
+3. **Update the *docker-compose.yml* File**  
+   Open your *docker-compose.yml* file and update the *image* field under the *tooljet* service:
+   ```yaml
+    services:
+      tooljet:
+        image: tooljet/tooljet:v3.x.x-lts   # Replace with the latest LTS tag
+   ```
+   :::note
+   Replace v3.x.x-lts with the exact LTS version tag copied from Docker Hub.
+   :::
+
+4. **Start ToolJet with the New Version**  
+   After updating the image tag in your *docker-compose.yml* file, run the following command on your server (in the same directory):
+
+   ```bash
+   docker compose up -d
+   ```
+   Docker will pull the new image and recreate the containers using the updated version.
 
 <br/>
 ---
