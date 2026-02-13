@@ -3,6 +3,46 @@ Disallow: /1.x.x/
 Disallow: /docs/1.x.x/
 Disallow: /2.50.0-lts/
 Disallow: /docs/2.50.0-lts/
+Disallow: /3.0.0-lts/
+Disallow: /docs/3.0.0-lts/
+Disallow: /3.5.0-lts/
+Disallow: /docs/3.5.0-lts/
+Disallow: /search
+Disallow: /search/
+
+# Allow Algolia crawler
+User-agent: Algolia
+Allow: /
+
+# Allow AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+Sitemap: https://docs.tooljet.com/sitemap.xml
 
 
 # ********************************************************************************

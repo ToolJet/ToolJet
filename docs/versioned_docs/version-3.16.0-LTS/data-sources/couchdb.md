@@ -5,8 +5,6 @@ title: CouchDB
 
 ToolJet can connect to CouchDB databases to read and write data. 
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the CouchDB data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -15,11 +13,7 @@ ToolJet requires the following to connect to your CouchDB.
 - **Username**
 - **Password**
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/connections.png" alt="Couch listing"/>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/connections.png" alt="CouchDB connection"/>
 
 ## Querying CouchDB
 
@@ -28,11 +22,7 @@ ToolJet requires the following to connect to your CouchDB.
 3. Select the operation you want to perform and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/operations.png" alt="Couch listing"/>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-listops.png" alt="Couch listing"/>
 
 ## Supported Queries 
 
@@ -55,7 +45,7 @@ This query lists all the records in a database.
 - **Limit**
 - **Skip**
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/listing-v2.png" alt="Couch listing"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-list-rec.png" alt="Couch listing"/>
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -99,7 +89,7 @@ This operation fetches a single record by its record ID.
 - **Record ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving-v2.png" alt="Couch retrieve view" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-retrieve.png" alt="Couch retrieve view" />
 
 <details id="tj-dropdown">
   <summary> **Response Example** </summary>
@@ -123,7 +113,7 @@ Inserts a new record into the database.
 - **Records**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/creating-v2.png" alt="Couch create view"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-create.png" alt="Couch create view"/>
 
 #### Example
 
@@ -152,7 +142,7 @@ You get the document as JSON in the response. For each update to the document, t
 - **Revision ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/updating-v2.png" alt="Couch update view" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-update.png" alt="Couch update view" />
 
 
 #### Example
@@ -181,7 +171,7 @@ Removes a record from the database by its record ID.
 - **Revision ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/deleteRecord.png" alt="Couch delete view"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-delete.png" alt="Couch delete view"/>
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -207,7 +197,7 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 :::
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/find-v2.png" alt="Couch find" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-find.png" alt="Couch find" />
 
 
 #### Example
@@ -223,7 +213,7 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 
 Example response from CouchDB:
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
 
 ### Get View
 
@@ -239,7 +229,7 @@ Views are the primary tool used for querying and reporting on CouchDB documents.
 - **Limit**
 - **Skip**
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view-v2.png" alt="Couch get view" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-get-view.png" alt="Couch get view" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -280,5 +270,3 @@ Views are the primary tool used for querying and reporting on CouchDB documents.
     }
     ```
 </details>
-
-</div>
