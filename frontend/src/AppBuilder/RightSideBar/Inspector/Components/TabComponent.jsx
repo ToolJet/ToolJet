@@ -244,7 +244,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   };
 
   const _renderOverlay = (item, index) => {
-    console.log('debug', item);
     const iconVisibility =
       item?.iconVisibility?.value !== undefined ? getResolvedValue(item?.iconVisibility?.value) : item?.iconVisibility;
 
