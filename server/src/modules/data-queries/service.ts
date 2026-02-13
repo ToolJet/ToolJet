@@ -26,7 +26,7 @@ export class DataQueriesService implements IDataQueriesService {
     protected readonly dataQueryUtilService: DataQueriesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService
-  ) { }
+  ) {}
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
@@ -200,7 +200,13 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
+  async runQueryForApp(
+    user: User,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    response: Response,
+    app?: App
+  ) {
     const { resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
@@ -238,18 +244,18 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
-          metadata: error.metadata,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
+          metadata: error?.metadata,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
-          message: 'Internal server error',
-          description: error.message,
-          data: {},
+          message: error?.message || 'Internal server error',
+          description: error?.message,
+          data: error?.data || {},
         };
       }
     }
@@ -265,16 +271,16 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
-          description: error.message,
+          description: error?.message,
           data: {},
         };
       }
