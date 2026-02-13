@@ -619,6 +619,7 @@
               "label": "Logic Nodes",
               "items": [
                 "workflows/nodes/logic/js",
+                "workflows/nodes/logic/py",
                 "workflows/nodes/logic/if-else",
                 "workflows/nodes/logic/loop"
               ]
@@ -636,6 +637,14 @@
             "workflows/triggers/app",
             "workflows/triggers/webhook",
             "workflows/triggers/scheduler"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Importing External Libraries",
+          "items": [
+            "workflows/external-libraries/js",
+            "workflows/external-libraries/py"
           ]
         }
       ]
