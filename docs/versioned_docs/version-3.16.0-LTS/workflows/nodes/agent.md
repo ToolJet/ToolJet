@@ -5,7 +5,7 @@ title: Agent Node
 
 <br/>
 
-The **Agent Node** enables AI-powered automation within your workflows. It connects to AI Models and can use tools (databases/APIs) to perform multi-step reasoning and task execution. The agent autonomously decides which tools to use and how to combine their results to accomplish complex tasks.
+The **Agent Node** enables AI-powered automation within your workflows. It connects to AI Models and can use tools (Slack, Gmail, GitHub, etc.) to perform multi-step reasoning and task execution. The agent autonomously decides which tools to use and how to combine their results to accomplish complex tasks.
 
 ## Configuration
 
@@ -90,7 +90,7 @@ agent1.data
 
 
 ## Use Cases
-
+<!-- 
 ### Customer Support Agent
 
 Create an agent that looks up customer information, creates support tickets, and retrieves order history.
@@ -150,7 +150,7 @@ Label guidelines:
 - Questions: add "question" and post documentation links
 ```
 
-<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/github-issue-triager.png" alt="GitHub Issue Triage" />
+<img className="screenshot-full img-full" src="/img/workflows/nodes/agent/github-issue-triager.png" alt="GitHub Issue Triage" /> -->
 
 ### Slack Notification Agent
 
@@ -180,6 +180,16 @@ When an alert is triggered:
 
 Always include: alert name, severity, timestamp, and recommended action.
 ```
+
+**How It Works:**
+
+1. **Trigger** — A workflow trigger (e.g., a webhook from your monitoring system) fires and passes alert data like `alert_id` into the workflow.
+2. **User Prompt** — The alert data is injected into the Agent Node's user prompt using dynamic syntax, for example: `New alert triggered. Alert ID: {{ startNode.data.alert_id }}`. This is the task the agent receives.
+3. **Agent Reasoning** — The AI model reads the system prompt and user prompt, then plans its approach. It decides which tools to call and in what order.
+4. **Tool Execution** — The agent starts executing:
+   - Calls `getAlertDetails` with the alert ID to fetch severity, service name, and timestamp from PostgreSQL.
+   - Based on the returned severity, it branches its logic. For a critical alert, it calls `getUserOnCall` to find the on-call engineer, then `createIncident` to open an incident, and finally `sendSlackMessage` to notify the #incidents channel with all the details.
+5. **Output** — The agent compiles a final response summarizing the actions it took (e.g., incident ID created, Slack message sent, on-call engineer notified). This output is available to downstream nodes via `agentNodeName.data`.
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/slack-agent.png" alt="Slack Agent" />
 
@@ -212,6 +222,18 @@ For each incoming email:
 
 Maintain a professional and helpful tone in all responses.
 ```
+
+**How It Works:**
+
+1. **Trigger** — A workflow trigger (e.g., a webhook from Gmail or a scheduled cron job) fires when a new email arrives and passes the `email_id` into the workflow.
+2. **User Prompt** — The email ID is passed into the Agent Node's user prompt dynamically, for example: `Process incoming email. Email ID: {{ startNode.data.email_id }}`. This tells the agent which email to work on.
+3. **Agent Reasoning** — The AI model reads the system prompt and user prompt, then determines the sequence of tool calls needed to process this email.
+4. **Tool Execution** — The agent starts executing:
+   - Calls `getEmailContent` with the email ID to fetch the subject, body, and sender details from Gmail.
+   - Passes the email content to `classifyEmail`, a JavaScript node that returns the classification (e.g., "complaint").
+   - Based on the classification, the agent branches: for a complaint, it calls `forwardEmail` to route it to the support team. For an inquiry, it would call `draftReply` to compose a response.
+   - Finally, it calls `logEmail` to record the email and the action taken in PostgreSQL.
+5. **Output** — The agent returns a summary of what it did (e.g., email classified as "complaint", forwarded to support@company.com, logged with tracking ID #4521). This output is available to downstream nodes via `agentNodeName.data`.
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/email-assistant.png" alt="Email Assistant" />
 
