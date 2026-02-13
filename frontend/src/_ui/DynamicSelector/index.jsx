@@ -501,7 +501,7 @@ const DynamicSelector = ({
           ) : (
             <div
               style={{
-                border: error || noAccessError ? '1px solid #E54D2E' : 'none',
+                border: error || (noAccessError && !isLoading) ? '1px solid #E54D2E' : 'none',
                 borderRadius: '6px',
               }}
             >
@@ -557,7 +557,7 @@ const DynamicSelector = ({
         </div>
       )}
 
-      {noAccessError && !error && (
+      {noAccessError && !error && !isLoading && (
         <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
           <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
           <span>
