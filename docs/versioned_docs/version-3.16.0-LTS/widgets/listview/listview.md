@@ -4,8 +4,6 @@ title: List View
 slug: /widgets/listview/
 ---
 
-# List View
-
 The **List View** component allows to create a list of repeatable rows of data. Just like the Container component, you can nest other components inside of it and control how many times they repeat.
 
 :::caution Restricted components
@@ -175,9 +173,3 @@ The components inside the list view can be controlled using the javascript queri
 ```js
 components.listview1.children[0].button1.disable(true) // disables the button1 component in the first record
 ```
-
-<br/>
-
-:::caution
-Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/widgets/overview)**.
-:::

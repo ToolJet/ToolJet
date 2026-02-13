@@ -26,7 +26,7 @@ When building applications with ToolJet, it's essential to follow best practices
 ## 3. Client-Side Operations for Large Data Sets
 
 - **Anti-Pattern**: Handling large data sets with client-side operations on the Table component.
-- **Solution**: **Implement [server-side operations](/docs/widgets/table/serverside-operations/overview) for handling large data sets.**
+- **Solution**: **Implement [server-side operations](/docs/widgets/table/serverside-operations/overview/) for handling large data sets.**
 - **Reason**: Server-side operations reduces the amount of data loaded at once, improving load times and performance.
 
 ---

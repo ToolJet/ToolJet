@@ -3,8 +3,6 @@ id: cloud-v3-migration
 title: ToolJet 3.0 Cloud Migration Guide
 ---
 
-# ToolJet 3.0 Cloud Migration Guide
-
 ToolJet Cloud will be upgraded to 3.0 on November 11th, 2024. This update includes breaking changes that may affect your applications. Please review and update your applications before November 11th to ensure they continue working after the upgrade.
 
 :::warning Important
@@ -214,7 +212,7 @@ After November 11th, applications with the old Kanban Board component will crash
 
 #### Action Required After Upgrade
 
-If you haven't migrated your local data sources to global data sources, you will encounter an error message indicating that local data sources are no longer supported. For detailed instructions on migrating from Local Data Sources to the new Data Sources, please refer to our [Local Data Sources Migration Guide](/docs/data-sources/local-data-sources-migration).
+If you haven't migrated your local data sources to global data sources, you will encounter an error message indicating that local data sources are no longer supported. For detailed instructions on migrating from Local Data Sources to the new Data Sources, please refer to our [Local Data Sources Migration Guide](/docs/3.0.0-lts/data-sources/local-data-sources-migration/).
 
 ### Workspace Variables
 

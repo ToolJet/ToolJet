@@ -41,6 +41,7 @@ jobs:
     if: ${{ github.event.inputs.env_changes != '' }}
     runs-on: ubuntu-latest
     steps:
+      
       - name: ✅ Check user authorization
         run: |
           allowed_users=(
@@ -73,8 +74,10 @@ jobs:
           else
             echo "✅ User '$current_user' is authorized."
           fi
+      
       - name: Install SSH and JQ
         run: sudo apt-get update && sudo apt-get install -y jq openssh-client
+      
       - name: Determine target host
         id: vmhost
         run: |
@@ -85,6 +88,7 @@ jobs:
             exit 1
           fi
           echo "host=$vm_host" >> $GITHUB_OUTPUT
+     
       - name: Update environment variables
         run: |
           echo "$SSH_KEY" > key.pem
@@ -300,18 +304,22 @@ jobs:
           else
             echo "✅ User '$current_user' is authorized."
           fi
+      
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch_name }}
           fetch-depth: 0
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PAT }}
+      
       - name: Generate full Docker tag
         id: taggen
         run: |
@@ -321,6 +329,7 @@ jobs:
           else
             echo "tag=tooljet/tj-osv:$input_tag" >> $GITHUB_OUTPUT
           fi
+      
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -329,15 +338,16 @@ jobs:
           push: true
           tags: ${{ steps.taggen.outputs.tag }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }}
             BRANCH_NAME=${{ github.event.inputs.branch_name }}
+      
       - name: Show the full Docker tag
         run: echo "✅ Docker image built and pushed:${{ steps.taggen.outputs.tag }}"
+      
       - name: Install SSH and JQ
         run: sudo apt-get update && sudo apt-get install -y jq openssh-client
+      
       - name: Determine target host
         id: vmhost
         run: |
@@ -348,6 +358,7 @@ jobs:
             exit 1
           fi
           echo "host=$vm_host" >> $GITHUB_OUTPUT
+      
       - name: Deploy to target environment
         run: |
           echo "$SSH_KEY" > key.pem

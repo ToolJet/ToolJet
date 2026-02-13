@@ -331,6 +331,7 @@
                 "widgets/html",
                 "widgets/icon",
                 "widgets/iframe",
+<<<<<<< HEAD
                 {
                   "type": "category",
                   "label": "Image",
@@ -343,7 +344,13 @@
                     "widgets/image/loading-image-pdf-from-db"
                   ]
                 },
+=======
+                "widgets/image",
+                "widgets/json-editor",
+                "widgets/json-explorer",
+>>>>>>> develop
                 "widgets/kanban",
+                "widgets/key-value-pair",
                 "widgets/link",
                 {
                   "type": "category",
@@ -377,6 +384,7 @@
                 },
                 "widgets/phone-input",
                 "widgets/popover-menu",
+                "widgets/progress-bar",
                 "widgets/qr-scanner",
                 "widgets/radio-button-v2",
                 "widgets/range-slider",
@@ -519,6 +527,7 @@
                   ]
             },
             "data-sources/googlesheets",
+            "data-sources/googlesheetsv2",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
@@ -545,7 +554,11 @@
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
                 "data-sources/restapi/metadata-and-cookies",
+<<<<<<< HEAD
                 "data-sources/restapi/pass-values-in-rest-api"
+=======
+                "data-sources/restapi/multipart-form-data-rest-api"
+>>>>>>> develop
               ]
             },
             "data-sources/soap-api",
@@ -612,6 +625,7 @@
                 "marketplace/plugins/marketplace-plugin-azurerepos",
                 "marketplace/plugins/marketplace-plugin-clickup",
                 "marketplace/plugins/marketplace-plugin-cohere",
+                "marketplace/plugins/marketplace-plugin-couchbase",
                 "marketplace/plugins/marketplace-plugin-easypost",
                 "marketplace/plugins/marketplace-plugin-engagespot",
                 "marketplace/plugins/marketplace-plugin-fedex",

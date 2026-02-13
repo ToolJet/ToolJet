@@ -15,7 +15,7 @@ By embedding applications, you reduce context switching, accelerate user adoptio
 
 ## Example
 
-For example, we have embedded a **Documentation Feedback** application directly in this document. Users can submit feedback without switching tabs, making the process faster and more efficient. On the backend, you can create a separate admin app on ToolJet to analyze the results or set up a [ToolJet workflow](/docs/workflows/overview) to perform automated actions based on the feedback.
+For example, we have embedded a **Documentation Feedback** application directly in this document. Users can submit feedback without switching tabs, making the process faster and more efficient. On the backend, you can create a separate admin app on ToolJet to analyze the results or set up a [ToolJet workflow](/docs/workflows/overview/) to perform automated actions based on the feedback.
 
 <iframe width="100%" height="650" src="https://app.tooljet.com/applications/docs-embed-app-example" title="ToolJet app - docs-embed-app-example" frameborder="0" allowfullscreen></iframe>
 

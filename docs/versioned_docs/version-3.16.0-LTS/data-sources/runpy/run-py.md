@@ -6,9 +6,7 @@ slug: /data-sources/run-py
 
 In ToolJet, custom **Run Python Code** can be used to interact with components and queries, making it possible to customize actions and data handling.
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-python/data-source.png" alt="Run Python code" />
 
 ## Using Python Code to Trigger Component Specific Actions
 
@@ -38,10 +36,6 @@ components.text1.setText(p1.myfunc())
 - Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
   :::
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Trigger Queries Using Run Python Code
 
 To trigger queries in Python, you can use the below functions:
@@ -57,10 +51,6 @@ Or
 queries.getSalesData.run()
 #replace getSalesData with your query name
 ```
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Get Query Data
 
@@ -102,10 +92,6 @@ value = queries.getTodos.getLoadingState()
 value
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Get Variables
 
 To set and access variables or page variables in **Run Python code**, you can use the below functions:
@@ -143,10 +129,6 @@ actions.setPageVariable('number',1)
 actions.getPageVariable('number')
 #replace number with your desired variable name
 ```
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Using Transformations With Python
 
@@ -192,10 +174,6 @@ To calculate the average price of products within the _laptops_ category. Enable
 return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0
 ```
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Refer Python Query Data in Components
 
 Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
@@ -205,5 +183,3 @@ For instance, if you have a **Run Python code** query named _updatedProductInfo_
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 :::
-
-</div>

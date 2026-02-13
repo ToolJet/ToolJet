@@ -331,5 +331,16 @@
     "tags": [
       "Payment"
     ]
+  },
+  {
+    "name": "couchbase",
+    "description": "database plugin from couchbase",
+    "version": "1.0.0",
+    "id": "couchbase",
+    "author": "Tooljet",
+    "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT",
+    "tags": [
+      "AI"
+    ]
   }
 ]

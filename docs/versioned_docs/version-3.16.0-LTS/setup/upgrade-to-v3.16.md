@@ -32,6 +32,21 @@ Audit logs are the reports of all the activities done in your ToolJet account. B
 | Cloud       | No change. Audit logs remain fixed to 90 days.                                          |
 | Self-Hosted | Audit logs now default to 90 days. Override via `.env`: `AUDIT_LOG_RETENTION_PERIOD=90` |
 
+#### Group Synchronization (Migration Only)
+
+Group synchronization for LDAP and SAML has moved from **environment variables** to **UI-based configuration**.
+
+Previously, the following variables were used during login:
+
+- `DISABLE_LDAP_GROUP_SYNC=true`
+- `DISABLE_SAML_GROUP_SYNC=true`
+
+In ToolJet 3.16, these variables are retained **only for backward compatibility during migration**.  
+For new installations, they have **no effect**.
+
+After upgrading, group synchronization should be managed exclusively via the UI.
+
+
 ## Minor Component Changes (Low Severity)
 
 These changes may cause **minor visual shifts** but require no action unless affecting your layout.

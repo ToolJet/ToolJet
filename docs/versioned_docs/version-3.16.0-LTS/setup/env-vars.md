@@ -371,7 +371,7 @@ ToolJet supports OpenTelemetry (OTEL) for comprehensive observability and monito
 Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high cardinality metrics that can impact Prometheus performance. Use an OTEL Collector to filter this label in production.
 :::
 
-For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/setup/observability-otel) documentation.
+For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
 
 <br/>
 ---
