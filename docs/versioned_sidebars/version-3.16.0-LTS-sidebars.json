@@ -72,7 +72,7 @@
             "setup/http-proxy",
             {
               "type": "category",
-              "label": "Built-in SSL & nginx",
+              "label": "Built-in SSL",
               "items": [
                 "setup/builtin-ssl/overview",
                 "setup/builtin-ssl/requirements",
