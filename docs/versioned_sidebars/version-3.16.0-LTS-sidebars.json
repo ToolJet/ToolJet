@@ -613,6 +613,7 @@
           "label": "Nodes",
           "items": [
             "workflows/nodes/start-trigger",
+            "workflows/nodes/agent",
             {
               "type": "category",
               "label": "Logic Nodes",
