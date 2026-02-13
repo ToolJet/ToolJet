@@ -136,6 +136,7 @@ export class AppsUtilService implements IAppsUtilService {
           appVersionId: appVersion.id,
           index: 1,
           autoComputeLayout: true,
+          appId: app.id,
         })
       );
 

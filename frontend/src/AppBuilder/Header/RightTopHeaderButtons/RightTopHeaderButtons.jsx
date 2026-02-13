@@ -24,8 +24,9 @@ const RightTopHeaderButtons = ({ isModuleEditor }) => {
       <div className=" release-buttons">
         <GitSyncManager />
         <div className="tw-hidden navbar-seperator" />
-        <PreviewAndShareIcons />
+        {/* <PreviewAndShareIcons /> */}
         {isNotPromotedOrReleased && <LifecycleCTAButton />}
+        {/* need to review if we need this or not */}
         {/* {!isModuleEditor && <PromoteReleaseButton />} */}
       </div>
     </div>

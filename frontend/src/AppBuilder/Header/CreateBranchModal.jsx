@@ -367,7 +367,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
           </div>
 
           {/* Info message about branch creation */}
-          <Alert placeSvgTop={true} svg="info-icon" className="create-branch-info">
+          <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
             Branch can only be created from master
           </Alert>
 
@@ -383,7 +383,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
               isLoading={isCreating}
               size="md"
             >
-              {isCreating ? 'Creating...' : 'Create branch'}
+              {'Create branch'}
             </ButtonSolid>
           </div>
         </div>

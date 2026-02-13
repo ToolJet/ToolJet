@@ -34,6 +34,9 @@ export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column({ name: 'name' })
   name: string;
 
@@ -79,6 +82,7 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'created_by' })
   user: User;
 
+  // need to review if this should be a non-nullable field with default value as DRAFT status
   @Column({
     name: 'status',
     type: 'enum',
