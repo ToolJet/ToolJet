@@ -1154,8 +1154,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
-        onDragGroupStart={(ev) => {
-          // Do nothing, Kept for future use/reference
+        onDragGroupStart={(e) => {
+          showGridLines();
+          handleActivateNonDraggingComponents();
+          // Don't start autoscroll if dragging via config handle
+          if (isGroupHandleHoverd) return;
+          // Start autoscroll for group drag with all target elements
+          const targets = e.targets || [];
+          if (targets.length > 0) {
+            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
+          }
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -1163,15 +1171,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const parentElm = events[0]?.target?.closest('.real-canvas');
           if (!isGroupDraggingRef.current) {
             useStore.getState().setIsGroupDragging(true);
-            showGridLines();
-            handleActivateNonDraggingComponents();
-            // Don't start autoscroll if dragging via config handle
-            if (isGroupHandleHoverd) return;
-            // Start autoscroll for group drag with all target elements
-            const targets = ev.targets || [];
-            if (targets.length > 0) {
-              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
-            }
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection
             lastGroupDragEventRef?.current?.forEach((ev) => {
