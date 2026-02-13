@@ -145,7 +145,7 @@ else
   echo "Failed to start and enable Redis"
 fi
 
-if sudo -E systemctl start openresty
+if sudo -E systemctl start nginx
 then
   echo "Successfully started reverse proxy!"
 else
