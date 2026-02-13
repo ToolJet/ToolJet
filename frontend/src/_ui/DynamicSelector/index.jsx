@@ -89,7 +89,7 @@ const DynamicSelector = ({
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
 
       const payload = response?.data ?? response;
-      const items = payload?.data || [];
+      const items = Array.isArray(payload) ? payload : (payload?.data || []);
       setFetchedData(items);
       validateSelectedValue(items);
 
