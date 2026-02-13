@@ -447,14 +447,7 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const {
-      clearSelectedComponents,
-      setActiveRightSideBarTab,
-      isRightSidebarOpen,
-      isGroupResizing,
-      isGroupDragging,
-      activeRightSideBarTab,
-    } = get();
+    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -478,6 +471,7 @@ export const createGridSlice = (set, get) => ({
       ].join(',');
       return !!document.querySelector(selector);
     };
+
     if (
       !isClickedOnSubcontainer &&
       ['rm-container', 'real-canvas', 'modal'].includes(e.target.id) &&
