@@ -141,6 +141,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'JSONEditor',
   'KeyValuePair',
   'IFrame',
+  'Accordion',
   'ReorderableList',
 ];
 

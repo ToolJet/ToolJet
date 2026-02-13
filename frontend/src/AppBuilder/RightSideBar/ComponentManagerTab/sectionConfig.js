@@ -13,7 +13,7 @@ const sectionConfig = {
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
