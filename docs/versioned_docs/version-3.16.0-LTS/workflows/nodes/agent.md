@@ -183,13 +183,41 @@ Always include: alert name, severity, timestamp, and recommended action.
 
 **How It Works:**
 
-1. **Trigger** — A workflow trigger (e.g., a webhook from your monitoring system) fires and passes alert data like `alert_id` into the workflow.
-2. **User Prompt** — The alert data is injected into the Agent Node's user prompt using dynamic syntax, for example: `New alert triggered. Alert ID: {{ startNode.data.alert_id }}`. This is the task the agent receives.
-3. **Agent Reasoning** — The AI model reads the system prompt and user prompt, then plans its approach. It decides which tools to call and in what order.
-4. **Tool Execution** — The agent starts executing:
-   - Calls `getAlertDetails` with the alert ID to fetch severity, service name, and timestamp from PostgreSQL.
-   - Based on the returned severity, it branches its logic. For a critical alert, it calls `getUserOnCall` to find the on-call engineer, then `createIncident` to open an incident, and finally `sendSlackMessage` to notify the #incidents channel with all the details.
-5. **Output** — The agent compiles a final response summarizing the actions it took (e.g., incident ID created, Slack message sent, on-call engineer notified). This output is available to downstream nodes via `agentNodeName.data`.
+```
+  Webhook Trigger (alert_id)
+        │
+        ▼
+  Agent Node receives User Prompt
+  "New alert triggered. Alert ID: {{ startTrigger.params.alert_id }}"
+        │
+        ▼
+  Agent Reasoning
+  AI model reads system + user prompt, plans tool calls
+        │
+        ▼
+  Tool: getAlertDetails (PostgreSQL)
+  Fetches severity, service name, timestamp
+        │
+        ▼
+  Severity Check
+  ┌─────────────┬─────────────────┬──────────────────┐
+  │  Critical   │    Warning      │      Info        │
+  │      │      │        │        │        │         │
+  │      ▼      │        ▼        │        ▼         │
+  │getUserOnCall│ sendSlackMessage│ sendSlackMessage │
+  │      │      │ #eng-alerts     │ #system-logs     │
+  │      ▼      │                 │                  │
+  │createIncident                 │                  │
+  │      │      │                 │                  │
+  │      ▼      │                 │                  │
+  │sendSlackMsg │                 │                  │
+  │ #incidents  │                 │                  │
+  └─────────────┴─────────────────┴──────────────────┘
+        │
+        ▼
+  Output → agentNodeName.data
+  Summary: incident ID, Slack message sent, on-call notified
+```
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/slack-agent.png" alt="Slack Agent" />
 
@@ -225,15 +253,43 @@ Maintain a professional and helpful tone in all responses.
 
 **How It Works:**
 
-1. **Trigger** — A workflow trigger (e.g., a webhook from Gmail or a scheduled cron job) fires when a new email arrives and passes the `email_id` into the workflow.
-2. **User Prompt** — The email ID is passed into the Agent Node's user prompt dynamically, for example: `Process incoming email. Email ID: {{ startNode.data.email_id }}`. This tells the agent which email to work on.
-3. **Agent Reasoning** — The AI model reads the system prompt and user prompt, then determines the sequence of tool calls needed to process this email.
-4. **Tool Execution** — The agent starts executing:
-   - Calls `getEmailContent` with the email ID to fetch the subject, body, and sender details from Gmail.
-   - Passes the email content to `classifyEmail`, a JavaScript node that returns the classification (e.g., "complaint").
-   - Based on the classification, the agent branches: for a complaint, it calls `forwardEmail` to route it to the support team. For an inquiry, it would call `draftReply` to compose a response.
-   - Finally, it calls `logEmail` to record the email and the action taken in PostgreSQL.
-5. **Output** — The agent returns a summary of what it did (e.g., email classified as "complaint", forwarded to support@company.com, logged with tracking ID #4521). This output is available to downstream nodes via `agentNodeName.data`.
+```
+  Webhook / Cron Trigger (email_id)
+        │
+        ▼
+  Agent Node receives User Prompt
+  "Process incoming email. Email ID: {{ startTrigger.params.email_id }}"
+        │
+        ▼
+  Agent Reasoning
+  AI model reads system + user prompt, plans tool calls
+        │
+        ▼
+  Tool: getEmailContent (Gmail)
+  Fetches subject, body, sender details
+        │
+        ▼
+  Tool: classifyEmail (JavaScript)
+  Returns classification: inquiry / complaint / order / spam
+        │
+        ▼
+  Classification Check
+  ┌────────────┬────────────┬────────────┬──────────┐
+  │  Inquiry   │ Complaint  │   Order    │   Spam   │
+  │     │      │     │      │     │      │          │
+  │     ▼      │     ▼      │     ▼      │  Ignore  │
+  │ draftReply │forwardEmail│  logEmail  │          │
+  │  (Gmail)   │  (Gmail)   │(PostgreSQL)│          │
+  └────────────┴────────────┴────────────┴──────────┘
+        │
+        ▼
+  Tool: logEmail (PostgreSQL)
+  Logs all processed emails for tracking
+        │
+        ▼
+  Output → agentNodeName.data
+  Summary: email classified, action taken, tracking ID
+```
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/agent/email-assistant.png" alt="Email Assistant" />
 
