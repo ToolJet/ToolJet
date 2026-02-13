@@ -181,6 +181,8 @@ When an alert is triggered:
 Always include: alert name, severity, timestamp, and recommended action.
 ```
 
+<img className="screenshot-full img-m" src="/img/workflows/nodes/agent/slack-agent-sys.png" alt="Slack Agent" />
+
 **How It Works:**
 
 ```
@@ -250,6 +252,8 @@ For each incoming email:
 
 Maintain a professional and helpful tone in all responses.
 ```
+
+<img className="screenshot-full img-m" src="/img/workflows/nodes/agent/email-agent-sys.png" alt="Slack Agent" />
 
 **How It Works:**
 
