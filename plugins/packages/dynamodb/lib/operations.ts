@@ -1,121 +1,91 @@
-export function listTables(client): Promise<object> {
-  return new Promise((resolve, reject) => {
-    client.listTables(function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data['TableNames']);
-      }
-    });
-  });
+import {
+  ListTablesCommand,
+  CreateTableCommand,
+  DescribeTableCommand,
+  DynamoDBClient,
+  CreateTableCommandInput,
+  DescribeTableCommandInput,
+} from '@aws-sdk/client-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  DeleteCommand,
+  UpdateCommand,
+  QueryCommand,
+  ScanCommand,
+  DynamoDBDocumentClient,
+  GetCommandInput,
+  PutCommandInput,
+  DeleteCommandInput,
+  UpdateCommandInput,
+  QueryCommandInput,
+  ScanCommandInput,
+} from '@aws-sdk/lib-dynamodb';
+
+export async function listTables(client: DynamoDBClient): Promise<object> {
+  const command = new ListTablesCommand({});
+  const data = await client.send(command);
+  return data.TableNames || [];
 }
 
-export function getItem(client, table: string, key: object): Promise<object> {
-  const params = {
+export async function getItem(client: DynamoDBDocumentClient, table: string, key: object): Promise<object> {
+  const params: GetCommandInput = {
     TableName: table,
-    Key: key,
+    Key: key as Record<string, any>,
   };
 
-  return new Promise((resolve, reject) => {
-    client.get(params, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data['Item'] || {});
-      }
-    });
-  });
+  const command = new GetCommand(params);
+  const data = await client.send(command);
+  return data.Item || {};
 }
 
-export function deleteItem(client, table: string, key: object): Promise<object> {
-  const params = {
+export async function deleteItem(client: DynamoDBDocumentClient, table: string, key: object): Promise<object> {
+  const params: DeleteCommandInput = {
     TableName: table,
-    Key: key,
+    Key: key as Record<string, any>,
   };
 
-  return new Promise((resolve, reject) => {
-    client.delete(params, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+  const command = new DeleteCommand(params);
+  const data = await client.send(command);
+  return data;
 }
 
-export function queryTable(client, queryCondition: object): Promise<object> {
-  return new Promise((resolve, reject) => {
-    client.query(queryCondition, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export async function queryTable(client: DynamoDBDocumentClient, queryCondition: object): Promise<object> {
+  const command = new QueryCommand(queryCondition as QueryCommandInput);
+  const data = await client.send(command);
+  return data;
 }
 
-export function scanTable(client, scanCondition: object): Promise<object> {
-  return new Promise((resolve, reject) => {
-    client.scan(scanCondition, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export async function scanTable(client: DynamoDBDocumentClient, scanCondition: object): Promise<object> {
+  const command = new ScanCommand(scanCondition as ScanCommandInput);
+  const data = await client.send(command);
+  return data;
 }
 
-export function updateItem(client, updateCondition: object): Promise<object> {
-  return new Promise((resolve, reject) => {
-    client.update(updateCondition, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export async function updateItem(client: DynamoDBDocumentClient, updateCondition: object): Promise<object> {
+  const command = new UpdateCommand(updateCondition as UpdateCommandInput);
+  const data = await client.send(command);
+  return data;
 }
 
-export function describeTable(client, table: string): Promise<object> {
-  const params = {
+export async function describeTable(client: DynamoDBClient, table: string): Promise<object> {
+  const params: DescribeTableCommandInput = {
     TableName: table,
   };
 
-  return new Promise((resolve, reject) => {
-    client.describeTable(params, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+  const command = new DescribeTableCommand(params);
+  const data = await client.send(command);
+  return data;
 }
 
-export function createTable(client, tableParameters: object) {
-  return new Promise((resolve, reject) => {
-    client.createTable(tableParameters, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export async function createTable(client: DynamoDBClient, tableParameters: object): Promise<object> {
+  const command = new CreateTableCommand(tableParameters as CreateTableCommandInput);
+  const data = await client.send(command);
+  return data;
 }
 
-export function putItem(client, newItemDetails: object): Promise<object> {
-  return new Promise((resolve, reject) => {
-    client.put(newItemDetails, function (err, data) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
+export async function putItem(client: DynamoDBDocumentClient, newItemDetails: object): Promise<object> {
+  const command = new PutCommand(newItemDetails as PutCommandInput);
+  const data = await client.send(command);
+  return data;
 }
