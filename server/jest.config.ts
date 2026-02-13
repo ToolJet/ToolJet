@@ -30,9 +30,11 @@ const config: Config.InitialOptions = {
     '@helpers/(.*)': '<rootDir>/src/helpers/$1',
     '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
     '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
+    '@otel/(.*)': '<rootDir>/src/otel/$1',
   },
   runner: 'groups',
   testTimeout: 30000,
+  forceExit: true,
   transformIgnorePatterns: [
     'node_modules/(?!(@octokit|before-after-hook|universal-user-agent|is-plain-object)/)',
   ],
