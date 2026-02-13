@@ -469,7 +469,7 @@ export const clearNonDraggingComponentsCache = () => {
 };
 
 export const handleActivateTargets = (parentId) => {
-  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban', 'ModalV2'];
+  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban', 'ModalV2', 'Accordion'];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
   let _parentId = parentId;

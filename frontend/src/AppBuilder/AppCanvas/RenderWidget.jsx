@@ -50,6 +50,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'JSONExplorer',
   'JSONEditor',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
   'KeyValuePair',
 ];
 

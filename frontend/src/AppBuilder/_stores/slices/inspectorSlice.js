@@ -69,6 +69,7 @@ export const createInspectorSlice = (set, get) => ({
       case 'Container':
       case 'Form':
       case 'ModalV2':
+      case 'Accordion':
         return [
           ...get().getContainerChildrenMapping(id),
           ...get().getContainerChildrenMapping(`${id}-header`),
