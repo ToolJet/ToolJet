@@ -47,11 +47,6 @@ build {
   }
 
   provisioner "file" {
-    source      = "../../../frontend/config/nginx-ec2.conf.template"
-    destination = "/tmp/nginx.conf"
-  }
-
-  provisioner "file" {
     source      = ".env"
     destination = "/tmp/.env"
   }

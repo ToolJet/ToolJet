@@ -145,14 +145,6 @@ else
   echo "Failed to start and enable Redis"
 fi
 
-if sudo -E systemctl start nginx
-then
-  echo "Successfully started reverse proxy!"
-else
-  echo "Failed to start reverse proxy"
-  exit 1
-fi
-
 if sudo -E systemctl start postgrest
 then
   echo "Successfully started PostgREST server!"

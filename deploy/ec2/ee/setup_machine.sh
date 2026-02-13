@@ -82,17 +82,6 @@ sudo ln -s "$(which npm)" /usr/bin/npm
 
 sudo npm i -g npm@10.9.2
 
-# Setup nginx
-retry_apt_update
-sudo apt-get -y install --no-install-recommends nginx
-sudo apt-get -y install --no-install-recommends openresty
-
-# CVE-2025-15467: Attempt to upgrade openresty-openssl3 to latest available version
-echo "Checking for openresty-openssl3 updates (CVE-2025-15467 mitigation)..."
-sudo apt-get -y install --only-upgrade openresty-openssl3 || true
-echo "OpenResty OpenSSL version installed:"
-dpkg -l | grep openresty-openssl3 | grep -E "^ii" | awk '{printf "%-25s %s\n", $2, $3}'
-echo "WARNING: CVE-2025-15467 requires OpenSSL 3.5.5+, 3.4.4+, or 3.0.19+. Verify installed version meets requirements."
 sudo apt-get install -y curl g++ gcc autoconf automake bison libc6-dev \
      libffi-dev libgdbm-dev libncurses5-dev libsqlite3-dev libtool \
      libyaml-dev make pkg-config sqlite3 zlib1g-dev libgmp-dev \
@@ -105,9 +94,18 @@ sudo snap refresh core
 sudo snap install --classic certbot
 sudo ln -sf /snap/bin/certbot /usr/bin/certbot
 
-# Create directories for SSL certificates and ACME challenges
-sudo mkdir -p /etc/letsencrypt /var/www/certbot /var/log/nginx
-sudo chown -R www-data:www-data /var/www/certbot
+# Create directory for SSL certificates
+sudo mkdir -p /etc/letsencrypt
+
+# Install iptables-persistent to preserve NAT rules across reboots
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
+
+# Forward port 80 → 3000 and 443 → 3443 (NestJS runs as non-root, can't bind ports <1024)
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3000
+sudo iptables -t nat -A OUTPUT -p tcp -d localhost --dport 80 -j REDIRECT --to-port 3000
+sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3443
+sudo iptables -t nat -A OUTPUT -p tcp -d localhost --dport 443 -j REDIRECT --to-port 3443
+sudo netfilter-persistent save
 
 # Oracle db client library setup
 sudo apt install -y libaio1 
@@ -121,13 +119,6 @@ curl -o instantclient-basiclite-11.zip https://tooljet-plugins-production.s3.us-
     echo /usr/lib/instantclient/* | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null && sudo ldconfig
 # Set the Instant Client library paths
 export LD_LIBRARY_PATH="/usr/lib/instantclient/instantclient_11_2:/usr/lib/instantclient/instantclient_21_10${LD_LIBRARY_PATH}" 
-
-# Setup nginx config
-export SERVER_HOST="${SERVER_HOST:=localhost}"
-export SERVER_USER="${SERVER_USER:=www-data}"
-VARS_TO_SUBSTITUTE='$SERVER_HOST:$SERVER_USER'
-envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
-sudo cp /tmp/nginx-substituted.conf /etc/nginx/nginx.conf
 
 # Download and setup postgrest binary
 curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.2.0/postgrest-v12.2.0-linux-static-x64.tar.xz
@@ -220,16 +211,6 @@ cp "$BUILD_DIR/plugins/package.json" "$PROD_DIR/plugins/"
 mv /tmp/.env "$PROD_DIR/.env"
 mv /tmp/setup_app "$PROD_DIR/setup_app"
 sudo chmod +x "$PROD_DIR/setup_app"
-
-# Setup web root for nginx
-# Remove default /var/www if it exists and create symlink to frontend build
-sudo rm -rf /var/www/html
-sudo mkdir -p /var/www
-# Symlink contents by symlinking the build directory itself as /var/www
-# This allows nginx root /var/www; to serve the built frontend
-sudo rm -f /var/www/index.html
-sudo cp -r "$PROD_DIR/frontend/build/." /var/www/
-sudo chown -R www-data:www-data /var/www
 
 # Clean up build directory
 echo "Cleaning up build directory..."
