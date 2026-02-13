@@ -70,6 +70,9 @@ import {
   cameraConfig,
   tagsInputConfig,
   reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
   progressbarConfig,
 } from '../widgets';
 
@@ -82,6 +85,7 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
@@ -146,6 +150,7 @@ export const widgets = [
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -160,6 +165,7 @@ export const widgets = [
   qrscannerConfig,
   chatConfig,
   reorderableListConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,

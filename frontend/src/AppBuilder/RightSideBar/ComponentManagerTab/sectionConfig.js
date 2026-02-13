@@ -60,6 +60,7 @@ const sectionConfig = {
       'Spinner',
       'Statistics',
       'Timer',
+      'JSONExplorer',
     ]),
   },
   custom: {
@@ -76,6 +77,7 @@ const sectionConfig = {
       'QrScanner',
       'Chat',
       'ReorderableList',
+      'JSONEditor',
     ]),
   },
   legacy: {

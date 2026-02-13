@@ -71,6 +71,7 @@ export function renderCustomStyles(
     componentConfig.component == 'StarRating' ||
     componentConfig.component == 'PopoverMenu' ||
     componentConfig.component == 'ReorderableList' ||
+    componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
@@ -172,6 +173,7 @@ export function renderElement(
     componentConfig.component == 'Statistics' ||
     componentConfig.component == 'Table' ||
     componentConfig.component == 'CircularProgressBar' ||
+    componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};

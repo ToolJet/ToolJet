@@ -70,6 +70,9 @@ import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
 import { reorderableListConfig } from './reorderableList';
+import { jsonExplorerConfig } from './jsonExplorer';
+import { jsonEditorConfig } from './jsonEditor';
+import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 
 export {
@@ -145,5 +148,8 @@ export {
   cameraConfig,
   tagsInputConfig,
   reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
   progressbarConfig,
 };
