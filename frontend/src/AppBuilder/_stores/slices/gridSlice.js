@@ -395,7 +395,8 @@ export const createGridSlice = (set, get) => ({
         const sameParent = box.component?.parent === changedComponent.component?.parent;
 
         // Checking if changed component initial bottom is below the initial box top
-        const boxTop = temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top;
+        const transformedBoxId = doesSubContainerIndexExist ? `${box.id}-${subContainerIndex}` : box.id;
+        const boxTop = temporaryLayouts?.[transformedBoxId]?.top ?? box.layouts[currentLayout].top;
         const isBelow = oldChangedCompBottom <= boxTop;
         return sameParent && isBelow;
       });

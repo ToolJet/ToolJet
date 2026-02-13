@@ -403,6 +403,8 @@ export const createEventsSlice = (set, get) => ({
           'onExpand',
           'onCollapse',
           'onSaveKeyValuePairChanges',
+          'onFieldValueChanged',
+          'onCancelKeyValuePairChanges',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);

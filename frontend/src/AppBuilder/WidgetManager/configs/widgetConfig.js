@@ -70,6 +70,7 @@ import {
   cameraConfig,
   tagsInputConfig,
   accordionConfig,
+  reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
   keyValuePairConfig,
@@ -165,6 +166,7 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  reorderableListConfig,
   jsonEditorConfig,
 
   //Legacy

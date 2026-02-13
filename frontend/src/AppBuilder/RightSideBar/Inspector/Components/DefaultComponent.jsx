@@ -52,6 +52,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'ProgressBar',
   'IFrame',
   'Accordion',
+  'ReorderableList',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
