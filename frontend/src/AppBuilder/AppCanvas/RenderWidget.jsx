@@ -95,11 +95,11 @@ const RenderWidget = ({
     shallow
   );
   const unResolvedValidation = component?.definition?.validation || {};
-  // const others = useStore((state) => state.getResolvedComponent(id, subContainerIndex)?.others, shallow);
-  const updateDependencyValues = useStore((state) => state.updateDependencyValues, shallow);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
   const setExposedValue = useStore((state) => state.setExposedValue, shallow);
   const setExposedValues = useStore((state) => state.setExposedValues, shallow);
+  const setExposedValuePerRow = useStore((state) => state.setExposedValuePerRow, shallow);
+  const setExposedValuesPerRow = useStore((state) => state.setExposedValuesPerRow, shallow);
   const setDefaultExposedValues = useStore((state) => state.setDefaultExposedValues, shallow);
   const resolvedValidation = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.validation,
@@ -169,26 +169,57 @@ const RenderWidget = ({
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
   const setExposedVariable = useCallback(
     (key, value) => {
-      setExposedValue(id, key, value, moduleId);
-      // Trigger an update when the child components is directly linked to any component
-      updateDependencyValues(`components.${id}.${key}`, moduleId);
+      if (nearestListviewId && resolveIndex) {
+        // Inside a ListView — per-row store write
+        const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
 
-      // Check if the component is inside the subcontainer and it has its own onOptionChange(setExposedValue) function
+        setExposedValuePerRow(id, key, value, indices, moduleId);
+        // updateDependencyValues called internally — no duplicate call
+      } else {
+        // Not inside a ListView — flat store write (existing path)
+        setExposedValue(id, key, value, moduleId);
+        // setExposedValue calls updateDependencyValues internally — no duplicate call
+      }
+      // ALWAYS call onOptionChange if provided (for any subcontainer that still uses it)
       if (onOptionChange !== null) {
         onOptionChange(key, value, id, subContainerIndex);
       }
     },
-    [id, setExposedValue, updateDependencyValues, subContainerIndex, onOptionChange, moduleId]
+    [
+      id,
+      setExposedValue,
+      setExposedValuePerRow,
+      subContainerIndex,
+      onOptionChange,
+      moduleId,
+      nearestListviewId,
+      resolveIndex,
+    ]
   );
   const setExposedVariables = useCallback(
     (exposedValues) => {
-      setExposedValues(id, 'components', exposedValues, moduleId);
-
+      if (nearestListviewId && resolveIndex) {
+        // Inside a ListView — per-row store write
+        const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
+        setExposedValuesPerRow(id, exposedValues, indices, moduleId);
+      } else {
+        // Not inside a ListView — flat store write (existing path)
+        setExposedValues(id, 'components', exposedValues, moduleId);
+      }
       if (onOptionsChange !== null) {
         onOptionsChange(exposedValues, id, subContainerIndex);
       }
     },
-    [id, setExposedValues, onOptionsChange, moduleId]
+    [
+      id,
+      setExposedValues,
+      setExposedValuesPerRow,
+      onOptionsChange,
+      moduleId,
+      subContainerIndex,
+      nearestListviewId,
+      resolveIndex,
+    ]
   );
   const fireEventWrapper = useCallback(
     (eventName, options) => {

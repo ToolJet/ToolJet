@@ -12,8 +12,6 @@ export const ListviewSubcontainer = ({
   positiveColumns,
   showBorder,
   onRecordOrRowClicked,
-  onOptionChange,
-  onOptionsChange,
   computeCanvasBackgroundColor,
   darkMode,
   id,
@@ -71,8 +69,6 @@ export const ListviewSubcontainer = ({
           key={`${id}-${index}`}
           canvasHeight={transformedRowHeight}
           canvasWidth={width}
-          onOptionChange={onOptionChange}
-          onOptionsChange={onOptionsChange}
           styles={computeCanvasBackgroundColor}
           columns={positiveColumns}
           listViewMode={mode}

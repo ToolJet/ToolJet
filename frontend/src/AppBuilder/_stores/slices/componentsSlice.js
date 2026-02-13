@@ -346,9 +346,9 @@ export const createComponentsSlice = (set, get) => ({
         allRefs = res.allRefs;
       }
       if (index !== null) {
-        const customResolvablePath = getCustomResolvableReference(value, parentId, moduleId);
-        if (customResolvablePath) {
-          allRefs.push(customResolvablePath);
+        const customResolvableRefs = getCustomResolvableReference(value, parentId, moduleId);
+        if (customResolvableRefs.length > 0) {
+          allRefs.push(...customResolvableRefs);
         }
       }
       if (updatePassedValue)
@@ -387,9 +387,19 @@ export const createComponentsSlice = (set, get) => ({
     componentResolvedValues = {},
     moduleId
   ) => {
-    const { getAllExposedValues, getComponentTypeFromId } = get();
+    const {
+      getAllExposedValues,
+      getComponentTypeFromId,
+      getComponentDefinition,
+      findNearestListviewAncestor,
+      buildSiblingsForRow,
+    } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
+
+    // Find nearest ListView for siblings injection
+    const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
+    const nearestListviewId = parentId ? findNearestListviewAncestor(parentId, moduleId) : null;
 
     const updateResolvedValueForNonNullIndex = (resolvedValue, idx) => {
       if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
@@ -447,8 +457,11 @@ export const createComponentsSlice = (set, get) => ({
     } else {
       // Loop all the index and set the resolved value
       for (let i = 0; i < length; i++) {
+        // Augment customResolvables with siblings for intra-row references
+        const siblings = nearestListviewId ? buildSiblingsForRow(nearestListviewId, i, moduleId) : {};
+        const augmented = { ...customResolvables[i], siblings };
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables[i], false, [])
+          ? resolveDynamicValues(value, getAllExposedValues(moduleId), augmented, false, [])
           : value;
 
         updateResolvedValueForNonNullIndex(resolvedValue, i);
@@ -473,6 +486,7 @@ export const createComponentsSlice = (set, get) => ({
       findNearestListviewAncestor,
       getComponentDefinition,
       getBaseParentId,
+      buildSiblingsForRow,
     } = get();
 
     let shouldResolve = false;
@@ -539,8 +553,11 @@ export const createComponentsSlice = (set, get) => ({
         // At leaf level - iterate through row indices
         for (let i = 0; i < resolvables.length; i++) {
           const fullIndices = [...currentIndices, i];
+          // Augment with siblings for intra-row references
+          const siblings = innermostListview ? buildSiblingsForRow(innermostListview, i, moduleId) : {};
+          const augmented = { ...resolvables[i], siblings };
           const resolvedValue = shouldResolve
-            ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), resolvables[i], false, [])
+            ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), augmented, false, [])
             : value;
           setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, fullIndices, moduleId);
         }
@@ -2189,7 +2206,14 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
-    const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency, findNearestListviewAncestor } = get();
+    const {
+      getCustomResolvables,
+      getNodeData,
+      getAllExposedValues,
+      getParentIdFromDependency,
+      findNearestListviewAncestor,
+      buildSiblingsForRow,
+    } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     const parentId = getParentIdFromDependency(dependency, moduleId);
     // Walk up to find the nearest ListView ancestor for customResolvables lookup
@@ -2201,13 +2225,11 @@ export const createComponentsSlice = (set, get) => ({
     // Collect all resolved values first, then apply in a single batched store update
     const updates = [];
     for (let i = 0; i < length; i++) {
-      const resolvedValue = resolveDynamicValues(
-        unResolvedValue,
-        getAllExposedValues(moduleId),
-        getCustomResolvables(resolvableParentId, i, moduleId, parentIndices), // passing the nearest ListView ID and index to get the custom resolvables of the child
-        false,
-        []
-      );
+      const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
+      // Augment with siblings for intra-row references
+      const siblings = resolvableParentId ? buildSiblingsForRow(resolvableParentId, i, moduleId) : {};
+      const augmented = { ...rowCustomResolvables, siblings };
+      const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), augmented, false, []);
       const validatedValue = shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
@@ -2289,7 +2311,7 @@ export const createComponentsSlice = (set, get) => ({
       'batchUpdateChildComponents'
     );
     const p2 = performance.now();
-    console.log(`here--- Time taken to update ${length} child components: ${p2 - p1} ms`);
+    console.log(`here--- Time taken to update ${length} child components: ${p2 - p1} ms`, updates);
   },
 
   getParentComponentType: (parentId, moduleId) => {
@@ -2319,18 +2341,60 @@ export const createComponentsSlice = (set, get) => ({
     return data?.length;
   },
 
-  // Check if the value contains listItem customResolvable and return the entityType, entityNameOrId, entityKey
+  // Check if the value contains listItem or siblings customResolvable and return the entityType, entityNameOrId, entityKey
+  // Returns an array of dependency references for custom resolvable keywords (listItem, siblings).
+  // Called during dependency graph construction to register what store paths an expression depends on.
   getCustomResolvableReference: (value, parentId, moduleId) => {
-    const { findNearestListviewAncestor } = get();
+    const { findNearestListviewAncestor, getComponentIdFromName } = get();
     const nearestAncestorId = findNearestListviewAncestor(parentId, moduleId);
-    if (!nearestAncestorId) return null;
-    if (
-      (value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
-      value === '{{listItem}}'
-    ) {
-      return { entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' };
+    if (!nearestAncestorId) return [];
+
+    const refs = [];
+
+    // listItem — coarse dependency on the ListView.
+    // listItem changes atomically (the entire data array is replaced at once via updateCustomResolvables),
+    // so property-level tracking (e.g., tracking listItem.name vs listItem.price separately) wouldn't help —
+    // all properties change in the same event. One coarse trigger is correct and sufficient.
+    if ((value.includes('listItem') && checkSubstringRegex(value, 'listItem')) || value === '{{listItem}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' });
     }
-    return null;
+
+    // siblings — property-level dependency tracking.
+    // Each sibling component's properties are written independently via setExposedValuePerRow,
+    // which fires updateDependencyValues('components.<componentId>.<property>') per property.
+    // By mapping siblings.radiobutton1.value → components.<radiobutton1-uuid>.value in the dependency
+    // graph, we ensure that changing radiobutton1.isValid does NOT trigger re-resolution of components
+    // that only reference siblings.radiobutton1.value. This is different from listItem where all
+    // properties change atomically.
+    if ((value.includes('siblings') && checkSubstringRegex(value, 'siblings')) || value === '{{siblings}}') {
+      // Extract all siblings.componentName.property patterns for fine-grained dependency tracking.
+      // Example: "{{siblings.radiobutton1.value === true}}" → deps on components.<radio-uuid>.value
+      // Example: "{{siblings.radio1.value + siblings.text1.value}}" → two separate deps
+      const siblingPropertyRegex = /siblings\.(\w+)\.(\w+)/g;
+      let match;
+      const seen = new Set();
+      while ((match = siblingPropertyRegex.exec(value)) !== null) {
+        const [, componentName, property] = match;
+        const key = `${componentName}.${property}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        // Map component name → UUID, then register dependency on the actual component's property.
+        // This reuses the same dependency key that setExposedValuePerRow already fires via
+        // updateDependencyValues(`components.${componentId}.${property}`), so no extra trigger needed.
+        const componentId = getComponentIdFromName(componentName, moduleId);
+        if (componentId) {
+          refs.push({ entityType: 'components', entityNameOrId: componentId, entityKey: property });
+        }
+      }
+      // Fallback: if no siblings.X.Y patterns found (e.g., bare {{siblings}} or {{siblings.radiobutton1}}
+      // without a property), use coarse dependency on the ListView's siblings key.
+      // This is rare but ensures correctness — any sibling property change triggers re-resolution.
+      if (seen.size === 0) {
+        refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'siblings' });
+      }
+    }
+
+    return refs;
   },
 
   checkIfParentIsListviewOrKanban: (parentId, moduleId) => {

@@ -1,9 +1,7 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 // import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
-import { removeFunctionObjects } from '@/_helpers/appUtils';
 import _ from 'lodash';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import './listview.scss';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -32,9 +30,9 @@ export const Listview = function Listview({
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
   const parentIndices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
-  const getComponentNameFromId = useStore((state) => state.getComponentNameFromId, shallow);
-  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), shallow);
+  const childComponentCount = useStore((state) => (state.containerChildrenMapping?.[id] || []).length);
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
+  const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
   const isWidgetInContainerDragging = useStore(
@@ -42,7 +40,7 @@ export const Listview = function Listview({
     shallow
   );
   const prevFilteredDataRef = useRef([]);
-  const prevChildComponents = useRef({});
+  const prevChildComponentCount = useRef(0);
   const prevParentIndicesRef = useRef([]);
   const combinedProperties = { ...fallbackProperties, ...properties };
   const {
@@ -90,123 +88,38 @@ export const Listview = function Listview({
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
 
-  const [childrenData, setChildrenData] = useState({});
-
-  const onOptionChange = useCallback(
-    (optionName, value, componentId, index) => {
-      setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId, moduleId);
-        const changedData = { [componentName]: { [optionName]: value } };
-        const existingDataAtIndex = prevData[index] ?? {};
-        const newDataAtIndex = {
-          ...prevData[index],
-          [componentName]: {
-            ...existingDataAtIndex[componentName],
-            ...changedData[componentName],
-            id: componentId,
-          },
-        };
-        const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-        return { ...prevData, ...newChildrenData };
+  // children/data are now derived directly in the store by deriveListviewExposedData.
+  // onRecordOrRowClicked reads from the store imperatively at click time.
+  const onRecordOrRowClicked = useCallback(
+    (index) => {
+      setSelectedRowIndex(index);
+      const state = useStore.getState();
+      let lvExposed = state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[id];
+      // For nested ListView, navigate to current row's exposed values
+      if (Array.isArray(lvExposed) && parentIndices.length > 0) {
+        for (const idx of parentIndices) {
+          lvExposed = lvExposed?.[idx];
+          if (!lvExposed) break;
+        }
+      }
+      const selectedRow = lvExposed?.children?.[index];
+      setExposedVariables({
+        selectedRecordId: index,
+        selectedRecord: selectedRow,
+        selectedRowId: index,
+        selectedRow: selectedRow,
       });
+      fireEvent('onRecordClicked');
+      fireEvent('onRowClicked');
     },
-    [getComponentNameFromId, setChildrenData, moduleId]
+    [id, moduleId, parentIndices, setExposedVariables, fireEvent]
   );
-
-  const onOptionsChange = useCallback(
-    (exposedVariables, componentId, index) => {
-      setChildrenData((prevData) => {
-        const componentName = getComponentNameFromId(componentId, moduleId);
-        const existingDataAtIndex = prevData[index] ?? {};
-        const changedData = {};
-        Object.keys(exposedVariables).forEach((key) => {
-          changedData[componentName] = { ...changedData[componentName], [key]: exposedVariables[key] };
-        });
-        const newDataAtIndex = {
-          ...prevData[index],
-          [componentName]: {
-            ...existingDataAtIndex[componentName],
-            ...changedData[componentName],
-            id: componentId,
-          },
-        };
-        const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-        return { ...prevData, ...newChildrenData };
-      });
-    },
-    [getComponentNameFromId, setChildrenData, moduleId]
-  );
-
-  function onRecordOrRowClicked(index) {
-    setSelectedRowIndex(index);
-    const exposedVariables = {
-      selectedRecordId: index,
-      selectedRecord: childrenData[index],
-      selectedRowId: index,
-      selectedRow: childrenData[index],
-    };
-    setExposedVariables(exposedVariables);
-    fireEvent('onRecordClicked');
-    fireEvent('onRowClicked');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }
 
   useEffect(() => {
     if (columns < 1) {
       setPositiveColumns(1);
     } else setPositiveColumns(columns);
   }, [columns]);
-
-  useEffect(() => {
-    const childrenDataClone = deepClone(childrenData);
-    const exposedVariables = {
-      data: removeFunctionObjects(childrenDataClone),
-      children: childrenData,
-    };
-    if (selectedRowIndex != undefined) {
-      exposedVariables.selectedRecordId = selectedRowIndex;
-      exposedVariables.selectedRecord = childrenData[selectedRowIndex];
-      exposedVariables.selectedRowId = selectedRowIndex;
-      exposedVariables.selectedRow = childrenData[selectedRowIndex];
-    }
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData]);
-
-  function filterComponents() {
-    if (!childrenData || childrenData.length === 0) {
-      return [];
-    }
-    const componentNamesSet = new Set(
-      Object.values(childComponents ?? {}).map((component) => component.component.component.name)
-    );
-    const filteredData = deepClone(childrenData);
-    if (filteredData?.[0]) {
-      // update the name of the component in the data
-      Object.keys(filteredData?.[0]).forEach((item) => {
-        const { id } = _.get(filteredData?.[0], item, {});
-        const oldName = item;
-        const newName = _.get(childComponents, `${id}.component.component.name`, '');
-        if (oldName !== newName) {
-          _.set(filteredData[0], newName, _.get(filteredData[0], oldName));
-          _.unset(filteredData[0], oldName);
-        }
-      });
-      Object.keys(filteredData?.[0]).forEach((item) => {
-        if (!componentNamesSet?.has(item)) {
-          for (const key in filteredData) {
-            delete filteredData[key][item];
-          }
-        }
-      });
-    }
-    return filteredData;
-  }
-  useEffect(() => {
-    const data = filterComponents(childComponents, childrenData);
-    if (!_.isEqual(data, childrenData)) setChildrenData(data);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childComponents, childrenData]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {
@@ -228,34 +141,12 @@ export const Listview = function Listview({
   // Check if the previous filtered data is different from the current filtered data
   if (
     Object.keys(diff(filteredData, prevFilteredDataRef.current)).length > 0 ||
-    Object.keys(childComponents).length !== Object.keys(prevChildComponents.current).length ||
+    childComponentCount !== prevChildComponentCount.current ||
     parentIndicesChanged
   ) {
     prevFilteredDataRef.current = filteredData;
     prevParentIndicesRef.current = parentIndices;
-    const firstPrevElement = Object.keys(prevChildComponents.current) || {};
-    const firstCurrentElement = Object.keys(childComponents) || {};
-    const elementIdToBeDeleted = firstPrevElement.filter((key) => !firstCurrentElement.includes(key));
-    const childData = childrenData?.[1] || {};
-    const elementNameToBeDeleted = [];
-    elementIdToBeDeleted.forEach((key) => {
-      Object.keys(childData).forEach((ele) => {
-        if (childData[ele]?.id === key) {
-          elementNameToBeDeleted.push(ele);
-        }
-      });
-    });
-    setChildrenData((prevData) => {
-      const newChildrenData = deepClone(prevData);
-      elementNameToBeDeleted.forEach((name) => {
-        Object.keys(newChildrenData).forEach((index) => {
-          if (newChildrenData?.[index]?.[name]) delete newChildrenData[index][name];
-        });
-      });
-      return newChildrenData;
-    });
-
-    prevChildComponents.current = childComponents;
+    prevChildComponentCount.current = childComponentCount;
 
     // Adding listItem as key value pair to the customResolvables
     const listItems = filteredData.map((listItem) => {
@@ -264,7 +155,11 @@ export const Listview = function Listview({
       };
     });
     // Update the customResolvables with the new listItems
-    if (listItems.length > 0) updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
+    if (listItems.length > 0) {
+      updateCustomResolvables(id, listItems, 'listItem', moduleId, parentIndices);
+      // Initialize exposed value arrays for children so per-row writes are correctly sized
+      initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
+    }
   }
   return (
     <div
@@ -290,8 +185,6 @@ export const Listview = function Listview({
             positiveColumns={positiveColumns}
             showBorder={showBorder}
             onRecordOrRowClicked={onRecordOrRowClicked}
-            onOptionChange={onOptionChange}
-            onOptionsChange={onOptionsChange}
             computeCanvasBackgroundColor={computeCanvasBackgroundColor}
             darkMode={darkMode}
             width={width}
