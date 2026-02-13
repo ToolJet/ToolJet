@@ -6,12 +6,12 @@ title: Kubernetes Deployment
 # Deploying ToolJet with Built-in SSL on Kubernetes
 
 :::tip Don't need built-in SSL?
-If you're deploying on **Google Cloud Run** or **Azure Container Apps**, you don't need this guide. These platforms provide native HTTPS termination out-of-the-box. Simply deploy ToolJet normally without enabling `ENABLE_BUILTIN_NGINX`. See the [deployment examples overview](../overview) for more information.
+If you're deploying on **Google Cloud Run** or **Azure Container Apps**, you don't need this guide. These platforms provide native HTTPS termination out-of-the-box. Simply deploy ToolJet normally without configuring SSL via the dashboard. See the [deployment examples overview](../overview) for more information.
 :::
 
 ## Overview
 
-This guide shows how to configure ToolJet with built-in SSL and nginx in a Kubernetes environment. This deployment method is suitable for production deployments on self-hosted or managed Kubernetes clusters.
+This guide shows how to configure ToolJet with built-in SSL in a Kubernetes environment. The NestJS application server handles SSL directly — no separate proxy sidecar is required.
 
 ## Prerequisites
 
@@ -36,10 +36,10 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 80
+      targetPort: 3000
     - name: https
       port: 443
-      targetPort: 443
+      targetPort: 3443
   selector:
     app: tooljet
 ```
@@ -65,22 +65,22 @@ spec:
         - name: tooljet
           image: tooljet/tooljet:latest
           env:
-            - name: ENABLE_BUILTIN_NGINX
-              value: "true"
             - name: TOOLJET_HOST
               value: "https://tooljet.yourdomain.com"
+            - name: SSL_PORT
+              value: "3443"
             # ... other environment variables
           ports:
-            - containerPort: 80
+            - containerPort: 3000
               name: http
-            - containerPort: 443
+            - containerPort: 3443
               name: https
 ```
 
 ## Important Notes
 
-- **Port Configuration**: The container exposes ports 80 and 443 instead of 3000 when built-in nginx is enabled
-- **DO NOT expose port 3000** in your service configuration - This bypasses nginx
+- **Port Configuration**: Service routes external port 80 → container port 3000 (HTTP) and 443 → 3443 (HTTPS)
+- **SSL_PORT**: Defaults to `PORT + 443` (i.e., `3443` when `PORT=3000`). Set explicitly for clarity.
 - **Load Balancer**: Ensure your load balancer routes traffic to ports 80 and 443
 - **TOOLJET_HOST**: Must include the protocol (`https://`)
 - **Minimal Example**: This is a basic configuration. For production deployments with persistent volumes, database setup, and resource limits, see the [Kubernetes deployment guide](/docs/setup/kubernetes)
@@ -91,9 +91,9 @@ After deploying to Kubernetes:
 
 1. Get your load balancer's external IP: `kubectl get service tooljet`
 2. Point your domain to the load balancer IP
-3. Access the ToolJet SSL dashboard at `http://your-domain`
+3. Access ToolJet at `http://your-domain`
 4. Navigate to **Settings** → **SSL Configuration**
-5. Upload your SSL certificate and private key, or configure Let's Encrypt
+5. Enable SSL, enter your domain and email, then click **"Acquire Certificate"**
 6. See the [SSL configuration guide](../../configuration.md) for detailed instructions
 
 ## Next Steps

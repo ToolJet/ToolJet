@@ -74,38 +74,38 @@
               "type": "category",
               "label": "Built-in SSL & nginx",
               "items": [
-                "setup/builtin-ssl-nginx/overview",
-                "setup/builtin-ssl-nginx/requirements",
-                "setup/builtin-ssl-nginx/quickstart",
-                "setup/builtin-ssl-nginx/configuration",
+                "setup/builtin-ssl/overview",
+                "setup/builtin-ssl/requirements",
+                "setup/builtin-ssl/quickstart",
+                "setup/builtin-ssl/configuration",
                 {
                   "type": "category",
                   "label": "Deployment Examples",
                   "items": [
-                    "setup/builtin-ssl-nginx/deployment-examples/overview",
+                    "setup/builtin-ssl/deployment-examples/overview",
                     {
                       "type": "category",
                       "label": "AWS",
                       "items": [
-                        "setup/builtin-ssl-nginx/deployment-examples/aws/ecs",
-                        "setup/builtin-ssl-nginx/deployment-examples/aws/ami"
+                        "setup/builtin-ssl/deployment-examples/aws/ecs",
+                        "setup/builtin-ssl/deployment-examples/aws/ami"
                       ]
                     },
                     {
                       "type": "category",
                       "label": "General",
                       "items": [
-                        "setup/builtin-ssl-nginx/deployment-examples/general/docker-compose",
-                        "setup/builtin-ssl-nginx/deployment-examples/general/kubernetes",
-                        "setup/builtin-ssl-nginx/deployment-examples/general/helm"
+                        "setup/builtin-ssl/deployment-examples/general/docker-compose",
+                        "setup/builtin-ssl/deployment-examples/general/kubernetes",
+                        "setup/builtin-ssl/deployment-examples/general/helm"
                       ]
                     }
                   ]
                 },
-                "setup/builtin-ssl-nginx/troubleshooting",
-                "setup/builtin-ssl-nginx/migration",
-                "setup/builtin-ssl-nginx/security",
-                "setup/builtin-ssl-nginx/faq"
+                "setup/builtin-ssl/troubleshooting",
+                "setup/builtin-ssl/migration",
+                "setup/builtin-ssl/security",
+                "setup/builtin-ssl/faq"
               ]
             },
             "setup/tooljet-subpath",

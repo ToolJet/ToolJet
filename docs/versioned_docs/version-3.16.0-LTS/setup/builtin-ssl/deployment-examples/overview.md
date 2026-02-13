@@ -5,7 +5,7 @@ title: Overview
 
 # Deployment Examples
 
-This section provides complete configuration examples for deploying ToolJet with built-in SSL and nginx across different platforms and cloud providers.
+This section provides complete configuration examples for deploying ToolJet with built-in SSL across different platforms and cloud providers.
 
 :::info Platforms with Native SSL
 Some managed platforms like **Google Cloud Run** and **Azure Container Apps** provide native HTTPS termination out-of-the-box. These platforms **do not need** ToolJet's built-in SSL feature. The examples below are specifically for platforms that require built-in SSL configuration.
@@ -21,7 +21,7 @@ Some managed platforms like **Google Cloud Run** and **Azure Container Apps** pr
 
 For these platforms:
 1. Deploy ToolJet normally (standard deployment guides)
-2. Do NOT set `ENABLE_BUILTIN_NGINX=true`
+2. Do not configure SSL via the ToolJet dashboard
 3. Configure your domain through the platform's dashboard
 4. SSL/TLS is handled automatically by the platform
 
@@ -61,10 +61,9 @@ Choose the deployment method that best fits your infrastructure and requirements
 
 All deployment methods require:
 
-1. **Environment Variable**: `ENABLE_BUILTIN_NGINX=true`
+1. **Port Mapping**: External port 80 → internal `PORT` (default 3000), external 443 → internal `SSL_PORT` (default 3443)
 2. **ToolJet Host**: Set `TOOLJET_HOST` to your domain (e.g., `https://tooljet.yourdomain.com`)
-3. **Port Configuration**: Expose ports 80 (HTTP) and 443 (HTTPS)
-4. **Important**: DO NOT expose port 3000 when using built-in nginx
+3. **SSL configuration**: Configured via the ToolJet dashboard after deployment — no special env var required
 
 ## Next Steps
 
@@ -75,7 +74,7 @@ All deployment methods require:
 
 ## Additional Resources
 
-- [Built-in SSL & nginx overview](../overview.md)
+- [Built-in SSL overview](../overview.md)
 - [Configuration guide](../configuration.md) - SSL certificate setup and environment variables
 - [Requirements](../requirements.md) - Prerequisites and system requirements
 - [Troubleshooting guide](../troubleshooting.md) - Common deployment issues

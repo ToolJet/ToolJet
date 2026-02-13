@@ -138,7 +138,7 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 - `ENABLE_BUILTIN_NGINX=true/false`: Enable built-in nginx reverse proxy with automatic SSL certificate management via Let's Encrypt. When enabled, nginx handles HTTP/HTTPS traffic on ports 80 and 443. Default: `false` (disabled for backward compatibility).
 
-For detailed setup instructions, see the [Built-in SSL & nginx guide](./builtin-ssl-nginx).
+For detailed setup instructions, see the [Built-in SSL guide](./builtin-ssl).
 
 :::warning
 When `ENABLE_BUILTIN_NGINX=true`, expose ports 80 and 443 instead of port 3000. The application will only be accessible through nginx.

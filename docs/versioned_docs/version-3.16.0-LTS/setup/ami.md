@@ -8,7 +8,7 @@ title: AWS AMI
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS AMI instances.
 
 :::info
-**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with nginx and Let's Encrypt. Learn more in the [Built-in SSL & nginx documentation](/docs/setup/builtin-ssl-nginx/overview).
+**Looking for automated SSL/HTTPS setup?** ToolJet now includes built-in SSL certificate management with Let's Encrypt. Learn more in the [Built-in SSL documentation](/docs/setup/builtin-ssl/overview).
 :::
 
 :::info

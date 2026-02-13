@@ -5,7 +5,7 @@ title: Security Considerations
 
 # Security Considerations
 
-Important security information when using built-in SSL and nginx.
+Important security information when using built-in SSL.
 
 ## Certificate Storage
 
@@ -33,7 +33,7 @@ Avoid repeatedly acquiring certificates. The automatic renewal process respects 
 - Enable SSL for all production deployments with public access
 - Use HTTP-only mode only for internal deployments or development environments
 - Regularly review your [configuration](configuration.md) for security updates
-- Monitor nginx logs for suspicious activity
+- Monitor application logs for suspicious activity
 
 ## Additional Resources
 

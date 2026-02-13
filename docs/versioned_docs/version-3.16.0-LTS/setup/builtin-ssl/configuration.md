@@ -5,7 +5,7 @@ title: Configuration
 
 # Configuration
 
-Configure built-in nginx and SSL settings through environment variables and the ToolJet dashboard.
+Configure built-in SSL settings through environment variables and the ToolJet dashboard.
 
 ## Environment Variables
 
@@ -13,17 +13,20 @@ Configure built-in nginx and SSL settings through environment variables and the 
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `ENABLE_BUILTIN_NGINX` | Enable built-in nginx and SSL support | `true` or `false` (default: `false`) |
 | `TOOLJET_HOST` | Public URL of your ToolJet instance | `https://tooljet.yourdomain.com` or `http://12.34.56.78` |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | HTTP port the application listens on | `3000` |
+| `SSL_PORT` | HTTPS port the application listens on | `PORT + 443` (e.g., `3443` when `PORT=3000`) |
 
 ### Behavior
 
-- **Not set or `false`**: nginx will not start. NestJS accessible on port 3000 (default behavior).
-- **Set to `true`**: nginx starts automatically and handles all HTTP/HTTPS traffic on ports 80/443.
-
-:::warning
-When `ENABLE_BUILTIN_NGINX=true`, the application is **only accessible via nginx** (ports 80/443). Port 3000 should not be exposed.
-:::
+- The application always listens on `PORT` for HTTP traffic.
+- When SSL is enabled via the dashboard and a certificate is acquired, the application also listens on `SSL_PORT` for HTTPS traffic.
+- HTTP requests on `PORT` automatically redirect to HTTPS on `SSL_PORT` once a certificate is active.
 
 ## SSL Configuration via Dashboard
 
@@ -41,7 +44,7 @@ When `ENABLE_BUILTIN_NGINX=true`, the application is **only accessible via nginx
 3. **Save Configuration**
    - Click **"Save"**
    - At this point, SSL is enabled but no certificate exists yet
-   - nginx continues serving HTTP on port 80
+   - The app continues serving HTTP on `PORT`
 
 ### Acquiring SSL Certificate
 
@@ -55,9 +58,9 @@ When `ENABLE_BUILTIN_NGINX=true`, the application is **only accessible via nginx
    - Process typically takes 30-60 seconds
 
 3. **Automatic HTTPS**
-   - Upon success, nginx automatically reloads with HTTPS configuration
+   - Upon success, the app automatically starts serving HTTPS on `SSL_PORT`
    - Your site is now accessible via `https://yourdomain.com`
-   - HTTP requests (port 80) automatically redirect to HTTPS
+   - HTTP requests automatically redirect to HTTPS
 
 ### Certificate Management
 

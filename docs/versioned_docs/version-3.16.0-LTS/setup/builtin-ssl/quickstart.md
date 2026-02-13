@@ -5,15 +5,11 @@ title: Quick Start Guide
 
 # Quick Start Guide
 
-Get started with built-in SSL and nginx in three simple steps.
+Get started with built-in SSL in three simple steps.
 
-## Step 1: Enable Built-in nginx
+## Step 1: Configure Port Mapping
 
-Add the following environment variable to your deployment:
-
-```bash
-ENABLE_BUILTIN_NGINX=true
-```
+Map external ports 80 and 443 to the application's internal HTTP and HTTPS ports:
 
 **Docker Compose Example:**
 
@@ -22,20 +18,21 @@ services:
   tooljet:
     image: tooljet/tooljet:latest
     environment:
-      - ENABLE_BUILTIN_NGINX=true
       - TOOLJET_HOST=https://tooljet.yourdomain.com
+      - SSL_PORT=3443
       # ... other environment variables
     ports:
-      - "80:80"
-      - "443:443"
-      # DO NOT expose port 3000 when using built-in nginx
+      - "80:3000"
+      - "443:3443"
 ```
+
+The app listens on port `3000` (HTTP) and `3443` (HTTPS) by default. `SSL_PORT` defaults to `PORT + 443` if not set.
 
 ## Step 2: Deploy and Access
 
 1. **Deploy your ToolJet instance** with the updated configuration
 2. **Access via HTTP** at `http://your-domain.com` or `http://your-ip-address`
-3. nginx will start in HTTP-only mode initially
+3. The app will start in HTTP-only mode initially
 
 ## Step 3: Configure SSL (Optional)
 
@@ -46,7 +43,7 @@ Once your instance is accessible via HTTP:
 3. **Enable SSL** and enter your domain name
 4. Click **"Acquire Certificate"**
 5. Wait for certificate acquisition (usually takes 30-60 seconds)
-6. nginx will automatically reload with HTTPS enabled
+6. The app will automatically start serving HTTPS on `SSL_PORT`
 
 :::tip
 You can use ToolJet in HTTP-only mode indefinitely if HTTPS is not required (e.g., internal deployments, development environments).

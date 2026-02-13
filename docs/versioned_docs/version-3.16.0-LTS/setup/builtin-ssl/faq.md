@@ -5,13 +5,13 @@ title: Frequently Asked Questions
 
 # Frequently Asked Questions
 
-Common questions about built-in SSL and nginx.
+Common questions about built-in SSL.
 
 <details id="tj-dropdown">
 <summary>Can I use built-in SSL without a domain?</summary>
 
 No. Let's Encrypt requires a valid domain name to issue certificates. If you don't have a domain:
-- Use HTTP-only mode (set **ENABLE_BUILTIN_NGINX=true** but don't enable SSL)
+- Use HTTP-only mode (deploy normally and don't enable SSL in the dashboard)
 - Use a reverse proxy with self-signed certificates
 - Use a service like ngrok for testing
 
@@ -22,27 +22,27 @@ No. Let's Encrypt requires a valid domain name to issue certificates. If you don
 
 Currently, the built-in SSL only supports Let's Encrypt certificates. To use custom certificates:
 - Use an external reverse proxy (nginx, Caddy, Traefik)
-- Set **ENABLE_BUILTIN_NGINX=false**
+- Do not configure SSL via the ToolJet dashboard
 
 </details>
 
 <details id="tj-dropdown">
-<summary>Does built-in nginx work with load balancers?</summary>
+<summary>Does built-in SSL work with load balancers?</summary>
 
 Yes, but consider:
 - If your load balancer handles SSL termination, you may not need built-in SSL
-- Use HTTP-only mode: set **ENABLE_BUILTIN_NGINX=true** but don't enable SSL
-- Configure load balancer to forward HTTP traffic to port 80
+- Simply don't configure SSL via the ToolJet dashboard, and let the load balancer handle HTTPS
+- Configure load balancer to forward HTTP traffic to port `3000` (or your configured `PORT`)
 
 </details>
 
 <details id="tj-dropdown">
 <summary>Can I run multiple ToolJet instances with built-in SSL?</summary>
 
-The current implementation is designed for single-instance deployments. For multi-instance setups:
-- Use an external load balancer with SSL termination
-- Set **ENABLE_BUILTIN_NGINX=false** on all instances
-- Let the load balancer handle HTTPS
+Yes. Since SSL certificates are stored in the database, all replicas share the same certificate automatically. For multi-instance setups:
+- Configure SSL via the dashboard on any one instance
+- All instances share the certificate from the database
+- For high-availability, consider using an external load balancer with SSL termination instead
 
 </details>
 
@@ -50,7 +50,7 @@ The current implementation is designed for single-instance deployments. For mult
 <summary>What happens during certificate renewal?</summary>
 
 - Renewal happens automatically 30 days before expiry
-- nginx reloads gracefully (no downtime)
+- The application reloads the new certificate with no downtime
 - Renewal failures are logged and can be retried manually
 
 </details>

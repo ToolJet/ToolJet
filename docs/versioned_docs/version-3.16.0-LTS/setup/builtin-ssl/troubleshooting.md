@@ -5,25 +5,25 @@ title: Troubleshooting
 
 # Troubleshooting
 
-Common issues and solutions when using built-in SSL and nginx.
+Common issues and solutions when using built-in SSL.
 
-## nginx Not Starting
+## HTTPS Not Starting
 
 **Symptoms:**
-- Site inaccessible on ports 80/443
-- Logs show: "SSL is disabled - skipping nginx bootstrap"
+- Site not accessible on port 443
+- Only HTTP is working after enabling SSL in the dashboard
 
 **Solution:**
-Either enable SSL via dashboard or ensure you're using the latest version where nginx starts in HTTP-only mode when SSL is disabled.
+Ensure SSL is configured and a certificate has been acquired via the dashboard (**Settings → SSL Configuration → Acquire Certificate**). The app serves HTTPS only after a valid certificate is obtained.
 
-**Verify nginx is running:**
+**Verify the app is listening on both ports:**
 ```bash
 # Docker
-docker exec <container-name> ps aux | grep nginx
+docker exec <container-name> ss -tlnp | grep -E ':(3000|3443)'
 
-# Expected output:
-# nginx: master process nginx
-# nginx: worker process
+# Expected output when HTTPS is active:
+# *:3000   (HTTP — also redirects to HTTPS)
+# *:3443   (HTTPS traffic)
 ```
 
 ## Certificate Acquisition Fails
@@ -50,18 +50,18 @@ docker exec <container-name> ps aux | grep nginx
    - Check cloud provider security groups
    - Verify firewall rules allow inbound traffic on port 80
 
-## Checking nginx Status
+## Checking Application Status
 
 ```bash
-# View nginx logs
-docker logs <container-name> 2>&1 | grep -i nginx
+# View application logs
+docker logs <container-name> 2>&1 | grep -i ssl
 
 # Check which ports are listening
-docker exec <container-name> ss -tlnp | grep -E ':(80|443)'
+docker exec <container-name> ss -tlnp | grep -E ':(3000|3443)'
 
 # Expected output when HTTPS is active:
-# *:80    nginx (redirects to HTTPS)
-# *:443   nginx (HTTPS traffic)
+# *:3000   (HTTP, redirects to HTTPS)
+# *:3443   (HTTPS traffic)
 ```
 
 ## Certificate Renewal Issues
