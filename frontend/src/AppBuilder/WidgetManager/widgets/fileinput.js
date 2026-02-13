@@ -5,7 +5,7 @@ export const fileinputConfig = {
   component: 'FileInput',
   defaultSize: {
     width: 10,
-    height: 40,
+    height: 60,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -26,22 +26,33 @@ export const fileinputConfig = {
       displayName: 'Placeholder',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'Select file(s)',
+        defaultValue: 'Click to select file',
       },
       accordian: 'Data',
     },
     enableMultiple: {
       type: 'toggle',
-      displayName: 'Pick multiple files',
+      displayName: 'Allow uploading multiple files',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
       accordian: 'Data',
     },
+    enableClearSelection: {
+      type: 'toggle',
+      displayName: 'Enable clear selection',
+      validation: {
+        schema: {
+          type: 'boolean',
+        },
+        defaultValue: false,
+      },
+      accordian: 'Data',
+    },
     parseContent: {
       type: 'toggle',
-      displayName: 'Parse content',
+      displayName: 'Enable parsing',
       validation: {
         schema: {
           type: 'boolean',
@@ -72,6 +83,12 @@ export const fileinputConfig = {
         },
         defaultValue: 'auto-detect',
       },
+      conditionallyRender: [
+        {
+          key: 'parseContent',
+          value: true,
+        },
+      ],
       accordian: 'Data',
     },
     loadingState: {
@@ -164,6 +181,13 @@ export const fileinputConfig = {
         },
         defaultValue: 0,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
     maxFileCount: {
       type: 'code',
@@ -175,6 +199,13 @@ export const fileinputConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
   },
   events: {
@@ -182,6 +213,103 @@ export const fileinputConfig = {
     onFileLoaded: { displayName: 'On File Loaded' },
   },
   styles: {
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    alignment: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'top' },
+      options: [
+        { displayName: 'Side', value: 'side' },
+        { displayName: 'Top', value: 'top' },
+      ],
+      accordian: 'label',
+    },
+    direction: {
+      type: 'switch',
+      displayName: 'Direction',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
+    auto: {
+      type: 'checkbox',
+      displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    labelWidth: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' }, defaultValue: 'IconFileSearch' },
+      accordian: 'field',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-icon)',
+      },
+      accordian: 'field',
+    },
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -337,9 +465,10 @@ export const fileinputConfig = {
     },
     properties: {
       label: { value: 'Label' },
-      instructionText: { value: 'Select file(s)' },
+      instructionText: { value: 'Click to select file' },
       enableMultiple: { value: '{{true}}', fxActive: false },
       parseContent: { value: '{{false}}' },
+      enableClearSelection: { value: '{{false}}' },
       parseFileType: { value: 'auto-detect' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
@@ -348,6 +477,14 @@ export const fileinputConfig = {
     },
     events: [],
     styles: {
+      labelColor: { value: 'var(--cc-primary-text)' },
+      labelWidth: { value: '33' },
+      auto: { value: '{{true}}' },
+      direction: { value: 'left' },
+      alignment: { value: 'top' },
+      widthType: { value: 'ofComponent' },
+      icon: { value: 'IconFileSearch' },
+      iconColor: { value: 'var(--cc-default-icon)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
