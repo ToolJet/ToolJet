@@ -1296,24 +1296,70 @@ class HomePageComponent extends React.Component {
 
     // Add latest commit as first option
     if (latestCommitData?.latestCommit?.[0]) {
+      const gitVersionName = latestCommitData?.gitVersionName;
+      // Check if the latest commit's version exists in tags (to determine if it's a draft)
+      const tagVersionNames = (tags || []).map((tag) => {
+        const [, version] = tag.name.split('/');
+        return version;
+      });
+      const isInTags = tagVersionNames.includes(gitVersionName);
+
       options.push({
-        name: 'Latest commit',
+        label: isInTags ? gitVersionName : 'Draft version',
         value: 'latest',
+        isLatest: true,
+        isDraft: !isInTags,
+        sha: latestCommitData?.latestCommit?.[0]?.commitId,
       });
     }
 
-    // Add tags
+    // Add tags - filter out tags that have the same SHA as the latest commit
     if (tags && tags.length > 0) {
-      tags.forEach((tag) => {
+      const latestCommitSha = latestCommitData?.latestCommit?.[0]?.commitId;
+      const filteredTags = latestCommitSha ? tags.filter((tag) => tag.commit?.sha !== latestCommitSha) : tags;
+
+      filteredTags.forEach((tag) => {
         const [, version] = tag.name.split('/');
         options.push({
-          name: version,
+          label: version,
           value: tag.name,
+          isLatest: false,
+          isDraft: false,
         });
       });
     }
 
     return options;
+  };
+
+  renderVersionOption = (option) => {
+    return (
+      <div className="version-option-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="version-option-name">{option.label}</span>
+        <div className="version-option-tags" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {option.isLatest && (
+            <span
+              className="version-tag version-tag-latest"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '10px',
+                fontWeight: 500,
+                lineHeight: '14px',
+                whiteSpace: 'nowrap',
+                backgroundColor: '#E6EDFE',
+                color: '#3451B2',
+              }}
+            >
+              Latest
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   handleVersionOptionChange = (newVal) => {
@@ -1718,6 +1764,7 @@ class HomePageComponent extends React.Component {
                           placeholder={fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'}
                           closeMenuOnSelect={true}
                           customWrap={true}
+                          customOption={this.renderVersionOption}
                         />
                       </div>
                     </div>
