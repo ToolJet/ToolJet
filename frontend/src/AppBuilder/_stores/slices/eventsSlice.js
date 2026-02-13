@@ -401,6 +401,8 @@ export const createEventsSlice = (set, get) => ({
           'onRecordingSave',
           'onImageSave',
           'onSaveKeyValuePairChanges',
+          'onFieldValueChanged',
+          'onCancelKeyValuePairChanges',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
