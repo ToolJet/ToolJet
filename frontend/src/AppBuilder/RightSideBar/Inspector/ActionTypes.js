@@ -52,7 +52,7 @@ export const ActionTypes = [
     group: 'control-component',
   },
   {
-    name: 'Scroll Component Into View',
+    name: 'Scroll component into view',
     id: 'scroll-component-into-view',
     options: [
       { name: 'componentId', type: 'text', default: '' },

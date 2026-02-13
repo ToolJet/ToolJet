@@ -1301,8 +1301,9 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const scrollComponentInToView = (componentName, behaviour, block, moduleId = 'canvas') => {
+      const scrollComponentInToView = (componentName, eventObj, moduleId = 'canvas') => {
         let componentId = '';
+        const { behaviour = 'smooth', block = 'nearest' } = eventObj;
         for (const [key, value] of currentComponents) {
           if (value.component.name === componentName) {
             componentId = key;
@@ -1311,8 +1312,8 @@ export const createEventsSlice = (set, get) => ({
         const event = {
           actionId: 'scroll-component-into-view',
           componentId,
-          behaviour,
-          block,
+          scrollBehaviour: behaviour,
+          scrollBlock: block,
         };
         return executeAction(event, mode, {}, moduleId);
       };
