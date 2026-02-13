@@ -89,7 +89,7 @@ export function getSuggestionKeys(refState) {
     'unsetAllPageVariables',
     'switchPage',
     'toggleAppMode',
-    'scrollToComponent',
+    'scrollComponentInToView',
   ];
 
   // eslint-disable-next-line no-unused-vars

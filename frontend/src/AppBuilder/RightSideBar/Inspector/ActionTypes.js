@@ -52,8 +52,8 @@ export const ActionTypes = [
     group: 'control-component',
   },
   {
-    name: 'Scroll to component',
-    id: 'scroll-to-component',
+    name: 'Scroll Component Into View',
+    id: 'scroll-component-into-view',
     options: [
       { name: 'componentId', type: 'text', default: '' },
       { name: 'scrollBehavior', type: 'text', default: 'smooth' },

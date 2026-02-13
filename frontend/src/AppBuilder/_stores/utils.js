@@ -500,7 +500,7 @@ export function createReferencesLookup(
     'log',
     'logError',
     'toggleAppMode',
-    'scrollToComponent',
+    'scrollComponentInToView',
   ];
 
   const suggestionList = [];

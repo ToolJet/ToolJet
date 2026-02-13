@@ -955,7 +955,7 @@ export const EventManager = ({
                 darkMode={darkMode}
               />
             )}
-            {event.actionId === 'scroll-to-component' && (
+            {event.actionId === 'scroll-component-into-view' && (
               <>
                 <div className="row">
                   <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>

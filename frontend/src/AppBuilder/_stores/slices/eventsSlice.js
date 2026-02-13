@@ -901,11 +901,11 @@ export const createEventsSlice = (set, get) => ({
               return Promise.reject(error);
             }
           }
-          case 'scroll-to-component': {
+          case 'scroll-component-into-view': {
             try {
               const componentId = event.componentId;
               if (!componentId) {
-                throw new Error('No component selected for scroll-to-component action.');
+                throw new Error('No component selected for scroll-component-into-view action.');
               }
               const element = document.getElementById(componentId);
               if (!element) {
@@ -916,7 +916,7 @@ export const createEventsSlice = (set, get) => ({
               element.scrollIntoView({ behavior, block });
               return Promise.resolve();
             } catch (error) {
-              get().eventsSlice.logError('scroll_to_component', 'scroll-to-component', error, eventObj, {
+              get().eventsSlice.logError('scroll_to_component', 'scroll-component-into-view', error, eventObj, {
                 eventId: event.eventId,
               });
               return Promise.reject(error);
@@ -1301,7 +1301,7 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const scrollToComponent = (componentName, moduleId = 'canvas') => {
+      const scrollComponentInToView = (componentName, behaviour, block, moduleId = 'canvas') => {
         let componentId = '';
         for (const [key, value] of currentComponents) {
           if (value.component.name === componentName) {
@@ -1309,8 +1309,10 @@ export const createEventsSlice = (set, get) => ({
           }
         }
         const event = {
-          actionId: 'scroll-to-component',
+          actionId: 'scroll-component-into-view',
           componentId,
+          behaviour,
+          block,
         };
         return executeAction(event, mode, {}, moduleId);
       };
@@ -1339,7 +1341,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
-        scrollToComponent,
+        scrollComponentInToView,
       };
     },
     // Selectors
