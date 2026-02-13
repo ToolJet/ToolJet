@@ -96,6 +96,7 @@ export const filepickerConfig = {
         },
         defaultValue: false,
       },
+      accordian: 'Data',
     },
     parseFileType: {
       type: 'select',
@@ -116,6 +117,11 @@ export const filepickerConfig = {
         },
         defaultValue: 'auto-detect',
       },
+      conditionallyRender: {
+        key: 'parseContent',
+        value: true,
+      },
+      accordian: 'Data',
     },
     delimiter: {
       type: 'code',
@@ -124,6 +130,17 @@ export const filepickerConfig = {
         schema: { type: 'string' },
         defaultValue: ',',
       },
+      conditionallyRender: [
+        {
+          key: 'parseContent',
+          value: true,
+        },
+        {
+          key: 'parseFileType',
+          value: 'csv',
+        },
+      ],
+      accordian: 'Data',
     },
     loadingState: {
       type: 'toggle',
@@ -220,6 +237,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
     maxFileCount: {
       type: 'code',
@@ -231,6 +255,13 @@ export const filepickerConfig = {
         },
         defaultValue: 2,
       },
+      conditionallyRender: [
+        {
+          key: 'enableMultiple',
+          value: true,
+          parentObjectKey: 'properties',
+        },
+      ],
     },
   },
   styles: {

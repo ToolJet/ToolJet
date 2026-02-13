@@ -1,16 +1,31 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { IconX, IconFileSearch } from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useFilePicker } from '@/AppBuilder/Widgets/FilePicker/hooks/useFilePicker';
+import { Button } from '@/components/ui/Button/Button';
+import RemoveRectangle from '@/_ui/Icon/bulkIcons/RemoveRectangle';
+
+
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 import './fileInput.scss';
+
+export const CustomClearIndicator = (props) => {
+  return (
+    <ClearIndicator {...props}>
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    </ClearIndicator>
+  );
+};
 
 export const FileInput = (props) => {
   const {
@@ -42,16 +57,19 @@ export const FileInput = (props) => {
     boxShadow = '0px 0px 0px 0px #00000040',
     labelWidth = 0,
     auto: labelAutoWidth = true,
+    icon = 'IconFileSearch',
+    iconColor = 'var(--cc-default-icon)',
   } = styles;
 
   const label = properties.label ?? 'Label';
-  const placeholder = properties.instructionText ?? 'Select file(s)';
+  const placeholder = properties.instructionText ?? 'Click to select file';
+  const enableClearSelection = properties.enableClearSelection ?? false;
 
   const isMandatory = validation?.enableValidation ?? false;
 
   const wrapperRef = useRef(null);
 
-  const inputHeight = useMemo(() => (padding === 'default' ? height || 40 : (height || 40) + 4), [height, padding]);
+  const inputHeight = useMemo(() => (padding === 'default' ? height || 60 : (height || 60) + 4), [height, padding]);
 
   const focusFn = () => {
     if (wrapperRef.current) {
@@ -84,6 +102,7 @@ export const FileInput = (props) => {
     disabledState,
     disablePicker,
     uiErrorMessage,
+    clearFiles,
   } = useFilePicker({
     ...props,
     properties: mergedProperties,
@@ -105,32 +124,31 @@ export const FileInput = (props) => {
 
   const computedStyles = useMemo(
     () => ({
-      height: `${inputHeight}px`,
+      height: `${alignment === 'top' ? inputHeight - 18 + 'px' : '100%'}`,
+      width: '100%',
       borderRadius: typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius,
       borderColor: hasError
         ? errTextColor
         : borderColor !== '#CCD1D5'
-        ? borderColor
-        : disabledState
-        ? 'var(--borders-disabled-on-white)'
-        : 'var(--borders-default)',
+          ? borderColor
+          : disabledState
+            ? 'var(--borders-disabled-on-white)'
+            : 'var(--borders-default)',
       '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
       boxShadow,
       backgroundColor:
         backgroundColor !== '#fff'
           ? backgroundColor
           : disabledState || isLoading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+            ? darkMode
+              ? 'var(--surfaces-app-bg-default)'
+              : 'var(--surfaces-surface-03)'
+            : 'var(--surfaces-surface-01)',
       color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
         ? textColor
         : disabledState
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
-      paddingLeft: padding === 'default' ? '10px' : '0px',
-      paddingRight: padding === 'default' ? '10px' : '0px',
+          ? 'var(--text-disabled)'
+          : 'var(--text-primary)',
     }),
     [
       inputHeight,
@@ -175,21 +193,21 @@ export const FileInput = (props) => {
     selectedFiles.length === 0
       ? placeholder
       : selectedFiles.length === 1
-      ? selectedFiles[0].name
-      : `${selectedFiles.length} files selected`;
+        ? selectedFiles[0].name
+        : `${selectedFiles.length} files selected`;
 
   if (!isVisible) return null;
 
   return (
     <div
       data-cy={dataCy}
-      className={clsx('d-flex', {
-        'flex-column': alignment === 'top',
-        'align-items-center': alignment !== 'top',
-        'flex-row-reverse': direction === 'right' && alignment === 'side',
-        'text-right': direction === 'right' && alignment === 'top',
+      className={clsx('tw-flex', {
+        'tw-flex-col': alignment === 'top',
+        'tw-flex-row': alignment === 'side',
+        'tw-flex-row-reverse': direction === 'right' && alignment === 'side',
+        'tw-text-right': direction === 'right' && alignment === 'top',
       })}
-      style={{ width: '100%' }}
+      style={{ width: '100%', height: '100%' }}
     >
       <Label
         label={label}
@@ -203,10 +221,11 @@ export const FileInput = (props) => {
         _width={_width}
         widthType={widthType}
         inputId={`component-${id}`}
+        style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
       />
 
       <div
-        className="px-0 h-100 tw-w-full"
+        className="tw-px-0 tw-h-full tw-w-full tw-flex tw-items-center"
         style={{
           ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
         }}
@@ -214,26 +233,48 @@ export const FileInput = (props) => {
         <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
           <input {...inputProps} className="tw-hidden" />
 
-          <div className="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-overflow-hidden">
+          <div className="tw-flex tw-h-full tw-items-center tw-gap-2 tw-border-l-0 tw-border-t-0 tw-border-b-0 tw-border-r tw-border-solid  tw-border-border-default tw-px-0">
+            {isLoading ? (
+              <div className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-py-2 tw-px-2 tw-h-full tw-rounded-none tw-justify-center">
+                <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
+              </div>
+            ) :
+              <Button
+                variant="ghost"
+                size="default"
+                className="tw-flex tw-items-center tw-gap-1.5 tw-py-2 tw-px-2 tw-h-full tw-rounded-none"
+                disabled={disabledState || disablePicker}
+              >
+                <TablerIcon iconName={icon} size={16} color={iconColor} className="cursor-pointer clear-indicator" />
+                <span>Browse</span>
+              </Button>
+            }
+          </div>
+          <div className="tw-flex tw-h-full tw-items-center tw-gap-2 tw-flex-1 tw-overflow-hidden tw-px-2.5 tw-py-2">
             <span
-              className={clsx('tw-text-xs tw-truncate', {
+              className={clsx('tw-text-xs tw-truncate tw-inline-block tw-w-full', {
                 'tw-text-[color:var(--text-placeholder)]': selectedFiles.length === 0,
               })}
             >
               {selectedSummary}
             </span>
+            {selectedFiles.length > 0 && enableClearSelection && (
+              <Button
+                variant="ghost"
+                iconOnly
+                size="small"
+                disabled={disabledState}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearFiles();
+                }}
+              >
+                <RemoveRectangle width={18} className="cursor-pointer" fill={'var(--icon-default)'} />
+              </Button>
+            )}
           </div>
 
-          <div className="tw-flex tw-items-center tw-gap-2">
-            {isLoading && <Loader width={14} />}
-            <button
-              type="button"
-              className="tj-file-input-button tw-text-xs tw-font-medium"
-              disabled={disabledState || disablePicker}
-            >
-              Browse
-            </button>
-          </div>
+
         </div>
 
         {hasError && (
@@ -261,14 +302,14 @@ FileInput.propTypes = {
 };
 
 FileInput.defaultProps = {
-  height: 40,
+  height: 60,
   darkMode: false,
   styles: {},
   properties: {},
   validation: {},
-  fireEvent: () => {},
-  setExposedVariable: () => {},
-  setExposedVariables: () => {},
+  fireEvent: () => { },
+  setExposedVariable: () => { },
+  setExposedVariables: () => { },
 };
 
 export default FileInput;
