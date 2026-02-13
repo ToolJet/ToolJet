@@ -51,6 +51,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'JSONEditor',
   'ProgressBar',
   'IFrame',
+  'ReorderableList',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

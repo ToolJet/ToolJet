@@ -69,7 +69,16 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat', 'JSONEditor']),
+    valueSet: new Set([
+      'FilePicker',
+      'CodeEditor',
+      'ColorPicker',
+      'BoundedBox',
+      'QrScanner',
+      'Chat',
+      'ReorderableList',
+      'JSONEditor',
+    ]),
   },
   legacy: {
     title: 'Legacy',

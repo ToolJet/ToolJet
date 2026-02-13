@@ -972,6 +972,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             );
           }
 
+          if (box?.component?.component === 'ReorderableList') {
+            const handleContainers = e.target.querySelectorAll('.reorderable-list-items');
+            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+              container.contains(e.inputEvent.target)
+            );
+          }
+
           if (box?.component?.component === 'KeyValuePair') {
             const handleContainers = e.target.querySelectorAll('.kv-editable');
             isDragOnInnerElement = Array.from(handleContainers).some((container) =>
