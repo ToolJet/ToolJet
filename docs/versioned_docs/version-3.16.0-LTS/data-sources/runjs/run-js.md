@@ -13,11 +13,7 @@ The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to 
 3. Add the JavaScript Code.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<<<<<<<< HEAD:docs/versioned_docs/version-3.16.0-LTS/data-sources/runjs/custom-js.md
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/create-query.png" alt="Run JavaScript code" />
-========
 <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-connection-v3.png" alt="Run JavaScript code" />
->>>>>>>> develop:docs/versioned_docs/version-3.16.0-LTS/data-sources/run-js.md
 
 ## Parameters in Run JavaScript Code
 
@@ -36,11 +32,7 @@ Each parameter requires:
 
 Once added, the **parameter can be referenced in the code using the syntax**: `parameters.<name>`.
 
-<<<<<<<< HEAD:docs/versioned_docs/version-3.16.0-LTS/data-sources/runjs/custom-js.md
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/js-param.png" alt="Run JavaScript code" />
-========
 <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-param.png" alt="Run JavaScript code"/>
->>>>>>>> develop:docs/versioned_docs/version-3.16.0-LTS/data-sources/run-js.md
 
 ### Displaying a Parameter Value in an Alert Box
 

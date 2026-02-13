@@ -331,7 +331,6 @@
                 "widgets/html",
                 "widgets/icon",
                 "widgets/iframe",
-<<<<<<< HEAD
                 {
                   "type": "category",
                   "label": "Image",
@@ -344,11 +343,8 @@
                     "widgets/image/loading-image-pdf-from-db"
                   ]
                 },
-=======
-                "widgets/image",
                 "widgets/json-editor",
                 "widgets/json-explorer",
->>>>>>> develop
                 "widgets/kanban",
                 "widgets/key-value-pair",
                 "widgets/link",
@@ -554,11 +550,8 @@
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
                 "data-sources/restapi/metadata-and-cookies",
-<<<<<<< HEAD
-                "data-sources/restapi/pass-values-in-rest-api"
-=======
+                "data-sources/restapi/pass-values-in-rest-api",
                 "data-sources/restapi/multipart-form-data-rest-api"
->>>>>>> develop
               ]
             },
             "data-sources/soap-api",
