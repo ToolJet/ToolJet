@@ -193,6 +193,9 @@ const DynamicSelector = ({
   // Check queryOptions for cached value on mount
   useEffect(() => {
     if (!selectedDataSource || !selectedDataSource.options) return;
+    // autoFetch has its own effect that handles fetching and validation;
+    // skip cache-checking here since autoFetch never persists cache to options
+    if (autoFetch) return;
 
     const storedValue = get(options, propertyKey);
     if (storedValue) {
