@@ -5,8 +5,6 @@ title: Run JavaScript Code
 
 The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to be executed to enhance application interactivity. This feature is useful for performing calculations, generating values, or interacting with queries and components.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Creating a Run JavaScript Query
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -14,11 +12,7 @@ The **Run JavaScript Code** feature in ToolJet allows custom JavaScript code to 
 3. Add the JavaScript Code.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/create-query.png" alt="Run JavaScript code" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-connection-v3.png" alt="Run JavaScript code" />
 
 ## Parameters in Run JavaScript Code
 
@@ -37,11 +31,7 @@ Each parameter requires:
 
 Once added, the **parameter can be referenced in the code using the syntax**: `parameters.<name>`.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/js-param.png" alt="Run JavaScript code" />
-
-</div>
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-param.png" alt="Run JavaScript code"/>
 
 ### Displaying a Parameter Value in an Alert Box
 
@@ -55,7 +45,7 @@ alert(parameters.newAlert)
 
 When the query is triggered the alert will show the parameters value.
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/param-alert.png" alt="Run JavaScript code" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-param1.png" alt="Run JavaScript code"  />
 
 ### Calling Another Query with Parameters
 
@@ -76,7 +66,7 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
 
    - To display the result, place a text component on the canvas and set its text to `{{queries.multiply.data}}`.
      <br/>
-     <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/multiply-v2.png" alt="Run JavaScript code" />
+     <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/multiply-v3.png" alt="Run JavaScript code" />
 
 2. Now, let's create another RunJS query called _callMultiply_, where we will invoke the _multiply_ query created earlier using custom parameter values. Here's the code snippet for _callMultiply_:
 
@@ -86,13 +76,9 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
 
    By executing this code within _callMultiply_, we trigger the _multiply_ query with specific values for its parameters.
 
-   <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/call-multiply-v2.png" alt="Run JavaScript code" />
+   <img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/callmultiply-v3.png" alt="Run JavaScript code" />
 
 With this setup, the _multiply_ query can be called from other queries, such as _callMultiply_, by providing custom parameter values. This allows you to reuse the _multiply_ query with different inputs and display the results accordingly.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## RunJS Example Queries
 
@@ -117,7 +103,7 @@ return a;
    2. Edit the property of text widget:
       1. In the text field enter **Random number:** `{{queries.runjs1.data}}`. It will display the output as Random number: _result from JS code_
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/random-num.png" alt="Run JavaScript code" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-ex-query.png" alt="Run JavaScript code"  />
 
 ### Generating a Unique ID
 
@@ -130,7 +116,7 @@ return id;
 
 For example, it could be something like "id2f4a1b".
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/unique-id-1.png" alt="Run JavaScript code" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-unique-id.png" alt="Run JavaScript code"  />
 
 ### Generating a Timestamp-Based Unique ID
 
@@ -145,7 +131,7 @@ return String(Date.now().toString(32) + Math.random().toString(16)).replace(
 
 This ID will be longer than the one generated earlier, and it could look like "2g3h1d6a4h3".
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/unique-id-2.png" alt="Run JavaScript code" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/custom-javascript/runjs-ts.png" alt="Run JavaScript code"  />
 
 :::tip Resources
 
@@ -154,10 +140,6 @@ This ID will be longer than the one generated earlier, and it could look like "2
 - [Intentionally Fail](/docs/how-to/intentionally-fail-js-query) a RunJS query.
 - [Trigger query at specified intervals](/docs/how-to/run-query-at-specified-intervals) using RunJS.
   :::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Libraries
 
@@ -172,5 +154,3 @@ ToolJet allows you to internally utilize these libraries:
 :::info
 Issues with writing custom JavaScript code? Ask in our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
 :::
-
-</div>
