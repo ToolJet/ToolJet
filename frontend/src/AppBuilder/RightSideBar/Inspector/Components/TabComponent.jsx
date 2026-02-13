@@ -132,12 +132,34 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     reorderTabItems(source.index, destination.index);
   };
 
+  const handleOnFxPress = (item, property, active) => {
+    const updatedTabItems = tabItems.map((tabItem) => {
+      if (tabItem.id === item.id) {
+        return {
+          ...tabItem,
+          [property]: {
+            ...tabItem[property],
+            fxActive: active,
+          },
+        };
+      }
+      return tabItem;
+    });
+    setTabItems(updatedTabItems);
+    updateAllTabItemsParams(updatedTabItems);
+  };
+
   const handleValueChange = (item, value, property, index) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
         return {
           ...tabItem,
-          [property]: value,
+          [property]: ['title', 'id'].includes(property)
+            ? value
+            : {
+                ...tabItem[property],
+                ...value,
+              },
         };
       }
       return tabItem;
@@ -315,6 +337,8 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 handleValueChange(item, { value }, 'loading', index);
               }}
+              onFxPress={(active) => handleOnFxPress(item, 'loading', active)}
+              fxActive={item?.loading?.fxActive}
               fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
               paramType={'toggle'}
             />
@@ -332,7 +356,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
-              onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
+              onFxPress={(active) => handleOnFxPress(item, 'visible', active)}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
                 type: 'toggle',
@@ -353,7 +377,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Disable'}
               paramName={'disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
-              onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
+              onFxPress={(active) => handleOnFxPress(item, 'disable', active)}
               fxActive={item?.disable?.fxActive}
               fieldMeta={{
                 type: 'toggle',
