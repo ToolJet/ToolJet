@@ -36,8 +36,8 @@ Query results can be transformed using transformations. Read our transformation 
 - **[Remove object](#remove-object)**
 - **[List buckets](#list-buckets)**
 - **[List objects in a bucket](#list-objects-in-a-bucket)**
-- **[Presigned url for download](#presigned-url-for-download)**
-- **[Presigned url for upload](#presigned-url-for-upload)**
+- **[Presigned url for download](#pre-signed-url-for-download)**
+- **[Presigned url for upload](#pre-signed-url-for-upload)**
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/minio/listops-v3.png" alt="minIo Operations"/>
 
