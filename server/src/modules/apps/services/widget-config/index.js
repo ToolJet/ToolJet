@@ -73,6 +73,8 @@ import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
+import { navigationConfig } from './navigation';
+
 const widgets = {
   buttonConfig,
   tableConfig,
@@ -149,6 +151,7 @@ const widgets = {
   cameraConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {

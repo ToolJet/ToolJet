@@ -2,8 +2,6 @@
 import React, { useRef, useState } from 'react';
 import _ from 'lodash';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { IconDotsVertical } from '@tabler/icons-react';
-// eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';

@@ -19,6 +19,7 @@ const NEW_WIDGETS = [
   'TagsInput',
   'JSONExplorer',
   'JSONEditor',
+  'Navigation',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {
