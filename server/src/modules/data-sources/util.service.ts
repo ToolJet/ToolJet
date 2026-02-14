@@ -455,11 +455,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async resolveKeyValuePair(arr, organization_id, environment_id) {
-    const resolvedArray = await Promise.all(
+    if (!Array.isArray(arr)) {
+      return this.resolveValue(arr, organization_id, environment_id);
+    }
+
+    return Promise.all(
       arr.map((item) => this.resolveValue(item, organization_id, environment_id))
     );
-
-    return resolvedArray;
   }
 
   async resolveValue(value, organization_id, environment_id) {
