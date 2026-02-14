@@ -67,6 +67,9 @@ export const ButtonColumn = ({
     buttonStyle.borderStyle = 'solid';
     buttonStyle.borderWidth = '1px';
   }
+  if (disableButton) {
+    buttonStyle.opacity = '50%';
+  }
 
   const buttonElement = (
     <Button
