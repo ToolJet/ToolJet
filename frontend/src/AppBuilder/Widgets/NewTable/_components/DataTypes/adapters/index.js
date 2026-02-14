@@ -10,3 +10,4 @@ export { ImageColumn } from './ImageColumnAdapter';
 export { JsonColumn } from './JsonColumnAdapter';
 export { MarkdownColumn } from './MarkdownColumnAdapter';
 export { HtmlColumn } from './HtmlColumnAdapter';
+export { ButtonColumn } from './ButtonColumnAdapter';
