@@ -78,6 +78,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.buttonLoaderColor;
       case 'buttonBorderColor':
         return props?.buttonBorderColor;
+      case 'buttonBorderRadius':
+        return props?.buttonBorderRadius;
       default:
         return;
     }
@@ -143,6 +145,9 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'buttonBorderColor') {
       return definitionObj?.value ?? 'var(--cc-weak-border)';
+    }
+    if (property === 'buttonBorderRadius') {
+      return definitionObj?.value ?? '6';
     }
     return definitionObj?.value ?? `{{false}}`;
   };

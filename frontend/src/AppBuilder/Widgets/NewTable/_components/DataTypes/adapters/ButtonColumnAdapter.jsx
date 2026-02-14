@@ -18,6 +18,7 @@ export const ButtonColumn = ({
   iconAlignment,
   loaderColor,
   borderColor,
+  borderRadius,
   onClick,
 }) => {
   const { getTableColumnEvents } = useTableStore();
@@ -45,7 +46,7 @@ export const ButtonColumn = ({
   const buttonStyle = {
     flex: '1 0 0',
     padding: '6px 12px',
-    borderRadius: '6px',
+    borderRadius: borderRadius ? `${borderRadius}px` : '6px',
     fontSize: '14px',
     fontWeight: 500,
     lineHeight: '20px',

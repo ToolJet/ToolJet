@@ -392,6 +392,22 @@ export const StylesTabElements = ({
               paramType="properties"
             />
           </div>
+
+          {/* Border radius */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Border radius"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonBorderRadius"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'numberInput', displayName: 'Border radius' }}
+              paramType="properties"
+            />
+          </div>
         </div>
       )}
     </>

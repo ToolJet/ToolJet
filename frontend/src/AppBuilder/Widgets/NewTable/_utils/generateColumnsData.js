@@ -431,6 +431,7 @@ export default function generateColumnsData({
                   iconAlignment={getResolvedValue(column.buttonIconAlignment, { cellValue, rowData }) || 'left'}
                   loaderColor={getResolvedValue(column.buttonLoaderColor, { cellValue, rowData })}
                   borderColor={getResolvedValue(column.buttonBorderColor, { cellValue, rowData })}
+                  borderRadius={getResolvedValue(column.buttonBorderRadius, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   onClick={(tableColumnEvents) => {
                     const columnEvents = tableColumnEvents.filter(

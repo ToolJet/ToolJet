@@ -59,6 +59,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         buttonIconAlignment: 'left',
         buttonLoaderColor: 'var(--cc-surface1-surface)',
         buttonBorderColor: 'var(--cc-weak-border)',
+        buttonBorderRadius: '6',
       };
     }
 
