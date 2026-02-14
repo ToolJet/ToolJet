@@ -70,6 +70,44 @@
             "setup/google-cloud-run",
             "setup/env-vars",
             "setup/http-proxy",
+            {
+              "type": "category",
+              "label": "Built-in SSL",
+              "items": [
+                "setup/builtin-ssl/overview",
+                "setup/builtin-ssl/requirements",
+                "setup/builtin-ssl/quickstart",
+                "setup/builtin-ssl/configuration",
+                {
+                  "type": "category",
+                  "label": "Deployment Examples",
+                  "items": [
+                    "setup/builtin-ssl/deployment-examples/overview",
+                    {
+                      "type": "category",
+                      "label": "AWS",
+                      "items": [
+                        "setup/builtin-ssl/deployment-examples/aws/ecs",
+                        "setup/builtin-ssl/deployment-examples/aws/ami"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "General",
+                      "items": [
+                        "setup/builtin-ssl/deployment-examples/general/docker-compose",
+                        "setup/builtin-ssl/deployment-examples/general/kubernetes",
+                        "setup/builtin-ssl/deployment-examples/general/helm"
+                      ]
+                    }
+                  ]
+                },
+                "setup/builtin-ssl/troubleshooting",
+                "setup/builtin-ssl/migration",
+                "setup/builtin-ssl/security",
+                "setup/builtin-ssl/faq"
+              ]
+            },
             "setup/tooljet-subpath",
             {
               "type": "category",
