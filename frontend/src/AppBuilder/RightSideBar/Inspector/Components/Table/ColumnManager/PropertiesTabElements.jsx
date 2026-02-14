@@ -288,7 +288,7 @@ export const PropertiesTabElements = ({
                   <EventManager
                     sourceId={props?.component?.id}
                     eventSourceType="table_column"
-                    customEventRefs={{ ref: column.name }}
+                    customEventRefs={{ ref: column.key || column.name }}
                     hideEmptyEventsAlert={false}
                     eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
                     currentState={currentState}

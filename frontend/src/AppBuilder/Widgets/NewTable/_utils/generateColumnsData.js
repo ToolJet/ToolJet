@@ -435,7 +435,7 @@ export default function generateColumnsData({
                   horizontalAlignment={column?.horizontalAlignment}
                   onClick={(tableColumnEvents) => {
                     const columnEvents = tableColumnEvents.filter(
-                      (event) => event?.event?.ref === column?.name
+                      (event) => event?.event?.ref === (column?.key || column?.name)
                     );
                     fireEvent('OnTableButtonColumnClicked', {
                       column,
