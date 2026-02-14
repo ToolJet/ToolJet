@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 // eslint-disable-next-line import/no-unresolved
-import { DynamicIcon } from 'lucide-react/dynamic.mjs';
+import * as TablerIcons from '@tabler/icons-react';
 import useTableStore from '../../../_stores/tableStore';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 
@@ -14,6 +14,7 @@ export const ButtonColumn = ({
   backgroundColor,
   labelColor,
   iconName,
+  iconVisibility,
   iconColor,
   iconAlignment,
   loaderColor,
@@ -35,9 +36,13 @@ export const ButtonColumn = ({
 
   const variant = buttonType === 'outline' ? 'outline' : 'primary';
 
-  const iconElement = iconName ? (
-    <DynamicIcon name={iconName} size={12} style={iconColor ? { color: iconColor } : undefined} />
-  ) : null;
+  let iconElement = null;
+  if (iconName && iconVisibility) {
+    const IconComponent = TablerIcons[iconName];
+    if (IconComponent) {
+      iconElement = <IconComponent size={14} stroke={1.5} style={iconColor ? { color: iconColor } : undefined} />;
+    }
+  }
 
   const buttonStyle = {};
   if (buttonType === 'solid' && backgroundColor) {
@@ -48,6 +53,8 @@ export const ButtonColumn = ({
   }
   if (borderColor) {
     buttonStyle.borderColor = borderColor;
+    buttonStyle.borderStyle = 'solid';
+    buttonStyle.borderWidth = '1px';
   }
 
   return (

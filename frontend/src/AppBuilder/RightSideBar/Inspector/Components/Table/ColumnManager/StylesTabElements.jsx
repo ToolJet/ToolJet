@@ -9,6 +9,9 @@ import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
+import { Icon as IconPicker } from '@/AppBuilder/CodeBuilder/Elements/Icon';
+import AlignLeftinspector from '@/_ui/Icon/solidIcons/AlignLeftinspector';
+import AlignRightinspector from '@/_ui/Icon/solidIcons/AlignRightinspector';
 
 export const StylesTabElements = ({
   column,
@@ -305,49 +308,56 @@ export const StylesTabElements = ({
             />
           </div>
 
-          {/* Icon name */}
-          <div className="field px-3">
-            <label className="form-label">Icon</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column?.buttonIconName ?? ''}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'e.g. arrow-right'}
-              onChange={(value) => onColumnItemChange(index, 'buttonIconName', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'buttonIconName')}
-            />
-          </div>
-
-          {/* Icon color */}
-          <div className="field px-3">
-            <ProgramaticallyHandleProperties
-              label="Icon color"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="buttonIconColor"
-              props={column}
-              component={component}
-              paramMeta={{ type: 'colorSwatches', displayName: 'Icon color' }}
-              paramType="properties"
-            />
-          </div>
-
-          {/* Icon alignment */}
+          {/* Icon - picker with visibility toggle */}
           <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
             <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-              Icon alignment
+              Icon
             </label>
+            <div style={{ flex: '1 1 0' }}>
+              <IconPicker
+                value={column?.buttonIconName || 'IconHome2'}
+                onChange={(value) => onColumnItemChange(index, 'buttonIconName', value)}
+                onVisibilityChange={(value) => onColumnItemChange(index, 'buttonIconVisibility', value)}
+                styleDefinition={{ iconVisibility: { value: column?.buttonIconVisibility ?? false } }}
+                component={component}
+                isVisibilityEnabled={true}
+              />
+            </div>
+          </div>
+
+          {/* Icon color - no label, right-aligned */}
+          <div className="field d-flex justify-content-end px-3">
+            <div style={{ flex: '1 1 0' }} />
+            <div style={{ flex: '1 1 0' }}>
+              <ProgramaticallyHandleProperties
+                label="Icon color"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="buttonIconColor"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'colorSwatches', displayName: ' ', showLabel: false }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+
+          {/* Icon alignment - no label, icon-based toggle, right-aligned */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <div style={{ flex: '1 1 0' }} />
             <ToggleGroup
               onValueChange={(_value) => onColumnItemChange(index, 'buttonIconAlignment', _value)}
               defaultValue={column?.buttonIconAlignment || 'left'}
               style={{ flex: '1 1 0' }}
             >
-              <ToggleGroupItem value="left">Left</ToggleGroupItem>
-              <ToggleGroupItem value="right">Right</ToggleGroupItem>
+              <ToggleGroupItem value="left">
+                <AlignLeftinspector width={14} fill="#C1C8CD" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="right">
+                <AlignRightinspector width={14} fill="#C1C8CD" />
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
 

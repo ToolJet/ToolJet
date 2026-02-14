@@ -426,6 +426,7 @@ export default function generateColumnsData({
                   backgroundColor={getResolvedValue(column.buttonBackgroundColor, { cellValue, rowData })}
                   labelColor={getResolvedValue(column.buttonLabelColor, { cellValue, rowData })}
                   iconName={getResolvedValue(column.buttonIconName, { cellValue, rowData })}
+                  iconVisibility={getResolvedValue(column.buttonIconVisibility, { cellValue, rowData })}
                   iconColor={getResolvedValue(column.buttonIconColor, { cellValue, rowData })}
                   iconAlignment={getResolvedValue(column.buttonIconAlignment, { cellValue, rowData }) || 'left'}
                   loaderColor={getResolvedValue(column.buttonLoaderColor, { cellValue, rowData })}

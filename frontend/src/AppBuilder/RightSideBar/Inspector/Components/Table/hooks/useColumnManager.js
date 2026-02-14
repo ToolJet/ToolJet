@@ -51,13 +51,14 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         buttonType: 'solid',
         disableButton: false,
         loadingState: false,
-        buttonBackgroundColor: '',
-        buttonLabelColor: '',
-        buttonIconName: '',
-        buttonIconColor: '',
+        buttonBackgroundColor: 'var(--cc-primary-brand)',
+        buttonLabelColor: 'var(--cc-surface1-surface)',
+        buttonIconName: 'IconHome2',
+        buttonIconVisibility: false,
+        buttonIconColor: 'var(--cc-surface1-surface)',
         buttonIconAlignment: 'left',
-        buttonLoaderColor: '',
-        buttonBorderColor: '',
+        buttonLoaderColor: 'var(--cc-surface1-surface)',
+        buttonBorderColor: 'var(--cc-weak-border)',
       };
     }
 

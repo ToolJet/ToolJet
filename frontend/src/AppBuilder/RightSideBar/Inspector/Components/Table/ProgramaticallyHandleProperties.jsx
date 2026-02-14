@@ -129,16 +129,20 @@ export const ProgramaticallyHandleProperties = ({
     if (property === 'loadingState') {
       return definitionObj?.value ?? '{{false}}';
     }
-    if (
-      [
-        'buttonBackgroundColor',
-        'buttonLabelColor',
-        'buttonIconColor',
-        'buttonLoaderColor',
-        'buttonBorderColor',
-      ].includes(property)
-    ) {
-      return definitionObj?.value ?? '';
+    if (property === 'buttonBackgroundColor') {
+      return definitionObj?.value ?? 'var(--cc-primary-brand)';
+    }
+    if (property === 'buttonLabelColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonIconColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonLoaderColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonBorderColor') {
+      return definitionObj?.value ?? 'var(--cc-weak-border)';
     }
     return definitionObj?.value ?? `{{false}}`;
   };
