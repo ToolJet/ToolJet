@@ -196,6 +196,7 @@ export const PropertiesTabElements = ({
           <EventManager
             sourceId={props?.component?.id}
             eventSourceType="table_column"
+            customEventRefs={{ ref: column.name }}
             hideEmptyEventsAlert={true}
             eventMetaDefinition={{ events: { onChange: { displayName: 'On change' } } }}
             currentState={currentState}
@@ -264,6 +265,7 @@ export const PropertiesTabElements = ({
             <EventManager
               sourceId={props?.component?.id}
               eventSourceType="table_column"
+              customEventRefs={{ ref: column.name }}
               hideEmptyEventsAlert={true}
               eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
               currentState={currentState}
