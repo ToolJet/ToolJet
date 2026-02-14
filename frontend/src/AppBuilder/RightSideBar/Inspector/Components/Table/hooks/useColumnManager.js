@@ -43,6 +43,24 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       };
     }
 
+    // Handle button column initialization
+    if (property === 'columnType' && value === 'button') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        buttonLabel: 'Button',
+        buttonType: 'solid',
+        disableButton: false,
+        loadingState: false,
+        buttonBackgroundColor: '',
+        buttonLabelColor: '',
+        buttonIconName: '',
+        buttonIconColor: '',
+        buttonIconAlignment: 'left',
+        buttonLoaderColor: '',
+        buttonBorderColor: '',
+      };
+    }
+
     return modifiedColumn;
   }, []);
 

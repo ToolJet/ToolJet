@@ -64,6 +64,20 @@ export const ProgramaticallyHandleProperties = ({
         return props?.selectedBgColorHearts;
       case 'unselectedBgColor':
         return props?.unselectedBgColor;
+      case 'disableButton':
+        return props?.disableButton;
+      case 'loadingState':
+        return props?.loadingState;
+      case 'buttonBackgroundColor':
+        return props?.buttonBackgroundColor;
+      case 'buttonLabelColor':
+        return props?.buttonLabelColor;
+      case 'buttonIconColor':
+        return props?.buttonIconColor;
+      case 'buttonLoaderColor':
+        return props?.buttonLoaderColor;
+      case 'buttonBorderColor':
+        return props?.buttonBorderColor;
       default:
         return;
     }
@@ -108,6 +122,23 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'jsonIndentation') {
       return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'disableButton') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'loadingState') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (
+      [
+        'buttonBackgroundColor',
+        'buttonLabelColor',
+        'buttonIconColor',
+        'buttonLoaderColor',
+        'buttonBorderColor',
+      ].includes(property)
+    ) {
+      return definitionObj?.value ?? '';
     }
     return definitionObj?.value ?? `{{false}}`;
   };

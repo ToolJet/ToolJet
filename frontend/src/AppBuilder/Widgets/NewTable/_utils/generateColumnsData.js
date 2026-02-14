@@ -15,6 +15,7 @@ import {
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
+  ButtonColumn,
   // Deprecated columns
   TagsColumn,
   RadioColumn,
@@ -413,11 +414,47 @@ export default function generateColumnsData({
               );
             }
 
+            case 'button': {
+              if (columnForAddNewRow) return <span />;
+              return (
+                <ButtonColumn
+                  id={id}
+                  buttonLabel={getResolvedValue(column.buttonLabel, { cellValue, rowData }) || 'Button'}
+                  buttonType={getResolvedValue(column.buttonType, { cellValue, rowData }) || 'solid'}
+                  disableButton={getResolvedValue(column.disableButton, { cellValue, rowData })}
+                  loadingState={getResolvedValue(column.loadingState, { cellValue, rowData })}
+                  backgroundColor={getResolvedValue(column.buttonBackgroundColor, { cellValue, rowData })}
+                  labelColor={getResolvedValue(column.buttonLabelColor, { cellValue, rowData })}
+                  iconName={getResolvedValue(column.buttonIconName, { cellValue, rowData })}
+                  iconColor={getResolvedValue(column.buttonIconColor, { cellValue, rowData })}
+                  iconAlignment={getResolvedValue(column.buttonIconAlignment, { cellValue, rowData }) || 'left'}
+                  loaderColor={getResolvedValue(column.buttonLoaderColor, { cellValue, rowData })}
+                  borderColor={getResolvedValue(column.buttonBorderColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  onClick={(tableColumnEvents) => {
+                    const columnEvents = tableColumnEvents.filter(
+                      (event) => event?.event?.ref === column?.name
+                    );
+                    fireEvent('OnTableButtonColumnClicked', {
+                      column,
+                      tableColumnEvents: columnEvents,
+                    });
+                  }}
+                />
+              );
+            }
+
             default:
               return cellValue || '';
           }
         },
       };
+
+      // Disable sorting and filtering for button columns
+      if (columnType === 'button') {
+        columnDef.enableSorting = false;
+        columnDef.enableColumnFilter = false;
+      }
 
       // Add sorting configuration for specific column types
       if (columnType === 'number') {

@@ -104,6 +104,7 @@ export const PropertiesTabElements = ({
             { label: 'Markdown', value: 'markdown' },
             { label: 'HTML', value: 'html' },
             { label: 'Rating', value: 'rating' },
+            { label: 'Button', value: 'button' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },
@@ -162,23 +163,25 @@ export const PropertiesTabElements = ({
           }}
         />
       </div>
-      <div data-cy={`transformation-field`} className="field px-3">
-        <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
-        <CodeHinter
-          currentState={currentState}
-          initialValue={column?.transformation ?? '{{cellValue}}'}
-          theme={darkMode ? 'monokai' : 'default'}
-          mode="javascript"
-          lineNumbers={false}
-          placeholder={column.name}
-          onChange={(value) => onColumnItemChange(index, 'transformation', value)}
-          componentName={getPopoverFieldSource(column.columnType, 'transformation')}
-          popOverCallback={(showing) => {
-            setColumnPopoverRootCloseBlocker('transformation', showing);
-          }}
-          enablePreview={false}
-        />
-      </div>
+      {column.columnType !== 'button' && (
+        <div data-cy={`transformation-field`} className="field px-3">
+          <label className="form-label">{t('widget.Table.transformationField', 'Transformation')}</label>
+          <CodeHinter
+            currentState={currentState}
+            initialValue={column?.transformation ?? '{{cellValue}}'}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            placeholder={column.name}
+            onChange={(value) => onColumnItemChange(index, 'transformation', value)}
+            componentName={getPopoverFieldSource(column.columnType, 'transformation')}
+            popOverCallback={(showing) => {
+              setColumnPopoverRootCloseBlocker('transformation', showing);
+            }}
+            enablePreview={false}
+          />
+        </div>
+      )}
       {column.columnType === 'rating' && (
         <div data-cy={`rating-type-field`} className="field px-3 d-flex justify-content-between">
           <label className="form-label d-flex align-items-center">{'Icon'}</label>
@@ -206,6 +209,75 @@ export const PropertiesTabElements = ({
             pages={props.pages}
           />
         </div>
+      )}
+      {column.columnType === 'button' && (
+        <>
+          <div className="field mb-2 px-3">
+            <label className="form-label">Button label</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.buttonLabel ?? 'Button'}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'Button label'}
+              onChange={(value) => onColumnItemChange(index, 'buttonLabel', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'buttonLabel')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('buttonLabel', showing);
+              }}
+            />
+          </div>
+          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+              <ProgramaticallyHandleProperties
+                label="Disable button"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="disableButton"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'toggle', displayName: 'Disable button' }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+              <ProgramaticallyHandleProperties
+                label="Loading state"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="loadingState"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'toggle', displayName: 'Loading state' }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+          <div className="px-3">
+            <EventManager
+              sourceId={props?.component?.id}
+              eventSourceType="table_column"
+              hideEmptyEventsAlert={true}
+              eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
+              currentState={currentState}
+              dataQueries={props.dataQueries}
+              components={props.components}
+              eventsChanged={(events) => columnEventChanged(column, events)}
+              apps={props.apps}
+              popOverCallback={(showing) => {
+                handleEventManagerPopoverCallback(showing);
+              }}
+              pages={props.pages}
+            />
+          </div>
+        </>
       )}
       {(column.columnType === 'dropdown' ||
         column.columnType === 'multiselect' ||
@@ -302,7 +374,7 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
-      {!['image', 'link'].includes(column.columnType) && (
+      {!['image', 'link', 'button'].includes(column.columnType) && (
         <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
           <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
             <ProgramaticallyHandleProperties
