@@ -230,6 +230,22 @@ export const PropertiesTabElements = ({
               }}
             />
           </div>
+          <div className="field mb-2 px-3">
+            <label className="form-label">Tooltip</label>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={column?.buttonTooltip ?? ''}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={'Enter tooltip text'}
+              onChange={(value) => onColumnItemChange(index, 'buttonTooltip', value)}
+              componentName={getPopoverFieldSource(column.columnType, 'buttonTooltip')}
+              popOverCallback={(showing) => {
+                setColumnPopoverRootCloseBlocker('buttonTooltip', showing);
+              }}
+            />
+          </div>
           <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
             <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
               <ProgramaticallyHandleProperties

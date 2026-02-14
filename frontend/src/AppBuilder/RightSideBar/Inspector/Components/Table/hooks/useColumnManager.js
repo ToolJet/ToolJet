@@ -60,6 +60,7 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
         buttonLoaderColor: 'var(--cc-surface1-surface)',
         buttonBorderColor: 'var(--cc-weak-border)',
         buttonBorderRadius: '6',
+        buttonTooltip: '',
       };
     }
 

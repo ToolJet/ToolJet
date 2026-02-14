@@ -2,6 +2,8 @@ import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 // eslint-disable-next-line import/no-unresolved
 import * as TablerIcons from '@tabler/icons-react';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 import useTableStore from '../../../_stores/tableStore';
 
 export const ButtonColumn = ({
@@ -19,6 +21,7 @@ export const ButtonColumn = ({
   loaderColor,
   borderColor,
   borderRadius,
+  tooltip,
   onClick,
 }) => {
   const { getTableColumnEvents } = useTableStore();
@@ -65,21 +68,37 @@ export const ButtonColumn = ({
     buttonStyle.borderWidth = '1px';
   }
 
+  const buttonElement = (
+    <Button
+      variant={variant}
+      size="default"
+      isLoading={!!loadingState}
+      disabled={!!disableButton}
+      fill={loaderColor || undefined}
+      style={buttonStyle}
+      onClick={handleClick}
+    >
+      {iconAlignment === 'left' && iconElement}
+      {buttonLabel || 'Button'}
+      {iconAlignment === 'right' && iconElement}
+    </Button>
+  );
+
+  const hasTooltip = tooltip && tooltip.toString().trim();
+
   return (
     <div className="h-100 d-flex align-items-center" style={{ padding: '0 6px', width: '100%' }}>
-      <Button
-        variant={variant}
-        size="default"
-        isLoading={!!loadingState}
-        disabled={!!disableButton}
-        fill={loaderColor || undefined}
-        style={buttonStyle}
-        onClick={handleClick}
-      >
-        {iconAlignment === 'left' && iconElement}
-        {buttonLabel || 'Button'}
-        {iconAlignment === 'right' && iconElement}
-      </Button>
+      {hasTooltip ? (
+        <OverlayTrigger
+          placement="auto"
+          delay={{ show: 500, hide: 0 }}
+          overlay={<Tooltip>{tooltip}</Tooltip>}
+        >
+          <div style={{ flex: '1 0 0', display: 'flex' }}>{buttonElement}</div>
+        </OverlayTrigger>
+      ) : (
+        buttonElement
+      )}
     </div>
   );
 };

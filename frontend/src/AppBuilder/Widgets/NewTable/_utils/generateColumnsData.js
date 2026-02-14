@@ -432,6 +432,7 @@ export default function generateColumnsData({
                   loaderColor={getResolvedValue(column.buttonLoaderColor, { cellValue, rowData })}
                   borderColor={getResolvedValue(column.buttonBorderColor, { cellValue, rowData })}
                   borderRadius={getResolvedValue(column.buttonBorderRadius, { cellValue, rowData })}
+                  tooltip={getResolvedValue(column.buttonTooltip, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   onClick={(tableColumnEvents) => {
                     const columnEvents = tableColumnEvents.filter(
