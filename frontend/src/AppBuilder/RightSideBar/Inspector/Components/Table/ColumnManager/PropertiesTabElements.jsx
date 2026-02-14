@@ -261,6 +261,22 @@ export const PropertiesTabElements = ({
               />
             </div>
           </div>
+          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+              <ProgramaticallyHandleProperties
+                label="Visibility"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="columnVisibility"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
+                paramType="properties"
+              />
+            </div>
+          </div>
           <div className="px-3">
             <EventManager
               sourceId={props?.component?.id}
@@ -424,22 +440,24 @@ export const PropertiesTabElements = ({
           </div>
         </div>
       )}
-      <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
-        <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
-          <ProgramaticallyHandleProperties
-            label="Visibility"
-            currentState={currentState}
-            index={index}
-            darkMode={darkMode}
-            callbackFunction={onColumnItemChange}
-            property="columnVisibility"
-            props={column}
-            component={component}
-            paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
-            paramType="properties"
-          />
+      {column.columnType !== 'button' && (
+        <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+            <ProgramaticallyHandleProperties
+              label="Visibility"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="columnVisibility"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'toggle', displayName: 'Visibility' }}
+              paramType="properties"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {['select', 'newMultiSelect', 'datepicker', 'rating'].includes(column.columnType) && <hr className="mx-0 my-2" />}
       {column.columnType === 'datepicker' && (
