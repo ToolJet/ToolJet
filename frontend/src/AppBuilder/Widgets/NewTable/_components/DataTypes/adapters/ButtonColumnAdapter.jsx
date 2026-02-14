@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/Button/Button';
 // eslint-disable-next-line import/no-unresolved
 import * as TablerIcons from '@tabler/icons-react';
 import useTableStore from '../../../_stores/tableStore';
-import { determineJustifyContentValue } from '@/_helpers/utils';
 
 export const ButtonColumn = ({
   id,
@@ -19,7 +18,6 @@ export const ButtonColumn = ({
   iconAlignment,
   loaderColor,
   borderColor,
-  horizontalAlignment,
   onClick,
 }) => {
   const { getTableColumnEvents } = useTableStore();
@@ -44,7 +42,16 @@ export const ButtonColumn = ({
     }
   }
 
-  const buttonStyle = {};
+  const buttonStyle = {
+    flex: '1 0 0',
+    padding: '6px 12px',
+    borderRadius: '6px',
+    fontSize: '14px',
+    fontWeight: 500,
+    lineHeight: '20px',
+    gap: '6px',
+    height: 'auto',
+  };
   if (buttonType === 'solid' && backgroundColor) {
     buttonStyle.backgroundColor = backgroundColor;
   }
@@ -58,16 +65,14 @@ export const ButtonColumn = ({
   }
 
   return (
-    <div
-      className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(horizontalAlignment || 'center')}`}
-    >
+    <div className="h-100 d-flex align-items-center" style={{ padding: '0 6px', width: '100%' }}>
       <Button
         variant={variant}
-        size="small"
+        size="default"
         isLoading={!!loadingState}
         disabled={!!disableButton}
         fill={loaderColor || undefined}
-        style={Object.keys(buttonStyle).length > 0 ? buttonStyle : undefined}
+        style={buttonStyle}
         onClick={handleClick}
       >
         {iconAlignment === 'left' && iconElement}
