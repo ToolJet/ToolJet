@@ -14,6 +14,7 @@ import DeprecatedColumnTypeMsg, {
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Accordion from '@/_ui/Accordion';
 import { getColumnIcon } from '../utils';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
@@ -277,23 +278,33 @@ export const PropertiesTabElements = ({
               />
             </div>
           </div>
-          <div className="px-3">
-            <EventManager
-              sourceId={props?.component?.id}
-              eventSourceType="table_column"
-              customEventRefs={{ ref: column.name }}
-              hideEmptyEventsAlert={true}
-              eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
-              currentState={currentState}
-              dataQueries={props.dataQueries}
-              components={props.components}
-              eventsChanged={(events) => columnEventChanged(column, events)}
-              apps={props.apps}
-              popOverCallback={(showing) => {
-                handleEventManagerPopoverCallback(showing);
-              }}
-              pages={props.pages}
-            />
+          <div style={{ borderTop: '1px solid var(--border-weak)' }}>
+          <Accordion
+            items={[
+              {
+                title: 'Events',
+                isOpen: true,
+                children: (
+                  <EventManager
+                    sourceId={props?.component?.id}
+                    eventSourceType="table_column"
+                    customEventRefs={{ ref: column.name }}
+                    hideEmptyEventsAlert={false}
+                    eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
+                    currentState={currentState}
+                    dataQueries={props.dataQueries}
+                    components={props.components}
+                    eventsChanged={(events) => columnEventChanged(column, events)}
+                    apps={props.apps}
+                    popOverCallback={(showing) => {
+                      handleEventManagerPopoverCallback(showing);
+                    }}
+                    pages={props.pages}
+                  />
+                ),
+              },
+            ]}
+          />
           </div>
         </>
       )}
