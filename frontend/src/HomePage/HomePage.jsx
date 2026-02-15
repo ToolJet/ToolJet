@@ -861,6 +861,7 @@ class HomePageComponent extends React.Component {
     let commitMessage = last_commit_message;
     let commitUser = last_commit_user;
     let commitDate = lastpush_date;
+    let gitVersionNameToUse = git_version_name;
 
     // If a tag is selected (not latest), use tag's commit info
     if (selectedVersionOption && selectedVersionOption !== 'latest') {
@@ -870,6 +871,7 @@ class HomePageComponent extends React.Component {
         commitMessage = selectedTag.message;
         commitUser = selectedTag.tagger?.name;
         commitDate = selectedTag.tagger?.date;
+        gitVersionNameToUse = selectedTag.name.split('/').pop();
       } else {
         commitMessage = last_commit_message;
         commitUser = last_commit_user;
@@ -881,7 +883,7 @@ class HomePageComponent extends React.Component {
     const body = {
       gitAppId: selectedAppRepo,
       gitAppName: git_app_name,
-      gitVersionName: git_version_name,
+      gitVersionName: gitVersionNameToUse,
       gitVersionId: git_version_id,
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
