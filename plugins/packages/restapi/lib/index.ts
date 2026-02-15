@@ -1,5 +1,7 @@
 const urrl = require('url');
 import { readFileSync } from 'fs';
+import * as dns from 'dns';
+import * as net from 'net';
 import * as tls from 'tls';
 import {
   QueryError,
@@ -39,6 +41,85 @@ function isFileObject(value) {
   );
 }
 
+function isPrivateIP(ip: string): boolean {
+  if (net.isIPv4(ip)) {
+    const parts = ip.split('.').map(Number);
+    if (parts[0] === 10) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    if (parts[0] === 0) return true;
+    return false;
+  }
+
+  if (net.isIPv6(ip)) {
+    const normalized = ip.toLowerCase();
+    if (normalized === '::1') return true;
+    if (normalized.startsWith('fe80:')) return true;
+    if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
+    if (normalized === '::') return true;
+    if (normalized.startsWith('::ffff:')) {
+      const ipv4 = normalized.substring(7);
+      if (net.isIPv4(ipv4)) return isPrivateIP(ipv4);
+    }
+    return false;
+  }
+
+  return false;
+}
+
+function ssrfSafeDnsLookup(
+  hostname: string,
+  options: dns.LookupOneOptions,
+  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+): void {
+  dns.lookup(hostname, options, (err, address, family) => {
+    if (err) {
+      callback(err, address, family);
+      return;
+    }
+    if (isPrivateIP(address)) {
+      const error = new Error(
+        `Access to internal network address ${address} is not allowed`
+      ) as NodeJS.ErrnoException;
+      error.code = 'ESSRF';
+      callback(error, address, family);
+      return;
+    }
+    callback(null, address, family);
+  });
+}
+
+function validateUrlScheme(url: string): void {
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+  } catch {
+    throw new QueryError('Invalid URL provided', `The URL "${url}" is not a valid URL`, {});
+  }
+
+  const allowedProtocols = ['http:', 'https:'];
+  if (!allowedProtocols.includes(parsedUrl.protocol)) {
+    throw new QueryError(
+      'Invalid URL scheme',
+      `The URL scheme "${parsedUrl.protocol}" is not allowed. Only HTTP and HTTPS are permitted`,
+      {}
+    );
+  }
+
+  const hostname = parsedUrl.hostname;
+  if (net.isIPv4(hostname) || net.isIPv6(hostname)) {
+    if (isPrivateIP(hostname)) {
+      throw new QueryError(
+        'Access to internal network is not allowed',
+        `Requests to private network address ${hostname} are forbidden`,
+        {}
+      );
+    }
+  }
+}
+
 interface RestAPIResult extends QueryResult {
   metadata?: Array<object> | object;
 }
@@ -53,6 +134,9 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+
+    validateUrlScheme(url);
+
     const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,
@@ -63,6 +147,7 @@ export default class RestapiQueryService implements QueryService {
 
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
+    requestOptions.dnsLookup = ssrfSafeDnsLookup as any;
 
     try {
       const response = await got(url, requestOptions);
