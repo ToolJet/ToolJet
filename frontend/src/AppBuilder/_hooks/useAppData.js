@@ -83,6 +83,7 @@ const useAppData = (
   const setCurrentMode = useStore((state) => state.setCurrentMode);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -370,6 +371,7 @@ const useAppData = (
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
+          setIsQueryPaneExpanded(false);
         }
 
         if (initialLoadRef.current) {
@@ -379,6 +381,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          setIsQueryPaneExpanded(false);
         }
 
         if (!moduleMode) {
