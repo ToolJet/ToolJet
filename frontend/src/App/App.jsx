@@ -51,6 +51,8 @@ import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
+import LogCaptureFloatingButton from '@/_components/LogCaptureFloatingButton/LogCaptureFloatingButton';
+import { useLogCaptureStore } from '@/_stores/logCaptureStore';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
 
@@ -134,6 +136,7 @@ class AppComponent extends React.Component {
     }
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.updateMargin(); // Set initial margin
+
     let counter = 0;
     let interval;
 
@@ -142,6 +145,8 @@ class AppComponent extends React.Component {
       const current_user = authenticationService.currentSessionValue?.current_user;
       if (current_user?.id) {
         this.initTelemetryAndSupport(current_user); //Call when currentuser is available
+        // Initialize log capture state after authentication is confirmed
+        useLogCaptureStore.getState().actions.checkStatus();
         clearInterval(interval);
       } else if (counter > 10) {
         clearInterval(interval);
@@ -492,6 +497,7 @@ class AppComponent extends React.Component {
           </div>
 
           <Toast toastOptions={toastOptions} />
+          <LogCaptureFloatingButton />
         </div>
       </>
     );

@@ -16,11 +16,73 @@ import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import * as pino from 'pino';
+
+// Global singleton for log capture state - accessible across modules
+// Uses globalThis to ensure SAME instance across all modules/imports
+interface LogCaptureState {
+  captureDestination: any;
+  captureMode: boolean;
+  captureFilePath: string | null;
+}
+
+// Attach to globalThis to ensure single instance across entire Node.js process
+declare global {
+  var __tooljet_log_capture_state__: LogCaptureState | undefined;
+}
+
+// Export for use by LogCaptureService
+export function getGlobalLogCaptureState(): LogCaptureState {
+  if (!globalThis.__tooljet_log_capture_state__) {
+    globalThis.__tooljet_log_capture_state__ = {
+      captureDestination: null,
+      captureMode: false,
+      captureFilePath: null,
+    };
+  }
+  return globalThis.__tooljet_log_capture_state__;
+}
 
 export class AppModuleLoader {
   static async loadModules(configs: {
     IS_GET_CONTEXT: boolean;
   }): Promise<(DynamicModule | typeof GuardValidatorModule)[]> {
+    // CRITICAL: Initialize global log capture state FIRST, before any streams are created
+    // This ensures the capture stream has a valid state object to reference
+    getGlobalLogCaptureState();
+
+    // Intercept process.stdout in production to capture ALL stdout writes
+    // This captures logs from ALL sources (Pino, console.log, child processes, etc.)
+    if (process.env.NODE_ENV === 'production') {
+      const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+
+      (process.stdout.write as any) = function(
+        chunk: any,
+        encodingOrCallback?: any,
+        callback?: any
+      ): boolean {
+        // Handle both (chunk, encoding, callback) and (chunk, callback) signatures
+        const encoding = typeof encodingOrCallback === 'string' ? encodingOrCallback : 'utf8';
+        const cb = typeof encodingOrCallback === 'function' ? encodingOrCallback : callback;
+
+        // Always write to original stdout
+        const result = originalStdoutWrite(chunk, encoding, cb);
+
+        // ALSO write to capture file if active
+        const state = globalThis.__tooljet_log_capture_state__;
+        if (state?.captureMode && state?.captureDestination) {
+          try {
+            state.captureDestination.write(chunk, encoding);
+          } catch (err) {
+            // Log errors to stderr to avoid infinite loops
+            console.error('[Capture Error]', err);
+          }
+        }
+
+        return result;
+      };
+    }
+
     const getMainDBConnectionModule = (): DynamicModule => {
       return process.env.DISABLE_CUSTOM_QUERY_LOGGING !== 'true'
         ? TypeOrmModule.forRootAsync({
@@ -81,17 +143,24 @@ export class AppModuleLoader {
               return false;
             },
           },
-          transport:
-            process.env.NODE_ENV !== 'production'
-              ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    levelFirst: true,
-                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                  },
-                }
-              : undefined,
+          // Use a simple stream - stdout interception handles capture
+          stream: (() => {
+            if (process.env.NODE_ENV !== 'production') {
+              // Development: use pino-pretty for console
+              return pino.transport({
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  levelFirst: true,
+                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                },
+              });
+            } else {
+              // Production: use stdout directly
+              // Capture is handled by process.stdout.write interception above
+              return process.stdout;
+            }
+          })(),
           redact: {
             paths: [
               'req.headers.authorization',
