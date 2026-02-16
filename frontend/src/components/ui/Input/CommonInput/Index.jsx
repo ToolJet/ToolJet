@@ -23,8 +23,9 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
   const [message, setMessage] = useState('');
 
   const isEncrypted = type === 'password' || encrypted;
+  const value = restProps?.value ?? '';
   const isWorkspaceConstant =
-    restProps.value && (restProps.value.includes('{{constants') || restProps.value.includes('{{secrets'));
+    typeof value === 'string' && (value.includes('{{constants') || value.includes('{{secrets'));
 
   const handleChange = (e) => {
     if (validation) {
