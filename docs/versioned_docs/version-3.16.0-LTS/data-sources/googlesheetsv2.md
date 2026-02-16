@@ -317,8 +317,30 @@ This operation adds additional rows of data to the end of a sheet without modify
 
 #### Example
 ```yaml
- Data : { "ID": 103, "Status": "In Progress", "Remarks": "Under review" } ,
-        { "ID": 104, "Status": "Approved", "Remarks": "Request verified" }
+ Data : 
+ [
+  {
+    "ID": 201,
+    "Status": "Pending",
+    "Remarks": "Waiting for manager approval"
+  },
+  {
+    "ID": 202,
+    "Status": "Rejected",
+    "Remarks": "Missing required documents"
+  },
+  {
+    "ID": 203,
+    "Status": "Completed",
+    "Remarks": "Process finished successfully"
+  },
+  {
+    "ID": 204,
+    "Status": "On Hold",
+    "Remarks": "Client requested changes"
+  }
+]
+
  ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/append-query.png" alt="append data operation" style={{marginBottom:'15px'}} />
@@ -328,10 +350,10 @@ This operation adds additional rows of data to the end of a sheet without modify
 
 ```
 spreadsheetId: "1CzNiGBJU2F3elO5gGPnzSnpLSovPxD_iUk8ox-rcmPg"
-tableRange: "Sheet1!A1:B8"
-
-updates: {} 2 keys
-  updatedRange: "Sheet1!A9"
+updatedRange: "Sheet1!A1:C8"
+updatedRows : 4
+updatedColumns : 3
+updatedCells :12
 ```
 </details>
 
@@ -445,10 +467,10 @@ This operation updates spreadsheet properties such as title or configuration set
 #### Example
 ```yaml
  Data : 
- {
+ [
   ["Inception", "2010", "Christopher Nolan", "Sci-Fi"],
   ["Interstellar", "2014", "Christopher Nolan", "Sci-Fi"]
- }
+ ]
  ```
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-query.png" alt="update operation" style={{marginBottom:'15px'}} />
