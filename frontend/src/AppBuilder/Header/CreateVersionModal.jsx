@@ -140,10 +140,6 @@ const CreateVersionModal = ({
       toast.error('Version name should not be empty');
       return;
     }
-    if (versionDescription.trim() == '') {
-      toast.error('Version description should not be empty');
-      return;
-    }
 
     if (!selectedVersionForCreation) {
       toast.error('Please wait while versions are loading...');
@@ -156,7 +152,7 @@ const CreateVersionModal = ({
       // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
-        description: versionDescription,
+        description: versionDescription || undefined,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
@@ -171,7 +167,7 @@ const CreateVersionModal = ({
           .then((commitDone) => {
             if (!commitDone) return;
             if (isBranchingEnabled) {
-              return gitSyncService.createGitTag(appId, selectedVersionForCreation.id, versionDescription);
+              return gitSyncService.createGitTag(appId, selectedVersionForCreation.id, versionDescription || `Version ${versionName.trim()} created`);
             }
           })
           .catch((error) => {

@@ -945,7 +945,7 @@ class HomePageComponent extends React.Component {
     folderService
       .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
       .then(() => {
-        toast.success('Removed from folder.');
+        toast.success('Application removed from folder successfully!');
 
         this.fetchApps(1, appOperations.selectedFolder.id);
         this.fetchFolders();
