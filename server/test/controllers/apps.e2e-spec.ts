@@ -30,6 +30,7 @@ import { FolderApp } from 'src/entities/folder_app.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { Credential } from 'src/entities/credential.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { MODULES } from 'src/modules/app/constants/modules';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -184,7 +185,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -643,7 +644,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: adminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -715,7 +716,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -785,7 +786,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: adminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -838,7 +839,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2341,7 +2342,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: adminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2389,7 +2390,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2449,9 +2450,9 @@ describe('apps controller', () => {
 
       // Audit log not created for public app viewed
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: { userId: adminUserData.user.id },
       });
-      expect(auditLog).toBeUndefined();
+      expect(auditLog).toBeNull();
     });
   });
 
@@ -2524,7 +2525,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: adminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2586,7 +2587,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2699,7 +2700,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const importedApp = await getManager().find(App, {
-        name: response.body.name,
+        where: { name: response.body.name },
       });
 
       expect(importedApp).toHaveLength(1);
@@ -2708,7 +2709,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: adminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
@@ -2757,7 +2758,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const importedApp = await getManager().find(App, {
-        name: response.body.name,
+        where: { name: response.body.name },
       });
 
       expect(importedApp).toHaveLength(1);
@@ -2766,7 +2767,7 @@ describe('apps controller', () => {
       const auditLog = await AuditLog.findOne({
         where: {
           userId: superAdminUserData.user.id,
-          resourceType: 'APP',
+          resourceType: MODULES.APP,
         },
       });
 
