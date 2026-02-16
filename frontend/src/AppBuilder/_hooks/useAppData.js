@@ -110,6 +110,8 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -515,7 +517,9 @@ const useAppData = (
           moduleId
         );
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
+        const p1 = performance.now();
         initDependencyGraph(moduleId);
+        console.log('here--- Time taken to initDependencyGraph: ', performance.now() - p1);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
 
         if (
@@ -539,7 +543,10 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        const p2 = performance.now();
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
+        console.log('here--- Time taken to load app data and set up the editor: ', performance.now() - p2);
         initialLoadRef.current = false;
 
         !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
@@ -557,6 +564,9 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
+      const p2 = performance.now();
+      flushExposedValueBatch();
+      console.log('here--- Time taken to flush the batched exposed values: ', performance.now() - p2);
       runOnLoadQueries(moduleId).then(() => {
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
