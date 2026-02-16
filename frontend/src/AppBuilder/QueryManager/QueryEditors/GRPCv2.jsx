@@ -359,17 +359,12 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
         throw new Error('Please select at least one service in the data source configuration');
       }
 
-      let result;
-      if (hasSelectedServices) {
-        result = await dataqueryService.invoke(
-          selectedDataSource.id,
-          'discoverMethodsForServices',
-          currentEnvironment?.id,
-          { serviceNames: selectedServices }
-        );
-      } else {
-        result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
-      }
+      const result = await dataqueryService.invoke(
+        selectedDataSource.id,
+        'getServiceDefinitions',
+        currentEnvironment?.id,
+        hasSelectedServices ? { serviceNames: selectedServices } : undefined
+      );
 
       if (result.status === 'failed') {
         console.error('Failed to discover services:', result.errorMessage);

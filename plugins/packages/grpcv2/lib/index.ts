@@ -163,9 +163,8 @@ export default class Grpcv2QueryService implements QueryService {
     args?: any
   ): Promise<unknown> {
     const methodMap: Record<string, Function> = {
-      'discoverServices': this.discoverServices.bind(this),
-      'discoverServiceNames': this.discoverServiceNames.bind(this),
-      'discoverMethodsForServices': this.discoverMethodsForServices.bind(this),
+      'listServices': this.listServices.bind(this),
+      'getServiceDefinitions': this.getServiceDefinitions.bind(this),
     };
 
     const method = methodMap[methodName];
@@ -182,39 +181,23 @@ export default class Grpcv2QueryService implements QueryService {
 
   /**
    * Full service + method discovery for reflection and proto URL modes.
-   * Filesystem mode uses a separate two-phase flow:
-   *   1. discoverServiceNames — lightweight name scan on DS config page
-   *   2. discoverMethodsForServices — scoped method loading in query manager
+   * Only used internally by getServiceDefinitions.
    */
-  private async discoverServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
-    try {
-      this.validateSourceOptionsForDiscovery(sourceOptions);
+  private async discoverAllServices(sourceOptions: SourceOptions): Promise<GrpcService[]> {
+    this.validateSourceOptionsForDiscovery(sourceOptions);
 
-      switch (sourceOptions.proto_files) {
-        case 'server_reflection':
-          return await discoverServicesUsingReflection(sourceOptions);
+    switch (sourceOptions.proto_files) {
+      case 'server_reflection':
+        return await discoverServicesUsingReflection(sourceOptions);
 
-        case 'import_proto_file':
-          return await discoverServicesUsingProtoUrl(sourceOptions);
+      case 'import_proto_file':
+        return await discoverServicesUsingProtoUrl(sourceOptions);
 
-        default:
-          throw new GrpcOperationError(
-            `Unsupported proto_files option: ${sourceOptions.proto_files}. ` +
-            `Use 'server_reflection' or 'import_proto_file'. ` +
-            `Filesystem mode uses discoverServiceNames + discoverMethodsForServices instead.`
-          );
-      }
-    } catch (error: unknown) {
-      if (error instanceof GrpcOperationError) {
-        throw new QueryError('Query could not be completed', error.message, error.errorDetails);
-      }
-
-      const err = toError(error);
-      throw new QueryError('Query could not be completed', err.message, {
-        grpcCode: 0,
-        grpcStatus: 'UNKNOWN',
-        errorType: 'QueryError'
-      });
+      default:
+        throw new GrpcOperationError(
+          `Unsupported proto_files option for full discovery: ${sourceOptions.proto_files}. ` +
+          `Use 'server_reflection' or 'import_proto_file'.`
+        );
     }
   }
 
@@ -233,11 +216,11 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   /**
-   * Lightweight service name discovery for filesystem mode.
+   * Lightweight service name enumeration for the DS config page (filesystem mode).
    * Uses protobufjs.parse() (~30KB/file vs 500KB with proto-loader) to scan
-   * proto files and return just service names without heavy gRPC objects.
+   * proto files and return just service names for a multi-select.
    */
-  private async discoverServiceNames(sourceOptions: SourceOptions): Promise<Array<{ label: string; value: string }>> {
+  private async listServices(sourceOptions: SourceOptions): Promise<Array<{ label: string; value: string }>> {
     try {
       const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
 
@@ -256,32 +239,36 @@ export default class Grpcv2QueryService implements QueryService {
   }
 
   /**
-   * Discovers methods for a specific set of selected services.
-   * For filesystem mode, only parses the proto files containing those services.
+   * Returns full service + method definitions for the query editor.
+   * Single entry point for all modes — takes an optional serviceNames filter.
+   *
+   * - Filesystem mode: requires serviceNames, scopes parsing to those services only
+   * - Reflection/URL modes: full discovery, optionally filtered by serviceNames
    */
-  private async discoverMethodsForServices(sourceOptions: SourceOptions, args?: { serviceNames?: string[] }): Promise<GrpcService[]> {
+  private async getServiceDefinitions(sourceOptions: SourceOptions, args?: { serviceNames?: string[] }): Promise<GrpcService[]> {
     try {
-      this.validateSourceOptionsForDiscovery(sourceOptions);
-
       const serviceNames = args?.serviceNames;
-      if (!serviceNames || serviceNames.length === 0) {
-        return [];
-      }
 
       if (sourceOptions.proto_files === 'import_protos_from_filesystem') {
+        if (!serviceNames?.length) return [];
         const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
         const { services } = await discoverMethodsForSelectedServices(directory, pattern, serviceNames);
         return services;
       }
 
-      // For reflection/URL modes, do full discovery and filter
-      const allServices = await this.discoverServices(sourceOptions);
+      // Reflection / URL: full discovery, optionally filtered
+      const allServices = await this.discoverAllServices(sourceOptions);
+      if (!serviceNames?.length) return allServices;
+
       const selectedSet = new Set(serviceNames);
       return allServices.filter((s) => selectedSet.has(s.name));
     } catch (error: unknown) {
+      if (error instanceof GrpcOperationError) {
+        throw new QueryError('Query could not be completed', error.message, error.errorDetails);
+      }
       if (error instanceof QueryError) throw error;
       const err = toError(error);
-      throw new QueryError('Method discovery failed', err.message, {
+      throw new QueryError('Service definition discovery failed', err.message, {
         grpcCode: 0, grpcStatus: 'UNKNOWN', errorType: 'QueryError'
       });
     }

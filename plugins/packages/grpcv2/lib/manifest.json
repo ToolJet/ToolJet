@@ -258,7 +258,7 @@
               "isMulti": true,
               "autoFetch": true,
               "operation": {
-                "invokeMethod": "discoverServiceNames",
+                "invokeMethod": "listServices",
                 "label": "Discover Services"
               }
             },
