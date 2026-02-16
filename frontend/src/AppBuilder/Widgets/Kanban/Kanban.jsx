@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
-  const { height, width, properties, styles, id } = props;
+  const { height, width, properties, styles, id, dataCy, componentName } = props;
   const { showDeleteButton } = properties;
   const { visibility, disabledState, boxShadow } = styles;
 
@@ -22,9 +22,10 @@ export const Kanban = (props) => {
       id={id}
       ref={parentRef}
       data-disabled={disabledState}
+      data-cy={dataCy}
       className="scrollbar-container"
     >
-      <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} id={id} />
+      <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} id={id} componentName={componentName} />
     </div>
   );
 };

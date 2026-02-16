@@ -2,13 +2,14 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import '@/_styles/widgets/kanban.scss';
 import cx from 'classnames';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Container = ({ children, id, disabled, ...props }) => {
   const { setNodeRef } = useDroppable({
     id,
   });
 
-  const { kanbanProps, style, label } = props;
+  const { kanbanProps, style, label, componentName } = props;
   const {
     styles: { accentColor },
     darkMode,
@@ -36,15 +37,17 @@ export const Container = ({ children, id, disabled, ...props }) => {
       }}
       className={cx('kanban-container', 'scrollable', darkMode && 'dark')}
       onMouseDown={(e) => e.stopPropagation()}
+      data-cy={componentName ? `${componentName}-container-${generateCypressDataCy(label)}` : `${generateCypressDataCy(label)}-container`}
     >
       {label ? (
         <div className={cx('header', darkMode && 'dark')}>
-          <span style={colAccentColor} className="container-name">
+          <span style={colAccentColor} className="container-name" data-cy={componentName ? `${componentName}-${generateCypressDataCy(label)}-container-header` : `${generateCypressDataCy(label)}-container-header`}>
             {label}
           </span>
         </div>
-      ) : null}
+      ) : null
+      }
       <ul>{children}</ul>
-    </div>
+    </div >
   );
 };
