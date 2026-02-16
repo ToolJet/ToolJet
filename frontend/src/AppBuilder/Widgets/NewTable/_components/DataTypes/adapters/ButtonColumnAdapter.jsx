@@ -22,6 +22,7 @@ export const ButtonColumn = ({
   borderColor,
   borderRadius,
   tooltip,
+  horizontalAlignment,
   onClick,
 }) => {
   const { getTableColumnEvents } = useTableStore();
@@ -47,7 +48,6 @@ export const ButtonColumn = ({
   }
 
   const buttonStyle = {
-    flex: '1 0 0',
     padding: '6px 12px',
     borderRadius: borderRadius ? `${borderRadius}px` : '6px',
     fontSize: '14px',
@@ -90,14 +90,14 @@ export const ButtonColumn = ({
   const hasTooltip = tooltip && tooltip.toString().trim();
 
   return (
-    <div className="h-100 d-flex align-items-center" style={{ padding: '0 6px', width: '100%' }}>
+    <div className="h-100 d-flex align-items-center" style={{ padding: '0 6px', justifyContent: horizontalAlignment === 'center' ? 'center' : horizontalAlignment === 'right' ? 'flex-end' : 'flex-start' }}>
       {hasTooltip ? (
         <OverlayTrigger
           placement="auto"
           delay={{ show: 500, hide: 0 }}
           overlay={<Tooltip>{tooltip}</Tooltip>}
         >
-          <div style={{ flex: '1 0 0', display: 'flex' }}>{buttonElement}</div>
+          <div style={{ display: 'flex' }}>{buttonElement}</div>
         </OverlayTrigger>
       ) : (
         buttonElement
