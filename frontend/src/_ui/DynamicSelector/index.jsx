@@ -91,7 +91,12 @@ const DynamicSelector = ({
       const payload = response?.data ?? response;
       const items = Array.isArray(payload) ? payload : (payload?.data || []);
       setFetchedData(items);
-      validateSelectedValue(items);
+      // Skip access validation for autoFetch fields (e.g. gRPC services discovered from proto files)
+      // — "no access" warnings only apply to OAuth-scoped resources like Google Sheets.
+      // If this needs per-field control, consider a `validateAccess` manifest prop instead.
+      if (!autoFetch) {
+        validateSelectedValue(items);
+      }
 
       // When autoFetch is enabled, skip persisting cache to options
       // to avoid triggering "Unsaved Changes" on mount
