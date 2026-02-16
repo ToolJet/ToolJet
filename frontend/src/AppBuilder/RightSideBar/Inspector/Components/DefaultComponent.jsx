@@ -47,6 +47,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Kanban',
   'Html',
   'TagsInput',
+  'JSONExplorer',
+  'JSONEditor',
   'ProgressBar',
   'IFrame',
 ];
@@ -75,6 +77,8 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   ProgressBar: 'Data',
   AudioRecorder: 'Content',
   Camera: 'Content',
+  JSONExplorer: 'Data',
+  JSONEditor: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -185,6 +189,8 @@ export const baseComponentProperties = (
       'ProgressBar',
       'AudioRecorder',
       'Camera',
+      'JSONExplorer',
+      'JSONEditor',
       'IFrame',
     ],
     Layout: [],
