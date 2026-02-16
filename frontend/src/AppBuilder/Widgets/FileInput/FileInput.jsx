@@ -1,7 +1,7 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { IconX, IconFileSearch } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -71,17 +71,17 @@ export const FileInput = (props) => {
 
   const inputHeight = useMemo(() => (padding === 'default' ? height || 60 : (height || 60) + 4), [height, padding]);
 
-  const focusFn = () => {
+  const focusFn = useCallback(() => {
     if (wrapperRef.current) {
       wrapperRef.current.focus();
     }
-  };
+  }, []);
 
-  const blurFn = () => {
+  const blurFn = useCallback(() => {
     if (wrapperRef.current) {
       wrapperRef.current.blur();
     }
-  };
+  }, []);
 
   const mergedProperties = useMemo(
     () => ({
@@ -91,6 +91,20 @@ export const FileInput = (props) => {
       enablePicker: true,
     }),
     [properties]
+  );
+
+  /* 
+   * Filter out deprecated keys that FilePicker exposes but FileInput should not.
+   * - file: legacy single-file array (use files instead)
+   * - clearFiles: legacy action name (use clear instead)
+   * - setFileName: action not supported in FileInput
+   */
+  const wrappedSetExposedVariables = useCallback(
+    (variables) => {
+      const { file, clearFiles, setFileName, ...rest } = variables;
+      setExposedVariables(rest);
+    },
+    [setExposedVariables]
   );
 
   const {
@@ -110,7 +124,7 @@ export const FileInput = (props) => {
     validation,
     fireEvent,
     setExposedVariable,
-    setExposedVariables,
+    setExposedVariables: wrappedSetExposedVariables,
     focusFn,
     blurFn,
   });
@@ -126,7 +140,7 @@ export const FileInput = (props) => {
     () => ({
       height: `${alignment === 'top' ? inputHeight - 18 + 'px' : '100%'}`,
       width: '100%',
-      borderRadius: typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius,
+      borderRadius: Number.isNaN(Number(borderRadius)) ? borderRadius : `${borderRadius}px`,
       borderColor: hasError
         ? errTextColor
         : borderColor !== '#CCD1D5'
@@ -171,7 +185,7 @@ export const FileInput = (props) => {
 
   const rootProps = getRootProps({
     tabIndex: disabledState || disablePicker ? -1 : 0,
-    className: clsx('tj-file-input-field tw-flex tw-items-center tw-justify-between', {
+    className: clsx('tj-file-input-field tw-flex tw-items-center tw-justify-between tw-overflow-hidden', {
       'tj-file-input-disabled': disabledState || disablePicker,
       'tj-file-input-error': hasError,
     }),
