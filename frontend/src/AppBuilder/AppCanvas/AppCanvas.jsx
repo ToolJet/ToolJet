@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
-import { debounce } from 'lodash';
 import { shallow } from 'zustand/shallow';
 import './appCanvas.scss';
 
@@ -7,7 +6,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS, PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from './appCanvasConstants';
+import { NO_OF_GRIDS } from './appCanvasConstants';
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -28,6 +27,7 @@ const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
+import useCanvasResizing from './Hooks/useCanvasResizing';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
@@ -94,56 +94,16 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, [moduleId, setIsComponentLayoutReady]);
 
-  const handleResizeImmediate = useCallback(() => {
-    const _canvasWidth =
-      moduleId === 'canvas'
-        ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
-        : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
-    if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
-  }, [moduleId]);
-
-  useEffect(() => {
-    const handleResize = debounce(handleResizeImmediate, 300);
-
-    if (moduleId === 'canvas') {
-      window.addEventListener('resize', handleResize);
-    } else {
-      const elem = document.getElementById(moduleId);
-      const resizeObserver = new ResizeObserver(handleResize);
-      if (elem) resizeObserver.observe(elem);
-
-      return () => {
-        if (elem) resizeObserver.unobserve(elem);
-        resizeObserver.disconnect();
-        handleResize.cancel();
-      };
-    }
-    handleResizeImmediate();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      handleResize.cancel();
-    };
-  }, [handleResizeImmediate, currentLayout, canvasMaxWidth, moduleId, isRightSidebarOpen]);
-
-  useEffect(() => {
-    if (moduleId === 'canvas' && currentLayout === 'desktop') {
-      const pageSidebarWidth =
-        position === 'side'
-          ? isViewerSidebarPinned
-            ? PAGES_SIDEBAR_WIDTH_EXPANDED
-            : PAGES_SIDEBAR_WIDTH_COLLAPSED
-          : 0;
-      const _canvasWidth =
-        document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
-        pageSidebarWidth -
-        16; // padding of 'div.canvas-container.page-container' container
-      if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
-    }
-
-    localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isViewerSidebarPinned, position, currentLayout]);
+  useCanvasResizing({
+    setCanvasWidth,
+    moduleId,
+    currentLayout,
+    canvasMaxWidth,
+    isRightSidebarOpen,
+    isViewerSidebarPinned,
+    position,
+    currentMode,
+  });
 
   const canvasContainerStyles = useMemo(() => {
     const canvasBgColor =
