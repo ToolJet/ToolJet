@@ -128,13 +128,23 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-  // Disable create draft if git sync is enabled and a version already exists
-  const shouldDisableCreateDraft = draftVersions.length > 0 && isGitSyncEnabled;
+
+  // Disable create draft logic:
+  // - Git sync enabled: disable if any draft already exists
+  // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
+  const shouldDisableCreateDraft = isGitSyncEnabled
+    ? draftVersions.length > 0
+    : savedVersions.length === 0 && draftVersions.length > 0;
+
   // Determine tooltip message based on why create draft is disabled
-  const createDraftDisabledTooltip =
-    shouldDisableCreateDraft && savedVersions.length > 0
-      ? 'Draft version already exists.'
-      : 'Draft version can only be created from saved versions.';
+  let createDraftDisabledTooltip = '';
+  if (shouldDisableCreateDraft) {
+    if (isGitSyncEnabled) {
+      createDraftDisabledTooltip = 'Draft version already exists.';
+    } else if (savedVersions.length === 0) {
+      createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
+    }
+  }
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {

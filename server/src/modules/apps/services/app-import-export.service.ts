@@ -44,6 +44,7 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
+import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -175,7 +176,7 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -293,10 +294,10 @@ export class AppImportExportService {
           ...page,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -308,10 +309,10 @@ export class AppImportExportService {
           ...query,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -361,10 +362,10 @@ export class AppImportExportService {
           // updatedAt: query?.updatedAt,
           permissions: groupPermission
             ? {
-              permissionGroup: groupPermission.users
-                .map((user) => user.permissionGroup?.name)
-                .filter((name): name is string => Boolean(name)),
-            }
+                permissionGroup: groupPermission.users
+                  .map((user) => user.permissionGroup?.name)
+                  .filter((name): name is string => Boolean(name)),
+              }
             : undefined,
         };
       });
@@ -424,11 +425,11 @@ export class AppImportExportService {
     const existingModules =
       moduleAppNames.length > 0
         ? await this.entityManager
-          .createQueryBuilder(App, 'app')
-          .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
-          .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
-          .distinct(true)
-          .getMany()
+            .createQueryBuilder(App, 'app')
+            .where('app.name IN (:...moduleAppNames)', { moduleAppNames })
+            .andWhere('app.organizationId = :organizationId', { organizationId: user.organizationId })
+            .distinct(true)
+            .getMany()
         : [];
 
     // Process each module from the import data
@@ -1705,10 +1706,10 @@ export class AppImportExportService {
       const options =
         importingDataSource.kind === 'tooljetdb'
           ? this.replaceTooljetDbTableIds(
-            importingQuery.options,
-            externalResourceMappings['tooljet_database'],
-            organizationId
-          )
+              importingQuery.options,
+              externalResourceMappings['tooljet_database'],
+              organizationId
+            )
           : importingQuery.options;
 
       const newQuery = manager.create(DataQuery, {
@@ -2143,6 +2144,38 @@ export class AppImportExportService {
     });
     let currentEnvironmentId: string;
 
+    // Check if git sync is configured for the workspace
+    const orgGitSync = await manager.findOne(OrganizationGitSync, {
+      where: { organizationId: user?.organizationId },
+    });
+    const isGitSyncConfigured = !!orgGitSync;
+
+    // Find the latest draft version
+    // When git sync is configured, only the latest draft should remain as DRAFT, others become PUBLISHED
+    let latestDraftId: string | null = null;
+    if (isGitSyncConfigured) {
+      const draftVersions = appVersions.filter((v) => v.status === AppVersionStatus.DRAFT || !v.status);
+
+      if (draftVersions.length > 0) {
+        // Check if createdAt is available on the versions
+        const hasCreatedAt = draftVersions.some((v) => v.createdAt);
+
+        if (hasCreatedAt) {
+          // Sort by createdAt descending to find the most recent draft
+          const sortedDrafts = [...draftVersions].sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA; // Descending order (latest first)
+          });
+          latestDraftId = sortedDrafts[0].id;
+        } else {
+          // If no createdAt available (export file), use the last draft in the array
+          // The editingVersion (most recent) is typically the last one in appVersions array
+          latestDraftId = draftVersions[draftVersions.length - 1].id;
+        }
+      }
+    }
+
     for (const appVersion of appVersions) {
       const appEnvIds: string[] = [...organization.appEnvironments.map((env) => env.id)];
 
@@ -2159,6 +2192,19 @@ export class AppImportExportService {
       if (importedApp.editingVersion && !createNewVersion) {
         version = importedApp.editingVersion;
       } else {
+        // Determine the version status
+        // When git sync is configured and there are multiple drafts, only the latest draft stays as DRAFT
+        let versionStatus: AppVersionStatus;
+        const isDraftVersion = appVersion.status === AppVersionStatus.DRAFT || !appVersion.status;
+
+        if (isGitSyncConfigured && isDraftVersion) {
+          // Only the latest draft should remain as DRAFT, others become PUBLISHED
+          versionStatus = appVersion.id === latestDraftId ? AppVersionStatus.DRAFT : AppVersionStatus.PUBLISHED;
+        } else {
+          // Preserve original status or default to DRAFT
+          versionStatus = appVersion.status || AppVersionStatus.DRAFT;
+        }
+
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
@@ -2166,7 +2212,7 @@ export class AppImportExportService {
           currentEnvironmentId,
           createdAt: new Date(),
           updatedAt: new Date(),
-          status: appVersion.status || AppVersionStatus.DRAFT,
+          status: versionStatus,
           versionType: appVersion.versionType,
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
@@ -2438,10 +2484,10 @@ export class AppImportExportService {
         options:
           dataSourceId == defaultDataSourceIds['tooljetdb']
             ? this.replaceTooljetDbTableIds(
-              query.options,
-              externalResourceMappings['tooljet_database'],
-              user?.organizationId
-            )
+                query.options,
+                externalResourceMappings['tooljet_database'],
+                user?.organizationId
+              )
             : query.options,
       });
       await manager.save(newQuery);
