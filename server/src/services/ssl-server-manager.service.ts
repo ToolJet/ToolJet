@@ -219,11 +219,12 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
     this.logger.log(`Starting HTTPS server with certificates from ${certPaths.fullchainPath}`);
 
-    // Read certificates
-    const httpsOptions = {
-      key: fs.readFileSync(certPaths.privkeyPath),
-      cert: fs.readFileSync(certPaths.fullchainPath),
-    };
+    // Read certificates asynchronously to avoid blocking the event loop
+    const [key, cert] = await Promise.all([
+      fs.promises.readFile(certPaths.privkeyPath),
+      fs.promises.readFile(certPaths.fullchainPath),
+    ]);
+    const httpsOptions = { key, cert };
 
     // Create HTTPS server with same Express app
     this.httpsServer = https.createServer(httpsOptions, (this as any).expressApp);
@@ -282,16 +283,27 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
 
     const certPaths = this.getCertificatePaths(domain);
 
-    // Read new certificates
-    const httpsOptions = {
-      key: fs.readFileSync(certPaths.privkeyPath),
-      cert: fs.readFileSync(certPaths.fullchainPath),
-    };
+    // Read new certificates asynchronously to avoid blocking the event loop
+    const [key, cert] = await Promise.all([
+      fs.promises.readFile(certPaths.privkeyPath),
+      fs.promises.readFile(certPaths.fullchainPath),
+    ]);
+    const httpsOptions = { key, cert };
 
-    // Create new HTTPS server
+    // Close old server FIRST to free the port, preventing EADDRINUSE
+    if (this.httpsServer) {
+      await new Promise<void>((resolve) => {
+        this.httpsServer!.close(() => {
+          this.logger.log('Old HTTPS server closed');
+          resolve();
+        });
+      });
+      this.httpsServer = undefined;
+    }
+
+    // Create and start new HTTPS server on the now-free port
     const newHttpsServer = https.createServer(httpsOptions, (this as any).expressApp);
 
-    // Start new server
     await new Promise<void>((resolve, reject) => {
       newHttpsServer.listen(this.httpsPort, this.listenAddr, () => {
         this.logger.log('New HTTPS server started with updated certificates');
@@ -304,20 +316,8 @@ export class SslServerManagerService implements OnApplicationBootstrap, OnModule
       });
     });
 
-    // Close old server (both servers briefly running)
-    const oldServer = this.httpsServer;
     this.httpsServer = newHttpsServer;
-
-    if (oldServer) {
-      await new Promise<void>((resolve) => {
-        oldServer.close(() => {
-          this.logger.log('Old HTTPS server closed');
-          resolve();
-        });
-      });
-    }
-
-    this.logger.log('Certificate reload complete - zero downtime');
+    this.logger.log('Certificate reload complete');
   }
 
   /**

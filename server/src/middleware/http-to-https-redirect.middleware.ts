@@ -30,7 +30,8 @@ export class HttpToHttpsRedirectMiddleware implements NestMiddleware {
       req.protocol === 'http'
     ) {
       const httpsPort = this.sslServerManager.getHttpsPort();
-      const httpsUrl = `https://${req.hostname}:${httpsPort}${req.url}`;
+      const portSuffix = httpsPort === 443 ? '' : `:${httpsPort}`;
+      const httpsUrl = `https://${req.hostname}${portSuffix}${req.url}`;
 
       this.logger.debug(`Redirecting HTTP to HTTPS: ${httpsUrl}`);
       return res.redirect(301, httpsUrl);
