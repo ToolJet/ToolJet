@@ -34,6 +34,12 @@ export class WorkflowExecution {
   @Column({ name: 'executing_user_id' })
   executingUserId: string;
 
+  @Column({ name: 'trigger_type', default: 'manual', nullable: true })
+  triggerType: string;
+
+  @Column({ name: 'schedule_id', nullable: true })
+  scheduleId: string;
+
   @Column('json', { name: 'logs' })
   logs: string[];
 

@@ -1844,25 +1844,32 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              <div className="w-100 mb-5 container home-page-content-container">
+              <div className="mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
                     <AppTypeTab
-                      appType={this.props.appType}
+                      appType={this.props.appType === 'executions' ? 'workflow' : this.props.appType}
                       navigate={this.props.navigate}
                       darkMode={this.props.darkMode}
                       hasModuleAccess={this.props.hasModuleAccess}
+                      activeTab={this.props.appType === 'executions' ? 'executions' : undefined}
                     />
                   </>
                 ) : (
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
+                {this.props.appType !== 'workflow' && this.props.appType !== 'executions' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
 
-                {(meta?.total_count > 0 || appSearchKey) && (
+                {this.props.appType === 'executions' && (
+                  <div className="container-fluid mt-4 px-4">
+                     {this.props.executionsComponent}
+                  </div>
+                )}
+
+                {this.props.appType !== 'executions' && (meta?.total_count > 0 || appSearchKey) && (
                   <>
                     {!(isLoading && !appSearchKey) && (
                       <HomeHeader
@@ -1895,7 +1902,7 @@ class HomePageComponent extends React.Component {
                     </div>
                   </>
                 )}
-                {!isLoading &&
+                {this.props.appType !== 'executions' && !isLoading &&
                   featuresLoaded &&
                   meta?.total_count === 0 &&
                   !currentFolder.id &&
@@ -1963,7 +1970,7 @@ class HomePageComponent extends React.Component {
                       </ButtonSolid>
                     </div>
                   ))}
-                {!isLoading && apps?.length === 0 && appSearchKey && (
+                {this.props.appType !== 'executions' && !isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
@@ -1972,7 +1979,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
+                {this.props.appType !== 'executions' && (isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}
@@ -1996,7 +2003,7 @@ class HomePageComponent extends React.Component {
                 )}
               </div>
               <div className="footer-container">
-                {this.pageCount() > MAX_APPS_PER_PAGE && (
+                {this.props.appType !== 'executions' && this.pageCount() > MAX_APPS_PER_PAGE && (
                   <Footer
                     currentPage={meta.current_page}
                     count={this.pageCount()}

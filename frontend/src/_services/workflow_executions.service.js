@@ -81,10 +81,31 @@ function enableWebhook(appId, value) {
   return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
 }
 
-function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10, workflowId = null, sortBy, sortOrder) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const baseParams = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+  });
+
+  if (workflowId) {
+    baseParams.set('workflow_id', workflowId);
+  }
+
+  if (sortBy) {
+    baseParams.set('sort_by', sortBy);
+  }
+
+  if (sortOrder) {
+    baseParams.set('sort_order', sortOrder);
+  }
+
+  if (!appVersionId) {
+    const url = `${config.apiUrl}/workflow_executions/organization/all?${baseParams.toString()}`;
+    return fetch(url, requestOptions).then(handleResponse);
+  }
   return fetch(
-    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
+    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&${baseParams.toString()}`,
     requestOptions
   ).then(handleResponse);
 }
