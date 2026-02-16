@@ -146,6 +146,8 @@ export const verifyEnvironmentTagsInGranularUI = (groupName, environmentTags) =>
     });
   });
 };
+
+
 export const verifyEnvironmentAccess = (environments, options = {}) => {
   const defaults = {
     workspaceName: "my-workspace",
@@ -182,6 +184,8 @@ const assertRestrictedTooltip = (selector, env) => {
   cy.get(selector).trigger("mouseout", { force: true });
   cy.get("div.tooltip-inner").should("not.exist");
 };
+
+
 export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId }) => {
 
   if (!canEdit) {
@@ -197,6 +201,7 @@ export const verifyAppBuilderAccess = (envNames, { workspaceName, canEdit, appId
     else assertRestrictedTooltip(envSelector, envName.name);
   });
 }
+
 const assertEnvRestrictedTooltip = (envButton, env) => {
   envButton.find(multiEnvSelector.envNameDropdown)
     .should("have.css", "cursor", "not-allowed")
