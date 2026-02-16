@@ -1,15 +1,11 @@
-import { EntityManager } from "typeorm";
-import { Component } from "src/entities/component.entity";
-import { Layout } from "src/entities/layout.entity";
-import { LayoutData } from "@modules/apps/dto/component";
+import { EntityManager } from 'typeorm';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
+import { LayoutData } from '@modules/apps/dto/component';
 
 export interface IComponentsService {
   findOne(id: string): Promise<Component>;
-  create(
-    componentDiff: object,
-    pageId: string,
-    appVersionId: string
-  ): Promise<any>;
+  create(componentDiff: object, pageId: string, appVersionId: string): Promise<any>;
   /**
    * Create components using an external EntityManager (for use within existing transactions)
    * Use this when creating components within a transaction that has also created pages
@@ -21,26 +17,17 @@ export interface IComponentsService {
     manager: EntityManager,
     skipHistoryCapture?: boolean
   ): Promise<void>;
-  update(
-    componentDiff: object,
-    appVersionId: string
-  ): Promise<void | { error: { message: string } }>;
+  update(componentDiff: object, appVersionId: string): Promise<void | { error: { message: string } }>;
   delete(
     componentIds: string[],
     appVersionId: string,
     isComponentCut?: boolean
   ): Promise<void | { error: { message: string } }>;
   componentLayoutChange(
-    componenstLayoutDiff: Record<
-      string,
-      { layouts: LayoutData; component?: { parent: string } }
-    >,
+    componenstLayoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
     appVersionId: string
   ): Promise<void | { error: { message: string } }>;
-  getAllComponents(
-    pageId: string,
-    manager?: EntityManager
-  ): Promise<Record<string, any>>;
+  getAllComponents(pageId: string, manager?: EntityManager): Promise<Record<string, any>>;
   transformComponentData(data: object): Component[];
   createComponentWithLayout(
     componentData: Component,
