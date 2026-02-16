@@ -282,7 +282,8 @@ const DynamicForm = ({
     depends_on,
     label,
     fx_enabled,
-    fxEnabled
+    fxEnabled,
+    autoFetch,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -569,7 +570,8 @@ const DynamicForm = ({
           propertyKey: key,
           value: options?.[key]?.value || options?.[key],
           optionsChanged,
-          fxEnabled: fxEnabled || fx_enabled
+          fxEnabled: fxEnabled || fx_enabled,
+          autoFetch: autoFetch,
         };
       default:
         return {};
