@@ -261,6 +261,21 @@ export const StylesTabElements = ({
 
       {column.columnType === 'button' && (
         <div className="d-flex flex-column custom-gap-16">
+          {/* Button type - Solid/Outline */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+              Button type
+            </label>
+            <ToggleGroup
+              onValueChange={(_value) => onColumnItemChange(index, 'buttonType', _value)}
+              defaultValue={column?.buttonType || 'solid'}
+              style={{ flex: '1 1 0' }}
+            >
+              <ToggleGroupItem value="solid">Solid</ToggleGroupItem>
+              <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
           {/* Button alignment */}
           <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
             <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
@@ -280,21 +295,6 @@ export const StylesTabElements = ({
               <ToggleGroupItem value="right">
                 <AlignRight width={14} />
               </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-
-          {/* Button type - Solid/Outline */}
-          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-              Button type
-            </label>
-            <ToggleGroup
-              onValueChange={(_value) => onColumnItemChange(index, 'buttonType', _value)}
-              defaultValue={column?.buttonType || 'solid'}
-              style={{ flex: '1 1 0' }}
-            >
-              <ToggleGroupItem value="solid">Solid</ToggleGroupItem>
-              <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
             </ToggleGroup>
           </div>
 
@@ -383,6 +383,22 @@ export const StylesTabElements = ({
             </ToggleGroup>
           </div>
 
+          {/* Cell color */}
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
+
           {/* Loader color */}
           <div className="field px-3">
             <ProgramaticallyHandleProperties
@@ -427,22 +443,6 @@ export const StylesTabElements = ({
               props={column}
               component={component}
               paramMeta={{ type: 'numberInput', displayName: 'Border radius' }}
-              paramType="properties"
-            />
-          </div>
-
-          {/* Cell color */}
-          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
-            <ProgramaticallyHandleProperties
-              label="Cell color"
-              currentState={currentState}
-              index={index}
-              darkMode={darkMode}
-              callbackFunction={onColumnItemChange}
-              property="cellBackgroundColor"
-              props={column}
-              component={component}
-              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
               paramType="properties"
             />
           </div>

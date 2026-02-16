@@ -100,7 +100,7 @@ export const ProgramaticallyHandleProperties = ({
       return value || '{{true}}';
     }
     if (property === 'cellBackgroundColor') {
-      return definitionObj?.value ?? '';
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
