@@ -294,11 +294,11 @@ export class AppsService implements IAppsService {
     });
   }
 
-  async getAllApps(user: User, appListDto: AppListDto): Promise<any> {
+  async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type, isGetAll } = appListDto;
+    const { folderId, page, searchKey, type } = appListDto;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
