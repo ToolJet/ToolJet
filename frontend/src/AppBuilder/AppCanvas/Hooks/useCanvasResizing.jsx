@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { PAGES_SIDEBAR_WIDTH_COLLAPSED, PAGES_SIDEBAR_WIDTH_EXPANDED } from '../appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -24,7 +24,7 @@ const useCanvasResizing = ({
         ? document.getElementById('real-canvas')?.getBoundingClientRect()?.width
         : document.getElementById(moduleId)?.getBoundingClientRect()?.width;
     if (_canvasWidth !== 0) setCanvasWidth(_canvasWidth);
-  }, [moduleId]);
+  }, [moduleId, setCanvasWidth]);
 
   useEffect(() => {
     const handleResize = debounce(handleResizeImmediate, 300);
@@ -63,9 +63,13 @@ const useCanvasResizing = ({
 
       let _canvasWidth;
 
-      const viewerWidth =
-        document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width -
-        (currentMode === 'edit' ? 16 : 0); // padding of 'div.canvas-container.page-container' container in editor is 8px
+      const containerWidth = document.querySelector('.canvas-container.page-container')?.getBoundingClientRect()?.width;
+
+      if (!containerWidth || containerWidth <= 0) {
+        return;
+      }
+
+      const viewerWidth = containerWidth - (currentMode === 'edit' ? 16 : 0); // padding of 'div.canvas-container.page-container' container in editor is 16px (8px on each side)
 
       const canvasWidth = viewerWidth - pageSidebarWidth;
 
@@ -80,7 +84,6 @@ const useCanvasResizing = ({
     }
 
     localStorage.setItem('isPagesSidebarPinned', isViewerSidebarPinned);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isViewerSidebarPinned,
     position,
@@ -89,9 +92,9 @@ const useCanvasResizing = ({
     currentMode,
     canvasMaxWidthType,
     canvasMaxWidthValue,
+    moduleId,
+    setCanvasWidth,
   ]);
-
-  return <></>;
 };
 
 export default useCanvasResizing;

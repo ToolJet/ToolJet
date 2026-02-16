@@ -23,7 +23,7 @@ const useAppCanvasMaxWidth = () => {
   const debouncedGetCanvasMaxWidth = useCallback(debounce(getCanvasMaxWidth, 250), [getCanvasMaxWidth]);
 
   useEffect(() => {
-    window.addEventListener('resize', () => debouncedGetCanvasMaxWidth);
+    window.addEventListener('resize', debouncedGetCanvasMaxWidth);
     getCanvasMaxWidth(); // Initial call without debounce
 
     return () => {
