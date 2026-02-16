@@ -510,6 +510,10 @@ module.exports = {
             to: '/docs/widgets/table/',
             from: '/docs/widgets/table/table-properties',
           },
+          {
+            to: '/docs/setup/cloud-v3-migration',
+            from: '/docs/setup/upgrade-to-v3',
+          },
           // {
           //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
           //   from: '/docs/workflows/trigger-workflow-from-app',
