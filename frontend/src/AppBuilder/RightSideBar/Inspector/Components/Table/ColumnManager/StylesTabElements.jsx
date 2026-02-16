@@ -430,6 +430,22 @@ export const StylesTabElements = ({
               paramType="properties"
             />
           </div>
+
+          {/* Cell color */}
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
         </div>
       )}
     </>
