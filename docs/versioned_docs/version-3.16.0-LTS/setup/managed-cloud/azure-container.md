@@ -31,6 +31,7 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 6. Then you will be redirected to the Create Container App tab, uncheck the **Use quickstart image** option to select the image source manually. Make sure to provide the image tag, and then enter `server/ee-entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
    <img className="screenshot-full img-m" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
 7. Under "Environmental variables", please add the below ToolJet application variables:
+
    ```env
    TOOLJET_HOST=<Endpoint url>
    LOCKBOX_MASTER_KEY=<generate using 'openssl rand -hex 32'>
@@ -41,18 +42,23 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    PG_PASS=<password>
    PG_DB=tooljet_production # Must be a unique database name (do not reuse across deployments)
    ```
+
    Update the `TOOLJET_HOST` environment variable to reflect the default host assigned by Azure Container Apps, if you're not using a custom domain. <br/>
    If using Azure Database for Postgresql-Flexible server, also add:
+
    ```env
    PGSSLMODE = require
    ```
+
    To set up [ToolJet Database](#tooljet-database), the following **environment variables are mandatory** and must be configured:
+
    ```env
    TOOLJET_DB=tooljet_db # Must be a unique database name (separate from PG_DB and not shared)
    TOOLJET_DB_HOST=<postgresql-database-host>
    TOOLJET_DB_USER=<username>
    TOOLJET_DB_PASS=<password>
    ```
+
    :::note
    Ensure that `TOOLJET_DB` is not the same as `PG_DB`. Both databases must be uniquely named and not shared.
    :::
@@ -63,13 +69,16 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 
    If this parameter is not specified, PostgREST will refuse authentication requests.
    :::
+
    ```env
     PGRST_HOST=127.0.0.1:3002
     PGRST_JWT_SECRET=
    ```
-   **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**  <br/> <br/>
+
+   **Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.** <br/> <br/>
    **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars).
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
+
 8. In the Ingress tab, configure Ingress and Authentication settings as shown below. You can customize the security configurations as per your requirements. Make sure the port is set to 3000.
    <img className="screenshot-full img-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
 9. Move to Review + create tab and wait for the template to be verified and passed, as shown in the screenshot below.
@@ -173,10 +182,9 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 

@@ -45,9 +45,11 @@ For more information about the ToolJet database, you can visit [here](/docs/tool
 For a multi-service or multi-pod setup, it is recommended to use an external Redis instance.
 
 **Default Behavior:** <br/>
+
 - Redis is included in the Helm chart but **disabled by default**.
 
 **When to Enable Redis?** <br/>
+
 - If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.
 
 Enabling or Disabling Redis in `values.yaml`
@@ -220,7 +222,7 @@ env:
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [*ToolJet Docker Hub*](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 ### Prerequisites for Upgrading
 
@@ -235,10 +237,9 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [_ToolJet 3.0 Migration Guide_](/docs/setup/upgrade-to-v3/).
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 

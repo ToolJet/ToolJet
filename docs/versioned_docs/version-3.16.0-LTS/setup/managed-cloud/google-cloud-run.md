@@ -19,11 +19,12 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
 ## Deploying ToolJet application
 
 :::info **Architecture Overview**: This deployment uses the following Google Cloud services:
+
 - **Cloud Run**: Hosts the ToolJet application container (**tooljet-app**)
 - **Cloud SQL**: Provides two separate PostgreSQL databases
   - **PG_DB** - Application database for users, apps, and configurations
   - **TOOLJET_DB** - Internal database for ToolJet Database feature data
-:::
+    :::
 
 1. **Create a new Google Cloud Run Service:**
    <img className="screenshot-full img-m" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
@@ -79,7 +80,6 @@ To use ToolJet AI features in your deployment, make sure to whitelist `https://a
    <summary>Why does ToolJet require two databases?</summary>
 
    ToolJet requires **two separate database names** for optimal functionality:
-
    - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
    - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
 
@@ -163,9 +163,7 @@ TOOLJET_WORKFLOW_CONCURRENCY=5
 - `REDIS_TLS=false` - Optional: Enable TLS/SSL (set to 'true')
   :::
 
-
 **For additional environment variables, refer to our [environment variables documentation](/docs/setup/env-vars).**
-
 
 ## Upgrading to the Latest LTS Version
 
@@ -188,10 +186,9 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 

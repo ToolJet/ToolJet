@@ -67,6 +67,7 @@ ToolJet requires **two separate database names** for optimal functionality:
 This separation ensures data isolation and optimal performance for both application operations and user-created database tables.
 
 **Deployment Flexibility:**
+
 - **Same PostgreSQL instance** (recommended for most use cases): Create both databases within a single PostgreSQL server
 - **Separate PostgreSQL instances** (optional, for scale): Host each database on different PostgreSQL servers based on your performance and isolation requirements
 
@@ -98,13 +99,17 @@ For additional environment variables, refer to our [environment variables docume
    When entering one or more files and use --- to separate each definition
    :::
    Copy paste deployment.yaml to the online editor
+
    ```
    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
    ```
+
    Copy paste the service.yaml to the online editor
+
    ```
    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
    ```
+
    <img className="screenshot-full img-full" src="/img/setup/openshift/online-yaml-editor.png" alt="online yaml editor" />
    Once you have added the files click on create.
 
@@ -224,10 +229,9 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](./upgrade-to-v3.md).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [ToolJet 3.0 Migration Guide](/docs/setup/upgrade-to-v3/).
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 

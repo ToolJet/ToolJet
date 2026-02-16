@@ -24,13 +24,13 @@ ToolJet provides Infrastructure as Code (IaC) templates for automated ECS deploy
 
 ToolJet provides Terraform modules that provision all required AWS resources including VPC, ECS cluster, task definitions, load balancers, and security groups.
 
-[*ToolJet Terraform for ECS*](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
+[_ToolJet Terraform for ECS_](https://github.com/ToolJet/ToolJet/tree/develop/terraform/ECS)
 
 ### Deploy using CloudFormation
 
 **Use CloudFormation if:** You prefer AWS-native infrastructure automation or need one-click deployments.
 
-ToolJet provides [*CloudFormation templates*](https://aws.amazon.com/cloudformation/) to automate resource provisioning and configuration.
+ToolJet provides [_CloudFormation templates_](https://aws.amazon.com/cloudformation/) to automate resource provisioning and configuration.
 
 #### Complete Infrastructure Setup (Recommended for new deployments)
 
@@ -60,10 +60,9 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
 
    ToolJet requires **two separate PostgreSQL databases** - one for core application data and one for ToolJet Database feature data.
 
-2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [*reference*](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
+2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [_reference_](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 
 3. Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
-
    1. Select Fargate as launch type compatibility
    2. Configure IAM roles and set operating system family as Linux.
    3. Select task size to have 3GB of memory and 1vCpu
@@ -73,7 +72,7 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
       Update port mappings at container port `3000` for tcp protocol.
       <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
-      Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [*docs*](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
+      Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [_docs_](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [_docs_](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) .
       <img className="screenshot-full img-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
 
       **Configure all required environment variables:**
@@ -116,7 +115,6 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       <summary>Why does ToolJet require two databases?</summary>
 
       ToolJet requires **two separate database names** for optimal functionality:
-
       - **PG_DB (Application Database)**: Stores ToolJet's core application data including user accounts, application definitions, permissions, and configurations
       - **TOOLJET_DB (Internal Database)**: Stores ToolJet Database feature data including internal metadata and tables created by users within the ToolJet Database feature
 
@@ -158,7 +156,6 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
       ```
 
       You'll also need to:
-
       1. **Download the AWS RDS global certificate bundle** on your ECS container instances:
          ```bash
          mkdir -p /opt/ssl-certs
@@ -176,24 +173,24 @@ Follow the steps below to deploy ToolJet on an ECS cluster.
 4. Create a service to run your task definition within your cluster.
    - Select the cluster which you have created
    - Select launch type as Fargate
-   <br />
-   <img className="screenshot-full img-m" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
-   <br />
+     <br />
+     <img className="screenshot-full img-m" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
+     <br />
    - Select the cluster and set the service name
    - You can set the number of tasks to start with as two
    - Rest of the values can be kept as default
-   <br />
-   <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
-   <br />
+     <br />
+     <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
+     <br />
    - Click on next step to configure networking options
    - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
-   <br />
-   <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
-   <br />
+     <br />
+     <img className="screenshot-full img-l" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
+     <br />
    - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
 :::info Note on ToolJet Database
-ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [*here*](/docs/tooljet-db/tooljet-database).
+ToolJet Database is a built-in feature that allows you to build apps faster and manage data with ease. Learn more about this feature [_here_](/docs/tooljet-db/tooljet-database).
 :::
 
 ## Workflows
@@ -267,7 +264,7 @@ For production deployments, ensure your ElastiCache Redis cluster is in the same
 If this is a new installation of the application, you may start directly with the latest version. This upgrade guide is only for existing installations.
 :::
 
-New LTS versions are released every 3-5 months with an end-of-life of at least 18 months. To check the latest LTS version, visit the [*ToolJet Docker Hub*](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of at least 18 months. To check the latest LTS version, visit the [_ToolJet Docker Hub_](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 ### Prerequisites for Upgrading
 
@@ -282,10 +279,9 @@ Ensure both databases are included in your backup before proceeding with the upg
 :::
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
-- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [*ToolJet 3.0 Migration Guide*](./upgrade-to-v3.md).
+- **ToolJet 3.0+ Requirement:** Deploying ToolJet Database is mandatory from ToolJet 3.0 onwards. For information about breaking changes, see the [_ToolJet 3.0 Migration Guide_](/docs/setup/upgrade-to-v3/).
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 
