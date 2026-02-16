@@ -12,7 +12,7 @@ import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
-import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
+import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
@@ -51,7 +51,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const canvasContainerHeight = computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
-  const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
+  const canvasMaxWidth = useAppCanvasMaxWidth();
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const getPageId = useStore((state) => state.getCurrentPageId, shallow);
   const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
