@@ -30,12 +30,17 @@ export const createBranchSlice = (set, get) => ({
       // Only set default branch if current version is a branch type
       // If selectedVersion is a regular version (not a branch), keep currentBranch as null
       const selectedVersion = useStore.getState().selectedVersion;
-      const isOnBranch = selectedVersion?.versionType === 'branch';
+      const isOnBranch = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
 
       let defaultBranch = get().currentBranch;
-      if (!defaultBranch && branches.length && isOnBranch) {
-        defaultBranch =
-          branches.find((b) => b.name === 'main') || branches.find((b) => b.name === 'master') || branches[0];
+      if (isOnBranch) {
+        const matchingBranch = branches.find((b) => b.name === selectedVersion.name);
+        if (matchingBranch) {
+          defaultBranch = matchingBranch;
+        } else if (!defaultBranch && branches.length) {
+          defaultBranch =
+            branches.find((b) => b.name === 'main') || branches.find((b) => b.name === 'master') || branches[0];
+        }
       }
 
       set(
