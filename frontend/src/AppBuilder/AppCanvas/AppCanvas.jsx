@@ -14,7 +14,7 @@ import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
-import useSidebarMargin from './useSidebarMargin';
+import useSidebarMargin from './Hooks/useSidebarMargin';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
 import { DragResizeGhostWidget } from './GhostWidgets';
@@ -26,8 +26,8 @@ import { SuspenseCountProvider, SuspenseLoadingOverlay } from './SuspenseTracker
 const AppCanvasBanner = lazy(() => import('@/AppBuilder/Header/AppCanvasBanner'));
 const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
-import useCanvasMinWidth from './useCanvasMinWidth';
-import useEnableMainCanvasScroll from './useEnableMainCanvasScroll';
+import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
+import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
