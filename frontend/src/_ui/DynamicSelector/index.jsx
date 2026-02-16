@@ -268,6 +268,29 @@ const DynamicSelector = ({
     }
   }, [selectedDataSource]);
 
+  useEffect(() => {
+    if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
+      const cacheKey = `${propertyKey}_cache`;
+      const existingCache = get(options, cacheKey) || {};
+      
+      const isMultiAuth = selectedDataSource?.options?.multiple_auth_enabled;
+      const userId = currentUser?.id;
+      
+      let cachedData = null;
+      if (isMultiAuth) {
+        if (userId && existingCache[userId]) {
+          cachedData = existingCache[userId]['nonDependentCache'];
+        }
+      } else {
+        cachedData = existingCache['nonDependentCache'];
+      }
+      
+      if (!cachedData) {
+        handleFetch();
+      }
+    }
+  }, [autoFetch, selectedDataSource?.id, invokeMethod, isFxMode]);
+
   // Watch for changes in dependency state
   useEffect(() => {
     if (isDependentField && compositeDependencyKey && depsReady) {
