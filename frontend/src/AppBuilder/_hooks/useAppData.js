@@ -148,6 +148,7 @@ const useAppData = (
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+  const promptSentRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -365,9 +366,10 @@ const useAppData = (
         if (
           !moduleMode &&
           state?.prompt &&
-          initialLoadRef.current &&
+          !promptSentRef.current &&
           (conversation?.aiConversationMessages || []).length === 0
         ) {
+          promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
