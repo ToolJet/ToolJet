@@ -83,6 +83,7 @@ const useAppData = (
   const setCurrentMode = useStore((state) => state.setCurrentMode);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
   // const fetchDataSources = useStore((state) => state.fetchDataSources);
   const fetchGlobalDataSources = useStore((state) => state.fetchGlobalDataSources);
   const getAllGlobalDataSourceList = useStore((state) => state.getAllGlobalDataSourceList);
@@ -147,6 +148,7 @@ const useAppData = (
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+  const promptSentRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -364,12 +366,14 @@ const useAppData = (
         if (
           !moduleMode &&
           state?.prompt &&
-          initialLoadRef.current &&
+          !promptSentRef.current &&
           (conversation?.aiConversationMessages || []).length === 0
         ) {
+          promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
           sendMessage(state.prompt);
+          setIsQueryPaneExpanded(false);
         }
 
         if (initialLoadRef.current) {
@@ -379,6 +383,7 @@ const useAppData = (
         if (appData.app_builder_mode === 'ai') {
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
+          setIsQueryPaneExpanded(false);
         }
 
         if (!moduleMode) {
