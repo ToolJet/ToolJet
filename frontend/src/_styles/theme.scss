@@ -6435,6 +6435,21 @@ input.hide-input-arrows {
     background: none !important;
   }
 
+   .react-checkbox-tree label {
+    display: flex;
+  }
+
+  .rct-text {
+    margin-bottom: 0.5rem;
+  }
+
+  .rct-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    padding: 0px;
+  }
+
   .rct-icons-fa4 {
 
     .rct-icon-expand-open,

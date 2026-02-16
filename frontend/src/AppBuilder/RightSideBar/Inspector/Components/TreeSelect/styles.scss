@@ -1,0 +1,403 @@
+// TreeSelect Inspector Styles
+// Adapted from Navigation inspector styles
+
+// ==========================================
+// Tree Item Wrapper (matches TreeItem.module.css .Wrapper)
+// ==========================================
+
+.treeselect-inspector {
+
+  .treeselect-tree-item-wrapper {
+    list-style: none;
+    box-sizing: border-box;
+    padding-left: var(--spacing) !important;
+    margin-bottom: 0;
+
+    &.clone {
+      display: inline-block;
+      pointer-events: none;
+      padding: 0;
+      padding-left: 10px;
+      padding-top: 5px;
+
+      .treeselect-tree-item {
+        --vertical-padding: 5px;
+        padding-right: 24px;
+        border-radius: 4px;
+        box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+      }
+    }
+
+    &.ghost {
+      &.indicator {
+        opacity: 1;
+        position: relative;
+        z-index: 1;
+        margin-bottom: -1px;
+
+        &.remove-border {
+          .treeselect-tree-item::before {
+            height: 0px !important;
+          }
+        }
+
+        .treeselect-tree-item {
+          position: relative;
+          padding: 0;
+          height: 0px;
+          > * {
+            opacity: 0;
+            height: 0;
+          }
+        }
+
+        .treeselect-tree-item::before {
+          content: '';
+          position: absolute;
+          top: 3px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background-color: var(--indigo9, #3D63DC);
+        }
+      }
+
+      &:not(.indicator) {
+        opacity: 0.5;
+      }
+
+      .treeselect-tree-item > * {
+        box-shadow: none;
+        background-color: transparent;
+      }
+    }
+
+    &.disable-interaction {
+      pointer-events: none;
+    }
+
+    &.disable-selection {
+      .option-label {
+        user-select: none;
+        -webkit-user-select: none;
+      }
+    }
+  }
+
+  // ==========================================
+  // Tree Item
+  // ==========================================
+  .treeselect-tree-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: var(--vertical-padding) 10px;
+    color: var(--text-default);
+    box-sizing: border-box;
+  }
+
+  // ==========================================
+  // Options List Container
+  // ==========================================
+  .treeselect-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+
+  // ==========================================
+  // Option Item styles
+  // ==========================================
+  .treeselect-option-item {
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 7px 8px;
+    width: 100%;
+    justify-content: space-between;
+    background-color: var(--interactive-default);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &.is-selected {
+      background-color: var(--interactive-selected) !important;
+    }
+
+    &:hover:not(.is-selected) {
+      background-color: var(--interactive-hover);
+    }
+
+    &.has-children {
+      font-weight: 500;
+    }
+
+    // Left content: label
+    .left {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      flex-shrink: 1;
+      min-width: 0;
+      gap: 6px;
+
+      .option-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-default);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        flex-shrink: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  // ==========================================
+  // Action button wrapper (shown on hover)
+  // ==========================================
+  .action-btn-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    .icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid var(--border-default);
+      background: var(--surfaces-surface-01);
+      box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+                  0px 1px 1px 0px rgba(48, 50, 51, 0.1);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--interactive-hover);
+      }
+    }
+
+    &.options-opened {
+      opacity: 1;
+    }
+  }
+
+  .treeselect-handler:hover,
+  .treeselect-option-item:hover {
+    .action-btn-wrapper {
+      opacity: 1;
+    }
+  }
+
+  // ==========================================
+  // Dark Theme Adjustments
+  // ==========================================
+  .dark-theme {
+    .treeselect-option-item {
+      background-color: var(--interactive-default);
+
+      .left .option-label {
+        color: var(--text-default);
+      }
+    }
+
+    .treeselect-item-popover {
+      background-color: var(--surfaces-surface-01);
+
+      .treeselect-item-popover-header {
+        border-bottom-color: var(--border-weak);
+      }
+    }
+
+    .action-btn-wrapper .icon-btn {
+      background: var(--surfaces-surface-02);
+      border-color: var(--border-weak);
+    }
+  }
+}
+
+// ==========================================
+// Ghost (for DragOverlay) - outside .treeselect-inspector
+// since it renders via createPortal to document.body
+// ==========================================
+.treeselect-handler.ghost {
+  background-color: var(--surfaces-surface-02);
+  border-radius: 6px;
+  position: relative;
+  width: 100%;
+  opacity: 0.9;
+  padding: 0 8px;
+
+  .treeselect-option-item {
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 7px 8px;
+    width: 100%;
+    justify-content: space-between;
+    background-color: var(--interactive-default);
+    box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+
+    .left {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      flex-shrink: 1;
+      min-width: 0;
+      gap: 6px;
+
+      .option-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-default);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        flex-shrink: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  &.dark-theme {
+    background-color: var(--surfaces-surface-02);
+
+    .treeselect-option-item {
+      background-color: var(--interactive-default);
+
+      .left .option-label {
+        color: var(--text-default);
+      }
+    }
+  }
+}
+
+// ==========================================
+// Edit Popover Styles
+// ==========================================
+.treeselect-item-popover {
+  border-radius: 8px;
+  background-color: var(--surfaces-surface-01);
+  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+              0px 4px 8px 0px rgba(48, 50, 51, 0.1);
+  border: none;
+
+  .popover-body {
+    padding: 0;
+  }
+
+  .treeselect-item-popover-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Header
+  .treeselect-item-popover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-weak);
+
+    .treeselect-item-popover-header-title {
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--text-default);
+    }
+
+    .treeselect-item-popover-header-actions {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  // Content
+  .treeselect-item-popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  // Fields section
+  .treeselect-item-popover-fields-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  // Individual field
+  .treeselect-item-popover-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  // Field label
+  .treeselect-item-popover-field-label {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+    padding-left: 2px;
+  }
+}
+
+// ==========================================
+// Item Actions Popover (Edit/Delete/Add nested menu)
+// ==========================================
+.treeselect-item-actions-popover {
+  min-width: 160px;
+  border-radius: 10px;
+  border: 1px solid var(--border-weak);
+  background-color: var(--surfaces-surface-01);
+  box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
+              0px 4px 8px 0px rgba(48, 50, 51, 0.1);
+
+  .popover-body {
+    padding: 8px;
+  }
+
+  .treeselect-item-action-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    .treeselect-item-action-option-icon {
+      color: var(--icons-default);
+    }
+
+    .treeselect-item-action-option-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-default);
+      line-height: 18px;
+    }
+
+    &.treeselect-item-action-option-danger {
+      .treeselect-item-action-option-icon {
+        color: var(--icons-danger);
+      }
+    }
+  }
+}

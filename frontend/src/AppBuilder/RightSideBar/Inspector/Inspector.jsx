@@ -54,6 +54,7 @@ import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
+import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -142,6 +143,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'KeyValuePair',
   'IFrame',
   'Navigation',
+  'TreeSelect',
 ];
 
 export const Inspector = ({
@@ -923,6 +925,8 @@ const GetAccordion = React.memo(
         return <KeyValuePair {...restProps} />;
       case 'Navigation':
         return <Navigation {...restProps} />;
+      case 'TreeSelect':
+        return <TreeSelect {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

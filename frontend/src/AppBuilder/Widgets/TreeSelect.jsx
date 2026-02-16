@@ -4,6 +4,7 @@ import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
+import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
 
 const TreeSelect = ({
   height,
@@ -16,8 +17,8 @@ const TreeSelect = ({
   dataCy,
   id,
 }) => {
-  const { label } = properties;
-  const { visibility, disabledState, checkboxColor, boxShadow } = styles;
+  const { label, visibility, disabledState } = properties;
+  const { checkboxColor: checkedBackground, uncheckedBackground, borderColor, checkmarkColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
@@ -111,27 +112,51 @@ const TreeSelect = ({
         maxHeight: height,
         display: visibility ? '' : 'none',
         color: textColor,
-        accentColor: checkboxColor,
         boxShadow,
       }}
       data-cy={dataCy}
       aria-hidden={!visibility}
       aria-disabled={disabledState}
     >
-      <div className="card-title" style={{ marginBottom: '0.5rem' }}>
+      <div className="" style={{ marginBottom: '0.25rem', color: textColor, fontWeight: '500' }}>
         <label htmlFor={`component-${id}`}>{label}</label>
       </div>
       <CheckboxTree
+        key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
         nodes={data}
         checked={checked}
         expanded={expanded}
         showNodeIcon={false}
         onCheck={onCheck}
         onExpand={onExpand}
-        nativeCheckboxes
         checkModel="all"
         disabled={disabledState}
         id={`component-${id}`}
+        icons={{
+          check: (
+            <SharedCheckbox
+              checked={true}
+              checkboxColor={checkedBackground}
+              uncheckedColor={uncheckedBackground}
+              borderColor={borderColor}
+              handleColor={checkmarkColor}
+              size={18}
+            />
+          ),
+          uncheck: (
+            <SharedCheckbox checked={false} uncheckedColor={uncheckedBackground} borderColor={borderColor} size={18} />
+          ),
+          halfCheck: (
+            <SharedCheckbox
+              checked={true}
+              checkboxColor={checkedBackground}
+              uncheckedColor={uncheckedBackground}
+              borderColor={borderColor}
+              handleColor={checkmarkColor}
+              size={18}
+            />
+          ),
+        }}
       />
     </div>
   );
