@@ -74,7 +74,8 @@ export interface IWorkflowExecutionsService {
     state: Record<string, any>,
     appVersion: AppVersion,
     user: User,
-    response: Response
+    response: Response,
+    environmentId: string
   ): Promise<any>;
 
   getWorkflowExecutionsLogs(

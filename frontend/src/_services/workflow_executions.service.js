@@ -19,9 +19,9 @@ export const workflowExecutionsService = {
   getExecutionStates,
 };
 
-function previewQueryNode(queryId, appVersionId, nodeId, state = {}) {
+function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state };
+  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state, appEnvId: environmentId };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }

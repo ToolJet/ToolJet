@@ -67,6 +67,7 @@ export class WorkflowsModule extends SubModule {
       BundleGenerationService,
       AgentNodeService,
       WorkflowBundlesController,
+      WorkflowVersionUtilService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -88,6 +89,7 @@ export class WorkflowsModule extends SubModule {
       'services/bundle-generation.service',
       'services/agent-node.service',
       'controllers/workflow-bundles.controller',
+      'services/workflow-version.util.service',
     ]);
 
     // Get apps related providers
@@ -187,6 +189,7 @@ export class WorkflowsModule extends SubModule {
         NpmRegistryService,
         BundleGenerationService,
         AgentNodeService,
+        WorkflowVersionUtilService,
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,

@@ -36,7 +36,10 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
 
   @InitFeature(FEATURE_KEY.LIST_WORKFLOW_SCHEDULES)
   @Get()
-  async findAll(@User() user, @Query('app_version_id') appVersionId: string): Promise<WorkflowSchedule[]> {
+  async findAll(
+    @User() user,
+    @Query('app_version_id') appVersionId: string
+  ): Promise<WorkflowSchedule[]> {
     throw new Error('Method not implemented.');
   }
 
