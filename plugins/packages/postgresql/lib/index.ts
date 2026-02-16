@@ -295,7 +295,7 @@ export default class PostgresqlQueryService implements QueryService {
     const knexInstance = knex({
       client: 'pg',
       connection: connectionConfig,
-      pool: { min: 0, max: 3 },
+      pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
       acquireConnectionTimeout: 60000,
     });
     // cleanup hook
