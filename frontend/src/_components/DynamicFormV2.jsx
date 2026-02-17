@@ -15,11 +15,8 @@ import { orgEnvironmentConstantService } from '../_services';
 import { Constants } from '@/_helpers/utils';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.js';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import {
-  validateMongoDBConnectionString,
-  parseMongoDBConnectionString,
-  detectConnectionStringChange,
-} from '../_helpers/mongoDbHelpers.js';
+import { getAutoFillStrategy } from '@/_helpers/autoFillRegistry';
+import { useConnectionStringAutoFill } from '@/_hooks/useConnectionStringAutofill';
 
 const DynamicFormV2 = ({
   schema,
@@ -56,6 +53,17 @@ const DynamicFormV2 = ({
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
 
+  // --- Abstracted autofill ---
+  const autoFillStrategy = React.useMemo(() => getAutoFillStrategy(schema), [schema]);
+
+  const { handleManualFieldEdit } = useConnectionStringAutoFill({
+    strategy: autoFillStrategy,
+    options,
+    optionsChanged,
+    selectedDataSource,
+  });
+
+  // --- Workspace constants ---
   const lastAutoFilledConnRef = React.useRef('');
   const autoFillTimeoutRef = React.useRef(null);
   const manuallyEditedFieldsRef = React.useRef(new Set());
@@ -94,155 +102,6 @@ const DynamicFormV2 = ({
       })
       .map((item) => item.key);
   };
-
-  React.useEffect(() => {
-    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
-
-    if (!isMongoDBDataSource) {
-      return;
-    }
-
-    const connectionType = options?.connection_type?.value;
-    if (connectionType !== 'string') {
-      return;
-    }
-
-    const connString = options?.connection_string?.value;
-
-    if (autoFillTimeoutRef.current) {
-      clearTimeout(autoFillTimeoutRef.current);
-      autoFillTimeoutRef.current = null;
-    }
-
-    if (!connString) {
-      lastAutoFilledConnRef.current = '';
-      manuallyEditedFieldsRef.current.clear();
-      return;
-    }
-
-    if (skipNextAutoFillRef.current) {
-      skipNextAutoFillRef.current = false;
-      lastAutoFilledConnRef.current = connString;
-      return;
-    }
-
-    const isNewConnectionString = connString !== lastAutoFilledConnRef.current;
-
-    if (!isNewConnectionString) {
-      return;
-    }
-
-    const isLoadingExistingDataSource =
-      !lastAutoFilledConnRef.current &&
-      selectedDataSource?.id &&
-      selectedDataSource?.options?.connection_string?.value === connString;
-
-    if (isLoadingExistingDataSource) {
-      lastAutoFilledConnRef.current = connString;
-      return;
-    }
-    autoFillTimeoutRef.current = setTimeout(() => {
-      const changeDetection = detectConnectionStringChange(lastAutoFilledConnRef.current, connString);
-
-      if (!changeDetection) {
-        const parsed = parseMongoDBConnectionString(connString);
-        if (!parsed) return;
-
-        const updatedOptions = { ...options };
-        if (parsed.connection_format !== undefined && !manuallyEditedFieldsRef.current.has('connection_format')) {
-          updatedOptions.connection_format = { value: parsed.connection_format };
-        }
-        if (parsed.host !== undefined) {
-          updatedOptions.host = { value: parsed.host };
-        }
-        if (parsed.port !== undefined) {
-          updatedOptions.port = { value: parsed.port };
-        }
-        if (parsed.username !== undefined) {
-          updatedOptions.username = { value: parsed.username };
-        }
-        if (parsed.password !== undefined) {
-          updatedOptions.password = { value: parsed.password };
-        }
-        if (parsed.database !== undefined) {
-          updatedOptions.database = { value: parsed.database };
-        }
-        if (parsed.use_ssl !== undefined) {
-          updatedOptions.use_ssl = { value: parsed.use_ssl };
-        }
-        if (parsed.query_params !== undefined) {
-          updatedOptions.query_params = { value: parsed.query_params };
-        }
-        optionsChanged(updatedOptions);
-        lastAutoFilledConnRef.current = connString;
-        return;
-      }
-
-      const { changes, newParsed } = changeDetection;
-      const updatedOptions = { ...options };
-
-      if (changes.protocol && !manuallyEditedFieldsRef.current.has('connection_format')) {
-        updatedOptions.connection_format = { value: newParsed.connection_format };
-      }
-      if (changes.host && !manuallyEditedFieldsRef.current.has('host')) {
-        updatedOptions.host = { value: newParsed.host };
-      }
-      if (changes.port && !manuallyEditedFieldsRef.current.has('port')) {
-        updatedOptions.port = { value: newParsed.port };
-      }
-      if (changes.username && !manuallyEditedFieldsRef.current.has('username')) {
-        updatedOptions.username = { value: newParsed.username };
-      }
-      if (changes.password && !manuallyEditedFieldsRef.current.has('password')) {
-        updatedOptions.password = { value: newParsed.password };
-      }
-      if (changes.database && !manuallyEditedFieldsRef.current.has('database')) {
-        updatedOptions.database = { value: newParsed.database };
-      }
-      if (changes.ssl && !manuallyEditedFieldsRef.current.has('use_ssl')) {
-        updatedOptions.use_ssl = { value: newParsed.use_ssl };
-      }
-      if (changes.query && !manuallyEditedFieldsRef.current.has('query_params')) {
-        updatedOptions.query_params = { value: newParsed.query_params };
-      }
-
-      optionsChanged(updatedOptions);
-      lastAutoFilledConnRef.current = connString;
-    }, 100);
-
-    return () => {
-      if (autoFillTimeoutRef.current) {
-        clearTimeout(autoFillTimeoutRef.current);
-      }
-    };
-  }, [
-    options?.connection_string?.value,
-    options?.connection_type?.value,
-    optionchanged,
-    selectedDataSource?.id,
-    schema,
-  ]);
-
-  React.useEffect(() => {
-    const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
-
-    if (!isMongoDBDataSource) {
-      return;
-    }
-    const prevDataSourceId = prevDataSourceIdRef.current;
-
-    if (prevDataSourceId !== selectedDataSource?.id) {
-      manuallyEditedFieldsRef.current.clear();
-      lastAutoFilledConnRef.current = '';
-      skipNextAutoFillRef.current = false;
-
-      const connString = options?.connection_string?.value;
-      if (connString) {
-        lastAutoFilledConnRef.current = connString;
-      }
-    }
-  }, [selectedDataSource?.id, options?.connection_string?.value, schema]);
-
   React.useEffect(() => {
     if (isGDS) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
@@ -268,6 +127,7 @@ const DynamicFormV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAppEnvironmentId]);
 
+  // --- Validation ---
   React.useEffect(() => {
     if (!hasUserInteracted) return;
 
@@ -285,44 +145,27 @@ const DynamicFormV2 = ({
       const conditionallyRequiredFields = processAllOfConditions(schema, options);
       setConditionallyRequiredProperties(conditionallyRequiredFields);
 
-      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
-
       let finalErrors = [...errors];
 
-      if (isMongoDBDataSource) {
-        const connectionType = options?.connection_type?.value;
+      // Strategy-specific validation
+      if (autoFillStrategy) {
+        const connectionType = options?.[autoFillStrategy.connectionTypeKey]?.value;
 
-        finalErrors = finalErrors.filter((err) => {
-          if (connectionType === 'string' && err.keyword === 'if') {
-            return false;
-          }
-          if (
-            connectionType === 'string' &&
-            err.dataPath === '.connection_string' &&
-            err.keyword === 'required' &&
-            err.schemaPath.includes('allOf')
-          ) {
-            return false;
-          }
+        finalErrors = autoFillStrategy.filterValidationErrors(finalErrors, options);
 
-          if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
-            return false;
-          }
-
-          return true;
-        });
-
-        if (connectionType === 'string' && options.connection_string?.value) {
-          const selectedFormat = options.connection_format?.value;
-          const validation = validateMongoDBConnectionString(options.connection_string.value, selectedFormat);
+        if (
+          connectionType === autoFillStrategy.activeConnectionTypeValue &&
+          options[autoFillStrategy.connectionStringKey]?.value
+        ) {
+          const validation = autoFillStrategy.validate(options[autoFillStrategy.connectionStringKey].value, options);
 
           if (!validation.valid) {
             finalErrors.push({
-              dataPath: '.connection_string',
+              dataPath: `.${autoFillStrategy.connectionStringKey}`,
               keyword: 'custom',
               message: validation.error,
               params: {},
-              schemaPath: '#/properties/connection_string',
+              schemaPath: `#/properties/${autoFillStrategy.connectionStringKey}`,
             });
           }
         }
@@ -346,6 +189,7 @@ const DynamicFormV2 = ({
     clearValidationErrorBanner,
     setValidationMessages,
     interactedFields,
+    autoFillStrategy,
   ]);
 
   const processAllOfConditions = React.useCallback((schema, options, path = []) => {
@@ -405,6 +249,7 @@ const DynamicFormV2 = ({
     }
   }, [showValidationErrors, options]);
 
+  // --- Computed props for encrypted fields ---
   React.useEffect(() => {
     const prevDataSourceId = prevDataSourceIdRef.current;
     prevDataSourceIdRef.current = selectedDataSource?.id;
@@ -457,7 +302,6 @@ const DynamicFormV2 = ({
             processNestedField(field, field.key);
           }
 
-          // Check for nested structures and recursively process them
           if (typeof field === 'object') {
             if (field.widget === 'dropdown-component-flip') {
               const selectedOption = options?.[field.key]?.value;
@@ -474,7 +318,6 @@ const DynamicFormV2 = ({
               }
             }
 
-            // For other nested objects, recursively process them
             Object.keys(field).forEach((subKey) => {
               if (typeof field[subKey] === 'object' && field[subKey] !== null) {
                 if (field[subKey].widget || field[subKey].key) {
@@ -551,58 +394,26 @@ const DynamicFormV2 = ({
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
+
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
         setHasUserInteracted(true);
       }
       setInteractedFields((prev) => new Set(prev).add(key));
 
-      const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
+      // Delegate manual edit tracking to the autofill hook
+      if (autoFillStrategy) {
+        handleManualFieldEdit(key, value);
 
-      if (isMongoDBDataSource) {
-        const autoFilledFields = [
-          'host',
-          'port',
-          'username',
-          'password',
-          'database',
-          'connection_format',
-          'use_ssl',
-          'query_params',
-        ];
-
-        if (autoFilledFields.includes(key)) {
-          if (key === 'connection_format') {
-            manuallyEditedFieldsRef.current.add(key);
-          }
+        if (autoFillStrategy.autoFillableFields.includes(key)) {
           optionchanged(key, value, flag);
           return;
-        }
-
-        if (key === 'connection_string') {
-          if (!value || value.trim() === '') {
-            manuallyEditedFieldsRef.current.clear();
-            lastAutoFilledConnRef.current = '';
-          } else {
-            const currentConnString = lastAutoFilledConnRef.current;
-            if (
-              !currentConnString ||
-              currentConnString.includes('mongodb+srv://') !== value.includes('mongodb+srv://')
-            ) {
-              manuallyEditedFieldsRef.current.delete('connection_format');
-            } else {
-              const connectionFormatWasEdited = manuallyEditedFieldsRef.current.has('connection_format');
-              manuallyEditedFieldsRef.current.clear();
-              if (connectionFormatWasEdited) {
-                manuallyEditedFieldsRef.current.add('connection_format');
-              }
-            }
-          }
         }
       }
 
       optionchanged(key, value, flag);
     };
+
     switch (widget) {
       case 'password':
       case 'text':
@@ -629,21 +440,19 @@ const DynamicFormV2 = ({
       case 'password-v3':
       case 'password-v3-textarea':
       case 'text-v3': {
-        const isMongoDBDataSource = schema['tj:source']?.kind === 'mongodb' || schema['tj:source']?.name === 'MongoDB';
-
         let customValidation = { valid: null, message: '' };
 
-        if (isMongoDBDataSource && key === 'connection_string' && currentValue && !skipValidation) {
-          const selectedFormat = options.connection_format?.value;
-          const validation = validateMongoDBConnectionString(currentValue, selectedFormat);
+        if (autoFillStrategy && key === autoFillStrategy.connectionStringKey && currentValue && !skipValidation) {
+          const validation = autoFillStrategy.validate(currentValue, options);
           if (!validation.valid) {
             customValidation = { valid: false, message: validation.error };
           } else {
             customValidation = { valid: true, message: '' };
           }
         }
+
         const validationStatus =
-          isMongoDBDataSource && key === 'connection_string' && customValidation.valid !== null
+          autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
             ? { valid: null, message: '' }
@@ -652,6 +461,7 @@ const DynamicFormV2 = ({
             : isRequired
             ? { valid: true, message: '' }
             : { valid: null, message: '' };
+
         return {
           propertyKey: key,
           widget,

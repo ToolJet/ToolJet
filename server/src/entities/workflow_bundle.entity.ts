@@ -17,9 +17,28 @@ export class WorkflowBundle {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
-  @Column('jsonb', { name: 'dependencies' })
-  dependencies: Record<string, string>;
+  /**
+   * Dependencies stored as string:
+   * - JavaScript: JSON string, e.g. '{"lodash": "4.17.21"}'
+   * - Python: requirements.txt content, e.g. 'requests==2.31.0\nnumpy==1.24.0'
+   */
+  @Column('text', { name: 'dependencies', nullable: true })
+  dependencies: string;
 
+  @Column({ name: 'language', length: 20, default: 'javascript' })
+  language: 'javascript' | 'python';
+
+  @Column({ name: 'runtime_version', length: 20, nullable: true })
+  runtimeVersion: string;
+
+  @Column('bytea', { name: 'bundle_binary', nullable: true })
+  bundleBinary: Buffer;
+
+  /**
+   * @deprecated Legacy column - use bundleBinary instead.
+   * Kept for backward compatibility during migration period.
+   * Will be removed in a future release after data migration is complete.
+   */
   @Column('text', { name: 'bundle_content', nullable: true })
   bundleContent: string;
 
