@@ -7,6 +7,8 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
   getCachedConnection,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
@@ -62,7 +64,7 @@ export default class MssqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
       const errorDetails: any = {};
 
       if (err && err instanceof Error) {
@@ -182,5 +184,60 @@ export default class MssqlQueryService implements QueryService {
     }
 
     return queryText.trim();
+  }
+
+  async listTables(
+    sourceOptions: SourceOptions
+  ): Promise<QueryResult> {
+    let knexInstance;
+    try {
+      knexInstance = await this.buildConnection(sourceOptions);
+      
+      const result = await knexInstance
+        .raw(`
+          SELECT TABLE_NAME 
+          FROM INFORMATION_SCHEMA.TABLES 
+          WHERE TABLE_TYPE = 'BASE TABLE' 
+          AND TABLE_CATALOG = ?
+          ORDER BY TABLE_NAME
+        `, [sourceOptions.database])
+        .timeout(this.STATEMENT_TIMEOUT);
+
+      const tables = result.map((row: any) => ({
+        label: row.TABLE_NAME,
+        value: row.TABLE_NAME,
+      }));
+
+      return {
+        status: 'ok',
+        data: tables,
+      };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+      throw new QueryError('Could not fetch tables', errorMessage, {});
+    } finally {
+      if (knexInstance) {
+        await knexInstance.destroy();
+      }
+    }
+  }
+
+  async invokeMethod(
+    methodName: string,
+    context: { user?: User; app?: App },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    if (methodName === 'getTables') {
+      return await this.listTables(sourceOptions);
+    }
+
+    throw new QueryError(
+      'Method not found', 
+      `Method ${methodName} is not supported for MSSQL plugin`, 
+      {
+        availableMethods: ['getTables'],
+      }
+    );
   }
 }

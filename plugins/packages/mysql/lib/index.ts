@@ -7,6 +7,8 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
@@ -58,7 +60,7 @@ export default class MysqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      const errorMessage = err.message || 'An unknown error occurred';
+      const errorMessage = err?.message || 'An unknown error occurred';
       const errorDetails: any = {};
 
       if (err instanceof Error) {
@@ -200,4 +202,56 @@ if (shouldUseSSL) {
 
     return queryText.trim();
   }
+  async listTables(
+      sourceOptions: SourceOptions,
+    ): Promise<QueryResult> {
+      let knexInstance;
+      try {
+        knexInstance = await this.buildConnection(sourceOptions);
+        
+        const result = await knexInstance.raw(`SHOW TABLES`);
+  
+        const rows = result[0] || [];
+    
+        const tables = rows.map((row: any) => {
+          const tableName = Object.values(row)[0] as string;
+          return {
+            key: tableName,
+            value: tableName,
+            label: tableName,
+          };
+        });
+  
+        return {
+          status: 'ok',
+          data: tables,
+        };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+        throw new QueryError('Could not fetch tables', errorMessage, {});
+      } finally {
+        if (knexInstance) {
+          await knexInstance.destroy();
+        }
+      }
+    }
+  
+    async invokeMethod(
+      methodName: string,
+      context: { user?: User; app?: App },
+      sourceOptions: SourceOptions,
+      args?: any
+    ): Promise<any> {
+      if (methodName === 'getTables') {
+        return await this.listTables(sourceOptions);
+      }
+  
+      throw new QueryError(
+        'Method not found', 
+        `Method ${methodName} is not supported for MSSQL plugin`, 
+        {
+          availableMethods: ['getTables'],
+        }
+      );
+    }
 }
