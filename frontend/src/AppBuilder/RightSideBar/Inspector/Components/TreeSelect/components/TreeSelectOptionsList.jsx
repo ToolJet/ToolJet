@@ -14,27 +14,20 @@ const TreeSelectOptionsList = ({
   onReorder,
   getResolvedValue,
 }) => {
-  const [buttonWidth, setButtonWidth] = useState(0);
-  const addButtonRef = useRef(null);
-
-  useEffect(() => {
-    if (addButtonRef.current) {
-      setButtonWidth(addButtonRef.current.offsetWidth);
-    }
-  }, []);
-
   return (
     <div className="treeselect-inspector" data-cy="inspector-treeselect-options-list" style={{ marginBottom: '12px' }}>
-      <TreeSelectSortableTree
-        treeItems={treeItems}
-        darkMode={darkMode}
-        onDeleteItem={onDeleteItem}
-        onItemChange={onItemChange}
-        onAddNestedItem={onAddNestedItem}
-        onReorder={onReorder}
-        getResolvedValue={getResolvedValue}
-      />
-      <div ref={addButtonRef}>
+      <div style={{ maxHeight: '800px', overflow: 'auto' }}>
+        <TreeSelectSortableTree
+          treeItems={treeItems}
+          darkMode={darkMode}
+          onDeleteItem={onDeleteItem}
+          onItemChange={onItemChange}
+          onAddNestedItem={onAddNestedItem}
+          onReorder={onReorder}
+          getResolvedValue={getResolvedValue}
+        />
+      </div>
+      <div>
         <AddNewButton onClick={() => onAddItem()} dataCy="inspector-treeselect-add-new-option" className="mt-2">
           Add new option
         </AddNewButton>
