@@ -65,6 +65,12 @@ export const treeSelectConfig = {
     },
     checkedData: { type: 'code', displayName: 'Selected values' },
     expandedData: { type: 'code', displayName: 'Expanded values' },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -202,7 +208,27 @@ export const treeSelectConfig = {
       'asia-india-mumbai',
       'asia-india-bengaluru',
     ],
+    isLoading: false,
+    isVisible: true,
+    isDisabled: false,
   },
+  actions: [
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

@@ -20,7 +20,7 @@ const TreeSelect = ({
   dataCy,
   id,
 }) => {
-  const { label, visibility, disabledState, options, advanced, allowIndependentSelection } = properties;
+  const { label, visibility, disabledState, loadingState, options, advanced, allowIndependentSelection } = properties;
   const { checkboxColor: checkedBackground, uncheckedBackground, borderColor, checkmarkColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
@@ -46,11 +46,14 @@ const TreeSelect = ({
   const checkedData = isExpectedDataType(properties.checkedData, 'array');
   const expandedData = isExpectedDataType(properties.expandedData, 'array');
 
-  const { checked, expanded, handleCheck, handleExpand } = useExposedVariables({
+  const { checked, expanded, handleCheck, handleExpand, isVisible, isDisabled, isLoading } = useExposedVariables({
     data,
     checkedData,
     expandedData,
     allowIndependentSelection,
+    visibility,
+    disabledState,
+    loadingState,
     setExposedVariable,
     setExposedVariables,
   });
@@ -65,19 +68,40 @@ const TreeSelect = ({
     handleExpand(newExpanded);
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div
+        // className="custom-checkbox-tree"
+        style={{
+          height: '100%',
+          display: isVisible ? '' : 'none',
+          boxShadow,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        data-cy={dataCy}
+      >
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <div className="spinner-border spinner-border-sm" role="status"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="custom-checkbox-tree"
-      data-disabled={disabledState}
+      data-disabled={isDisabled}
       style={{
-        maxHeight: height,
-        display: visibility ? '' : 'none',
+        height: '100%',
+        display: isVisible ? '' : 'none',
         color: textColor,
         boxShadow,
       }}
       data-cy={dataCy}
-      aria-hidden={!visibility}
-      aria-disabled={disabledState}
+      aria-hidden={!isVisible}
+      aria-disabled={isDisabled}
     >
       <div className="" style={{ marginBottom: '0.25rem', color: textColor, fontWeight: '500' }}>
         <label htmlFor={`component-${id}`}>{label}</label>
@@ -92,7 +116,7 @@ const TreeSelect = ({
         onExpand={onExpand}
         checkModel="all"
         noCascade={allowIndependentSelection}
-        disabled={disabledState}
+        disabled={isDisabled}
         id={`component-${id}`}
         icons={{
           check: (

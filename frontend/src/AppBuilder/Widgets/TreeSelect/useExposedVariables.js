@@ -3,18 +3,67 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
  * Handles: checked, expanded, checkedPathArray, checkedPathStrings,
- *          leafPathArray, leafPathStrings
+ *          leafPathArray, leafPathStrings, and CSAs (setLoading, setVisibility, setDisable)
  */
 export function useExposedVariables({
   data,
   checkedData,
   expandedData,
   allowIndependentSelection,
+  visibility,
+  disabledState,
+  loadingState,
   setExposedVariable,
   setExposedVariables,
 }) {
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
+
+  // === CSA Local State ===
+  const [isLoading, setIsLoading] = useState(loadingState);
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+
+  // Sync CSA state when properties change
+  useEffect(() => {
+    setIsVisible(visibility);
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setIsLoading(loadingState);
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  // Register CSA functions on mount
+  useEffect(() => {
+    setExposedVariables({
+      isLoading: false,
+      isVisible: visibility,
+      isDisabled: disabledState,
+      setLoading: async function (value) {
+        setIsLoading(!!value);
+        setExposedVariable('isLoading', !!value);
+      },
+      setVisibility: async function (value) {
+        setIsVisible(!!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(!!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Build a map of value -> full path from root
   const pathObj = useMemo(() => {
@@ -136,5 +185,5 @@ export function useExposedVariables({
     [setExposedVariable]
   );
 
-  return { checked, expanded, handleCheck, handleExpand };
+  return { checked, expanded, handleCheck, handleExpand, isVisible, isDisabled, isLoading };
 }
