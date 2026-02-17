@@ -108,13 +108,35 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-    knexInstance.destroy();
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, false);
+      await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
 
-    return {
-      status: 'ok',
-    };
+      return {
+        status: 'ok',
+      };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err && err instanceof Error) {
+        const msSqlError = err as any;
+        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
+        errorDetails.code = code || null;
+        errorDetails.severity = severity || null;
+        errorDetails.state = state || null;
+        errorDetails.number = number || null;
+        errorDetails.lineNumber = lineNumber || null;
+        errorDetails.serverName = serverName || null;
+        errorDetails.class = errorClass || null;
+      }
+      throw new QueryError('Connection test failed', errorMessage, errorDetails);
+    } finally {
+      if (knexInstance) {
+        await knexInstance.destroy();
+      }
+    }
   }
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
@@ -228,16 +250,37 @@ export default class MssqlQueryService implements QueryService {
     sourceOptions: SourceOptions,
     args?: any
   ): Promise<any> {
-    if (methodName === 'getTables') {
-      return await this.listTables(sourceOptions);
-    }
-
-    throw new QueryError(
-      'Method not found', 
-      `Method ${methodName} is not supported for MSSQL plugin`, 
-      {
-        availableMethods: ['getTables'],
+    try {
+      if (methodName === 'getTables') {
+        return await this.listTables(sourceOptions);
       }
-    );
+      throw new QueryError(
+        'Method not found', 
+        `Method ${methodName} is not supported for MSSQL plugin`, 
+        {
+          availableMethods: ['getTables'],
+        }
+      );
+    } catch (err) {
+      if (err instanceof QueryError) {
+        throw err;
+      }
+
+      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err && err instanceof Error) {
+        const msSqlError = err as any;
+        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
+        errorDetails.code = code || null;
+        errorDetails.severity = severity || null;
+        errorDetails.state = state || null;
+        errorDetails.number = number || null;
+        errorDetails.lineNumber = lineNumber || null;
+        errorDetails.serverName = serverName || null;
+        errorDetails.class = errorClass || null;
+      }
+      throw new QueryError('Method invocation failed', errorMessage, errorDetails);
+    }
   }
 }

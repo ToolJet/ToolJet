@@ -80,10 +80,32 @@ export default class MysqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-    knexInstance.destroy();
-    return { status: 'ok' };
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, false);
+      await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
+
+      return { status: 'ok' };
+    } catch (err) {
+      const errorMessage = err?.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err instanceof Error) {
+        const mysqlError = err as any;
+        const { code, errno, sqlMessage, sqlState } = mysqlError;
+
+        errorDetails.code = code || null;
+        errorDetails.errno = errno || null;
+        errorDetails.sqlMessage = sqlMessage || null;
+        errorDetails.sqlState = sqlState || null;
+      }
+
+      throw new QueryError('Connection test failed', errorMessage, errorDetails);
+    } finally {
+      if (knexInstance) {
+        await knexInstance.destroy();
+      }
+    }
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
@@ -242,16 +264,37 @@ if (shouldUseSSL) {
       sourceOptions: SourceOptions,
       args?: any
     ): Promise<any> {
-      if (methodName === 'getTables') {
-        return await this.listTables(sourceOptions);
-      }
-  
-      throw new QueryError(
-        'Method not found', 
-        `Method ${methodName} is not supported for MSSQL plugin`, 
-        {
-          availableMethods: ['getTables'],
+      try {
+        if (methodName === 'getTables') {
+          return await this.listTables(sourceOptions);
         }
-      );
+
+        throw new QueryError(
+          'Method not found', 
+          `Method ${methodName} is not supported for MySQL plugin`, 
+          {
+            availableMethods: ['getTables'],
+          }
+        );
+      } catch (err) {
+        if (err instanceof QueryError) {
+          throw err;
+        }
+
+        const errorMessage = err?.message || 'An unknown error occurred';
+        const errorDetails: any = {};
+
+        if (err instanceof Error) {
+          const mysqlError = err as any;
+          const { code, errno, sqlMessage, sqlState } = mysqlError;
+
+          errorDetails.code = code || null;
+          errorDetails.errno = errno || null;
+          errorDetails.sqlMessage = sqlMessage || null;
+          errorDetails.sqlState = sqlState || null;
+        }
+
+        throw new QueryError('Method invocation failed', errorMessage, errorDetails);
+      }
     }
 }
