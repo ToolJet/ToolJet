@@ -2,12 +2,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { getManager, Repository, Not } from 'typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from '@entities/user.entity';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
-import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { SSOConfigs } from 'src/entities/sso_config.entity';
-import { EmailService } from '@services/email.service';
+import { OrganizationUser } from '@entities/organization_user.entity';
+import { Organization } from '@entities/organization.entity';
+import { SSOConfigs } from '@entities/sso_config.entity';
+import { EmailService } from '@modules/email/service';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('Authentication', () => {
@@ -134,7 +134,7 @@ describe('Authentication', () => {
       });
       it('throw unauthorized error if user status is archived', async () => {
         const adminUser = await userRepository.findOneOrFail({
-          email: 'admin@tooljet.io',
+          where: { email: 'admin@tooljet.io' },
         });
         await userRepository.update({ id: adminUser.id }, { status: 'archived' });
         await request(app.getHttpServer())
@@ -157,7 +157,7 @@ describe('Authentication', () => {
           .expect(401);
 
         const adminUser = await userRepository.findOneOrFail({
-          email: 'admin@tooljet.io',
+          where: { email: 'admin@tooljet.io' },
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
@@ -172,7 +172,7 @@ describe('Authentication', () => {
           .expect(401);
 
         const adminUser = await userRepository.findOneOrFail({
-          email: 'admin@tooljet.io',
+          where: { email: 'admin@tooljet.io' },
         });
         await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 

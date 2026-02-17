@@ -3886,6 +3886,12 @@ input[type="text"] {
   }
 }
 
+.daterange-picker-widget.has-clear-btn {
+  .DateRangePickerInput {
+    padding-right: 32px;
+  }
+}
+
 .form-ele {
   .DateRangePicker_picker {
     top: 40px !important;
@@ -15001,6 +15007,21 @@ textarea.tj-text-input-widget {
   &::placeholder {
     color: var(--text-placeholder) !important;
   }
+}
+
+.tj-input-clear-btn {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 2px;
+}
+
+.tj-input-clear-btn:hover {
+  background-color: var(--interactive-overlays-fill-hover);
 }
 
 .icon-style-container {

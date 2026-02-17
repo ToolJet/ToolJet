@@ -112,7 +112,7 @@ describe('Authentication', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: user.id,
+        where: { userId: user.id },
       });
 
       expect(auditLog.organizationId).toEqual(organization.id);
@@ -179,7 +179,7 @@ describe('Authentication', () => {
     });
     it('throw unauthorized error if super admin status is archived', async () => {
       const adminUser = await userRepository.findOneOrFail({
-        email: 'admin@tooljet.io',
+        where: { email: 'admin@tooljet.io' },
       });
       await userRepository.update({ id: adminUser.id }, { status: 'archived' });
       await request(app.getHttpServer())
@@ -191,7 +191,7 @@ describe('Authentication', () => {
       await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
 
       const adminUser = await userRepository.findOneOrFail({
-        email: 'admin@tooljet.io',
+        where: { email: 'admin@tooljet.io' },
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
@@ -200,7 +200,7 @@ describe('Authentication', () => {
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
-      const orgCount = await orgUserRepository.count({ userId: adminUser.id });
+      const orgCount = await orgUserRepository.count({ where: { userId: adminUser.id } });
 
       expect(orgCount).toBe(1); // Should not create new workspace
 
@@ -222,7 +222,7 @@ describe('Authentication', () => {
         .expect(401);
 
       const adminUser = await userRepository.findOneOrFail({
-        email: 'admin@tooljet.io',
+        where: { email: 'admin@tooljet.io' },
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
@@ -245,7 +245,7 @@ describe('Authentication', () => {
       await createUser(app, { email: 'user@tooljet.io', organization: current_organization });
 
       const adminUser = await userRepository.findOneOrFail({
-        email: 'admin@tooljet.io',
+        where: { email: 'admin@tooljet.io' },
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
@@ -254,7 +254,7 @@ describe('Authentication', () => {
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
-      const orgCount = await orgUserRepository.count({ userId: adminUser.id });
+      const orgCount = await orgUserRepository.count({ where: { userId: adminUser.id } });
 
       expect(orgCount).toBe(1); // Should not create new workspace
 
@@ -276,7 +276,7 @@ describe('Authentication', () => {
         .expect(401);
 
       const adminUser = await userRepository.findOneOrFail({
-        email: 'admin@tooljet.io',
+        where: { email: 'admin@tooljet.io' },
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 

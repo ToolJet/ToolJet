@@ -57,6 +57,8 @@ import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { ProgressBar } from '@/AppBuilder/Widgets/Progressbar/Progressbar';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
+import { Accordion } from '@/AppBuilder/Widgets/Accordion/Accordion';
+import { ReorderableList } from '@/AppBuilder/Widgets/ReorderableList/ReorderableList';
 import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
 import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
 
@@ -177,6 +179,8 @@ export const AllComponents = {
   TagsInput,
   AudioRecorder,
   Camera,
+  Accordion,
+  ReorderableList,
   JSONEditor,
   JSONExplorer,
   KeyValuePair,

@@ -52,6 +52,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'JSONEditor',
   'ProgressBar',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -78,6 +80,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   ProgressBar: 'Data',
   AudioRecorder: 'Content',
   Camera: 'Content',
+  Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
 };
@@ -194,6 +197,7 @@ export const baseComponentProperties = (
       'JSONExplorer',
       'JSONEditor',
       'IFrame',
+      'Accordion',
     ],
     Layout: [],
   };

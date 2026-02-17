@@ -71,6 +71,8 @@ import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
+import { accordionConfig } from './accordion';
+import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { fileinputConfig } from './fileinput';
@@ -150,6 +152,8 @@ const widgets = {
   progressbarConfig,
   audioRecorderConfig,
   cameraConfig,
+  accordionConfig,
+  reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
 };

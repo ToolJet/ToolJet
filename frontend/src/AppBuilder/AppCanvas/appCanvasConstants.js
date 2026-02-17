@@ -10,7 +10,15 @@ export const CANVAS_WIDTHS = Object.freeze({
   rightSideBarWidth: 300,
 });
 
-export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanban', 'Container', 'ModalV2'];
+export const WIDGETS_WITH_DEFAULT_CHILDREN = [
+  'Listview',
+  'Tabs',
+  'Form',
+  'Kanban',
+  'Container',
+  'ModalV2',
+  'Accordion',
+];
 
 export const DEFAULT_CANVAS_WIDTH = 1292;
 
@@ -29,7 +37,7 @@ export const PAGES_SIDEBAR_WIDTH_EXPANDED = 256;
 
 export const PAGES_SIDEBAR_WIDTH_COLLAPSED = 54;
 
-export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
+export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form', 'Accordion'];
 
 export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
@@ -48,6 +56,7 @@ export const DROPPABLE_PARENTS = new Set([
   'ModalV2',
   'Listview',
   'Container',
+  'Accordion',
   'Table',
   'ModuleContainer',
 ]);

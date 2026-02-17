@@ -9,11 +9,11 @@ const sectionConfig = {
   },
   data: {
     title: 'Data',
-    valueSet: new Set(['Table', 'Chart']),
+    valueSet: new Set(['Table', 'Chart', 'KeyValuePair']),
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
@@ -69,7 +69,16 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat', 'JSONEditor']),
+    valueSet: new Set([
+      'FilePicker',
+      'CodeEditor',
+      'ColorPicker',
+      'BoundedBox',
+      'QrScanner',
+      'Chat',
+      'ReorderableList',
+      'JSONEditor',
+    ]),
   },
   legacy: {
     title: 'Legacy',
