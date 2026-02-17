@@ -48,99 +48,139 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/setup"
-          },
           "items": [
-            "setup/try-tooljet",
-            "setup/choose-your-tooljet",
-            "setup/system-requirements",
-            "setup/digitalocean",
-            "setup/docker",
-            "setup/ami",
-            "setup/ecs",
-            "setup/openshift",
-            "setup/helm",
-            "setup/kubernetes",
-            "setup/kubernetes-gke",
-            "setup/kubernetes-aks",
-            "setup/kubernetes-eks",
-            "setup/azure-container",
-            "setup/google-cloud-run",
-            "setup/env-vars",
-            "setup/http-proxy",
-            "setup/tooljet-subpath",
             {
               "type": "category",
-              "label": "PostgreSQL 13 → 16 Upgrade",
+              "label": "Overview",
+              "link": {
+                "type": "doc",
+                "id": "setup/overview/setup"
+              },
               "items": [
+                "setup/overview/setup",
+                "setup/overview/system-requirements",
+                "setup/overview/choose-your-tooljet",
+                "setup/overview/try-tooljet"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Configuration",
+              "items": [
+                "setup/configuration/env-vars",
+                "setup/configuration/http-proxy",
+                "setup/configuration/tooljet-subpath"
+              ]
+            },
+            "setup/docker",
+            {
+              "type": "category",
+              "label": "Managed Cloud",
+              "items": [
+                "setup/managed-cloud/digitalocean",
                 {
                   "type": "category",
                   "label": "AWS",
                   "items": [
-                    "setup/postgresql-13-16/aws/overview",
-                    "setup/postgresql-13-16/aws/db-upgrade",
+                    "setup/managed-cloud/aws/ami",
+                    "setup/managed-cloud/aws/ecs"
+                  ]
+                },
+                "setup/managed-cloud/azure-container",
+                "setup/managed-cloud/google-cloud-run"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Kubernetes",
+              "items": [
+                "setup/kubernetes/kubernetes",
+                "setup/kubernetes/openshift",
+                "setup/kubernetes/helm",
+                "setup/kubernetes/kubernetes-gke",
+                "setup/kubernetes/kubernetes-aks",
+                "setup/kubernetes/kubernetes-eks"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Migrations & Upgrades",
+              "items": [
+                "setup/migration/upgrade-to-lts",
+                {
+                  "type": "category",
+                  "label": "PostgreSQL 13 → 16 Upgrade",
+                  "items": [
                     {
                       "type": "category",
-                      "label": "Deployment Specific",
+                      "label": "AWS",
                       "items": [
-                        "setup/postgresql-13-16/aws/deployment/docker",
-                        "setup/postgresql-13-16/aws/deployment/ami",
-                        "setup/postgresql-13-16/aws/deployment/ecs",
-                        "setup/postgresql-13-16/aws/deployment/eks"
+                        "setup/migration/postgresql-13-16/aws/overview",
+                        "setup/migration/postgresql-13-16/aws/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/aws/deployment/docker",
+                            "setup/migration/postgresql-13-16/aws/deployment/ami",
+                            "setup/migration/postgresql-13-16/aws/deployment/ecs",
+                            "setup/migration/postgresql-13-16/aws/deployment/eks"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/aws/verification",
+                        "setup/migration/postgresql-13-16/aws/best-practices"
                       ]
                     },
-                    "setup/postgresql-13-16/aws/verification",
-                    "setup/postgresql-13-16/aws/best-practices"
+                    {
+                      "type": "category",
+                      "label": "Azure",
+                      "items": [
+                        "setup/migration/postgresql-13-16/azure/overview",
+                        "setup/migration/postgresql-13-16/azure/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/azure/deployment/aks",
+                            "setup/migration/postgresql-13-16/azure/deployment/container"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/azure/verification",
+                        "setup/migration/postgresql-13-16/azure/best-practices"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "GCP",
+                      "items": [
+                        "setup/migration/postgresql-13-16/gcp/overview",
+                        "setup/migration/postgresql-13-16/gcp/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/gcp/deployment/docker",
+                            "setup/migration/postgresql-13-16/gcp/deployment/gke",
+                            "setup/migration/postgresql-13-16/gcp/deployment/cloud-run"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/gcp/verification",
+                        "setup/migration/postgresql-13-16/gcp/best-practices"
+                      ]
+                    }
                   ]
                 },
                 {
                   "type": "category",
-                  "label": "Azure",
+                  "label": "Version Migrations",
                   "items": [
-                    "setup/postgresql-13-16/azure/overview",
-                    "setup/postgresql-13-16/azure/db-upgrade",
-                    {
-                      "type": "category",
-                      "label": "Deployment Specific",
-                      "items": [
-                        "setup/postgresql-13-16/azure/deployment/aks",
-                        "setup/postgresql-13-16/azure/deployment/container"
-                      ]
-                    },
-                    "setup/postgresql-13-16/azure/verification",
-                    "setup/postgresql-13-16/azure/best-practices"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "GCP",
-                  "items": [
-                    "setup/postgresql-13-16/gcp/overview",
-                    "setup/postgresql-13-16/gcp/db-upgrade",
-                    {
-                      "type": "category",
-                      "label": "Deployment Specific",
-                      "items": [
-                        "setup/postgresql-13-16/gcp/deployment/docker",
-                        "setup/postgresql-13-16/gcp/deployment/gke",
-                        "setup/postgresql-13-16/gcp/deployment/cloud-run"
-                      ]
-                    },
-                    "setup/postgresql-13-16/gcp/verification",
-                    "setup/postgresql-13-16/gcp/best-practices"
+                    "setup/migration/upgrade-to-v3",
+                    "setup/migration/upgrade-to-v3.16",
+                    "setup/migration/workflow-temporal-to-bullmq-migration"
                   ]
                 }
               ]
-            },
-            "setup/v2-migration-guide",
-            "setup/upgrade-to-lts",
-            "setup/upgrade-to-v3",
-            "setup/cloud-v3-migration",
-            "setup/upgrade-to-v3.16",
-            "setup/workflow-temporal-to-bullmq-migration",
-            "setup/tooljet-domain-change"
+            }
           ]
         }
       ]
