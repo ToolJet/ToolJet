@@ -108,6 +108,7 @@ export const IFrame = function IFrame({
         </div>
       ) : (
         <iframe
+          key={exposedVariablesTemporaryState.url}
           width={width - 4}
           height={height}
           src={exposedVariablesTemporaryState.url}

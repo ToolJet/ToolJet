@@ -54,14 +54,16 @@ import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
+import { ProgressBar } from '@/AppBuilder/Widgets/Progressbar/Progressbar';
 import { Camera } from '@/AppBuilder/Widgets/Camera/Camera';
+import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
+import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
   import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainer }))
 );
 const ModuleViewer = lazy(() => import('@/modules/Modules/components').then((m) => ({ default: m.ModuleViewer })));
-
 
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
@@ -83,6 +85,7 @@ const QrScanner = lazy(() => import('@/AppBuilder/Widgets/QrScanner/QrScanner'))
 const RichTextEditor = lazy(() => import('@/AppBuilder/Widgets/RichTextEditor'));
 const TreeSelect = lazy(() => import('@/AppBuilder/Widgets/TreeSelect'));
 const TagsInput = lazy(() => import('@/AppBuilder/Widgets/TagsInput/TagsInput'));
+const KeyValuePair = lazy(() => import('@/AppBuilder/Widgets/KeyValuePair/KeyValuePair'));
 
 export function memoizeFunction(func) {
   const cache = new Map();
@@ -168,9 +171,13 @@ export const AllComponents = {
   ModalV2,
   ModuleContainer,
   ModuleViewer,
+  ProgressBar,
   TagsInput,
   AudioRecorder,
   Camera,
+  JSONEditor,
+  JSONExplorer,
+  KeyValuePair,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;
@@ -366,6 +373,7 @@ export function checkAndExtractEntityId(errorString) {
 }
 
 export const computeCanvasContainerHeight = (queryPanelHeight, isDraggingQueryPane) => {
-  return `calc(${100}% - ${isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
-    }px)`;
+  return `calc(${100}% - ${
+    isDraggingQueryPane ? 0 : Math.max(queryPanelHeight + APP_HEADER_HEIGHT, APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT)
+  }px)`;
 };

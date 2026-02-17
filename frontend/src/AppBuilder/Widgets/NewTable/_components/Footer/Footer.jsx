@@ -95,9 +95,9 @@ export const Footer = memo(
                 height={height}
               />
             )}
-            {editedRows.size > 0 && showBulkUpdateActions && (
-              <div className="d-flex custom-gap-4">{renderChangeSetUI()}</div>
-            )}
+            <div className="d-flex custom-gap-4">
+              {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
+            </div>
             <ControlButtons
               id={id}
               table={table}
