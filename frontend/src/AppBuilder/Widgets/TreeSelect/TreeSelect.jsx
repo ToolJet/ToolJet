@@ -72,7 +72,7 @@ const TreeSelect = ({
   if (isLoading) {
     return (
       <div
-        // className="custom-checkbox-tree"
+        className="custom-checkbox-tree"
         style={{
           height: '100%',
           display: isVisible ? '' : 'none',
