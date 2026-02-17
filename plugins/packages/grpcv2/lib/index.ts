@@ -5,10 +5,14 @@ import * as os from 'os';
 import * as path from 'path';
 import JSON5 from 'json5';
 import { isEmpty } from 'lodash';
+import fg from 'fast-glob';
 import {
   buildReflectionClient,
   buildProtoFileClient,
   buildFilesystemClient,
+  buildChannelCredentials,
+  sanitizeGrpcServerUrl,
+  validateFilesystemAccess,
   discoverServicesUsingReflection,
   discoverServicesUsingProtoUrl,
   discoverServiceNamesFromFilesystem,
@@ -74,15 +78,32 @@ export default class Grpcv2QueryService implements QueryService {
 
         case 'import_protos_from_filesystem': {
           const { directory, pattern } = this.resolveFilesystemConfig(sourceOptions);
-          const { serviceNames, failures } = await discoverServiceNamesFromFilesystem(directory, pattern);
+          const expandedDir = validateFilesystemAccess(directory);
 
-          if (serviceNames.length === 0) {
-            return { status: 'failed', message: 'No services found in proto files' };
+          // Count proto files — don't parse them
+          const protoFiles = await fg(pattern, { cwd: expandedDir, onlyFiles: true });
+          if (protoFiles.length === 0) {
+            return { status: 'failed', message: `No .proto files found in directory: ${expandedDir}` };
           }
 
-          services = serviceNames.map(name => ({ name, methods: [] }));
-          parseFailures = failures;
-          break;
+          // TCP connectivity via raw gRPC channel (no proto loading)
+          const credentials = buildChannelCredentials(sourceOptions);
+          const cleanUrl = sanitizeGrpcServerUrl(sourceOptions.url, sourceOptions.ssl_enabled);
+          const rawClient = new grpc.Client(cleanUrl, credentials);
+          const deadline = new Date();
+          deadline.setSeconds(deadline.getSeconds() + 60);
+
+          try {
+            await new Promise<void>((resolve, reject) => {
+              rawClient.waitForReady(deadline, (err) => (err ? reject(err) : resolve()));
+            });
+          } catch (error) {
+            return { status: 'failed', message: `Cannot connect to host: ${error.message}` };
+          } finally {
+            rawClient.close();
+          }
+
+          return { status: 'ok', message: `Successfully connected. Found ${protoFiles.length} proto file(s) in directory.` };
         }
 
         default:

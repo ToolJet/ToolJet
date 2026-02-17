@@ -24,7 +24,7 @@ const getDefaultProtoDirectory = (): string => {
   return path.join(os.homedir(), 'protos');
 };
 
-const validateFilesystemAccess = (directory: string): string => {
+export const validateFilesystemAccess = (directory: string): string => {
   // Expand ~ to home directory if needed
   const expandedDir = expandPath(directory);
 
@@ -178,7 +178,7 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
       // Fallback: Re-discover to find which file contains this service
       console.warn(`[gRPC] Service mapping not found for '${serviceName}', re-discovering proto files...`);
 
-      const { serviceToFileMap } = await discoverServicesIndividually(directory, protoFilePattern);
+      const { serviceToFileMap } = await discoverServiceNamesFromFilesystem(directory, protoFilePattern);
       const targetFile = serviceToFileMap.get(serviceName);
 
       if (!targetFile) {
@@ -382,129 +382,6 @@ export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions
 
 // Module-level storage for service-to-file mapping (not cached with TTL, just per-discovery)
 let lastServiceToFileMap = new Map<string, string>();
-
-/**
- * Discovers services by loading proto files individually.
- * This prevents duplicate symbol errors and syntax errors in one file from breaking all files.
- */
-export const discoverServicesIndividually = async (
-  directory: string,
-  pattern: string
-): Promise<{ services: GrpcService[]; failures: Array<{ file: string; error: string }>; serviceToFileMap: Map<string, string> }> => {
-  const expandedDir = validateFilesystemAccess(directory);
-
-  const protoFiles = await fg(pattern, {
-    cwd: expandedDir,
-    onlyFiles: true,
-    absolute: true
-  });
-
-  if (protoFiles.length === 0) {
-    throw new GrpcOperationError(
-      `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
-    );
-  }
-
-  const allServices: GrpcService[] = [];
-  const failures: Array<{ file: string; error: string }> = [];
-  const serviceToFileMap = new Map<string, string>();
-
-  // Load each file individually to avoid conflicts
-  for (const protoFile of protoFiles) {
-    try {
-      // Build include directories: root + all parent directories from file to root
-      const fileDir = path.dirname(protoFile);
-      const includeDirs = [expandedDir];
-
-      // Add all parent directories between file and root
-      let currentDir = fileDir;
-      while (currentDir.startsWith(expandedDir) && currentDir !== expandedDir) {
-        if (!includeDirs.includes(currentDir)) {
-          includeDirs.push(currentDir);
-        }
-        currentDir = path.dirname(currentDir);
-      }
-
-      // Load THIS file only (not all files together)
-      const packageDefinition = protoLoader.loadSync(
-        [protoFile], // Single file array
-        {
-          keepCase: true,
-          longs: String,
-          enums: String,
-          defaults: true,
-          oneofs: true,
-          includeDirs // For resolving imports from root, intermediate dirs, and file's directory
-        }
-      );
-
-      const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-      const services = extractServicesFromGrpcPackage(grpcObject);
-
-      // Track which file contains which service
-      services.forEach(service => {
-        serviceToFileMap.set(service.name, protoFile);
-      });
-
-      allServices.push(...services);
-
-    } catch (error: unknown) {
-      // Don't throw - just collect failures for summary logging
-      const err = toError(error);
-      const fileName = path.basename(protoFile);
-
-      // Skip logging "No services found" errors - these are expected for message-only files
-      if (!err.message.includes('No services found')) {
-        failures.push({
-          file: fileName,
-          error: err.message
-        });
-      }
-    }
-  }
-
-  // Store mapping for use in buildFilesystemClient
-  lastServiceToFileMap = serviceToFileMap;
-
-  return { services: allServices, failures, serviceToFileMap };
-};
-
-export const discoverServicesUsingFilesystem = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
-  try {
-    const directory =
-      isEmpty(sourceOptions.proto_files_directory) ?
-        getDefaultProtoDirectory() :
-        sourceOptions.proto_files_directory;
-
-    const protoFilePattern =
-      isEmpty(sourceOptions.proto_files_pattern) ?
-        '**/*.proto' :
-        sourceOptions.proto_files_pattern;
-
-    const { services, failures } = await discoverServicesIndividually(directory, protoFilePattern);
-
-    // Log warnings about skipped files but don't fail
-    if (failures.length > 0) {
-      console.warn(
-        `[gRPC] Successfully discovered ${services.length} service(s) from ${services.length} proto file(s). ` +
-        `Skipped ${failures.length} file(s) due to errors:`
-      );
-      failures.forEach(failure => {
-        console.warn(`[gRPC]   - ${failure.file}: ${failure.error}`);
-      });
-    } else {
-      console.log(`[gRPC] Successfully discovered ${services.length} service(s) from proto files.`);
-    }
-
-    return services;
-  } catch (error: unknown) {
-    if (error instanceof GrpcOperationError) {
-      throw error;
-    }
-    const err = toError(error);
-    throw new GrpcOperationError(`Service discovery via filesystem failed: ${err.message}`, error);
-  }
-};
 
 /**
  * Lightweight service name discovery using protobufjs.parse().
