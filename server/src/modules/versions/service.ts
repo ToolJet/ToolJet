@@ -151,7 +151,10 @@ export class VersionService implements IVersionService {
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
     if (app.type === 'workflow') {
       await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
-    } else if (appVersion.name !== appVersionUpdateDto.name) {
+    } else if (
+      appVersion.name !== appVersionUpdateDto.name &&
+      appVersionUpdateDto.status !== AppVersionStatus.PUBLISHED
+    ) {
       const versionRenameDto = {
         user: user,
         appVersion: appVersion,

@@ -157,7 +157,9 @@ const CreateVersionModal = ({
         status: 'PUBLISHED',
       });
       if (isGitSyncEnabled) {
-        // Create updated version data with the new name for commit comparison
+        // The backend's version-rename-commit event is suppressed when the status is
+        // also changing to PUBLISHED (save-version flow), so there's no competing push.
+        // We always handle the commit here with the correct "Version Created" message.
         const updatedVersionData = {
           ...selectedVersionForCreation,
           name: versionName,
@@ -167,7 +169,11 @@ const CreateVersionModal = ({
           .then((commitDone) => {
             if (!commitDone) return;
             if (isBranchingEnabled) {
-              return gitSyncService.createGitTag(appId, selectedVersionForCreation.id, versionDescription || `Version ${versionName.trim()} created`);
+              return gitSyncService.createGitTag(
+                appId,
+                selectedVersionForCreation.id,
+                versionDescription || `Version ${versionName.trim()} created`
+              );
             }
           })
           .catch((error) => {
