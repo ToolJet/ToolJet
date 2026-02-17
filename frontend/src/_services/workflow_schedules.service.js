@@ -10,15 +10,13 @@ export const workflowSchedulesService = {
   activateWorkflowSchedule,
 };
 
-function getAll(appVersionId) {
+function getAll(appId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/workflow-schedules?app_version_id=${appVersionId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/workflow-schedules?app_id=${appId}`, requestOptions).then(handleResponse);
 }
 
 function getById(id) {

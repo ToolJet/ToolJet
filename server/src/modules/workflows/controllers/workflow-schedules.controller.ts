@@ -10,7 +10,7 @@ import { FEATURE_KEY } from '@modules/workflows/constants';
 @InitModule(MODULES.WORKFLOWS)
 @Controller('workflow-schedules')
 export class WorkflowSchedulesController implements IWorkflowSchedulesController {
-  constructor() {}
+  constructor() { }
 
   @InitFeature(FEATURE_KEY.CREATE_WORKFLOW_SCHEDULE)
   @Post()
@@ -38,7 +38,7 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
   @Get()
   async findAll(
     @User() user,
-    @Query('app_version_id') appVersionId: string
+    @Query('app_id') appId: string
   ): Promise<WorkflowSchedule[]> {
     throw new Error('Method not implemented.');
   }
@@ -57,6 +57,8 @@ export class WorkflowSchedulesController implements IWorkflowSchedulesController
     @Body()
     updateWorkflowScheduleDto: Partial<{
       environmentId: string;
+      /* workflow id = versionId */
+      workflowId: string;
       type: string;
       timezone: string;
       details: {

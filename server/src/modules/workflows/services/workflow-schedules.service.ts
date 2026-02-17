@@ -26,7 +26,7 @@ export class WorkflowSchedulesService implements IWorkflowSchedulesService {
     throw new Error('Method not implemented.');
   }
 
-  async findAll(appVersionId: string): Promise<WorkflowSchedule[]> {
+  async findAll(appId: string): Promise<WorkflowSchedule[]> {
     throw new Error('Method not implemented.');
   }
 
@@ -35,6 +35,7 @@ export class WorkflowSchedulesService implements IWorkflowSchedulesService {
     updateWorkflowScheduleDto: Partial<{
       active: boolean;
       environmentId: string;
+      workflowId: string;
       type: string;
       timezone: string;
       details: any;
