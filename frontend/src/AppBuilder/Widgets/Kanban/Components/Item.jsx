@@ -24,10 +24,11 @@ export const Item = React.memo(
         parentRef = null,
         isDragActive = false,
         isFirstItem = false,
-        setShowModal = () => {},
+        setShowModal = () => { },
         cardDataAsObj = {},
         setLastSelectedCard,
         cardData,
+        componentName,
         ...props
       },
       ref
@@ -55,6 +56,7 @@ export const Item = React.memo(
             height: `${Number(cardHeight) || 100}px`,
           }}
           ref={ref}
+          data-cy={componentName ? `${componentName}-card-${value}` : undefined}
           onClick={({ target }) => {
             const { properties } = kanbanProps;
             const { openModalOnCardClick } = properties;
