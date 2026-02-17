@@ -145,18 +145,20 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
         (value) => typeof value === 'boolean' && value === true
       );
 
-      if (!customGroupsEnabled) {
-        Object.keys(group).forEach((key) => {
-          if (typeof group[key] === 'boolean' && !['appPromote', 'appRelease'].includes(key)) {
-            group[key] = true;
-          }
-        });
-      }
-      if (!canPromote) {
-        group.appPromote = true;
-      }
-      if (!canRelease) {
-        group.appRelease = true;
+      if (group.name !== USER_ROLE.END_USER) {
+        if (!customGroupsEnabled) {
+          Object.keys(group).forEach((key) => {
+            if (typeof group[key] === 'boolean' && !['appPromote', 'appRelease'].includes(key)) {
+              group[key] = true;
+            }
+          });
+        }
+        if (!canPromote) {
+          group.appPromote = true;
+        }
+        if (!canRelease) {
+          group.appRelease = true;
+        }
       }
 
       if (isBuilderLevelMainPermissions) {
