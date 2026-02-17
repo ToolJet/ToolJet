@@ -25,7 +25,15 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['TagsInput', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),
+    valueSet: new Set([
+      'TagsInput',
+      'DropdownV2',
+      'MultiselectV2',
+      'ToggleSwitchV2',
+      'RadioButtonV2',
+      'Checkbox',
+      'TreeSelect',
+    ]),
   },
   dateTimeInputs: {
     title: 'Date and time inputs',
@@ -52,6 +60,7 @@ const sectionConfig = {
       'Spinner',
       'Statistics',
       'Timer',
+      'JSONExplorer',
     ]),
   },
   custom: {
@@ -60,7 +69,7 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat']),
+    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat', 'JSONEditor']),
   },
   legacy: {
     title: 'Legacy',

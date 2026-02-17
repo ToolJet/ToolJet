@@ -67,6 +67,8 @@ import Progressbar from './progressbar.jsx';
 import AudioRecorder from './audiorecorder.jsx';
 import Camera from './camera.jsx';
 import TagsInput from './tagsinput.jsx';
+import JSONExplorer from './jsonexplorer.jsx';
+import JSONEditor from './jsoneditor.jsx';
 import Navigation from './navigation.jsx';
 
 const WidgetIcon = (props) => {
@@ -231,6 +233,10 @@ const WidgetIcon = (props) => {
       return <AudioRecorder {...props} />;
     case 'camera':
       return <Camera {...props} />;
+    case 'jsonexplorer':
+      return <JSONExplorer {...props} />;
+    case 'jsoneditor':
+      return <JSONEditor {...props} />;
     default:
       return <BoundedBox {...props} />;
   }
