@@ -85,7 +85,11 @@ const DynamicSelector = ({
     try {
       const args = depKeys.length ? { values: depValues } : undefined;
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
-
+      if (response?.status === 'failed') {
+        setError(response?.errorMessage || 'Failed to fetch data');
+        setFetchedData([]);
+        return;
+      }
       const payload = response?.data ?? response;
       const items = payload?.data || [];
       setFetchedData(items);
@@ -259,7 +263,7 @@ const DynamicSelector = ({
         cachedData = existingCache['nonDependentCache'];
       }
       
-      if (!cachedData) {
+      if (!cachedData || cachedData.length === 0) {
         handleFetch();
       }
     }
