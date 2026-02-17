@@ -7,8 +7,17 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
+      branch:
+        description: "Branch to build from (e.g. lts-3.16)"
+        required: true
+        default: "lts-3.16"
       version:
         description: "RELEASE_VERSION"
+        required: true
+      region:
+        description: "AWS region to build AMI in (default: us-east-1)"
+        required: false
+        default: "us-east-1"
 
 jobs:
   packer-ee:
@@ -16,11 +25,10 @@ jobs:
     name: packer-ee
 
     steps:
-      - name: Checkout code to lts-3.16 branch
-        if: contains(github.event.release.tag_name, '-lts')
+      - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: refs/heads/lts-3.16
+          ref: refs/heads/${{ github.event.inputs.branch || 'lts-3.16' }}
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -35,7 +43,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-1
+          aws-region: ${{ github.event.inputs.region || 'us-east-1' }}
 
       # Initialize Packer templates
       - name: Initialize Packer Template
@@ -69,7 +77,7 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy -var ami_region=${{ github.event.inputs.region || 'us-east-1' }}
           target: .
           working_directory: deploy/ec2/ee
         env:
@@ -78,7 +86,7 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu-jammy\`"
+            message="ToolJet enterprise AWS AMI published:\\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu-jammy\` in region \`${{ github.event.inputs.region || 'us-east-1' }}\`"
           else
             message="ToolJet enterprise AWS AMI release failed! \\n\`tooljet_${{ env.RELEASE_VERSION }}.ubuntu-jammy\`"
           fi
