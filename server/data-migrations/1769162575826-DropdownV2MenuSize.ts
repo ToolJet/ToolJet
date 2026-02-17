@@ -1,4 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationProgress } from '@helpers/migration.helper';
 
 const DEFAULT_STYLES: Record<string, Record<string, { value: string | number }>> = {
   DropdownV2: {
@@ -11,6 +12,9 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
     const batchSize = 100;
     let offset = 0;
     let hasMoreData = true;
+
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) as count FROM components WHERE type = $1`, ['DropdownV2']);
+    const migrationProgress = new MigrationProgress('DropdownV2MenuSize1769162575826', parseInt(count));
 
     while (hasMoreData) {
       // Fetch DropdownV2 components in batches using raw SQL
@@ -28,7 +32,7 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
         break;
       }
 
-      await this.processUpdates(queryRunner, components);
+      await this.processUpdates(queryRunner, components, migrationProgress);
       offset += batchSize;
     }
   }
@@ -44,7 +48,7 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
     }
   }
 
-  private async processUpdates(queryRunner: QueryRunner, components: any[]) {
+  private async processUpdates(queryRunner: QueryRunner, components: any[], migrationProgress: MigrationProgress) {
     for (const component of components) {
       const styles = component.styles ? { ...component.styles } : {};
 
@@ -55,8 +59,9 @@ export class DropdownV2MenuSize1769162575826 implements MigrationInterface {
         JSON.stringify(styles),
         component.id,
       ]);
+      migrationProgress.show();
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
