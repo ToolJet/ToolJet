@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -13,27 +13,29 @@ export const TreeSelectItem = ({
   onAddNestedItem,
   getResolvedValue,
   parentValue = null,
+  activePopover,
+  setActivePopover,
 }) => {
-  const [showActionsPopover, setShowActionsPopover] = useState(false);
-  const [showEditPopover, setShowEditPopover] = useState(false);
   const optionBtnRef = useRef(null);
   const moreBtnRef = useRef(null);
 
+  // Derive local visibility from shared state
+  const showActionsPopover = activePopover?.id === item.value && activePopover?.type === 'actions';
+  const showEditPopover = activePopover?.id === item.value && activePopover?.type === 'edit';
   const isEditing = showEditPopover || showActionsPopover;
   const hasChildren = item.children && item.children.length > 0;
 
   const handleEdit = () => {
-    setShowActionsPopover(false);
-    setShowEditPopover(true);
+    setActivePopover({ id: item.value, type: 'edit' });
   };
 
   const handleDelete = () => {
-    setShowActionsPopover(false);
+    setActivePopover(null);
     onDeleteItem?.(item.value, parentValue);
   };
 
   const handleAddNested = () => {
-    setShowActionsPopover(false);
+    setActivePopover(null);
     onAddNestedItem?.(item.value);
   };
 
@@ -47,7 +49,11 @@ export const TreeSelectItem = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setShowEditPopover(!showEditPopover);
+          if (showEditPopover) {
+            setActivePopover(null);
+          } else {
+            setActivePopover({ id: item.value, type: 'edit' });
+          }
         }}
       >
         <div className="left">
@@ -60,8 +66,7 @@ export const TreeSelectItem = ({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setShowActionsPopover(true);
-                setShowEditPopover(false);
+                setActivePopover({ id: item.value, type: 'actions' });
               }}
               className="icon-btn"
             >
@@ -73,7 +78,7 @@ export const TreeSelectItem = ({
               show={showActionsPopover}
               placement="bottom-end"
               rootClose
-              onHide={() => setShowActionsPopover(false)}
+              onHide={() => setActivePopover(null)}
             >
               <Popover
                 style={{ zIndex: '99999' }}
@@ -134,7 +139,7 @@ export const TreeSelectItem = ({
               show={showEditPopover}
               placement="left-start"
               rootClose
-              onHide={() => setShowEditPopover(false)}
+              onHide={() => setActivePopover(null)}
             >
               <TreeSelectItemPopover
                 item={item}

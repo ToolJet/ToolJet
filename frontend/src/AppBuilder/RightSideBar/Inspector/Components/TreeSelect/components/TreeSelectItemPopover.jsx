@@ -25,7 +25,6 @@ const TreeSelectItemPopover = forwardRef(
     const handleChange = (propertyPath, value) => {
       onItemChange(propertyPath, value, item.value, parentValue);
     };
-
     const handleDelete = () => {
       onDeleteItem(item.value, parentValue);
     };
@@ -98,16 +97,16 @@ const TreeSelectItemPopover = forwardRef(
             {/* </div> */}
 
             {/* Toggle fields section */}
-            <div data-cy="inspector-treeselect-item-details-visibility-field" className="treeselect-item-popover-field">
+            <div data-cy="inspector-treeselect-item-details-visible-field" className="treeselect-item-popover-field">
               <CodeHinter
                 {...fxEditorCodeHinterProps}
-                data-cy="inspector-treeselect-item-details-visibility-input"
-                initialValue={item?.visibility?.value}
+                data-cy="inspector-treeselect-item-details-visible-input"
+                initialValue={item?.visible?.value}
                 paramLabel={'Visibility'}
-                paramName={'visibility'}
-                onChange={(value) => handleChange('visibility.value', value)}
-                onFxPress={(active) => handleChange('visibility.fxActive', active)}
-                fxActive={item?.visibility?.fxActive}
+                paramName={'visible'}
+                onChange={(value) => handleChange('visible.value', value)}
+                onFxPress={(active) => handleChange('visible.fxActive', active)}
+                fxActive={item?.visible?.fxActive}
                 fieldMeta={{ type: 'toggle', displayName: 'Visibility' }}
                 paramType={'toggle'}
               />

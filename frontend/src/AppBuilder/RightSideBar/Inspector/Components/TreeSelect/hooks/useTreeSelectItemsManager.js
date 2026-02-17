@@ -50,6 +50,26 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
     return {
       label: `Option ${id.replace('option', '')}`,
       value: id,
+      visible: { value: true },
+      disable: { value: false },
+    };
+  };
+
+  // Helper to update a property that may be dot-notated (e.g. 'visible.value')
+  const updateItemProperty = (item, propertyPath, value) => {
+    if (propertyPath.includes('.')) {
+      const [parentKey, childKey] = propertyPath.split('.');
+      return {
+        ...item,
+        [parentKey]: {
+          ...item[parentKey],
+          [childKey]: value,
+        },
+      };
+    }
+    return {
+      ...item,
+      [propertyPath]: value,
     };
   };
 
@@ -62,14 +82,14 @@ export const useTreeSelectItemsManager = (component, paramUpdated) => {
             ...item,
             children: item.children.map((child) => {
               if (child.value === itemValue) {
-                return { ...child, [propertyPath]: value };
+                return updateItemProperty(child, propertyPath, value);
               }
               return child;
             }),
           };
         }
         if (item.value === itemValue) {
-          return { ...item, [propertyPath]: value };
+          return updateItemProperty(item, propertyPath, value);
         }
         if (item.children) {
           return { ...item, children: updateItems(item.children) };

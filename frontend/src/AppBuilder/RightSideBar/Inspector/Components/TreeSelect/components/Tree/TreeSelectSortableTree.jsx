@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SortableTree as SharedSortableTree } from '@/_ui/SortableTree';
 import { TreeSelectItem } from '../TreeSelectItem';
 import { TreeSelectItemGhost } from './TreeSelectItemGhost';
@@ -20,6 +20,9 @@ export function TreeSelectSortableTree({
   indentationWidth = 15,
   darkMode,
 }) {
+  // Shared popover state: { id, type } or null
+  const [activePopover, setActivePopover] = useState(null);
+
   const renderItem = (item) => {
     return (
       <TreeSelectItem
@@ -29,6 +32,8 @@ export function TreeSelectSortableTree({
         onItemChange={onItemChange}
         onAddNestedItem={onAddNestedItem}
         getResolvedValue={getResolvedValue}
+        activePopover={activePopover}
+        setActivePopover={setActivePopover}
       />
     );
   };
