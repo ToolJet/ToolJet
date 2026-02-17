@@ -20,6 +20,11 @@
       ],
       "default": "manual"
     },
+    "connection_options": {
+      "type": "object",
+      "title": "Connection options",
+      "description": "Additional connection options"
+    },
     "host": {
       "type": "string",
       "title": "Host",
@@ -52,6 +57,39 @@
       "title": "SSL",
       "description": "Toggle for ssl_enabled",
       "default": true
+    },
+    "ssh_enabled": {
+      "type": "string",
+      "title": "SSH Tunnel",
+      "description": "Connect through an SSH server to access databases in private networks",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "ssh_host": {
+      "type": "string",
+      "title": "SSH Host",
+      "description": "SSH server hostname or IP address"
+    },
+    "ssh_port": {
+      "type": "number",
+      "title": "SSH Port",
+      "description": "Default SSH port is 22",
+      "default": 22
+    },
+    "ssh_username": {
+      "type": "string",
+      "title": "SSH Username",
+      "description": "SSH username"
+    },
+    "ssh_password": {
+      "type": "string",
+      "title": "SSH Password",
+      "description": "SSH password"
+    },
+    "ssh_private_key": {
+      "type": "string",
+      "title": "Private key",
+      "description": "SSH private key"
     },
     "ssl_certificate": {
       "type": "string",
@@ -102,7 +140,9 @@
     "client_key",
     "client_cert",
     "root_cert",
-    "connection_string"
+    "connection_string",
+    "ssh_password",
+    "ssh_private_key"
   ],
   "required": [
     "connection_type"
@@ -171,6 +211,20 @@
           "connection_string"
         ]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssh_enabled": { "const": "enabled" }
+        }
+      },
+      "then": {
+        "required": [
+          "ssh_host",
+          "ssh_port",
+          "ssh_username"
+        ]
+      }
     }
   ],
   "tj:ui:properties": {
@@ -201,115 +255,178 @@
       }
     },
     "manual": {
-      "ssl_certificate": {
-        "$ref": "#/properties/ssl_certificate",
-        "key": "ssl_certificate",
-        "label": "SSL certificate",
-        "description": "Single select dropdown for choosing certificates",
+      "ssh_enabled": {
+        "order": 5,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH Tunnel",
+        "description": "Connect through an SSH server to access databases in private networks",
         "widget": "dropdown-component-flip",
         "list": [
           {
-            "value": "ca_certificate",
-            "name": "CA certificate"
+            "value": "disabled",
+            "name": "Disabled"
           },
           {
-            "value": "self_signed",
-            "name": "Self-signed certificate"
-          },
-          {
-            "value": "none",
-            "name": "None"
+            "value": "enabled",
+            "name": "Enabled"
           }
         ],
         "commonFields": {
-          "host": {
-            "$ref": "#/properties/host",
-            "key": "host",
-            "label": "Host",
-            "description": "Enter host",
-            "widget": "text-v3",
-            "required": true
+          "ssl_certificate": {
+            "$ref": "#/properties/ssl_certificate",
+            "key": "ssl_certificate",
+            "label": "SSL certificate",
+            "description": "Single select dropdown for choosing certificates",
+            "widget": "dropdown-component-flip",
+            "list": [
+              {
+                "value": "ca_certificate",
+                "name": "CA certificate"
+              },
+              {
+                "value": "self_signed",
+                "name": "Self-signed certificate"
+              },
+              {
+                "value": "none",
+                "name": "None"
+              }
+            ],
+            "commonFields": {
+              "host": {
+                "$ref": "#/properties/host",
+                "key": "host",
+                "label": "Host",
+                "description": "Enter host",
+                "widget": "text-v3",
+                "required": true
+              },
+              "port": {
+                "$ref": "#/properties/port",
+                "key": "port",
+                "label": "Port",
+                "description": "Enter port",
+                "widget": "text-v3",
+                "required": true
+              },
+              "ssl_enabled": {
+                "$ref": "#/properties/ssl_enabled",
+                "key": "ssl_enabled",
+                "label": "SSL",
+                "description": "Toggle for ssl_enabled",
+                "widget": "toggle"
+              },
+              "database": {
+                "$ref": "#/properties/database",
+                "key": "database",
+                "label": "Database name",
+                "description": "Name of the database",
+                "widget": "text-v3"
+              },
+              "username": {
+                "$ref": "#/properties/username",
+                "key": "username",
+                "label": "Username",
+                "description": "Enter username",
+                "widget": "text-v3",
+                "required": true
+              },
+              "password": {
+                "$ref": "#/properties/password",
+                "key": "password",
+                "label": "Password",
+                "description": "Enter password",
+                "widget": "password-v3",
+                "required": true
+              },
+              "connection_options": {
+                "$ref": "#/properties/connection_options",
+                "key": "connection_options",
+                "label": "Connection options",
+                "widget": "react-component-headers",
+                "width": "316px",
+                "required": true
+              }
+            }
           },
-          "port": {
-            "$ref": "#/properties/port",
-            "key": "port",
-            "label": "Port",
-            "description": "Enter port",
-            "widget": "text-v3",
-            "required": true
+          "ca_certificate": {
+            "ca_cert": {
+              "$ref": "#/properties/ca_cert",
+              "key": "ca_cert",
+              "label": "CA Cert",
+              "description": "Enter ca certificate",
+              "widget": "password-v3-textarea"
+            }
           },
-          "ssl_enabled": {
-            "$ref": "#/properties/ssl_enabled",
-            "key": "ssl_enabled",
-            "label": "SSL",
-            "description": "Toggle for ssl_enabled",
-            "widget": "toggle"
-          },
-          "database": {
-            "$ref": "#/properties/database",
-            "key": "database",
-            "label": "Database name",
-            "description": "Name of the database",
-            "widget": "text-v3"
-          },
-          "username": {
-            "$ref": "#/properties/username",
-            "key": "username",
-            "label": "Username",
-            "description": "Enter username",
-            "widget": "text-v3",
-            "required": true
-          },
-          "password": {
-            "$ref": "#/properties/password",
-            "key": "password",
-            "label": "Password",
-            "description": "Enter password",
-            "widget": "password-v3",
-            "required": true
-          },
-          "connection_options": {
-            "$ref": "#/properties/connection_options",
-            "key": "connection_options",
-            "label": "Connection options",
-            "widget": "react-component-headers",
-            "width": "316px",
-            "required": true
+          "self_signed": {
+            "client_key": {
+              "$ref": "#/properties/client_key",
+              "key": "client_key",
+              "label": "Client Key",
+              "description": "Enter client key",
+              "widget": "password-v3-textarea"
+            },
+            "client_cert": {
+              "$ref": "#/properties/client_cert",
+              "key": "client_cert",
+              "label": "Client Cert",
+              "description": "Enter client certificate",
+              "widget": "password-v3-textarea"
+            },
+            "root_cert": {
+              "$ref": "#/properties/root_cert",
+              "key": "root_cert",
+              "label": "Root Cert",
+              "description": "Enter root certificate",
+              "widget": "password-v3-textarea"
+            }
           }
         }
       },
-      "ca_certificate": {
-        "ca_cert": {
-          "$ref": "#/properties/ca_cert",
-          "key": "ca_cert",
-          "label": "CA Cert",
-          "description": "Enter ca certificate",
+      "enabled": {
+        "ssh_host": {
+          "order": 100,
+          "$ref": "#/properties/ssh_host",
+          "key": "ssh_host",
+          "label": "SSH Host",
+          "description": "SSH server hostname or IP address",
+          "widget": "text-v3"
+        },
+        "ssh_port": {
+          "order": 110,
+          "$ref": "#/properties/ssh_port",
+          "key": "ssh_port",
+          "label": "SSH Port",
+          "description": "Default SSH port is 22",
+          "widget": "text-v3"
+        },
+        "ssh_username": {
+          "order": 120,
+          "$ref": "#/properties/ssh_username",
+          "key": "ssh_username",
+          "label": "SSH Username",
+          "description": "SSH username",
+          "widget": "text-v3"
+        },
+        "ssh_password": {
+          "order": 130,
+          "$ref": "#/properties/ssh_password",
+          "key": "ssh_password",
+          "label": "SSH Password",
+          "description": "SSH password",
+          "widget": "password-v3"
+        },
+        "ssh_private_key": {
+          "order": 140,
+          "$ref": "#/properties/ssh_private_key",
+          "key": "ssh_private_key",
+          "label": "Private key",
+          "description": "SSH private key",
           "widget": "password-v3-textarea"
         }
       },
-      "self_signed": {
-        "client_key": {
-          "$ref": "#/properties/client_key",
-          "key": "client_key",
-          "label": "Client Key",
-          "description": "Enter client key",
-          "widget": "password-v3-textarea"
-        },
-        "client_cert": {
-          "$ref": "#/properties/client_cert",
-          "key": "client_cert",
-          "label": "Client Cert",
-          "description": "Enter client certificate",
-          "widget": "password-v3-textarea"
-        },
-        "root_cert": {
-          "$ref": "#/properties/root_cert",
-          "key": "root_cert",
-          "label": "Root Cert",
-          "description": "Enter root certificate",
-          "widget": "password-v3-textarea"
-        }
-      }
+      "disabled": {}
     },
     "string": {
       "connection_string": {
