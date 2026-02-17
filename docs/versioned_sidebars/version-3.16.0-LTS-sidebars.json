@@ -48,19 +48,19 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/overview/setup"
-          },
           "items": [
             {
               "type": "category",
               "label": "Overview",
+              "link": {
+                "type": "doc",
+                "id": "setup/overview/setup"
+              },
               "items": [
                 "setup/overview/setup",
-                "setup/overview/try-tooljet",
                 "setup/overview/system-requirements",
-                "setup/overview/choose-your-tooljet"
+                "setup/overview/choose-your-tooljet",
+                "setup/overview/try-tooljet"
               ]
             },
             {
