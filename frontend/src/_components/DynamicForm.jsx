@@ -656,14 +656,7 @@ const DynamicForm = ({
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
           const fieldConfig = obj[key];
-          const {
-            label,
-            type,
-            encrypted,
-            className,
-            key: propertyKey,
-            shouldRenderTheProperty = ''
-          } = fieldConfig;
+          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = fieldConfig;
 
           const Element = getElement(type);
           const isSpecificComponent = [
@@ -677,11 +670,11 @@ const DynamicForm = ({
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
             : true;
 
-          const elementProps = getElementProps({
-            ...fieldConfig,
-            key,
-            type,
-          });
+          // const elementProps = getElementProps({
+          //   ...fieldConfig,
+          //   key,
+          //   type,
+          // });
 
           return (
             enabled && (
@@ -751,7 +744,7 @@ const DynamicForm = ({
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
-                    {...elementProps}
+                    {...getElementProps(obj[key])}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
                     dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}

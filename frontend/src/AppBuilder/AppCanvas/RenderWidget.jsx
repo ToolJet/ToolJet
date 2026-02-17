@@ -47,7 +47,10 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'JSONExplorer',
+  'JSONEditor',
   'IFrame',
+  'KeyValuePair',
 ];
 
 const RenderWidget = ({
