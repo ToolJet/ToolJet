@@ -103,6 +103,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
   ): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }> {
     // Check if plan is restricted (basic/starter have read-only permissions)
     const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
+    const { promote: canPromote, release: canRelease } =
+      await this.licenseUtilService.isPromoteAndReleaseEnabled(organizationId);
+    const customGroupsEnabled = await this.licenseUtilService.isCustomGroupsEnabled(organizationId);
     const restrictedPlanFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
@@ -141,6 +144,20 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       const isBuilderLevelMainPermissions = Object.values(group).some(
         (value) => typeof value === 'boolean' && value === true
       );
+
+      if (!customGroupsEnabled) {
+        Object.keys(group).forEach((key) => {
+          if (typeof group[key] === 'boolean' && !['appPromote', 'appRelease'].includes(key)) {
+            group[key] = true;
+          }
+        });
+      }
+      if (!canPromote) {
+        group.appPromote = true;
+      }
+      if (!canRelease) {
+        group.appRelease = true;
+      }
 
       if (isBuilderLevelMainPermissions) {
         return { group, isBuilderLevel: true };
