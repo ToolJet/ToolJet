@@ -261,7 +261,9 @@ function getAllBranches(appId, organizationId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/branches`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/branches`, requestOptions).then((response) =>
+    handleResponse(response, false, null, true)
+  );
 }
 
 /**
@@ -293,7 +295,7 @@ function getPullRequests(appId, organizationId) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/app-git/${organizationId}/app/${appId}/pull-requests`, requestOptions).then(
-    handleResponse
+    (response) => handleResponse(response, false, null, true)
   );
 }
 
