@@ -186,6 +186,22 @@ export const treeSelectConfig = {
       'asia-india-mumbai',
       'asia-india-bengaluru',
     ],
+    leafPathArray: [
+      ['asia', 'china', 'beijing'],
+      ['asia', 'china', 'shanghai'],
+      ['asia', 'japan'],
+      ['asia', 'india', 'delhi'],
+      ['asia', 'india', 'mumbai'],
+      ['asia', 'india', 'bengaluru'],
+    ],
+    leafPathStrings: [
+      'asia-china-beijing',
+      'asia-china-shanghai',
+      'asia-japan',
+      'asia-india-delhi',
+      'asia-india-mumbai',
+      'asia-india-bengaluru',
+    ],
   },
   definition: {
     others: {

@@ -17,15 +17,41 @@ const TreeSelect = ({
   dataCy,
   id,
 }) => {
-  const { label, visibility, disabledState } = properties;
+  const { label, visibility, disabledState, options, advanced } = properties;
   const { checkboxColor: checkedBackground, uncheckedBackground, borderColor, checkmarkColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
-  const data = isExpectedDataType(properties.data, 'array');
+  // Recursively filter out items where visibility is false
+  const filterVisibleItems = (items) => {
+    if (!Array.isArray(items)) return items;
+    return items
+      .filter((item) => item.visibility !== false)
+      .map((item) => (item.children ? { ...item, children: filterVisibleItems(item.children) } : item));
+  };
+
+  const data = !advanced ? filterVisibleItems(options) : isExpectedDataType(properties.data, 'array');
   const checkedData = isExpectedDataType(properties.checkedData, 'array');
   const expandedData = isExpectedDataType(properties.expandedData, 'array');
   let pathObj = {};
+
+  // Collect leaf node values (nodes with no children)
+  const leafValues = useMemo(() => {
+    const leaves = new Set();
+    const collectLeaves = (nodes) => {
+      if (!Array.isArray(nodes)) return;
+      nodes.forEach((node) => {
+        if (!node.children || node.children.length === 0) {
+          leaves.add(node.value);
+        } else {
+          collectLeaves(node.children);
+        }
+      });
+    };
+    collectLeaves(data);
+    return leaves;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(data)]);
 
   useEffect(() => {
     const checkedArr = [],
@@ -48,10 +74,22 @@ const TreeSelect = ({
       checkedPathString.push(pathObj[item].join('-'));
     });
 
+    // Compute leaf-only paths (nodes with no children)
+    const leafPathArray = [];
+    const leafPathStrings = [];
+    checkedArr.forEach((item) => {
+      if (leafValues.has(item) && pathObj[item]) {
+        leafPathArray.push(pathObj[item]);
+        leafPathStrings.push(pathObj[item].join('-'));
+      }
+    });
+
     const exposedVariables = {
       checkedPathArray: checkedPathArray,
       checkedPathStrings: checkedPathString,
       checked: checkedArr,
+      leafPathArray,
+      leafPathStrings,
     };
     setExposedVariables(exposedVariables);
 
@@ -87,10 +125,22 @@ const TreeSelect = ({
       checkedPathString.push(pathObj[item].join('-'));
     });
 
+    // Compute leaf-only paths
+    const leafPathArray = [];
+    const leafPathStrings = [];
+    checked.forEach((item) => {
+      if (leafValues.has(item) && pathObj[item]) {
+        leafPathArray.push(pathObj[item]);
+        leafPathStrings.push(pathObj[item].join('-'));
+      }
+    });
+
     const exposedVariables = {
       checkedPathArray: checkedPathArray,
       checkedPathStrings: checkedPathString,
       checked: checked,
+      leafPathArray,
+      leafPathStrings,
     };
     setExposedVariables(exposedVariables);
 

@@ -68,6 +68,7 @@ export function SortableTree({
   collapsible = true,
   indicator = true,
   indentationWidth = 15,
+  maxDepth = 1,
   darkMode,
   handlerClassName,
   nestedStyle,
@@ -102,7 +103,16 @@ export function SortableTree({
   // Calculate projection
   const projected =
     activeId && overId
-      ? getProjection(flattenedItems, activeId, overId, offsetLeft, indentationWidth, intersections.current, propertyNames)
+      ? getProjection(
+          flattenedItems,
+          activeId,
+          overId,
+          offsetLeft,
+          indentationWidth,
+          intersections.current,
+          propertyNames,
+          maxDepth
+        )
       : null;
 
   const sensors = useSensors(
@@ -139,8 +149,8 @@ export function SortableTree({
           isGroupKey,
           parentIdKey,
         });
-      } else {
-        // Default group-aware collision filtering
+      } else if (maxDepth <= 1) {
+        // Default group-aware collision filtering (only for single-level Navigation mode)
         const activeItemIsGroup = flattenedItems.find(({ id }) => id === active.id)?.[isGroupKey];
 
         if (activeItemIsGroup) {
@@ -322,9 +332,7 @@ export function SortableTree({
         </Container>
         {createPortal(
           <DragOverlay dropAnimation={dropAnimationConfig} modifiers={indicator ? [adjustTranslate] : undefined}>
-            {activeId && activeItem && renderGhost
-              ? renderGhost(activeItem, { darkMode })
-              : null}
+            {activeId && activeItem && renderGhost ? renderGhost(activeItem, { darkMode }) : null}
           </DragOverlay>,
           document.body
         )}

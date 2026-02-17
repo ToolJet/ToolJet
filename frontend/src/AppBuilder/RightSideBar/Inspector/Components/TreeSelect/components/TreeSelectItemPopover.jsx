@@ -17,6 +17,11 @@ const TreeSelectItemPopover = forwardRef(
       type: 'basic',
     };
 
+    const fxEditorCodeHinterProps = {
+      ...commonCodeHinterProps,
+      type: 'fxEditor',
+    };
+
     const handleChange = (propertyPath, value) => {
       onItemChange(propertyPath, value, item.value, parentValue);
     };
@@ -58,38 +63,69 @@ const TreeSelectItemPopover = forwardRef(
 
           {/* Content */}
           <div data-cy="inspector-treeselect-item-details-content" className="treeselect-item-popover-content">
-            {/* Label field */}
-            <div className="treeselect-item-popover-fields-section">
-              <div data-cy="inspector-treeselect-item-details-label-field" className="treeselect-item-popover-field">
-                <label
-                  data-cy="inspector-treeselect-item-details-label-label"
-                  className="treeselect-item-popover-field-label"
-                >
-                  Label
-                </label>
-                <CodeHinter
-                  {...basicCodeHinterProps}
-                  data-cy="inspector-treeselect-item-details-label-input"
-                  initialValue={item?.label || ''}
-                  onChange={(value) => handleChange('label', value)}
-                />
-              </div>
+            {/* Label & Value fields */}
+            {/* <div className="treeselect-item-popover-fields-section"> */}
+            <div data-cy="inspector-treeselect-item-details-label-field" className="treeselect-item-popover-field">
+              <label
+                data-cy="inspector-treeselect-item-details-label-label"
+                className="treeselect-item-popover-field-label"
+              >
+                Label
+              </label>
+              <CodeHinter
+                {...basicCodeHinterProps}
+                data-cy="inspector-treeselect-item-details-label-input"
+                initialValue={item?.label || ''}
+                onChange={(value) => handleChange('label', value)}
+              />
+            </div>
 
-              {/* Value field */}
-              <div data-cy="inspector-treeselect-item-details-value-field" className="treeselect-item-popover-field">
-                <label
-                  data-cy="inspector-treeselect-item-details-value-label"
-                  className="treeselect-item-popover-field-label"
-                >
-                  Value
-                </label>
-                <CodeHinter
-                  {...basicCodeHinterProps}
-                  data-cy="inspector-treeselect-item-details-value-input"
-                  initialValue={item?.value || ''}
-                  onChange={(value) => handleChange('value', value)}
-                />
-              </div>
+            {/* Value field */}
+            <div data-cy="inspector-treeselect-item-details-value-field" className="treeselect-item-popover-field">
+              <label
+                data-cy="inspector-treeselect-item-details-value-label"
+                className="treeselect-item-popover-field-label"
+              >
+                Value
+              </label>
+              <CodeHinter
+                {...basicCodeHinterProps}
+                data-cy="inspector-treeselect-item-details-value-input"
+                initialValue={item?.value || ''}
+                onChange={(value) => handleChange('value', value)}
+              />
+            </div>
+            {/* </div> */}
+
+            {/* Toggle fields section */}
+            <div data-cy="inspector-treeselect-item-details-visibility-field" className="treeselect-item-popover-field">
+              <CodeHinter
+                {...fxEditorCodeHinterProps}
+                data-cy="inspector-treeselect-item-details-visibility-input"
+                initialValue={item?.visibility?.value}
+                paramLabel={'Visibility'}
+                paramName={'visibility'}
+                onChange={(value) => handleChange('visibility.value', value)}
+                onFxPress={(active) => handleChange('visibility.fxActive', active)}
+                fxActive={item?.visibility?.fxActive}
+                fieldMeta={{ type: 'toggle', displayName: 'Visibility' }}
+                paramType={'toggle'}
+              />
+            </div>
+
+            <div data-cy="inspector-treeselect-item-details-disable-field" className="treeselect-item-popover-field">
+              <CodeHinter
+                {...fxEditorCodeHinterProps}
+                data-cy="inspector-treeselect-item-details-disable-input"
+                initialValue={item?.disable?.value}
+                paramLabel={'Disable'}
+                paramName={'disable'}
+                onChange={(value) => handleChange('disable.value', value)}
+                onFxPress={(active) => handleChange('disable.fxActive', active)}
+                fxActive={item?.disable?.fxActive}
+                fieldMeta={{ type: 'toggle', displayName: 'Disable' }}
+                paramType={'toggle'}
+              />
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
 import { TreeSelectOptionsList } from './components';
 import { useTreeSelectItemsManager } from './hooks';
-import './styles.scss';
+import './treeSelect.scss';
 
 export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -101,8 +101,6 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
   // Check if dynamic options is enabled
   const isAdvanced = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
 
-  console.log(isAdvanced);
-
   // Section configurations
   const sections = [
     {
@@ -118,6 +116,8 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
           {isAdvanced && createRenderElement('data')}
           {!isAdvanced && _renderTreeItems()}
           {createRenderElement('allowIndependentSelection')}
+          {createRenderElement('checkedData')}
+          {createRenderElement('expandedData')}
         </>
       ),
     },

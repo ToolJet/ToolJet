@@ -35,26 +35,15 @@ export function TreeSelectSortableTree({
 
   const renderGhost = (item) => <TreeSelectItemGhost darkMode={darkMode} item={item} />;
 
-  // Transform items to add hasChildren flag for SortableTree
-  const transformedItems = treeItems.map((item) => ({
+  // Recursively transform items to add hasChildren flag and id for SortableTree
+  const transformItem = (item) => ({
     ...item,
     id: item.value,
     hasChildren: item.children && item.children.length > 0,
-    children: item.children
-      ? item.children.map((child) => ({
-          ...child,
-          id: child.value,
-          hasChildren: child.children && child.children.length > 0,
-          children: child.children
-            ? child.children.map((grandchild) => ({
-                ...grandchild,
-                id: grandchild.value,
-                hasChildren: false,
-              }))
-            : undefined,
-        }))
-      : undefined,
-  }));
+    children: item.children ? item.children.map(transformItem) : undefined,
+  });
+
+  const transformedItems = treeItems.map(transformItem);
 
   return (
     <SharedSortableTree
@@ -66,6 +55,7 @@ export function TreeSelectSortableTree({
       collapsible={collapsible}
       indicator={indicator}
       indentationWidth={indentationWidth}
+      maxDepth={Infinity}
       darkMode={darkMode}
       handlerClassName="treeselect-handler"
       containerElement="ul"
