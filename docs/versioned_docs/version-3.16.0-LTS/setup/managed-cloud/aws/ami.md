@@ -37,7 +37,29 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
+4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X-lts.ubuntu_jammy` in the search bar.
+
+   :::info AMI Region
+   ToolJet AMIs are published in the **us-east-1 (N. Virginia)** region. If you want to deploy in a different region, you can copy the AMI to your preferred region using one of the methods below.
+   :::
+
+   **Copying AMI to another region:**
+
+   **Option A: Using AWS Console**
+   - Go to **EC2 → AMIs** in us-east-1
+   - Find the ToolJet AMI → **Actions → Copy AMI**
+   - Select your target region and click **Copy AMI**
+
+   **Option B: Using AWS CLI**
+   ```bash
+   aws ec2 copy-image \
+     --source-region us-east-1 \
+     --source-image-id <ami-id> \
+     --region <your-preferred-region> \
+     --name "ToolJet-<version>"
+   ```
+   The copy process takes 2-5 minutes. Once complete, the AMI will be available in your selected region.
+
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
    **Security Group Configuration:** Creating a new security group is recommended. Configure the following inbound rules to allow traffic:
 
@@ -229,8 +251,8 @@ Ensure both databases are included in your backup before proceeding with the upg
 
 #### 3. Launch a new EC2 instance using the latest AMI
 
-- Open the AWS **AMI dashboard**.
-- Locate the **latest ToolJet AMI**.
+- Open the AWS **AMI dashboard** in the **us-east-1 (N. Virginia)** region.
+- Locate the **latest ToolJet AMI**. If you need to deploy in a different region, copy the AMI first (see [AMI Region info](#deploying-tooljet) in step 4 above).
 - Launch a new EC2 instance using this AMI.
 - Configure the required **security group rules**.
 
