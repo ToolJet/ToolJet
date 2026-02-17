@@ -2,13 +2,12 @@ import React from 'react';
 import { renderElement } from '../../Utils';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../../EventManager';
-import { OptionsList } from './components';
-import { useOptionsManager } from './hooks/useOptionsManager';
-import './styles.scss';
+import { OptionsList } from '../PopoverMenu/components';
+import { useOptionsManager } from '../PopoverMenu/hooks/useOptionsManager';
 
-const POPOVER_MENU_FIELDS = ['format', 'label', 'description', 'value', 'icon', 'visibility', 'disable'];
+const REORDERABLE_LIST_FIELDS = ['format', 'label', 'value'];
 
-export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
+export const ReorderableList = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
     component,
@@ -33,10 +32,9 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
     getItemStyle,
     getResolvedValue,
     isDynamicOptionsEnabled,
-  } = useOptionsManager(component, paramUpdated);
+  } = useOptionsManager(component, paramUpdated, 'Card');
 
-  // ===== PROPERTY ORGANIZATION =====
-  let properties = [];
+  // Property organization
   let additionalActions = [];
   let optionsProperties = [];
 
@@ -45,12 +43,10 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
       additionalActions.push(key);
     } else if (componentMeta?.properties[key]?.accordian === 'Options') {
       optionsProperties.push(key);
-    } else {
-      properties.push(key);
     }
   }
 
-  // ===== RENDER FUNCTIONS =====
+  // Render options list with ReorderableList-specific configuration
   const _renderOptions = () => {
     return (
       <OptionsList
@@ -65,13 +61,13 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         onDragEnd={onDragEnd}
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
-        popoverFields={POPOVER_MENU_FIELDS}
+        dataCyPrefix="inspector-reorderable-list"
+        popoverFields={REORDERABLE_LIST_FIELDS}
         {...restProps}
       />
     );
   };
 
-  // ===== MAIN RENDER =====
   // Helper function to create renderElement with common parameters
   const createRenderElement = (property, type = 'properties', extraProps = {}) => {
     return renderElement(
@@ -98,22 +94,11 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   // Section configurations
   const sections = [
     {
-      title: 'Menu',
-      type: 'properties',
-      properties: properties.filter((property) => !optionsProperties.includes(property)),
-    },
-    {
-      title: 'Options',
+      title: 'Data',
       custom: () => (
         <>
           {createRenderElement('advanced')}
-          {isDynamicOptionsEnabled ? (
-            <>
-              {createRenderElement('schema')} {createRenderElement('optionsLoadingState')}
-            </>
-          ) : (
-            _renderOptions()
-          )}
+          {isDynamicOptionsEnabled ? <>{createRenderElement('schema')}</> : _renderOptions()}
         </>
       ),
     },
