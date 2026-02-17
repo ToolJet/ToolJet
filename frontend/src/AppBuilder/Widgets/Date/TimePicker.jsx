@@ -22,7 +22,7 @@ export const TimePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, timeFormat } = properties;
+  const { label, defaultValue, timeFormat, showClearBtn } = properties;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -60,6 +60,11 @@ export const TimePicker = ({
     });
     if (skipFireEvent) return;
     fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null);
+    setDisplayTimestamp('Select time');
   };
 
   const onDateSelect = (date) => {
@@ -170,6 +175,8 @@ export const TimePicker = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
   };
 
   return (
@@ -189,6 +196,7 @@ export const TimePicker = ({
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
     />
   );
 };
