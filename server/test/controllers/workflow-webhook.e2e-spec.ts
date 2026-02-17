@@ -15,7 +15,7 @@ import {
 } from '../test.helper';
 import { v4 as uuidv4 } from 'uuid';
 import * as request from 'supertest';
-import { LICENSE_FIELD } from '@modules/licensing/helper';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 
