@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException} from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -125,19 +125,25 @@ export class VersionService implements IVersionService {
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
-    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-      userId: user.id,
-      organizationId: user.organizationId,
-      resourceId: app.id,
-      resourceName: app.name,
-      metadata: {
-        data: {
-          versionId: app.appVersions[0].id,
-          deletedAppVersionName: app.appVersions[0].name,
+    const versionToDelete = app.appVersions[0];
+    try {
+      await this.versionsUtilService.deleteVersion(app, user, manager);
+
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceName: app.name,
+        metadata: {
+          data: {
+            versionId: versionToDelete.id,
+            deletedAppVersionName: versionToDelete.name,
+          },
         },
-      },
-    });
-    return await this.versionsUtilService.deleteVersion(app, user, manager);
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(`Failed to delete version "${versionToDelete.name}": ${error.message}`);
+    }
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
