@@ -11,7 +11,7 @@
 
 :root {
   --ifm-color-primary: #4d72fa;
-  --ifm-color-primary-dark: rgb(33, 175, 144);  
+  --ifm-color-primary-dark: rgb(33, 175, 144);
   --ifm-color-primary-darker: rgb(31, 165, 136);
   --ifm-color-primary-darkest: rgb(26, 136, 112);
   --ifm-color-primary-light: rgb(70, 203, 174);
@@ -537,9 +537,12 @@ img {
 
 [data-theme='dark'] .navbar-signin,
 [data-theme='dark'] .navbar-signin:hover,
-[data-theme='dark'] .navbar-website,
-[data-theme='dark'] .navbar-website:hover {
+[data-theme='dark'] .navbar-website {
   color: white;
+}
+
+[data-theme='dark'] .navbar-website:hover {
+  color: black;
 }
 
 .navbar-website {
@@ -978,8 +981,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   padding: 0px 70px !important;
 }
 
-.sc-kSaXSp.dkiBl { /* This hides the redocly branding at the bottom on the API pages.*/
-    visibility: hidden;
+.sc-kSaXSp.dkiBl {
+  /* This hides the redocly branding at the bottom on the API pages.*/
+  visibility: hidden;
 }
 
 .jcDBan {
@@ -988,7 +992,7 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 }
 
 .gHrCVQ {
-    padding: 30px 0 !important;
+  padding: 30px 0 !important;
 }
 
 .hgujxv {
