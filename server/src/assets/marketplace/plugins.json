@@ -341,14 +341,11 @@
     ]
   },
   {
-    "name": "couchbase",
-    "description": "database plugin from couchbase",
+    "name": "Couchbase",
+    "description": "Couchbase is a high-performance, distributed NoSQL document database",
     "version": "1.0.0",
     "id": "couchbase",
     "author": "Tooljet",
-    "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT",
-    "tags": [
-      "AI"
-    ]
+    "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT"
   }
 ]

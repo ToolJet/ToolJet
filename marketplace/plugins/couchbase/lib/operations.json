@@ -249,7 +249,7 @@
         "editorType": "extendedSingleLine"
       },
       "query_options": {
-        "label": "Query Options",
+        "label": "Query options",
         "key": "query_options",
         "type": "codehinter",
         "mode": "javascript",
@@ -281,7 +281,7 @@
         "placeholder": "_default"
       },
       "index_name": {
-        "label": "Index Name",
+        "label": "Index name",
         "key": "index_name",
         "type": "codehinter",
         "lineNumbers": false,
@@ -291,7 +291,7 @@
         "placeholder": "Enter FTS index name"
       },
       "query": {
-        "label": "Search Query",
+        "label": "Search query",
         "key": "search_query",
         "type": "codehinter",
         "mode": "javascript",
