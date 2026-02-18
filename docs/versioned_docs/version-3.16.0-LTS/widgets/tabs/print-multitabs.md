@@ -3,102 +3,100 @@ id: print-multi-tabs-report
 title: Print Data from Multiple Tabs
 ---
 
-In this guide, we will implement printing data from multiple tabs in ToolJet. This will be useful when printing an invoice or a report from your ToolJet application. For example, a ToolJet app that has a set of tabs for each invoice, and you want to print all the tabs in one go.
+This guide walks you through creating a comprehensive PDF report that combines content from all tabs in your ToolJet application. This is particularly valuable when building applications like Invoice Generators, Employee Records, Multi-section Reports etc.
 
-## UI of the App
+### Prerequisites
 
-On the ToolJet homepage, click on the ellipses on the `Create new app` button. Choose an app with a set of tabs for each record. Each tab will have a set of fields to display. For this guide, we will be using the **Lead Management System** app.
+Before starting, make sure you have:
 
-In the example below, we have the **Tabs** component and each tab has a set of fields to display the record details.
+- A ToolJet application with a **Tabs component** containing multiple tabs
+- Data loaded and displaying in your tabs (from a database query, API, or other data source)
+- Basic familiarity with:
+  - Creating buttons and adding event handlers
+  - Writing simple JavaScript queries in ToolJet
+  - Using variables to store temporary data
 
-- **Tabs**: Each tab represents different type of lead record. For this app, we have 4 tabs. Each tab has an id starting from 0 to 4.
+### Application Setup
 
-- **Button**: The **Create Lead** button is the deafult button. For this guide, we will also add another button named **Download PDF**, that will print the data from all the tabs. The button will have two events, the details for which we will share later in this guide.
+For this guide, we'll use a **Lead Management System** as our example. The application has a Tabs component with 4 tabs.
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/appui-v2.png" alt="Print data from multiple tabs" />
+Each tab displays data from the `leads` database table using a query called `fetchData`.
 
-## Load Data from Database
+<img className="screenshot-full img-full mb-5" src="/img/how-to/print-multitabs/v2/appUI.png" alt="Lead management application with tabs" />
 
-- To load the data from the database, we will use the **lead_management_system** table.
-- In the *fetchLeads* query, choose `lead_management_system` in `Table name` parameter.
-- Choose `List rows` in the `Operations` parameter.
-- Click on the **Run** button in the query panel to load the data.
+:::note
+You can adapt this approach to any application with tabs. Just adjust the tab count in the queries to match your setup.
+:::
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/data-v2.png" alt="Print data from multiple tabs" />
+### Step 1: Add the Download PDF Button
 
-Once the data is successfully loaded on the tabs and the app is working as expected, we can move to the next step.
+First, add a button that will trigger the entire print workflow. You can place this button anywhere in your application, typically near the top of your tabs or in a toolbar.
 
-## Printing Data from Multiple Tabs
+After adding the button, configure two event handlers:
 
-To print data from multiple tabs, we will create few JavaScript queries. Using event handlers, we will run these JavaScript queries in a sequence to print data from all the tabs. 
+**Event 1: Store the Current Tab**
 
-Before we start creating the JavaScript queries, we need to add a few events to the **Download PDF** button:
+Add an **On click** event with **Set variable** action. Set the key as `lastSelectedTab` and value as `{{components.tabs.currentTab}}`. This saves the user's current tab selection so we can return them to it after printing.
 
-| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"100px"}}> Description </div> |
-|:--- |:--- |:--- |
-| On click | Set variable | Set a variable with key `lastSelectedTab` and value to `{{components.tabs1.currentTab}}`. This will store the id of the currently selected tab in the variable. |
-| On click | Run query | Select the query named *viewTabs* to run when the button is clicked. |
+**Event 2: Start the Print Process**  
 
-**Note**: We will create the *viewTabs* query later in this guide, so you will need to add the event to the button after you've created the query.
+Add another **On click** event with **Run query** action and select the `viewTabs` query. This kicks off the tab iteration process. We'll create this query in the next step.
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/buttonevents-v2.png" alt="Print data from multiple tabs" />
+<img className="screenshot-full" src="/img/how-to/print-multitabs/v2/buttonEvents.png" alt="Download PDF button event handlers" />
 
-## Creating Queries
+**Note:** You'll need to create the `viewTabs` query first (see next step) before you can select it in this event handler.
 
-### viewTabs Query
+### Step 2: Create the Tab Iterator Query
 
-The *viewTabs* query is a JavaScript query that will run a loop to print data from all the tabs. The query will set a variable `tabIndex` that will store the id of the tab to print data from. The query for this app will loop and increment the tabsIndex variable by 1, using the setVariable action, till the value is less than 4.
+The `viewTabs` query manages the iteration process that cycles through each tab. It uses a variable called `tabIndex` to track which tab we're currently processing.
 
-```js title="viewTabs"
-if ((variables?.tabIndex ?? undefined) == undefined) { 
-  await actions.setVariable("tabIndex", "0"); // set tabIndex to 0 if it is not set
+Create a new **JavaScript (RunJS)** query named `viewTabs` with this code:
+
+```js
+if ((variables?.tabIndex ?? undefined) == undefined) {
+  await actions.setVariable("tabIndex", "0");
 } else if (parseInt(variables.tabIndex) < 4){
-  await actions.setVariable("tabIndex", (parseInt(variables.tabIndex) + 1).toString()); // increment tabIndex by 1
+  await actions.setVariable("tabIndex", (parseInt(variables.tabIndex) + 1).toString());
 }
 ```
 
-**This query will have 3 events:**
+**How this works:**
+- The first time it runs, `tabIndex` doesn't exist, so we initialize it to "0" (the first tab)
+- On subsequent runs, we increment `tabIndex` by 1
+- The iteration continues while `tabIndex` is less than 4 (the total number of tabs)
+- The event handlers we'll add next will recursively call this query to process each tab
 
-#### Event 1:
+:::note Important
+Replace `4` with the actual number of tabs in your application.
+:::
 
-- In the *viewTabs* query, click on the **New event handler** button, for the event type, choose `Query Success` from the dropdown.
-- Choose `Control component` as the **Action** for the event.
-- In the **Run only if** parameter of the event, copy the code: `{{parseInt(variables.tabIndex) < 4}}`. This will run only if the output of the given code is true, i.e. if the tabIndex is less than 4.
-- Under the **ACTION OPTIONS** of the event, choose **Action** as `Set current tab`.
-- Copy the code: `{{variables.tabIndex}}` in the Id parameter. This sets the current tab to the tab with id stored in the tabIndex variable, i.e. it sets the current tab to the tab whose id got recently stored in the `tabIndex` variable via the *viewTabs* query.
+Now, add three event handlers to this query to control what happens after it runs successfully:
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/q1-v2.png" alt="Print data from multiple tabs" />
+**Event Handler 1: Switch to the Current Tab**
 
-#### Event 2:
+Add a **Query Success** event with **Control component** action. Select the `tabs` component, choose **Set current tab** action, and set the Id to `{{variables.tabIndex}}`. In the **Run only if** field, enter `{{parseInt(variables.tabIndex) < 4}}`. This event switches the visible tab to match the `tabIndex` we just set, and the condition ensures we only switch tabs while we're still within the tab range.
 
-- The second event in this query will also be a `Query Success` event.
-- Choose `Run Query` as the **Action** for the event.
-- In the **Run Only If** parameter, copy the code: `{{parseInt(variables.tabIndex) < 4}}`. This event will run only if the condition given in the code is true.
-- The query for this event handler will be `getTabsHTML`.
-- Add a **Debounce** of `100` milliseconds to this event handler.
+<img className="screenshot-full img-full mb-5" src="/img/how-to/print-multitabs/v2/q1.png" alt="viewTabs Event 1" />
 
-**Note:** We will create the *getTabsHTML* query later in this guide, so you will need to add the event to the button after you've created the query.
+**Event Handler 2: Capture the Tab's HTML**
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/q2-v2.png" alt="Print data from multiple tabs" />
+Add another **Query Success** event with **Run query** action. Select the `getTabsHTML` query, set **Debounce** to `100` milliseconds, and in the **Run only if** field, enter `{{parseInt(variables.tabIndex) < 4}}`. After switching to the tab, we need to give it a moment to render before capturing its content. The 100ms debounce ensures the tab is fully rendered. We'll create the `getTabsHTML` query in Step 3.
 
-#### Event 3:
+<img className="screenshot-full img-full mb-5" src="/img/how-to/print-multitabs/v2/q2.png" alt="viewTabs Event 2" />
 
-- The third event in this query will also be a `Query Success` event.
-- Choose `Run Query` as the **Action** for the event.
-- In the **Run Only If** parameter, copy the code: `{{parseInt(variables.tabIndex) === 4}}`. This action runs only when the `tabIndex` is equal to 4, i.e. the last iteration of the loop and we will print the data from all the tabs in this iteration.
-- The query for this event handler will be `printPDF`.
+**Event Handler 3: Generate the PDF**
 
-**Note:** We will create the *printPDF* query later in this guide, so you will need to add the event to the button after you've created the query.
+Add a third **Query Success** event with **Run query** action. Select the `printPDF` query and in the **Run only if** field, enter `{{parseInt(variables.tabIndex) === 4}}`. This only runs after we've finished iterating through all tabs (when `tabIndex` equals 4), triggering the PDF generation. We'll create the `printPDF` query in Step 4.
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/q3-v2.png" alt="Print data from multiple tabs" />
+<img className="screenshot-full img-full" src="/img/how-to/print-multitabs/v2/q3.png" alt="viewTabs Event 3" />
 
-Now that we have created the *viewTabs* query, we can go to the **[Download PDF](/docs/how-to/print-multi-tabs-report#printing-data-from-multiple-tabs)** button and add the *viewTabs* query to the `On click` event handler.
+### Step 3: Create the HTML Capture Query
 
-### getTabsHTML Query
+The `getTabsHTML` query captures the HTML content of the currently visible tab and stores it in an array. Each time it runs, it adds another tab's content to the collection.
 
-The *getTabsHTML* is a JavaScript query that will get the HTML of the current tab and store it in a variable. The query will have a variable `tabsHtml` that will store the HTML of all the tabs in the form of an array.
+Create a new **JavaScript (RunJS)** query named `getTabsHTML` with this code:
 
-```js title="getTabsHTML"
+```js
 actions.setVariable( // set tabsHtml variable
   "tabsHtml", 
   [...(variables?.tabsHtml ?? [])].concat([  // add html of the current tab to the tabsHtml variable
@@ -107,30 +105,35 @@ actions.setVariable( // set tabsHtml variable
           variables?.tabIndex ?? -1 
         }00vh; position: absolute;">` // this will help to print data from all the tabs in one go
       : "") + 
-      document.getElementsByClassName("widget-" + components.tabs1.id)[0] // get the html of the current tab
+      document.getElementsByClassName("widget-" + components.tabs.id)[0] // get the html of the current tab
         .innerHTML +
       "</div>", // add the html of the current tab to the tabsHtml variable
   ])
 );
 ```
 
-**This query will have 1 event:**
+**How this works:**
+- Gets the existing `tabsHtml` array (or creates an empty array if it doesn't exist)
+- Finds the Tabs component in the DOM using its widget class
+- Extracts the innerHTML of the current tab
+- Wraps each tab (except the first) in a positioned div to ensure proper page breaks in the PDF
+- Adds this HTML to the `tabsHtml` array
 
-#### Event 1:
+Now add one event handler to continue the loop:
 
-- The event in this query will be a `Query Success` event.
-- This event will have an **Action** of `Run Query`.
-- In the **Query** Parameter, choose *viewTabs* as the query. This will run the *viewTabs* query after the *getTabsHTML* query is successfully executed.
+**Event Handler: Continue to Next Tab**
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/gettabshtml-v2.png" alt="Print data from multiple tabs" />
+Add a **Query Success** event with **Run query** action and select the `viewTabs` query. After capturing the current tab's HTML, this triggers `viewTabs` again to increment the index and process the next tab.
 
-Now that we have created the *getTabsHTML* query, we can go to the *viewTabs* query and in the **Event 2** of that query, add the *getTabsHTML* query to the event handler.
+<img className="screenshot-full img-full" src="/img/how-to/print-multitabs/v2/getTabsHtml.png" alt="getTabsHTML event handler" />
 
-### printPDF Query
+### Step 4: Create the PDF Generation Query
 
-The *printPDF* query is a JavaScript query that generates a printable document from the HTML content stored in the `tabsHtml` variable. This query will open a new window and write the HTML content of all the tabs. This will allow the user to download a PDF document that includes the formatted content of all the tabs.
+The `printPDF` query takes all the captured HTML from the `tabsHtml` array and generates a printable document. It opens a new browser window, injects the combined HTML along with all the application's styles, and triggers the print dialog.
 
-```js title="printPDF"
+Create a new **JavaScript (RunJS)** query named `printPDF` with this code:
+
+```js
 var printContents = variables.tabsHtml; // get the html of all the tabs from the tabsHtml variable
 
 var winPrint = window.open("", "", "width=900,height=650"); // Open a New Window for Printing
@@ -157,37 +160,29 @@ winPrint.document.write("</body></html>"); // Document Finalization and Printing
 winPrint.document.close();
 winPrint.focus();
 winPrint.print();
-winPrint.close();
 ```
 
-**This query will have 3 events:**
+**How this works:**  
+This query opens a new browser window for the print preview and copies all CSS styles from your application to ensure the PDF looks correct. It sets the page orientation to landscape (you can change this to portrait if needed), writes all the captured tab HTML into the new window, and triggers the browser's print dialog.
 
-#### Event 1:
+Now add three event handlers to clean up after printing:
 
-- In the *printPDF* query, click on the **New event handler** button, for the event type, choose `Query Success` from the dropdown.
-- Choose `Unset variable` as the **Action** for the event.
-- Under the **ACTION OPTIONS** of the event, set `tabsIndex` as the **Key**. This will unset the tabsIndex variable after the *printPDF* query is successfully executed.
+**Event Handler 1: Clear the Tab Index Variable**
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar1-v2.png" alt="Print data from multiple tabs" />
+Add a **Query Success** event with **Unset variable** action and set the Key as `tabIndex`.
 
-#### Event 2:
+<img className="screenshot-full img-full mb-5" src="/img/how-to/print-multitabs/v2/unsetVar1.png" alt="Unset tabIndex" />
 
-- The second event in this query will also be a `Query Success` event.
-- Choose `Unset variable` as the **Action** for the event.
-- Under the **ACTION OPTIONS** of the event, set `tabsHtml` as the **Key**. This will unset the `tabsHtml` variable after the *printPDF* query is successfully executed.
+**Event Handler 2: Clear the HTML Storage**
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/unsetvar2-v2.png" alt="Print data from multiple tabs" />
+Add another **Query Success** event with **Unset variable** action and set the key as `tabsHtml`.
 
-#### Event 3:
+<img className="screenshot-full img-full mb-5" src="/img/how-to/print-multitabs/v2/unsetVar2.png" alt="Unset tabsHtml" />
 
-- The third event in this query will also be a `Query Success` event.
-- Choose `Control component` as the **Action** for the event.
-- Choose `tabs1` for the **Component** parameter.
-- Choose `Set current tab` as the **Action**.
-- For the Id parameter, copy the code: `{{variables.lastSelectedTab}}`. This will set the current tab to the tab that was selected before the **Download PDF** button was clicked.
+**Event Handler 3: Restore the Original Tab**
 
-<img className="screenshot-full" src="/img/how-to/print-multitabs/controlcomp2-v2.png" alt="Print data from multiple tabs" />
+Add a third **Query Success** event with **Control component** action. Select the `tabs1` component, choose **Set current tab** action, and set the Id to `{{variables.lastSelectedTab}}`. This returns the user to whichever tab they were viewing before clicking the print button.
 
-Now that we have created the *printPDF* query, we can go to the *viewTabs* query, and in the **Event 3** of that query, add the *printPDF* query to the **Query Success** event handler.
+<img className="screenshot-full img-full" src="/img/how-to/print-multitabs/v2/controlComp2.png" alt="Restore original tab selection" />
 
-Finally, we can test the app by clicking on the **Download PDF** button. This will redirect us to the new tab of the browser, and download a PDF document with the data from all the tabs.
+You've successfully implemented a multi-tab PDF printing feature. Users can now generate comprehensive reports that include all tab content with a single click.
