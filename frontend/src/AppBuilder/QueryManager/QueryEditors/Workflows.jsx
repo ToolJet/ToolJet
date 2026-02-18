@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { appsService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +20,8 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [_selectedWorkflowId, setSelectedWorkflowId] = useState(undefined);
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
+  const [versionOptions, setVersionOptions] = useState([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -44,6 +47,28 @@ export function Workflows({ options, optionsChanged, currentState }) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (options.workflowId) {
+      setLoadingVersions(true);
+      appVersionService.getAll(options.workflowId).then((data) => {
+        const versions = (data?.versions || [])
+          .filter((v) => v.status === 'PUBLISHED')
+          .map((v) => ({
+          value: v.id,
+          name: v.name,
+        }));
+        setVersionOptions(versions);
+        setLoadingVersions(false);
+      }).catch(() => {
+        setVersionOptions([]);
+        setLoadingVersions(false);
+      });
+    } else {
+      setVersionOptions([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.workflowId]);
 
   useEffect(() => {
     optionsChanged({
@@ -87,6 +112,26 @@ export function Workflows({ options, optionsChanged, currentState }) {
         onMenuOpen={() => setIsMenuOpen(true)}
         onMenuClose={() => setIsMenuOpen(false)}
       />
+      {options.workflowId && (
+        <>
+          <label className="mb-1 mt-2">Version</label>
+          <div data-cy="workflow-version-dropdown"></div>
+          <Select
+            options={versionOptions}
+            value={options.workflowVersionId ?? {}}
+            onChange={(workflowVersionId) => {
+              optionsChanged({ ...options, workflowVersionId: workflowVersionId || null });
+            }}
+            height="32px"
+            useMenuPortal={true}
+            closeMenuOnSelect={true}
+            customWrap={true}
+            width="300px"
+            menuPlacement="bottom"
+            customClassPrefix="workflow-version-select"
+          />
+        </>
+      )}
       <div className="my-2">
         <CustomToggleSwitch
           isChecked={syncExecution}
