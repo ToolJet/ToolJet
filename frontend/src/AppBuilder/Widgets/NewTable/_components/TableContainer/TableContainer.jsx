@@ -20,6 +20,7 @@ export const TableContainer = ({
   setExposedVariables,
   hasDataChanged,
   tableBodyRef,
+  loadingState,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
@@ -135,6 +136,10 @@ export const TableContainer = ({
     fireEvent('onCancelChanges');
   }, [clearChangeSet, fireEvent]);
 
+  useEffect(() => {
+    setExposedVariables({ resetChanges: handleChangesDiscarded });
+  }, [handleChangesDiscarded, setExposedVariables]);
+
   return (
     <>
       <TableExposedVariables
@@ -171,6 +176,7 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         lastClickedRowRef={lastClickedRowRef}
+        loadingState={loadingState}
       />
       <Footer
         id={id}

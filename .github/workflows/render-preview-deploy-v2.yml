@@ -3,6 +3,8 @@ name: Render Preview Deploy (DockerHub-based)
 on:
   pull_request:
     types: [labeled, unlabeled, closed, synchronize]
+  pull_request_target:
+    types: [labeled, unlabeled]
 
 env:
   PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -136,7 +138,7 @@ jobs:
                 "disk": {
                   "name": "tooljet-ce-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
@@ -199,8 +201,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ce-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ce-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline_`
             });
 
@@ -613,12 +614,12 @@ jobs:
                 "disk": {
                   "name": "tooljet-ee-lts-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{"port": 80, "protocol": "TCP"}],
-                "plan": "pro",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon"
               }
@@ -676,8 +677,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ee-lts-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline - LTS Edition_`
             });
 
@@ -1093,12 +1093,12 @@ jobs:
                 "disk": {
                   "name": "tooljet-ee-pre-release-pr-${{ env.PR_NUMBER }}-postgresql",
                   "mountPath": "/var/lib/postgresql/13/main",
-                  "sizeGB": 10
+                  "sizeGB": 1
                 },
                 "healthCheckPath": "/api/health",
                 "numInstances": 1,
                 "openPorts": [{"port": 80, "protocol": "TCP"}],
-                "plan": "pro",
+                "plan": "standard",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon"
               }
@@ -1156,8 +1156,7 @@ jobs:
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-pre-release-pr-${prNumber}.onrender.com |\n` +
-                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n` +
-                    `| **Docker Image** | \`tooljet/tooljet-render:ee-pre-release-pr-${prNumber}\` |\n\n` +
+                    `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
                     `_Deployed using DockerHub-based pipeline - Pre-release Edition_`
             });
 

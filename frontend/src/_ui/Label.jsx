@@ -20,6 +20,8 @@ function Label({
   inputId,
   id,
   classes = null,
+  style = {},
+  fontSize = '12px',
 }) {
   const { moduleId } = useModuleContext();
   const isViewerMode = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'view', shallow);
@@ -34,8 +36,9 @@ function Label({
             display: 'flex',
             fontWeight: 500,
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
-            fontSize: '12px',
+            fontSize,
             height: defaultAlignment === 'top' && '20px',
+            ...style,
           }}
           htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste
           className={cn(classes?.labelContainer)}
