@@ -229,6 +229,30 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function isChildOfModal(componentId) {
+    const parentId = components[componentId]?.component?.parent?.slice(0, 36);
+    if (!parentId) return false;
+    const parentComponent = components[parentId];
+    if (!parentComponent) return false;
+    if (parentComponent.component.component === 'Modal' || parentComponent.component.component === 'ModalV2') {
+      return true;
+    }
+    return isChildOfModal(parentId);
+  }
+
+  function getComponentsOptionsWithoutModalChilds() {
+    let componentOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if (!isChildOfModal(key)) {
+        componentOptions.push({
+          name: components[key].component.name,
+          value: key,
+        });
+      }
+    });
+    return componentOptions;
+  }
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
@@ -962,7 +986,7 @@ export const EventManager = ({
                   <div className="col-9">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={getComponentOptions()}
+                      options={getComponentsOptionsWithoutModalChilds()}
                       value={event.componentId}
                       search={true}
                       onChange={(value) => {
