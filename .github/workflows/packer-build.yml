@@ -15,9 +15,9 @@ on:
         description: "RELEASE_VERSION"
         required: true
       region:
-        description: "AWS region to build AMI in (default: us-east-1)"
+        description: "AWS region to build AMI in (default: us-west-1)"
         required: false
-        default: "us-east-1"
+        default: "us-west-1"
 
 jobs:
   check-version:
@@ -70,7 +70,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ github.event.inputs.region || 'us-east-1' }}
+          aws-region: ${{ github.event.inputs.region || 'us-west-1' }}
 
       # Initialize Packer templates
       - name: Initialize Packer Template
@@ -105,7 +105,7 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy -var ami_region=${{ github.event.inputs.region || 'us-east-1' }}
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy -var ami_region=${{ github.event.inputs.region || 'us-west-1' }}
           target: .
           working_directory: deploy/ec2/ee
         env:
@@ -117,13 +117,13 @@ jobs:
           echo "Listing all EC2 instances..."
 
           INSTANCE_IDS=$(aws ec2 describe-instances \
-            --region ${{ github.event.inputs.region || 'us-east-1' }} \
+            --region ${{ github.event.inputs.region || 'us-west-1' }} \
             --query 'Reservations[*].Instances[*].InstanceId' \
             --output text)
 
           if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
             echo "Found instances: $INSTANCE_IDS"
-            aws ec2 terminate-instances --region ${{ github.event.inputs.region || 'us-east-1' }} --instance-ids $INSTANCE_IDS
+            aws ec2 terminate-instances --region ${{ github.event.inputs.region || 'us-west-1' }} --instance-ids $INSTANCE_IDS
             echo "Terminated instances: $INSTANCE_IDS"
           else
             echo "No instances found to cleanup"
@@ -133,6 +133,6 @@ jobs:
         if: success()
         run: |
           ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
-          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ github.event.inputs.branch || 'lts-3.16' }}\`\nRegion: \`${{ github.event.inputs.region || 'us-east-1' }}\`\nAMI Name: \`${ami_name}\`"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ github.event.inputs.branch || 'lts-3.16' }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
