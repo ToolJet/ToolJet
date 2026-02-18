@@ -11,6 +11,8 @@ import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import cx from 'classnames';
+import { Triangle } from 'lucide-react';
+import './treeSelect.scss';
 
 const TreeSelect = ({
   height,
@@ -177,6 +179,16 @@ const TreeSelect = ({
               handleColor={checkmarkColor}
               size={18}
             />
+          ),
+          expandOpen: (
+            <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
+              <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+            </span>
+          ),
+          expandClose: (
+            <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
+              <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+            </span>
           ),
         }}
       />
