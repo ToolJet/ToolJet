@@ -17,6 +17,7 @@ const s3 = new S3Client({
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
   },
   maxAttempts: 3,
+  followRegionRedirects: true,
 });
 
 const basePluginsPath = _resolve(__dirname, 'plugins');
