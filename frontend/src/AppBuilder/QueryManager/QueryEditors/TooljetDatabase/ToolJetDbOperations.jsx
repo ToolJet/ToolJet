@@ -58,6 +58,8 @@ const ToolJetDbOperations = ({
   const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
   const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
 
+  const skipJoinTableUpdateRef = useRef(false);
+
   // Check if SQL mode should be disabled
   const isSqlModeDisabled = () => {
     // Check legacy environment variable for backward compatibility
@@ -174,6 +176,10 @@ const ToolJetDbOperations = ({
 
   useEffect(() => {
     const tableSet = new Set();
+    if (selectedTableId) {
+        tableSet.add(selectedTableId);
+    }
+    
     const joinOptions = options['join_table']?.['joins'];
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;
@@ -191,12 +197,22 @@ const ToolJetDbOperations = ({
 
     const tables = [...tableSet];
     tables.forEach((tableId) => tableId && loadTableInformation(tableId));
-  }, [options['join_table']?.['joins'], tables]);
+  }, [options['join_table']?.['joins'], tables, selectedTableId]);
 
   useEffect(() => {
-    selectedTableId && fetchTableInformation(selectedTableId, false, tables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTableId]);
+    if (selectedTableId && tables.length > 0) {
+       const tableDetails = findTableDetails(selectedTableId);
+       if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+         setColumns(tableInfo[tableDetails.table_name]);
+       }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTableId, tableInfo, tables]);
+
+  // useEffect(() => {
+  //   selectedTableId && fetchTableInformation(selectedTableId, false, tables);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [selectedTableId]);
 
   useEffect(() => {
     if (mounted) {
@@ -234,6 +250,10 @@ const ToolJetDbOperations = ({
   }, [updateRowsOptions]);
 
   useEffect(() => {
+    if (skipJoinTableUpdateRef.current) {
+        skipJoinTableUpdateRef.current = false; 
+        return;
+    }
     mounted && optionchanged('join_table', joinTableOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinTableOptions]);
@@ -497,11 +517,7 @@ const ToolJetDbOperations = ({
   };
 
   const handleTableNameSelect = (tableId) => {
-    setSelectedTableId(tableId);
-    optionchanged('table_id', tableId);
-
-    setJoinTableOptions(() => {
-      return {
+    const newJoinOptions = {
         joins: [
           {
             id: new Date().getTime(),
@@ -522,9 +538,15 @@ const ToolJetDbOperations = ({
           type: 'Table',
         },
         fields: [],
-      };
-    });
+    };
 
+    optionsChanged({ 
+        table_id: tableId,
+        join_table: newJoinOptions 
+    });
+    skipJoinTableUpdateRef.current = true;
+    setSelectedTableId(tableId);
+    setJoinTableOptions(newJoinOptions); 
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
