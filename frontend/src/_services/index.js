@@ -15,6 +15,7 @@ export * from './comments.service';
 export * from './commentNotifications.service';
 export * from './library-app.service';
 export * from './instance_settings.service';
+export * from './ssl.service';
 export * from './white-labelling.service';
 export * from './plugins.service';
 export * from './marketplace.service';

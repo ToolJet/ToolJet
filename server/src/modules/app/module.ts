@@ -15,6 +15,7 @@ import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
+import { SslConfigurationModule } from '@modules/ssl-configuration/module';
 import { UsersModule } from '@modules/users/module';
 import { FilesModule } from '@modules/files/module';
 import { RolesModule } from '@modules/roles/module';
@@ -98,6 +99,7 @@ export class AppModule implements OnModuleInit {
       await FoldersModule.register(configs, true),
       await FolderAppsModule.register(configs, true),
       await SMTPModule.register(configs, true),
+      await SslConfigurationModule.register(configs, true),
       await RolesModule.register(configs, true),
       await GroupPermissionsModule.register(configs, true),
       await AppConfigModule.register(configs, true),

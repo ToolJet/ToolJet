@@ -13,7 +13,12 @@ export class InstanceSettingsModule extends SubModule {
       module: InstanceSettingsModule,
       imports: [await EncryptionModule.register(configs)],
       controllers: isMainImport ? [InstanceSettingsController] : [],
-      providers: [InstanceSettingsUtilService, InstanceSettingsService, FeatureAbilityFactory, OrganizationRepository],
+      providers: [
+        InstanceSettingsUtilService,
+        InstanceSettingsService,
+        FeatureAbilityFactory,
+        OrganizationRepository,
+      ],
       exports: [InstanceSettingsUtilService],
     };
   }
