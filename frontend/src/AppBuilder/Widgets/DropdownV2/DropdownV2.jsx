@@ -441,7 +441,7 @@ export const DropdownV2 = ({
       backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
       borderRadius: '8px',
       boxShadow: 'unset',
-      margin: 0,
+      marginTop: '5px',
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value

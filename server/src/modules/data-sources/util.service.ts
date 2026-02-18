@@ -33,7 +33,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
-  ) {}
+  ) { }
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
@@ -455,11 +455,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async resolveKeyValuePair(arr, organization_id, environment_id) {
-    const resolvedArray = await Promise.all(
+    if (!Array.isArray(arr)) {
+      return this.resolveValue(arr, organization_id, environment_id);
+    }
+
+    return Promise.all(
       arr.map((item) => this.resolveValue(item, organization_id, environment_id))
     );
-
-    return resolvedArray;
   }
 
   async resolveValue(value, organization_id, environment_id) {
@@ -557,6 +559,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'snowflake',
         'microsoft_graph',
         'hubspot',
+        'xero',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(
