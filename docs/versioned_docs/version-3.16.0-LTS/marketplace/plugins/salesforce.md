@@ -29,7 +29,7 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 
 ## Querying Salesforce
 
-- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
 - Select the previously configured Salesforce datasource from the **Data Source** dropdown.
 - In the Operation dropdown, select the desired operation type. ToolJet supports two operation types for Salesforce interactions:
   - **[SOQL Query](#soql-query)** - SOQL (Salesforce Object Query Language) is used to search your organization’s Salesforce data for specific information.

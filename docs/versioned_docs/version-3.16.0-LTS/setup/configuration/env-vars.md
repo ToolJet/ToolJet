@@ -56,7 +56,6 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 - `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Maximum number of rows allowed in bulk upload (default: 5000)
 - `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Maximum file size of CSV for bulk upload. Default value is 5 MB
 
-
 #### Why ToolJet Requires Two Databases
 
 ToolJet requires two separate databases for optimal functionality. **TOOLJET_DB** is used to store the platform's internal metadata, including tables created within ToolJet. On the other hand, **PG_DB** acts as the primary database for application data, handling end-user data managed by the apps built on ToolJet.
@@ -131,7 +130,7 @@ ToolJet Workflows allows you to design and execute complex, data-centric automat
 **External Redis Requirement**: When running separate worker containers or multiple instances, an external stateful Redis instance is **required** for job queue coordination. The built-in Redis only works when the server and worker are in the same container instance (single instance deployment).
 :::
 
-For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+For detailed workflow configuration and deployment examples, refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
 
 ### Optional Configurations
 
@@ -194,23 +193,25 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 
 You can control workflow execution behavior using the following environment variables:
 
-| Variable | Description | Default | Unit |
-|-----------|-------------|---------|-------|
-| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out. | 60 | seconds |
-| `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20 | MB |
-| `WORKFLOW_JS_TIMEOUT` | Maximum time allowed for each `runjs` or `loop` node execution. | 100 | milliseconds |
+| Variable                   | Description                                                                     | Default | Unit         |
+| -------------------------- | ------------------------------------------------------------------------------- | ------- | ------------ |
+| `WORKFLOW_TIMEOUT_SECONDS` | Maximum duration a workflow execution can run before timing out.                | 60      | seconds      |
+| `WORKFLOW_JS_MEMORY_LIMIT` | Maximum memory limit allocated to each `runjs` or `loop` node during execution. | 20      | MB           |
+| `WORKFLOW_JS_TIMEOUT`      | Maximum time allowed for each `runjs` or `loop` node execution.                 | 100     | milliseconds |
 
 #### Configuring Non Email Identifier for ToolJet OIDC
+
 You can setup OIDC using non email identifier for authenticating users to ToolJet (for example, an employee ID) by setting the following environment variables.
 
-| Variable | Description |
-|-----------|-------------|
-| `SSO_UNIQUE_ID_FIELD` | Unique identifier field name sent back by the IdP. |
+| Variable                  | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `SSO_UNIQUE_ID_FIELD`     | Unique identifier field name sent back by the IdP.         |
 | `SSO_CUSTOM_EMAIL_DOMAIN` | Domain name that will be used to construct dummy email id. |
 
- To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
+To learn more, refer to [this section](/docs/user-management/sso/oidc/setup#configuring-tooljet-oidc-with-non-email-identifier).
 
 #### Configure Stronger Password Validation Rules
+
 ToolJet allows you to enforce a stronger password complexity rule. By default, the login password should be atleast 5 characters long and any character can be used. To enforce stronger password validation, use the following environment variable:
 
 - `ENABLE_PASSWORD_COMPLEXITY_RULES = true`
@@ -218,15 +219,16 @@ ToolJet allows you to enforce a stronger password complexity rule. By default, t
 When **false**, passwords will follow the default validations. When **true**, passwords must meet all the following rules:
 | Rule | Requirement |
 |-----------|-------------|
-| Password length | 12-24 characters | 
+| Password length | 12-24 characters |
 | Uppercase letters | A-Z |
 | Lowercase letters | a-z |
 | Numbers | 0-9 |
-| Special characters | ! @ # $ % ^ & * ( ) _ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
+| Special characters | ! @ # $ % ^ & \* ( ) \_ + - = \{ \} [ ] : ; ” ' , . ? / \ \| |
 
 :::info
 These validations apply to both the instance and workspace levels.
 :::
+
 ### Third-Party Integrations
 
 #### Slack
@@ -374,8 +376,7 @@ Only enable `OTEL_INCLUDE_QUERY_TEXT=true` for debugging. This creates high card
 
 For comprehensive setup instructions, metrics details, and Grafana dashboard integration, see the [OpenTelemetry Observability](/docs/tj-setup/observability/observability-otel) documentation.
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 
