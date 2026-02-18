@@ -1,0 +1,2370 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@aws-sdk/client-cognito-identity": {
+      "name": "@aws-sdk/client-cognito-identity",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [
+        "@aws-sdk/credential-provider-cognito-identity"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/client-cognito-identity"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-s3": {
+      "name": "@aws-sdk/client-s3",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-flexible-checksums",
+        "@aws-sdk/middleware-sdk-s3",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/signature-v4-multi-region",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.978.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/client-s3"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-ses": {
+      "name": "@aws-sdk/client-ses",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/client-ses"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-sesv2": {
+      "name": "@aws-sdk/client-sesv2",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/signature-v4-multi-region",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.978.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/client-sesv2"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-sso": {
+      "name": "@aws-sdk/client-sso",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/client-sso"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/core": {
+      "name": "@aws-sdk/core",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/xml-builder"
+      ],
+      "effects": [
+        "@aws-sdk/client-cognito-identity",
+        "@aws-sdk/client-s3",
+        "@aws-sdk/client-ses",
+        "@aws-sdk/client-sesv2",
+        "@aws-sdk/client-sso",
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-provider-login",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity",
+        "@aws-sdk/credential-providers",
+        "@aws-sdk/middleware-flexible-checksums",
+        "@aws-sdk/middleware-sdk-s3",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/nested-clients",
+        "@aws-sdk/token-providers"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/core"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-cognito-identity": {
+      "name": "@aws-sdk/credential-provider-cognito-identity",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-cognito-identity"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-cognito-identity"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-env": {
+      "name": "@aws-sdk/credential-provider-env",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-env"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-http": {
+      "name": "@aws-sdk/credential-provider-http",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/credential-provider-node"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-http"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-ini": {
+      "name": "@aws-sdk/credential-provider-ini",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-login",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-ini"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-login": {
+      "name": "@aws-sdk/credential-provider-login",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-providers"
+      ],
+      "range": "<=3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-login"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-node": {
+      "name": "@aws-sdk/credential-provider-node",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-node"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-process": {
+      "name": "@aws-sdk/credential-provider-process",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-process"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-sso": {
+      "name": "@aws-sdk/credential-provider-sso",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-sso",
+        "@aws-sdk/core",
+        "@aws-sdk/token-providers"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-sso"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-web-identity": {
+      "name": "@aws-sdk/credential-provider-web-identity",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-provider-web-identity"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-providers": {
+      "name": "@aws-sdk/credential-providers",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-cognito-identity",
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-cognito-identity",
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-provider-login",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/credential-providers"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/middleware-flexible-checksums": {
+      "name": "@aws-sdk/middleware-flexible-checksums",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/middleware-flexible-checksums"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/middleware-sdk-s3": {
+      "name": "@aws-sdk/middleware-sdk-s3",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/signature-v4-multi-region"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/middleware-sdk-s3"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/middleware-user-agent": {
+      "name": "@aws-sdk/middleware-user-agent",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/middleware-user-agent"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/nested-clients": {
+      "name": "@aws-sdk/nested-clients",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/nested-clients"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/s3-request-presigner": {
+      "name": "@aws-sdk/s3-request-presigner",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/signature-v4-multi-region"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.978.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/s3-request-presigner"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/signature-v4-multi-region": {
+      "name": "@aws-sdk/signature-v4-multi-region",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/middleware-sdk-s3"
+      ],
+      "effects": [
+        "@aws-sdk/client-s3",
+        "@aws-sdk/client-sesv2",
+        "@aws-sdk/s3-request-presigner"
+      ],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/signature-v4-multi-region"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/token-providers": {
+      "name": "@aws-sdk/token-providers",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/token-providers"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/util-user-agent-node": {
+      "name": "@aws-sdk/util-user-agent-node",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/middleware-user-agent"
+      ],
+      "effects": [],
+      "range": "3.894.0 - 3.972.0",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/util-user-agent-node"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/xml-builder": {
+      "name": "@aws-sdk/xml-builder",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-xml-parser"
+      ],
+      "effects": [
+        "@aws-sdk/core"
+      ],
+      "range": "3.894.0 - 3.972.2",
+      "nodes": [
+        "../plugins/node_modules/@aws-sdk/xml-builder"
+      ],
+      "fixAvailable": true
+    },
+    "@babel/eslint-parser": {
+      "name": "@babel/eslint-parser",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@babel/eslint-parser"
+      ],
+      "fixAvailable": false
+    },
+    "@eslint-community/eslint-utils": {
+      "name": "@eslint-community/eslint-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@eslint-community/eslint-utils"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "@eslint/eslintrc": {
+      "name": "@eslint/eslintrc",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ajv"
+      ],
+      "effects": [
+        "eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "../plugins/node_modules/@eslint/eslintrc",
+        "node_modules/@eslint/eslintrc"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "@google-cloud/storage": {
+      "name": "@google-cloud/storage",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-xml-parser"
+      ],
+      "effects": [],
+      "range": "6.12.0 - 7.18.0",
+      "nodes": [
+        "../plugins/node_modules/snowflake-sdk/node_modules/@google-cloud/storage"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/add": {
+      "name": "@lerna/add",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/bootstrap",
+        "pacote"
+      ],
+      "effects": [
+        "lerna"
+      ],
+      "range": "3.1.1 - 3.5.0 || 3.11.0 - 3.14.2 || 4.0.0 - 6.4.2-beta.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/add"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/bootstrap": {
+      "name": "@lerna/bootstrap",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/run-lifecycle",
+        "@npmcli/arborist"
+      ],
+      "effects": [
+        "@lerna/add",
+        "lerna"
+      ],
+      "range": "5.0.0-alpha.0 - 6.4.2-beta.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/bootstrap"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/create": {
+      "name": "@lerna/create",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "pacote"
+      ],
+      "effects": [
+        "lerna"
+      ],
+      "range": "3.11.0 - 3.14.2 || 4.0.0 - 8.2.4",
+      "nodes": [
+        "../plugins/node_modules/@lerna/create"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/get-packed": {
+      "name": "@lerna/get-packed",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "tar"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "../plugins/node_modules/@lerna/get-packed"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/github-client": {
+      "name": "@lerna/github-client",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@octokit/rest"
+      ],
+      "effects": [
+        "@lerna/version"
+      ],
+      "range": ">=4.0.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/github-client"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/npm-dist-tag": {
+      "name": "@lerna/npm-dist-tag",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "npm-registry-fetch"
+      ],
+      "effects": [],
+      "range": ">=4.0.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/npm-dist-tag"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/npm-publish": {
+      "name": "@lerna/npm-publish",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/run-lifecycle",
+        "libnpmpublish"
+      ],
+      "effects": [],
+      "range": ">=4.0.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/npm-publish"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/pack-directory": {
+      "name": "@lerna/pack-directory",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/get-packed",
+        "@lerna/run-lifecycle",
+        "tar"
+      ],
+      "effects": [
+        "@lerna/publish"
+      ],
+      "range": "*",
+      "nodes": [
+        "../plugins/node_modules/@lerna/pack-directory"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/publish": {
+      "name": "@lerna/publish",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/npm-dist-tag",
+        "@lerna/npm-publish",
+        "@lerna/pack-directory",
+        "@lerna/run-lifecycle",
+        "@lerna/version",
+        "libnpmaccess",
+        "npm-registry-fetch",
+        "pacote"
+      ],
+      "effects": [],
+      "range": "3.7.0 - 6.4.2-beta.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/publish"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/run-lifecycle": {
+      "name": "@lerna/run-lifecycle",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@npmcli/run-script"
+      ],
+      "effects": [
+        "@lerna/bootstrap",
+        "@lerna/npm-publish",
+        "@lerna/pack-directory",
+        "@lerna/publish",
+        "@lerna/version"
+      ],
+      "range": ">=5.0.0-alpha.0",
+      "nodes": [
+        "../plugins/node_modules/@lerna/run-lifecycle"
+      ],
+      "fixAvailable": true
+    },
+    "@lerna/version": {
+      "name": "@lerna/version",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/github-client",
+        "@lerna/run-lifecycle"
+      ],
+      "effects": [
+        "@lerna/publish",
+        "lerna"
+      ],
+      "range": "4.0.0 - 6.4.1",
+      "nodes": [
+        "../plugins/node_modules/@lerna/version"
+      ],
+      "fixAvailable": true
+    },
+    "@mdxeditor/editor": {
+      "name": "@mdxeditor/editor",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "js-yaml"
+      ],
+      "effects": [],
+      "range": "<=3.49.1",
+      "nodes": [
+        "node_modules/@mdxeditor/editor"
+      ],
+      "fixAvailable": true
+    },
+    "@npmcli/arborist": {
+      "name": "@npmcli/arborist",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@npmcli/metavuln-calculator",
+        "@npmcli/run-script",
+        "cacache",
+        "npm-registry-fetch",
+        "pacote"
+      ],
+      "effects": [
+        "@lerna/bootstrap"
+      ],
+      "range": "<=9.0.0-pre.1",
+      "nodes": [
+        "../plugins/node_modules/@npmcli/arborist"
+      ],
+      "fixAvailable": true
+    },
+    "@npmcli/metavuln-calculator": {
+      "name": "@npmcli/metavuln-calculator",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "cacache",
+        "pacote"
+      ],
+      "effects": [
+        "@npmcli/arborist"
+      ],
+      "range": "<=8.0.1",
+      "nodes": [
+        "../plugins/node_modules/@npmcli/metavuln-calculator"
+      ],
+      "fixAvailable": true
+    },
+    "@npmcli/run-script": {
+      "name": "@npmcli/run-script",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "node-gyp"
+      ],
+      "effects": [
+        "@lerna/run-lifecycle",
+        "pacote"
+      ],
+      "range": "1.1.1 - 9.0.1",
+      "nodes": [
+        "../plugins/node_modules/@npmcli/run-script"
+      ],
+      "fixAvailable": true
+    },
+    "@nrwl/cli": {
+      "name": "@nrwl/cli",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "nx"
+      ],
+      "effects": [
+        "nx"
+      ],
+      "range": "14.3.3 - 15.9.7",
+      "nodes": [
+        "../plugins/node_modules/@nrwl/cli"
+      ],
+      "fixAvailable": true
+    },
+    "@nrwl/tao": {
+      "name": "@nrwl/tao",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "nx"
+      ],
+      "effects": [
+        "nx"
+      ],
+      "range": "<=0.0.0-pr-31222-862e973 || 14.3.3 - 19.0.7 || 19.1.0-beta.0 - 19.1.0-canary.20240524-12c6a73",
+      "nodes": [
+        "../plugins/node_modules/@nrwl/tao"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/core": {
+      "name": "@octokit/core",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@octokit/graphql",
+        "@octokit/request",
+        "@octokit/request-error"
+      ],
+      "effects": [
+        "@octokit/rest"
+      ],
+      "range": "<=5.0.0-beta.5",
+      "nodes": [
+        "../plugins/node_modules/@octokit/core"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/graphql": {
+      "name": "@octokit/graphql",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@octokit/request"
+      ],
+      "effects": [],
+      "range": "<=2.1.3 || 3.0.0 - 6.0.1",
+      "nodes": [
+        "../plugins/node_modules/@octokit/graphql"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/plugin-paginate-rest": {
+      "name": "@octokit/plugin-paginate-rest",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102898,
+          "name": "@octokit/plugin-paginate-rest",
+          "dependency": "@octokit/plugin-paginate-rest",
+          "title": "@octokit/plugin-paginate-rest has a Regular Expression in iterator Leads to ReDoS Vulnerability Due to Catastrophic Backtracking",
+          "url": "https://github.com/advisories/GHSA-h5c3-5r3r-rr8q",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=1.0.0 <9.2.2"
+        }
+      ],
+      "effects": [
+        "@octokit/rest"
+      ],
+      "range": "<=9.2.1",
+      "nodes": [
+        "../plugins/node_modules/@octokit/plugin-paginate-rest"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/request": {
+      "name": "@octokit/request",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@octokit/request-error",
+        {
+          "source": 1112248,
+          "name": "@octokit/request",
+          "dependency": "@octokit/request",
+          "title": "@octokit/request has a Regular Expression in fetchWrapper that Leads to ReDoS Vulnerability Due to Catastrophic Backtracking",
+          "url": "https://github.com/advisories/GHSA-rmvr-2pp2-xj38",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=1.0.0 <8.4.1"
+        }
+      ],
+      "effects": [
+        "@octokit/core",
+        "@octokit/graphql"
+      ],
+      "range": "<=8.4.0",
+      "nodes": [
+        "../plugins/node_modules/@octokit/request"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/request-error": {
+      "name": "@octokit/request-error",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102256,
+          "name": "@octokit/request-error",
+          "dependency": "@octokit/request-error",
+          "title": "@octokit/request-error has a Regular Expression in index that Leads to ReDoS Vulnerability Due to Catastrophic Backtracking",
+          "url": "https://github.com/advisories/GHSA-xx4v-prfh-6cgc",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=1.0.0 <5.1.1"
+        }
+      ],
+      "effects": [
+        "@octokit/core",
+        "@octokit/request"
+      ],
+      "range": "<=5.1.0",
+      "nodes": [
+        "../plugins/node_modules/@octokit/request-error"
+      ],
+      "fixAvailable": true
+    },
+    "@octokit/rest": {
+      "name": "@octokit/rest",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@octokit/core",
+        "@octokit/plugin-paginate-rest"
+      ],
+      "effects": [
+        "@lerna/github-client"
+      ],
+      "range": "16.39.0 - 20.0.1",
+      "nodes": [
+        "../plugins/node_modules/@octokit/rest"
+      ],
+      "fixAvailable": true
+    },
+    "@remix-run/router": {
+      "name": "@remix-run/router",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112052,
+          "name": "@remix-run/router",
+          "dependency": "@remix-run/router",
+          "title": "React Router vulnerable to XSS via Open Redirects",
+          "url": "https://github.com/advisories/GHSA-2w69-qvjg-hvjx",
+          "severity": "high",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 8,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:N"
+          },
+          "range": "<=1.23.1"
+        }
+      ],
+      "effects": [
+        "react-router",
+        "react-router-dom"
+      ],
+      "range": "<=1.23.1",
+      "nodes": [
+        "node_modules/@remix-run/router"
+      ],
+      "fixAvailable": true
+    },
+    "@storybook/builder-webpack5": {
+      "name": "@storybook/builder-webpack5",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "fork-ts-checker-webpack-plugin"
+      ],
+      "effects": [
+        "@storybook/react-webpack5"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@storybook/builder-webpack5"
+      ],
+      "fixAvailable": false
+    },
+    "@storybook/react-webpack5": {
+      "name": "@storybook/react-webpack5",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@storybook/builder-webpack5"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@storybook/react-webpack5"
+      ],
+      "fixAvailable": false
+    },
+    "@typescript-eslint/eslint-plugin": {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/experimental-utils",
+        "@typescript-eslint/parser",
+        "eslint"
+      ],
+      "effects": [
+        "eslint-plugin-jest"
+      ],
+      "range": "*",
+      "nodes": [
+        "../plugins/node_modules/@typescript-eslint/eslint-plugin"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "@typescript-eslint/experimental-utils": {
+      "name": "@typescript-eslint/experimental-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint-utils"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin"
+      ],
+      "range": "4.25.1-alpha.0 - 5.9.1",
+      "nodes": [
+        "../plugins/node_modules/@typescript-eslint/experimental-utils"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "@typescript-eslint/parser": {
+      "name": "@typescript-eslint/parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin"
+      ],
+      "range": "*",
+      "nodes": [
+        "../plugins/node_modules/@typescript-eslint/parser"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "@typescript-eslint/utils": {
+      "name": "@typescript-eslint/utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "eslint"
+      ],
+      "effects": [
+        "eslint-plugin-jest",
+        "eslint-plugin-storybook"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@typescript-eslint/utils",
+        "node_modules/eslint-plugin-storybook/node_modules/@typescript-eslint/utils"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "ajv": {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113214,
+          "name": "ajv",
+          "dependency": "ajv",
+          "title": "ajv has ReDoS when using `$data` option",
+          "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<8.18.0"
+        }
+      ],
+      "effects": [
+        "@eslint/eslintrc",
+        "ajv-keywords",
+        "eslint",
+        "schema-utils"
+      ],
+      "range": "<8.18.0",
+      "nodes": [
+        "../plugins/node_modules/ajv",
+        "../plugins/node_modules/table/node_modules/ajv",
+        "node_modules/ajv",
+        "node_modules/ajv-formats/node_modules/ajv",
+        "node_modules/schema-utils/node_modules/ajv"
+      ],
+      "fixAvailable": false
+    },
+    "ajv-keywords": {
+      "name": "ajv-keywords",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ajv"
+      ],
+      "effects": [
+        "schema-utils"
+      ],
+      "range": "2.1.1 - 4.0.1",
+      "nodes": [
+        "node_modules/ajv-keywords"
+      ],
+      "fixAvailable": false
+    },
+    "axios": {
+      "name": "axios",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1113092,
+          "name": "axios",
+          "dependency": "axios",
+          "title": "Axios is Vulnerable to Denial of Service via __proto__ Key in mergeConfig",
+          "url": "https://github.com/advisories/GHSA-43fc-jf86-j433",
+          "severity": "high",
+          "cwe": [
+            "CWE-754"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=1.13.4"
+        }
+      ],
+      "effects": [],
+      "range": "<=1.13.4",
+      "nodes": [
+        "../plugins/node_modules/axios",
+        "node_modules/axios"
+      ],
+      "fixAvailable": true
+    },
+    "body-parser": {
+      "name": "body-parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "qs"
+      ],
+      "effects": [
+        "express"
+      ],
+      "range": "<=1.20.3 || 2.0.0-beta.1 - 2.0.2",
+      "nodes": [
+        "node_modules/body-parser"
+      ],
+      "fixAvailable": true
+    },
+    "cacache": {
+      "name": "cacache",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "tar"
+      ],
+      "effects": [
+        "@npmcli/arborist",
+        "@npmcli/metavuln-calculator",
+        "make-fetch-happen",
+        "pacote"
+      ],
+      "range": "14.0.0 - 18.0.4",
+      "nodes": [
+        "../plugins/node_modules/cacache"
+      ],
+      "fixAvailable": true
+    },
+    "diff": {
+      "name": "diff",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112705,
+          "name": "diff",
+          "dependency": "diff",
+          "title": "jsdiff has a Denial of Service vulnerability in parsePatch and applyPatch",
+          "url": "https://github.com/advisories/GHSA-73rr-hh4g-fpgx",
+          "severity": "low",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0 <5.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "5.0.0 - 5.2.1",
+      "nodes": [
+        "node_modules/diff"
+      ],
+      "fixAvailable": true
+    },
+    "eslint": {
+      "name": "eslint",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "@eslint/eslintrc",
+        "ajv"
+      ],
+      "effects": [
+        "@babel/eslint-parser",
+        "@eslint-community/eslint-utils",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "@typescript-eslint/utils",
+        "eslint-config-prettier",
+        "eslint-plugin-jest",
+        "eslint-plugin-prettier",
+        "eslint-plugin-storybook",
+        "eslint-utils"
+      ],
+      "range": ">=4.2.0",
+      "nodes": [
+        "../plugins/node_modules/eslint",
+        "node_modules/eslint"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-config-prettier": {
+      "name": "eslint-config-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [],
+      "range": ">=7.0.0",
+      "nodes": [
+        "../plugins/node_modules/eslint-config-prettier",
+        "node_modules/eslint-config-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-config-prettier",
+        "version": "6.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-plugin-jest": {
+      "name": "eslint-plugin-jest",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "effects": [],
+      "range": ">=22.0.0",
+      "nodes": [
+        "../plugins/node_modules/eslint-plugin-jest",
+        "node_modules/eslint-plugin-jest"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-plugin-prettier": {
+      "name": "eslint-plugin-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [],
+      "range": ">=3.0.0",
+      "nodes": [
+        "../plugins/node_modules/eslint-plugin-prettier",
+        "node_modules/eslint-plugin-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-prettier",
+        "version": "2.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-plugin-storybook": {
+      "name": "eslint-plugin-storybook",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "effects": [],
+      "range": "<=0.0.1-alpha.9 || >=0.2.0",
+      "nodes": [
+        "node_modules/eslint-plugin-storybook"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-storybook",
+        "version": "0.1.1",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-utils": {
+      "name": "eslint-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/experimental-utils"
+      ],
+      "range": ">=3.0.0",
+      "nodes": [
+        "../plugins/node_modules/eslint-utils"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-jest",
+        "version": "21.27.2",
+        "isSemVerMajor": true
+      }
+    },
+    "express": {
+      "name": "express",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "body-parser",
+        "qs"
+      ],
+      "effects": [],
+      "range": "2.5.8 - 2.5.11 || 3.2.1 - 3.2.3 || 4.0.0-rc1 - 4.21.2 || 5.0.0-alpha.1 - 5.0.1",
+      "nodes": [
+        "node_modules/express"
+      ],
+      "fixAvailable": true
+    },
+    "fast-xml-parser": {
+      "name": "fast-xml-parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113153,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser has RangeError DoS Numeric Entities Bug",
+          "url": "https://github.com/advisories/GHSA-37qj-frw5-hhjh",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-248"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=5.0.9 <=5.3.3"
+        },
+        {
+          "source": 1113240,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
+          "url": "https://github.com/advisories/GHSA-jmr7-xgp7-cmfj",
+          "severity": "high",
+          "cwe": [
+            "CWE-776"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.1.3 <5.3.6"
+        }
+      ],
+      "effects": [
+        "@aws-sdk/xml-builder",
+        "@google-cloud/storage",
+        "minio",
+        "snowflake-sdk"
+      ],
+      "range": "4.1.3 - 5.3.5",
+      "nodes": [
+        "../plugins/node_modules/fast-xml-parser",
+        "../plugins/node_modules/minio/node_modules/fast-xml-parser",
+        "../plugins/node_modules/snowflake-sdk/node_modules/fast-xml-parser"
+      ],
+      "fixAvailable": true
+    },
+    "file-loader": {
+      "name": "file-loader",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "schema-utils"
+      ],
+      "effects": [],
+      "range": ">=1.1.0",
+      "nodes": [
+        "node_modules/file-loader"
+      ],
+      "fixAvailable": {
+        "name": "file-loader",
+        "version": "1.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    "fork-ts-checker-webpack-plugin": {
+      "name": "fork-ts-checker-webpack-plugin",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "schema-utils"
+      ],
+      "effects": [
+        "@storybook/builder-webpack5"
+      ],
+      "range": "5.0.0-alpha.1 - 7.0.0-alpha.16 || >=7.2.2",
+      "nodes": [
+        "node_modules/fork-ts-checker-webpack-plugin"
+      ],
+      "fixAvailable": false
+    },
+    "glob": {
+      "name": "glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109842,
+          "name": "glob",
+          "dependency": "glob",
+          "title": "glob CLI: Command injection via -c/--cmd executes matches with shell:true",
+          "url": "https://github.com/advisories/GHSA-5j98-mcp5-4vw2",
+          "severity": "high",
+          "cwe": [
+            "CWE-78"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": ">=10.2.0 <10.5.0"
+        }
+      ],
+      "effects": [],
+      "range": "10.2.0 - 10.4.5",
+      "nodes": [
+        "node_modules/sucrase/node_modules/glob"
+      ],
+      "fixAvailable": true
+    },
+    "js-yaml": {
+      "name": "js-yaml",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112714,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "js-yaml has prototype pollution in merge (<<)",
+          "url": "https://github.com/advisories/GHSA-mh29-5h37-fv8m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<3.14.2"
+        },
+        {
+          "source": 1112715,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "js-yaml has prototype pollution in merge (<<)",
+          "url": "https://github.com/advisories/GHSA-mh29-5h37-fv8m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": ">=4.0.0 <4.1.1"
+        }
+      ],
+      "effects": [
+        "@mdxeditor/editor",
+        "nx"
+      ],
+      "range": "<3.14.2 || >=4.0.0 <4.1.1",
+      "nodes": [
+        "../plugins/node_modules/nx/node_modules/js-yaml",
+        "node_modules/@istanbuljs/load-nyc-config/node_modules/js-yaml",
+        "node_modules/js-yaml"
+      ],
+      "fixAvailable": true
+    },
+    "jspdf": {
+      "name": "jspdf",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1112264,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has Local File Inclusion/Path Traversal vulnerability",
+          "url": "https://github.com/advisories/GHSA-f8cm-6447-x5h2",
+          "severity": "critical",
+          "cwe": [
+            "CWE-22",
+            "CWE-35",
+            "CWE-73"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.0.4"
+        },
+        {
+          "source": 1112801,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has PDF Injection in AcroFormChoiceField that allows Arbitrary JavaScript Execution",
+          "url": "https://github.com/advisories/GHSA-pqxr-3g65-p328",
+          "severity": "high",
+          "cwe": [
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 8.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112802,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF Vulnerable to Denial of Service (DoS) via Unvalidated BMP Dimensions in BMPDecoder",
+          "url": "https://github.com/advisories/GHSA-95fx-jjr5-f39c",
+          "severity": "high",
+          "cwe": [
+            "CWE-20",
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112803,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF Vulnerable to Stored XMP Metadata Injection (Spoofing & Integrity Violation)",
+          "url": "https://github.com/advisories/GHSA-vm32-vv63-w422",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-74"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        },
+        {
+          "source": 1112804,
+          "name": "jspdf",
+          "dependency": "jspdf",
+          "title": "jsPDF has Shared State Race Condition in addJS Plugin",
+          "url": "https://github.com/advisories/GHSA-cjw8-79x6-5cj4",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200",
+            "CWE-362"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=4.0.0"
+        }
+      ],
+      "effects": [
+        "jspdf-autotable"
+      ],
+      "range": "<=4.0.0",
+      "nodes": [
+        "node_modules/jspdf"
+      ],
+      "fixAvailable": {
+        "name": "jspdf",
+        "version": "4.1.0",
+        "isSemVerMajor": true
+      }
+    },
+    "jspdf-autotable": {
+      "name": "jspdf-autotable",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        "jspdf"
+      ],
+      "effects": [],
+      "range": "2.0.9 - 2.1.0 || 2.3.3 - 5.0.2",
+      "nodes": [
+        "node_modules/jspdf-autotable"
+      ],
+      "fixAvailable": {
+        "name": "jspdf-autotable",
+        "version": "5.0.7",
+        "isSemVerMajor": true
+      }
+    },
+    "lerna": {
+      "name": "lerna",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@lerna/add",
+        "@lerna/bootstrap",
+        "@lerna/create",
+        "@lerna/publish",
+        "@lerna/version",
+        "nx"
+      ],
+      "effects": [],
+      "range": "3.11.0 - 3.14.2 || 4.0.0 - 8.2.4",
+      "nodes": [
+        "../plugins/node_modules/lerna"
+      ],
+      "fixAvailable": true
+    },
+    "libnpmaccess": {
+      "name": "libnpmaccess",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "npm-registry-fetch"
+      ],
+      "effects": [],
+      "range": "4.0.0 - 8.0.6",
+      "nodes": [
+        "../plugins/node_modules/libnpmaccess"
+      ],
+      "fixAvailable": true
+    },
+    "libnpmpublish": {
+      "name": "libnpmpublish",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "npm-registry-fetch"
+      ],
+      "effects": [
+        "@lerna/npm-publish"
+      ],
+      "range": "3.0.0 - 9.0.9",
+      "nodes": [
+        "../plugins/node_modules/libnpmpublish"
+      ],
+      "fixAvailable": true
+    },
+    "lodash": {
+      "name": "lodash",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1112455,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+          "url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": ">=4.0.0 <=4.17.22"
+        }
+      ],
+      "effects": [],
+      "range": "4.0.0 - 4.17.21",
+      "nodes": [
+        "../plugins/node_modules/lodash",
+        "node_modules/lodash"
+      ],
+      "fixAvailable": true
+    },
+    "lodash-es": {
+      "name": "lodash-es",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112453,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+          "url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": ">=4.0.0 <=4.17.22"
+        }
+      ],
+      "effects": [],
+      "range": "4.0.0 - 4.17.22",
+      "nodes": [
+        "node_modules/lodash-es"
+      ],
+      "fixAvailable": true
+    },
+    "make-fetch-happen": {
+      "name": "make-fetch-happen",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "cacache"
+      ],
+      "effects": [
+        "node-gyp",
+        "npm-registry-fetch"
+      ],
+      "range": "7.1.1 - 14.0.0",
+      "nodes": [
+        "../plugins/node_modules/make-fetch-happen"
+      ],
+      "fixAvailable": true
+    },
+    "mdast-util-to-hast": {
+      "name": "mdast-util-to-hast",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113048,
+          "name": "mdast-util-to-hast",
+          "dependency": "mdast-util-to-hast",
+          "title": "mdast-util-to-hast has unsanitized class attribute",
+          "url": "https://github.com/advisories/GHSA-4fh9-h7wg-q85m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-915"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": ">=13.0.0 <13.2.1"
+        }
+      ],
+      "effects": [],
+      "range": "13.0.0 - 13.2.0",
+      "nodes": [
+        "node_modules/mdast-util-to-hast"
+      ],
+      "fixAvailable": true
+    },
+    "minio": {
+      "name": "minio",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-xml-parser"
+      ],
+      "effects": [],
+      "range": ">=7.0.33",
+      "nodes": [
+        "../plugins/node_modules/minio"
+      ],
+      "fixAvailable": true
+    },
+    "node-forge": {
+      "name": "node-forge",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1110996,
+          "name": "node-forge",
+          "dependency": "node-forge",
+          "title": "node-forge has ASN.1 Unbounded Recursion",
+          "url": "https://github.com/advisories/GHSA-554w-wpv2-vw27",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<1.3.2"
+        },
+        {
+          "source": 1110998,
+          "name": "node-forge",
+          "dependency": "node-forge",
+          "title": "node-forge has an Interpretation Conflict vulnerability via its ASN.1 Validator Desynchronization",
+          "url": "https://github.com/advisories/GHSA-5gfm-wpxj-wjgq",
+          "severity": "high",
+          "cwe": [
+            "CWE-436"
+          ],
+          "cvss": {
+            "score": 8.6,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:H/A:N"
+          },
+          "range": "<1.3.2"
+        },
+        {
+          "source": 1111068,
+          "name": "node-forge",
+          "dependency": "node-forge",
+          "title": "node-forge is vulnerable to ASN.1 OID Integer Truncation",
+          "url": "https://github.com/advisories/GHSA-65ch-62r8-g69g",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-190"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<1.3.2"
+        }
+      ],
+      "effects": [],
+      "range": "<=1.3.1",
+      "nodes": [
+        "node_modules/node-forge"
+      ],
+      "fixAvailable": true
+    },
+    "node-gyp": {
+      "name": "node-gyp",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "make-fetch-happen",
+        "tar"
+      ],
+      "effects": [
+        "@npmcli/run-script"
+      ],
+      "range": "<=10.3.1",
+      "nodes": [
+        "../plugins/node_modules/node-gyp"
+      ],
+      "fixAvailable": true
+    },
+    "nodemailer": {
+      "name": "nodemailer",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109804,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer: Email to an unintended domain can occur due to Interpretation Conflict",
+          "url": "https://github.com/advisories/GHSA-mm7p-fcc7-pg87",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-20",
+            "CWE-436"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<7.0.7"
+        },
+        {
+          "source": 1113165,
+          "name": "nodemailer",
+          "dependency": "nodemailer",
+          "title": "Nodemailer’s addressparser is vulnerable to DoS caused by recursive calls",
+          "url": "https://github.com/advisories/GHSA-rcmh-qjqh-p98v",
+          "severity": "high",
+          "cwe": [
+            "CWE-703"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=7.0.10"
+        }
+      ],
+      "effects": [],
+      "range": "<=7.0.10",
+      "nodes": [
+        "../plugins/node_modules/nodemailer"
+      ],
+      "fixAvailable": {
+        "name": "nodemailer",
+        "version": "8.0.1",
+        "isSemVerMajor": true
+      }
+    },
+    "npm-registry-fetch": {
+      "name": "npm-registry-fetch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "make-fetch-happen"
+      ],
+      "effects": [
+        "@lerna/npm-dist-tag",
+        "@lerna/publish",
+        "@npmcli/arborist",
+        "libnpmaccess",
+        "libnpmpublish",
+        "pacote"
+      ],
+      "range": "7.0.0 - 18.0.0",
+      "nodes": [
+        "../plugins/node_modules/npm-registry-fetch"
+      ],
+      "fixAvailable": true
+    },
+    "nx": {
+      "name": "nx",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@nrwl/cli",
+        "@nrwl/tao",
+        "js-yaml"
+      ],
+      "effects": [
+        "@nrwl/cli",
+        "@nrwl/tao",
+        "lerna"
+      ],
+      "range": "14.3.3 - 19.0.7 || 19.1.0-beta.0 - 19.1.0-canary.20240524-12c6a73 || 19.8.15",
+      "nodes": [
+        "../plugins/node_modules/nx"
+      ],
+      "fixAvailable": true
+    },
+    "pacote": {
+      "name": "pacote",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@npmcli/run-script",
+        "cacache",
+        "npm-registry-fetch",
+        "tar"
+      ],
+      "effects": [
+        "@lerna/add",
+        "@lerna/create",
+        "@lerna/publish",
+        "@npmcli/arborist",
+        "@npmcli/metavuln-calculator"
+      ],
+      "range": "5.0.0 - 21.0.0",
+      "nodes": [
+        "../plugins/node_modules/pacote"
+      ],
+      "fixAvailable": true
+    },
+    "preact": {
+      "name": "preact",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1111983,
+          "name": "preact",
+          "dependency": "preact",
+          "title": "Preact has JSON VNode Injection issue",
+          "url": "https://github.com/advisories/GHSA-36hm-qxxp-pg3m",
+          "severity": "high",
+          "cwe": [
+            "CWE-843"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=10.27.0 <10.27.3"
+        }
+      ],
+      "effects": [],
+      "range": "10.27.0 - 10.27.2",
+      "nodes": [
+        "node_modules/preact"
+      ],
+      "fixAvailable": true
+    },
+    "qs": {
+      "name": "qs",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113132,
+          "name": "qs",
+          "dependency": "qs",
+          "title": "qs's arrayLimit bypass in its bracket notation allows DoS via memory exhaustion",
+          "url": "https://github.com/advisories/GHSA-6rw7-vpxm-498p",
+          "severity": "high",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<6.14.1"
+        },
+        {
+          "source": 1113161,
+          "name": "qs",
+          "dependency": "qs",
+          "title": "qs's arrayLimit bypass in comma parsing allows denial of service",
+          "url": "https://github.com/advisories/GHSA-w7fw-mjwx-w883",
+          "severity": "low",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=6.7.0 <=6.14.1"
+        }
+      ],
+      "effects": [
+        "body-parser",
+        "express"
+      ],
+      "range": "<=6.14.1",
+      "nodes": [
+        "../plugins/node_modules/qs",
+        "node_modules/body-parser/node_modules/qs",
+        "node_modules/express/node_modules/qs"
+      ],
+      "fixAvailable": true
+    },
+    "react-router": {
+      "name": "react-router",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@remix-run/router",
+        {
+          "source": 1112057,
+          "name": "react-router",
+          "dependency": "react-router",
+          "title": "React Router has unexpected external redirect via untrusted paths",
+          "url": "https://github.com/advisories/GHSA-9jcx-v3wj-wh4m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-601"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": ">=6.0.0 <6.30.2"
+        }
+      ],
+      "effects": [
+        "react-router-dom"
+      ],
+      "range": "6.0.0 - 6.30.2",
+      "nodes": [
+        "node_modules/react-router"
+      ],
+      "fixAvailable": true
+    },
+    "react-router-dom": {
+      "name": "react-router-dom",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@remix-run/router",
+        "react-router"
+      ],
+      "effects": [],
+      "range": "6.0.0-alpha.0 - 6.30.2",
+      "nodes": [
+        "node_modules/react-router-dom"
+      ],
+      "fixAvailable": true
+    },
+    "schema-utils": {
+      "name": "schema-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ajv",
+        "ajv-keywords"
+      ],
+      "effects": [
+        "file-loader",
+        "fork-ts-checker-webpack-plugin"
+      ],
+      "range": "<=3.3.0",
+      "nodes": [
+        "node_modules/file-loader/node_modules/schema-utils",
+        "node_modules/fork-ts-checker-webpack-plugin/node_modules/schema-utils"
+      ],
+      "fixAvailable": false
+    },
+    "snowflake-sdk": {
+      "name": "snowflake-sdk",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102097,
+          "name": "snowflake-sdk",
+          "dependency": "snowflake-sdk",
+          "title": "snowflake-sdk may incorrectly validate temporary credential cache file permissions",
+          "url": "https://github.com/advisories/GHSA-xfhv-wqj6-rx99",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-281"
+          ],
+          "cvss": {
+            "score": 4.4,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N"
+          },
+          "range": ">=1.12.0 <=2.0.1"
+        },
+        {
+          "source": 1104100,
+          "name": "snowflake-sdk",
+          "dependency": "snowflake-sdk",
+          "title": "NodeJS Driver for Snowflake has race condition when checking access to Easy Logging configuration file",
+          "url": "https://github.com/advisories/GHSA-wmjq-jrm2-9wfr",
+          "severity": "low",
+          "cwe": [
+            "CWE-367"
+          ],
+          "cvss": {
+            "score": 3.3,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=1.10.0 <=2.0.3"
+        },
+        "fast-xml-parser"
+      ],
+      "effects": [],
+      "range": "1.6.21 - 2.3.3",
+      "nodes": [
+        "../plugins/node_modules/snowflake-sdk"
+      ],
+      "fixAvailable": true
+    },
+    "tar": {
+      "name": "tar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112255,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "node-tar is Vulnerable to Arbitrary File Overwrite and Symlink Poisoning via Insufficient Path Sanitization",
+          "url": "https://github.com/advisories/GHSA-8qq5-rm4j-mr97",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=7.5.2"
+        },
+        {
+          "source": 1112329,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Race Condition in node-tar Path Reservations via Unicode Ligature Collisions on macOS APFS",
+          "url": "https://github.com/advisories/GHSA-r6q2-hw4h-h46w",
+          "severity": "high",
+          "cwe": [
+            "CWE-176"
+          ],
+          "cvss": {
+            "score": 8.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:H/A:L"
+          },
+          "range": "<=7.5.3"
+        },
+        {
+          "source": 1112659,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",
+          "url": "https://github.com/advisories/GHSA-34x7-hfp2-rc4v",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-59"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N"
+          },
+          "range": "<7.5.7"
+        },
+        {
+          "source": 1113249,
+          "name": "tar",
+          "dependency": "tar",
+          "title": "Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction",
+          "url": "https://github.com/advisories/GHSA-83g3-92jg-28cx",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 7.1,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
+          },
+          "range": "<7.5.8"
+        }
+      ],
+      "effects": [
+        "@lerna/get-packed",
+        "@lerna/pack-directory",
+        "cacache",
+        "node-gyp",
+        "pacote"
+      ],
+      "range": "<=7.5.7",
+      "nodes": [
+        "../plugins/node_modules/tar"
+      ],
+      "fixAvailable": true
+    },
+    "webpack": {
+      "name": "webpack",
+      "severity": "low",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1113041,
+          "name": "webpack",
+          "dependency": "webpack",
+          "title": "webpack buildHttp: allowedUris allow-list bypass via URL userinfo (@) leading to build-time SSRF behavior",
+          "url": "https://github.com/advisories/GHSA-8fgc-7cc6-rx7x",
+          "severity": "low",
+          "cwe": [
+            "CWE-918"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N"
+          },
+          "range": ">=5.49.0 <=5.104.0"
+        },
+        {
+          "source": 1113042,
+          "name": "webpack",
+          "dependency": "webpack",
+          "title": "webpack buildHttp HttpUriPlugin allowedUris bypass via HTTP redirects → SSRF + cache persistence",
+          "url": "https://github.com/advisories/GHSA-38r7-794h-5758",
+          "severity": "low",
+          "cwe": [
+            "CWE-918"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:N"
+          },
+          "range": ">=5.49.0 <5.104.0"
+        }
+      ],
+      "effects": [],
+      "range": "5.49.0 - 5.104.0",
+      "nodes": [
+        "node_modules/webpack"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 2,
+      "moderate": 35,
+      "high": 62,
+      "critical": 2,
+      "total": 101
+    },
+    "dependencies": {
+      "prod": 2321,
+      "dev": 1677,
+      "optional": 72,
+      "peer": 330,
+      "peerOptional": 0,
+      "total": 4380
+    }
+  }
+}
