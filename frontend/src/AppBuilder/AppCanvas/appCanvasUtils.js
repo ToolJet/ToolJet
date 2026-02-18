@@ -252,6 +252,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
       allComponents[parentId]?.component?.component === 'ModalV2';
 
@@ -382,6 +383,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
+      parentComponent.component.component === 'Accordion' ||
       parentComponent.component.component === 'Form' ||
       parentComponent.component.component === 'ModalV2'
     );
@@ -555,7 +557,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
@@ -753,7 +755,10 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
   else if (
     slotName &&
-    (parentComponent === 'Form' || parentComponent === 'Container' || parentComponent === 'ModalV2')
+    (parentComponent === 'Form' ||
+      parentComponent === 'Container' ||
+      parentComponent === 'Accordion' ||
+      parentComponent === 'ModalV2')
   ) {
     return `${parentId}-${slotName}`;
   }
@@ -789,7 +794,7 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form') {
+  if (componentType === 'Container' || componentType === 'Accordion' || componentType === 'Form') {
     padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
   }
   // if (componentType === 'Tabs') {
