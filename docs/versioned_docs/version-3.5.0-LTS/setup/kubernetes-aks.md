@@ -64,7 +64,7 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](/docs/setup/upgrade-to-v3/)
 
 #### Setting Up ToolJet Database
 

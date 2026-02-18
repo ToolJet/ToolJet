@@ -57,7 +57,6 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 1. Setup a PostgreSQL database, ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
 2. Create a target group and an application load balancer to route traffic onto ToolJet containers. You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
 3. Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
-
    1. Select Fargate as launch type compatibility
    2. Configure IAM roles and set operating system family as Linux.
    3. Select task size to have 3GB of memory and 1vCpu
@@ -129,7 +128,7 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](/docs/setup/upgrade-to-v3/)
   Follow the steps below to deploy PostgREST on a ECS cluster.
 
 1. Create a new take definition

@@ -15,7 +15,6 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
 2. **Create a Kubernetes secret with name `server`.** <br/>
    For the setup, ToolJet requires:
-
    - **TOOLJET_DB**
    - **TOOLJET_DB_HOST**
    - **TOOLJET_DB_USER**
@@ -52,7 +51,6 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
    **Examples:**
-
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
@@ -66,7 +64,7 @@ To use the ToolJet Database, you need to set up and deploy a PostgREST server, w
 
 Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
 
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](/docs/setup/upgrade-to-v3/)
 
 1. Setup PostgREST server
 
