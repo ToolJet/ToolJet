@@ -3,47 +3,68 @@ id: display-listview-record-on-new-page
 title: Display Listview Record Details on a New Page
 ---
 
-This guide explains how to display details of a selected record from a **Listview** component on a different page in ToolJet.
+The **ListView** widget allows you to display structured data in a repeatable layout. You can configure it to navigate to another page and display detailed information about a selected record.
+
+For this guide, we are going to use one of the existing templates on ToolJet: **Employee Time Tracker**
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/display-listview-record-on-new-page/overview1.png" alt="App's overview"  />
 
 ## Build the App
 
-1. Drag a **Listview** component and setup other required components.
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/build-app.png" alt="Build the app"  />
-2. Add another page in the application.
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/add-new-page.png" alt="Add a new page"  />
-3. Setup the second page with required fields and components.
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/setup-second-page.png" alt="Setup the second page"  />
+### Query Configuration
+
+- Create a query named **`get_employees`** which is configured to fetch records from a database table such as **`ett_employee_details`**
+
+- Select the operation as **Liste rows** and select the mode as **GUI**
+
+### ListView Data Configuration
+
+- Drag the **ListView** widget from Components section onto the canvas, and bind the Data property to:
+
+```javascript
+ {{queries.get_employees.data}}
+ ```
+Each employee object will now render as one ListView item.
+
+- Inside the ListView, add Text widgets and bind them using:
+
+```javascript
+{{listItem.name}}
+{{listItem.designation}}
+{{listItem.department}} 
+```
+Here, `listItem` represents the current employee object being rendered.
+
+<img className="screenshot-full img-full" src="/img/how-to/display-listview-record-on-new-page/get-employees-query.png" alt="Add a new page"  />
 
 ## Setting up Event Handlers
-
 Add a new event handler to the **Listview** component with the following configurations:
-- Event: **Record Clicked**
-- Action: **Set variable**
-- Key: **selectedEmp** *(Enter your desired variable name.)*
-- Value: 
+
+1. - Event: **Record Clicked**
+   - Action: **Set variable**
+   - Key: **selected_emp** *(Enter your desired variable name.)*
+   - Value: 
+
     ```json
     {{[{ 
-        name: components.listview1.selectedRecord.text17.text,
-        designation: components.listview1.selectedRecord.text15.text,
-        department: components.listview1.selectedRecord.text14.text 
+    name: components.listview1.selectedRecord.emp_name.text,
+    designation: components.listview1.selectedRecord.emp_designation.text,
+    department: components.listview1.selectedRecord.emp_dept.text 
     }]}}
     ```
+    <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/display-listview-record-on-new-page/set-variable-eh.png" alt="Add event handler to set variables"/>
 
-This event will save the record value in the specified variable, which can be accessed on another page. 
+2. - Event: **Record Clicked**
+   - Action: **Switch Page** 
+   - Page: **Employee Details**
 
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/set-variable.png" alt="Add event handler to set variables"/>
+    <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/how-to/display-listview-record-on-new-page/switch-page-eh.png" alt="Add event handler to switch page"/> 
 
-Create one more event and configure it with the following settings to switch the page when a record is clicked:
-    - Event: **Record Clicked**
-    - Action: **Switch page**
-    - Page: **Employee Details** *(Select your desired page from the dropdown.)*
 
-This event will switch the page whenever a record is clicked.
+## Displaying Selected Record on Another Page
 
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/switch-page.png" alt="Add event handler to switch page"/>
+After setting up event handlers and configuring the ListView to navigate to a detail page with parameters, the destination page needs to consume the passed data and render the appropriate record details.
 
-## Displaying Info on Another Page
+On the destination page, this data is accessed using **`{{variables.selectedEmp[0].name}}`**
 
-Now, you can reference the values stored in the variables from the previous page. For instance, you can set the default value of the **Text input** component using `{{variables.selectedEmp[0].name}}`.
-
-<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/display-data.png" alt="Display data on the new page"/>
+<img className="screenshot-full" src="/img/how-to/display-listview-record-on-new-page/overview2.png" alt="Display data on the new page"/>   
