@@ -40,20 +40,20 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X-lts.ubuntu_jammy` in the search bar.
 
    :::info AMI Region
-   ToolJet AMIs are published in the **us-east-1 (N. Virginia)** region. If you want to deploy in a different region, you can copy the AMI to your preferred region using one of the methods below.
+   ToolJet AMIs are published in the **us-west-1 (N. California)** region. If you want to deploy in a different region, you can copy the AMI to your preferred region using one of the methods below.
    :::
 
    **Copying AMI to another region:**
 
    **Option A: Using AWS Console**
-   - Go to **EC2 → AMIs** in us-east-1
+   - Go to **EC2 → AMIs** in us-west-1
    - Find the ToolJet AMI → **Actions → Copy AMI**
    - Select your target region and click **Copy AMI**
 
    **Option B: Using AWS CLI**
    ```bash
    aws ec2 copy-image \
-     --source-region us-east-1 \
+     --source-region us-west-1 \
      --source-image-id <ami-id> \
      --region <your-preferred-region> \
      --name "ToolJet-<version>"
