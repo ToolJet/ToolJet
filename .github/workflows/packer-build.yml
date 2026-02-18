@@ -20,7 +20,34 @@ on:
         default: "us-east-1"
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    name: check-version
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Check if version is AMI-eligible (multiple of 10)
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch — always build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF#refs/*/}"
+            # Extract patch number: v3.20.100-lts → 100
+            PATCH=$(echo "$TAG" | sed 's/^v//' | cut -d'.' -f3 | cut -d'-' -f1)
+            if (( PATCH % 10 == 0 )); then
+              echo "Version $TAG is AMI-eligible (patch $PATCH is multiple of 10)"
+              echo "should_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "Skipping AMI build — $TAG patch $PATCH is not a multiple of 10"
+              echo "should_build=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
   packer-ee:
+    needs: check-version
+    if: needs.check-version.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     name: packer-ee
 
