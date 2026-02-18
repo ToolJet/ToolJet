@@ -81,10 +81,128 @@ function enableWebhook(appId, value) {
   return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
 }
 
-function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10, workflowId = null, sortBy, sortOrder, filters = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const baseParams = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+  });
+
+  if (workflowId) {
+    baseParams.set('workflow_id', workflowId);
+  }
+
+  if (sortBy) {
+    baseParams.set('sort_by', sortBy);
+  }
+
+  if (sortOrder) {
+    baseParams.set('sort_order', sortOrder);
+  }
+
+  // Add filters to query params
+  if (filters) {
+    // Status filter (multiple selection)
+    if (filters.status && filters.status.length > 0) {
+      baseParams.set('status', filters.status.join(','));
+    }
+    
+    // Trigger filter (multiple selection)
+    if (filters.trigger && filters.trigger.length > 0) {
+      baseParams.set('trigger', filters.trigger.join(','));
+    }
+    
+    // Started at filter (single selection - converts to date range)
+    if (filters.startedAt) {
+      const now = new Date();
+      let startDate, endDate;
+      
+      switch (filters.startedAt) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+          break;
+        case 'yesterday':
+          const yesterday = new Date(now);
+          yesterday.setDate(yesterday.getDate() - 1);
+          startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+          endDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
+          break;
+        case 'last7days':
+          startDate = new Date(now);
+          startDate.setDate(startDate.getDate() - 7);
+          endDate = now;
+          break;
+        case 'last30days':
+          startDate = new Date(now);
+          startDate.setDate(startDate.getDate() - 30);
+          endDate = now;
+          break;
+      }
+      
+      if (startDate) {
+        baseParams.set('started_at_start', startDate.toISOString());
+      }
+      if (endDate) {
+        baseParams.set('started_at_end', endDate.toISOString());
+      }
+    }
+    
+    // Date filter (explicit date range)
+    if (filters.date) {
+      if (filters.date.start) {
+        baseParams.set('started_at_start', new Date(filters.date.start).toISOString());
+      }
+      if (filters.date.end) {
+        // Set end date to end of day
+        const endDate = new Date(filters.date.end);
+        endDate.setHours(23, 59, 59, 999);
+        baseParams.set('started_at_end', endDate.toISOString());
+      }
+    }
+    
+    // Duration filter (single selection - converts to min/max seconds)
+    if (filters.duration) {
+      let minSeconds, maxSeconds;
+      
+      switch (filters.duration) {
+        case 'less1min':
+          minSeconds = 0;
+          maxSeconds = 59;
+          break;
+        case '1-5min':
+          minSeconds = 60;
+          maxSeconds = 300;
+          break;
+        case '5-15min':
+          minSeconds = 300;
+          maxSeconds = 900;
+          break;
+        case '15-30min':
+          minSeconds = 900;
+          maxSeconds = 1800;
+          break;
+        case '30+min':
+          minSeconds = 1800;
+          maxSeconds = null; // No upper limit
+          break;
+      }
+      
+      if (minSeconds !== undefined) {
+        baseParams.set('duration_min', minSeconds);
+      }
+      if (maxSeconds !== null && maxSeconds !== undefined) {
+        baseParams.set('duration_max', maxSeconds);
+      }
+    }
+  }
+
+  if (!appVersionId) {
+    const url = `${config.apiUrl}/workflow_executions/organization/all?${baseParams.toString()}`;
+    return fetch(url, requestOptions).then(handleResponse);
+  }
   return fetch(
-    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
+    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&${baseParams.toString()}`,
     requestOptions
   ).then(handleResponse);
 }
