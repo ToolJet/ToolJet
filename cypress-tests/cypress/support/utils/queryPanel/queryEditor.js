@@ -84,7 +84,7 @@ export const verifyConnectionFormUI = (fields) => {
         verifyCheckboxFieldUI(field);
         break;
       case 'codeMirror':
-        fillDataOnCodeMirrorInput(field.selector, field.data);
+        fillDataOnCodeMirrorInput(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);

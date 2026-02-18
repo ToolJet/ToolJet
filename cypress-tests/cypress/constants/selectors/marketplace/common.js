@@ -70,4 +70,7 @@ export const dsCommonSelector = {
     checkboxInput: (checkboxName) => {
         return `[data-cy="${cyParamName(checkboxName)}-checkbox-input"]`;
     },
+    codeMirrorField: (fieldName) => {
+        return `[data-cy="${cyParamName(fieldName)}-input-field"]`;
+    },
 };

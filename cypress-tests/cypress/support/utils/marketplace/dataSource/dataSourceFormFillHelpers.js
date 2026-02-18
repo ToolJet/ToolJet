@@ -140,9 +140,44 @@ export const fillDSConnectionEncryptedField = (field) => {
   cy.clearAndType(fieldSelector, field.text);
 };
 
-export const fillDataOnCodeMirrorInput = (selector, data) => {
-  cy.get(selector).clearAndTypeOnCodeMirror(data);
-}
+export const fillDataOnCodeMirrorInput = (field) => {
+  const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  if (Array.isArray(field.text)) {
+    const rawText = field.text.join("");
+    cy.get(selector)
+      .realClick()
+      .find(".cm-line")
+      .invoke("text")
+      .then((text) => {
+        cy.get(selector)
+          .last()
+          .click()
+          .type("{selectAll}{backspace}", { delay: 0 });
+        cy.get(selector).last().realType(rawText, {
+          parseSpecialCharSequences: false,
+          delay: 0,
+          force: true,
+        });
+      });
+  } else {
+    cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+  }
+};
+
+export const fillCodeMirrorKeyValuePairs = (field) => {
+  field.keyValueData.forEach((pair, index) => {
+    cy.get(dsCommonSelector.button(field.addButtonFieldName))
+      .should('be.visible')
+      .click();
+    cy.wait(500);
+
+    cy.get(dsCommonSelector.codeMirrorField(`key-${index}`))
+      .clearAndTypeOnCodeMirror(pair.key);
+
+    cy.get(dsCommonSelector.codeMirrorField(`value-${index}`))
+      .clearAndTypeOnCodeMirror(pair.value);
+  });
+};
 
 
 const processFields = (fields) => {
@@ -170,7 +205,10 @@ const processFields = (fields) => {
         selectDSConnectionCheckbox(field);
         break;
       case 'codeMirror':
-        fillDataOnCodeMirrorInput(field.selector, field.data);
+        fillDataOnCodeMirrorInput(field);
+        break;
+      case 'codeMirrorKeyValue':
+        fillCodeMirrorKeyValuePairs(field);
         break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);

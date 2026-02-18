@@ -1,5 +1,5 @@
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
-import { postgresQueryConfig } from "Constants/constants/queryPanel/postgres";
+import { postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/queryPanel/postgres";
 import { restapiQueryConfig } from "Constants/constants/queryPanel/restapi";
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
@@ -26,6 +26,7 @@ describe('Query', () => {
                 { key: "connection_type", value: "manual", encrypted: false },
                 { key: "host", value: Cypress.env("pg_host"), encrypted: false },
                 { key: "port", value: 5432, encrypted: false },
+                { key: "database", value: Cypress.env("pg_database"), encrypted: false },
                 { key: "ssl_enabled", value: false, encrypted: false },
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: Cypress.env("pg_user"), encrypted: false },
@@ -35,7 +36,8 @@ describe('Query', () => {
                 { key: "client_cert", value: null, encrypted: true },
                 { key: "root_cert", value: null, encrypted: true },
                 { key: "connection_string", value: null, encrypted: true },
-            ]
+            ],
+            true
         );
 
         cy.apiCreateApp(data.appName);
@@ -53,6 +55,11 @@ describe('Query', () => {
 
         cy.get('[data-cy="list-query-table-creation"]').click();
         verifyConnectionFormUI(postgresQueryConfig.defaultFields);
+        // cy.get('[data-cy="list-query-select-with-params"]').click();
+        fillDSConnectionForm(postgresQueryFillConfig.selectWithParams);
+
     });
+
+
 
 });
