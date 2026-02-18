@@ -469,6 +469,9 @@ export const tableConfig = {
     },
   },
   exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
     selectedRow: {},
     changeSet: {},
     dataUpdates: [],
@@ -570,6 +573,21 @@ export const tableConfig = {
     {
       handle: 'clearFilters',
       displayName: 'Clear filters',
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   definition: {
