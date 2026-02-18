@@ -11,7 +11,7 @@ const { MenuList } = components;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput } =
+  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput, placeholderTextColor } =
     selectProps;
 
   const parentRef = useRef(null);
@@ -84,6 +84,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             onFocus={onMenuInputFocus}
             placeholder="Search"
             className="dropdown-multiselect-widget-search-box"
+            style={{ '--cc-placeholder-text': placeholderTextColor || 'var(--cc-placeholder-text)' }}
           />
         </div>
       )}

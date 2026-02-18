@@ -70,6 +70,7 @@ type NewRevampedComponent =
   | 'PasswordInput'
   | 'NumberInput'
   | 'EmailInput'
+  | 'DropdownV2'
   | 'Table'
   | 'Button'
   | 'Checkbox'
@@ -112,6 +113,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'PasswordInput',
   'NumberInput',
   'EmailInput',
+  'DropdownV2',
   'Table',
   'Checkbox',
   'Button',
@@ -173,6 +175,13 @@ const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
       'DatetimePickerV2',
       'TimePicker',
       'DaterangePicker',
+];
+
+const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = [
+  'TextInput',
+  'PasswordInput',
+  'NumberInput',
+  'DropdownV2',
 ];
 
 @Injectable()
@@ -2866,6 +2875,10 @@ function migrateProperties(
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
       properties.showClearBtn = { value: '{{false}}' };
+    }
+
+    if (PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES.includes(componentType) && styles.placeholderTextColor === undefined) {
+      styles.placeholderTextColor = { value: 'var(--cc-placeholder-text)' };
     }
   }
 

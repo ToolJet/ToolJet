@@ -229,6 +229,12 @@ export const dropdownV2Config = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'field',
+    },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
@@ -369,6 +375,7 @@ export const dropdownV2Config = {
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
       selectedTextColor: { value: 'var(--cc-primary-text)' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       fieldBorderColor: { value: 'var(--cc-default-border)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
