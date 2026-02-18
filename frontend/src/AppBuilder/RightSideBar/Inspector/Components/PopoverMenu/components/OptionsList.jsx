@@ -16,10 +16,14 @@ const OptionsList = ({
   onDragEnd,
   getResolvedValue,
   getItemStyle,
+  // Configurable props for reuse
+  dataCyPrefix = 'inspector-popover-menu',
+  popoverFields,
+  popoverClassName,
   ...restProps
 }) => {
   return (
-    <List data-cy="inspector-popover-menu-options-list" style={{ marginBottom: '12px' }}>
+    <List data-cy={`${dataCyPrefix}-options-list`} style={{ marginBottom: '12px' }}>
       <DragDropContext
         onDragEnd={(result) => {
           onDragEnd(result);
@@ -28,12 +32,7 @@ const OptionsList = ({
         <Droppable droppableId="droppable">
           {({ innerRef, droppableProps, placeholder }) => {
             return (
-              <div
-                data-cy="inspector-popover-menu-options-droppable"
-                className="w-100"
-                {...droppableProps}
-                ref={innerRef}
-              >
+              <div data-cy={`${dataCyPrefix}-options-droppable`} className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => (
                   <OptionItem
                     key={item?.value}
@@ -47,6 +46,9 @@ const OptionsList = ({
                     onOptionChange={onOptionChange}
                     getResolvedValue={getResolvedValue}
                     getItemStyle={getItemStyle}
+                    dataCyPrefix={dataCyPrefix}
+                    popoverFields={popoverFields}
+                    popoverClassName={popoverClassName}
                     {...restProps}
                   />
                 ))}
@@ -56,7 +58,7 @@ const OptionsList = ({
           }}
         </Droppable>
       </DragDropContext>
-      <AddNewButton onClick={onAddOption} dataCy="inspector-popover-menu-add-new-option" className="mt-0">
+      <AddNewButton onClick={onAddOption} dataCy={`${dataCyPrefix}-add-new-option`} className="mt-0">
         Add new option
       </AddNewButton>
     </List>
