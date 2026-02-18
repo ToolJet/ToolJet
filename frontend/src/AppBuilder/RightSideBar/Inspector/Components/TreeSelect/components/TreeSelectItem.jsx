@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import TreeSelectItemPopover from './TreeSelectItemPopover';
+import { ToolTip } from '@/_components/ToolTip';
+import { EllipsisVertical, Plus, Trash2, Pencil } from 'lucide-react';
 
 export const TreeSelectItem = ({
   darkMode,
@@ -59,6 +59,19 @@ export const TreeSelectItem = ({
         <div className="left">
           <OverflowTooltip childrenClassName="option-label">{item?.label || item?.value}</OverflowTooltip>
         </div>
+        <div
+          className={`action-btn-wrapper tw-mr-1`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddNested();
+          }}
+        >
+          <div className="icon-btn">
+            <ToolTip message="Create nested option" placement="bottom">
+              <Plus width={12} height={12} />
+            </ToolTip>
+          </div>
+        </div>
         <div>
           <div className={`action-btn-wrapper ${showActionsPopover ? 'options-opened' : ''}`}>
             <div
@@ -70,7 +83,7 @@ export const TreeSelectItem = ({
               }}
               className="icon-btn"
             >
-              <SolidIcon name="morevertical01" fill="var(--icons-strong)" width="12" viewBox="0 0 12 12" />
+              <EllipsisVertical width={12} height={12} />
             </div>
 
             <Overlay
@@ -92,28 +105,8 @@ export const TreeSelectItem = ({
                       handleEdit();
                     }}
                   >
-                    <TablerIcon
-                      iconName="IconPencil"
-                      size={16}
-                      stroke={1.5}
-                      className="treeselect-item-action-option-icon"
-                    />
+                    <Pencil className="treeselect-item-action-option-icon" width={12} height={12} />
                     <span className="treeselect-item-action-option-label">Edit option</span>
-                  </div>
-                  <div
-                    className="treeselect-item-action-option"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddNested();
-                    }}
-                  >
-                    <TablerIcon
-                      iconName="IconPlus"
-                      size={16}
-                      stroke={1.5}
-                      className="treeselect-item-action-option-icon"
-                    />
-                    <span className="treeselect-item-action-option-label">Create nested option</span>
                   </div>
                   <div
                     className="treeselect-item-action-option treeselect-item-action-option-danger"
@@ -122,12 +115,7 @@ export const TreeSelectItem = ({
                       handleDelete();
                     }}
                   >
-                    <TablerIcon
-                      iconName="IconTrash"
-                      size={16}
-                      stroke={1.5}
-                      className="treeselect-item-action-option-icon"
-                    />
+                    <Trash2 className="treeselect-item-action-option-icon" width={12} height={12} />
                     <span className="treeselect-item-action-option-label">Delete option</span>
                   </div>
                 </Popover.Body>

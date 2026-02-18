@@ -168,6 +168,7 @@
     transition: opacity 0.15s ease;
 
     .icon-btn {
+      padding: 0px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -383,9 +384,7 @@
       background-color: var(--interactive-hover);
     }
 
-    .treeselect-item-action-option-icon {
-      color: var(--icons-default);
-    }
+
 
     .treeselect-item-action-option-label {
       font-size: 12px;

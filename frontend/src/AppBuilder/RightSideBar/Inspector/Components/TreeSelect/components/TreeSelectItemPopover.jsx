@@ -53,7 +53,7 @@ const TreeSelectItemPopover = forwardRef(
                 iconOnly
                 onClick={handleDelete}
                 title="Delete"
-                trailingIcon="trash"
+                trailingIcon="trash-2"
                 variant="ghost"
                 size="medium"
               />
