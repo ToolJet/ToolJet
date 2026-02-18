@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -8,6 +8,9 @@ import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
 import { useExposedVariables } from './useExposedVariables';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import cx from 'classnames';
 
 const TreeSelect = ({
   height,
@@ -19,11 +22,29 @@ const TreeSelect = ({
   darkMode,
   dataCy,
   id,
+  width,
+  adjustComponentPositions,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
 }) => {
-  const { label, visibility, disabledState, loadingState, options, advanced, allowIndependentSelection } = properties;
+  const {
+    label,
+    visibility,
+    disabledState,
+    loadingState,
+    options,
+    advanced,
+    allowIndependentSelection,
+    dynamicHeight = false,
+  } = properties;
   const { checkboxColor: checkedBackground, uncheckedBackground, borderColor, checkmarkColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+
+  const containerRef = useRef(null);
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
   // Recursively filter hidden items and resolve per-node disabled state
   const processNodes = (items) => {
@@ -56,6 +77,18 @@ const TreeSelect = ({
     loadingState,
     setExposedVariable,
     setExposedVariables,
+  });
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width,
+    visibility: isVisible,
+    subContainerIndex,
   });
 
   const onCheck = (newChecked, updatedNode) => {
@@ -91,10 +124,13 @@ const TreeSelect = ({
 
   return (
     <div
-      className="custom-checkbox-tree"
+      ref={containerRef}
+      className={cx('custom-checkbox-tree', {
+        [`dynamic-${id}`]: isDynamicHeightEnabled,
+      })}
       data-disabled={isDisabled}
       style={{
-        height: '100%',
+        height: isDynamicHeightEnabled ? 'auto' : '100%',
         display: isVisible ? '' : 'none',
         color: textColor,
         boxShadow,

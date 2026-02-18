@@ -63,13 +63,12 @@ const TreeSelectItemPopover = forwardRef(
           {/* Content */}
           <div data-cy="inspector-treeselect-item-details-content" className="treeselect-item-popover-content">
             {/* Label & Value fields */}
-            {/* <div className="treeselect-item-popover-fields-section"> */}
             <div data-cy="inspector-treeselect-item-details-label-field" className="treeselect-item-popover-field">
               <label
                 data-cy="inspector-treeselect-item-details-label-label"
                 className="treeselect-item-popover-field-label"
               >
-                Label
+                Option label
               </label>
               <CodeHinter
                 {...basicCodeHinterProps}
@@ -85,7 +84,7 @@ const TreeSelectItemPopover = forwardRef(
                 data-cy="inspector-treeselect-item-details-value-label"
                 className="treeselect-item-popover-field-label"
               >
-                Value
+                Option value
               </label>
               <CodeHinter
                 {...basicCodeHinterProps}
@@ -94,7 +93,6 @@ const TreeSelectItemPopover = forwardRef(
                 onChange={(value) => handleChange('value', value)}
               />
             </div>
-            {/* </div> */}
 
             {/* Toggle fields section */}
             <div data-cy="inspector-treeselect-item-details-visible-field" className="treeselect-item-popover-field">
@@ -132,7 +130,5 @@ const TreeSelectItemPopover = forwardRef(
     );
   }
 );
-
-TreeSelectItemPopover.displayName = 'TreeSelectItemPopover';
 
 export default TreeSelectItemPopover;

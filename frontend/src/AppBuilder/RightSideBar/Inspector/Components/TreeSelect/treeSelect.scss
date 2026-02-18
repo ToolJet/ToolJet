@@ -342,12 +342,12 @@
   .treeselect-item-popover-field {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 8px;
   }
 
   // Field label
   .treeselect-item-popover-field-label {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 12px;
     line-height: 18px;
     color: var(--text-default);
