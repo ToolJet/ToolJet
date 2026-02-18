@@ -65,6 +65,7 @@ const UploadArea = ({
         aria-disabled={isDisabled}
         aria-busy={isLoading}
         aria-required={isMandatory}
+        data-cy={`file-picker-input-field`}
       />
 
       {hasUiError && (
@@ -75,9 +76,9 @@ const UploadArea = ({
 
       {!hasUiError && (
         <>
-          {canShowInstructionText && <p className="dropzone-instruction">{instructionText}</p>}
+          {canShowInstructionText && <p className="dropzone-instruction" data-cy={`drag-drop-instruction-text`}>{instructionText}</p>}
 
-          {showGenericDropMessage && <p className="dropzone-message">Drop the files here ...</p>}
+          {showGenericDropMessage && <p className="dropzone-message" data-cy={`drag-drop-message`}>Drop the files here ...</p>}
           {showAcceptDropMessage && (
             <p className="dropzone-message">
               <SolidIcon name="pageUpload" width="25px" height="25px" fill="var(--primary-brand)" />
