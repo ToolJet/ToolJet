@@ -415,7 +415,7 @@
                   },
                   "items": [
                     "widgets/pdf/pdf",
-                    "widgets/pdf/pdf"
+                    "widgets/pdf/loading-image-pdf-from-db"
                   ]
                 },
                 "widgets/phone-input",
