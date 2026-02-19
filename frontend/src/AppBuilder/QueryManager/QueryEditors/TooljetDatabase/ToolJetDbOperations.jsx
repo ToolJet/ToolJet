@@ -23,11 +23,6 @@ import config from 'config';
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-// Cache to prevent duplicate API calls during query creation
-let fetchTablesPromiseCache = null;
-let fetchTablesCacheTimestamp = null;
-const CACHE_DURATION_MS = 2000; // Cache valid for 2 seconds
-
 const ToolJetDbOperations = ({
   optionchanged,
   options,
@@ -174,27 +169,7 @@ const ToolJetDbOperations = ({
   };
 
   useEffect(() => {
-    const now = Date.now();
-    
-    // If we have a cached promise that's still valid, use it
-    if (fetchTablesPromiseCache && fetchTablesCacheTimestamp && (now - fetchTablesCacheTimestamp) < CACHE_DURATION_MS) {
-      fetchTablesPromiseCache.then((tableList) => {
-        if (tableList) {
-          setTables(tableList);
-          const selectedTableInfo = tableList.find((table) => table.table_id === options['table_id']);
-          if (selectedTableInfo) {
-            setSelectedTableId(selectedTableInfo.table_id);
-          }
-        }
-      });
-      return;
-    }
-
-    // Create a new promise and cache it with timestamp
-    fetchTablesCacheTimestamp = now;
-    const fetchPromise = fetchTables();
-    fetchTablesPromiseCache = fetchPromise;
-
+    fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -452,7 +427,7 @@ const ToolJetDbOperations = ({
     triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
-      return null;
+      return;
     }
 
     if (Array.isArray(data?.result)) {
@@ -466,9 +441,7 @@ const ToolJetDbOperations = ({
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
       }
-      return tableList;
     }
-    return null;
   };
 
   const generateListForDropdown = (tableList) => {
