@@ -62,7 +62,8 @@
           "fxEnabled": false,
           "autoFetch": true,
           "operation": {
-            "invokeMethod": "getTables"
+            "invokeMethod": "getTables",
+            "label": "Fetch Tables"
           },
           "lineNumbers": false,
           "description": "Select a table from the dropdown",
