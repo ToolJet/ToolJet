@@ -306,6 +306,7 @@ module.exports = {
             //   badge: false,
             // },
             "2.50.0-LTS": {
+              label: '2.50.0-LTS (Outdated)',
               banner: 'none',
               badge: false
             },
