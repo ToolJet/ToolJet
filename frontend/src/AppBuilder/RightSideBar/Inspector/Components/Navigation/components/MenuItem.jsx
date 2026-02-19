@@ -32,7 +32,6 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
         className={`page-menu-item ${darkMode ? 'dark-theme theme-dark' : ''} ${isEditing ? 'is-selected' : ''}`}
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setShowEditPopover(!showEditPopover);
         }}
       >

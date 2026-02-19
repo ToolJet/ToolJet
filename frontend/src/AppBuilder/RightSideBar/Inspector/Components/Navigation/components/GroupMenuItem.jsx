@@ -31,7 +31,6 @@ export const GroupMenuItem = ({ darkMode, item, highlight, onDeleteItem, onItemC
         className={`page-menu-item page-group-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme theme-dark' : ''} ${isEditing ? 'is-selected' : ''}`}
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           setShowEditPopover(!showEditPopover);
         }}
       >
