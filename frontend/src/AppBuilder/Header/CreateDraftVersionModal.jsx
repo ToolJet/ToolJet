@@ -149,7 +149,8 @@ const CreateDraftVersionModal = ({
           (error) => {
             console.error('Error switching to new draft version:', error);
             toast.error('Draft created but failed to switch to it');
-          }
+          },
+          null // Don't pass env - use the draft's own currentEnvironmentId (development)
         );
       },
       (error) => {

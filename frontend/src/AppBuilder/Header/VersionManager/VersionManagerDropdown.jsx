@@ -106,7 +106,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   // Current version data - use selectedVersion from global store as source of truth
   // Also check developmentVersions to ensure we have the status field for draft versions
-  let currentVersion = selectedVersion || versions.find((v) => v.id === currentVersionId);
+  let currentVersion = selectedVersion || developmentVersions.find((v) => v.id === currentVersionId);
 
   // If currentVersion doesn't have status field, try to get it from developmentVersions
   if (currentVersion && !currentVersion.status && developmentVersions.length > 0) {
