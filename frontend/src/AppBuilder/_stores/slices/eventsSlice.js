@@ -1332,27 +1332,34 @@ export const createEventsSlice = (set, get) => ({
     performDeletionUpdationAndCreationOfEvents: (eventsInfo, moduleId = 'canvas') => {
       if (!(eventsInfo?.delete?.length || eventsInfo?.update?.length || eventsInfo?.create?.length)) return;
 
-      const eventIdsToDelete = new Set(eventsInfo.delete?.map((event) => event.id) ?? []);
+      const eventIdsToDelete = new Set(eventsInfo.delete ?? []);
       const eventToUpdate = new Map(eventsInfo.update?.map((event) => [event.id, event]) ?? []);
       const eventsToCreate = eventsInfo.create ?? [];
+
+      const isCreateOnly = !eventIdsToDelete.size && !eventToUpdate.size && eventsToCreate.length > 0;
 
       set(
         (state) => {
           const eventsValueInState = state.eventsSlice.module[moduleId].events;
 
-          const updatedEventsValue = eventsValueInState;
+          if (isCreateOnly) {
+            eventsValueInState.push(...eventsToCreate);
+            return;
+          }
 
-          // Delete events
-          if (eventIdsToDelete.size) updatedEventsValue.filter((event) => !eventIdsToDelete.has(event.id));
+          const updatedEvents = [];
 
-          // Update events
-          if (eventToUpdate.size)
-            updatedEventsValue.map((event) => (eventToUpdate.has(event.id) ? eventToUpdate.get(event.id) : event));
+          for (const event of eventsValueInState) {
+            if (eventIdsToDelete.has(event.id)) continue; // Skip pushing event if it's present in eventIdsToDelete
 
-          // Create/Add events
-          eventsToCreate.length && updatedEventsValue.push(...eventsToCreate);
+            // Use updated event if exists, otherwise keep original
+            updatedEvents.push(eventToUpdate.get(event.id) ?? event);
+          }
 
-          state.eventsSlice.module[moduleId].events = updatedEventsValue;
+          // Append new events
+          if (eventsToCreate.length) updatedEvents.push(...eventsToCreate);
+
+          state.eventsSlice.module[moduleId].events = updatedEvents;
         },
         false,
         'performDeletionUpdationAndCreationOfEvents'
