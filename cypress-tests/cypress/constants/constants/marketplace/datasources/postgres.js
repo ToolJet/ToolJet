@@ -172,6 +172,7 @@ export const postgresFormConfig = {
         }
     ],
 };
+
 export const postgresQueryConfig = {
     defaultFields: [
         {

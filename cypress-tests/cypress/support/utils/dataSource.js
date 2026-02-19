@@ -305,7 +305,7 @@ export const createRestAPIQuery = (
 export const verifyPreviewData = (expectedData) => {
   cy.get('[data-cy="query-preview-button"]').click();
   cy.wait(2000);
-  cy.get('[data-cy="preview-json-data-container"]>ul>li>ul>li').click();
+  cy.get('[data-cy="preview-json-data-container"]>ul>li>ul>li>div').click();
   cy.get('[data-cy="preview-json-data-container"]')
     .should("be.visible")
     .and("contain", expectedData);

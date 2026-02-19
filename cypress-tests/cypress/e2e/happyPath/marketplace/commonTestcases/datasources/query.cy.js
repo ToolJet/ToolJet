@@ -53,7 +53,6 @@ describe('Query', () => {
 
         cy.get('[data-cy="list-query-table-creation"]').click();
         verifyConnectionFormUI(postgresQueryConfig.defaultFields);
-        // cy.get('[data-cy="list-query-select-with-params"]').click();
         fillDSConnectionForm(postgresQueryFillConfig.selectWithParams);
         cy.forceClickOnCanvas();
         cy.wait(5000);
