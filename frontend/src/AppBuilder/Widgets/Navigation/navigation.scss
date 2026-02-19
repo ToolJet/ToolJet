@@ -379,6 +379,15 @@
   }
 }
 
+// Elevate the widget wrapper's z-index when a Navigation dropdown is open.
+// Each widget wrapper uses `transform` which creates a stacking context,
+// so the dropdown can't appear above sibling widgets without this.
+// Consistent with `.target.hovered { z-index: 2 }` in Grid.css.
+.target:has(.navigation-widget [data-state='open']),
+.nested-target:has(.navigation-widget [data-state='open']) {
+  z-index: 3;
+}
+
 // Dark theme adjustments
 .navigation-widget.dark-theme {
   .tj-list-item,
