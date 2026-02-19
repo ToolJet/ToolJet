@@ -2274,8 +2274,6 @@ export const createComponentsSlice = (set, get) => ({
       updates.push({ index: i, value: validatedValue });
     }
 
-    const p1 = performance.now();
-
     // Single batched update instead of N individual set() calls
     set(
       (state) => {
@@ -2347,8 +2345,6 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'batchUpdateChildComponents'
     );
-    const p2 = performance.now();
-    console.log(`here--- Time taken to update ${length} child components: ${p2 - p1} ms`, updates);
   },
 
   getParentComponentType: (parentId, moduleId) => {
