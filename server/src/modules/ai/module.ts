@@ -17,6 +17,7 @@ import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { VersionRepository } from '@modules/versions/repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { UserRepository } from '@modules/users/repositories/repository';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -27,6 +28,8 @@ export class AiModule extends SubModule {
     const { AgentsService } = await import(`${importPath}/ai/services/agents.service`);
     const { ComponentsService } = await import(`${importPath}/apps/services/component.service`);
     const { EventsService } = await import(`${importPath}/apps/services/event.service`);
+    const { PageService } = await import(`${importPath}/apps/services/page.service`);
+    const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
@@ -53,10 +56,13 @@ export class AiModule extends SubModule {
         AppsRepository,
         AiResponseVoteRepository,
         OrganizationRepository,
+        UserRepository,
         FeatureAbilityFactory,
         ArtifactRepository,
         DataQueryRepository,
         EventsService,
+        PageService,
+        PageHelperService,
         AppsUtilService,
         AiCacheService,
         ...(isMainImport ? [AiService, AiCacheService] : []),

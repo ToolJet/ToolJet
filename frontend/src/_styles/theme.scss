@@ -15351,7 +15351,8 @@ textarea.tj-text-input-widget {
   }
 }
 
-.ds-svg-container svg {
+.ds-svg-container svg,
+.ds-svg-container img {
   padding: 2px;
   object-fit: contain;
 }
@@ -16479,8 +16480,7 @@ section.ai-message-prompt-input-wrapper {
   z-index: 1000;
   overflow-y: auto;
 
-  border-left: 1px solid var(--border-weak, #e4e7eb);
-  background-color: #fff;
+  background-color: var(--background-surface-layer-01);
   box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
     0px 8px 16px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
 
@@ -16502,14 +16502,6 @@ section.ai-message-prompt-input-wrapper {
     align-self: flex-start;
     background-color: var(--text-placeholder, #6a727c);
     margin-top: 6px;
-  }
-
-  &.dark-theme {
-    background-color: #1f2936;
-
-    .header {
-      background-color: #1f2936;
-    }
   }
 
   button.dropdown-toggle {
@@ -16543,46 +16535,10 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-
-    background-color: #fff;
-    padding: 0.75rem 1.75rem;
-
-    border-bottom: 1px solid var(--border-weak, #e4e7eb);
-
-    section {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      button {
-        height: 28px;
-        width: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-
-        &:hover {
-          background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-        }
-
-        // &:focus {
-        //     border: 1px solid var(--border-default, #CCD1D5);
-        //     background: var(--button-outline, #FFF);
-        //     box-shadow: 0px 0px 0px 2px var(--Interactive-focusActive, #4368E3);
-        // }
-      }
-    }
-  }
-
   .conversation-wrapper {
     overflow-y: auto;
     flex-grow: 1;
-    padding: 1.25rem 1.75rem 1rem;
+    padding: 1.25rem 1.25rem 1rem;
     z-index: 2;
     scroll-behavior: smooth;
 
@@ -17005,7 +16961,7 @@ section.ai-message-prompt-input-wrapper {
           white-space: pre-wrap;
           display: inline-block;
           border-radius: 8px;
-          background: #f5f6f7;
+          background-color: var(--interactive-default);
           padding: 0.75rem 1rem;
           justify-content: flex-end;
           align-items: center;
@@ -17013,10 +16969,6 @@ section.ai-message-prompt-input-wrapper {
           color: var(--text-default, #1b1f24);
 
           margin-left: auto;
-
-          &.dark-theme {
-            background-color: #1b1f24;
-          }
         }
       }
     }
@@ -17130,78 +17082,6 @@ section.ai-message-prompt-input-wrapper {
 
       &:hover {
         background: var(--interactive-hover, rgba(136, 144, 153, 0.12));
-      }
-    }
-  }
-}
-
-.ai-message-loading-state {
-  display: flex;
-  margin-top: 12px;
-  gap: 20px;
-
-  .logo {
-    height: 28px;
-    width: 28px;
-    border-radius: 24px;
-    background: var(--background-surface-layer-01, #ffffff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--border-weak, #e4e7eb);
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    span {
-      color: var(--text-placeholder, #6a727c);
-      text-align: center;
-      font-size: 11px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: 16px;
-    }
-
-    div.dots {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      .dot {
-        width: 8px;
-        height: 8px;
-        background-color: #ff5f6d;
-        opacity: 0.3;
-        border-radius: 50%;
-        animation: dot-blink 1.2s infinite;
-      }
-
-      .dot:nth-child(1) {
-        animation-delay: 0s;
-      }
-
-      .dot:nth-child(2) {
-        animation-delay: 0.3s;
-      }
-
-      .dot:nth-child(3) {
-        animation-delay: 0.6s;
-      }
-
-      @keyframes dot-blink {
-
-        0%,
-        80%,
-        100% {
-          opacity: 0;
-        }
-
-        40% {
-          opacity: 1;
-        }
       }
     }
   }
@@ -17391,26 +17271,12 @@ section.ai-message-prompt-input-wrapper {
   }
 
   &.dark-theme {
-    .copilot-loader-wrapper {
-      background-color: #858c9414;
-    }
-
     section.content {
       background-color: #858c9414;
 
       pre {
         color: #fff;
       }
-    }
-  }
-
-  .copilot-loader-wrapper {
-    border-radius: 6px;
-    background-color: #f6f7f7;
-    padding: 8px;
-
-    .ai-message-loading-state {
-      margin-top: 0;
     }
   }
 }
