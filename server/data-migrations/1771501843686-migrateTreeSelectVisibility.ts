@@ -53,6 +53,11 @@ export class MigrateTreeSelectVisibility1771501843686 implements MigrationInterf
                 styles.labelColor = { value: styles?.textColor };
             }
 
+            if (!styles.alignment) {
+                styles.alignment = { value: 'top' };
+                styles.direction = { value: 'left' };
+            }
+
             await entityManager.update(Component, component.id, {
                 properties,
                 styles,

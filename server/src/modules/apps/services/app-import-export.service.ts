@@ -2871,6 +2871,10 @@ function migrateProperties(
       if (!styles.labelColor) {
         styles.labelColor = { value: styles?.textColor };
       }
+      if (!styles.alignment) {
+        styles.alignment = { value: 'top' };
+        styles.direction = { value: 'left' };
+      }
     }
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {

@@ -118,12 +118,52 @@ export const treeSelectConfig = {
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
-      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      validation: { schema: { type: 'string' }, defaultValue: 'side' },
       options: [
-        { displayName: 'Left', value: 'left' },
-        { displayName: 'Right', value: 'right' },
+        { displayName: 'Side', value: 'side' },
+        { displayName: 'Top', value: 'top' },
       ],
       accordian: 'label',
+    },
+    direction: {
+      type: 'switch',
+      displayName: 'Direction',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
+    autoLabelWidth: {
+      type: 'checkbox',
+      displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    labelWidth: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'autoLabelWidth',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
     },
     borderColor: {
       type: 'colorSwatches',
@@ -298,7 +338,10 @@ export const treeSelectConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
-      alignment: { value: 'left' },
+      alignment: { value: 'side' },
+      direction: { value: 'left' },
+      autoLabelWidth: { value: '{{true}}' },
+      labelWidth: { value: '33' },
       borderColor: { value: 'var(--cc-default-border)' },
       uncheckedBackground: { value: 'var(--cc-surface1-surface)' },
       checkboxColor: { value: 'var(--cc-primary-brand)' },

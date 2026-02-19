@@ -5,6 +5,7 @@ import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
+import Label from '@/_ui/Label';
 import { useTreeSelect } from './useTreeSelect';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -12,6 +13,11 @@ import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import cx from 'classnames';
 import { Triangle } from 'lucide-react';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { cn } from '@/lib/utils';
 import './treeSelect.scss';
 
 const TreeSelect = ({
@@ -49,12 +55,22 @@ const TreeSelect = ({
     checkmarkColor,
     boxShadow,
     labelColor,
+    alignment,
+    direction,
+    autoLabelWidth,
+    labelWidth,
   } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const containerRef = useRef(null);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+
+  const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const _width = getLabelWidthOfInput('ofComponent', labelWidth);
+  const isTopAlignment = defaultAlignment === 'top';
+  const isRightDirection = direction === 'right';
+
   const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
   // Recursively filter hidden items and resolve per-node disabled state
@@ -164,96 +180,99 @@ const TreeSelect = ({
       aria-disabled={isDisabled}
     >
       <div
-        className=""
+        className={cx('d-flex', {
+          'flex-column': isTopAlignment && label?.length > 0,
+          'flex-row-reverse': isRightDirection && !isTopAlignment,
+        })}
         style={{
-          marginBottom: '0.25rem',
-          fontWeight: '500',
-          textAlign: styles.alignment === 'right' ? 'right' : 'left',
+          width: '100%',
+          height: '100%',
         }}
       >
-        <label
-          htmlFor={`component-${id}`}
-          style={{
-            position: 'relative',
-            paddingRight: styles.alignment === 'right' && isMandatory ? '8px' : undefined,
-            color: labelColor,
-          }}
-        >
-          {label}
-          {isMandatory && (
-            <span
-              style={{
-                color: 'var(--cc-error-systemStatus)',
-                position: 'absolute',
-                right: styles.alignment === 'right' ? '0px' : '-8px',
-                top: '0px',
-              }}
-            >
-              *
-            </span>
-          )}
-        </label>
-      </div>
-      <CheckboxTree
-        key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
-        nodes={data}
-        checked={checked}
-        expanded={expanded}
-        showNodeIcon={false}
-        onCheck={onCheck}
-        onExpand={onExpand}
-        checkModel="all"
-        noCascade={allowIndependentSelection}
-        disabled={isDisabled}
-        id={`component-${id}`}
-        icons={{
-          check: (
-            <SharedCheckbox
-              checked={true}
-              checkboxColor={checkedBackground}
-              uncheckedColor={uncheckedBackground}
-              borderColor={borderColor}
-              handleColor={checkmarkColor}
-              size={18}
-            />
-          ),
-          uncheck: (
-            <SharedCheckbox checked={false} uncheckedColor={uncheckedBackground} borderColor={borderColor} size={18} />
-          ),
-          halfCheck: (
-            <SharedCheckbox
-              checked={true}
-              checkboxColor={checkedBackground}
-              uncheckedColor={uncheckedBackground}
-              borderColor={borderColor}
-              handleColor={checkmarkColor}
-              size={18}
-            />
-          ),
-          expandOpen: (
-            <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
-              <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
-            </span>
-          ),
-          expandClose: (
-            <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
-              <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
-            </span>
-          ),
-        }}
-      />
-      {showValidationError && visibility && (
+        <Label
+          label={label}
+          width={labelWidth}
+          auto={autoLabelWidth}
+          _width={_width}
+          color={labelColor}
+          direction={direction}
+          defaultAlignment={defaultAlignment}
+          darkMode={darkMode}
+          isMandatory={isMandatory}
+          inputId={`component-${id}`}
+        />
         <div
           style={{
-            color: 'var(--status-error-strong)',
-            fontSize: '11px',
-            fontWeight: '400',
-            lineHeight: '16px',
+            ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, autoLabelWidth, alignment),
           }}
         >
-          {validationError}
+          <CheckboxTree
+            key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
+            nodes={data}
+            checked={checked}
+            expanded={expanded}
+            showNodeIcon={false}
+            onCheck={onCheck}
+            onExpand={onExpand}
+            checkModel="all"
+            noCascade={allowIndependentSelection}
+            disabled={isDisabled}
+            id={`component-${id}`}
+            icons={{
+              check: (
+                <SharedCheckbox
+                  checked={true}
+                  checkboxColor={checkedBackground}
+                  uncheckedColor={uncheckedBackground}
+                  borderColor={borderColor}
+                  handleColor={checkmarkColor}
+                  size={18}
+                />
+              ),
+              uncheck: (
+                <SharedCheckbox
+                  checked={false}
+                  uncheckedColor={uncheckedBackground}
+                  borderColor={borderColor}
+                  size={18}
+                />
+              ),
+              halfCheck: (
+                <SharedCheckbox
+                  checked={true}
+                  checkboxColor={checkedBackground}
+                  uncheckedColor={uncheckedBackground}
+                  borderColor={borderColor}
+                  handleColor={checkmarkColor}
+                  size={18}
+                />
+              ),
+              expandOpen: (
+                <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
+                  <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+                </span>
+              ),
+              expandClose: (
+                <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
+                  <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
+                </span>
+              ),
+            }}
+          />
+          {showValidationError && visibility && (
+            <div
+              style={{
+                color: 'var(--status-error-strong)',
+                fontSize: '11px',
+                fontWeight: '400',
+                lineHeight: '16px',
+              }}
+            >
+              {validationError}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
