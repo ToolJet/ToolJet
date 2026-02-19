@@ -26,6 +26,7 @@ const DynamicSelector = ({
   propertyKey,
   value,
   fxEnabled = false,
+  autoFetch = false,
 }) => {
   const isDependentField = dependsOn?.length > 0;
 
@@ -84,7 +85,11 @@ const DynamicSelector = ({
     try {
       const args = depKeys.length ? { values: depValues } : undefined;
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
-
+      if (response?.status === 'failed') {
+        setError(response?.errorMessage || 'Failed to fetch data');
+        setFetchedData([]);
+        return;
+      }
       const payload = response?.data ?? response;
       const items = payload?.data || [];
       setFetchedData(items);
@@ -240,6 +245,29 @@ const DynamicSelector = ({
       }
     }
   }, [selectedDataSource]);
+
+  useEffect(() => {
+    if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
+      const cacheKey = `${propertyKey}_cache`;
+      const existingCache = get(options, cacheKey) || {};
+      
+      const isMultiAuth = selectedDataSource?.options?.multiple_auth_enabled;
+      const userId = currentUser?.id;
+      
+      let cachedData = null;
+      if (isMultiAuth) {
+        if (userId && existingCache[userId]) {
+          cachedData = existingCache[userId]['nonDependentCache'];
+        }
+      } else {
+        cachedData = existingCache['nonDependentCache'];
+      }
+      
+      if (!cachedData || cachedData.length === 0) {
+        handleFetch();
+      }
+    }
+  }, [autoFetch, selectedDataSource?.id, invokeMethod, isFxMode]);
 
   // Watch for changes in dependency state
   useEffect(() => {

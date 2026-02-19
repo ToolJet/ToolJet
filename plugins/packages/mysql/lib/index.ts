@@ -7,9 +7,79 @@ import {
   QueryService,
   QueryResult,
   QueryError,
+  User,
+  App,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
+import { Client } from 'ssh2';
+
+function createSSHStream(
+  sourceOptions: SourceOptions
+): Promise<{ client: Client; stream: NodeJS.ReadWriteStream }> {
+  return new Promise((resolve, reject) => {
+    const sshClient = new Client();
+
+    sshClient.on('ready', () => {
+      sshClient.forwardOut(
+        '127.0.0.1', 
+        0,          
+        sourceOptions.host,        
+        Number(sourceOptions.port),
+        (err, stream) => {
+          if (err) {
+            sshClient.end();
+            return reject(err);
+          }
+          stream.on('error', (streamErr) => {
+            console.error('SSH stream error (suppressed):', streamErr.message);
+          });
+
+          stream.on('close', () => {
+            setImmediate(() => {
+              try {
+                if (sshClient) {
+                  sshClient.destroy(); 
+                }
+              } catch (e) {
+                console.error('Error closing SSH client (suppressed):', e.message);
+              }
+            });
+          });
+
+          resolve({ client: sshClient, stream });
+        }
+      );
+    });
+
+    sshClient.on('error', (err) => {
+      reject(err);
+    });
+
+    sshClient.on('end', () => {
+        console.log('SSH connection ended');
+      });
+
+   sshClient.on('close', () => {
+        console.log('SSH connection closed');
+      });
+
+ 
+    sshClient.connect({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      ...(sourceOptions.ssh_auth_type === 'password'
+        ? { password: sourceOptions.ssh_password }
+        : {
+            privateKey: sourceOptions.ssh_private_key,
+            passphrase: sourceOptions.ssh_passphrase,
+          }),
+      readyTimeout: 20000,
+      keepaliveInterval: 10000,
+    });
+  });
+}
 
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;
@@ -58,7 +128,7 @@ export default class MysqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      const errorMessage = err.message || 'An unknown error occurred';
+      const errorMessage = err?.message || 'An unknown error occurred';
       const errorDetails: any = {};
 
       if (err instanceof Error) {
@@ -78,10 +148,32 @@ export default class MysqlQueryService implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-    knexInstance.destroy();
-    return { status: 'ok' };
+    let knexInstance;
+    try {
+      knexInstance = await this.getConnection(sourceOptions, {}, false);
+      await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
+
+      return { status: 'ok' };
+    } catch (err) {
+      const errorMessage = err?.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err instanceof Error) {
+        const mysqlError = err as any;
+        const { code, errno, sqlMessage, sqlState } = mysqlError;
+
+        errorDetails.code = code || null;
+        errorDetails.errno = errno || null;
+        errorDetails.sqlMessage = sqlMessage || null;
+        errorDetails.sqlState = sqlState || null;
+      }
+
+      throw new QueryError('Connection test failed', errorMessage, errorDetails);
+    } finally {
+      if (knexInstance) {
+        await knexInstance.destroy();
+      }
+    }
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
@@ -118,43 +210,107 @@ export default class MysqlQueryService implements QueryService {
     return connectionOptions;
   }
 
-  private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-  const props = sourceOptions.socket_path
-    ? { socketPath: sourceOptions.socket_path }
-    : {
-        host: sourceOptions.host,
-        port: +sourceOptions.port,
-      };
+  private  parseConnectionString(connectionString: string): Partial<SourceOptions> {
+    const parsed: Partial<SourceOptions> = {};
+    const uriMatch = connectionString.match(/^mysql:\/\/([^:]+):(.+)@([^:@]+):(\d+)(?:\/(.*))?$/);
+    if (uriMatch) {
+      parsed.username = decodeURIComponent(uriMatch[1]);
+      parsed.password = decodeURIComponent(uriMatch[2]);
+      parsed.host = uriMatch[3];
+      parsed.port = uriMatch[4];
+      if (uriMatch[5]) {
+        parsed.database = uriMatch[5];
+      }
+      return parsed;
+    }
+    const pairs = connectionString.split(';').filter(pair => pair.trim());
+    for (const pair of pairs) {
+      const [key, value] = pair.split('=').map(s => s.trim());
+      if (!key || !value) continue;
+      
+      const lowerKey = key.toLowerCase();
+      
+      if (lowerKey === 'server' || lowerKey === 'host') {
+        parsed.host = value;
+      } else if (lowerKey === 'port') {
+        parsed.port = value;
+      } else if (lowerKey === 'database' || lowerKey === 'db') {
+        parsed.database = value;
+      } else if (lowerKey === 'uid' || lowerKey === 'user' || lowerKey === 'username') {
+        parsed.username = value;
+      } else if (lowerKey === 'pwd' || lowerKey === 'password') {
+        parsed.password = value;
+      }
+    }
 
-    const shouldUseSSL = sourceOptions.ssl_enabled;
-    let sslObject: any = null;
-
-if (shouldUseSSL) {
-  sslObject = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
-  
-  if (sourceOptions.ssl_certificate === 'ca_certificate') {
-    sslObject.ca = sourceOptions.ca_cert;
-  } else if (sourceOptions.ssl_certificate === 'self_signed') {
-    sslObject.ca = sourceOptions.root_cert;
-    sslObject.key = sourceOptions.client_key;
-    sslObject.cert = sourceOptions.client_cert;
+    return parsed;
   }
-}
+  
+
+  private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
+  let effectiveOptions = { ...sourceOptions };
+  if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
+    const parsed = this.parseConnectionString(sourceOptions.connection_string);
+    effectiveOptions = { ...parsed, ...sourceOptions };
+  }
+
+  const shouldUseSSL = effectiveOptions.ssl_enabled;
+  let sslObject: any = null;
+
+  if (shouldUseSSL) {
+    sslObject = { rejectUnauthorized: (effectiveOptions.ssl_certificate ?? 'none') !== 'none' };
+    
+    if (effectiveOptions.ssl_certificate === 'ca_certificate') {
+      sslObject.ca = effectiveOptions.ca_cert;
+      sslObject.key = effectiveOptions.client_key;
+      sslObject.cert = effectiveOptions.client_cert;
+    } else if (effectiveOptions.ssl_certificate === 'self_signed') {
+      sslObject.ca = effectiveOptions.root_cert;
+      sslObject.key = effectiveOptions.client_key;
+      sslObject.cert = effectiveOptions.client_cert;
+    }
+  }
+  let connectionConfig: any ;
+  if (effectiveOptions.ssh_enabled) {
+    connectionConfig = async () => {
+      const ssh = await createSSHStream(effectiveOptions);
+      return {
+        stream: ssh.stream,
+        user: effectiveOptions.username,
+        password: effectiveOptions.password,
+        database: effectiveOptions.database,
+        multipleStatements: true,
+        ...(shouldUseSSL ? { ssl: sslObject } : {}),
+      };
+    };
+  }else{
+     connectionConfig = {
+      user: effectiveOptions.username,
+      password: effectiveOptions.password,
+      database: effectiveOptions.database,
+      multipleStatements: true,
+      ...(shouldUseSSL ? { ssl: sslObject } : {}),
+    };
+    
+    if (effectiveOptions.socket_path) {
+      connectionConfig.socketPath = effectiveOptions.socket_path;
+    }else{
+      connectionConfig.host = effectiveOptions.host;
+      connectionConfig.port =  Number(effectiveOptions.port);
+    }
+  }
 
   const config: Knex.Config = {
     client: 'mysql2',
-    connection: {
-      ...props,
-      user: sourceOptions.username,
-      password: sourceOptions.password,
-      database: sourceOptions.database,
-      multipleStatements: true,
-      ...(shouldUseSSL ? { ssl: sslObject } : {}),
-    },
-    ...this.connectionOptions(sourceOptions),
+    connection: connectionConfig,
+    ...this.connectionOptions(effectiveOptions),
   };
 
-  return knex(config);
+  const knexInstance = knex(config);
+
+
+
+  return knexInstance;
 }
 
   async getConnection(
@@ -200,4 +356,77 @@ if (shouldUseSSL) {
 
     return queryText.trim();
   }
+  async listTables(
+      sourceOptions: SourceOptions,
+    ): Promise<QueryResult> {
+      let knexInstance;
+      try {
+        knexInstance = await this.buildConnection(sourceOptions);
+        
+        const result = await knexInstance.raw(`SHOW TABLES`);
+  
+        const rows = result[0] || [];
+    
+        const tables = rows.map((row: any) => {
+          const tableName = Object.values(row)[0] as string;
+          return {
+            key: tableName,
+            value: tableName,
+            label: tableName,
+          };
+        });
+  
+        return {
+          status: 'ok',
+          data: tables,
+        };
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
+        throw new QueryError('Could not fetch tables', errorMessage, {});
+      } finally {
+        if (knexInstance) {
+          await knexInstance.destroy();
+        }
+      }
+    }
+  
+    async invokeMethod(
+      methodName: string,
+      context: { user?: User; app?: App },
+      sourceOptions: SourceOptions,
+      args?: any
+    ): Promise<any> {
+      try {
+        if (methodName === 'getTables') {
+          return await this.listTables(sourceOptions);
+        }
+
+        throw new QueryError(
+          'Method not found', 
+          `Method ${methodName} is not supported for MySQL plugin`, 
+          {
+            availableMethods: ['getTables'],
+          }
+        );
+      } catch (err) {
+        if (err instanceof QueryError) {
+          throw err;
+        }
+
+        const errorMessage = err?.message || 'An unknown error occurred';
+        const errorDetails: any = {};
+
+        if (err instanceof Error) {
+          const mysqlError = err as any;
+          const { code, errno, sqlMessage, sqlState } = mysqlError;
+
+          errorDetails.code = code || null;
+          errorDetails.errno = errno || null;
+          errorDetails.sqlMessage = sqlMessage || null;
+          errorDetails.sqlState = sqlState || null;
+        }
+
+        throw new QueryError('Method invocation failed', errorMessage, errorDetails);
+      }
+    }
 }
