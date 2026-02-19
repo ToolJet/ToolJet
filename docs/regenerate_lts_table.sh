@@ -3,7 +3,7 @@ set -e
 
 # Configuration
 DOCKER_REPO="tooljet/tooljet"
-MARKDOWN_FILE="docs/versioned_docs/version-3.5.0-LTS/setup/choose-your-tooljet.md"
+MARKDOWN_FILE="docs/versioned_docs/version-3.16.0-LTS/setup/overview/choose-your-tooljet.mdx"
 TABLE_HEADER="| Version | Release Date | Docker Pull Command |"
 TABLE_DIVIDER="|---------|--------------|----------------------|"
 DRY_RUN=false
@@ -81,7 +81,7 @@ get_lts_tags() {
         fi
         
         local page_tags
-        page_tags=$(echo "$resp" | jq -r '.results[]? | select(.name | test("^v.*ee-lts$")) | .name' 2>/dev/null)
+        page_tags=$(echo "$resp" | jq -r '.results[]? | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+(-ee)?-lts$")) | .name' 2>/dev/null)
         
         if [[ -n "$page_tags" ]]; then
             while IFS= read -r tag; do
@@ -108,7 +108,13 @@ get_lts_tags() {
     
     # Sort tags by version (reverse)
     IFS=$'\n' tags=($(printf '%s\n' "${tags[@]}" | sort -Vr))
-    
+
+    # Cap to 10 most recent tags
+    if [[ ${#tags[@]} -gt 10 ]]; then
+        tags=("${tags[@]:0:10}")
+        log "✂️  Capped to 10 most recent LTS tags"
+    fi
+
     log "📋 LTS tags (sorted):"
     printf '   %s\n' "${tags[@]}"
     
@@ -196,14 +202,7 @@ build_table_rows() {
         return 1
     fi
     
-    # Add latest EE-LTS row (always use ee-lts-latest tag)
-    local latest="${tags[0]}"
-    log "⭐ Latest EE-LTS is: $latest"
-    local latest_row="| Latest EE-LTS | N/A | \`docker pull tooljet/tooljet:ee-lts-latest\` |"
-    
-    log "📝 Generated ${#rows[@]} table rows plus Latest EE-LTS row"
-    
-    echo "$latest_row"
+    log "📝 Generated ${#rows[@]} table rows"
     printf "%s\n" "${rows[@]}"
 }
 
@@ -239,38 +238,23 @@ replace_table_in_file() {
     
     log "✍️  Writing to $MARKDOWN_FILE..."
     local tmp_md="${MARKDOWN_FILE}.tmp"
-    local in_table=false
-    local lines_written=0
-    local table_lines=0
-    
-    > "$tmp_md"
-    
-    while IFS= read -r line || [[ -n "$line" ]]; do
-        if [[ "$line" == "$TABLE_HEADER" ]]; then
-            log "🔍 Found table header, replacing table content"
-            echo "$TABLE_HEADER" >> "$tmp_md"
-            echo "$TABLE_DIVIDER" >> "$tmp_md"
-            echo "$table_body" >> "$tmp_md"
-            in_table=true
-            table_lines=$(echo "$table_body" | wc -l)
-            lines_written=$((lines_written + 2 + table_lines))
-        elif [[ "$in_table" == true && "$line" == :::* ]]; then
-            echo "$line" >> "$tmp_md"
-            in_table=false
-            lines_written=$((lines_written + 1))
-            log "✅ Table replacement complete"
-        elif [[ "$in_table" == false ]]; then
-            echo "$line" >> "$tmp_md"
-            lines_written=$((lines_written + 1))
-        fi
-    done < "$MARKDOWN_FILE"
-    
+
+    local new_table="${TABLE_HEADER}
+${TABLE_DIVIDER}
+${table_body}"
+
+    awk -v tbl="$new_table" '
+        /^### Latest Patch$/ { print; print ""; print tbl; skip=1; next }
+        /^### Base Versions$/ { skip=0 }
+        !skip { print }
+    ' "$MARKDOWN_FILE" > "$tmp_md"
+
     if ! mv "$tmp_md" "$MARKDOWN_FILE"; then
         log_error "Failed to move temporary file to $MARKDOWN_FILE"
         return 1
     fi
-    
-    log "✅ Markdown updated successfully ($lines_written lines written, $table_lines table rows)"
+
+    log "✅ Markdown updated successfully"
 }
 
 main() {
