@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
+import React from 'react';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import { TreeSelectSortableTree } from './Tree';
 
@@ -16,7 +14,7 @@ const TreeSelectOptionsList = ({
 }) => {
   return (
     <div className="treeselect-inspector" data-cy="inspector-treeselect-options-list" style={{ marginBottom: '12px' }}>
-      <div style={{ maxHeight: '800px', overflow: 'auto' }}>
+      <div>
         <TreeSelectSortableTree
           treeItems={treeItems}
           darkMode={darkMode}
