@@ -11,6 +11,11 @@ import useWorkflowStore from '@/_stores/workflowStore';
 import { useTranslation } from 'react-i18next';
 import { CustomToggleSwitch } from '../Components/CustomToggleSwitch';
 
+// cache to prevent duplicate API calls during query creation
+let fetchWorkflowsPromiseCache = null;
+let fetchWorkflowsCacheTimestamp = null;
+const CACHE_DURATION_MS = 2000;
+
 export function Workflows({ options, optionsChanged, currentState }) {
   const { moduleId } = useModuleContext();
   const { t } = useTranslation();
@@ -34,14 +39,27 @@ export function Workflows({ options, optionsChanged, currentState }) {
   );
 
   useEffect(() => {
-    appsService.getWorkflows(appId).then(({ workflows }) => {
-      setWorkflowOptions(
-        workflows.map((workflow) => ({
-          value: workflow.id,
-          name: workflow.name,
-        }))
-      );
-    });
+    const now = Date.now();    
+    // cached promise
+    if (fetchWorkflowsPromiseCache && fetchWorkflowsCacheTimestamp && (now - fetchWorkflowsCacheTimestamp) < CACHE_DURATION_MS) {
+      fetchWorkflowsPromiseCache.then((workflows) => {
+        if (workflows) {
+          setWorkflowOptions(workflows);
+        }
+      });
+      return;
+    }
+    // Create a new promise and cache it with timestamp
+    fetchWorkflowsCacheTimestamp = now;
+    const fetchPromise = appsService.getWorkflows(appId).then(({ workflows }) => {
+      const workflowList = workflows.map((workflow) => ({
+        value: workflow.id,
+        name: workflow.name,
+      }));
+      setWorkflowOptions(workflowList);
+      return workflowList;
+    });    
+    fetchWorkflowsPromiseCache = fetchPromise;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -23,6 +23,11 @@ import config from 'config';
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
+// Cache to prevent duplicate API calls during query creation
+let fetchTablesPromiseCache = null;
+let fetchTablesCacheTimestamp = null;
+const CACHE_DURATION_MS = 2000; // Cache valid for 2 seconds
+
 const ToolJetDbOperations = ({
   optionchanged,
   options,
@@ -168,13 +173,32 @@ const ToolJetDbOperations = ({
     }
   };
 
-
   useEffect(() => {
-    fetchTables();
+    const now = Date.now();
+    
+    // If we have a cached promise that's still valid, use it
+    if (fetchTablesPromiseCache && fetchTablesCacheTimestamp && (now - fetchTablesCacheTimestamp) < CACHE_DURATION_MS) {
+      fetchTablesPromiseCache.then((tableList) => {
+        if (tableList) {
+          setTables(tableList);
+          const selectedTableInfo = tableList.find((table) => table.table_id === options['table_id']);
+          if (selectedTableInfo) {
+            setSelectedTableId(selectedTableInfo.table_id);
+          }
+        }
+      });
+      return;
+    }
+
+    // Create a new promise and cache it with timestamp
+    fetchTablesCacheTimestamp = now;
+    const fetchPromise = fetchTables();
+    fetchTablesPromiseCache = fetchPromise;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {    
     const tableSet = new Set();
     if (selectedTableId) {
         tableSet.add(selectedTableId);
@@ -197,6 +221,7 @@ const ToolJetDbOperations = ({
 
     const tables = [...tableSet];
     tables.forEach((tableId) => tableId && loadTableInformation(tableId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options['join_table']?.['joins'], tables, selectedTableId]);
 
   useEffect(() => {
@@ -208,11 +233,6 @@ const ToolJetDbOperations = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId, tableInfo, tables]);
-
-  // useEffect(() => {
-  //   selectedTableId && fetchTableInformation(selectedTableId, false, tables);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [selectedTableId]);
 
   useEffect(() => {
     if (mounted) {
@@ -355,10 +375,6 @@ const ToolJetDbOperations = ({
     });
   };
 
-  const findTableDetailsWithTableList = (tableId, tableList) => {
-    return tableList.find((table) => table.table_id == tableId);
-  };
-
   const findTableDetails = (tableId) => {
     return tables.find((table) => table.table_id == tableId);
   };
@@ -436,7 +452,7 @@ const ToolJetDbOperations = ({
     triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
-      return;
+      return null;
     }
 
     if (Array.isArray(data?.result)) {
@@ -450,61 +466,9 @@ const ToolJetDbOperations = ({
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
       }
+      return tableList;
     }
-  };
-
-  /**
-   * TODO: This function to be removed and replaced with loadTableInformation function everywhere
-   */
-  const fetchTableInformation = async (tableId, isNewTableAdded, tableList) => {
-    const tableDetails = findTableDetailsWithTableList(tableId, tableList);
-    if (tableDetails?.table_name) {
-      const { table_name } = tableDetails;
-      const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table_name);
-
-      if (error) {
-        toast.error(error?.message ?? 'Failed to fetch table information');
-        return;
-      }
-
-      if (data?.result?.columns?.length > 0) {
-        const columnList = data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }));
-        setColumns(columnList);
-        setTableInfo((prevTableInfo) => ({ ...prevTableInfo, [table_name]: columnList }));
-
-        setTableForeignKeyInfo((fk_info) => ({
-          ...fk_info,
-          [table_name]: data?.result?.foreign_keys || [],
-        }));
-
-        if (isNewTableAdded) {
-          setJoinTableOptions((joinOptions) => {
-            const { fields } = joinOptions;
-            const newFields = deepClone(fields).filter((field) => field.table !== tableId);
-            newFields.push(
-              ...(data?.result?.columns
-                ? data.result.columns.map((col) => ({
-                    name: col.column_name,
-                    table: tableId,
-                    // alias: `${tableId}_${col.column_name}`,
-                  }))
-                : [])
-            );
-
-            return {
-              ...joinOptions,
-              fields: newFields,
-            };
-          });
-        }
-      }
-    }
+    return null;
   };
 
   const generateListForDropdown = (tableList) => {
