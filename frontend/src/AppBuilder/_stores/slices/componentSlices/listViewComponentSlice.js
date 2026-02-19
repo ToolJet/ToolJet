@@ -34,20 +34,18 @@ export const listViewComponentSlice = (set, get) => ({
         payload: { componentId, property, value, indices, moduleId },
       }
     );
-    // Fire property-level dependency update. Components with property-level siblings deps
-    // (e.g., {{siblings.radiobutton1.value}}) are registered against this exact key in the
-    // dependency graph via getCustomResolvableReference, so they re-resolve here.
+    // Fire property-level dependency update.
+    // Example: user toggles checkbox in row 2 →
+    //   updateDependencyValues('components.checkbox-uuid.value')
+    //   → dependency graph finds: button's visibility depends on this key
+    //   → triggers updateChildComponentResolvedValues for the button
+    //   → which uses prepareRowScope/updateRowScope to resolve per row
     get().updateDependencyValues(`components.${componentId}.${property}`, moduleId, []);
 
-    // Derive ListView children/data and trigger coarse siblings fallback
+    // Derive the ListView's children/data exposed values (used by {{components.listview1.data}})
     const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
     const nearestListviewId = parentId ? get().findNearestListviewAncestor(parentId, moduleId) : null;
     if (nearestListviewId) {
-      // Coarse siblings trigger — only affects components using the fallback dependency
-      // (bare {{siblings}} or {{siblings.radiobutton1}} without a specific property).
-      // Components with property-level deps (e.g., {{siblings.radiobutton1.value}}) are NOT
-      // registered against this key, so this trigger doesn't cause extra re-resolutions for them.
-      get().updateDependencyValues(`components.${nearestListviewId}.siblings`, moduleId, []);
       get()._deriveListviewChain(nearestListviewId, indices, moduleId);
     }
   },
@@ -89,22 +87,17 @@ export const listViewComponentSlice = (set, get) => ({
         payload: { componentId, values, indices, moduleId },
       }
     );
-    // Fire property-level dependency updates for each changed key.
-    // Components with property-level siblings deps are registered against these exact keys.
+    // Fire property-level dependency updates for each changed key (same mechanism as above).
     Object.entries(values).forEach(([key, value]) => {
       if (typeof value !== 'function' && !skipKeys.has(key)) {
         get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []);
       }
     });
 
-    // Derive ListView children/data and trigger coarse siblings fallback
+    // Derive ListView children/data
     const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
     const nearestListviewId = parentId ? get().findNearestListviewAncestor(parentId, moduleId) : null;
     if (nearestListviewId) {
-      // Coarse siblings trigger — only affects components using the fallback dependency
-      // (bare {{siblings}} or {{siblings.radiobutton1}} without a specific property).
-      // Components with property-level deps are NOT registered against this key.
-      get().updateDependencyValues(`components.${nearestListviewId}.siblings`, moduleId, []);
       get()._deriveListviewChain(nearestListviewId, indices, moduleId);
     }
   },
@@ -165,21 +158,93 @@ export const listViewComponentSlice = (set, get) => ({
     });
   },
 
-  // Build a siblings object for a given row of a ListView.
-  // Returns { componentName: { ...exposedValues } } for all children at that row index.
-  buildSiblingsForRow: (listviewId, rowIndex, moduleId = 'canvas') => {
-    const { getContainerChildrenMapping, getComponentNameFromId } = get();
-    const childIds = getContainerChildrenMapping(listviewId);
-    const exposedComponents = get().resolvedStore.modules[moduleId]?.exposedValues?.components;
-    const siblings = {};
-    childIds.forEach((childId) => {
-      const name = getComponentNameFromId(childId, moduleId);
-      const childExposed = exposedComponents?.[childId];
-      if (Array.isArray(childExposed) && childExposed[rowIndex]) {
-        siblings[name] = childExposed[rowIndex];
+  // ─── Row-Scoped Component Resolution ───────────────────────────────────────
+  //
+  // PROBLEM:
+  //   Inside a ListView, components like checkbox1 store their exposed values as
+  //   per-row arrays: components['checkbox-uuid'] = [{ value: false }, { value: true }, ...]
+  //   But when resolving an expression like {{components.checkbox1.value}} for a button
+  //   in row 2, we need the resolver to see the single row-2 object { value: true },
+  //   not the full array.
+  //
+  // SOLUTION:
+  //   We create a lightweight overlay object using Object.create(components).
+  //   - The overlay inherits ALL entries from state.components via the prototype chain.
+  //   - We then override ONLY the ListView's descendant entries on the overlay,
+  //     replacing their arrays with the specific row's object.
+  //   - When the resolver accesses a descendant (e.g., checkbox-uuid), it hits the
+  //     overlay's own property → gets the row-specific value.
+  //   - When the resolver accesses a non-descendant (e.g., a canvas-level button),
+  //     it falls through the prototype → gets the global value from state.components.
+  //
+  // ──────────────────────────────────────────────────────────────────────────────
+
+  // Called ONCE before the row loop. Collects descendant IDs and creates the
+  // prototype overlay. Returns null if the ListView has no descendants.
+  prepareRowScope: (components, listviewId, moduleId = 'canvas') => {
+    const { getContainerChildrenMapping } = get();
+
+    // Recursively collect ALL descendant component IDs of this ListView.
+    // This includes components nested inside sub-containers (Form, Container, etc.).
+    // Example: ListView → [Checkbox, Button, Form → [TextInput, Dropdown]]
+    //   → allDescendants = [Checkbox, Button, Form, TextInput, Dropdown]
+    const allDescendants = [];
+    const collectDescendants = (containerId) => {
+      const children = getContainerChildrenMapping(containerId, moduleId);
+      if (!children) return;
+      for (const childId of children) {
+        allDescendants.push(childId);
+        collectDescendants(childId);
       }
-    });
-    return siblings;
+    };
+    collectDescendants(listviewId);
+
+    if (allDescendants.length === 0) return null;
+
+    // Create a new object whose prototype is state.components.
+    // Any property not explicitly set on `scoped` will fall through to state.components.
+    const scoped = Object.create(components);
+
+    // Pre-create writable own properties for each descendant.
+    // WHY Object.defineProperty instead of plain assignment (scoped[childId] = {})?
+    //   Immer freezes state.components after each store update, which makes all its
+    //   properties non-writable. In JavaScript strict mode, if a prototype has a
+    //   non-writable property, you CANNOT create a same-named own property on a
+    //   derived object via plain assignment — it throws TypeError. But
+    //   Object.defineProperty bypasses this restriction and creates the own property.
+    //   After this, the own property is writable:true, so updateRowScope can use
+    //   plain assignment (scoped[childId] = ...) without issues.
+    for (const childId of allDescendants) {
+      Object.defineProperty(scoped, childId, {
+        value: {},
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+
+    return { scoped, descendantIds: allDescendants, components };
+  },
+
+  // Called PER ROW inside the loop. Mutates the same `scoped` object in place —
+  // overwrites each descendant's own property with the row-specific value.
+  // Uses plain assignment (fast) because prepareRowScope already created writable
+  // own properties via Object.defineProperty.
+  //
+  // Example for row 2:
+  //   components['checkbox-uuid'] = [{ value: false }, { value: false }, { value: true }]
+  //   → scoped['checkbox-uuid'] = { value: true }   (the row-2 entry)
+  //
+  // The scoped object is shared across rows — we just overwrite the values each iteration.
+  // This works because resolveDynamicValues is synchronous and doesn't hold references.
+  updateRowScope: (scopeCtx, rowIndex) => {
+    const { scoped, descendantIds, components } = scopeCtx;
+    for (const childId of descendantIds) {
+      const val = components[childId];
+      if (Array.isArray(val)) {
+        scoped[childId] = val[rowIndex] ?? {};
+      }
+    }
   },
 
   // Derive a single row's data for a ListView and write to the store.

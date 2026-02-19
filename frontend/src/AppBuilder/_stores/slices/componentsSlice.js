@@ -392,12 +392,13 @@ export const createComponentsSlice = (set, get) => ({
       getComponentTypeFromId,
       getComponentDefinition,
       findNearestListviewAncestor,
-      buildSiblingsForRow,
+      prepareRowScope,
+      updateRowScope,
     } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
 
-    // Find nearest ListView for siblings injection
+    // Find nearest ListView for row-scoped component resolution
     const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
     const nearestListviewId = parentId ? findNearestListviewAncestor(parentId, moduleId) : null;
 
@@ -455,13 +456,30 @@ export const createComponentsSlice = (set, get) => ({
         }
       }
     } else {
-      // Loop all the index and set the resolved value
+      // Component is inside a ListView — resolve once per row with row-scoped components.
+      //
+      // How this works:
+      //   1. getAllExposedValues returns the full state: { components, variables, queries, ... }
+      //      where components['checkbox-uuid'] = [row0, row1, row2, ...] (per-row arrays)
+      //   2. prepareRowScope creates a prototype overlay on state.components (done once)
+      //   3. For each row, updateRowScope overwrites descendants on the overlay with that row's
+      //      values, so the resolver sees e.g. components['checkbox-uuid'] = { value: true }
+      //      instead of the full array
+      //   4. scopedState holds a reference to the overlay object, so mutating the overlay
+      //      in updateRowScope is automatically visible to the resolver — no need to recreate
+      //      scopedState each iteration
+      const state = getAllExposedValues(moduleId);
+      const scopeCtx = nearestListviewId ? prepareRowScope(state.components, nearestListviewId, moduleId) : null;
+      // { ...state, components: scopeCtx.scoped } only spreads ~10 top-level keys
+      // (components, variables, queries, globals, page, etc.) — trivially cheap.
+      // When scopeCtx is null (not in ListView), we pass state as-is (no copy).
+      const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
       for (let i = 0; i < length; i++) {
-        // Augment customResolvables with siblings for intra-row references
-        const siblings = nearestListviewId ? buildSiblingsForRow(nearestListviewId, i, moduleId) : {};
-        const augmented = { ...customResolvables[i], siblings };
+        // Mutate the overlay in place: swap descendant entries to row i's values
+        if (scopeCtx) updateRowScope(scopeCtx, i);
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(value, getAllExposedValues(moduleId), augmented, false, [])
+          ? resolveDynamicValues(value, scopedState, customResolvables[i] || {}, false, [])
           : value;
 
         updateResolvedValueForNonNullIndex(resolvedValue, i);
@@ -486,7 +504,8 @@ export const createComponentsSlice = (set, get) => ({
       findNearestListviewAncestor,
       getComponentDefinition,
       getBaseParentId,
-      buildSiblingsForRow,
+      prepareRowScope,
+      updateRowScope,
     } = get();
 
     let shouldResolve = false;
@@ -550,14 +569,19 @@ export const createComponentsSlice = (set, get) => ({
         'listItem' in resolvables[0];
 
       if (isLeafLevel) {
-        // At leaf level - iterate through row indices
+        // At the leaf level of nested ListView traversal — resolvables is an array of
+        // per-row { listItem } objects. Now resolve the expression for each row, with
+        // row-scoped components so that {{components.checkbox1.value}} returns the
+        // row-specific value, not the full per-row array.
+        const state = getAllExposedValues(moduleId);
+        const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
+        const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
         for (let i = 0; i < resolvables.length; i++) {
           const fullIndices = [...currentIndices, i];
-          // Augment with siblings for intra-row references
-          const siblings = innermostListview ? buildSiblingsForRow(innermostListview, i, moduleId) : {};
-          const augmented = { ...resolvables[i], siblings };
+          if (scopeCtx) updateRowScope(scopeCtx, i);
           const resolvedValue = shouldResolve
-            ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), augmented, false, [])
+            ? resolveDynamicValues(unResolvedValue, scopedState, resolvables[i] || {}, false, [])
             : value;
           setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, fullIndices, moduleId);
         }
@@ -2213,7 +2237,8 @@ export const createComponentsSlice = (set, get) => ({
       getAllExposedValues,
       getParentIdFromDependency,
       findNearestListviewAncestor,
-      buildSiblingsForRow,
+      prepareRowScope,
+      updateRowScope,
     } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     const parentId = getParentIdFromDependency(dependency, moduleId);
@@ -2223,14 +2248,25 @@ export const createComponentsSlice = (set, get) => ({
     const unResolvedValue = getNodeData(dependency, moduleId);
     const shouldValidate = entityType === 'components' && entityId;
 
-    // Collect all resolved values first, then apply in a single batched store update
+    // Collect all resolved values first, then apply in a single batched store update.
+    //
+    // Row-scoped resolution: when a dependency like components.checkbox-uuid.value fires,
+    // we re-resolve the dependent expression for ALL rows. For each row, updateRowScope
+    // swaps the overlay's descendant entries to that row's values, so the resolver sees
+    // components['checkbox-uuid'] as a plain object (row-specific) instead of the full array.
+    //
+    // Note: currently re-resolves all rows even if only one row changed. The store update
+    // below is batched, and React skips re-renders for rows where the resolved value didn't
+    // change, so the DOM cost is minimal.
+    const state = getAllExposedValues(moduleId);
+    const scopeCtx = resolvableParentId ? prepareRowScope(state.components, resolvableParentId, moduleId) : null;
+    const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
     const updates = [];
     for (let i = 0; i < length; i++) {
       const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
-      // Augment with siblings for intra-row references
-      const siblings = resolvableParentId ? buildSiblingsForRow(resolvableParentId, i, moduleId) : {};
-      const augmented = { ...rowCustomResolvables, siblings };
-      const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), augmented, false, []);
+      if (scopeCtx) updateRowScope(scopeCtx, i);
+      const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
       const validatedValue = shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
@@ -2342,11 +2378,18 @@ export const createComponentsSlice = (set, get) => ({
     return data?.length;
   },
 
-  // Check if the value contains listItem or siblings customResolvable and return the entityType, entityNameOrId, entityKey
-  // Returns an array of dependency references for custom resolvable keywords (listItem, siblings).
+  // Returns dependency references for the listItem custom resolvable keyword.
   // Called during dependency graph construction to register what store paths an expression depends on.
+  //
+  // Note: this function previously also handled the `siblings` keyword, which required mapping
+  // siblings.componentName.property → components.<uuid>.property. That handling was removed
+  // because sibling references now use the standard {{components.componentName.value}} syntax.
+  // The AST already converts component names to UUIDs (components.radiobutton1 → components['uuid']),
+  // so these references are registered as normal component dependencies automatically — no special
+  // handling needed here. Row-scoping is handled transparently at resolution time via
+  // prepareRowScope/updateRowScope.
   getCustomResolvableReference: (value, parentId, moduleId) => {
-    const { findNearestListviewAncestor, getComponentIdFromName } = get();
+    const { findNearestListviewAncestor } = get();
     const nearestAncestorId = findNearestListviewAncestor(parentId, moduleId);
     if (!nearestAncestorId) return [];
 
@@ -2358,41 +2401,6 @@ export const createComponentsSlice = (set, get) => ({
     // all properties change in the same event. One coarse trigger is correct and sufficient.
     if ((value.includes('listItem') && checkSubstringRegex(value, 'listItem')) || value === '{{listItem}}') {
       refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' });
-    }
-
-    // siblings — property-level dependency tracking.
-    // Each sibling component's properties are written independently via setExposedValuePerRow,
-    // which fires updateDependencyValues('components.<componentId>.<property>') per property.
-    // By mapping siblings.radiobutton1.value → components.<radiobutton1-uuid>.value in the dependency
-    // graph, we ensure that changing radiobutton1.isValid does NOT trigger re-resolution of components
-    // that only reference siblings.radiobutton1.value. This is different from listItem where all
-    // properties change atomically.
-    if ((value.includes('siblings') && checkSubstringRegex(value, 'siblings')) || value === '{{siblings}}') {
-      // Extract all siblings.componentName.property patterns for fine-grained dependency tracking.
-      // Example: "{{siblings.radiobutton1.value === true}}" → deps on components.<radio-uuid>.value
-      // Example: "{{siblings.radio1.value + siblings.text1.value}}" → two separate deps
-      const siblingPropertyRegex = /siblings\.(\w+)\.(\w+)/g;
-      let match;
-      const seen = new Set();
-      while ((match = siblingPropertyRegex.exec(value)) !== null) {
-        const [, componentName, property] = match;
-        const key = `${componentName}.${property}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        // Map component name → UUID, then register dependency on the actual component's property.
-        // This reuses the same dependency key that setExposedValuePerRow already fires via
-        // updateDependencyValues(`components.${componentId}.${property}`), so no extra trigger needed.
-        const componentId = getComponentIdFromName(componentName, moduleId);
-        if (componentId) {
-          refs.push({ entityType: 'components', entityNameOrId: componentId, entityKey: property });
-        }
-      }
-      // Fallback: if no siblings.X.Y patterns found (e.g., bare {{siblings}} or {{siblings.radiobutton1}}
-      // without a property), use coarse dependency on the ListView's siblings key.
-      // This is rare but ensures correctness — any sibling property change triggers re-resolution.
-      if (seen.size === 0) {
-        refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'siblings' });
-      }
     }
 
     return refs;

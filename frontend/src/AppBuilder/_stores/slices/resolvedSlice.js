@@ -400,16 +400,22 @@ export const createResolvedSlice = (set, get) => ({
     set(
       (state) => {
         Object.entries(values).forEach(([key, value]) => {
-          if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
+          const existing = state.resolvedStore.modules[moduleId].exposedValues[type][id];
+          if (existing === undefined || Array.isArray(existing)) {
+            // Initialize as plain object. The Array.isArray check handles the case where a
+            // component was previously inside a ListView (exposed values stored as a per-row
+            // array) and is moved to the canvas — the stale array must be replaced with a
+            // plain object before setting named properties, otherwise Immer throws because
+            // arrays only support numeric indices.
             state.resolvedStore.modules[moduleId].exposedValues[type][id] = {
               [key]: value,
             };
-          else {
+          } else {
             // If the value is equal to the existing value, add the key to the skipKeys set and do not update it
             // using lodash's isEqual as the state is immer proxy and cannot be compared directly
-            if (_.isEqual(value, state.resolvedStore.modules[moduleId].exposedValues[type][id][key])) {
+            if (_.isEqual(value, existing[key])) {
               skipKeys.add(key);
-            } else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
+            } else existing[key] = value;
           }
         });
       },
