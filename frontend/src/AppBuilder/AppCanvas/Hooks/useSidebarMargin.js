@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, use } from 'react';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { LEFT_SIDEBAR_WIDTH } from './appCanvasConstants';
+import { LEFT_SIDEBAR_WIDTH } from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const useSidebarMargin = (canvasContainerRef) => {
