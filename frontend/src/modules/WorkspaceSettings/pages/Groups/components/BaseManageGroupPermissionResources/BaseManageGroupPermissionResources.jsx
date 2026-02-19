@@ -534,6 +534,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     // Treat both basic and starter plans as restricted plans
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
+    const { customGroups: isFeatureEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
@@ -1123,6 +1124,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       fetchGroup={this.fetchGroupPermission}
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
+                      isFeatureEnabled={isFeatureEnabled}
                       hasEndUsers={hasEndUsers}
                     />
                   </aside>
