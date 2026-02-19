@@ -12,6 +12,7 @@ import * as nodemailer from 'nodemailer';
 import { centsToUSD } from '@helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
+import { OrganizationsLicense } from '@entities/organization_license.entity';
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -259,6 +260,24 @@ export class EmailUtilService implements IEmailUtilService {
         )}</div><a href='https://dashboard.stripe.com/subscriptions/${
           paymentObj?.subscription
         }'>Subscription Link</a></div>`,
+        footerText: '',
+        whiteLabelText: this.WHITE_LABEL_TEXT,
+        whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      }
+    );
+  }
+
+  licenseUpdateEmailInternal(
+    oldOrganizationLicense: OrganizationsLicense,
+    newOrganizationLicense: Partial<OrganizationsLicense>
+  ) {
+    return this.sendEmail(
+      [this.FROM_EMAIL, 'adish@tooljet.com', 'midhun.gs@tooljet.com'],
+      '[Important] Cloud License Updated',
+      {
+        bodyContent: `<div><div>Old: ${JSON.stringify(oldOrganizationLicense)}</div><div>New: ${JSON.stringify(
+          newOrganizationLicense
+        )}</div>`,
         footerText: '',
         whiteLabelText: this.WHITE_LABEL_TEXT,
         whiteLabelLogo: this.WHITE_LABEL_LOGO,
