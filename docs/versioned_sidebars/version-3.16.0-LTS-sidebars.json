@@ -364,7 +364,6 @@
                     "widgets/form/properties",
                     "widgets/form/csa",
                     "widgets/form/schema",
-                    "widgets/form/build-dynamic-forms",
                     "widgets/form/use-form-component"
                   ]
                 },

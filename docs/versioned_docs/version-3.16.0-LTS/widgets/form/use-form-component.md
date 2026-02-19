@@ -1,6 +1,6 @@
 ---
 id: use-form-component
-title: Use Form Component
+title: Using Form Component
 ---
 
 In this guide, we’ll build a simple app using the **[Form](/docs/widgets/form)** component to:
