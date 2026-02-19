@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -121,6 +121,32 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       id: result.appVersion_id,
       currentEnvironmentId: result.appVersion_current_environment_id,
     };
+  }
+
+  /**
+   * Resolves the effective environment ID, respecting license restrictions.
+   * Throws ForbiddenException if a non-dev environment is requested without multi-environment license.
+   * If no environment is requested, defaults to the development environment.
+   */
+  async resolveEnvironmentId(
+    organizationId: string,
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<string> {
+    const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
+
+    const devEnv = await this.getByPriority(organizationId, true, manager);
+
+    if (!isMultiEnvEnabled && requestedEnvironmentId && requestedEnvironmentId !== devEnv.id) {
+      throw new ForbiddenException(
+        'Multi-environment is not enabled for this organization. Please upgrade your plan.'
+      );
+    }
+
+    return requestedEnvironmentId || devEnv.id;
   }
 
   async get(
