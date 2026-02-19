@@ -213,6 +213,9 @@ export const ConfigHandle = ({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        if (['Modal', 'ModalV2'].includes(componentType)) {
+          setSelectedComponentAsModal(id);
+        }
         if (componentType === 'Tabs') {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
