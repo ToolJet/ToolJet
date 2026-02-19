@@ -136,6 +136,10 @@ export const TableContainer = ({
     fireEvent('onCancelChanges');
   }, [clearChangeSet, fireEvent]);
 
+  useEffect(() => {
+    setExposedVariables({ resetChanges: handleChangesDiscarded });
+  }, [handleChangesDiscarded, setExposedVariables]);
+
   return (
     <>
       <TableExposedVariables
