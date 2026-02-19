@@ -53,6 +53,13 @@ export function useTreeSelect({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
+  // Helper to normalize a single value or array into a flat array of strings
+  const normalizeValues = (input) => {
+    if (Array.isArray(input)) return input;
+    if (input != null) return [input];
+    return [];
+  };
+
   // Register CSA functions on mount
   useEffect(() => {
     setExposedVariables({
@@ -72,6 +79,29 @@ export function useTreeSelect({
       setDisable: async function (value) {
         setIsDisabled(!!value);
         setExposedVariable('isDisabled', !!value);
+      },
+      checkOptions: async function (values) {
+        const updated = normalizeValues(values);
+        setChecked(updated);
+        setExposedVariables(computeExposedVars(updated));
+        if (validate) {
+          const result = validate(updated);
+          setValidationStatus(result);
+          setExposedVariable('isValid', result.isValid);
+        }
+      },
+      uncheckOptions: async function (values) {
+        const toRemove = new Set(normalizeValues(values));
+        setChecked((prev) => {
+          const updated = prev.filter((v) => !toRemove.has(v));
+          setExposedVariables(computeExposedVars(updated));
+          if (validate) {
+            const result = validate(updated);
+            setValidationStatus(result);
+            setExposedVariable('isValid', result.isValid);
+          }
+          return updated;
+        });
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

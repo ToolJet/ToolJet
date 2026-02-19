@@ -155,7 +155,7 @@ export const treeSelectConfig = {
       validation: { schema: { type: 'string' } },
       accordian: 'switch',
     },
-    optionTextColor: {
+    textColor: {
       type: 'colorSwatches',
       displayName: 'Option text',
       validation: { schema: { type: 'string' } },
@@ -202,6 +202,16 @@ export const treeSelectConfig = {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'checkOptions',
+      displayName: 'Check option(s)',
+      params: [{ handle: 'values', displayName: 'Values', defaultValue: '{{[]}}', type: 'code' }],
+    },
+    {
+      handle: 'uncheckOptions',
+      displayName: 'Uncheck option(s)',
+      params: [{ handle: 'values', displayName: 'Values', defaultValue: '{{[]}}', type: 'code' }],
     },
   ],
   definition: {
@@ -284,7 +294,7 @@ export const treeSelectConfig = {
       uncheckedBackground: { value: 'var(--cc-surface1-surface)' },
       checkboxColor: { value: 'var(--cc-primary-brand)' },
       checkmarkColor: { value: 'var(--cc-surface1-surface)' },
-      optionTextColor: { value: 'var(--cc-primary-text)' },
+      textColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
     },
   },

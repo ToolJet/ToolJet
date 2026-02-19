@@ -42,7 +42,14 @@ const TreeSelect = ({
     allowIndependentSelection,
     dynamicHeight = false,
   } = properties;
-  const { checkboxColor: checkedBackground, uncheckedBackground, borderColor, checkmarkColor, boxShadow } = styles;
+  const {
+    checkboxColor: checkedBackground,
+    uncheckedBackground,
+    borderColor,
+    checkmarkColor,
+    boxShadow,
+    labelColor,
+  } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
@@ -160,7 +167,6 @@ const TreeSelect = ({
         className=""
         style={{
           marginBottom: '0.25rem',
-          color: textColor,
           fontWeight: '500',
           textAlign: styles.alignment === 'right' ? 'right' : 'left',
         }}
@@ -170,6 +176,7 @@ const TreeSelect = ({
           style={{
             position: 'relative',
             paddingRight: styles.alignment === 'right' && isMandatory ? '8px' : undefined,
+            color: labelColor,
           }}
         >
           {label}
