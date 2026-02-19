@@ -190,7 +190,7 @@ export const navigationConfig = {
       orientation: { value: 'horizontal' },
       displayStyle: { value: 'textAndIcon' },
       horizontalAlignment: { value: 'left' },
-      verticalAlignment: { value: 'top' },
+      verticalAlignment: { value: 'center' },
       menuItems: {
         value: [
           {
