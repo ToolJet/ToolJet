@@ -39,8 +39,7 @@ export const createInitSlice = (set, get) => ({
   setTableProperties: (id, properties) =>
     set(
       (state) => {
-        const visibility = properties?.visibility ?? true;
-        state.components[id].properties.visibility = visibility ? '' : 'none';
+        state.components[id].properties.visibility = properties?.visibility ?? true;
         state.components[id].properties.disabledState = properties?.disabledState ?? false;
         state.components[id].loadingState = properties?.loadingState ?? false;
         state.components[id].properties.displaySearchBox = properties?.displaySearchBox ?? true;

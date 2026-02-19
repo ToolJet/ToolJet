@@ -40,6 +40,12 @@ export const phoneinputConfig = {
       displayName: 'Enable country change',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -296,6 +302,7 @@ export const phoneinputConfig = {
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
       isCountryChangeEnabled: { value: '{{true}}' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {

@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import moment from 'moment-timezone';
 
 export const DatepickerInput = forwardRef(
@@ -31,7 +32,31 @@ export const DatepickerInput = forwardRef(
     auto,
     labelWidth,
     label,
+    showClearBtn,
+    onClear,
+    clearButtonRightOffset = 0,
   }) => {
+    // Check if value is a placeholder text (not an actual date/time value)
+    const isPlaceholderValue =
+      value === 'Select date' ||
+      value === 'Select time' ||
+      value === 'Select date and time' ||
+      value === 'Select Date Range' ||
+      (typeof value === 'string' && value.includes('→') && value.trim() === '→');
+
+    const computedInputStyles = {
+      ...inputStyles,
+      color: isPlaceholderValue ? 'var(--cc-placeholder-text)' : inputStyles?.color,
+    };
+
+    const placeholderValues = new Set(['Select date', 'Select time', 'Select date and time', 'Select Date Range']);
+    const hasValue = value !== null && value !== undefined && value !== '' && !placeholderValues.has(value);
+    const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+    const clearButtonBaseRight = loaderStyles?.right ?? '11px';
+    const clearButtonRight =
+      clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+    const clearButtonTop = '50%';
+    const clearButtonTransform = 'translateY(-50%)';
     return (
       <>
         <input
@@ -53,7 +78,7 @@ export const DatepickerInput = forwardRef(
           aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           ref={dateInputRef}
           id={`component-${inputId}`}
-          style={inputStyles}
+          style={computedInputStyles}
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
@@ -92,6 +117,30 @@ export const DatepickerInput = forwardRef(
             </div>
           )}
         </span>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onClear?.();
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={{ ...loaderStyles }} width="16" />}
       </>
     );
