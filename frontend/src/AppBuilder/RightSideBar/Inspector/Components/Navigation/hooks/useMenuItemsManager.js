@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -6,11 +6,14 @@ export const useMenuItemsManager = (component, paramUpdated) => {
   const [menuItems, setMenuItems] = useState([]);
   const [hoveredItemIndex, setHoveredItemIndex] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
+  const lastLocalUpdateRef = useRef(null);
 
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   // Helper function to update menu items
   const updateMenuItems = (newItems) => {
+    // Track that this update originated locally so the sync effect can skip it
+    lastLocalUpdateRef.current = JSON.stringify(newItems);
     setMenuItems(newItems);
     paramUpdated({ name: 'menuItems' }, 'value', newItems, 'properties', false);
   };
@@ -215,19 +218,28 @@ export const useMenuItemsManager = (component, paramUpdated) => {
     }));
   };
 
-  // Side effects
+  // Re-sync from the store definition when it changes externally (e.g., undo/redo)
+  const menuItemsDefinition = component?.component?.definition?.properties?.menuItems?.value;
+
   useEffect(() => {
+    const definitionJson = JSON.stringify(menuItemsDefinition);
+
+    // Skip if this change originated from our own local update
+    if (lastLocalUpdateRef.current === definitionJson) return;
+
     const items = constructMenuItems();
     setMenuItems(items);
-    // Initialize expanded state for all groups
-    const initialExpanded = {};
-    items.forEach((item) => {
-      if (item.isGroup) {
-        initialExpanded[item.id] = true;
-      }
+    // Preserve existing expanded states, only add newly discovered groups
+    setExpandedGroups((prev) => {
+      const merged = { ...prev };
+      items.forEach((item) => {
+        if (item.isGroup && !(item.id in merged)) {
+          merged[item.id] = true;
+        }
+      });
+      return merged;
     });
-    setExpandedGroups(initialExpanded);
-  }, [component?.id]);
+  }, [component?.id, menuItemsDefinition]);
 
   return {
     menuItems,

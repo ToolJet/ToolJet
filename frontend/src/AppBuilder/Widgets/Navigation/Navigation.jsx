@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/navigation-menu';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
 import { findItemById, findParentGroup } from './utils';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
@@ -212,6 +215,7 @@ const RenderNavGroup = ({
 
 export const Navigation = function Navigation(props) {
   const {
+    id,
     width,
     properties,
     styles,
@@ -220,6 +224,7 @@ export const Navigation = function Navigation(props) {
     setExposedVariable,
     setExposedVariables,
     darkMode,
+    currentMode,
   } = props;
 
   const {
@@ -414,6 +419,34 @@ export const Navigation = function Navigation(props) {
     right: 'tw-justify-end',
   }[horizontalAlignment] || 'tw-justify-start';
 
+  // In viewer mode, the canvasWidth state can be inflated beyond the actual #real-canvas width
+  // (by the sidebar effect in AppCanvas), causing gridWidth and widget widths to be too large.
+  // Fix: read real-canvas.clientWidth directly — HotkeyProvider constrains it with maxWidth,
+  // so clientWidth reflects the true canvas width. Then cap the widget accordingly.
+  const gridColumns = useStore(
+    (state) => state.getComponentDefinition(id, 'canvas')?.layouts?.[state.currentLayout]?.width,
+    shallow
+  );
+
+  const [viewerMaxWidth, setViewerMaxWidth] = useState(undefined);
+  useLayoutEffect(() => {
+    if (currentMode !== 'view' || orientation !== 'horizontal') {
+      setViewerMaxWidth(undefined);
+      return;
+    }
+    if (!gridColumns) return;
+
+    const realCanvas = document.getElementById('real-canvas');
+    if (!realCanvas || realCanvas.clientWidth <= 0) return;
+
+    const expectedWidth = (realCanvas.clientWidth / NO_OF_GRIDS) * gridColumns;
+    if (width > expectedWidth) {
+      setViewerMaxWidth(Math.round(expectedWidth));
+    } else {
+      setViewerMaxWidth(undefined);
+    }
+  }, [currentMode, orientation, width, gridColumns]);
+
   // Container styles
   const containerStyle = useMemo(() => {
     const parsedPadding = parseInt(padding, 10) || 2;
@@ -438,6 +471,7 @@ export const Navigation = function Navigation(props) {
         : mapAlignment(verticalAlignment),
       width: '100%',
       height: '100%',
+      maxWidth: viewerMaxWidth ? `${viewerMaxWidth}px` : undefined,
       backgroundColor: bgColor,
       border: `1px solid ${bdrColor}`,
       borderRadius: `${parsedBorderRadius}px`,
@@ -447,7 +481,7 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, horizontalAlignment, verticalAlignment]);
+  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, horizontalAlignment, verticalAlignment, viewerMaxWidth]);
 
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {

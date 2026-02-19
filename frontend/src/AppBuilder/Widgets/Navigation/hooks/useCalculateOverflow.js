@@ -17,7 +17,10 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
       return;
     }
 
-    const containerWidth = containerRef.current.offsetWidth;
+    // Use clientWidth (excludes border) and subtract both sides of padding
+    const CONTAINER_PADDING = parseInt(padding) || 8;
+    const availableWidth = containerRef.current.clientWidth - 2 * CONTAINER_PADDING;
+
     const measuredItems = measurementContainerRef.current?.children
       ? Array.from(measurementContainerRef.current.children)
       : [];
@@ -27,11 +30,11 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
       return;
     }
 
-    const FLEX_GAP = 4;
+    // Match the CSS gap: 6px from navigation.scss .navigation-horizontal-list
+    const FLEX_GAP = 6;
     const MORE_BUTTON_WIDTH = 80;
-    const CONTAINER_PADDING = parseInt(padding) || 8;
 
-    let currentWidth = CONTAINER_PADDING;
+    let currentWidth = 0;
     const finalVisible = [];
     const finalOverflow = [];
 
@@ -51,7 +54,7 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
       const needsMoreButton = remainingItems > 0 || finalOverflow.length > 0;
       const moreButtonSpace = needsMoreButton ? MORE_BUTTON_WIDTH + FLEX_GAP : 0;
 
-      if (currentWidth + widthNeeded + moreButtonSpace <= containerWidth) {
+      if (currentWidth + widthNeeded + moreButtonSpace <= availableWidth) {
         finalVisible.push(item);
         currentWidth += widthNeeded;
       } else {
@@ -62,7 +65,7 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
     while (
       finalOverflow.length > 0 &&
       finalVisible.length > 0 &&
-      currentWidth + MORE_BUTTON_WIDTH + FLEX_GAP > containerWidth
+      currentWidth + MORE_BUTTON_WIDTH + FLEX_GAP > availableWidth
     ) {
       const lastVisible = finalVisible.pop();
       const lastMeasured = measuredItems.find((el) => el.dataset.id === lastVisible.id);
@@ -75,7 +78,7 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
     setLinks({ visible: finalVisible, overflow: finalOverflow });
   }, [visibleMenuItems, orientation, padding]);
 
-  // Recalculate on resize
+  // Recalculate on resize and observe container size changes
   useLayoutEffect(() => {
     const handleResize = () => {
       requestAnimationFrame(calculateOverflow);
@@ -84,7 +87,21 @@ export function useCalculateOverflow({ containerRef, measurementContainerRef, vi
     handleResize();
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    // ResizeObserver catches container size changes that don't trigger window resize
+    // (e.g., editor sidebar toggle, viewer layout settling)
+    let resizeObserver;
+    if (containerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(calculateOverflow);
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
   }, [calculateOverflow]);
 
   // Recalculate when width changes
