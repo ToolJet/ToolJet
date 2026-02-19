@@ -2,101 +2,145 @@
 id: use-form-component
 title: Use Form Component
 ---
-<div style={{paddingBottom:'24px'}}>
 
-In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form)** component to add records to a database. We'll use **[ToolJet Database](/docs/tooljet-db/tooljet-database/)** as our data source. 
+In this guide, we’ll build a simple app using the **[Form](/docs/widgets/form)** component to:
 
-</div>
+- Add records to **[ToolJet Database](/docs/tooljet-db/tooljet-database/)**
+- Validate user inputs
+- Add conditional form behaviour
+- Refresh data automatically after submission
 
-<div style={{paddingBottom:'24px'}}>
+### Step 1: Create a Table in ToolJet Database
 
-## 1. Create a Table in ToolJet Database 
-- Create a table named *products* in ToolJet Database. 
-- Create three columns - `name`, `quantity` and `price`. 
-- Add some sample data to the table.
+Create a table named _products_ with the following columns:
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/database-table.png" alt="Database Table" />
-</div>
+- `name` (varchar)
+- `category` (varchar)
+- `quantity` (int)
+- `price` (int)
+- `supplier_email` (varchar)
+- `rating` (int)
+- `low_stock_note` (varchar)
 
-</div>
+Add a few sample rows to the table.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Step 2: Create a Query to Fetch Data
 
-## 2. Create the UI
-- Create a new app and drag and drop a **[Table](/docs/widgets/table)** component on the canvas.
-- Drop a **[Form](/docs/widgets/form)** next to it.
-- Since we have three columns in the database, let's update the Form with one **[Text Input](/docs/widgets/text-input)** for `name` and two **[Number Inputs](/docs/widgets/text-input)** for `quantity` and `price`.
-- Name the three input fields on the form as - *nameInput*, *quantityInput* and *priceInput*. Name the button as *submitButton*.
+1. Open the **Query Panel** and click **Add** to create a new query. Select **ToolJet Database** as the datasource.
+2. Select _products_ as the Table name and **List rows** as the Operation.
+3. Rename the query to _fetchData_.
+4. Enable `Run this query on application load?` so the data loads automatically when the application starts.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/user-interface.png" alt="User Interface" />
-</div>
-<i>Naming the components can help in easily identifying or referring individual components when there are a large number of components in the app</i>. 
+    <img className="screenshot-full img-l" src="/img/how-to/use-form/v2/fetchData.png" alt="fetchData Query" />
 
-</div>
+### Step 3: Create the UI
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+1. Create a new application.
+2. Drag a **[Table](/docs/widgets/table)** component onto the canvas.
+3. Set the Table's **Data** property to:
 
-## 3. Load the Table Component With Data
+   ```js
+   {{queries.fetchData.data;}}
+   ```
 
-- Click on the Add button in the **[Query Panel](/docs/app-builder/query-panel/)**, select ToolJet Database
-- Rename the query to *getProducts*
-- Choose *products* as Table name, List rows as Operations
-- Enable `Run this query on application load?` to automatically run the query when the app starts
-- Click on Run to fetch data
-- Click on the Table component to open its properties panel on the right. Under the `Data` property, paste the below code:
+4. Drag a **[Modal](/docs/widgets/modal)** component above the Table.
+
+    <img className="screenshot-full img-full" src="/img/how-to/use-form/v2/ui.png" alt="User Interface" />
+
+### Step 4: Create the Form
+
+1. Drag a **[Form](/docs/widgets/form)** component inside the **Modal**.
+2. Disable the **Header** and **Footer** of the Form from its Properties panel since the Modal already provides these.
+3. In the **Generate form from** field, select the _fetchData_ query.
+4. Adjust the field mapping as needed and click **Generate form**.
+
+    <img className="screenshot-full img-m" src="/img/how-to/use-form/v2/generateForm.png" alt="Generate Form" />
+
+5. Adjust the Form layout as needed.
+6. Add two buttons to the Modal's footer : _Cancel_ and _Add_.
+
+    <img className="screenshot-full img-full" src="/img/how-to/use-form/v2/formUI.png" alt="Form UI" />
+
+### Step 5: Insert Data Using the Form
+
+Create a new query to write form data to the database:
+
+- Name: _addProduct_
+- Operation: **Create row**
+- Table: _products_
+
+Map each column to its corresponding form field:
+
 ```js
-{{queries.getProducts.data}}
+name            → {{components.form.formData.name}}
+category        → {{components.form.formData.category}}
+quantity        → {{components.form.formData.quantity}}
+price           → {{components.form.formData.price}}
+rating          → {{components.form.formData.rating}}
+low_stock_note  → {{components.form.formData.low_stock_note}}
+supplier_email  → {{components.form.formData.supplier_email}}
 ```
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/use-form/load-data.png" alt="Table with Data" />
-</div>
 
-</div>
+<img className="screenshot-full img-full" src="/img/how-to/use-form/v2/addProduct.png" alt="addProduct Query" />
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Step 6: Connect Events and Refresh Data
 
-## 4. Write Data Using the Form Component 
-- Click on the Add button in the Query Panel, select ToolJet Database
-- Select *products* as Table name, Create row as Operations
-- Rename the query to *addProduct*
-- Click on Add Column and add three columns - **name**, **quantity** and **price**
-- Enter code below for **name**, **quantity** and **price** column keys:
+**Refresh the Table after a successful insert:**
+
+1. Select the _addProduct_ query and go to **Settings**.
+2. Click **New event handler** and configure:
+
+   - Event: _Query Success_
+   - Action: _Run Query_
+   - Query: _fetchData_
+
+    <img className="screenshot-full img-full mt-10" src="/img/how-to/use-form/v2/eventHandler1.png" alt="Refresh Table" />
+
+**Run the query when the user clicks Add:**
+
+1. Select the _Add_ button in the Modal footer.
+2. Click **New event handler** and configure:
+
+   - Event: _On click_
+   - Action: _Run Query_
+   - Query: _addProduct_
+
+    <img className="screenshot-full img-full mt-10" src="/img/how-to/use-form/v2/eventHandler2.png" alt="Submit" />
+
+Submitting the form now inserts a new row into the _products_ table and immediately refreshes the **Table** component with the latest data.
+
+### Step 7: Add Validations
+
+1. **Make Fields Mandatory**
+   Multiple fields are already marked as mandatory from the form generation step. To also make _category_ mandatory, select the _category_ input component and enable the **Make this field mandatory** toggle. ToolJet displays an error if the user tries to submit the form with any of these fields empty.
+
+2. **Validate Email Format**
+   Select the _supplier_email_ input component and navigate to its **Validation** property. Select **Regex** and enter:
+
+   ```js
+   {{/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(components.form.formData.supplier_email) ? '' : 'Enter a valid email address'}}
+   ```
+
+   This regex pattern checks the email format and returns an error message when the input doesn't match.
+
+### Step 8: Add Conditional Fields
+
+You can show or hide fields based on user input using the **Visibility** property. For example, the _low_stock_note_ field is only relevant when the quantity entered is low.
+
+Select the _low_stock_note_ input component, click **fx** next to its **Visibility** property, and enter:
 
 ```js
-{{components.form.data.nameInput.value}}
-{{components.form.data.quantityInput.value}}
-{{components.form.data.priceInput.value}}
+{{components.form.formData.quantity < 10;}}
 ```
 
-To ensure the Table component updates with new data after adding products, trigger the *getProducts* query following each *addProduct* query execution. Here's how:
+The _low_stock_note_ field now only appears when the quantity is below 10, prompting the user to add a note about the stock status.
 
-- Click on **New event handler** in the *addProduct* query to add a new event.
-- For the new event, leave the event as Query Success, set Run Query as the Action and choose *getProducts* as the Query.
+### Step 9: Disable Submit Until Form Is Valid
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/refresh-table.png" alt="Refresh Table" width="100%" />
-</div>
+Select the _Add_ button in the Modal footer and set its **Disable** property to:
 
-<i>This process refreshes the Table component with the latest data from the database.</i>
-<br/>
-<br/>
+```js
+{{!components.form.isValid;}}
+```
 
-- Next, click on the Form component and set `Button To Submit Form` as *submitButton*. 
-- Add a **New event handler** to the Form component. Keep On submit as Event, Run Query as Action and select *addProduct* as the Query.
-
-<div style={{textAlign: 'center', marginBottom: '15px'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/write-data-query.png" alt="Table with Data" width="100%" />
-</div>
-
-Now if you enter the product data on the form and click on Submit. The `addProduct` query will run and the entered data will be written to the `products` table in the ToolJet Database.
-
-<div style={{textAlign: 'center', marginBotton: '15px', marginTop: '15px'}}>
-    <img className="screenshot-full" src="/img/how-to/use-form/final-preview.png" alt="Final Preview" width="100%" />
-</div>
-<br/>
-
-In this how-to guide, we have explored a practical application of the Form component in ToolJet. You can apply the same principles for a variety of use cases that requires data input from the end-user.
-
-</div>
+The Form component's `isValid` property returns `true` only when all visible child components pass their validations. This keeps the button disabled until mandatory fields are filled and custom validations like the email check pass.
