@@ -29,17 +29,15 @@
       margin: 0px !important;
       height: 32px;
       width: 100%;
-      justify-content: start;
       gap: 6px;
     }
   }
 
   // Vertical menu - uses pages-wrapper styling
   .navigation-vertical-menu {
-    width: 100%;
+    width: max-content;
     padding: 0 8px;
     display: flex;
-    align-items: center;
     flex-direction: column;
     gap: 6px;
   }
@@ -359,16 +357,24 @@
       height: 36px;
       padding: 8px 12px;
       gap: 10px;
-      width: 100%;
+      width: auto;
     }
 
     .page-group-wrapper {
       height: 36px;
       padding: 8px 12px;
+      width: auto;
+      justify-content: start;
+      gap: 4px;
 
       .group-info {
+        width: auto;
         gap: 10px;
       }
+    }
+
+    .accordion-item {
+      width: auto;
     }
   }
 }
