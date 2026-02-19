@@ -50,7 +50,7 @@ function create(workflowId, active, environmentId, type, timezone, details) {
   return fetch(`${config.apiUrl}/workflow-schedules`, requestOptions).then(handleResponse);
 }
 
-function update(id, active, environmentId, type, timezone, details) {
+function update(id, workflowId, active, environmentId, type, timezone, details) {
   const body = {
     active,
     environmentId,
@@ -58,6 +58,11 @@ function update(id, active, environmentId, type, timezone, details) {
     timezone,
     details,
   };
+
+  // Include workflowId (versionId) if provided
+  if (workflowId) {
+    body.workflowId = workflowId;
+  }
 
   const requestOptions = {
     method: 'PUT',
