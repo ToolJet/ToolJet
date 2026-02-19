@@ -9,7 +9,7 @@ import { NO_OF_GRIDS } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
-const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'TagsInput'];
+const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'TagsInput', 'KeyValuePair'];
 
 const WidgetWrapper = memo(
   ({

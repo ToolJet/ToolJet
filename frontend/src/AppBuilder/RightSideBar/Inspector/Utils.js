@@ -70,6 +70,7 @@ export function renderCustomStyles(
     componentConfig.component == 'DaterangePicker' ||
     componentConfig.component == 'StarRating' ||
     componentConfig.component == 'PopoverMenu' ||
+    componentConfig.component == 'ReorderableList' ||
     componentConfig.component == 'KeyValuePair' ||
     componentConfig.component == 'ProgressBar'
   ) {
