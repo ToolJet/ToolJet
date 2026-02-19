@@ -277,7 +277,7 @@ export class EmailUtilService implements IEmailUtilService {
       {
         bodyContent: `<div><div>Old: ${JSON.stringify(oldOrganizationLicense)}</div><div>New: ${JSON.stringify(
           newOrganizationLicense
-        )}</div>`,
+        )}</div></div>`,
         footerText: '',
         whiteLabelText: this.WHITE_LABEL_TEXT,
         whiteLabelLogo: this.WHITE_LABEL_LOGO,
