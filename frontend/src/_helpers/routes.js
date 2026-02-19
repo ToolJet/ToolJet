@@ -282,3 +282,14 @@ export const redirectToWorkflows = (data, redirectTo, relativePath = null) => {
   const workflowUrl = `${dashboardUrl(data, redirectTo, relativePath)}/workflows`;
   window.location = workflowUrl;
 };
+
+export const isCustomDomain = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (!tooljetHost) return false;
+  try {
+    const tooljetHostname = new URL(tooljetHost).hostname;
+    return window.location.hostname !== tooljetHostname;
+  } catch {
+    return false;
+  }
+};
