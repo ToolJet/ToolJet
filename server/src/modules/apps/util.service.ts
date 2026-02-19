@@ -51,7 +51,7 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly abilityService: AbilityService
-  ) { }
+  ) {}
   async create(
     name: string,
     user: User,
@@ -71,55 +71,9 @@ export class AppsUtilService implements IAppsUtilService {
             userId: user.id,
             isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
             ...(isInitialisedFromPrompt && {
-              aiGenerationMetadata: {
-                steps: [
-                  {
-                    name: 'Describe app',
-                    id: 'describe_app',
-                    loadingStates: ['Generating PRD', 'PRD generated successfully'],
-                  },
-                  {
-                    name: 'Define specs',
-                    id: 'define_specs',
-                    loadingStates: ['Generating app specifications', 'Specifications generated successfully'],
-                  },
-                  {
-                    name: 'Design layout',
-                    id: 'design_layout',
-                    loadingStates: ['Designing app layout', 'Layout designed successfully'],
-                  },
-                  {
-                    name: 'Select datasource',
-                    id: 'select_datasource',
-                    loadingStates: ['Selecting datasource', 'Datasource selected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Connect datasource',
-                    id: 'connect_datasource',
-                    loadingStates: ['Connecting to datasource', 'Datasource connected successfully'],
-                    hidden: true,
-                    parent_step_id: 'setup_database',
-                  },
-                  {
-                    name: 'Setup database',
-                    id: 'setup_database',
-                    loadingStates: ['Setting up database schema', 'Database schema setup successfully'],
-                  },
-                  {
-                    name: 'Generate app',
-                    id: 'generate_app',
-                    loadingStates: ['Generating app', 'App generated successfully'],
-                  },
-                ],
-                activeStep: 'describe_app',
-                completedSteps: [],
-                version: 'v3',
-              },
+              aiGenerationMetadata: {},
             }),
             isInitialisedFromPrompt: isInitialisedFromPrompt,
-            appBuilderMode: isInitialisedFromPrompt ? 'ai' : 'visual',
             ...(type === APP_TYPES.WORKFLOW && { workflowApiToken: uuidv4() }),
           })
         );
@@ -522,14 +476,14 @@ export class AppsUtilService implements IAppsUtilService {
     return userAppPermissions.hideAll
       ? [null, ...userAppPermissions.editableAppsId]
       : [
-        null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
-          ])
-        ),
-      ];
+          null,
+          ...Array.from(
+            new Set([
+              ...userAppPermissions.editableAppsId,
+              ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+            ])
+          ),
+        ];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -616,9 +570,16 @@ export class AppsUtilService implements IAppsUtilService {
             if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
               return srcValue;
             } else if (
-              ['DropdownV2', 'MultiselectV2', 'PopoverMenu', 'Steps', 'Tabs', 'RadioButtonV2', 'Tags', 'TagsInput'].includes(
-                currentComponentData?.component?.component
-              ) &&
+              [
+                'DropdownV2',
+                'MultiselectV2',
+                'PopoverMenu',
+                'Steps',
+                'Tabs',
+                'RadioButtonV2',
+                'Tags',
+                'TagsInput',
+              ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {
               return isArray(srcValue) ? srcValue : Object.values(srcValue);
@@ -682,10 +643,10 @@ export class AppsUtilService implements IAppsUtilService {
       const modules =
         moduleAppIds.length > 0
           ? await manager
-            .createQueryBuilder(App, 'app')
-            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-            .distinct(true)
-            .getMany()
+              .createQueryBuilder(App, 'app')
+              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+              .distinct(true)
+              .getMany()
           : [];
       return modules;
     });
