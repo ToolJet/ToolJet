@@ -161,6 +161,15 @@ export const treeSelectConfig = {
       validation: { schema: { type: 'string' } },
       accordian: 'switch',
     },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Container',
+    },
     padding: {
       type: 'switch',
       displayName: 'Padding',
@@ -296,6 +305,7 @@ export const treeSelectConfig = {
       checkmarkColor: { value: 'var(--cc-surface1-surface)' },
       textColor: { value: 'var(--cc-primary-text)' },
       padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
