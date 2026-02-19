@@ -306,12 +306,10 @@ export const Navigation = function Navigation(props) {
   // Shared selection logic — updates exposed variables and ref
   const applySelection = (item) => {
     const parentGroup = findParentGroup(menuItems, item.id);
-    const index = menuItems.findIndex((mi) => mi.id === item.id);
 
     const clickData = {
       id: item.id,
       label: item.label,
-      index: index !== -1 ? index : null,
       groupId: parentGroup?.id || null,
       groupLabel: parentGroup?.label || null,
     };
