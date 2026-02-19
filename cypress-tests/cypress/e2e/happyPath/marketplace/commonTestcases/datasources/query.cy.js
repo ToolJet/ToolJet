@@ -1,10 +1,8 @@
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
-import { postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/queryPanel/postgres";
-import { restapiQueryConfig } from "Constants/constants/queryPanel/restapi";
+import { postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/marketplace/datasources/postgres.js";
 import { fake } from "Fixtures/fake";
-import { dsCommonSelector } from "Selectors/marketplace/common";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
-import { postgresUIConfig, postgresFormConfig } from "Constants/constants/marketplace/datasources/postgres";
+import { fillDSConnectionForm } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { verifyPreviewData } from "Support/utils/dataSource";
 
 
 describe('Query', () => {
@@ -57,6 +55,10 @@ describe('Query', () => {
         verifyConnectionFormUI(postgresQueryConfig.defaultFields);
         // cy.get('[data-cy="list-query-select-with-params"]').click();
         fillDSConnectionForm(postgresQueryFillConfig.selectWithParams);
+        cy.forceClickOnCanvas();
+        cy.wait(5000);
+
+        verifyPreviewData("Bob Smith");
 
     });
 

@@ -142,26 +142,7 @@ export const fillDSConnectionEncryptedField = (field) => {
 
 export const fillDataOnCodeMirrorInput = (field) => {
   const selector = dsCommonSelector.codeMirrorField(field.fieldName);
-  if (Array.isArray(field.text)) {
-    const rawText = field.text.join("");
-    cy.get(selector)
-      .realClick()
-      .find(".cm-line")
-      .invoke("text")
-      .then((text) => {
-        cy.get(selector)
-          .last()
-          .click()
-          .type("{selectAll}{backspace}", { delay: 0 });
-        cy.get(selector).last().realType(rawText, {
-          parseSpecialCharSequences: false,
-          delay: 0,
-          force: true,
-        });
-      });
-  } else {
-    cy.get(selector).clearAndTypeOnCodeMirror(field.text);
-  }
+  cy.get(selector).clearAndTypeOnCodeMirror(field.text);
 };
 
 export const fillCodeMirrorKeyValuePairs = (field) => {
@@ -204,7 +185,7 @@ const processFields = (fields) => {
       case 'checkbox':
         selectDSConnectionCheckbox(field);
         break;
-      case 'codeMirror':
+      case 'codeMirrorInput':
         fillDataOnCodeMirrorInput(field);
         break;
       case 'codeMirrorKeyValue':

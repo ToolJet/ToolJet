@@ -172,3 +172,65 @@ export const postgresFormConfig = {
         }
     ],
 };
+export const postgresQueryConfig = {
+    defaultFields: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            validations: {
+                defaultValue: "SQL mode",
+                disabled: false,
+            },
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Query",
+            assertion: "contain.text",
+            data: "SELECT * FROM users",
+        },
+        {
+            type: "label",
+            fieldName: "SQL Parameters",
+        },
+        {
+            type: "keyValue",
+            fieldName: null,
+            validations: {
+                rows: [
+                    {
+                        key: "Key",
+                        keyAssertion: "contain.text",
+                        value: "Value",
+                        valueAssertion: "contain.text",
+                        hasDeleteButton: true,
+                    },
+                ],
+            },
+        },
+        {
+            type: "button",
+            fieldName: "Add SQL parameter",
+            validations: {
+                disabled: false,
+            },
+        },
+    ],
+};
+
+export const postgresQueryFillConfig = {
+    selectWithParams: [
+        {
+            type: "codeMirrorInput",
+            fieldName: "query",
+            text: ["select name from student_data where id=:id"],
+        },
+        {
+            type: "codeMirrorKeyValue",
+            fieldName: null,
+            addButtonFieldName: "add-sql-parameter",
+            keyValueData: [
+                { key: "id", value: "2" },
+            ],
+        },
+    ],
+};
