@@ -564,13 +564,37 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
+    const isEmpty = Array.isArray(widgetValue) ? widgetValue.length === 0 : !widgetValue && widgetValue !== 0;
 
-    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
+    if (resolvedMandatory == true && isEmpty) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
       };
     }
+
+    // Selection count validations (for array-based widgets like TreeSelect, Multiselect)
+    if (Array.isArray(widgetValue)) {
+      const minSelection = validationObject?.minSelection?.value ?? validationObject?.minSelection;
+      const maxSelection = validationObject?.maxSelection?.value ?? validationObject?.maxSelection;
+
+      const resolvedMinSelection = parseInt(getResolvedValue(minSelection, customResolveObjects)) || 0;
+      if (resolvedMinSelection > 0 && widgetValue.length < resolvedMinSelection) {
+        return {
+          isValid: false,
+          validationError: `Minimum ${resolvedMinSelection} selections required`,
+        };
+      }
+
+      const resolvedMaxSelection = parseInt(getResolvedValue(maxSelection, customResolveObjects)) || 0;
+      if (resolvedMaxSelection > 0 && widgetValue.length > resolvedMaxSelection) {
+        return {
+          isValid: false,
+          validationError: `Maximum ${resolvedMaxSelection} selections allowed`,
+        };
+      }
+    }
+
     return {
       isValid,
       validationError,

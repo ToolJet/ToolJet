@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
  * Handles: checked, expanded, checkedPathArray, checkedPathStrings,
  *          leafPathArray, leafPathStrings, and CSAs (setLoading, setVisibility, setDisable)
  */
-export function useExposedVariables({
+export function useTreeSelect({
   data,
   checkedData,
   expandedData,
@@ -15,9 +15,19 @@ export function useExposedVariables({
   loadingState,
   setExposedVariable,
   setExposedVariables,
+  validate,
+  validation,
 }) {
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
+
+  // === Validation State ===
+  const [validationStatus, setValidationStatus] = useState(
+    validate?.(checkedData) ?? { isValid: true, validationError: null }
+  );
+  const [showValidationError, setShowValidationError] = useState(false);
+  const { isValid, validationError } = validationStatus;
+  const isMandatory = validation?.mandatory ?? false;
 
   // === CSA Local State ===
   const [isLoading, setIsLoading] = useState(loadingState);
@@ -49,6 +59,8 @@ export function useExposedVariables({
       isLoading: false,
       isVisible: visibility,
       isDisabled: disabledState,
+      isValid: validationStatus.isValid,
+      isMandatory,
       setLoading: async function (value) {
         setIsLoading(!!value);
         setExposedVariable('isLoading', !!value);
@@ -157,6 +169,13 @@ export function useExposedVariables({
 
     setChecked(checkedArr);
     setExposedVariables(computeExposedVars(checkedArr));
+
+    // Run validation on checked change
+    if (validate) {
+      const result = validate(checkedArr);
+      setValidationStatus(result);
+      setExposedVariable('isValid', result.isValid);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(checkedData), JSON.stringify(data), allowIndependentSelection]);
 
@@ -172,8 +191,16 @@ export function useExposedVariables({
     (newChecked) => {
       setChecked(newChecked);
       setExposedVariables(computeExposedVars(newChecked));
+      setShowValidationError(true);
+
+      // Run validation on user interaction
+      if (validate) {
+        const result = validate(newChecked);
+        setValidationStatus(result);
+        setExposedVariable('isValid', result.isValid);
+      }
     },
-    [computeExposedVars, setExposedVariables]
+    [computeExposedVars, setExposedVariables, validate, setExposedVariable]
   );
 
   // Handler for expand events
@@ -185,5 +212,33 @@ export function useExposedVariables({
     [setExposedVariable]
   );
 
-  return { checked, expanded, handleCheck, handleExpand, isVisible, isDisabled, isLoading };
+  // Re-validate when the validate function itself changes (e.g. validation config updated)
+  useEffect(() => {
+    if (validate) {
+      const result = validate(checked);
+      setValidationStatus(result);
+      setExposedVariable('isValid', result.isValid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validate]);
+
+  // Expose isMandatory when it changes
+  useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  return {
+    checked,
+    expanded,
+    handleCheck,
+    handleExpand,
+    isVisible,
+    isDisabled,
+    isLoading,
+    validationError,
+    showValidationError,
+    isValid,
+    isMandatory,
+  };
 }

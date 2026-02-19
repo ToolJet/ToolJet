@@ -5,7 +5,7 @@ import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
-import { useExposedVariables } from './useExposedVariables';
+import { useTreeSelect } from './useTreeSelect';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
@@ -29,6 +29,8 @@ const TreeSelect = ({
   currentLayout,
   currentMode,
   subContainerIndex,
+  validate,
+  validation,
 }) => {
   const {
     label,
@@ -69,7 +71,18 @@ const TreeSelect = ({
   const checkedData = isExpectedDataType(properties.checkedData, 'array');
   const expandedData = isExpectedDataType(properties.expandedData, 'array');
 
-  const { checked, expanded, handleCheck, handleExpand, isVisible, isDisabled, isLoading } = useExposedVariables({
+  const {
+    checked,
+    expanded,
+    handleCheck,
+    handleExpand,
+    isVisible,
+    isDisabled,
+    isLoading,
+    validationError,
+    showValidationError,
+    isMandatory,
+  } = useTreeSelect({
     data,
     checkedData,
     expandedData,
@@ -79,6 +92,8 @@ const TreeSelect = ({
     loadingState,
     setExposedVariable,
     setExposedVariables,
+    validate,
+    validation,
   });
 
   useDynamicHeight({
@@ -141,8 +156,36 @@ const TreeSelect = ({
       aria-hidden={!isVisible}
       aria-disabled={isDisabled}
     >
-      <div className="" style={{ marginBottom: '0.25rem', color: textColor, fontWeight: '500' }}>
-        <label htmlFor={`component-${id}`}>{label}</label>
+      <div
+        className=""
+        style={{
+          marginBottom: '0.25rem',
+          color: textColor,
+          fontWeight: '500',
+          textAlign: styles.alignment === 'right' ? 'right' : 'left',
+        }}
+      >
+        <label
+          htmlFor={`component-${id}`}
+          style={{
+            position: 'relative',
+            paddingRight: styles.alignment === 'right' && isMandatory ? '8px' : undefined,
+          }}
+        >
+          {label}
+          {isMandatory && (
+            <span
+              style={{
+                color: 'var(--cc-error-systemStatus)',
+                position: 'absolute',
+                right: styles.alignment === 'right' ? '0px' : '-8px',
+                top: '0px',
+              }}
+            >
+              *
+            </span>
+          )}
+        </label>
       </div>
       <CheckboxTree
         key={`${checkedBackground}-${uncheckedBackground}-${borderColor}-${checkmarkColor}`}
@@ -192,6 +235,18 @@ const TreeSelect = ({
           ),
         }}
       />
+      {showValidationError && visibility && (
+        <div
+          style={{
+            color: 'var(--status-error-strong)',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
     </div>
   );
 };
