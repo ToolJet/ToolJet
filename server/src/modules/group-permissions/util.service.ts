@@ -105,7 +105,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
     const { promote: canPromote, release: canRelease } =
       await this.licenseUtilService.isPromoteAndReleaseEnabled(organizationId);
-    const customGroupsEnabled = await this.licenseUtilService.isCustomGroupsEnabled(organizationId);
+    const customGroupsEnabled = await this.licenseUtilService.isFeatureEnabled(organizationId);
     const restrictedPlanFilter = { type: GROUP_PERMISSIONS_TYPE.DEFAULT };
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
