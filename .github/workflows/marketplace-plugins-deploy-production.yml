@@ -10,6 +10,10 @@ on:
         description: "Branch to deploy from"
         required: true
         default: "lts-3.16"
+      plugin_name:
+        description: "Plugin name to deploy individually (leave empty to deploy all)"
+        required: false
+        default: ""
 
 env:
   PR_NUMBER: ${{ github.event.number }}
@@ -99,7 +103,7 @@ jobs:
         run: |
           cd marketplace
           echo "🚀 Uploading to S3 Production"
-          AWS_BUCKET=${{ secrets.S3_BUCKET_PRODUCTION }} node scripts/upload-to-s3.js | tee upload_summary.log
+          AWS_BUCKET=${{ secrets.S3_BUCKET_PRODUCTION }} bash scripts/upload-to-s3.sh ${{ github.event.inputs.plugin_name }} | tee upload_summary.log
 
       - name: Extract upload summary
         id: upload_summary
