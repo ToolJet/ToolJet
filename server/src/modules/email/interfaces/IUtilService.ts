@@ -5,6 +5,7 @@ export interface IEmailUtilService {
   retrieveSmtpSettings(): Promise<any>;
   licenseUpdateEmailInternal(
     oldOrganizationLicense: OrganizationsLicense,
-    newOrganizationLicense: Partial<OrganizationsLicense>
+    newOrganizationLicense: Partial<OrganizationsLicense>,
+    period: { start: Date; end: Date }
   ): Promise<any>;
 }
