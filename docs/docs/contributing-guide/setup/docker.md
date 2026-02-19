@@ -42,13 +42,13 @@ git clone https://github.com/<your-username>/ToolJet.git
 3. Create a `.env` file by copying `.env.internal.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
 
 ```bash
-cp ./deploy/docker/.env.internal.example .env
+cp ./docker/.env.internal.example .env
 ```
 
 4. Populate the keys in the `.env` using the below the command:
 
 ```bash
-chmod +x ./deploy/docker/internal.sh && ./deploy/docker/internal.sh
+chmod +x ./docker/internal.sh && ./docker/internal.sh
 ```
 
 :::warning
