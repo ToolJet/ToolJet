@@ -29,8 +29,22 @@ source "amazon-ebs" "ubuntu" {
 
   launch_block_device_mappings {
     device_name = "/dev/sda1"
-    volume_size = 15
+    volume_size = 8
     delete_on_termination = true
+  }
+
+  # Temporary build volume — destroyed after build, NOT included in AMI
+  launch_block_device_mappings {
+    device_name = "/dev/sdf"
+    volume_size = 15
+    volume_type = "gp3"
+    delete_on_termination = true
+  }
+
+  # Explicitly exclude the temporary build volume from the AMI snapshot
+  ami_block_device_mappings {
+    device_name = "/dev/sdf"
+    no_device   = true
   }
 
 }
