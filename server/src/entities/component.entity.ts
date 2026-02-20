@@ -19,6 +19,9 @@ export class Component {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column()
   name: string;
 

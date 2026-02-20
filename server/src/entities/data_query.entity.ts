@@ -35,6 +35,9 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
