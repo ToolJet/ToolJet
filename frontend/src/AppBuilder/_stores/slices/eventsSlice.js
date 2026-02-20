@@ -11,7 +11,6 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import urlJoin from 'url-join';
 import { useCallback } from 'react';
-import { navigate } from '@/AppBuilder/_utils/misc';
 import moment from 'moment';
 
 // To unsubscribe from the changes when no longer needed
@@ -657,7 +656,7 @@ export const createEventsSlice = (set, get) => ({
                 if (queryPart.length > 0) url = url + `?${queryPart}`;
               }
               if (mode === 'view') {
-                navigate(url);
+                window.open(urlJoin(window.public_config?.TOOLJET_HOST, url), '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
                   window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
