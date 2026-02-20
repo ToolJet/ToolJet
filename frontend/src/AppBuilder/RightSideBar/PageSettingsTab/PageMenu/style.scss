@@ -429,3 +429,23 @@
         background-color: var(--slate3) !important;
     }
 }
+
+.add-new-page-popover-header {
+    height: 40px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 0 16px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid var(--border-weak);
+    font-family: 'IBM Plex Sans';
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-default);
+}
+
+.add-new-page-options {
+    padding: 8px;
+    border-radius: 0 0 8px 8px;
+}

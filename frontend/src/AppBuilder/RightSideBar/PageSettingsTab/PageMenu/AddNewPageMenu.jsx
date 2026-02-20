@@ -9,6 +9,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function AddNewPageMenu({ darkMode }) {
   const newPageBtnRef = useRef(null);
+  const addPageBtnRef = useRef(null);
+
   const [showMenuPopover, setShowMenuPopover] = useState(false);
   const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
   const setEditingPage = useStore((state) => state.setEditingPage);
@@ -21,12 +23,15 @@ export function AddNewPageMenu({ darkMode }) {
   };
 
   return (
-    <div className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}>
+    <div
+      className={`page-type-buttons-container d-flex justify-content-between custom-gap-12 ${darkMode && 'dark-mode'}`}
+    >
       <Button
         ref={newPageBtnRef}
         key="new-page-btn"
         fill="var(--icon-default)"
         leadingIcon="plus"
+        isLucid
         variant="outline"
         className="add-new-page icon-btn d-flex flex-grow-1"
         id="add-new-page"
@@ -38,8 +43,11 @@ export function AddNewPageMenu({ darkMode }) {
       </Button>
 
       <Button
+        ref={addPageBtnRef}
         iconOnly
-        leadingIcon="morevertical01"
+        leadingIcon="ellipsis-vertical"
+        isLucid
+        fill="var(--icon-strong)"
         className="more-page-opts"
         onClick={() => {
           setShowMenuPopover((prev) => !prev);
@@ -49,36 +57,76 @@ export function AddNewPageMenu({ darkMode }) {
       />
 
       <Overlay
-        target={newPageBtnRef.current}
+        target={addPageBtnRef.current}
         show={showMenuPopover}
-        placement="bottom"
+        placement="bottom-end"
         rootClose
         onHide={() => setShowMenuPopover(false)}
+        popperConfig={{
+          modifiers: [
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                flipVariations: true,
+                allowedAutoPlacements: ['top', 'bottom'],
+                boundary: 'viewport',
+              },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 2],
+              },
+            },
+          ],
+        }}
       >
-        <Popover className={darkMode && 'dark-theme theme-dark'} id="add-new-page-popover">
-          <div className="menu-options mb-0">
-            <PageOptions
-              type="url"
-              text="Add nav item with URL"
-              icon="addnavitemurl"
-              darkMode={darkMode}
+        <Popover className={`!tw-rounded-[8px] !tw-border-[var(--border-weak)] ${darkMode && 'dark-theme theme-dark'}`}>
+          <div className="add-new-page-popover-header">Add new nav item</div>
+          <div className="add-new-page-options">
+            <Button
+              variant="ghost"
               onClick={() => handleOpenPopup('url')}
-            />
-            <PageOptions
-              type="app"
-              text="Add nav item ToolJet app"
-              icon="apps"
-              darkMode={darkMode}
+              leadingIcon="link-2"
+              isLucid
+              fill="var(--icon-weak)"
+              className="tw-w-full tw-justify-start"
+            >
+              Add nav item with URL
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => handleOpenPopup('app')}
-            />
-            <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex disabled licensed-page-option'}`}>
-              <PageOptions
-                type="group"
-                text="Add nav group"
-                icon="folder"
-                darkMode={darkMode}
-                onClick={() => hasAppPagesAddNavGroupEnabled && handleOpenPopup('group')}
-              />
+              leadingIcon="app-window"
+              isLucid
+              fill="var(--icon-weak)"
+              className="tw-w-full tw-justify-start"
+            >
+              Add nav item ToolJet app
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => handleOpenPopup('custom')}
+              leadingIcon="mouse-pointer-click"
+              isLucid
+              fill="var(--icon-weak)"
+              className="tw-w-full tw-justify-start"
+            >
+              Add custom nav item
+            </Button>
+            <div className={`${!hasAppPagesAddNavGroupEnabled && 'd-flex'}`}>
+              <Button
+                variant="ghost"
+                onClick={() => handleOpenPopup('group')}
+                leadingIcon="folder-open-dot"
+                isLucid
+                fill="var(--icon-weak)"
+                className={`${hasAppPagesAddNavGroupEnabled ? 'tw-w-full' : 'tw-opacity-[0.5]'} tw-justify-start`}
+                disabled={!hasAppPagesAddNavGroupEnabled}
+              >
+                Add nav group
+              </Button>
               <LicenseTooltip
                 message={"You don't have access to nav groups. Upgrade your plan to access this feature."}
                 placement="bottom"
