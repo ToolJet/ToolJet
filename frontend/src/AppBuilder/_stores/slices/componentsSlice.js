@@ -2359,9 +2359,14 @@ export const createComponentsSlice = (set, get) => ({
     return component.component.component;
   },
 
-  // Return the length of the resolved value of the component
+  // Return the length of the resolved value of the component.
+  // For components inside a ListView, the authoritative row count comes from
+  // the nearest ListView ancestor's customResolvables — not from the component's
+  // own resolved array, which may still be undersized on refresh (grandchildren
+  // are initialised at index 0 only during initDependencyGraph because the
+  // ListView data isn't available yet at that point).
   getEntityResolvedValueLength: (dependency, moduleId = 'canvas', parentIndices = []) => {
-    const { resolvedStore } = get();
+    const { resolvedStore, getParentIdFromDependency, findNearestListviewAncestor, getCustomResolvables } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     let data = resolvedStore.modules[moduleId]?.[entityType]?.[entityId];
     if (typeof data === 'string') return undefined;
@@ -2371,6 +2376,20 @@ export const createComponentsSlice = (set, get) => ({
       data = data?.[parentIndices[i]];
       if (!data) return undefined;
     }
+
+    // If the component is inside a ListView, use the ListView's data length
+    // so that all rows are resolved even if this component's array hasn't
+    // been fully sized yet (e.g. grandchildren on page refresh).
+    if (Array.isArray(data)) {
+      const parentId = getParentIdFromDependency(dependency, moduleId);
+      const nearestListviewId = parentId ? findNearestListviewAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        const customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
+        const lvLength = Array.isArray(customResolvables) ? customResolvables.length : 0;
+        if (lvLength > 0) return lvLength;
+      }
+    }
+
     return data?.length;
   },
 
