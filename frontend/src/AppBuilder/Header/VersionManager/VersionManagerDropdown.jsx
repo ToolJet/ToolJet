@@ -33,6 +33,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
+    orgGit,
   } = useStore(
     (state) => ({
       appId: state.appStore.modules[moduleId].app.appId,
@@ -48,6 +49,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
+      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -122,9 +124,27 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
   // Check if there's only one draft and no other saved versions
-  const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
+  // draftVersions are versions of type 'version' (not branches)
+  const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
-  const shouldDisableCreateDraft = draftVersions.length > 0 && savedVersions.length === 0;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+
+  // Disable create draft logic:
+  // - Git sync enabled: disable if any draft already exists
+  // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
+  const shouldDisableCreateDraft = isGitSyncEnabled
+    ? draftVersions.length > 0
+    : savedVersions.length === 0 && draftVersions.length > 0;
+
+  // Determine tooltip message based on why create draft is disabled
+  let createDraftDisabledTooltip = '';
+  if (shouldDisableCreateDraft) {
+    if (isGitSyncEnabled) {
+      createDraftDisabledTooltip = 'Draft version already exists.';
+    } else if (savedVersions.length === 0) {
+      createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
+    }
+  }
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -352,7 +372,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} darkMode={darkMode} />
+        <CreateDraftButton
+          onClick={handleCreateDraft}
+          disabled={shouldDisableCreateDraft}
+          disabledTooltip={createDraftDisabledTooltip}
+          darkMode={darkMode}
+        />
       </Popover.Body>
     </Popover>
   );

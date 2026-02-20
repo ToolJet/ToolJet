@@ -67,6 +67,7 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
                 versionId: versionToPromote?.id,
                 lastCommitMessage: ` ${versionToPromote.name} Version of app ${appGit?.git_app_name} promoted from development to staging`,
                 gitVersionName: versionToPromote?.name,
+                allowMasterPush: true,
               };
               await gitSyncService.gitPush(body, appGit?.id, versionToPromote?.id);
               toast.success('Changes committed successfully');

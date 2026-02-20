@@ -27,6 +27,7 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
+import { AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -44,6 +45,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -61,7 +63,8 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository
+    protected readonly appGitRepository: AppGitRepository,
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
@@ -221,6 +224,21 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
+
+    // Check if name is being changed - require draft version to exist
+    if (name && name !== app.name) {
+      const draftVersion = await this.versionRepository.findOne({
+        where: {
+          appId: app.id,
+          versionType: AppVersionType.VERSION,
+          status: AppVersionStatus.DRAFT,
+        },
+      });
+
+      if (!draftVersion) {
+        throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+      }
+    }
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
@@ -406,8 +424,13 @@ export class AppsService implements IAppsService {
         response['editing_version']['current_environment_id'] = appVersionEnvironment.id;
       }
       response['should_freeze_editor'] = shouldFreezeEditor;
+      // Check if editing version is a draft
+      const editingVersion = response['editing_version'];
+      const isDraft = editingVersion?.status === 'DRAFT';
+
       const appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      if (appGit) {
+      if (appGit && !isDraft) {
+        // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
       }
       response['editorEnvironment'] = {
