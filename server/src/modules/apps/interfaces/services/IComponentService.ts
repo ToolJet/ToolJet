@@ -6,6 +6,17 @@ import { LayoutData } from '@modules/apps/dto/component';
 export interface IComponentsService {
   findOne(id: string): Promise<Component>;
   create(componentDiff: object, pageId: string, appVersionId: string): Promise<any>;
+  /**
+   * Create components using an external EntityManager (for use within existing transactions)
+   * Use this when creating components within a transaction that has also created pages
+   */
+  createWithManager(
+    componentDiff: object,
+    pageId: string,
+    appVersionId: string,
+    manager: EntityManager,
+    skipHistoryCapture?: boolean
+  ): Promise<void>;
   update(componentDiff: object, appVersionId: string): Promise<void | { error: { message: string } }>;
   delete(
     componentIds: string[],

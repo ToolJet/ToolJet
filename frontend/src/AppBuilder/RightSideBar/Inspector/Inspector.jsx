@@ -50,6 +50,7 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { ReorderableList } from './Components/ReorderableList';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
@@ -140,6 +141,8 @@ export const NEW_REVAMPED_COMPONENTS = [
   'JSONEditor',
   'KeyValuePair',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
 ];
 
 export const Inspector = ({
@@ -917,7 +920,8 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
-
+      case 'ReorderableList':
+        return <ReorderableList {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
 
