@@ -296,7 +296,8 @@ export const createEventsSlice = (set, get) => ({
         const { queryName, parameters } = options;
         const queryId = queries.filter((query) => query.name === queryName && isQueryRunnable(query))?.[0]?.id;
         if (!queryId) return;
-        runQuery(queryId, queryName, true, mode, parameters, undefined, undefined, false, false, moduleId);
+        // Return the query result promise so it can be passed back to the custom component iframe
+        return runQuery(queryId, queryName, true, mode, parameters, undefined, undefined, false, false, moduleId);
       }
       if (eventName === 'onTableActionButtonClicked') {
         const { action, tableActionEvents } = options;
