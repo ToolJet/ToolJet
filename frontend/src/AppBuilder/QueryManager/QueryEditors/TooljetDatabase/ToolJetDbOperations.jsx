@@ -128,9 +128,9 @@ const ToolJetDbOperations = ({
           ...acc,
           ...(tableInfo[newTable]
             ? tableInfo[newTable].map((col) => ({
-                name: col.Header,
-                table: newTable,
-              }))
+              name: col.Header,
+              table: newTable,
+            }))
             : []),
         ],
         []
@@ -306,10 +306,10 @@ const ToolJetDbOperations = ({
           newFields.push(
             ...(data?.result?.columns
               ? data.result.columns.map((col) => ({
-                  name: col.column_name,
-                  table: tableId,
-                  // alias: `${tableId}_${col.column_name}`,
-                }))
+                name: col.column_name,
+                table: tableId,
+                // alias: `${tableId}_${col.column_name}`,
+              }))
               : [])
           );
 
@@ -470,10 +470,10 @@ const ToolJetDbOperations = ({
             newFields.push(
               ...(data?.result?.columns
                 ? data.result.columns.map((col) => ({
-                    name: col.column_name,
-                    table: tableId,
-                    // alias: `${tableId}_${col.column_name}`,
-                  }))
+                  name: col.column_name,
+                  table: tableId,
+                  // alias: `${tableId}_${col.column_name}`,
+                }))
                 : [])
             );
 
@@ -585,12 +585,15 @@ const ToolJetDbOperations = ({
         <div
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
-          <label className={cx('form-label', 'flex-shrink-0')}>Mode</label>
+          <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-tooljetdb-mode">
+            Mode
+          </label>
           <div
             className={cx('d-flex align-items-center justify-content-start gap-2', {
               'row-tabs-dark': darkMode,
               'row-tabs': !darkMode,
             })}
+            data-cy="tooljetdb-mode-tabs"
           >
             <div
               onClick={() => handleTabClick('GUI mode')}
@@ -599,16 +602,17 @@ const ToolJetDbOperations = ({
                   activeTab === 'GUI mode' && !darkMode
                     ? 'white'
                     : activeTab === 'GUI mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'GUI mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'GUI mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
+              data-cy="tooljetdb-gui-mode-tab"
             >
               GUI mode
             </div>
@@ -620,16 +624,17 @@ const ToolJetDbOperations = ({
                   activeTab === 'SQL mode' && !darkMode
                     ? 'white'
                     : activeTab === 'SQL mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'SQL mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'SQL mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
+              data-cy="tooljetdb-sql-mode-tab"
             >
               SQL mode
             </div>
@@ -646,7 +651,9 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-table-name">
+                Table name
+              </label>
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
@@ -681,7 +688,9 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-operations">
+                Operations
+              </label>
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
@@ -714,7 +723,10 @@ const ToolJetDbOperations = ({
         </>
       )}
       {activeTab === 'SQL mode' && (
-        <div className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+        <div
+          className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+          data-cy="tooljetdb-sql-mode-section"
+        >
           {/*<label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>*/}
           <CodeHinter
             type="multiline"
@@ -728,6 +740,7 @@ const ToolJetDbOperations = ({
             delayOnChange={false}
             className="w-100"
             renderCopilot={renderCopilot}
+            cyLabel="tooljetdb-sql-query-input"
           />
         </div>
       )}

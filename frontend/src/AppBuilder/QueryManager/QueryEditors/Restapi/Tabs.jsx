@@ -43,12 +43,13 @@ function ControlledTabs({
           <div className="text-nowrap d-flex align-items-center">
             {key === 'body' && (
               <>
-                Raw &nbsp;&nbsp;
+                <span data-cy="restapi-body-raw-label">Raw</span> &nbsp;&nbsp;
                 <CustomToggleSwitch
                   toggleSwitchFunction={setBodyToggle}
                   action="bodyToggle"
                   darkMode={darkMode}
                   isChecked={bodyToggle}
+                  dataCy="restapi-body-raw"
                 />
               </>
             )}
@@ -60,7 +61,7 @@ function ControlledTabs({
               variant="ghost"
               leadingIcon="plus"
               id="runjs-param-add-btn"
-              data-cy={`runjs-add-param-button`}
+              data-cy={`restapi-${key}-add-button`}
               disabled={bodyToggle && key === 'body'}
               onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
             />
