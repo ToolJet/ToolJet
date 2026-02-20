@@ -9,6 +9,9 @@ import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
+import { Icon as IconPicker } from '@/AppBuilder/CodeBuilder/Elements/Icon';
+import AlignLeftinspector from '@/_ui/Icon/solidIcons/AlignLeftinspector';
+import AlignRightinspector from '@/_ui/Icon/solidIcons/AlignRightinspector';
 
 export const StylesTabElements = ({
   column,
@@ -22,28 +25,30 @@ export const StylesTabElements = ({
   const { t } = useTranslation();
   return (
     <>
-      <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
-        <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
-          {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
-            ? t('widget.Table.textAlignment', 'Text Alignment')
-            : 'Alignment'}
-        </label>
-        <ToggleGroup
-          onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
-          defaultValue={column?.horizontalAlignment || 'left'}
-          style={{ width: '58%' }}
-        >
-          <ToggleGroupItem value="left">
-            <AlignLeft width={14} />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="center">
-            <AlignCenter width={14} />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="right">
-            <AlignRight width={14} />
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+      {column.columnType !== 'button' && (
+        <div className="field  d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+          <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+            {column.columnType !== 'boolean' && column.columnType !== 'image' && column.columnType !== 'rating'
+              ? t('widget.Table.textAlignment', 'Text Alignment')
+              : 'Alignment'}
+          </label>
+          <ToggleGroup
+            onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+            defaultValue={column?.horizontalAlignment || 'left'}
+            style={{ width: '58%' }}
+          >
+            <ToggleGroupItem value="left">
+              <AlignLeft width={14} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="center">
+              <AlignCenter width={14} />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="right">
+              <AlignRight width={14} />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
       {column.columnType === 'toggle' && (
         <div>
           <div className="field px-3">
@@ -248,6 +253,196 @@ export const StylesTabElements = ({
               props={column}
               component={component}
               paramMeta={{ type: 'colorSwatches', displayName: 'Unselected color' }}
+              paramType="properties"
+            />
+          </div>
+        </div>
+      )}
+
+      {column.columnType === 'button' && (
+        <div className="d-flex flex-column custom-gap-16">
+          {/* Button type - Solid/Outline */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+              Button type
+            </label>
+            <ToggleGroup
+              onValueChange={(_value) => onColumnItemChange(index, 'buttonType', _value)}
+              defaultValue={column?.buttonType || 'solid'}
+              style={{ flex: '1 1 0' }}
+            >
+              <ToggleGroupItem value="solid">Solid</ToggleGroupItem>
+              <ToggleGroupItem value="outline">Outline</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          {/* Button alignment */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+              Button alignment
+            </label>
+            <ToggleGroup
+              onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+              defaultValue={column?.horizontalAlignment || 'left'}
+              style={{ width: '58%' }}
+            >
+              <ToggleGroupItem value="left">
+                <AlignLeft width={14} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="center">
+                <AlignCenter width={14} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="right">
+                <AlignRight width={14} />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          {/* Background color */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Background"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Background' }}
+              paramType="properties"
+            />
+          </div>
+
+          {/* Label color */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Label color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonLabelColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Label color' }}
+              paramType="properties"
+            />
+          </div>
+
+          {/* Icon - picker with visibility toggle */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+              Icon
+            </label>
+            <div style={{ flex: '1 1 0' }}>
+              <IconPicker
+                value={column?.buttonIconName || 'IconHome2'}
+                onChange={(value) => onColumnItemChange(index, 'buttonIconName', value)}
+                onVisibilityChange={(value) => onColumnItemChange(index, 'buttonIconVisibility', value)}
+                styleDefinition={{ iconVisibility: { value: column?.buttonIconVisibility ?? false } }}
+                component={component}
+                isVisibilityEnabled={true}
+              />
+            </div>
+          </div>
+
+          {/* Icon color - no label, right-aligned */}
+          <div className="field d-flex justify-content-end px-3">
+            <div style={{ flex: '1 1 0' }} />
+            <div style={{ flex: '1 1 0' }}>
+              <ProgramaticallyHandleProperties
+                label="Icon color"
+                currentState={currentState}
+                index={index}
+                darkMode={darkMode}
+                callbackFunction={onColumnItemChange}
+                property="buttonIconColor"
+                props={column}
+                component={component}
+                paramMeta={{ type: 'colorSwatches', displayName: ' ', showLabel: false }}
+                paramType="properties"
+              />
+            </div>
+          </div>
+
+          {/* Icon alignment - no label, icon-based toggle, right-aligned */}
+          <div className="field d-flex custom-gap-12 align-items-center align-self-stretch justify-content-between px-3">
+            <div style={{ flex: '1 1 0' }} />
+            <ToggleGroup
+              onValueChange={(_value) => onColumnItemChange(index, 'buttonIconAlignment', _value)}
+              defaultValue={column?.buttonIconAlignment || 'left'}
+              style={{ flex: '1 1 0' }}
+            >
+              <ToggleGroupItem value="left">
+                <AlignLeftinspector width={14} fill="#C1C8CD" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="right">
+                <AlignRightinspector width={14} fill="#C1C8CD" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          {/* Cell color */}
+          <div className="field px-3" data-cy={`input-and-label-cell-background-color`}>
+            <ProgramaticallyHandleProperties
+              label="Cell color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="cellBackgroundColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Cell color' }}
+              paramType="properties"
+            />
+          </div>
+
+          {/* Loader color */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Loader color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonLoaderColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Loader color' }}
+              paramType="properties"
+            />
+          </div>
+
+          {/* Border color */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Border color"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonBorderColor"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'colorSwatches', displayName: 'Border color' }}
+              paramType="properties"
+            />
+          </div>
+
+          {/* Border radius */}
+          <div className="field px-3">
+            <ProgramaticallyHandleProperties
+              label="Border radius"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="buttonBorderRadius"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'numberInput', displayName: 'Border radius' }}
               paramType="properties"
             />
           </div>

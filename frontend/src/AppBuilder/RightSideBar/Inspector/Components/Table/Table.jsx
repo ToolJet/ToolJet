@@ -45,6 +45,7 @@ const getColumnTypeDisplayText = (columnType) => {
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
+    button: 'Button',
   };
   return displayMap[columnType] ?? capitalize(columnType ?? '');
 };

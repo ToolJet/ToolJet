@@ -10,6 +10,7 @@ export { CustomSelectColumn } from './adapters/SelectColumnAdapter'; // Select &
 export { JsonColumn } from './adapters/JsonColumnAdapter';
 export { MarkdownColumn } from './adapters/MarkdownColumnAdapter';
 export { HTMLColumn } from './adapters/HtmlColumnAdapter';
+export { ButtonColumn } from './adapters/ButtonColumnAdapter';
 
 // Deprecated columns not moved to shared renderers
 export { ToggleColumn } from './Toggle';
