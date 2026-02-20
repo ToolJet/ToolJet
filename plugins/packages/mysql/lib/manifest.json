@@ -381,18 +381,8 @@
             "key": "ssh_enabled",
             "label": "SSH Tunnel",
             "description": "Connect through an SSH server",
-            "widget": "dropdown-component-flip",
-            "default": "disabled_ssh",
-            "list": [
-              {
-                "value": "disabled",
-                "name": "Disabled"
-              },
-              {
-                "value": "enabled",
-                "name": "Enabled"
-              }
-            ]
+            "widget": "toggle-flip",
+            "default": false
           },
           "enabled": {
             "ssh_host": {
@@ -576,18 +566,8 @@
             "key": "ssh_enabled",
             "label": "SSH Tunnel",
             "description": "Connect through an SSH server",
-            "widget": "dropdown-component-flip",
-            "default": "disabled_ssh",
-            "list": [
-              {
-                "value": "disabled",
-                "name": "Disabled"
-              },
-              {
-                "value": "enabled",
-                "name": "Enabled"
-              }
-            ]
+            "widget": "toggle-flip",
+            "default": false
           },
           "enabled": {
             "ssh_host": {
@@ -661,7 +641,7 @@
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
         "label": "Connection string",
-        "description": "mysql://username:password@host:port/database",
+        "description": "Enter encoded connection string",
         "widget": "text-v3",
         "required": true
       },
@@ -804,18 +784,8 @@
             "key": "ssh_enabled",
             "label": "SSH Tunnel",
             "description": "Connect through an SSH server",
-            "widget": "dropdown-component-flip",
-            "default": "disabled_ssh",
-            "list": [
-              {
-                "value": "disabled",
-                "name": "Disabled"
-              },
-              {
-                "value": "enabled",
-                "name": "Enabled"
-              }
-            ]
+            "widget": "toggle-flip",
+            "default": false
           },
           "enabled": {
             "ssh_host": {
@@ -995,18 +965,8 @@
             "key": "ssh_enabled",
             "label": "SSH Tunnel",
             "description": "Connect through an SSH server",
-            "widget": "dropdown-component-flip",
-            "default": "disabled_ssh",
-            "list": [
-              {
-                "value": "disabled",
-                "name": "Disabled"
-              },
-              {
-                "value": "enabled",
-                "name": "Enabled"
-              }
-            ]
+            "widget": "toggle-flip",
+            "default": false
           },
           "enabled": {
             "ssh_host": {
