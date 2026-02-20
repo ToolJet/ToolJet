@@ -316,8 +316,7 @@
                   "items": [
                     "widgets/chart/chart-properties",
                     "widgets/chart/chart-examples",
-                    "widgets/chart/transforming-data-for-charts",
-                    "widgets/chart/use-events-on-chart"
+                    "widgets/chart/transforming-data-for-charts"
                   ]
                 },
                 {
