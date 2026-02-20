@@ -905,6 +905,27 @@ export const createEventsSlice = (set, get) => ({
               return Promise.reject(error);
             }
           }
+          case 'scroll-component-into-view': {
+            try {
+              const componentId = event.componentId;
+              if (!componentId) {
+                throw new Error('No component selected for scroll-component-into-view action.');
+              }
+              const element = document.getElementById(componentId);
+              if (!element) {
+                throw new Error('Component element not found in DOM.');
+              }
+              const behavior = event.scrollBehavior || 'smooth';
+              const block = event.scrollBlock || 'nearest';
+              element.scrollIntoView({ behavior, block });
+              return Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('scroll_to_component', 'scroll-component-into-view', error, eventObj, {
+                eventId: event.eventId,
+              });
+              return Promise.reject(error);
+            }
+          }
           case 'toggle-app-mode': {
             const {
               updateIsTJDarkMode,
@@ -1096,7 +1117,6 @@ export const createEventsSlice = (set, get) => ({
             modal = key;
           }
         }
-
         const event = {
           actionId: 'show-modal',
           modal,
@@ -1285,6 +1305,23 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const scrollComponentInToView = (componentName, eventObj, moduleId = 'canvas') => {
+        let componentId = '';
+        const { behaviour = 'smooth', block = 'nearest' } = eventObj;
+        for (const [key, value] of currentComponents) {
+          if (value.component.name === componentName) {
+            componentId = key;
+          }
+        }
+        const event = {
+          actionId: 'scroll-component-into-view',
+          componentId,
+          scrollBehaviour: behaviour,
+          scrollBlock: block,
+        };
+        return executeAction(event, mode, {}, moduleId);
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1309,6 +1346,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        scrollComponentInToView,
       };
     },
     // Selectors
