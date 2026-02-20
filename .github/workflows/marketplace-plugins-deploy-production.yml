@@ -1,39 +1,75 @@
-name: Maketplace plugin build
+name: Marketplace Plugin Production Deploy
 
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
 
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy from"
+        required: true
+        default: "lts-3.16"
+      plugin_name:
+        description: "Plugin name to deploy individually (leave empty to deploy all)"
+        required: false
+        default: ""
 
 env:
   PR_NUMBER: ${{ github.event.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  BRANCH_NAME: ${{ github.event.inputs.branch || github.head_ref || github.ref_name }}
 
 jobs:
-  deploy-marketplace-plugin:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin' }}
+  deploy-marketplace-plugin-production:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'deploy-marketplace-plugin-prod')
     runs-on: ubuntu-latest
-
     steps:
+      - name: ✅ Check user authorization
+        run: |
+          allowed_user1="${{ secrets.ALLOWED_USER1_USERNAME }}"
+          allowed_user2="${{ secrets.ALLOWED_USER2_USERNAME }}"
+          allowed_user3="${{ secrets.ALLOWED_USER3_USERNAME }}"
+
+          if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                "${{ github.actor }}" != "$allowed_user2" && \
+                "${{ github.actor }}" != "$allowed_user3" ]]; then
+            echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+            echo "Only the following users can deploy to production:"
+            echo "  - $allowed_user1"
+            echo "  - $allowed_user2"
+            echo "  - $allowed_user3"
+            exit 1
+          else
+            echo "✅ User '${{ github.actor }}' is authorized to deploy to production."
+          fi
+
       - name: Sync repo
         uses: actions/checkout@v3
 
       - name: Check if PR is from the same repo
+        if: github.event_name == 'pull_request_target'
         id: check_repo
         run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
 
       - name: Fetch the remote branch if it's a forked PR
-        if: steps.check_repo.outputs.is_fork == 'true'
+        if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'true'
         run: |
           git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
           git checkout ${{ env.BRANCH_NAME }}
 
-      - name: Checkout
-        if: steps.check_repo.outputs.is_fork == 'false'
+      - name: Checkout PR branch
+        if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'false'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout specified branch
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -43,8 +79,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_MAR_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_MAR_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_PROD_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_PROD_ACCESS_KEY }}
           aws-region: us-east-2
 
       - name: Install and build dependencies in order
@@ -66,8 +102,8 @@ jobs:
       - name: Build marketplace plugins and capture summary
         run: |
           cd marketplace
-          echo "🚀 Uploading to S3"
-          AWS_BUCKET=tooljet-plugins-stage bash scripts/upload-to-s3.sh | tee upload_summary.log
+          echo "🚀 Uploading to S3 Production"
+          AWS_BUCKET=${{ secrets.S3_BUCKET_PRODUCTION }} bash scripts/upload-to-s3.sh ${{ github.event.inputs.plugin_name }} | tee upload_summary.log
 
       - name: Extract upload summary
         id: upload_summary
@@ -77,8 +113,17 @@ jobs:
           echo "$SUMMARY" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      - name: Output summary to logs (manual trigger)
+        if: success() && github.event_name == 'workflow_dispatch'
+        run: |
+          echo "========================================="
+          echo "PRODUCTION DEPLOYMENT SUMMARY"
+          echo "========================================="
+          echo "${{ env.UPLOAD_SUMMARY }}"
+          echo "========================================="
+
       - name: Comment on success
-        if: success()
+        if: success() && github.event_name == 'pull_request_target'
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +131,7 @@ jobs:
             const runId = process.env.GITHUB_RUN_ID;
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
             const summary = process.env.UPLOAD_SUMMARY;
-            const body = `Marketplace Plugin added to stage bucket\n\n🔍 [View Deployment Logs & Summary](${runUrl})\n\n\`\`\`\n${summary}\n\`\`\``;
+            const body = `✅ Marketplace Plugin deployed to **PRODUCTION** bucket\n\n🔍 [View Deployment Logs & Summary](${runUrl})\n\n\`\`\`\n${summary}\n\`\`\``;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -96,7 +141,7 @@ jobs:
             });
 
       - name: Label update on success
-        if: success()
+        if: success() && github.event_name == 'pull_request_target'
         uses: actions/github-script@v6
         with:
           script: |
@@ -105,7 +150,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'deploy-marketplace-plugin'
+                name: 'deploy-marketplace-plugin-prod'
               })
             } catch (e) {
               console.log(e)
@@ -115,11 +160,11 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['marketplace-plugin-deployed']
+              labels: ['plugin-deployed-production']
             })
 
       - name: Comment on failure
-        if: failure()
+        if: failure() && github.event_name == 'pull_request_target'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -131,5 +176,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `❌ Marketplace Plugin deployment failed.\n\n🔍 [View Deployment Logs & Summary](${runUrl})`
+              body: `❌ Marketplace Plugin deployment to **PRODUCTION** failed.\n\n🔍 [View Deployment Logs & Summary](${runUrl})`
             });
