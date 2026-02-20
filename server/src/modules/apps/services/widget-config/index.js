@@ -75,6 +75,7 @@ import { accordionConfig } from './accordion';
 import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
+import { navigationConfig } from './navigation';
 
 const widgets = {
   buttonConfig,
@@ -154,6 +155,7 @@ const widgets = {
   reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {

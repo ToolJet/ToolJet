@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
 
 export const Checkbox = ({
   height,
@@ -202,46 +203,29 @@ export const Checkbox = ({
           <Loader width="16" />
         ) : (
           <>
-            <div
-              onClick={handleToggleChange}
-              style={{
-                ...checkboxStyle,
-              }}
-            >
-              <input
-                style={{ display: 'none' }}
-                className="form-check-input"
-                type="checkbox"
-                onClick={toggleValue}
-                defaultChecked={defaultValue}
-                checked={checked}
-                id={`component-${id}`}
-                aria-disabled={disable}
-                aria-busy={loading}
-                aria-required={isMandatory}
-                aria-hidden={!visibility}
-                aria-invalid={!isValid}
-              />
-              <div style={checkmarkStyle}>
-                {checked && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="icon-tabler icon-tabler-check"
-                    width={14}
-                    height={14}
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                    stroke={handleColor}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                    <path d="M5 12l5 5l10 -10" />
-                  </svg>
-                )}
-              </div>
-            </div>
+            <SharedCheckbox
+              checked={checked}
+              onChange={handleToggleChange}
+              disabled={disable}
+              checkboxColor={checkboxColor}
+              uncheckedColor={uncheckedColor}
+              borderColor={borderColor}
+              handleColor={handleColor}
+            />
+            {/* <input
+              style={{ display: 'none' }}
+              className="form-check-input"
+              type="checkbox"
+              onClick={toggleValue}
+              defaultChecked={defaultValue}
+              checked={checked}
+              id={`component-${id}`}
+              aria-disabled={disable}
+              aria-busy={loading}
+              aria-required={isMandatory}
+              aria-hidden={!visibility}
+              aria-invalid={!isValid}
+            /> */}
 
             <OverflowTooltip
               className="form-check-label"
@@ -279,30 +263,6 @@ export const Checkbox = ({
       )}
     </>
   );
-  const checkmarkStyle = {
-    position: 'absolute',
-    top: '1px',
-    right: '1px',
-    visibility: checked ? 'visible' : 'hidden',
-    height: '14px',
-    width: '14px',
-    display: 'flex',
-  };
-
-  const checkboxStyle = {
-    display: 'inline-block',
-    cursor: 'pointer',
-    padding: '2px',
-    border: `1px solid ${borderColor}`,
-    backgroundColor: checked ? checkboxColor : uncheckedColor,
-    borderRadius: '5px',
-    height: '18px',
-    width: '18px',
-    minHeight: '18px',
-    minWidth: '18px',
-    position: 'relative',
-    borderColor: borderColor === '#CCD1D5' ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor,
-  };
 
   return (
     <div

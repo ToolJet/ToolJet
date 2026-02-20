@@ -21,6 +21,7 @@ const NEW_WIDGETS = [
   'ReorderableList',
   'JSONExplorer',
   'JSONEditor',
+  'Navigation',
   'KeyValuePair',
 ];
 
