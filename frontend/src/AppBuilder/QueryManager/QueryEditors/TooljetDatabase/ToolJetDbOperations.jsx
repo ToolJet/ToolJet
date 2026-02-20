@@ -166,6 +166,7 @@ const ToolJetDbOperations = ({
     }
   };
 
+
   useEffect(() => {
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -428,7 +429,6 @@ const ToolJetDbOperations = ({
       const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
-        fetchTableInformation(selectedTableInfo.id, false, tableList);
       }
     }
   };
@@ -498,7 +498,6 @@ const ToolJetDbOperations = ({
 
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
-    fetchTableInformation(tableId, true, tables);
     optionchanged('table_id', tableId);
 
     setJoinTableOptions(() => {
@@ -525,6 +524,7 @@ const ToolJetDbOperations = ({
         fields: [],
       };
     });
+
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
