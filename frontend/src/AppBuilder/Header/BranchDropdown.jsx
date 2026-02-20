@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import cx from 'classnames';
 import { Overlay, Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -334,7 +335,7 @@ export function BranchDropdown({ appId, organizationId }) {
   const renderPopover = (overlayProps) => (
     <Popover
       id="branch-dropdown-popover"
-      className="branch-dropdown-popover"
+      className={cx('branch-dropdown-popover', { 'dark-theme theme-dark': darkMode })}
       ref={popoverRef}
       {...overlayProps}
       style={{

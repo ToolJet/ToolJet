@@ -15,34 +15,50 @@ import { shallow } from 'zustand/shallow';
 const LifecycleCTAButton = () => {
   const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed } = useStore(
-    (state) => ({
-      selectedVersion: state.selectedVersion,
-      toggleGitSyncModal: state.toggleGitSyncModal,
-      creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
-      featureAccess: state?.license?.featureAccess,
-      isEditorFreezed: state.isEditorFreezed,
-    }),
-    shallow
-  );
+  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isEditorFreezed, isGitSyncConfigured } =
+    useStore(
+      (state) => ({
+        selectedVersion: state.selectedVersion,
+        toggleGitSyncModal: state.toggleGitSyncModal,
+        creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
+        featureAccess: state?.license?.featureAccess,
+        isEditorFreezed: state.isEditorFreezed,
+        isGitSyncConfigured: state.isGitSyncConfigured,
+      }),
+      shallow
+    );
+
+  const isGitSyncEnabled = featureAccess?.gitSync;
+
+  // If git sync is not available in the plan or license is expired, hide completely
+  if (!isGitSyncEnabled) {
+    return null;
+  }
 
   // Determine if we're on default branch or feature branch
   // - versionType === 'version' means default branch
   // - versionType === 'branch' means feature branch
   const isOnDefaultBranch = selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  // Determine button state based on branch type
+  // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
-    const isGitSyncEnabled = featureAccess?.gitSync;
-    console.log('isEditorFreezed:', isEditorFreezed);
-    console.log('is on default branch', isOnDefaultBranch);
+    if (!isGitSyncConfigured) {
+      // Git is in the plan but not configured in the workspace
+      return {
+        label: 'Configure Git',
+        icon: 'commit',
+        variant: 'secondary',
+        disabled: false,
+      };
+    }
+
     if (isOnDefaultBranch) {
       // Default branch - show "Pull commit" button
       return {
         label: 'Pull commit',
         icon: 'commit',
         variant: 'secondary',
-        disabled: !isGitSyncEnabled,
+        disabled: false,
       };
     } else {
       // Feature branch - show "Commit" button
@@ -50,17 +66,14 @@ const LifecycleCTAButton = () => {
         label: 'Commit',
         icon: 'commit',
         variant: 'secondary',
-        disabled: !isGitSyncEnabled,
+        disabled: false,
       };
     }
   };
 
   const config = getButtonConfig();
-  console.log('config testing', config);
-
   const handleClick = () => {
     // Open the git sync modal (which has pull/push tabs)
-    console.log('here');
     toggleGitSyncModal(creationMode);
   };
 

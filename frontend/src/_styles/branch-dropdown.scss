@@ -6,6 +6,7 @@
   margin-left: 8px;
   user-select: none;
   margin-right: 8px;
+  border-radius: 8px;
 
   &.selected {
     .branch-dropdown-button {
@@ -176,7 +177,7 @@
       font-weight: 500;
       font-size: 14px;
       line-height: 20px;
-      color: var(--slate12);
+      color: var(--text-default);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

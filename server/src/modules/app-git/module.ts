@@ -10,6 +10,8 @@ import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
+import { FolderAppsModule } from '@modules/folder-apps/module';
+import { FoldersModule } from '@modules/folders/module';
 export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const {
@@ -38,6 +40,8 @@ export class AppGitModule extends SubModule {
     return {
       module: AppGitModule,
       imports: [
+        await FolderAppsModule.register(configs),
+        await FoldersModule.register(configs),
         await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -59,7 +63,7 @@ export class AppGitModule extends SubModule {
         GitLabAppGitUtilityService,
         VersionRepository,
         FeatureAbilityFactory,
-        AppVersionRenameListener,
+        ...(isMainImport ? [AppVersionRenameListener] : []),
       ],
       exports: [SSHAppGitUtilityService, HTTPSAppGitUtilityService, GitLabAppGitUtilityService],
     };

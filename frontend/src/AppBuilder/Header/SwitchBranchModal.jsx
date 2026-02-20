@@ -37,7 +37,14 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     appVersions: state.appVersions,
   }));
 
-  const currentBranchName = selectedVersion?.name || currentBranch?.name;
+  const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
+  // Determine current branch name: use selectedVersion.name for branches, or default branch name for versions
+  const currentBranchName =
+    selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch'
+      ? selectedVersion?.name
+      : selectedVersion?.versionType === 'version' || selectedVersion?.version_type === 'version'
+      ? defaultBranchName
+      : currentBranch?.name || defaultBranchName;
 
   useEffect(() => {
     if (show && appId && organizationId) {

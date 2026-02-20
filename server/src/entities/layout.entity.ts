@@ -6,6 +6,9 @@ export class Layout {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
   @Column({ type: 'enum', enumName: 'layout_type', enum: ['desktop', 'mobile'] })
   type: string;
 
