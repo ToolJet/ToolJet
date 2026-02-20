@@ -87,6 +87,7 @@ export const DropdownV2 = ({
     direction,
     fieldBorderColor,
     fieldBackgroundColor,
+    placeholderTextColor,
     labelWidth,
     icon,
     iconVisibility,
@@ -381,7 +382,7 @@ export const DropdownV2 = ({
     }),
     placeholder: (provided, _state) => ({
       ...provided,
-      color: 'var(--cc-placeholder-text)',
+      color: placeholderTextColor || 'var(--cc-placeholder-text)',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -535,6 +536,7 @@ export const DropdownV2 = ({
             isSearchable={false}
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
+            placeholderTextColor={placeholderTextColor}
             menuPlacement="auto"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {
