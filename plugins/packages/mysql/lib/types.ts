@@ -14,6 +14,15 @@ export type SourceOptions = {
   connection_options: string[][];
   allow_dynamic_connection_parameters: boolean;
   connection_type: string;
+
+  ssh_enabled?: boolean;
+  ssh_host?: string;
+  ssh_port?: number;        // default 22
+  ssh_username?: string;
+  ssh_auth_type?: 'password' | 'private_key';
+  ssh_password?: string;   // encrypted
+  ssh_private_key?: string; // encrypted PEM
+  ssh_passphrase?: string;
 };
 export type QueryOptions = {
   operation: string;
