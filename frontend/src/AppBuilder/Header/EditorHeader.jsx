@@ -11,150 +11,96 @@ import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
-import LockedBranchBanner from './LockedBranchBanner';
 import './styles/style.scss';
-import { ToolTip } from '@/_components/ToolTip';
-import Steps from './Steps';
+
 import SaveIndicator from './SaveIndicator';
 
-export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
+export const EditorHeader = ({ darkMode }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const {
-    isSaving,
-    saveError,
-    isVersionReleased,
-    aiGenerationMetadata,
-    branchingEnabled,
-    appId,
-    organizationId,
-    currentBranch,
-    isBranchReadonly,
-    selectedVersion,
-  } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
-      aiGenerationMetadata: state.appStore.modules[moduleId].app?.aiGenerationMetadata,
-      branchingEnabled: state.branchingEnabled,
       appId: state.appStore.modules[moduleId].app.appId,
       organizationId: state.appStore.modules[moduleId].app.organizationId,
-      currentBranch: state.currentBranch,
-      isBranchReadonly: state.isBranchReadonly,
       selectedVersion: state.selectedVersion,
     }),
     shallow
   );
 
-  const activeStepDetails = aiGenerationMetadata.steps?.find((step) => step.id === aiGenerationMetadata.active_step);
-  const activeStep = activeStepDetails?.hidden ? activeStepDetails.parent_step_id : aiGenerationMetadata.active_step;
-
-  // Check if current branch is readonly (merged or released)
-  const isCurrentBranchLocked = branchingEnabled && currentBranch && isBranchReadonly(currentBranch.name);
-
   return (
-    <>
-      <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
-        <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
-          <div className="container-xl header-container">
-            <div className="d-flex w-100 tw-h-9  tw-justify-between">
-              <div
-                className="header-inner-wrapper d-flex"
-                style={{
-                  width: isUserInZeroToOneFlow ? 'auto' : 'calc(100% - 348px)',
-                  background: '',
-                }}
-              >
-                <div className="d-flex align-items-center">
-                  <div
-                    className="p-0 m-0 d-flex align-items-center"
-                    style={{
-                      padding: '0px',
-                      width: '100%',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div className="global-settings-app-wrapper p-0 m-0 ">
-                      <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
-                        <LogoNavDropdown darkMode={darkMode} />
-                      </h1>
-                      <div className="d-flex flex-row tw-mr-1">
-                        {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
-                        <EditAppName />
-                      </div>
-                      <div>
-                        <span
-                          className={cx('autosave-indicator tj-text-xsm', {
-                            'autosave-indicator-saving': isSaving,
-                            'text-danger': saveError,
-                            'd-none': isVersionReleased,
-                          })}
-                          data-cy="autosave-indicator"
-                        >
-                          <SaveIndicator isSaving={isSaving} saveError={saveError} />
-                        </span>
-                      </div>
+    <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
+      <header className="navbar navbar-expand-md d-print-none tw-h-12" style={{ zIndex: 12 }}>
+        <div className="container-xl header-container">
+          <div className="d-flex w-100 tw-h-9  tw-justify-between">
+            <div
+              className="header-inner-wrapper d-flex"
+              style={{
+                width: 'calc(100% - 348px)',
+                background: '',
+              }}
+            >
+              <div className="d-flex align-items-center">
+                <div
+                  className="p-0 m-0 d-flex align-items-center"
+                  style={{
+                    padding: '0px',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div className="global-settings-app-wrapper p-0 m-0 ">
+                    <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
+                      <LogoNavDropdown darkMode={darkMode} />
+                    </h1>
+                    <div className="d-flex flex-row tw-mr-1">
+                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
+                      <EditAppName />
+                    </div>
+                    <div>
+                      <span
+                        className={cx('autosave-indicator tj-text-xsm', {
+                          'autosave-indicator-saving': isSaving,
+                          'text-danger': saveError,
+                          'd-none': isVersionReleased,
+                        })}
+                        data-cy="autosave-indicator"
+                      >
+                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {isUserInZeroToOneFlow && (
-                <Steps
-                  steps={
-                    aiGenerationMetadata.steps
-                      ?.filter((step) => !step.hidden)
-                      ?.map((step) => ({
-                        label: step.name,
-                        value: step.id,
-                      })) ?? []
-                  }
-                  activeStep={activeStep}
-                  classes={{ stepsContainer: 'tw-mx-auto' }}
-                />
-              )}
-              {!isUserInZeroToOneFlow && <HeaderActions darkMode={darkMode} />}
+            <HeaderActions darkMode={darkMode} />
 
-              {!isUserInZeroToOneFlow && (
-                <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
-                  <div className="d-flex align-items-center p-0">
-                    <div className="d-flex version-manager-container p-0  align-items-center gap-0">
-                      {!isModuleEditor && (
-                        <>
-                          <PreviewAndShareIcons />
-                          {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                          {/* Hide version dropdown when on a feature branch */}
-                          {selectedVersion?.versionType !== 'branch' && (
-                            <VersionManagerErrorBoundary>
-                              <VersionManagerDropdown darkMode={darkMode} />
-                            </VersionManagerErrorBoundary>
-                          )}
-                          <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
-                        </>
+            <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
+              <div className="d-flex align-items-center p-0">
+                <div className="d-flex version-manager-container p-0  align-items-center gap-0">
+                  {!isModuleEditor && (
+                    <>
+                      <PreviewAndShareIcons />
+                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
+                      {/* Hide version dropdown when on a feature branch */}
+                      {selectedVersion?.versionType !== 'branch' && (
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
                       )}
-                    </div>
-                  </div>
-
-                  <BuildSuggestions />
+                      <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <BuildSuggestions />
             </div>
           </div>
-        </header>
-        {/* <ToolTip
-          id="editor-header-tooltip"
-          className="tw-text-text-default tw-bg-background-inverse tw-p-3 tw-rounded-md tw-text-xs tw-font-medium"
-          style={{ zIndex: 9999 }}
-          place="bottom"
-          delayShow={300}
-          delayHide={100}
-        /> */}
-      </div>
-      <LockedBranchBanner
-        isVisible={isCurrentBranchLocked}
-        branchName={currentBranch?.name}
-        reason={currentBranch?.is_released || currentBranch?.isReleased ? 'released' : 'merged'}
-      />
-    </>
+        </div>
+      </header>
+    </div>
   );
 };
