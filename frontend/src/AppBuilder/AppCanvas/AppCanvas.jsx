@@ -6,7 +6,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING } from './appCanvasConstants';
+
+// TODO: Move these to page settings / global settings when ready
+const SHOW_CANVAS_HEADER = true;
+const CANVAS_HEADER_HEIGHT = 80;
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
 import AutoComputeMobileLayoutAlert from './AutoComputeMobileLayoutAlert';
@@ -228,9 +232,40 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         onAllResolved={handleAllSuspenseResolved}
                         deferCheck={isModuleMode || appType === 'module'}
                       >
-                        <div key={pageKey} className={cx({ 'h-100': isModuleMode })} style={{ position: 'relative' }}>
+                        <div
+                          key={pageKey}
+                          className={cx({ 'h-100': isModuleMode })}
+                          style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+                        >
                           {currentMode === 'view' && appType !== 'module' && (
                             <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
+                          )}
+                          {SHOW_CANVAS_HEADER && appType !== 'module' && (
+                            <div
+                              className="canvas-header-slot"
+                              style={{
+                                flexShrink: 0,
+                                padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+                                height: `${CANVAS_HEADER_HEIGHT}px`,
+                                borderBottom: '1px solid var(--cc-default-border)',
+                                backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
+                              }}
+                            >
+                              <Container
+                                id={`${moduleId}-header`}
+                                canvasHeight={CANVAS_HEADER_HEIGHT / 10}
+                                canvasWidth={canvasWidth}
+                                darkMode={isAppDarkMode}
+                                allowContainerSelect={false}
+                                styles={{
+                                  margin: 0,
+                                  backgroundColor: 'transparent',
+                                  overflow: 'hidden',
+                                }}
+                                componentType="AppCanvas"
+                                hasNoScroll={true}
+                              />
+                            </div>
                           )}
                           <Container
                             id={moduleId}

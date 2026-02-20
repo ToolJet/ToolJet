@@ -4,6 +4,16 @@
     }
 }
 
+.canvas-header-slot {
+    flex-shrink: 0;
+    position: relative;
+
+    .real-canvas {
+        height: 100% !important;
+        min-height: unset !important;
+    }
+}
+
 .modal-backdrop {
     width: 100% !important;
     height: 100% !important;
