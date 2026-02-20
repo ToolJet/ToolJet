@@ -373,7 +373,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -400,22 +400,23 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        undefined,
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
         type
       );
 
       // Eagerly load appVersions for modules
-      if (type === APP_TYPES.MODULE) {
+      if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
 
-      if (page) {
-        return await viewableAppsQb
-          .take(9)
-          .skip(9 * (page - 1))
-          .getMany();
+      if (isGetAll) {
+        return await viewableAppsQb.getMany();
       }
-      return await viewableAppsQb.getMany();
+
+      return await viewableAppsQb
+        .take(9)
+        .skip(9 * (page - 1))
+        .getMany();
     });
   }
 
