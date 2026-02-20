@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { Organization } from '@entities/organization.entity';
 import { App } from '@entities/app.entity';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { MigrationProgress } from '@helpers/migration.helper';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -55,6 +55,7 @@ export class PromoteAndReleaseExistingWorkflowVersionsToProductionAndRelease1771
                     { id: version.id },
                     {
                         currentEnvironmentId: productionEnvironment.id,
+                        status: AppVersionStatus.PUBLISHED,
                     }
                 );
 
