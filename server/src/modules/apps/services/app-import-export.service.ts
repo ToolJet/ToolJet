@@ -69,12 +69,17 @@ type NewRevampedComponent =
   | 'TextInput'
   | 'PasswordInput'
   | 'NumberInput'
+  | 'EmailInput'
   | 'Table'
   | 'Button'
   | 'Checkbox'
   | 'Divider'
   | 'VerticalDivider'
   | 'Link'
+  | 'Datepicker'
+  | 'DatePickerV2'
+  | 'TimePicker'
+  | 'DatetimePickerV2'
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
@@ -91,6 +96,7 @@ type NewRevampedComponent =
   | 'Html'
   | 'Chat'
   | 'CurrencyInput'
+  | 'PhoneInput'
   | 'IFrame';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
@@ -105,12 +111,17 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'TextInput',
   'PasswordInput',
   'NumberInput',
+  'EmailInput',
   'Table',
   'Checkbox',
   'Button',
   'Divider',
   'VerticalDivider',
   'Link',
+  'Datepicker',
+  'DatePickerV2',
+  'TimePicker',
+  'DatetimePickerV2',
   'DaterangePicker',
   'TextArea',
   'Container',
@@ -127,6 +138,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'Html',
   'Chat',
   'CurrencyInput',
+  'PhoneInput',
   'IFrame',
 ];
 
@@ -154,6 +166,19 @@ const INPUT_WIDGET_TYPES = [
   'MultiselectV2',
   'RadioButtonV2',
   'RangeSliderV2',
+];
+
+const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
+      'TextInput',
+      'NumberInput',
+      'EmailInput',
+      'CurrencyInput',
+      'PhoneInput',
+      'Datepicker',
+      'DatePickerV2',
+      'DatetimePickerV2',
+      'TimePicker',
+      'DaterangePicker',
 ];
 
 @Injectable()
@@ -2853,6 +2878,10 @@ function migrateProperties(
       if (!styles.menuWidthMode) {
         styles.menuWidthMode = { value: 'matchField' };
       }
+    }
+
+    if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
+      properties.showClearBtn = { value: '{{false}}' };
     }
   }
 

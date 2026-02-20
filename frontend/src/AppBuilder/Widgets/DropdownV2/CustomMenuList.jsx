@@ -19,6 +19,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     inputValue,
     menuId,
     showSearchInput,
+    menuBackgroundColor,
     menuWidthStyle,
   } = selectProps;
 
@@ -64,6 +65,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       style={{
         ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
         ...(menuWidthStyle || {}),
+        '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
       }}
     >
       {showSearchInput && (
