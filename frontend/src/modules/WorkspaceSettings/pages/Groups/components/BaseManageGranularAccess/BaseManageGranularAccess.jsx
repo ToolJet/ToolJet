@@ -920,7 +920,7 @@ class BaseManageGranularAccess extends React.Component {
               openAddPermissionModal={this.openAddPermissionModal}
               resourcesOptions={resourcesOptions}
               currentGroupPermission={currentGroupPermission}
-              isBasicPlan={isBasicPlan}
+              isEditable={this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled)}
               darkMode={this.props.darkMode}
             />
           </div>
