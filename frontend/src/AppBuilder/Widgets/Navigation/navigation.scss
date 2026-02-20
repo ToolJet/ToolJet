@@ -351,6 +351,33 @@
     }
   }
 
+  // Scrollbar behavior for vertical mode — match editor canvas pattern:
+  // hidden by default, thin styled scrollbar appears on hover
+  &.navigation-vertical {
+    scrollbar-width: none; // Firefox: hide by default
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      background: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 4px;
+    }
+
+    &:hover {
+      scrollbar-width: thin; // Firefox: show on hover
+      scrollbar-color: var(--interactive-hover) transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--interactive-hover);
+      }
+    }
+  }
+
   // Vertical mode adjustments
   &.navigation-vertical {
     .tj-list-item {

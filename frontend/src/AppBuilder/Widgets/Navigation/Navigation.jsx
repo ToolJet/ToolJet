@@ -452,21 +452,12 @@ export const Navigation = function Navigation(props) {
     const bgColor = backgroundColor || 'var(--cc-surface1-surface)';
     const bdrColor = borderColor || 'var(--cc-weak-border)';
 
-    // For horizontal (flex-direction: row): alignItems = vertical positioning
-    // For vertical (flex-direction: column): justifyContent = vertical positioning, alignItems = horizontal positioning
     const isHorizontal = orientation === 'horizontal';
 
     return {
       display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
       flexDirection: isHorizontal ? 'row' : 'column',
-      // Horizontal (row): alignItems = vertical position within the bar; justifyContent handled by inner list via Tailwind class
-      // Vertical (column): justifyContent = vertical position; alignItems = horizontal position
-      alignItems: isHorizontal
-        ? mapAlignment(verticalAlignment)
-        : mapAlignment(horizontalAlignment),
-      justifyContent: isHorizontal
-        ? undefined
-        : mapAlignment(verticalAlignment),
+      alignItems: isHorizontal ? mapAlignment(verticalAlignment) : undefined,
       width: '100%',
       height: '100%',
       maxWidth: viewerMaxWidth ? `${viewerMaxWidth}px` : undefined,
@@ -479,7 +470,7 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, horizontalAlignment, verticalAlignment, viewerMaxWidth]);
+  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, verticalAlignment, viewerMaxWidth]);
 
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {
@@ -578,8 +569,18 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
+    // Auto-margins handle alignment without clipping scrollable content:
+    // center → auto margins on both sides; end → auto margin on start side only
+    const verticalMenuStyle = {
+      ...navItemStyles,
+      marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
+      marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
+      marginLeft: horizontalAlignment === 'center' ? 'auto' : horizontalAlignment === 'right' ? 'auto' : undefined,
+      marginRight: horizontalAlignment === 'center' ? 'auto' : undefined,
+    };
+
     return (
-      <div className="navigation-vertical-menu" style={navItemStyles}>
+      <div className="navigation-vertical-menu" style={verticalMenuStyle}>
         {visibleMenuItems.map((item) => {
           if (item.isGroup) {
             return (
