@@ -303,7 +303,7 @@ const DynamicFormV2 = ({
           }
 
           if (typeof field === 'object') {
-            if (field.widget === 'dropdown-component-flip') {
+            if (field.widget === 'dropdown-component-flip' || field.widget === 'toggle-flip') {
               const selectedOption = options?.[field.key]?.value;
 
               if (field.commonFields) {
@@ -369,6 +369,8 @@ const DynamicFormV2 = ({
       case 'textarea':
         return Textarea;
       case 'toggle':
+        return Toggle;
+      case 'toggle-flip':
         return Toggle;
       case 'checkbox':
         return Checkbox;
@@ -513,6 +515,12 @@ const DynamicFormV2 = ({
           defaultChecked: currentValue,
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
+        };
+      case 'toggle-flip':
+        return {
+          defaultChecked: currentValue === 'enabled',
+          checked: currentValue === 'enabled',
+          onChange: (e) => handleOptionChange(key, e.target.checked ? 'enabled' : 'disabled', true),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -695,7 +703,9 @@ const DynamicFormV2 = ({
   };
 
   const FlipComponentDropdown = (uiProperties) => {
-    const flipComponentDropdowns = filter(uiProperties, ['widget', 'dropdown-component-flip']).sort((a, b) => {
+    const flipComponentDropdowns = Object.values(uiProperties || {})
+    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+    .sort((a, b) => {
       const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
       const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
@@ -740,12 +750,16 @@ const DynamicFormV2 = ({
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
-                  <Select
-                    {...getElementProps(flipComponentDropdown)}
-                    styles={{}}
-                    useCustomStyles={false}
-                    dataCy={generateCypressDataCy(flipComponentDropdown.label)}
-                  />
+                  {flipComponentDropdown.widget === 'toggle-flip' ? (
+                    <Toggle {...getElementProps(flipComponentDropdown)} />
+                  ) : (
+                    <Select
+                      {...getElementProps(flipComponentDropdown)}
+                      styles={{}}
+                      useCustomStyles={false}
+                      dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                    />
+                  )}
                 </div>
                 {flipComponentDropdown.helpText && (
                   <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
@@ -764,7 +778,7 @@ const DynamicFormV2 = ({
       const component = uiProperties[key];
       const componentType = component.widget || component.type;
 
-      if (componentType && componentType !== 'dropdown-component-flip') {
+      if (componentType && componentType !== 'dropdown-component-flip' && componentType !== 'toggle-flip') {
         allComponents.push({
           order: component.order, // Keep undefined if not set
           insertIndex: insertIndex++,
@@ -797,7 +811,9 @@ const DynamicFormV2 = ({
   };
 
   const isFlipComponentDropdown = (uiProperties) => {
-    const checkFlipComponents = filter(uiProperties, ['widget', 'dropdown-component-flip']);
+    const checkFlipComponents = uiProperties
+      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);
     } else {

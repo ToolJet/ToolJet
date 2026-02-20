@@ -233,18 +233,8 @@
         "key": "ssh_enabled",
         "label": "SSH Tunnel",
         "description": "Connect through an SSH server",
-        "widget": "dropdown-component-flip",
-        "default": false,
-        "list": [
-          {
-            "value": "disabled",
-            "name": "Disabled"
-          },
-          {
-            "value": "enabled",
-            "name": "Enabled"
-          }
-        ]
+        "widget": "toggle-flip",
+        "default": false
       },
       "enabled": {
         "ssh_host": {
@@ -271,43 +261,43 @@
           "description": "SSH Username",
           "widget": "text-v3"
         },
-         "ssh_auth_type": {
-              "order": 175,
-              "$ref": "#/properties/ssh_auth_type",
-              "key": "ssh_auth_type",
-              "label": "Authentication Type",
-              "widget": "dropdown-component-flip",
-              "default": "private_key",
-              "list": [
-                { "value": "private_key", "name": "Private Key" },
-                { "value": "password", "name": "Password" }
-              ]
-            },
-            "private_key": {
-              "ssh_private_key": {
-                "order": 180,
-                "$ref": "#/properties/ssh_private_key",
-                "key": "ssh_private_key",
-                "label": "SSH Private Key",
-                "widget": "password-v3-textarea"
-              },
-              "ssh_passphrase": {
-                "order": 190,
-                "$ref": "#/properties/ssh_passphrase",
-                "key": "ssh_passphrase",
-                "label": "SSH Passphrase",
-                "widget": "password-v3"
-              }
-            },
-            "password": {
-              "ssh_password": {
-                "order": 180,
-                "$ref": "#/properties/ssh_password",
-                "key": "ssh_password",
-                "label": "SSH Password",
-                "widget": "password-v3"
-              }
-            }
+        "ssh_auth_type": {
+          "order": 175,
+          "$ref": "#/properties/ssh_auth_type",
+          "key": "ssh_auth_type",
+          "label": "Authentication Type",
+          "widget": "dropdown-component-flip",
+          "default": "private_key",
+          "list": [
+            { "value": "private_key", "name": "Private Key" },
+            { "value": "password", "name": "Password" }
+          ]
+        },
+        "private_key": {
+          "ssh_private_key": {
+            "order": 180,
+            "$ref": "#/properties/ssh_private_key",
+            "key": "ssh_private_key",
+            "label": "SSH Private Key",
+            "widget": "password-v3-textarea"
+          },
+          "ssh_passphrase": {
+            "order": 190,
+            "$ref": "#/properties/ssh_passphrase",
+            "key": "ssh_passphrase",
+            "label": "SSH Passphrase",
+            "widget": "password-v3"
+          }
+        },
+        "password": {
+          "ssh_password": {
+            "order": 180,
+            "$ref": "#/properties/ssh_password",
+            "key": "ssh_password",
+            "label": "SSH Password",
+            "widget": "password-v3"
+          }
+        }
       },
       "disabled": {},
       "azure": {
@@ -325,7 +315,7 @@
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
         "label": "Connection string",
-        "description": "Server=localhost,1433;Database=mydb;User Id=sa;Password=mypass;",
+        "description": "Enter encoded connection string",
         "widget": "text-v3",
         "required": true
       },
@@ -377,27 +367,17 @@
         "widget": "react-component-headers"
       },
       "ssh_enabled": {
-        "order": 70,
+        "order": 80,
         "$ref": "#/properties/ssh_enabled",
         "key": "ssh_enabled",
         "label": "SSH Tunnel",
         "description": "Connect through an SSH server",
-        "widget": "dropdown-component-flip",
-        "default": "disabled",
-        "list": [
-          {
-            "value": "disabled",
-            "name": "Disabled"
-          },
-          {
-            "value": "enabled",
-            "name": "Enabled"
-          }
-        ]
+        "widget": "toggle-flip",
+        "default": false
       },
       "enabled": {
         "ssh_host": {
-          "order": 80,
+          "order": 90,
           "$ref": "#/properties/ssh_host",
           "key": "ssh_host",
           "label": "SSH Host",
@@ -405,7 +385,7 @@
           "widget": "text-v3"
         },
         "ssh_port": {
-          "order": 90,
+          "order": 100,
           "$ref": "#/properties/ssh_port",
           "key": "ssh_port",
           "label": "SSH Port",
@@ -413,50 +393,50 @@
           "widget": "text-v3"
         },
         "ssh_username": {
-          "order": 100,
+          "order": 110,
           "$ref": "#/properties/ssh_username",
           "key": "ssh_username",
           "label": "SSH Username",
           "description": "SSH Username",
           "widget": "text-v3"
         },
-         "ssh_auth_type": {
-              "order": 175,
-              "$ref": "#/properties/ssh_auth_type",
-              "key": "ssh_auth_type",
-              "label": "Authentication Type",
-              "widget": "dropdown-component-flip",
-              "default": "private_key",
-              "list": [
-                { "value": "private_key", "name": "Private Key" },
-                { "value": "password", "name": "Password" }
-              ]
-            },
-            "private_key": {
-              "ssh_private_key": {
-                "order": 180,
-                "$ref": "#/properties/ssh_private_key",
-                "key": "ssh_private_key",
-                "label": "SSH Private Key",
-                "widget": "password-v3-textarea"
-              },
-              "ssh_passphrase": {
-                "order": 190,
-                "$ref": "#/properties/ssh_passphrase",
-                "key": "ssh_passphrase",
-                "label": "SSH Passphrase",
-                "widget": "password-v3"
-              }
-            },
-            "password": {
-              "ssh_password": {
-                "order": 180,
-                "$ref": "#/properties/ssh_password",
-                "key": "ssh_password",
-                "label": "SSH Password",
-                "widget": "password-v3"
-              }
-            }
+        "ssh_auth_type": {
+          "order": 175,
+          "$ref": "#/properties/ssh_auth_type",
+          "key": "ssh_auth_type",
+          "label": "Authentication Type",
+          "widget": "dropdown-component-flip",
+          "default": "private_key",
+          "list": [
+            { "value": "private_key", "name": "Private Key" },
+            { "value": "password", "name": "Password" }
+          ]
+        },
+        "private_key": {
+          "ssh_private_key": {
+            "order": 180,
+            "$ref": "#/properties/ssh_private_key",
+            "key": "ssh_private_key",
+            "label": "SSH Private Key",
+            "widget": "password-v3-textarea"
+          },
+          "ssh_passphrase": {
+            "order": 190,
+            "$ref": "#/properties/ssh_passphrase",
+            "key": "ssh_passphrase",
+            "label": "SSH Passphrase",
+            "widget": "password-v3"
+          }
+        },
+        "password": {
+          "ssh_password": {
+            "order": 180,
+            "$ref": "#/properties/ssh_password",
+            "key": "ssh_password",
+            "label": "SSH Password",
+            "widget": "password-v3"
+          }
+        }
       },
       "disabled": {},
       "azure": {
