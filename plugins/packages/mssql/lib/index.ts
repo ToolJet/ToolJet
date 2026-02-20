@@ -197,7 +197,7 @@ export default class MssqlQueryService implements QueryService {
       throw new QueryError('Connection test failed', errorMessage, errorDetails);
     } finally {
       if (knexInstance) {
-        await knexInstance.destroy();
+       try { await knexInstance.destroy(); } catch (_) {}
       }
     }
   }
@@ -244,8 +244,8 @@ export default class MssqlQueryService implements QueryService {
         database:  parsedOptions.database || '',
         username:  parsedOptions.username || '',
         password:  parsedOptions.password || '',
-        azure: sourceOptions.azure !== undefined ? sourceOptions.azure : parsedOptions.azure,
-        instanceName: sourceOptions.instanceName || parsedOptions.instanceName,
+        azure: parsedOptions.azure !== undefined ? parsedOptions.azure : sourceOptions.azure,
+        instanceName: sourceOptions.instanceName,
         connection_options: sourceOptions.connection_options,
         connection_type: sourceOptions.connection_type,
         connection_string: sourceOptions.connection_string,

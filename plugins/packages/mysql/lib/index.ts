@@ -171,7 +171,7 @@ export default class MysqlQueryService implements QueryService {
       throw new QueryError('Connection test failed', errorMessage, errorDetails);
     } finally {
       if (knexInstance) {
-        await knexInstance.destroy();
+          try { await knexInstance.destroy(); } catch (_) {}
       }
     }
   }
@@ -210,48 +210,129 @@ export default class MysqlQueryService implements QueryService {
     return connectionOptions;
   }
 
-  private  parseConnectionString(connectionString: string): Partial<SourceOptions> {
-    const parsed: Partial<SourceOptions> = {};
-    const uriMatch = connectionString.match(/^mysql:\/\/([^:]+):(.+)@([^:@]+):(\d+)(?:\/(.*))?$/);
-    if (uriMatch) {
-      parsed.username = decodeURIComponent(uriMatch[1]);
-      parsed.password = decodeURIComponent(uriMatch[2]);
-      parsed.host = uriMatch[3];
-      parsed.port = uriMatch[4];
-      if (uriMatch[5]) {
-        parsed.database = uriMatch[5];
+ private parseConnectionString(connectionString: string): Partial<SourceOptions> {
+  const parsed: Partial<SourceOptions & { params?: Record<string, string>; socketPath?: string }> = {};
+
+  const regex =
+    /^mysql:\/\/(?:([^:@\/?#]+)(?::([^@\/?#]*))?@)?(\[[^\]]+\]|[^:\/?#]+)?(?::(\d+))?(?:\/([^?]*))?(?:\?(.*))?$/;
+
+  const m = connectionString.match(regex);
+
+  if (m) {
+    const user = m[1];
+    const pass = m[2];
+    const hostRaw = m[3];
+    const port = m[4];
+    const db = m[5];
+    const query = m[6];
+
+    if (user) {
+      try {
+        parsed.username = decodeURIComponent(user);
+      } catch {
+        parsed.username = user;
       }
-      return parsed;
     }
-    const pairs = connectionString.split(';').filter(pair => pair.trim());
-    for (const pair of pairs) {
-      const [key, value] = pair.split('=').map(s => s.trim());
-      if (!key || !value) continue;
-      
-      const lowerKey = key.toLowerCase();
-      
-      if (lowerKey === 'server' || lowerKey === 'host') {
-        parsed.host = value;
-      } else if (lowerKey === 'port') {
-        parsed.port = value;
-      } else if (lowerKey === 'database' || lowerKey === 'db') {
-        parsed.database = value;
-      } else if (lowerKey === 'uid' || lowerKey === 'user' || lowerKey === 'username') {
-        parsed.username = value;
-      } else if (lowerKey === 'pwd' || lowerKey === 'password') {
-        parsed.password = value;
+
+    if (pass !== undefined) {
+      try {
+        parsed.password = decodeURIComponent(pass);
+      } catch {
+        parsed.password = pass;
+      }
+    }
+
+    if (hostRaw) {
+      let host = hostRaw;
+      if (host.startsWith('[') && host.endsWith(']')) {
+        host = host.slice(1, -1);
+      }
+      try {
+        parsed.host = decodeURIComponent(host);
+      } catch {
+        parsed.host = host;
+      }
+    }
+
+    if (port) parsed.port = port;
+
+    if (db && db !== '') {
+      try {
+        parsed.database = decodeURIComponent(db);
+      } catch {
+        parsed.database = db;
+      }
+    }
+
+    if (query) {
+      const params: Record<string, string> = {};
+      for (const part of query.split('&')) {
+        if (!part) continue;
+        const idx = part.indexOf('=');
+        if (idx === -1) {
+          params[decodeURIComponent(part)] = '';
+        } else {
+          const k = part.slice(0, idx);
+          const v = part.slice(idx + 1);
+          try {
+            params[decodeURIComponent(k)] = decodeURIComponent(v);
+          } catch {
+            params[k] = v;
+          }
+        }
+      }
+      parsed.params = params;
+      if (params['socket'] || params['socketPath']) {
+        parsed.socketPath = params['socket'] || params['socketPath'];
       }
     }
 
     return parsed;
   }
+
+  const pairs = connectionString.split(';').map(p => p.trim()).filter(Boolean);
+
+  for (const pair of pairs) {
+    const idx = pair.indexOf('=');
+    if (idx === -1) continue;
+
+    const key = pair.slice(0, idx).trim();
+    const value = pair.slice(idx + 1).trim();
+    if (!key) continue;
+
+    const lowerKey = key.toLowerCase();
+
+    if (lowerKey === 'server' || lowerKey === 'host') {
+      parsed.host = value;
+    } else if (lowerKey === 'port') {
+      parsed.port = value;
+    } else if (lowerKey === 'database' || lowerKey === 'db') {
+      parsed.database = value;
+    } else if (lowerKey === 'uid' || lowerKey === 'user' || lowerKey === 'username') {
+      parsed.username = value;
+    } else if (lowerKey === 'pwd' || lowerKey === 'password') {
+      parsed.password = value;
+    } else if (lowerKey === 'socket' || lowerKey === 'socketpath') {
+      parsed.socketPath = value;
+    } else {
+      parsed.params = parsed.params || {};
+      parsed.params[key] = value;
+    }
+  }
+
+  return parsed;
+}
   
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
   let effectiveOptions = { ...sourceOptions };
   if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
     const parsed = this.parseConnectionString(sourceOptions.connection_string);
-    effectiveOptions = { ...parsed, ...sourceOptions };
+      effectiveOptions.host=parsed.host || effectiveOptions.host;
+      effectiveOptions.port=parsed.port || effectiveOptions.port;
+      effectiveOptions.database=parsed.database || effectiveOptions.database;
+      effectiveOptions.username=parsed.username || effectiveOptions.username;
+      effectiveOptions.password=parsed.password || effectiveOptions.password;
   }
 
   const shouldUseSSL = effectiveOptions.ssl_enabled;
@@ -271,7 +352,7 @@ export default class MysqlQueryService implements QueryService {
     }
   }
   let connectionConfig: any ;
-  if (effectiveOptions.ssh_enabled) {
+  if (effectiveOptions.ssh_enabled=='enabled') {
     connectionConfig = async () => {
       const ssh = await createSSHStream(effectiveOptions);
       return {
@@ -307,8 +388,6 @@ export default class MysqlQueryService implements QueryService {
   };
 
   const knexInstance = knex(config);
-
-
 
   return knexInstance;
 }
