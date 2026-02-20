@@ -8,6 +8,11 @@ TABLE_HEADER="| Version | Release Date | Docker Pull Command |"
 TABLE_DIVIDER="|---------|--------------|----------------------|"
 DRY_RUN=false
 
+# Current LTS line — update CURRENT_LTS_PREFIX when a new LTS series starts (e.g. v3.21)
+CURRENT_LTS_PREFIX="v3.20"
+CURRENT_LTS_TAG_PATTERN="^v3\\.20\\.[0-9]+-lts$"
+CURRENT_LTS_MAX=6
+
 # Enhanced logging function
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >&2
@@ -81,38 +86,43 @@ get_lts_tags() {
         fi
         
         local page_tags
-        page_tags=$(echo "$resp" | jq -r '.results[]? | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+(-ee)?-lts$")) | .name' 2>/dev/null)
-        
+        page_tags=$(echo "$resp" | jq -r --arg pat "$CURRENT_LTS_TAG_PATTERN" '.results[]? | select(.name | test($pat)) | .name' 2>/dev/null)
+
         if [[ -n "$page_tags" ]]; then
             while IFS= read -r tag; do
                 [[ -n "$tag" ]] && tags+=("$tag")
             done <<< "$page_tags"
         fi
-        
+
         url=$(echo "$resp" | jq -r '.next // empty' 2>/dev/null)
         [[ "$url" == "null" || -z "$url" ]] && break
-        
+
+        # Stop early once we have enough tags to avoid unnecessary pages
+        if [[ ${#tags[@]} -ge $CURRENT_LTS_MAX ]]; then
+            log "✅ Collected enough tags (${#tags[@]}), stopping pagination"
+            break
+        fi
+
         # Safety check to prevent infinite loops
         if [[ $page_count -gt 10 ]]; then
             log "⚠️  Reached maximum page limit (10), stopping pagination"
             break
         fi
     done
-    
+
     if [[ ${#tags[@]} -eq 0 ]]; then
         log_error "No LTS tags found"
         return 1
     fi
-    
+
     log "✅ Found ${#tags[@]} LTS tags"
-    
-    # Sort tags by version (reverse)
+
+    # Sort tags by version (reverse) and cap to CURRENT_LTS_MAX
     IFS=$'\n' tags=($(printf '%s\n' "${tags[@]}" | sort -Vr))
 
-    # Cap to 10 most recent tags
-    if [[ ${#tags[@]} -gt 10 ]]; then
-        tags=("${tags[@]:0:10}")
-        log "✂️  Capped to 10 most recent LTS tags"
+    if [[ ${#tags[@]} -gt $CURRENT_LTS_MAX ]]; then
+        tags=("${tags[@]:0:$CURRENT_LTS_MAX}")
+        log "✂️  Capped to ${CURRENT_LTS_MAX} most recent ${CURRENT_LTS_PREFIX} tags"
     fi
 
     log "📋 LTS tags (sorted):"
@@ -239,9 +249,27 @@ replace_table_in_file() {
     log "✍️  Writing to $MARKDOWN_FILE..."
     local tmp_md="${MARKDOWN_FILE}.tmp"
 
+    # Extract preserved rows — older LTS lines that are NOT part of the current LTS series.
+    # These rows sit below the current LTS entries and are never auto-updated.
+    local preserved_rows
+    preserved_rows=$(awk '
+        /^### Latest Patch$/ { in_section=1; next }
+        /^### Base Versions$/ { in_section=0 }
+        in_section && /^\| \[/ { print }
+    ' "$MARKDOWN_FILE" | grep -v "${CURRENT_LTS_PREFIX}\.")
+
+    # Combine: new current-LTS rows on top, preserved older-LTS rows below
+    local full_body
+    if [[ -n "$preserved_rows" ]]; then
+        full_body="${table_body}
+${preserved_rows}"
+    else
+        full_body="$table_body"
+    fi
+
     local new_table="${TABLE_HEADER}
 ${TABLE_DIVIDER}
-${table_body}"
+${full_body}"
 
     awk -v tbl="$new_table" '
         /^### Latest Patch$/ { print; print ""; print tbl; skip=1; next }
