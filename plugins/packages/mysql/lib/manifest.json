@@ -123,6 +123,20 @@
       "type": "string",
       "title": "SSH Username"
     },
+    "ssh_auth_type": {
+      "type": "string",
+      "title": "SSH Authentication Type",
+      "enum": ["private_key", "password"],
+      "default": "private_key"
+    },
+    "ssh_password": {
+      "type": "string",
+      "title": "SSH Password"
+    },
+    "ssh_passphrase": {
+      "type": "string",
+      "title": "SSH Passphrase"
+    },
     "ssh_private_key": {
       "type": "string",
       "title": "SSH Private Key"
@@ -186,7 +200,7 @@
         }
       },
       "then": {
-        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_private_key"]
+        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
       }
     }
   ],
@@ -196,7 +210,9 @@
     "client_key",
     "client_cert",
     "root_cert",
-    "ssh_private_key"
+    "ssh_private_key",
+    "ssh_password",
+    "ssh_passphrase"
   ],
   "required": [
     "connection_type"
@@ -403,13 +419,42 @@
               "description": "SSH Username",
               "widget": "text-v3"
             },
-            "ssh_private_key": {
-              "order": 180,
-              "$ref": "#/properties/ssh_private_key",
-              "key": "ssh_private_key",
-              "label": "SSH Private Key",
-              "description": "SSH private key",
-              "widget": "password-v3-textarea"
+            "ssh_auth_type": {
+              "order": 175,
+              "$ref": "#/properties/ssh_auth_type",
+              "key": "ssh_auth_type",
+              "label": "Authentication Type",
+              "widget": "dropdown-component-flip",
+              "default": "private_key",
+              "list": [
+                { "value": "private_key", "name": "Private Key" },
+                { "value": "password", "name": "Password" }
+              ]
+            },
+            "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
             }
           },
           "disabled": {}
@@ -569,13 +614,42 @@
               "description": "SSH Username",
               "widget": "text-v3"
             },
-            "ssh_private_key": {
-              "order": 180,
-              "$ref": "#/properties/ssh_private_key",
-              "key": "ssh_private_key",
-              "label": "SSH Private Key",
-              "description": "SSH private key",
-              "widget": "password-v3-textarea"
+             "ssh_auth_type": {
+              "order": 175,
+              "$ref": "#/properties/ssh_auth_type",
+              "key": "ssh_auth_type",
+              "label": "Authentication Type",
+              "widget": "dropdown-component-flip",
+              "default": "private_key",
+              "list": [
+                { "value": "private_key", "name": "Private Key" },
+                { "value": "password", "name": "Password" }
+              ]
+            },
+            "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
             }
           },
           "disabled": {}
@@ -768,13 +842,42 @@
               "description": "SSH Username",
               "widget": "text-v3"
             },
-            "ssh_private_key": {
-              "order": 180,
-              "$ref": "#/properties/ssh_private_key",
-              "key": "ssh_private_key",
-              "label": "SSH Private Key",
-              "description": "SSH private key",
-              "widget": "password-v3-textarea"
+             "ssh_auth_type": {
+              "order": 175,
+              "$ref": "#/properties/ssh_auth_type",
+              "key": "ssh_auth_type",
+              "label": "Authentication Type",
+              "widget": "dropdown-component-flip",
+              "default": "private_key",
+              "list": [
+                { "value": "private_key", "name": "Private Key" },
+                { "value": "password", "name": "Password" }
+              ]
+            },
+            "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
             }
           },
           "disabled": {}
@@ -930,13 +1033,42 @@
               "description": "SSH Username",
               "widget": "text-v3"
             },
-            "ssh_private_key": {
-              "order": 180,
-              "$ref": "#/properties/ssh_private_key",
-              "key": "ssh_private_key",
-              "label": "SSH Private Key",
-              "description": "SSH private key",
-              "widget": "password-v3-textarea"
+             "ssh_auth_type": {
+              "order": 175,
+              "$ref": "#/properties/ssh_auth_type",
+              "key": "ssh_auth_type",
+              "label": "Authentication Type",
+              "widget": "dropdown-component-flip",
+              "default": "private_key",
+              "list": [
+                { "value": "private_key", "name": "Private Key" },
+                { "value": "password", "name": "Password" }
+              ]
+            },
+            "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
             }
           },
           "disabled": {}
