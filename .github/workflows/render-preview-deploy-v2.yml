@@ -193,17 +193,45 @@ jobs:
             const prNumber = process.env.PR_NUMBER;
             const serviceId = process.env.SERVICE_ID;
             
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚀 CE Review App Deployed!\n\n` +
+            const commentBody = `## 🚀 CE Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ce-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
-                    `_Deployed using DockerHub-based pipeline_`
+                    `_Deployed using DockerHub-based pipeline_`;
+            
+            // Comment on PR
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
             });
+            
+            // Find and comment on linked issues
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const prBody = pr.data.body || '';
+            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
+            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
+            
+            for (const issueNumber of linkedIssues) {
+              try {
+                await github.rest.issues.createComment({
+                  issue_number: parseInt(issueNumber),
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: commentBody
+                });
+                console.log(`✅ Commented on issue #${issueNumber}`);
+              } catch (error) {
+                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+              }
+            }
 
       - name: Update Labels
         uses: actions/github-script@v6
@@ -669,17 +697,45 @@ jobs:
             const prNumber = process.env.PR_NUMBER;
             const serviceId = process.env.SERVICE_ID;
             
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚀 EE LTS Review App Deployed!\n\n` +
+            const commentBody = `## 🚀 EE LTS Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-lts-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
-                    `_Deployed using DockerHub-based pipeline - LTS Edition_`
+                    `_Deployed using DockerHub-based pipeline - LTS Edition_`;
+            
+            // Comment on PR
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
             });
+            
+            // Find and comment on linked issues
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const prBody = pr.data.body || '';
+            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
+            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
+            
+            for (const issueNumber of linkedIssues) {
+              try {
+                await github.rest.issues.createComment({
+                  issue_number: parseInt(issueNumber),
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: commentBody
+                });
+                console.log(`✅ Commented on issue #${issueNumber}`);
+              } catch (error) {
+                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+              }
+            }
 
       - name: Update Labels
         uses: actions/github-script@v6
@@ -1148,17 +1204,45 @@ jobs:
             const prNumber = process.env.PR_NUMBER;
             const serviceId = process.env.SERVICE_ID;
             
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚀 EE Pre-release Review App Deployed!\n\n` +
+            const commentBody = `## 🚀 EE Pre-release Review App Deployed!\n\n` +
                     `| Resource | Link |\n` +
                     `|----------|------|\n` +
                     `| **App URL** | https://tooljet-ee-pre-release-pr-${prNumber}.onrender.com |\n` +
                     `| **Render Dashboard** | https://dashboard.render.com/web/${serviceId} |\n\n` +
-                    `_Deployed using DockerHub-based pipeline - Pre-release Edition_`
+                    `_Deployed using DockerHub-based pipeline - Pre-release Edition_`;
+            
+            // Comment on PR
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
             });
+            
+            // Find and comment on linked issues
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const prBody = pr.data.body || '';
+            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
+            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
+            
+            for (const issueNumber of linkedIssues) {
+              try {
+                await github.rest.issues.createComment({
+                  issue_number: parseInt(issueNumber),
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: commentBody
+                });
+                console.log(`✅ Commented on issue #${issueNumber}`);
+              } catch (error) {
+                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+              }
+            }
 
       - name: Update Labels
         uses: actions/github-script@v6
