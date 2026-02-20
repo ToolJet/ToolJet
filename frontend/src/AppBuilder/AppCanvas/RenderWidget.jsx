@@ -36,6 +36,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Link',
   'Form',
   'FilePicker',
+  'FileInput',
   'Tabs',
   'RangeSliderV2',
   'Statistics',
@@ -212,18 +213,17 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
+              ? null
+              : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
             text: inCanvas
-              ? `${
-                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
+              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                ? resolvedProperties?.tooltip
+                : resolvedGeneralProperties?.tooltip
+              }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -233,13 +233,11 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          className={`canvas-component ${
-            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${
-            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+            } ${!['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
               ? 'disabled'
               : ''
-          }`} //required for custom CSS
+            }`} //required for custom CSS
         >
           <TrackedSuspense fallback={null}>
             <ComponentToRender
