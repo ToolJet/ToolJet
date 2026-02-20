@@ -4,7 +4,7 @@ import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, ILike } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -33,7 +33,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
-  ) {}
+  ) { }
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
@@ -364,6 +364,22 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }, manager);
   }
 
+  async findOneWithName(name: string, organizationId: string): Promise<DataSource> {
+    return this.dataSourceRepository.findOneOrFail({
+      where: { name: ILike(name), organizationId },
+      relations: [
+        'apps',
+        'dataSourceOptions',
+        'appVersion',
+        'appVersion.app',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
+    });
+  }
+
   async findOneByEnvironment(
     dataSourceId: string,
     environmentId: string,
@@ -455,11 +471,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
   }
 
   async resolveKeyValuePair(arr, organization_id, environment_id) {
-    const resolvedArray = await Promise.all(
+    if (!Array.isArray(arr)) {
+      return this.resolveValue(arr, organization_id, environment_id);
+    }
+
+    return Promise.all(
       arr.map((item) => this.resolveValue(item, organization_id, environment_id))
     );
-
-    return resolvedArray;
   }
 
   async resolveValue(value, organization_id, environment_id) {
@@ -557,6 +575,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'snowflake',
         'microsoft_graph',
         'hubspot',
+        'xero',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

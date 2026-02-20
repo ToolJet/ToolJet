@@ -5,9 +5,10 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { convertKeysToCamelCase, replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
   isSaving: false,
@@ -19,6 +20,7 @@ const initialState = {
   isViewer: false,
   themeChanged: false,
   isComponentLayoutReady: false,
+  pageKey: uuidv4(),
   appPermission: {
     selectedUsers: [],
     selectedUserGroups: [],
@@ -30,33 +32,10 @@ const initialState = {
         app: {},
         isViewer: false,
         isComponentLayoutReady: false,
-        isAppModeSwitchedToVisualPostLayoutGeneration: false,
       },
     },
   },
 };
-
-function isDesignLayoutStepDone(steps, activeStepId) {
-  const designLayoutIndex = steps.findIndex((step) => step.id === 'design_layout');
-  const activeStepIndex = steps.findIndex((step) => step.id === activeStepId);
-
-  if (designLayoutIndex === -1 || activeStepIndex === -1) {
-    return false; // invalid input
-  }
-
-  return activeStepIndex >= designLayoutIndex;
-}
-
-function checkIsAppSwitchedToVisualModePostLayoutGeneration(prevAppState, dataToUpdate) {
-  if (prevAppState?.appBuilderMode === 'ai' && dataToUpdate?.appBuilderMode === 'visual') {
-    return isDesignLayoutStepDone(
-      prevAppState?.aiGenerationMetadata?.steps || [],
-      prevAppState?.aiGenerationMetadata?.active_step
-    );
-  }
-
-  return false;
-}
 
 export const createAppSlice = (set, get) => ({
   ...initialState,
@@ -251,6 +230,7 @@ export const createAppSlice = (set, get) => ({
   },
   switchPage: (pageId, handle, queryParams = [], moduleId = 'canvas', isBackOrForward = false) => {
     get().debugger.resetUnreadErrorCount();
+
     // reset stores
     if (get().pageSwitchInProgress) {
       toast('Please wait, page switch in progress', {
@@ -267,6 +247,7 @@ export const createAppSlice = (set, get) => ({
       setResolvedGlobals,
       setResolvedPageConstants,
       setPageSwitchInProgress,
+      getCurrentPageId,
       license,
       modules: {
         canvas: { pages },
@@ -291,6 +272,14 @@ export const createAppSlice = (set, get) => ({
       if (key === 'env' && !isLicenseValid) return false;
       return true;
     });
+    const currentPageId = getCurrentPageId(moduleId);
+    const isSamePage = currentPageId === pageId;
+
+    if (isSamePage) {
+      set((state) => {
+        state.pageKey = uuidv4();
+      });
+    }
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().appStore.modules[moduleId].app.slug;
@@ -326,11 +315,11 @@ export const createAppSlice = (set, get) => ({
     set(() => ({ pageSwitchInProgress: isInProgress }), false, 'setPageSwitchInProgress'),
 
   cleanUpStore: (isPageSwitch = false, moduleId) => {
-    const { resetUndoRedoStack, initModules } = get();
+    const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
     resetUndoRedoStack();
+    clearSelectedComponents();
     set((state) => {
       state.modules.canvas.componentNameIdMapping = {};
-      state.selectedComponents = [];
       if (isPageSwitch) {
         state.pageSwitchInProgress = false;
       }
@@ -395,29 +384,6 @@ export const createAppSlice = (set, get) => ({
         }
       });
     });
-  },
-
-  updateAppData: (dataToUpdate, moduleId = 'canvas') => {
-    set((state) => {
-      if (checkIsAppSwitchedToVisualModePostLayoutGeneration(state.appStore.modules[moduleId].app, dataToUpdate)) {
-        state.appStore.modules[moduleId].isAppModeSwitchedToVisualPostLayoutGeneration = true;
-      }
-
-      state.appStore.modules[moduleId].app = { ...state.appStore.modules[moduleId].app, ...dataToUpdate };
-    });
-  },
-
-  updateAppInfoInDB: async (payload, moduleId = 'canvas') => {
-    const { appId } = get().appStore.modules[moduleId].app;
-
-    if (!appId || isEmpty(payload)) return;
-
-    try {
-      await appsService.saveApp(appId, payload);
-      get().updateAppData(convertKeysToCamelCase(payload), moduleId);
-    } catch (error) {
-      console.log(error);
-    }
   },
 
   checkIfLicenseNotValid: () => {

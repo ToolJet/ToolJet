@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
@@ -46,6 +47,10 @@ export const BaseInput = ({
   isDynamicHeightEnabled,
   id,
   classes = null,
+  showClearBtn,
+  onClear,
+  clearButtonRightOffset = 0,
+  getCustomStyles,
 }) => {
   const {
     padding,
@@ -70,13 +75,17 @@ export const BaseInput = ({
   const { label, placeholder } = properties;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
   };
@@ -94,19 +103,54 @@ export const BaseInput = ({
     };
   }
 
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] ?? Icons['IconHome2'];
+  const finalStyles = getCustomStyles ? getCustomStyles(inputStyles) : inputStyles;
+  const clearButtonBaseRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonRight =
+    clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+  const clearButtonTop =
+    inputType === 'textarea'
+      ? defaultAlignment === 'top'
+        ? '30px'
+        : '10px'
+      : defaultAlignment === 'top' && hasLabel
+      ? 'calc(50% + 10px)'
+      : '50%';
+  const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
+  const clearButton = shouldShowClearBtn ? (
+    <button
+      type="button"
+      className="tj-input-clear-btn"
+      aria-label="Clear"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClear?.();
+      }}
+      style={{
+        position: 'absolute',
+        right: clearButtonRight,
+        top: clearButtonTop,
+        transform: clearButtonTransform,
+        zIndex: 3,
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    </button>
+  ) : null;
 
   return (
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input scrollbar-container d-flex ${
-          defaultAlignment === 'top' &&
+        className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : ''
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : ''
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -150,23 +194,23 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                ? accentColor != '4368E3'
-                  ? accentColor
-                  : 'var(--primary-accent-strong)'
-                : borderColor != '#CCD1D5'
-                ? borderColor
-                : disable || loading
-                ? '1px solid var(--borders-disabled-on-white)'
-                : 'var(--borders-default)',
+                  ? accentColor != '4368E3'
+                    ? accentColor
+                    : 'var(--primary-accent-strong)'
+                  : borderColor != '#CCD1D5'
+                    ? borderColor
+                    : disable || loading
+                      ? '1px solid var(--borders-disabled-on-white)'
+                      : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                ? darkMode
-                  ? 'var(--surfaces-app-bg-default)'
-                  : 'var(--surfaces-surface-03)'
-                : 'var(--surfaces-surface-01)',
+                  ? darkMode
+                    ? 'var(--surfaces-app-bg-default)'
+                    : 'var(--surfaces-surface-03)'
+                  : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
@@ -178,7 +222,8 @@ export const BaseInput = ({
           }}
         >
           {showLeftIcon && (
-            <IconElement
+            <TablerIcon
+              iconName={icon}
               data-cy={'text-input-icon'}
               className={cn('tw-shrink-0', classes?.leftIcon)}
               style={{
@@ -207,7 +252,7 @@ export const BaseInput = ({
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             placeholder={placeholder}
-            style={inputStyles}
+            style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
             aria-disabled={disable || loading}
@@ -217,7 +262,7 @@ export const BaseInput = ({
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
-
+          {clearButton}
           {loading ? <Loader classes={classes} style={loaderStyle} absolute={false} width="16" /> : rightIcon}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
@@ -43,8 +44,15 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Tags',
   'CircularProgressBar',
   'Kanban',
+  'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'JSONExplorer',
+  'JSONEditor',
+  'IFrame',
+  'Accordion',
+  'ReorderableList',
+  'KeyValuePair',
 ];
 
 const RenderWidget = ({
@@ -209,7 +217,7 @@ const RenderWidget = ({
         }
         overlay={(props) =>
           renderTooltip({
-            props,
+            props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
             text: inCanvas
               ? `${
                   SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
@@ -233,27 +241,29 @@ const RenderWidget = ({
               : ''
           }`} //required for custom CSS
         >
-          <ComponentToRender
-            id={id}
-            key={key}
-            {...obj}
-            setExposedVariable={setExposedVariable}
-            setExposedVariables={setExposedVariables}
-            height={widgetHeight - 4}
-            width={widgetWidth}
-            parentId={parentId}
-            fireEvent={fireEventWrapper}
-            validate={validate}
-            resetComponent={resetComponent}
-            onComponentClick={onComponentClick}
-            darkMode={darkMode}
-            componentName={componentName}
-            adjustComponentPositions={adjustComponentPositions}
-            componentCount={componentCount}
-            dataCy={`draggable-widget-${componentName}`}
-            currentMode={currentMode}
-            subContainerIndex={subContainerIndex}
-          />
+          <TrackedSuspense fallback={null}>
+            <ComponentToRender
+              id={id}
+              key={key}
+              {...obj}
+              setExposedVariable={setExposedVariable}
+              setExposedVariables={setExposedVariables}
+              height={widgetHeight - 4}
+              width={widgetWidth}
+              parentId={parentId}
+              fireEvent={fireEventWrapper}
+              validate={validate}
+              resetComponent={resetComponent}
+              onComponentClick={onComponentClick}
+              darkMode={darkMode}
+              componentName={componentName}
+              adjustComponentPositions={adjustComponentPositions}
+              componentCount={componentCount}
+              dataCy={`draggable-widget-${componentName}`}
+              currentMode={currentMode}
+              subContainerIndex={subContainerIndex}
+            />
+          </TrackedSuspense>
         </div>
       </OverlayTrigger>
     </ErrorBoundary>

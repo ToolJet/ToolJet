@@ -19,7 +19,7 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
-export const TagsInput = ({
+const TagsInput = ({
   id,
   height,
   width,
@@ -119,13 +119,13 @@ export const TagsInput = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible ?? true)
-          .map((data) => ({
-            ...data,
-            label: getSafeRenderableValue(data?.label),
-            value: data?.value,
-            isDisabled: data?.disable ?? false,
-          }))
+        .filter((data) => data?.visible ?? true)
+        .map((data) => ({
+          ...data,
+          label: getSafeRenderableValue(data?.label),
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
+        }))
       : [];
     return sortArray(_selectOptions, sort);
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
@@ -180,7 +180,7 @@ export const TagsInput = ({
   };
 
   // Find default items based on options
-  function findDefaultItem(values, isAdvanced=false, isDefault=false) {
+  function findDefaultItem(values, isAdvanced = false, isDefault = false) {
     if (isAdvanced) {
       const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
       return foundItem;
@@ -246,6 +246,76 @@ export const TagsInput = ({
     }
     setInputValues(items || []);
     setUserInteracted(true);
+  };
+
+  // Parse delimited input (comma or semicolon separated)
+  const parseDelimitedInput = (value) => {
+    if (!value) return null;
+    const hasDelimiters = value.includes(',') || value.includes(';');
+    if (!hasDelimiters) return null;
+
+    const parts = value.split(/[,;]/).map((part) => part.trim()).filter(Boolean);
+    return parts.length > 1 ? parts : null;
+  };
+
+  // Find existing option by label or value
+  const findMatchingOption = (tagText) => {
+    return allOptions.find((opt) => opt.label === tagText || opt.value === tagText);
+  };
+
+  // Check if tag is already selected
+  const isAlreadySelected = (tagText, currentSelection) => {
+    return currentSelection.some((s) => s.label === tagText || s.value === tagText);
+  };
+
+  // Create a new tag object and update newTagsAdded state
+  const createNewTag = (tagText) => {
+    const newTag = { label: tagText, value: tagText };
+    setNewTagsAdded((prev) => {
+      const updated = [...prev, newTag];
+      setExposedVariable('newTagsAdded', updated.map(({ label, value }) => ({ label, value })));
+      return updated;
+    });
+    return newTag;
+  };
+
+  // Process pasted/delimited input and select matching tags
+  const handleDelimitedInput = (parts) => {
+    let newSelected = [...selected];
+
+    parts.forEach((tagText) => {
+      if (isAlreadySelected(tagText, newSelected)) return;
+
+      const matchingOption = findMatchingOption(tagText);
+      if (matchingOption) {
+        newSelected.push(matchingOption);
+      } else if (allowNewTags && tagText) {
+        newSelected.push(createNewTag(tagText));
+      }
+    });
+
+    if (newSelected.length > selected.length) {
+      setInputValues(newSelected);
+      fireEvent('onTagAdded');
+      setUserInteracted(true);
+    }
+
+    setInputValue('');
+    setFocusedOptionIndex(-1);
+  };
+
+  // Handle input change with delimiter support for paste
+  const handleInputChange = (value, action) => {
+    if (action.action !== 'input-change') return;
+
+    const parts = parseDelimitedInput(value);
+    if (parts) {
+      handleDelimitedInput(parts);
+      return;
+    }
+
+    setInputValue(value);
+    setFocusedOptionIndex(-1);
   };
 
   // Handle keyboard events
@@ -681,7 +751,7 @@ export const TagsInput = ({
       flexDirection: 'column',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
-      padding:"4px",
+      padding: "4px",
     }),
     menu: (provided) => ({
       ...provided,
@@ -710,7 +780,7 @@ export const TagsInput = ({
           data-cy={`label-${String(componentName).toLowerCase()}`}
           className={cx('tags-input-widget', 'd-flex', {
             [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+              ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
               ? 'flex-column'
               : 'align-items-start']: true,
             'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -774,13 +844,7 @@ export const TagsInput = ({
               aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
               isLoading={isTagsLoading}
               inputValue={inputValue}
-              onInputChange={(value, action) => {
-                if (action.action === 'input-change') {
-                  setInputValue(value);
-                  // Reset focused option when user types - they're now searching, not navigating
-                  setFocusedOptionIndex(-1);
-                }
-              }}
+              onInputChange={handleInputChange}
               menuIsOpen={enableSearch && isMenuOpen}
               placeholder={placeholder}
               formatCreateLabel={(input) => `add "${input}"`}
@@ -848,5 +912,7 @@ export const TagsInput = ({
         </div>
       )}
     </>
-);
+  );
 };
+
+export default TagsInput;
