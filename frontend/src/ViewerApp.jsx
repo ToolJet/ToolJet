@@ -12,7 +12,6 @@ import { authenticationService, tooljetService } from '@/_services';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -99,9 +98,6 @@ const ViewerApp = () => {
 
     // Authorize workspace session
     authorizeWorkspace();
-
-    // Load HubSpot (analytics)
-    hubspotHelper.loadHubspot();
 
     // Fetch instance metadata
     fetchMetadata();
