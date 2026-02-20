@@ -14,18 +14,26 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 ## Connection
 
 - To connect to PocketBase, you need the Host URL, email, and password. The Host URL is the URL of your PocketBase instance. Email and password are the credentials of the user who has access to the PocketBase instance.
+
 - Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+
 - Enter your Host URL, email and password into their designated fields.
+
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
+
+<img className="screenshot-full img-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/connection.png" alt="PocketBase datasource configuration" />
 
 ## Querying PocketBase
 
-- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
+
 - Select the previously configured PocketBase datasource.
+
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for PocketBase interactions.
+
 - Enter the collection name and other required parameters for the selected operation and click on **Run** button to run the query.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/add_query.gif" alt="PocketBase query" />
+
+  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/listops.png" alt="PocketBase supported operations" />
 
 :::info
 Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
@@ -52,7 +60,8 @@ You can create query for PocketBase data source to perform several operations su
 - **Limit** - Number of records to be fetched.
 - **Sort** - Sort the records based on a sort rule. Add `-` / `+`(default) in front of the attribute for DESC / ASC order.
 - **Where** - Filter the records based on a filter conditions.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
+
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/listrec-query.png" alt="List Records" />
 
 ### Get Record
 
@@ -60,7 +69,8 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be fetched.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
+
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/getrec-query.png" alt="Get Record" />
 
 ### Add Record to Collection
 
@@ -68,7 +78,17 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Body** - Data to be added to the collection. It should be in valid JSON format.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
+
+```javascript
+{
+  "email": "emma.brown@example.com",
+  "name": "Emma Brown",
+  "emailVisibility": true,
+  "password": "12345678",
+  "passwordConfirm": "12345678"
+}
+```
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/addrec-query.png" alt="Add a Record" />
 
 ### Update Record to Collection
 
@@ -77,7 +97,8 @@ You can create query for PocketBase data source to perform several operations su
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be updated.
 - **Body** - Data to be updated in the collection. It should be in valid JSON format.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
+
+ <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/updaterec-query.png" alt="Update Record" />
 
 ### Delete Record
 
@@ -85,4 +106,5 @@ You can create query for PocketBase data source to perform several operations su
 
 - **Collection Name** - Collection name in the database.
 - **Record ID** - ID of the record to be deleted.
-  <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />
+
+<img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/pocketbase/deleterec-query.png" alt="Delete Record" />
