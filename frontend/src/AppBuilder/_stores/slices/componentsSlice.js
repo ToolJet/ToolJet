@@ -140,7 +140,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'addNewComponentNameIdMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   renameComponentNameIdMapping: (oldName, newName, moduleId = 'canvas') => {
@@ -148,7 +148,7 @@ export const createComponentsSlice = (set, get) => ({
       state.modules[moduleId].componentNameIdMapping[newName] = state.modules[moduleId].componentNameIdMapping[oldName];
       delete state.modules[moduleId].componentNameIdMapping[oldName];
     });
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   deleteComponentNameIdMapping: (componentName, moduleId = 'canvas') => {
@@ -159,7 +159,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponentNameIdMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   setComponentNameIdMapping: (moduleId = 'canvas') => {
@@ -244,7 +244,7 @@ export const createComponentsSlice = (set, get) => ({
       delete state.modules[moduleId].queryNameIdMapping[oldName];
       state.modules[moduleId].queryIdNameMapping[queryId] = newName;
     });
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildQueryHints(moduleId);
   },
 
   deleteQueryMapping: (queryName, queryId, moduleId = 'canvas') => {
@@ -256,7 +256,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteQueryMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildQueryHints(moduleId);
   },
 
   generateDependencyGraphForRefs: (
