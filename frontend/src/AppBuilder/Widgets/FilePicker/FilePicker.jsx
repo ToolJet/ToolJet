@@ -181,6 +181,8 @@ const FilePicker = (props) => {
     'tw-flex-grow': selectedFiles.length === 0,
   });
 
+  const componentName = dataCy?.replace('draggable-widget-', '') || '';
+
   return (
     <div
       ref={rootRef}
@@ -195,7 +197,7 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`}>
+            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`} data-cy={`${componentName}-upload-files-label`}>
               {labelText}
             </h3>
             <ValidationBar
@@ -205,6 +207,7 @@ const FilePicker = (props) => {
               minFileCount={minFileCount}
               maxFileCount={maxFileCount}
               enableMultiple={enableMultiple}
+              componentName={componentName}
             />
             <UploadArea
               getRootProps={getRootProps}
@@ -267,9 +270,9 @@ FilePicker.defaultProps = {
   darkMode: false,
   styles: {},
   properties: {},
-  fireEvent: () => {},
-  setExposedVariable: () => {},
-  setExposedVariables: () => {},
+  fireEvent: () => { },
+  setExposedVariable: () => { },
+  setExposedVariables: () => { },
 };
 
 export default FilePicker;
