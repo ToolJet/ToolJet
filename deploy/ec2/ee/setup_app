@@ -161,7 +161,7 @@ else
   exit 1
 fi
 
-TOOLJET_EDTION=ee npm --prefix server run db:setup
+TOOLJET_EDITION=ee npm --prefix server run db:setup:prod
 
 if sudo -E systemctl start nest && sudo journalctl -u nest -f
 then
