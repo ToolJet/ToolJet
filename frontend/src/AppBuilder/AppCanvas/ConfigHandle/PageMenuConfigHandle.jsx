@@ -2,7 +2,7 @@ import React from 'react';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { PencilRuler } from 'lucide-react';
-import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const PageMenuConfigHandle = ({ position, isSidebarPinned, isMobile = false }) => {
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);

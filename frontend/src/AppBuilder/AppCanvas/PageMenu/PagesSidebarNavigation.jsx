@@ -7,11 +7,11 @@ import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
 import { DarkModeToggle } from '@/_components';
-import { RenderPageAndPageGroup } from './PageGroup';
+import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
-import { buildTree } from './Tree/utilities';
-import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+import { buildTree } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import {
   Sidebar as SidebarWrapper,
@@ -21,7 +21,7 @@ import {
   SidebarProvider,
   useSidebar,
 } from '@/components/ui/sidebar';
-import PageMenuConfigHandle from './PageMenuConfigHandle';
+import PageMenuConfigHandle from '@/AppBuilder/AppCanvas/ConfigHandle/PageMenuConfigHandle';
 
 export const PagesSidebarNavigation = ({
   isMobileDevice,
