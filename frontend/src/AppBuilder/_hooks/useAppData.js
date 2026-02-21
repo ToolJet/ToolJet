@@ -540,7 +540,6 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
-        !moduleMode && mode === 'edit' && initSuggestions(moduleId);
         return () => {
           document.title = retrieveWhiteLabelText();
         };
@@ -555,10 +554,6 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
-      // Critical timing: initSuggestions must run AFTER isComponentLayoutReady,
-      // because components need to have mounted and called setDefaultExposedValues
-      // before their data is available for hint traversal. The initial call at app
-      // load (line ~542) runs too early — exposed values aren't populated yet.
       mode === 'edit' && initSuggestions(moduleId);
       runOnLoadQueries(moduleId).then(() => {
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);

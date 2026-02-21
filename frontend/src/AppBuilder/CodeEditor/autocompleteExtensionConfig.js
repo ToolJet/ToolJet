@@ -124,13 +124,13 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
         .join('.');
     }
 
-    // Section ordering: context hints (rank 0) → row-scoped siblings (rank 0.5)
+    // Section ordering: context hints (rank 0) → row-scoped components (rank 0.5)
     // → regular suggestions (rank 1) → JS methods (rank 2)
     let section;
     if (isContext) {
       section = { name: 'Current context', rank: 0 };
     } else if (isRowScoped) {
-      section = { name: 'Row-scoped siblings', rank: 0.5 };
+      section = { name: 'Row scoped components', rank: 0.5 };
     } else if (type === 'js_method') {
       section = { name: 'JS methods', rank: 2 };
     } else {
