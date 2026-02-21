@@ -41,22 +41,23 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
   const deprecatedWorkspaceVarsHints = ['client', 'server'];
 
   const appHints = hints['appHints'].filter((cm) => {
-    // Context hints (listItem, cardData, rowData) and row-scoped sibling hints
-    // bypass the normal filtering — they're always relevant within their context
-    if (cm.isContext || cm.isRowScoped) return true;
-
     const { hint } = cm;
 
+    // Filter out actions, function hints, and Function-typed entries for all hints
+    // including row-scoped (e.g. components.button1.setLoading, .setVisibility)
     if (hint.includes('actions') || hint.endsWith('run()')) {
       return false;
     }
 
-    if (deprecatedWorkspaceVarsHints.includes(hint)) {
+    if (cm.type === 'Function' && !hint.endsWith('.run()') && !hint.endsWith('.reset()')) {
       return false;
     }
 
-    const lastChar = hint[cm.length - 1];
-    if (lastChar === ')') {
+    // Context hints (listItem, cardData, rowData) and row-scoped sibling hints
+    // bypass deprecation and other filters — they're always relevant within their context
+    if (cm.isContext || cm.isRowScoped) return true;
+
+    if (deprecatedWorkspaceVarsHints.includes(hint)) {
       return false;
     }
 
