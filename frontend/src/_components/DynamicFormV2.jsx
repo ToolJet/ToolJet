@@ -520,6 +520,7 @@ const DynamicFormV2 = ({
         return {
           defaultChecked: currentValue === 'enabled',
           checked: currentValue === 'enabled',
+          helpText: helpText,
           onChange: (e) => handleOptionChange(key, e.target.checked ? 'enabled' : 'disabled', true),
         };
       case 'dropdown':
