@@ -3,8 +3,6 @@ id: marketplace-plugin-supabase
 title: Supabase
 ---
 
-# Supabase
-
 ToolJet connects to your Supabase database, allowing you to directly interact with your Supabase back-end from within your ToolJet application.
 
 :::info
@@ -22,7 +20,7 @@ ToolJet connects to your Supabase database, allowing you to directly interact wi
 
 ## Querying Supabase
 
-- To perform queries on Supabase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on Supabase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) located at the bottom panel of the editor.
 - Select the previously configured Supabase datasource.
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for Supabase interactions.
 - Enter the table name and other required parameters for the selected operation and click on **Run** button to run the query.
