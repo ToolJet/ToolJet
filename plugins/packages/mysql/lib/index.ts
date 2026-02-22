@@ -210,118 +210,138 @@ export default class MysqlQueryService implements QueryService {
     return connectionOptions;
   }
 
- private parseConnectionString(connectionString: string): Partial<SourceOptions> {
-  const parsed: Partial<SourceOptions & { params?: Record<string, string>; socketPath?: string }> = {};
 
-  const regex =
-    /^mysql:\/\/(?:([^:@\/?#]+)(?::([^@\/?#]*))?@)?(\[[^\]]+\]|[^:\/?#]+)?(?::(\d+))?(?:\/([^?]*))?(?:\?(.*))?$/;
 
-  const m = connectionString.match(regex);
+  private parseConnectionString(connectionString: string): Partial<SourceOptions> {
+    const parsed: Partial<SourceOptions & { params?: Record<string, string>; socketPath?: string }> = {};
 
-  if (m) {
-    const user = m[1];
-    const pass = m[2];
-    const hostRaw = m[3];
-    const port = m[4];
-    const db = m[5];
-    const query = m[6];
+    if (!connectionString) return parsed;
 
-    if (user) {
-      try {
-        parsed.username = decodeURIComponent(user);
-      } catch {
-        parsed.username = user;
+    const trimmed = connectionString.trim();
+
+    try {
+      const url = new URL(trimmed);
+      if (url.protocol && url.protocol.startsWith('mysql')) {
+        if (url.username) parsed.username = decodeURIComponent(url.username);
+        if (url.password) parsed.password = decodeURIComponent(url.password);
+        if (url.hostname) parsed.host = decodeURIComponent(url.hostname);
+
+        if (url.port) {
+          const p = parseInt(url.port, 10);
+          if (!isNaN(p)) parsed.port = String(p);
+        }
+
+        if (url.pathname && url.pathname !== '/') {
+          parsed.database = decodeURIComponent(url.pathname.slice(1));
+        }
+
+        const queryParams: Record<string, string> = {};
+        url.searchParams.forEach((v, k) => {
+          queryParams[k] = v;
+        });
+
+        if (Object.keys(queryParams).length) {
+          parsed.params = queryParams;
+        }
+
+        const socket = url.searchParams.get('socket') || url.searchParams.get('socketPath');
+        if (socket) parsed.socketPath = socket;
+
+        return parsed;
       }
-    }
+    } catch (_) {}
 
-    if (pass !== undefined) {
-      try {
-        parsed.password = decodeURIComponent(pass);
-      } catch {
-        parsed.password = pass;
+    const regex =
+      /^mysql:\/\/(?:([^:@\/?#]+)(?::([^@\/?#]*))?@)?(\[[^\]]+\]|[^:\/?#]+)?(?::(\d+))?(?:\/([^?]*))?(?:\?(.*))?$/;
+
+    const m = trimmed.match(regex);
+
+    if (m) {
+      const user = m[1];
+      const pass = m[2];
+      const hostRaw = m[3];
+      const portRaw = m[4];
+      const db = m[5];
+      const query = m[6];
+
+      if (user) {
+        try { parsed.username = decodeURIComponent(user); } catch { parsed.username = user; }
       }
-    }
-
-    if (hostRaw) {
-      let host = hostRaw;
-      if (host.startsWith('[') && host.endsWith(']')) {
-        host = host.slice(1, -1);
+      if (pass !== undefined) {
+        try { parsed.password = decodeURIComponent(pass); } catch { parsed.password = pass; }
       }
-      try {
-        parsed.host = decodeURIComponent(host);
-      } catch {
-        parsed.host = host;
+
+      if (hostRaw) {
+        let host = hostRaw;
+        if (host.startsWith('[') && host.endsWith(']')) host = host.slice(1, -1);
+        try { parsed.host = decodeURIComponent(host); } catch { parsed.host = host; }
       }
-    }
 
-    if (port) parsed.port = port;
-
-    if (db && db !== '') {
-      try {
-        parsed.database = decodeURIComponent(db);
-      } catch {
-        parsed.database = db;
+      if (portRaw) {
+        const p = parseInt(portRaw, 10);
+        if (!isNaN(p)) parsed.port = String(p);
       }
-    }
 
-    if (query) {
-      const params: Record<string, string> = {};
-      for (const part of query.split('&')) {
-        if (!part) continue;
-        const idx = part.indexOf('=');
-        if (idx === -1) {
-          params[decodeURIComponent(part)] = '';
-        } else {
-          const k = part.slice(0, idx);
-          const v = part.slice(idx + 1);
-          try {
-            params[decodeURIComponent(k)] = decodeURIComponent(v);
-          } catch {
-            params[k] = v;
+      if (db) {
+        try { parsed.database = decodeURIComponent(db); } catch { parsed.database = db; }
+      }
+
+      if (query) {
+        const q: Record<string, string> = {};
+        query.split('&').forEach(part => {
+          if (!part) return;
+          const idx = part.indexOf('=');
+          if (idx === -1) {
+            q[decodeURIComponent(part)] = '';
+          } else {
+            const k = part.slice(0, idx);
+            const v = part.slice(idx + 1);
+            try { q[decodeURIComponent(k)] = decodeURIComponent(v); } catch { q[k] = v; }
           }
+        });
+
+        if (Object.keys(q).length) parsed.params = q;
+        if (q['socket'] || q['socketPath']) {
+          parsed.socketPath = q['socket'] || q['socketPath'];
         }
       }
-      parsed.params = params;
-      if (params['socket'] || params['socketPath']) {
-        parsed.socketPath = params['socket'] || params['socketPath'];
-      }
+
+      return parsed;
     }
+
+    // Strategy 3: Key-value pair parsing (Server=host;Port=3306;...)
+    // Uses join('=') to correctly handle values that contain '=' characters
+    const pairs = trimmed.split(';').filter(p => p.trim());
+
+    pairs.forEach(pair => {
+      if (!pair.includes('=')) return;
+
+      const [key, ...valueParts] = pair.split('=');
+      const value = valueParts.join('=').trim();
+      const lowerKey = key.trim().toLowerCase();
+
+      if (lowerKey === 'server' || lowerKey === 'host') {
+        parsed.host = value;
+      } else if (lowerKey === 'port') {
+        const p = parseInt(value, 10);
+        if (!isNaN(p)) parsed.port = String(p);
+      } else if (lowerKey === 'database' || lowerKey === 'db') {
+        parsed.database = value;
+      } else if (lowerKey === 'uid' || lowerKey === 'user' || lowerKey === 'username') {
+        parsed.username = value;
+      } else if (lowerKey === 'pwd' || lowerKey === 'password') {
+        parsed.password = value;
+      } else if (lowerKey === 'socket' || lowerKey === 'socketpath') {
+        parsed.socketPath = value;
+      } else {
+        if (!parsed.params) parsed.params = {};
+        parsed.params[key.trim()] = value;
+      }
+    });
 
     return parsed;
   }
 
-  const pairs = connectionString.split(';').map(p => p.trim()).filter(Boolean);
-
-  for (const pair of pairs) {
-    const idx = pair.indexOf('=');
-    if (idx === -1) continue;
-
-    const key = pair.slice(0, idx).trim();
-    const value = pair.slice(idx + 1).trim();
-    if (!key) continue;
-
-    const lowerKey = key.toLowerCase();
-
-    if (lowerKey === 'server' || lowerKey === 'host') {
-      parsed.host = value;
-    } else if (lowerKey === 'port') {
-      parsed.port = value;
-    } else if (lowerKey === 'database' || lowerKey === 'db') {
-      parsed.database = value;
-    } else if (lowerKey === 'uid' || lowerKey === 'user' || lowerKey === 'username') {
-      parsed.username = value;
-    } else if (lowerKey === 'pwd' || lowerKey === 'password') {
-      parsed.password = value;
-    } else if (lowerKey === 'socket' || lowerKey === 'socketpath') {
-      parsed.socketPath = value;
-    } else {
-      parsed.params = parsed.params || {};
-      parsed.params[key] = value;
-    }
-  }
-
-  return parsed;
-}
   
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {

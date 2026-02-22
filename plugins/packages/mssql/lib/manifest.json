@@ -234,7 +234,9 @@
         "label": "SSH Tunnel",
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
-        "default": false
+        "default": false,
+        "helpText": "Enable this to connect through an SSH tunnel."
+
       },
       "enabled": {
         "ssh_host": {
@@ -373,7 +375,9 @@
         "label": "SSH Tunnel",
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
-        "default": false
+        "default": false,
+        "helpText": "Enable this to connect through an SSH tunnel."
+
       },
       "enabled": {
         "ssh_host": {
