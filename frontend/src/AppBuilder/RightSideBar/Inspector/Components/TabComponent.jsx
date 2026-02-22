@@ -36,6 +36,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   );
   const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
@@ -171,6 +172,34 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       const [isValid] = validateTabId(value, item?.id);
       if (!isValid) {
         return;
+      }
+
+      const allComponents = useStore.getState().getCurrentPageComponents();
+      const tabsComponentId = component.id;
+      const oldTabId = item.id;
+      const newTabId = value;
+
+      const oldParentId = `${tabsComponentId}-${oldTabId}`;
+      const newParentId = `${tabsComponentId}-${newTabId}`;
+
+      // Collect all child components that need to be reparented
+      const childIdsToReparent = Object.entries(allComponents)
+        .filter(([, childDef]) => childDef?.component?.parent === oldParentId)
+        .map(([childId]) => childId);
+
+      // Batch update all parent changes together using setComponentLayout
+      if (childIdsToReparent.length > 0) {
+        const batchLayouts = childIdsToReparent.reduce((layouts, childId) => {
+          // Use empty layout object since we only want to update the parent
+          layouts[childId] = {};
+          return layouts;
+        }, {});
+
+        setComponentLayout(batchLayouts, newParentId, 'canvas', {
+          updateParent: true,
+          skipUndoRedo: false,
+          saveAfterAction: true,
+        });
       }
     }
 
