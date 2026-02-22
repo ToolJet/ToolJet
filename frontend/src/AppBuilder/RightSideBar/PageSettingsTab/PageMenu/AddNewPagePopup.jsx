@@ -74,7 +74,6 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
   const [error, setError] = useState(null);
 
-  const allpages = pages.filter((p) => p.id !== page?.id);
   const isHomePage = page?.id === homePageId;
 
   //Nav item with app
@@ -183,6 +182,29 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       setPageName(editingPage.name);
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
+  //Custom nav item
+  useEffect(() => {
+    if (mode === 'add' && type === 'custom' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Custom ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Custom ${index}`;
+      }
+      const pageObj = { type: 'custom' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
 
   //Nav item with group
   useEffect(() => {

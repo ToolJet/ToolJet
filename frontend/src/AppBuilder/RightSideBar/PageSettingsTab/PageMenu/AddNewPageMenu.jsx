@@ -3,7 +3,6 @@ import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/components/ui/Button/Button';
 import useStore from '@/AppBuilder/_stores/store';
 import { AddEditPagePopup } from './AddNewPagePopup';
-import PageOptions from './PageOptions';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
