@@ -11,7 +11,6 @@ import { RenameInput } from './RenameInput';
 import { withRouter } from '@/_hoc/withRouter';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { shallow } from 'zustand/shallow';
 import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
@@ -22,10 +21,11 @@ export const PAGE_TYPES = {
   default: '',
   app: 'TJ app',
   url: 'URL',
+  custom: 'Custom',
 };
 
 export const PageMenuItem = withRouter(
-  memo(({ darkMode, page, navigate, treeRef }) => {
+  memo(({ darkMode, page }) => {
     const { moduleId } = useModuleContext();
     const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
     const isHomePage = page.id === homePageId;
@@ -35,10 +35,7 @@ export const PageMenuItem = withRouter(
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
-    const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
-    const showEditingPopover = useStore((state) => state.showEditingPopover);
-    const logError = useStore((state) => state.eventsSlice.logError);
     const setNewPagePopupConfig = useStore((state) => state.setNewPagePopupConfig);
     const setEditingPage = useStore((state) => state.setEditingPage);
     const newPagePopupConfig = useStore((state) => state.newPagePopupConfig);
@@ -48,15 +45,14 @@ export const PageMenuItem = withRouter(
     const markAsHomePage = useStore((state) => state.markAsHomePage);
     const restricted = page?.permissions && page?.permissions?.length > 0;
     const {
-      definition: { styles, properties },
+      definition: { styles },
     } = useStore((state) => state.pageSettings);
-    const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
     // only update when the page is being edited
     const editingPage = useStore((state) => state.editingPage);
     const editingPageName = useStore((state) => state.showEditPageNameInput);
+    const switchPageWrapper = useStore((state) => state.switchPageWrapper);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
     const [showEditPopover, setShowEditPopover] = useState(false);
-    const popoverRef = useRef(null);
 
     const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
@@ -65,6 +61,7 @@ export const PageMenuItem = withRouter(
     const moreBtnRef = useRef(null);
 
     const isEditingPage = editingPage?.id === page?.id;
+
     const icon = (props) => {
       const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       // eslint-disable-next-line import/namespace
@@ -73,15 +70,8 @@ export const PageMenuItem = withRouter(
       return (
         <Icon {...props} style={{ width: '16px', height: '16px', color: 'var(--icons-default)', marginRight: '6px' }} />
       );
-
-      // if (!isDisabled && !isHidden) {
-      // }
-      // if (isDisabled || (isDisabled && isHidden)) {
-      //   return (
-      //     <FileRemove fill={computedStyles?.icon?.fill} className=" " width={16} height={16} viewBox={'0 0 16 16'} />
-      //   );
-      // }
     };
+
     const computeStyles = useCallback(() => {
       const baseStyles = {
         pill: {
@@ -139,103 +129,22 @@ export const PageMenuItem = withRouter(
 
     const computedStyles = computeStyles();
 
-    const labelStyle = {
-      icon: {
-        hidden: properties.style === 'text',
-      },
-      label: {
-        hidden: properties.style === 'icon',
-      },
-    };
-
-    const switchPage = useStore((state) => state.switchPage);
-
-    const getAbsoluteUrl = (url) => {
-      if (!url) return '';
-
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-      return `https://${url}`;
-    };
-
     const handlePageSwitch = useCallback(
       (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (page?.type === 'url') {
-          if (page?.url) {
-            const finalUrl = getAbsoluteUrl(page.url);
-            if (finalUrl) {
-              if (page.openIn === 'new_tab') {
-                window.open(finalUrl, '_blank');
-              } else {
-                window.location.href = finalUrl;
-              }
-            }
-          } else {
-            logError(
-              'Navigation',
-              'navigation',
-              { message: 'No URL provided', errorTarget: 'page' },
-              { eventType: 'page' },
-              {},
-              '',
-              page
-            );
-            return;
-          }
-          return;
-        }
-
-        if (page?.type === 'app') {
-          if (page?.appId) {
-            const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
-            if (page.openIn === 'new_tab') {
-              window.open(baseUrl, '_blank');
-            } else {
-              window.location.href = baseUrl;
-            }
-          } else {
-            logError(
-              'Navigation',
-              'navigation',
-              { message: 'No application slug provided', errorTarget: 'page' },
-              { eventType: 'page' },
-              {},
-              '',
-              page
-            );
-            return;
-          }
-          return;
-        }
-
-        if (currentPageId === page?.id) {
-          return;
-        }
-
-        switchPage(page?.id, page?.handle, [], moduleId);
-        setCurrentPageHandle(page.handle);
+        switchPageWrapper(page, currentPageId, moduleId);
       },
-      [page, currentPageId, switchPage, moduleId, setCurrentPageHandle, logError]
-    );
-
-    const handlePageMenuSettings = useCallback(
-      (event) => {
-        event.stopPropagation();
-        openPageEditPopover(page, popoverRef);
-      },
-      [popoverRef.current, page]
+      [switchPageWrapper, page, currentPageId, moduleId]
     );
 
     const handleOpenPopup = (type, page) => {
-      // openPageEditPopover(page);
       setEditingPage(page);
       toggleShowPageOptions(false);
       setShowEditPopover(true);
       setNewPagePopupConfig({ type, mode: 'edit' });
     };
+
     function getTooltip() {
       const permission = page?.permissions?.length ? page?.permissions[0] : null;
       if (!permission) return 'Access restricted';
@@ -265,6 +174,7 @@ export const PageMenuItem = withRouter(
 
       return 'Access restricted';
     }
+
     return (
       <div
         onMouseEnter={() => setIsHovered(true)}
@@ -275,8 +185,9 @@ export const PageMenuItem = withRouter(
       >
         <>
           <div
-            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${(showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
-              }`}
+            className={`page-menu-item ${darkMode && 'dark-theme theme-dark'} ${
+              (showPageOptions || showEditPopover) && isEditingPage ? 'is-selected' : ''
+            }`}
             style={{
               position: 'relative',
               width: '100%',
@@ -315,7 +226,6 @@ export const PageMenuItem = withRouter(
                         </div>
                       </ToolTip>
                     )}
-
                     {isDisabled && (
                       <ToolTip message="Disabled page" placement="bottom">
                         <div className=" d-flex align-items-center justify-content-center">
@@ -456,7 +366,9 @@ export const PageMenuItem = withRouter(
                             <PageOptions
                               text={
                                 <ToolTip
-                                  message={'You don\'t have access to page permissions. Upgrade your plan to access this feature.'}
+                                  message={
+                                    "You don't have access to page permissions. Upgrade your plan to access this feature."
+                                  }
                                   placement="auto"
                                   show={!hasAppPermissionPages}
                                   tooltipClassName="!tw-z-[100000]"
