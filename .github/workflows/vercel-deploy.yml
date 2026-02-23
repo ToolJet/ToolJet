@@ -109,6 +109,22 @@ jobs:
             fi
           '
 
+      - name: 📄 Write vercel.json for SPA routing
+        run: |
+          cat > repo/vercel.json << 'EOF'
+          {
+            "outputDirectory": "frontend/build",
+            "rewrites": [
+              {
+                "source": "/((?!.*\\.).*)",
+                "destination": "/"
+              }
+            ]
+          }
+          EOF
+          echo "✅ vercel.json written:"
+          cat repo/vercel.json
+
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v2
         with:
