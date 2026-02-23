@@ -9,17 +9,12 @@ variable "instance_type" {
 
 variable "ami_region" {
   type    = string
-  default = "us-west-2"
+  default = "us-west-1"
 }
 
 variable "ami_groups" {
   type    = list(string)
   default = ["all"]
-}
-
-variable "ami_regions" {
-  type    = list(string)
-  default = ["us-west-1","us-east-1", "us-east-2"]
 }
 
 variable "PACKER_BUILDER_TYPE" {
