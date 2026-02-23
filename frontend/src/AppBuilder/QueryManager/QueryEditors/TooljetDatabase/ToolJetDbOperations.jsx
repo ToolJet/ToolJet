@@ -233,6 +233,16 @@ const ToolJetDbOperations = ({
   }, [updateRowsOptions]);
 
   useEffect(() => {
+    if (mounted && columns.length > 0) {
+      const primaryKeyColumn = columns.find((col) => col.isPrimaryKey);
+      if (primaryKeyColumn?.accessor) {
+        setDeleteRowsOptions((prev) => ({ ...prev, order_column: primaryKeyColumn.accessor }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns]);
+
+  useEffect(() => {
     mounted && optionchanged('join_table', joinTableOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinTableOptions]);
