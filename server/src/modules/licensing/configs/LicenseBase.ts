@@ -49,6 +49,7 @@ export default class LicenseBase {
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
+  private _isCustomDomains: boolean;
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -78,6 +79,7 @@ export default class LicenseBase {
       this._isAi = true;
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
+      this._isCustomDomains = true;
       this._plan = plan;
       return;
     }
@@ -134,6 +136,7 @@ export default class LicenseBase {
     this._isAi = this.getFeatureValue('ai');
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
+    this._isCustomDomains = this.getFeatureValue('customDomains');
   }
 
   private getFeatureValue(key: string) {
@@ -431,6 +434,13 @@ export default class LicenseBase {
     return this._isScimEnabled;
   }
 
+  public get customDomains(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.customDomains;
+    }
+    return this._isCustomDomains;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -492,6 +502,7 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       workflowsEnabled: this.getWorkflowsEnabled(),
+      customDomain: this.customDomains,
     };
   }
 

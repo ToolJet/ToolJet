@@ -138,6 +138,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
       return licenseInstance.appPagesAddNavGroupEnabled;
 
+    case LICENSE_FIELD.CUSTOM_DOMAINS:
+      return licenseInstance.customDomains;
+
     default:
       return licenseInstance.terms;
   }

@@ -1,4 +1,5 @@
 import { getWorkspaceId } from '@/_helpers/utils';
+import { getHostURL } from '@/_helpers/routes';
 import urlJoin from 'url-join';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState, useCallback } from 'react';
@@ -18,9 +19,7 @@ export function UserGroupsSelect(props) {
             onClick={() =>
               window.open(
                 urlJoin(
-                  `${window.public_config?.TOOLJET_HOST}${
-                    window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : ''
-                  }`,
+                  getHostURL(),
                   `/${workspaceId}/workspace-settings/groups`
                 )
               )

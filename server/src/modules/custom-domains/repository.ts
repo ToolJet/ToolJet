@@ -12,6 +12,10 @@ export class CustomDomainRepository extends Repository<CustomDomain> {
     return this.findOne({ where: { organizationId } });
   }
 
+  async findActiveByOrganizationId(organizationId: string): Promise<CustomDomain | null> {
+    return this.findOne({ where: { organizationId, status: 'active' } });
+  }
+
   async findByDomain(domain: string): Promise<CustomDomain | null> {
     return this.findOne({ where: { domain: domain.toLowerCase() } });
   }

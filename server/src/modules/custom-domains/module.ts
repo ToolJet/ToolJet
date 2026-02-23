@@ -1,5 +1,6 @@
 import { DynamicModule } from '@nestjs/common';
 import { CustomDomainRepository } from './repository';
+import { CustomDomainCacheService } from './cache.service';
 import { FeatureAbilityFactory } from '@modules/custom-domains/ability';
 import { SubModule } from '@modules/app/sub-module';
 
@@ -18,10 +19,11 @@ export class CustomDomainsModule extends SubModule {
       providers: [
         CustomDomainsService,
         CustomDomainRepository,
+        CustomDomainCacheService,
         FeatureAbilityFactory,
         CloudflareProvider,
       ],
-      exports: [CustomDomainsService],
+      exports: [CustomDomainsService, CustomDomainCacheService],
     };
   }
 }

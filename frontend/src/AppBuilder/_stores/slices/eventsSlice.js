@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { findAllEntityReferences } from '@/_stores/utils';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, isValidUUID, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { getHostURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
@@ -660,7 +661,7 @@ export const createEventsSlice = (set, get) => ({
                 navigate(url);
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+                  window.open(urlJoin(getHostURL(), url));
                 }
               }
               return Promise.resolve();

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { OidcOAuthService } from './util-services/oidc-auth.service';
 import { decamelizeKeys } from 'humps';
 import { Organization } from 'src/entities/organization.entity';
@@ -12,7 +12,8 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
-import { generateInviteURL, generateNextNameAndSlug, isValidDomain } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateNextNameAndSlug, getHostForOrganization, isValidDomain } from 'src/helpers/utils.helper';
+import { CustomDomainCacheService } from '@modules/custom-domains/cache.service';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './util-services/git-oauth.service';
@@ -58,7 +59,8 @@ export class OauthService implements IOAuthService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
+    @Optional() protected readonly customDomainCacheService?: CustomDomainCacheService
   ) {}
 
   async signIn(
@@ -328,8 +330,9 @@ export class OauthService implements IOAuthService {
           getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
           manager
         );
+        const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
         return decamelizeKeys({
-          redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
+          redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE, undefined, host),
         });
       }
 

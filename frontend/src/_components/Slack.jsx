@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { datasourceService } from '@/_services';
+import { getHostURL } from '@/_helpers/routes';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
@@ -24,10 +25,7 @@ const Slack = ({
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const [whiteLabelText, setWhiteLabelText] = useState('');
-  const hostUrl = window.public_config?.TOOLJET_HOST;
-  const subPathUrl = window.public_config?.SUB_PATH;
-  const fullUrl = `${hostUrl}${subPathUrl ? subPathUrl : '/'}oauth2/authorize`;
-  const redirectUri = fullUrl;
+  const redirectUri = `${getHostURL()}/oauth2/authorize`;
   const { t } = useTranslation();
   const { tooljetVersion } = useAppDataStore(
     (state) => ({

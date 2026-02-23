@@ -1,4 +1,5 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
 import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
@@ -550,7 +551,7 @@ export const createPageMenuSlice = (set, get) => {
 
       if (page?.type === 'app') {
         if (page?.appId) {
-          const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+          const baseUrl = `${getHostURL()}/applications/${page.appId}`;
           if (page.openIn === 'new_tab') {
             window.open(baseUrl, '_blank');
           } else {

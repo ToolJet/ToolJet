@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import SSOButtonWrapper from '../SSOButtonWrapper';
 import { buildURLWithQuery } from '@/_helpers/utils';
+import { getHostURL } from '@/_helpers/routes';
 
 const GoogleSSOLoginButton = forwardRef((props, ref) => {
   const randomString = (length) => {
@@ -19,7 +20,7 @@ const GoogleSSOLoginButton = forwardRef((props, ref) => {
 
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
-      redirect_uri: `${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ?? '/'}sso/google${
+      redirect_uri: `${getHostURL()}/sso/google${
         props.configId ? `/${props.configId}` : ''
       }`,
       response_type: 'id_token',

@@ -266,11 +266,12 @@ export const generateInviteURL = (
   organizationToken?: string,
   organizationId?: string,
   source?: string,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  const baseURL = `${host}${subpath ? subpath : '/'}`;
+  const baseURL = `${effectiveHost}${subpath ? subpath : '/'}`;
   const inviteSupath = `invitations/${invitationToken}`;
   const organizationSupath = `${organizationToken ? `/workspaces/${organizationToken}` : ''}`;
   let queryString = new URLSearchParams({
@@ -286,11 +287,12 @@ export const generateOrgInviteURL = (
   organizationToken: string,
   organizationId?: string,
   fullUrl = true,
-  redirectTo?: string
+  redirectTo?: string,
+  host?: string
 ) => {
-  const host = process.env.TOOLJET_HOST;
+  const effectiveHost = host || process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
+  return `${fullUrl ? `${effectiveHost}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
@@ -307,6 +309,17 @@ export function extractFirstAndLastName(fullName: string) {
     };
   }
 }
+
+export const getHostForOrganization = async (
+  organizationId: string | undefined,
+  cacheService?: { getActiveDomainForOrg(orgId: string): Promise<string | null> }
+): Promise<string> => {
+  if (organizationId && cacheService) {
+    const domain = await cacheService.getActiveDomainForOrg(organizationId);
+    if (domain) return `https://${domain}`;
+  }
+  return process.env.TOOLJET_HOST;
+};
 
 export const getServerURL = () => {
   const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';

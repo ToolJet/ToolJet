@@ -32,6 +32,7 @@ export interface Terms {
     externalApi?: boolean;
     appWhiteLabelling?: boolean;
     scim?: boolean;
+    customDomains?: boolean;
   };
   type?: LICENSE_TYPE;
   plan?: {
