@@ -31,6 +31,7 @@ export const BaseDateComponent = ({
   customTimeInputProps,
   customDateInputProps,
   id,
+  showClearBtn,
 }) => {
   const { i18n } = useTranslation();
   const currentLocale = getDateLocale(i18n.language);
@@ -56,6 +57,8 @@ export const BaseDateComponent = ({
     widthType,
   } = styles;
 
+  const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
+  const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderColor: focus
@@ -87,6 +90,7 @@ export const BaseDateComponent = ({
     ...(iconVisibility && {
       ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
     }),
+    ...(paddingRight && { paddingRight }),
   };
 
   const loaderStyles = {
@@ -198,6 +202,7 @@ export const BaseDateComponent = ({
               label={label}
               {...customDateInputProps}
               inputId={id}
+              clearButtonRightOffset={iconVisibility && iconDirection === 'right' ? 20 : 0}
             />
           }
           customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}

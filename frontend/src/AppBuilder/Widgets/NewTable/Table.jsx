@@ -64,7 +64,6 @@ const Table = memo(
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
-    const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
     const scrollColor = getModifiedColor(containerBackgroundColor, 12);
     const editableColumnColor = getModifiedColor(containerBackgroundColor, 12);
@@ -258,7 +257,6 @@ const Table = memo(
           boxShadow,
           borderColor,
           backgroundColor: containerBackgroundColor,
-          '--cc-table-record-text-color': textColor,
           '--cc-table-action-icon-color': iconColor,
           '--cc-table-footer-action-hover': hoverColor,
           '--cc-table-row-hover': hoverColor,

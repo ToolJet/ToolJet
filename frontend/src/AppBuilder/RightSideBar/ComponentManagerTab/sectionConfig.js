@@ -9,11 +9,11 @@ const sectionConfig = {
   },
   data: {
     title: 'Data',
-    valueSet: new Set(['Table', 'Chart']),
+    valueSet: new Set(['Table', 'Chart', 'KeyValuePair']),
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
@@ -25,7 +25,15 @@ const sectionConfig = {
   },
   selectInputs: {
     title: 'Select inputs',
-    valueSet: new Set(['TagsInput', 'DropdownV2', 'MultiselectV2', 'ToggleSwitchV2', 'RadioButtonV2', 'Checkbox', 'TreeSelect']),
+    valueSet: new Set([
+      'TagsInput',
+      'DropdownV2',
+      'MultiselectV2',
+      'ToggleSwitchV2',
+      'RadioButtonV2',
+      'Checkbox',
+      'TreeSelect',
+    ]),
   },
   dateTimeInputs: {
     title: 'Date and time inputs',
@@ -52,6 +60,7 @@ const sectionConfig = {
       'Spinner',
       'Statistics',
       'Timer',
+      'JSONExplorer',
     ]),
   },
   custom: {
@@ -60,7 +69,16 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat']),
+    valueSet: new Set([
+      'FilePicker',
+      'CodeEditor',
+      'ColorPicker',
+      'BoundedBox',
+      'QrScanner',
+      'Chat',
+      'ReorderableList',
+      'JSONEditor',
+    ]),
   },
   legacy: {
     title: 'Legacy',

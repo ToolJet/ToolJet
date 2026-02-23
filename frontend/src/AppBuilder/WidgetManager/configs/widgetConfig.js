@@ -69,6 +69,11 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  accordionConfig,
+  reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
   progressbarConfig,
 } from '../widgets';
 
@@ -81,11 +86,13 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
   modalV2Config,
   containerConfig,
+  accordionConfig,
   tabsConfig,
   listviewConfig,
   calendarConfig,
@@ -145,6 +152,7 @@ export const widgets = [
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -158,6 +166,8 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  reorderableListConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,
