@@ -2,17 +2,13 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useGridStore } from '@/_stores/gridStore';
 import { shallow } from 'zustand/shallow';
 import { noop } from 'lodash';
-import {
-  addChildrenWidgetsToParent,
-  addNewWidgetToTheEditor,
-  addDefaultButtonIdToForm,
-} from '../AppCanvas/appCanvasUtils';
-import { WIDGETS_WITH_DEFAULT_CHILDREN } from '../AppCanvas/appCanvasConstants';
-import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
+import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, addDefaultButtonIdToForm } from '../appCanvasUtils';
+import { WIDGETS_WITH_DEFAULT_CHILDREN } from '../appCanvasConstants';
+import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { handleDeactivateTargets, hideGridLines } from '../AppCanvas/Grid/gridUtils';
+import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
 
 const BUFFER_OFFSET = 15;
 

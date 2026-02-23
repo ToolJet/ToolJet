@@ -509,8 +509,9 @@ export const createDataQuerySlice = (set, get) => ({
           });
         });
     }, 500),
-    runOnLoadQueries: async (moduleId = 'canvas') => {
-      const queries = get().dataQuery.queries.modules[moduleId];
+    runOnLoadQueries: async (moduleId = 'canvas', queryList = null) => {
+      const queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+
       try {
         for (const query of queries) {
           if (
@@ -541,7 +542,7 @@ export const createDataQuerySlice = (set, get) => ({
 
       const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
       const queriesToUpdate = new Map(queriesInfo.update?.map((query) => [query.id, query]) ?? []);
-      const queriesToCreate = queriesInfo.create ?? [];
+      const queriesToCreate = (queriesInfo.create ?? []).map(normalizeQueryTransformationOptions);
 
       set(
         (state) => {
@@ -584,8 +585,7 @@ export const createDataQuerySlice = (set, get) => ({
             });
 
           queriesToCreate.forEach((query) => {
-            const normalizedQuery = normalizeQueryTransformationOptions(query);
-            updatedQueriesValue.push(normalizedQuery);
+            updatedQueriesValue.push(query);
 
             state.modules[moduleId].queryNameIdMapping[query.name] = query.id;
             state.modules[moduleId].queryIdNameMapping[query.id] = query.name;
@@ -596,6 +596,8 @@ export const createDataQuerySlice = (set, get) => ({
         false,
         'performDeletionUpdationAndCreationOfQuery'
       );
+
+      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
 
       get().checkAndSetTrueBuildSuggestionsFlag();
     },

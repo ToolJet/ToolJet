@@ -4,6 +4,7 @@ import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import moment from 'moment';
+import { IconX } from '@tabler/icons-react';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -20,7 +21,7 @@ export const DaterangePicker = function DaterangePicker({
 }) {
   const isInitialRender = useRef(true);
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
-  const { defaultStartDate, defaultEndDate } = properties;
+  const { defaultStartDate, defaultEndDate, showClearBtn } = properties;
   const formatProp = typeof properties.format === 'string' ? properties.format : '';
 
   const [focusedInput, setFocusedInput] = useState(null);
@@ -52,6 +53,16 @@ export const DaterangePicker = function DaterangePicker({
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const hasValue = (startDate && startDate.isValid()) || (endDate && endDate.isValid());
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState;
+
+  const clearDateRange = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setExposedVariables({ startDate: undefined, endDate: undefined });
+    fireEvent('onSelect');
+  };
 
   useEffect(() => {
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
@@ -96,8 +107,8 @@ export const DaterangePicker = function DaterangePicker({
 
   return (
     <div
-      className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-      style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent' }}
+      className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0 ${shouldShowClearBtn ? 'has-clear-btn' : ''}`}
+      style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent', position: 'relative' }}
       data-cy={dataCy}
     >
       <DateRangePicker
@@ -114,6 +125,30 @@ export const DaterangePicker = function DaterangePicker({
         displayFormat={formatProp}
         ref={dateRangeRef}
       />
+      {shouldShowClearBtn && (
+        <button
+          type="button"
+          className="tj-input-clear-btn"
+          aria-label="Clear"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            clearDateRange();
+          }}
+          style={{
+            position: 'absolute',
+            right: '11px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 3,
+          }}
+        >
+          <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+        </button>
+      )}
     </div>
   );
 };
