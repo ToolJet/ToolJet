@@ -208,7 +208,7 @@ jobs:
               body: commentBody
             });
             
-            // Find and comment on linked issues
+            // Find and comment on linked issues (supports same-repo and cross-repo)
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -216,20 +216,75 @@ jobs:
             });
             
             const prBody = pr.data.body || '';
-            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
-            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
             
-            for (const issueNumber of linkedIssues) {
+            // Detect all issue references (no keyword requirement)
+            const issueReferences = [];
+            
+            // Pattern 1: owner/repo#123 (cross repo - CHECK FIRST!)
+            const crossRepoRegex = /([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)#(\d+)/g;
+            let match;
+            while ((match = crossRepoRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'cross-repo',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 2: https://github.com/owner/repo/issues/123 (full URL)
+            const urlRegex = /https?:\/\/github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/issues\/(\d+)/g;
+            while ((match = urlRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'url',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 3: #123 (same repo - CHECK LAST to avoid matching # in owner/repo#123)
+            // Remove already matched patterns to avoid duplicates
+            let prBodyForSameRepo = prBody;
+            prBodyForSameRepo = prBodyForSameRepo.replace(/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+#\d+/g, '');
+            prBodyForSameRepo = prBodyForSameRepo.replace(/https?:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/issues\/\d+/g, '');
+            
+            const sameRepoRegex = /#(\d+)/g;
+            while ((match = sameRepoRegex.exec(prBodyForSameRepo)) !== null) {
+              issueReferences.push({
+                type: 'same-repo',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                number: match[1],
+                raw: match[0]
+              });
+            }
+            
+            // Remove duplicates
+            const uniqueIssues = [];
+            const seen = new Set();
+            for (const ref of issueReferences) {
+              const key = `${ref.owner}/${ref.repo}#${ref.number}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                uniqueIssues.push(ref);
+              }
+            }
+            
+            // Comment on all detected issues
+            for (const issue of uniqueIssues) {
               try {
                 await github.rest.issues.createComment({
-                  issue_number: parseInt(issueNumber),
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  issue_number: parseInt(issue.number),
+                  owner: issue.owner,
+                  repo: issue.repo,
                   body: commentBody
                 });
-                console.log(`✅ Commented on issue #${issueNumber}`);
+                console.log(`✅ Commented on ${issue.owner}/${issue.repo}#${issue.number}`);
               } catch (error) {
-                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+                console.log(`⚠️ Could not comment on ${issue.owner}/${issue.repo}#${issue.number}: ${error.message}`);
               }
             }
 
@@ -712,7 +767,7 @@ jobs:
               body: commentBody
             });
             
-            // Find and comment on linked issues
+            // Find and comment on linked issues (supports same-repo and cross-repo)
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -720,20 +775,75 @@ jobs:
             });
             
             const prBody = pr.data.body || '';
-            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
-            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
             
-            for (const issueNumber of linkedIssues) {
+            // Detect all issue references (no keyword requirement)
+            const issueReferences = [];
+            
+            // Pattern 1: owner/repo#123 (cross repo - CHECK FIRST!)
+            const crossRepoRegex = /([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)#(\d+)/g;
+            let match;
+            while ((match = crossRepoRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'cross-repo',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 2: https://github.com/owner/repo/issues/123 (full URL)
+            const urlRegex = /https?:\/\/github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/issues\/(\d+)/g;
+            while ((match = urlRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'url',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 3: #123 (same repo - CHECK LAST to avoid matching # in owner/repo#123)
+            // Remove already matched patterns to avoid duplicates
+            let prBodyForSameRepo = prBody;
+            prBodyForSameRepo = prBodyForSameRepo.replace(/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+#\d+/g, '');
+            prBodyForSameRepo = prBodyForSameRepo.replace(/https?:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/issues\/\d+/g, '');
+            
+            const sameRepoRegex = /#(\d+)/g;
+            while ((match = sameRepoRegex.exec(prBodyForSameRepo)) !== null) {
+              issueReferences.push({
+                type: 'same-repo',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                number: match[1],
+                raw: match[0]
+              });
+            }
+            
+            // Remove duplicates
+            const uniqueIssues = [];
+            const seen = new Set();
+            for (const ref of issueReferences) {
+              const key = `${ref.owner}/${ref.repo}#${ref.number}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                uniqueIssues.push(ref);
+              }
+            }
+            
+            // Comment on all detected issues
+            for (const issue of uniqueIssues) {
               try {
                 await github.rest.issues.createComment({
-                  issue_number: parseInt(issueNumber),
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  issue_number: parseInt(issue.number),
+                  owner: issue.owner,
+                  repo: issue.repo,
                   body: commentBody
                 });
-                console.log(`✅ Commented on issue #${issueNumber}`);
+                console.log(`✅ Commented on ${issue.owner}/${issue.repo}#${issue.number}`);
               } catch (error) {
-                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+                console.log(`⚠️ Could not comment on ${issue.owner}/${issue.repo}#${issue.number}: ${error.message}`);
               }
             }
 
@@ -1219,7 +1329,7 @@ jobs:
               body: commentBody
             });
             
-            // Find and comment on linked issues
+            // Find and comment on linked issues (supports same-repo and cross-repo)
             const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -1227,20 +1337,75 @@ jobs:
             });
             
             const prBody = pr.data.body || '';
-            const issueRegex = /(?:Resolves|resolves|Fixes|fixes)\s+#(\d+)/g;
-            const linkedIssues = [...prBody.matchAll(issueRegex)].map(match => match[1]);
             
-            for (const issueNumber of linkedIssues) {
+            // Detect all issue references (no keyword requirement)
+            const issueReferences = [];
+            
+            // Pattern 1: owner/repo#123 (cross repo - CHECK FIRST!)
+            const crossRepoRegex = /([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)#(\d+)/g;
+            let match;
+            while ((match = crossRepoRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'cross-repo',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 2: https://github.com/owner/repo/issues/123 (full URL)
+            const urlRegex = /https?:\/\/github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/issues\/(\d+)/g;
+            while ((match = urlRegex.exec(prBody)) !== null) {
+              issueReferences.push({
+                type: 'url',
+                owner: match[1],
+                repo: match[2],
+                number: match[3],
+                raw: match[0]
+              });
+            }
+            
+            // Pattern 3: #123 (same repo - CHECK LAST to avoid matching # in owner/repo#123)
+            // Remove already matched patterns to avoid duplicates
+            let prBodyForSameRepo = prBody;
+            prBodyForSameRepo = prBodyForSameRepo.replace(/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+#\d+/g, '');
+            prBodyForSameRepo = prBodyForSameRepo.replace(/https?:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/issues\/\d+/g, '');
+            
+            const sameRepoRegex = /#(\d+)/g;
+            while ((match = sameRepoRegex.exec(prBodyForSameRepo)) !== null) {
+              issueReferences.push({
+                type: 'same-repo',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                number: match[1],
+                raw: match[0]
+              });
+            }
+            
+            // Remove duplicates
+            const uniqueIssues = [];
+            const seen = new Set();
+            for (const ref of issueReferences) {
+              const key = `${ref.owner}/${ref.repo}#${ref.number}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                uniqueIssues.push(ref);
+              }
+            }
+            
+            // Comment on all detected issues
+            for (const issue of uniqueIssues) {
               try {
                 await github.rest.issues.createComment({
-                  issue_number: parseInt(issueNumber),
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  issue_number: parseInt(issue.number),
+                  owner: issue.owner,
+                  repo: issue.repo,
                   body: commentBody
                 });
-                console.log(`✅ Commented on issue #${issueNumber}`);
+                console.log(`✅ Commented on ${issue.owner}/${issue.repo}#${issue.number}`);
               } catch (error) {
-                console.log(`⚠️ Could not comment on issue #${issueNumber}: ${error.message}`);
+                console.log(`⚠️ Could not comment on ${issue.owner}/${issue.repo}#${issue.number}: ${error.message}`);
               }
             }
 
