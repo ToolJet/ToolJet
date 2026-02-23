@@ -235,7 +235,7 @@ export class TooljetDbDataOperationsService implements QueryService {
         data: {},
       };
     }
-    const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} }, primary_key: primary_key = 'id' } = queryOptions;
+    const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
     const { where_filters: whereFilters, limit = 1 } = deleteRows;
     const { organization_id: organizationId } = context.app;
 
@@ -254,7 +254,19 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
 
     if (!isEmpty(whereQuery)) query.push(whereQuery);
-    if (limit && limit !== '') query.push(`limit=${limit}&order=${primary_key}`);
+
+    if (limit && limit !== '') {
+      query.push(`limit=${limit}`);
+
+      const tableInfo = await this.tableOperationsService.perform(organizationId, 'view_table', { id: tableId });
+      const primaryKeyColumns = tableInfo?.columns
+        ?.filter((col) => col.keytype === 'PRIMARY KEY')
+        ?.map((col) => col.column_name);
+
+      if (primaryKeyColumns && primaryKeyColumns.length > 0) {
+        query.push(`order=${primaryKeyColumns[0]}`);
+      }
+    }
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));
