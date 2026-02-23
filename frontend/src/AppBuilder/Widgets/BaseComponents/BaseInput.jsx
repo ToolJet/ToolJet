@@ -89,7 +89,7 @@ export const BaseInput = ({
         : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
-    '--cc-placeholder-text': placeholderTextColor || 'var(--cc-placeholder-text)',
+    ...(placeholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
   };
 
   let loaderStyle;
