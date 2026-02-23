@@ -444,18 +444,30 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             </div>
           )}
         </div>
-        {['default', 'custom'].includes(type) && <PageEvents page={page} allPages={pages} />}
+        {['default', 'custom'].includes(type) && <PageEvents type={type} page={page} allPages={pages} />}
       </Popover.Body>
     </Popover>
   );
 });
 
-const PageEvents = ({ page, allPages }) => {
+const PageEvents = ({ type, page, allPages }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
+
+  const eventMapping = {
+    default: {
+      title: 'Page events',
+      event: { onPageLoad: { displayName: 'On page load' } },
+    },
+    custom: {
+      title: 'Events',
+      event: { onClick: { displayName: 'On click' } },
+    },
+  };
+
   return (
     <div className="page-events">
-      <div className="section-header pb-2">Page events</div>
+      <div className="section-header pb-2">{eventMapping[type].title}</div>
       <div>
         <EventManager
           component={{
@@ -467,7 +479,7 @@ const PageEvents = ({ page, allPages }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
           components={components}
           pages={allPages}
           popOverCallback={(showing) => showing}

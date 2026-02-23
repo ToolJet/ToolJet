@@ -571,7 +571,7 @@ export const createPageMenuSlice = (set, get) => {
       }
 
       if (page?.type === 'custom') {
-        fireEvent('onPageLoad', page?.id, moduleId, {}, {});
+        fireEvent('onClick', page?.id, moduleId, {}, {});
         return;
       }
 
