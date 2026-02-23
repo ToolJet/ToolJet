@@ -14,7 +14,7 @@ import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
+  constructor(protected readonly licenseTermsService: LicenseTermsService) { }
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(
@@ -142,7 +142,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
 
     if (!isMultiEnvEnabled && requestedEnvironmentId && requestedEnvironmentId !== devEnv.id) {
       throw new ForbiddenException(
-        'Multi-environment is not enabled for this organization. Please upgrade your plan.'
+        'Multi-environment is not enabled for this organization. Please contact the super admin.'
       );
     }
 

@@ -21,7 +21,6 @@ export function Workflows({ options, optionsChanged, currentState }) {
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
   const [syncExecution, setSyncExecution] = useState(options.syncExecution ?? true);
   const [versionOptions, setVersionOptions] = useState([]);
-  const [loadingVersions, setLoadingVersions] = useState(false);
 
   const workflowIdFromStore = useWorkflowStore((state) => state.workflowId);
   const appIdFromStore = useStore((state) => state.appStore.modules[moduleId].app.appId);
@@ -50,19 +49,16 @@ export function Workflows({ options, optionsChanged, currentState }) {
 
   useEffect(() => {
     if (options.workflowId) {
-      setLoadingVersions(true);
       appVersionService.getAll(options.workflowId).then((data) => {
         const versions = (data?.versions || [])
           .filter((v) => v.status === 'PUBLISHED')
           .map((v) => ({
-          value: v.id,
-          name: v.name,
-        }));
+            value: v.id,
+            name: v.name,
+          }));
         setVersionOptions(versions);
-        setLoadingVersions(false);
       }).catch(() => {
         setVersionOptions([]);
-        setLoadingVersions(false);
       });
     } else {
       setVersionOptions([]);
