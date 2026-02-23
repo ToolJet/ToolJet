@@ -21,9 +21,9 @@ export const TableData = ({
   fireEvent,
   lastClickedRowRef,
   componentName,
+  loadingState,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
-  const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
 
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);

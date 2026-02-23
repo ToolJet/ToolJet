@@ -190,7 +190,7 @@ export const Text = function Text({
   };
 
   const commonScrollStyle = {
-    overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden',
+    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
   };
 
   return (

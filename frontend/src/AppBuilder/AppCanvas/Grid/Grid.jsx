@@ -971,6 +971,21 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               container.contains(e.inputEvent.target)
             );
           }
+
+          if (box?.component?.component === 'ReorderableList') {
+            const handleContainers = e.target.querySelectorAll('.reorderable-list-items');
+            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+              container.contains(e.inputEvent.target)
+            );
+          }
+
+          if (box?.component?.component === 'KeyValuePair') {
+            const handleContainers = e.target.querySelectorAll('.kv-editable');
+            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+              container.contains(e.inputEvent.target)
+            );
+          }
+
           if (
             ['RangeSlider', 'RangeSliderV2', 'BoundedBox'].includes(box?.component?.component) ||
             isDragOnInnerElement
@@ -1154,8 +1169,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           // Update autoscroll with current mouse position and target
           updateMousePosition(e.clientX, e.clientY, e.target);
         }}
-        onDragGroupStart={(ev) => {
-          // Do nothing, Kept for future use/reference
+        onDragGroupStart={(e) => {
+          showGridLines();
+          handleActivateNonDraggingComponents();
+          // Don't start autoscroll if dragging via config handle
+          if (isGroupHandleHoverd) return;
+          // Start autoscroll for group drag with all target elements
+          const targets = e.targets || [];
+          if (targets.length > 0) {
+            startAutoScroll(e.clientX, e.clientY, targets, 'groupDrag');
+          }
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
@@ -1163,15 +1186,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const parentElm = events[0]?.target?.closest('.real-canvas');
           if (!isGroupDraggingRef.current) {
             useStore.getState().setIsGroupDragging(true);
-            showGridLines();
-            handleActivateNonDraggingComponents();
-            // Don't start autoscroll if dragging via config handle
-            if (isGroupHandleHoverd) return;
-            // Start autoscroll for group drag with all target elements
-            const targets = ev.targets || [];
-            if (targets.length > 0) {
-              startAutoScroll(ev.clientX, ev.clientY, targets, 'groupDrag');
-            }
             isGroupDraggingRef.current = true;
             // Add the class to the targets that are being dragged to hide the group selection
             lastGroupDragEventRef?.current?.forEach((ev) => {
