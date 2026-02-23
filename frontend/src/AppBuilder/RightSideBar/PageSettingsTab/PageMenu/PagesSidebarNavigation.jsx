@@ -511,11 +511,6 @@ export const PagesSidebarNavigation = ({
             }
             return `1px solid ${styles?.borderColor?.value}`;
           })(),
-          maxWidth: (() => {
-            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
-              return canvasMaxWidth;
-            }
-          })(),
         }}
         onClick={handleSidebarClick}
       >

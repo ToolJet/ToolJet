@@ -8,7 +8,7 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { ImportAppDto, ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { CloneAppDto, CloneResourcesDto, CloneTooljetDatabaseDto } from '@dto/clone-resources.dto';
-import { TooljetDbService } from '@services/tooljet_db.service';
+// TooljetDbService import removed - not used in this test file
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
 import {
   clearDB,
@@ -21,7 +21,7 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { AppsService } from '@services/apps.service';
+import { AppsService } from '@modules/apps/service';
 
 /**
  * Tests ImportExportResourcesController
@@ -37,7 +37,7 @@ describe('ImportExportResourcesController', () => {
   let application: App;
   let loggedUser: { tokenCookie: string; user: User };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let tooljetDbService: TooljetDbService;
+  // tooljetDbService removed - not used in this test file
   let appsService: AppsService;
   let licenseServiceMock;
 
@@ -62,7 +62,7 @@ describe('ImportExportResourcesController', () => {
 
     user = adminUserData.user;
     organization = adminUserData.organization;
-    tooljetDbService = app.get(TooljetDbService);
+    // tooljetDbService assignment removed - service not used
     appsService = app.get(AppsService);
 
     loggedUser = await authenticateUser(app, user.email);
@@ -305,10 +305,10 @@ describe('ImportExportResourcesController', () => {
       expect(response.body.imports).toBeDefined();
       expect(response.body.imports.app[0].name).toBe('Imported App');
 
-      const importedApp = await getManager().findOne(App, { name: 'Imported App' });
+      const importedApp = await getManager().findOne(App, { where: { name: 'Imported App' } });
       expect(importedApp).toBeDefined();
 
-      const importedTable = await getManager().findOne(InternalTable, { tableName: 'users' });
+      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'users' } });
       expect(importedTable).toBeDefined();
     });
 
@@ -593,7 +593,7 @@ describe('ImportExportResourcesController', () => {
       expect(response.body.success).toBe(true);
 
       // Verify that the schema was transformed
-      const importedTable = await getManager().findOne(InternalTable, { tableName: 'users' });
+      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'users' } });
       expect(importedTable).toBeDefined();
 
       // Export the table to check its structure
