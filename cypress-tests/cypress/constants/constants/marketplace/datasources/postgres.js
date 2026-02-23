@@ -216,9 +216,77 @@ export const postgresQueryConfig = {
             },
         },
     ],
+    guiModeDefault: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            validations: {
+                defaultValue: "Select..",
+                disabled: false,
+            },
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "codeMirror",
+            fieldName: "Table",
+            assertion: "contain.text",
+            data: "Enter table",
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Primary key column",
+            assertion: "contain.text",
+            data: "Enter primary key column",
+        },
+        {
+            type: "codeMirror",
+            fieldName: "Records to update",
+            assertion: "contain.text",
+            data: "{{ [ ] }}",
+        },
+    ],
 };
 
 export const postgresQueryFillConfig = {
+    switchToGuiMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "GUI mode",
+        },
+    ],
+    switchToSqlMode: [
+        {
+            type: "dropdown",
+            fieldName: "",
+            text: "SQL mode",
+        },
+    ],
+    selectBulkUpdateOperation: [
+        {
+            type: "dropdown",
+            fieldName: "Operation",
+            text: "Bulk update using primary key",
+        },
+    ],
+    bulkUpdateUsingPrimaryKey: [
+        {
+            type: "codeMirrorInput",
+            fieldName: "Table",
+            text: ["student_data"],
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Primary key column",
+            text: ["id"],
+        },
+        {
+            type: "codeMirrorInput",
+            fieldName: "Records to update",
+            text: '{{ [{"id": 2, "name": "Bob Smith Updated"}] }}',
+        },
+    ],
     selectWithParams: [
         {
             type: "codeMirrorInput",

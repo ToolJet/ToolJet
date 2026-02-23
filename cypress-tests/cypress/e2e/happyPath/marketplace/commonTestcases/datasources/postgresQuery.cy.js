@@ -3,6 +3,7 @@ import { fake } from "Fixtures/fake";
 import { fillDSConnectionForm } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
 import { verifyPreviewData } from "Support/utils/dataSource";
+import { dataSourceSelector } from "Constants/selectors/dataSource";
 
 
 describe('Query', () => {
@@ -12,6 +13,7 @@ describe('Query', () => {
     const postgresqlDataSourceName = `cypress-${data.dataSourceName}-postgresql`;
     beforeEach(() => {
         cy.apiLogin();
+        cy.viewport(1800, 1800);
     });
 
     it('should verify PostgreSQL query editor', () => {
@@ -53,11 +55,27 @@ describe('Query', () => {
 
         cy.get('[data-cy="list-query-table-creation"]').click();
         verifyConnectionFormUI(postgresQueryConfig.defaultFields);
+
+        // Switch to GUI mode and verify default state
+        fillDSConnectionForm(postgresQueryFillConfig.switchToGuiMode);
+        verifyConnectionFormUI(postgresQueryConfig.guiModeDefault);
+
+        // Select Bulk update operation and verify UI fields
+        fillDSConnectionForm(postgresQueryFillConfig.selectBulkUpdateOperation);
+        verifyConnectionFormUI(postgresQueryConfig.bulkUpdateUsingPrimaryKey);
+
+        // Fill bulk update fields
+        fillDSConnectionForm(postgresQueryFillConfig.bulkUpdateUsingPrimaryKey);
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.get('[data-cy="preview-toggle-button"]').click();
+        cy.wait(1000);
+
+        // Switch back to SQL mode and verify updated data
+        fillDSConnectionForm(postgresQueryFillConfig.switchToSqlMode);
         fillDSConnectionForm(postgresQueryFillConfig.selectWithParams);
         cy.forceClickOnCanvas();
         cy.wait(5000);
-
-        verifyPreviewData("Bob Smith");
+        verifyPreviewData("Bob Smith Updated");
 
     });
 

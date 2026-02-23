@@ -184,10 +184,17 @@ Cypress.Commands.add(
   (subject, value) => {
     cy.wrap(subject)
       .realClick()
-      .type("{selectAll}{backspace}", { delay: 0 });
+      .find(".cm-line")
+      .invoke("text")
+      .then((text) => {
+        cy.wrap(subject)
+          .last()
+          .click()
+          .type(createBackspaceText(text), { delay: 0 });
+      });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
