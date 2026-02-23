@@ -11,7 +11,7 @@ ToolJet is a fast, secure, and user-friendly development platform to build custo
 
 ## What is ToolJet?
 
-ToolJet is a low-code platform that enables developers to rapidly build and deploy custom internal tools. It has a drag-and-drop app builder with 70+ to 80+ pre-built components, so developers can create complex applications in minutes. ToolJet also connects to most popular data sources and APIs out of the box, and it has a group-based permission system for easy user access management. ToolJet also comes with a lot of other features, but for now, let’s build a basic ToolJet app.
+ToolJet is a low-code platform that enables developers to rapidly build and deploy custom internal tools. It has a drag-and-drop app builder with 80+ pre-built components, so developers can create complex applications in minutes. ToolJet also connects to most popular data sources and APIs out of the box, and it has a group-based permission system for easy user access management. ToolJet also comes with a lot of other features, but for now, let’s build a basic ToolJet app.
 
 
 </div>
