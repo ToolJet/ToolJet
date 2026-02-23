@@ -37,7 +37,7 @@ export const SearchBar = memo(({ globalFilter = '', setGlobalFilter, componentNa
         />
         <div
           className={`d-flex table-clear-icon align-items-center ${value ? 'visible' : 'invisible'}`}
-          {...(value && { 'data-cy': `${componentName}-search-clear-icon` })}
+          data-cy={`${componentName}-search-clear-icon`}
           style={{ cursor: 'pointer' }}
           onClick={() => {
             // setGlobalFilter(undefined);

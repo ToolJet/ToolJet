@@ -121,7 +121,7 @@ export const Header = memo(
           </div>
         </div>
         {showFilter && (
-          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} dataCy={`${componentName}-filter`} />
+          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} componentName={componentName} />
         )}
       </>
     );
