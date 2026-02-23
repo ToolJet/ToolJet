@@ -915,8 +915,8 @@ export const createEventsSlice = (set, get) => ({
               if (!element) {
                 throw new Error('Component element not found in DOM.');
               }
-              const behavior = event.scrollBehavior || 'smooth';
-              const block = event.scrollBlock || 'nearest';
+              const behavior = event?.scrollBehavior || 'smooth';
+              const block = event?.scrollBlock || 'nearest';
               element.scrollIntoView({ behavior, block });
               return Promise.resolve();
             } catch (error) {
@@ -1305,7 +1305,7 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const scrollComponentInToView = (componentName, eventObj, moduleId = 'canvas') => {
+      const scrollComponentInToView = (componentName, eventObj = {}, moduleId = 'canvas') => {
         let componentId = '';
         const { behaviour = 'smooth', block = 'nearest' } = eventObj;
         for (const [key, value] of currentComponents) {
