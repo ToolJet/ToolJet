@@ -16,9 +16,9 @@ export const createGitSyncSlice = (set, get) => ({
     const selectedEnvironment = useStore.getState()?.selectedEnvironment;
     const isEditorFreezed = useStore.getState()?.isEditorFreezed;
 
-    return featureAccess?.gitSync && selectedEnvironment?.priority === 1 && (creationMode === 'GIT' || !isEditorFreezed)
+    return featureAccess?.gitSync && selectedEnvironment?.priority === 1
       ? set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal')
-      : () => { };
+      : () => {};
   },
   fetchAppGit: async (currentOrganizationId, currentAppVersionId) => {
     set((state) => ({ appLoading: true }), false, 'setAppLoading');
@@ -26,18 +26,23 @@ export const createGitSyncSlice = (set, get) => ({
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
       const allowEditing = data?.app_git?.allow_editing ?? false;
       const orgGit = data?.app_git?.org_git;
+      const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
       const appGit = data?.app_git;
-      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured
-      set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured')
+      set((state) => ({ appGit }), false, 'setAppGit');
+      const isGitSyncConfigured = data?.app_git?.is_git_sync_configured;
+      // Update branchingEnabled in branchSlice
+      get().updateBranchingEnabled?.(isBranchingEnabled);
+      set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured');
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
       set((state) => ({ allowEditing }), false, 'setAllowEditing');
-      console.log('app git', appGit);
       return allowEditing;
     } catch (error) {
       console.error('Failed to fetch app git configs:', error);
       // Set allowEditing to false on error
       set((state) => ({ allowEditing: false }), false, 'setAllowEditing');
+      // Also reset branching on error
+      get().updateBranchingEnabled?.(false);
       return false;
     } finally {
       set((state) => ({ appLoading: false }), false, 'setAppLoading');
@@ -45,5 +50,5 @@ export const createGitSyncSlice = (set, get) => ({
   },
   setAppGit(appGit) {
     set((state) => ({ appGit: appGit }), false, 'setAppGit');
-  }
+  },
 });

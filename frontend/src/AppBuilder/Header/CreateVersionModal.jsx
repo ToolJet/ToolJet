@@ -18,9 +18,10 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation,
   versionId,
   onVersionCreated,
+  isBranchingEnabled,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -28,6 +29,8 @@ const CreateVersionModal = ({
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const { current_organization_id } = authenticationService.currentSessionValue;
+
   const {
     changeEditorVersionAction,
     environmentChangedAction,
@@ -146,12 +149,39 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
-        description: versionDescription,
+        description: versionDescription || undefined,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
+      if (isGitSyncEnabled) {
+        // The backend's version-rename-commit event is suppressed when the status is
+        // also changing to PUBLISHED (save-version flow), so there's no competing push.
+        // We always handle the commit here with the correct "Version Created" message.
+        const updatedVersionData = {
+          ...selectedVersionForCreation,
+          name: versionName,
+          description: versionDescription,
+        };
+        handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
+          .then((commitDone) => {
+            if (!commitDone) return;
+            if (isBranchingEnabled) {
+              return gitSyncService.createGitTag(
+                appId,
+                selectedVersionForCreation.id,
+                versionDescription || `Version ${versionName.trim()} created`
+              );
+            }
+          })
+          .catch((error) => {
+            console.error('Commit or tag failed:', error);
+            toast.error(error?.data?.message || 'Commit or tag failed');
+          });
+      }
+
       toast.success('Version Created successfully');
       setVersionName('');
       setVersionDescription('');
@@ -194,10 +224,7 @@ const CreateVersionModal = ({
                 changeEditorVersionAction(
                   appId,
                   newVersionData.editing_version.id,
-                  () => {
-                    console.log('Successfully switched environment and version');
-                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
-                  },
+                  () => {},
                   (error) => {
                     console.error('Error switching to newly created version:', error);
                     toast.error('Version created but failed to switch to it');
@@ -210,9 +237,7 @@ const CreateVersionModal = ({
             await changeEditorVersionAction(
               appId,
               newVersionData.editing_version.id,
-              () => {
-                handleCommitOnVersionCreation(newVersionData, selectedVersion);
-              },
+              () => {},
               (error) => {
                 console.error('Error switching to newly created version:', error);
                 toast.error('Version created but failed to switch to it');
@@ -229,8 +254,7 @@ const CreateVersionModal = ({
         toast.error('Version name already exists.');
       } else if (error?.error) {
         toast.error(error?.error);
-      }
-      else {
+      } else {
         toast.error('Error while creating version. Please try again.');
       }
     } finally {
@@ -333,6 +357,7 @@ const CreateVersionModal = ({
                     checked={canCommit}
                     type="checkbox"
                     onChange={handleCommitEnableChange}
+                    disabled={isBranchingEnabled}
                     data-cy="git-commit-input"
                   />
                 </div>

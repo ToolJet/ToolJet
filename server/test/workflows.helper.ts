@@ -37,7 +37,8 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { GROUP_PERMISSIONS_TYPE, ResourceType } from '@modules/group-permissions/constants';
-import { BundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
+import { JavaScriptBundleGenerationService } from '../ee/workflows/services/bundle-generation.service';
+import { PythonBundleGenerationService } from '../ee/workflows/services/python-bundle-generation.service';
 
 export const createUser = async (
   nestApp: INestApplication,
@@ -118,14 +119,14 @@ export const setupOrganizationAndUser = async (
   return { user, organization };
 };
 
-const createUserWorkflowPermissions = async (
-  nestApp: INestApplication,
-  user: User,
-  organizationId: string,
-  permissions: {
-    isAllEditable?: boolean;
-    workflowCreate?: boolean;
-  }
+export const createUserWorkflowPermissions = async (
+    nestApp: INestApplication,
+    user: User,
+    organizationId: string,
+    permissions: {
+        isAllEditable?: boolean;
+        workflowCreate?: boolean;
+    }
 ): Promise<void> => {
   const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
   const groupPermissionsRepository = defaultDataSource.getRepository(GroupPermissions);

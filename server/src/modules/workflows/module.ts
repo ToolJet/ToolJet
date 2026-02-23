@@ -39,6 +39,7 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
@@ -64,9 +65,14 @@ export class WorkflowsModule extends SubModule {
       WorkflowStreamService,
       ScheduleBootstrapService,
       NpmRegistryService,
-      BundleGenerationService,
+      JavaScriptBundleGenerationService,
+      BundleServiceFactory,
       AgentNodeService,
       WorkflowBundlesController,
+      PythonExecutorService,
+      SecurityModeDetectorService,
+      PythonBundleGenerationService,
+      PyPiRegistryService,
     } = await this.getProviders(configs, 'workflows', [
       'services/workflow-executions.service',
       'controllers/workflow-executions.controller',
@@ -86,8 +92,13 @@ export class WorkflowsModule extends SubModule {
       'services/schedule-bootstrap.service',
       'services/npm-registry.service',
       'services/bundle-generation.service',
+      'services/bundle-service.factory',
       'services/agent-node.service',
       'controllers/workflow-bundles.controller',
+      'services/python-executor.service',
+      'services/security-mode-detector.service',
+      'services/python-bundle-generation.service',
+      'services/pypi-registry.service',
     ]);
 
     // Get apps related providers
@@ -170,6 +181,7 @@ export class WorkflowsModule extends SubModule {
         OrganizationConstantRepository,
         VersionRepository,
         AppGitRepository,
+        OrganizationGitSyncRepository,
         OrganizationRepository,
         AppsService,
         PageService,
@@ -185,22 +197,27 @@ export class WorkflowsModule extends SubModule {
         WorkflowTerminationRegistry,
         FeatureAbilityFactory,
         NpmRegistryService,
-        BundleGenerationService,
+        JavaScriptBundleGenerationService,
+        BundleServiceFactory,
+        PythonExecutorService,
+        SecurityModeDetectorService,
+        PythonBundleGenerationService,
+        PyPiRegistryService,
         AgentNodeService,
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
-        ...(isMainImport ? [
-          WorkflowStreamService,
-          AppsActionsListener,
-          // Only register BullMQ processors and schedule bootstrap when WORKER=true
-          // This allows running dedicated HTTP-only instances and worker instances
-          ...(process.env.WORKER === 'true' ? [
-            WorkflowScheduleProcessor,
-            WorkflowExecutionProcessor,
-            ScheduleBootstrapService,
-          ] : []),
-        ] : []),
+        ...(isMainImport
+          ? [
+              WorkflowStreamService,
+              AppsActionsListener,
+              // Only register BullMQ processors and schedule bootstrap when WORKER=true
+              // This allows running dedicated HTTP-only instances and worker instances
+              ...(process.env.WORKER === 'true'
+                ? [WorkflowScheduleProcessor, WorkflowExecutionProcessor, ScheduleBootstrapService]
+                : []),
+            ]
+          : []),
       ],
       controllers: [
         WorkflowsController,

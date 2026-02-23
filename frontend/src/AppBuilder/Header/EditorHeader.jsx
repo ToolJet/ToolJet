@@ -6,29 +6,28 @@ import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
-import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
+import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { BranchDropdown } from './BranchDropdown';
 import './styles/style.scss';
 
-import Steps from './Steps';
 import SaveIndicator from './SaveIndicator';
 
-export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
+export const EditorHeader = ({ darkMode }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased, aiGenerationMetadata } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
-      aiGenerationMetadata: state.appStore.modules[moduleId].app?.aiGenerationMetadata,
+      appId: state.appStore.modules[moduleId].app.appId,
+      organizationId: state.appStore.modules[moduleId].app.organizationId,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
-
-  const activeStepDetails = aiGenerationMetadata.steps?.find((step) => step.id === aiGenerationMetadata.active_step);
-  const activeStep = activeStepDetails?.hidden ? activeStepDetails.parent_step_id : aiGenerationMetadata.active_step;
 
   return (
     <div className={cx('header', { 'dark-theme theme-dark': darkMode })} style={{ width: '100%' }}>
@@ -38,7 +37,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
             <div
               className="header-inner-wrapper d-flex"
               style={{
-                width: isUserInZeroToOneFlow ? 'auto' : 'calc(100% - 348px)',
+                width: 'calc(100% - 348px)',
                 background: '',
               }}
             >
@@ -56,7 +55,7 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
-                      {isModuleEditor && <ModuleEditorBanner />}
+                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
                     <div>
@@ -76,40 +75,29 @@ export const EditorHeader = ({ darkMode, isUserInZeroToOneFlow }) => {
               </div>
             </div>
 
-            {isUserInZeroToOneFlow && (
-              <Steps
-                steps={
-                  aiGenerationMetadata.steps
-                    ?.filter((step) => !step.hidden)
-                    ?.map((step) => ({
-                      label: step.name,
-                      value: step.id,
-                    })) ?? []
-                }
-                activeStep={activeStep}
-                classes={{ stepsContainer: 'tw-mx-auto' }}
-              />
-            )}
-            {!isUserInZeroToOneFlow && <HeaderActions darkMode={darkMode} />}
+            <HeaderActions darkMode={darkMode} />
 
-            {!isUserInZeroToOneFlow && (
-              <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
-                <div className="d-flex align-items-center p-0">
-                  <div className="d-flex version-manager-container p-0  align-items-center gap-0">
-                    {!isModuleEditor && (
-                      <>
+            <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
+              <div className="d-flex align-items-center p-0">
+                <div className="d-flex version-manager-container p-0  align-items-center gap-0">
+                  {!isModuleEditor && (
+                    <>
+                      <PreviewAndShareIcons />
+                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
+                      {/* Hide version dropdown when on a feature branch */}
+                      {selectedVersion?.versionType !== 'branch' && (
                         <VersionManagerErrorBoundary>
                           <VersionManagerDropdown darkMode={darkMode} />
                         </VersionManagerErrorBoundary>
-                        <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
-                      </>
-                    )}
-                  </div>
+                      )}
+                      <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
+                    </>
+                  )}
                 </div>
-
-                <BuildSuggestions />
               </div>
-            )}
+
+              <BuildSuggestions />
+            </div>
           </div>
         </div>
       </header>

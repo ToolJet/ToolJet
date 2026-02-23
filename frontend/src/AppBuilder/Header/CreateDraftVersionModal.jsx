@@ -9,20 +9,14 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 
-const CreateDraftVersionModal = ({
-  showCreateAppVersion,
-  setShowCreateAppVersion,
-  handleCommitEnableChange,
-  canCommit,
-  orgGit,
-  fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
-}) => {
+const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
+  const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
     createNewVersionAction,
     changeEditorVersionAction,
@@ -30,6 +24,9 @@ const CreateDraftVersionModal = ({
     developmentVersions,
     appId,
     selectedVersion,
+    selectedEnvironment,
+    orgGit,
+    appGit,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -42,6 +39,8 @@ const CreateDraftVersionModal = ({
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
+      appGit: state.appGit,
+      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -50,12 +49,11 @@ const CreateDraftVersionModal = ({
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
     const gitSyncEnabled =
-      orgGit?.git_ssh?.is_enabled ||
-      orgGit?.git_https?.is_enabled ||
-      orgGit?.git_lab?.is_enabled;
+      appGit?.org_git?.git_ssh?.is_enabled ||
+      appGit?.org_git?.git_https?.is_enabled ||
+      appGit?.org_git?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
-  }, [orgGit]);
-
+  }, [appGit]);
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
 
   useEffect(() => {
@@ -105,8 +103,8 @@ const CreateDraftVersionModal = ({
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-        : [];
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+      : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -138,14 +136,13 @@ const CreateDraftVersionModal = ({
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
         fetchDevelopmentVersions(appId);
+        refreshVersions(appId, selectedEnvironment?.id);
         // Use changeEditorVersionAction to properly switch to the new draft version
         // This will update selectedVersion with all fields including status
         changeEditorVersionAction(
           appId,
           newVersion.id,
-          (data) => {
-            handleCommitOnVersionCreation(data);
-          },
+          () => {},
           (error) => {
             console.error('Error switching to new draft version:', error);
             toast.error('Draft created but failed to switch to it');
@@ -253,28 +250,6 @@ const CreateDraftVersionModal = ({
                 </div>
               </div>
             </Alert>
-
-            {isGitSyncEnabled && (
-              <div className="commit-changes mb-3">
-                <div>
-                  <input
-                    className="form-check-input"
-                    checked={canCommit}
-                    type="checkbox"
-                    onChange={handleCommitEnableChange}
-                    data-cy="git-commit-input"
-                  />
-                </div>
-                <div>
-                  <div className="tj-text tj-text-xsm" data-cy="commit-changes-label">
-                    Commit changes
-                  </div>
-                  <div className="tj-text-xxsm" data-cy="commit-helper-text">
-                    This will commit the creation of the new version to the git repo
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="create-draft-version-footer">

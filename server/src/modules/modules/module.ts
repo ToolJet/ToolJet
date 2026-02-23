@@ -17,6 +17,7 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { RolesRepository } from '@modules/roles/repository';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 @Module({})
 export class ModulesModule {
@@ -62,6 +63,7 @@ export class ModulesModule {
         AppGitRepository,
         GroupPermissionsRepository,
         ValidAppGuard,
+        OrganizationGitSyncRepository,
       ],
       exports: [AppsUtilService],
     };
