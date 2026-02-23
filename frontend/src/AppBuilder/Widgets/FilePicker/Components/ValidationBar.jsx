@@ -9,7 +9,7 @@ const ValidationBar = ({
   minFileCount, // Added minFileCount prop
   maxFileCount,
   enableMultiple,
-  componentName,
+  dataCy,
 }) => {
   const showSizeValidation = minSize > 0 || (maxSize > 0 && maxSize < Infinity); // Check if size limits are meaningful
   // Show count validation if multiple files are enabled OR if a minimum is set (even for single file upload)
@@ -42,10 +42,10 @@ const ValidationBar = ({
   const countText = getCountText();
 
   return (
-    <div className="validation-bar" data-cy={`${componentName}-validation-bar`}>
+    <div className="validation-bar" data-cy={`${dataCy}-validation-bar`}>
       {/* Size Validation Info */}
       {showSizeValidation && (
-        <span className="validation-info size-info" data-cy={`${componentName}-size-validation-info`}>
+        <span className="validation-info size-info" data-cy={`${dataCy}-size-validation-info`}>
           {minSize > 0 && maxSize < Infinity
             ? `${formatFileSize(minSize)} to ${formatFileSize(maxSize)}` // Min and Max
             : maxSize < Infinity && maxSize > 0
@@ -54,7 +54,7 @@ const ValidationBar = ({
         </span>
       )}
 
-      {countText && <span className="validation-info count-info" data-cy={`${componentName}-count-validation-info`}>{countText}</span>}
+      {countText && <span className="validation-info count-info" data-cy={`${dataCy}-count-validation-info`}>{countText}</span>}
     </div>
   );
 };
