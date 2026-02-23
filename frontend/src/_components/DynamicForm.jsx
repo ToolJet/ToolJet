@@ -171,7 +171,7 @@ const DynamicForm = ({
             const field = fields[key];
             return field?.dependsOn || field?.depends_on;
           });
-          
+
           if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
             const clearedOptions = { ...options };
             fieldsWithDependencies.forEach((fieldKey) => {
@@ -480,7 +480,11 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -791,7 +795,7 @@ const DynamicForm = ({
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
                   className={cx('form-label')}
-                  data-cy={`label-dropdown-${generateCypressDataCy(flipComponentDropdown.label)}`}
+                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
                   style={{ marginBottom: '2px' }}
                 >
                   {flipComponentDropdown.label}
