@@ -72,8 +72,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -224,6 +224,7 @@ export const Button = function Button(props) {
                 <p
                   className="tj-text-sm"
                   style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  data-cy={`${dataCy}-label`}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -240,6 +241,7 @@ export const Button = function Button(props) {
                       color: computedIconColor,
                     }}
                     stroke={1.5}
+                    data-cy={`${dataCy}-icon`}
                   />
                 )}
               </div>

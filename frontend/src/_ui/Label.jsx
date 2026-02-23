@@ -20,6 +20,7 @@ function Label({
   inputId,
   id,
   classes = null,
+  dataCy,
   style = {},
   fontSize = '12px',
 }) {
@@ -43,6 +44,7 @@ function Label({
           htmlFor={isViewerMode ? inputId : undefined} // To avoid focus on label in edit mode which prevents copy/paste
           className={cn(classes?.labelContainer)}
           id={id}
+          data-cy={`${dataCy}-label`}
         >
           <p
             style={{
@@ -57,8 +59,8 @@ function Label({
                 direction == 'right'
                   ? '6px'
                   : (label?.length > 0 && defaultAlignment === 'side') || defaultAlignment === 'top'
-                  ? '12px'
-                  : '',
+                    ? '12px'
+                    : '',
               paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
               ...(top && { top }),
             }}

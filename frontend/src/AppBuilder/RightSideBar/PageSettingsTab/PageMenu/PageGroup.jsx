@@ -15,6 +15,7 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 const RenderPage = ({
   page,
@@ -60,7 +61,7 @@ const RenderPage = ({
         aria-label={page.name}
       >
         {!labelStyle?.icon?.hidden && (
-          <div className="custom-icon" data-cy={`pages-icon-${String(page?.name).toLowerCase()}`}>
+          <div className="custom-icon" data-cy={`pages-icon-${generateCypressDataCy(page?.name)}`}>
             <IconElement
               color={iconColor}
               style={{
@@ -73,7 +74,7 @@ const RenderPage = ({
           </div>
         )}
         {!labelStyle?.label?.hidden && (
-          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+          <div className="w-100 tw-overflow-hidden" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
             <OverflowTooltip childrenClassName={'page-name'}>{page.name}</OverflowTooltip>
           </div>
         )}
@@ -162,7 +163,7 @@ const RenderPageGroup = ({
         {!labelStyle?.label?.hidden && (
           <div
             style={{ width: '100%', overflow: 'hidden' }}
-            data-cy={`pages-name-${String(pageGroup?.name).toLowerCase()}`}
+            data-cy={`pages-name-${generateCypressDataCy(pageGroup?.name)}`}
           >
             <OverflowTooltip childrenClassName={'page-name'}>{pageGroup.name}</OverflowTooltip>
           </div>
