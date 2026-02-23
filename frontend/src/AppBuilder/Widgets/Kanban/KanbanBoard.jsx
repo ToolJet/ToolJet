@@ -40,7 +40,7 @@ const dropAnimation = {
 
 const TRASH_ID = 'void';
 
-export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, componentName }) {
+export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, dataCy }) {
   const { moduleId } = useModuleContext();
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
@@ -416,7 +416,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, compone
                 }}
                 kanbanProps={kanbanProps}
                 componentType="Kanban"
-                componentName={componentName}
+                dataCy={dataCy}
               >
                 {items[columnId] && (
                   <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>
@@ -438,7 +438,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, compone
                           cardDataAsObj={cardDataAsObj}
                           setLastSelectedCard={setLastSelectedCard}
                           cardData={flatCardData}
-                          componentName={componentName}
+                          dataCy={dataCy}
                         />
                       );
                     })}
@@ -451,7 +451,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, compone
             className={cx('kanban-add-card-button jet-button btn', !enableAddCard && 'invisible')}
             style={colAccentColor}
             onClick={() => enableAddCard && fireEvent('onAddCardClick')}
-            data-cy={`${componentName}-add-card-button`}
+            data-cy={`${dataCy}-add-card-button`}
           >
             + Add Card
           </button>
@@ -462,7 +462,7 @@ export function KanbanBoard ({ widgetHeight, kanbanProps, parentRef, id, compone
           </DragOverlay>,
           document.body
         )}
-        {showDeleteButton ? <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${componentName}-drag-delete-button`} /> : null}
+        {showDeleteButton ? <Trash id={TRASH_ID} deleteLabel={deleteLabel} dataCy={`${dataCy}-drag-delete-button`} /> : null}
       </DndContext>
       <Modal
         showModal={showModal}
@@ -504,7 +504,7 @@ function SortableItem ({
   cardDataAsObj,
   setLastSelectedCard,
   cardData,
-  componentName,
+  dataCy,
 }) {
   const { setNodeRef, setActivatorNodeRef, listeners, isDragging, isSorting, transform, transition } = useSortable({
     id,
@@ -531,7 +531,7 @@ function SortableItem ({
       cardDataAsObj={cardDataAsObj}
       setLastSelectedCard={setLastSelectedCard}
       cardData={cardData}
-      componentName={componentName}
+      dataCy={dataCy}
     />
   );
 }

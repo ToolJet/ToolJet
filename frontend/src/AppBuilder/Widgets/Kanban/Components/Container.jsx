@@ -9,7 +9,7 @@ export const Container = ({ children, id, disabled, ...props }) => {
     id,
   });
 
-  const { kanbanProps, style, label, componentName } = props;
+  const { kanbanProps, style, label, dataCy } = props;
   const {
     styles: { accentColor },
     darkMode,
@@ -37,11 +37,11 @@ export const Container = ({ children, id, disabled, ...props }) => {
       }}
       className={cx('kanban-container', 'scrollable', darkMode && 'dark')}
       onMouseDown={(e) => e.stopPropagation()}
-      data-cy={componentName ? `${componentName}-container-${generateCypressDataCy(label)}` : `${generateCypressDataCy(label)}-container`}
+      data-cy={dataCy ? `${dataCy}-container-${generateCypressDataCy(label)}` : `${generateCypressDataCy(label)}-container`}
     >
       {label ? (
         <div className={cx('header', darkMode && 'dark')}>
-          <span style={colAccentColor} className="container-name" data-cy={componentName ? `${componentName}-${generateCypressDataCy(label)}-container-header` : `${generateCypressDataCy(label)}-container-header`}>
+          <span style={colAccentColor} className="container-name" data-cy={dataCy ? `${dataCy}-${generateCypressDataCy(label)}-container-header` : `${generateCypressDataCy(label)}-container-header`}>
             {label}
           </span>
         </div>
