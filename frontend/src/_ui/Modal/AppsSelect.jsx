@@ -10,6 +10,7 @@ export const RESOURCE_TYPE = {
   APPS: 'app',
   DATA_SOURCES: 'data_source',
   WORKFLOWS: 'workflow',
+  FOLDERS: 'folder',
 };
 
 export const getResourceTypeConfig = (resourceType) => {
@@ -31,6 +32,12 @@ export const getResourceTypeConfig = (resourceType) => {
         placeholder: 'Select workflows..',
         noOptionsMessage: 'No workflows found',
         icon: 'workflows',
+      };
+    case RESOURCE_TYPE.FOLDERS:
+      return {
+        placeholder: 'Select folders..',
+        noOptionsMessage: 'There are no folders created yet',
+        icon: 'folder',
       };
     default:
       return {
@@ -222,7 +229,7 @@ export function AppsSelect(props) {
         if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
         return props.onChange(selected.filter((app) => !app?.isAllField));
       }}
-      options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
+      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options]}
       styles={selectStyles}
       placeholder={resourceConfig.placeholder}
       noOptionsMessage={() => resourceConfig.noOptionsMessage}

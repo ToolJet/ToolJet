@@ -202,12 +202,12 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         },
         manager
       );
-
+      const action = (createFolderPermissionsObj as any)?.action ?? createFolderPermissionsObj;
       const foldersGroupPermissions = await manager.save(
         manager.create(FoldersGroupPermissions, {
-          canEditFolder: createFolderPermissionsObj.canEditFolder || false,
-          canEditApps: createFolderPermissionsObj.canEditApps || false,
-          canViewApps: createFolderPermissionsObj.canViewApps || false,
+          canEditFolder: action.canEditFolder ?? false,
+          canEditApps: action.canEditApps ?? false,
+          canViewApps: action.canViewApps ?? false,
           granularPermissionId: granularPermissions.id,
         })
       );

@@ -532,3 +532,27 @@
     }
   }
 }
+
+.permission-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permission-item {
+  width: 100%;
+
+  .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .form-check-input {
+    margin-top: 4px;
+  }
+
+  .tj-text-xsm {
+    display: block;
+  }
+}

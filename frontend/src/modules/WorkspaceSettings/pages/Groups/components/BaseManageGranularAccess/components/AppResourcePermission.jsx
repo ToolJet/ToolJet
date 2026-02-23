@@ -28,10 +28,10 @@ function AppResourcePermissions({
     <div
       className="manage-resource-permission"
       onMouseEnter={() => {
-        setHover(true);
+        if (currentGroupPermission.name !== 'admin') setHover(true);
       }}
       onMouseLeave={() => {
-        setHover(false);
+        if (currentGroupPermission.name !== 'admin') setHover(false);
       }}
       onClick={() => {
         !isRoleGroup && !isBasicPlan && !notClickable && openEditPermissionModal(permissions);
@@ -172,7 +172,7 @@ function AppResourcePermissions({
         <GroupChipTD groups={apps} />
       </div>
       <div className="edit-icon-container">
-        {onHover && (
+        {onHover && !isRoleGroup && currentGroupPermission.name === 'admin' && (
           <ButtonSolid
             leftIcon="editrectangle"
             className="edit-permission-custom"
