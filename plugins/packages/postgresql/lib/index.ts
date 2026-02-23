@@ -11,6 +11,112 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
 import { isEmpty } from '@tooljet-plugins/common';
+import { Client } from 'ssh2';
+import { URL } from 'url';
+import net from 'net';
+
+  async function createLocalSSHTunnel(
+    sourceOptions: SourceOptions,
+    targetHost: string,
+    targetPort: number
+  ): Promise<{
+    sshClient: Client;
+    server: net.Server;
+    localPort: number;
+  }> {
+    return new Promise((resolve, reject) => {
+      const ssh = new Client();
+      ssh.on('ready', () => {
+        
+
+        const server = net.createServer((localSocket) => {
+          ssh.forwardOut(
+            localSocket.remoteAddress || '127.0.0.1',
+            localSocket.remotePort || 0,
+            targetHost,
+            targetPort,
+            (err, remoteStream) => {
+              if (err) {
+                localSocket.destroy();
+                return;
+              }
+
+              localSocket.pipe(remoteStream).pipe(localSocket);
+
+              remoteStream.on('error', () => {
+                localSocket.destroy();
+              });
+
+              localSocket.on('error', () => {
+                remoteStream.destroy();
+              });
+            }
+          );
+        });
+
+        server.listen(0, '127.0.0.1', () => {
+          const addr = server.address() as net.AddressInfo;
+          resolve({
+            sshClient: ssh,
+            server,
+            localPort: addr.port,
+          });
+        });
+      });
+
+      ssh.on('error', (e) => {
+        reject(e);
+      });
+
+      const sshConfig: any = {
+        host: sourceOptions.ssh_host,
+        port: Number(sourceOptions.ssh_port) || 22,
+        username: sourceOptions.ssh_username,
+        readyTimeout: 20000, // recommended
+      };
+
+      if (sourceOptions.ssh_auth_type === 'private_key') {
+        if (
+          !sourceOptions.ssh_private_key ||
+          sourceOptions.ssh_private_key.trim() === ''
+        ) {
+          return reject(
+            new Error('SSH private key is required for private_key auth type')
+          );
+        }
+        sshConfig.privateKey = Buffer.from(
+          sourceOptions.ssh_private_key
+        );
+        if (
+          sourceOptions.ssh_passphrase &&
+          sourceOptions.ssh_passphrase.trim() !== ''
+        ) {
+          sshConfig.passphrase =
+            sourceOptions.ssh_passphrase;
+        }
+
+      } else if (sourceOptions.ssh_auth_type === 'password') {
+        if (
+          !sourceOptions.ssh_password ||
+          sourceOptions.ssh_password.trim() === ''
+        ) {
+          return reject(
+            new Error('SSH password is required for password auth type')
+          );
+        }
+        sshConfig.password =
+          sourceOptions.ssh_password;
+
+      } else {
+        return reject(
+          new Error(
+            `Unsupported SSH auth type: ${sourceOptions.ssh_auth_type}`
+          )
+        );
+      }
+      ssh.connect(sshConfig);
+    });
+  }
 
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
@@ -30,6 +136,25 @@ export default class PostgresqlQueryService implements QueryService {
     }
     PostgresqlQueryService._instance = this;
     return PostgresqlQueryService._instance;
+  }
+
+  async invokeMethod(
+    methodName: string,
+    context: { user?: any; app?: any },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    if (methodName === 'getTables') {
+      const dataSourceId = args?.dataSourceId || '';
+      const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+      return await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+    }
+
+    throw new QueryError(
+      'Method not found',
+      `Method ${methodName} is not supported for PostgreSQL plugin`,
+      { availableMethods: ['getTables'] }
+    );
   }
 
   async run(
@@ -94,14 +219,88 @@ export default class PostgresqlQueryService implements QueryService {
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       if (pgPool && pgConnection) pgPool.release(pgConnection);
-      if (!checkCache) await knexInstance.destroy();
+      if (!checkCache && knexInstance) {
+        const tunnel = (knexInstance as any).__sshTunnel;
+        await knexInstance.destroy();
+        if (tunnel) {
+          tunnel.server.close();
+          tunnel.sshClient.end();
+        }
+      }
     }
   }
 
-  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('SELECT version();').timeout(this.STATEMENT_TIMEOUT);
-    return { status: 'ok' };
+  async testConnection(
+    sourceOptions: SourceOptions
+  ): Promise<ConnectionTestResult> {
+    let knexInstance: Knex | undefined;
+    try {
+      knexInstance =
+        await this.getConnection(sourceOptions, {}, false);
+
+      await knexInstance
+        .raw('SELECT version();')
+        .timeout(this.STATEMENT_TIMEOUT);
+
+      return { status: 'ok' };
+
+    } catch (err: any) {
+      let message = 'Connection test failed';
+      let details: any = {};
+      //  PostgreSQL driver errors
+      if (err?.code || err?.detail || err?.hint) {
+        message = err.message;
+        details = {
+          code: err.code ?? null,
+          detail: err.detail ?? null,
+          hint: err.hint ?? null,
+          routine: err.routine ?? null,
+        };
+      }
+      //  Invalid connection string
+      else if (
+        err instanceof TypeError &&
+        err.message?.includes('Invalid URL')
+      ) {
+        message = 'Invalid PostgreSQL connection string';
+      }
+
+      //  SSH errors
+      else if (err?.message?.includes('SSH')) {
+
+        message = `SSH connection failed : ${err.message}`;
+
+      }
+
+      //  Knex timeout
+      else if (err?.name === 'KnexTimeoutError') {
+        message =
+          'Database connection timeout. Please check host/port/firewall';
+      }
+
+      //  fallback
+      else if (err?.message) {
+        message = err.message;
+      }
+
+      throw new QueryError(
+        'Connection test failed',
+        message,
+        details
+      );
+
+    } finally {
+      //  Always cleanup SSH tunnel + knex
+      if (knexInstance) {
+        const tunnel =
+          (knexInstance as any).__sshTunnel;
+        await knexInstance.destroy();
+        if (tunnel) {
+          tunnel.server.close();
+          tunnel.sshClient.end();
+        }
+      }
+    }
   }
 
   async listTables(
@@ -172,36 +371,112 @@ export default class PostgresqlQueryService implements QueryService {
   }
 
   private async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    let connectionConfig;
-    if (sourceOptions.connection_type === 'manual') {
+    let connectionConfig: any;
+    let tunnel: Awaited<ReturnType<typeof createLocalSSHTunnel>> | null = null;
+
+    // Resolve the base connection parameters depending on connection_type
+    let resolvedHost: string = sourceOptions.host;
+    let resolvedPort: number | undefined = Number(sourceOptions.port) || undefined;
+    let resolvedUser: string = sourceOptions.username;
+    let resolvedPass: string = sourceOptions.password;
+    let resolvedDb: string = sourceOptions.database;
+
+    if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
+      const parsedUrl = new URL(sourceOptions.connection_string);
+
+      const connUser = decodeURIComponent(parsedUrl.username || '');
+      const connPass = decodeURIComponent(parsedUrl.password || '');
+      const connHost = parsedUrl.hostname || '';
+      const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
+      const connDb = parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '';
+      const sslmode =
+      parsedUrl.searchParams.get('sslmode') ||
+      parsedUrl.searchParams.get('ssl') ||
+      '';
+
+      let connSslEnabled: 'enabled' | 'disabled' | undefined;
+
+      if (
+        sslmode === 'require' ||
+        sslmode === 'verify-full' ||
+        sslmode === 'verify-ca' ||
+        sslmode === 'true'
+      ) {
+        connSslEnabled = 'enabled';
+      } else if (
+        sslmode === 'disable' ||
+        sslmode === 'false'
+      ) {
+        connSslEnabled = 'disabled';
+      }
+      // Explicit UI values override connection string values
+      resolvedUser = sourceOptions.username || connUser;
+      resolvedPass = sourceOptions.password || connPass;
+      // Only override if user explicitly changed away from the default
+      resolvedHost = (sourceOptions.host && sourceOptions.host !== 'localhost') 
+        ? sourceOptions.host 
+        : connHost;
+
+      resolvedPort =
+          sourceOptions.port &&
+          Number(sourceOptions.port) !== 5432
+            ? Number(sourceOptions.port)
+            : connPort;
+
+      resolvedDb = sourceOptions.database || connDb;
+
+          // SSL Autofill
+    if ((!sourceOptions.ssl_enabled ||
+          sourceOptions.ssl_enabled === 'disabled') &&
+          connSslEnabled) {
+          sourceOptions.ssl_enabled = connSslEnabled;
+        }
+    }
+
+    // --- SSL config ---
+    const sslConfig = this.getSslConfig(sourceOptions);
+
+    // Set up SSH tunnel if enabled — pass targetHost/targetPort explicitly to avoid type conflicts
+    if (sourceOptions.ssh_enabled === 'enabled') {
+      tunnel = await createLocalSSHTunnel(sourceOptions, resolvedHost, resolvedPort ?? 5432);
+
       connectionConfig = {
-        user: sourceOptions.username,
-        host: sourceOptions.host,
-        database: sourceOptions.database,
-        password: sourceOptions.password,
-        port: sourceOptions.port,
-        ssl: this.getSslConfig(sourceOptions),
+        host: '127.0.0.1',
+        port: tunnel.localPort,
+        user: resolvedUser,
+        password: resolvedPass,
+        database: resolvedDb,
+        ssl: sslConfig,
         ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
-    } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
+    } else {
       connectionConfig = {
-        connectionString: sourceOptions.connection_string,
+        host: resolvedHost,
+        port: resolvedPort,
+        user: resolvedUser,
+        password: resolvedPass,
+        database: resolvedDb,
+        ssl: sslConfig,
         ...(this.tooljet_edition !== 'cloud' ? { statement_timeout: this.STATEMENT_TIMEOUT } : {}),
       };
     }
-    const connectionOptions: Knex.Config = {
+    const knexInstance = knex({
       client: 'pg',
       connection: connectionConfig,
       pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
       acquireConnectionTimeout: 60000,
       ...this.connectionOptions(sourceOptions),
-    };
-
-    return knex(connectionOptions);
+    });
+    // Attach tunnel reference for cleanup in run()/testConnection()
+    if (tunnel) {
+      (knexInstance as any).__sshTunnel = tunnel;
+    }
+    return knexInstance;
   }
 
   private getSslConfig(sourceOptions: SourceOptions) {
-    if (!sourceOptions.ssl_enabled) return false;
+    // ssl_enabled is stored as string "enabled"/"disabled" from the toggle-flip widget
+    if (sourceOptions.ssl_enabled !== 'enabled') return false;
 
     return {
       rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none',
