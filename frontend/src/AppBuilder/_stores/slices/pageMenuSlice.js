@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';
 import _ from 'lodash';
 import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { getSubpath } from '@/_helpers/routes';
 
 const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
   appId,
@@ -550,11 +551,15 @@ export const createPageMenuSlice = (set, get) => {
 
       if (page?.type === 'app') {
         if (page?.appId) {
-          const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+          let appUrl = `/applications/${page.appId}`;
+
+          const path = getSubpath();
+          if (path) appUrl = path + appUrl;
+
           if (page.openIn === 'new_tab') {
-            window.open(baseUrl, '_blank');
+            window.open(appUrl, '_blank');
           } else {
-            window.location.href = baseUrl;
+            window.location.href = appUrl;
           }
         } else {
           toast.error('No app selected');
