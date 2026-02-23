@@ -9,6 +9,7 @@ export const appsService = {
   setMaintenance,
   setSlug,
   getAll,
+  getAllAddableApps,
   createApp,
   cloneApp,
   exportApp,
@@ -64,6 +65,12 @@ function getAll(page, folder, searchKey, type = 'front-end') {
       `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
+}
+
+// get all addable apps
+function getAllAddableApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {
