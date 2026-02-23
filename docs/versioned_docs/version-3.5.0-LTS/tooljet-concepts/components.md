@@ -3,7 +3,7 @@ id: what-are-components
 title: Components
 ---
 
-Components in ToolJet serve as the building blocks for creating applications. They are pre-designed elements that you can drag and drop onto the canvas in the App-Builder. ToolJet comes with 45+ built-in components. 
+Components in ToolJet serve as the building blocks for creating applications. They are pre-designed elements that you can drag and drop onto the canvas in the App-Builder. ToolJet comes with 70+ to 80+ built-in components. 
 
 <div class="video-container">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/J3-wpo4J76U?si=D2ovxqa42HUGZ4PC&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
