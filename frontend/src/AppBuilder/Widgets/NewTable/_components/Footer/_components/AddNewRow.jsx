@@ -103,7 +103,7 @@ export function AddNewRow ({ id, hideAddNewRowPopup, darkMode, allColumns, fireE
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy='close-button' onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
+          <button data-cy='add-new-rows-close-button' onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
             x
           </button>
         </div>
