@@ -84,6 +84,12 @@ export const MultiselectV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  const menuBackgroundColor = getInputBackgroundColor({
+    fieldBackgroundColor,
+    darkMode,
+    isLoading: isMultiSelectLoading,
+    isDisabled: isMultiSelectDisabled,
+  });
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -431,13 +437,17 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
+      backgroundColor: _state.isFocused
+        ? 'var(--interactive-overlays-fill-hover)'
+        : menuBackgroundColor || 'var(--cc-surface1-surface)',
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled
+          ? menuBackgroundColor || 'var(--cc-surface1-surface)'
+          : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       cursor: 'pointer',
@@ -450,10 +460,11 @@ export const MultiselectV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--cc-surface1-surface)',
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
       marginTop: '5px',
       borderRadius: '8px',
     }),
@@ -565,6 +576,7 @@ export const MultiselectV2 = ({
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
+            menuBackgroundColor={menuBackgroundColor}
             menuPlacement="auto"
             menuPortalTarget={document.body}
             // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)

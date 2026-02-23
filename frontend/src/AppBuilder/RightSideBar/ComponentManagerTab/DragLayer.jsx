@@ -8,7 +8,7 @@ import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { noop } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
-import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/useCanvasDropHandler';
+import { useCanvasDropHandler } from '@/AppBuilder/AppCanvas/Hooks/useCanvasDropHandler';
 
 export const DragLayer = ({ index, component, isModuleTab = false, disabled = false }) => {
   const [isRightSidebarOpen, toggleRightSidebar] = useStore(

@@ -8,5 +8,26 @@ export const EmailInput = (props) => {
     autocomplete: 'email',
     name: 'email',
   };
-  return <BaseInput {...props} {...inputLogic} inputType="email" additionalInputProps={additionalInputProps} />;
+  const showClearBtn = props.properties?.showClearBtn;
+  const handleClear = () => {
+    inputLogic.setInputValue('');
+    props.fireEvent('onChange');
+  };
+  const getCustomStyles = (baseStyles) => {
+    return {
+      ...baseStyles,
+      paddingRight: showClearBtn ? '25px' : '0px', 
+    };
+  };
+  return (
+    <BaseInput
+      {...props}
+      {...inputLogic}
+      inputType="email"
+      additionalInputProps={additionalInputProps}
+      showClearBtn={showClearBtn}
+      onClear={handleClear}
+      getCustomStyles={getCustomStyles}
+    />
+  );
 };
