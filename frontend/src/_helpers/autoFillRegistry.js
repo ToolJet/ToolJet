@@ -1,11 +1,14 @@
 import { mongoDbAutoFillStrategy } from './autoFillStrategies/mongodbAutoFillStategy';
+import { postgresqlAutoFillStrategy } from './autoFillStrategies/postgresqlAutoFillStrategy';
 
 const strategiesByKind = {
   mongodb: mongoDbAutoFillStrategy,
+  postgresql: postgresqlAutoFillStrategy,
 };
 
 const strategiesByName = {
   MongoDB: mongoDbAutoFillStrategy,
+  PostgreSQL: postgresqlAutoFillStrategy,
 };
 
 /**

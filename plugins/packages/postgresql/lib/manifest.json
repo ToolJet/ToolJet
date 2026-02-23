@@ -14,10 +14,7 @@
       "type": "string",
       "title": "Connection type",
       "description": "Single select dropdown for connection_type",
-      "enum": [
-        "manual",
-        "string"
-      ],
+      "enum": ["manual", "string"],
       "default": "manual"
     },
     "host": {
@@ -48,20 +45,17 @@
       "description": "Enter password"
     },
     "ssl_enabled": {
-      "type": "boolean",
-      "title": "SSL",
-      "description": "Toggle for ssl_enabled",
-      "default": true
+      "type": "string",
+      "title": "SSL/TLS",
+      "description": "Connect using SSL",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
     },
     "ssl_certificate": {
       "type": "string",
       "title": "SSL certificate",
       "description": "Single select dropdown for choosing certificates",
-      "enum": [
-        "ca_certificate",
-        "self_signed",
-        "none"
-      ],
+      "enum": ["ca_certificate", "self_signed", "none"],
       "default": "none"
     },
     "connection_string": {
@@ -94,6 +88,44 @@
       "title": "Allow dynamic connection parameters",
       "description": "Turning this on will allow dynamically setting host name and database from application",
       "default": false
+    },
+    "ssh_enabled": {
+      "type": "string",
+      "title": "SSH Tunnel",
+      "description": "Connect through an SSH server",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "ssh_host": {
+      "type": "string",
+      "title": "SSH Host"
+    },
+    "ssh_port": {
+      "type": "number",
+      "title": "SSH Port",
+      "default": 22
+    },
+    "ssh_username": {
+      "type": "string",
+      "title": "SSH Username"
+    },
+    "ssh_auth_type": {
+      "type": "string",
+      "title": "SSH Authentication Type",
+      "enum": ["private_key", "password"],
+      "default": "private_key"
+    },
+    "ssh_private_key": {
+      "type": "string",
+      "title": "SSH Private Key"
+    },
+    "ssh_password": {
+      "type": "string",
+      "title": "SSH Password"
+    },
+    "ssh_passphrase": {
+      "type": "string",
+      "title": "SSH Passphrase"
     }
   },
   "tj:encrypted": [
@@ -102,56 +134,47 @@
     "client_key",
     "client_cert",
     "root_cert",
-    "connection_string"
+    "connection_string",
+    "ssh_private_key",
+    "ssh_password",
+    "ssh_passphrase"
   ],
-  "required": [
-    "connection_type"
-  ],
+  "required": ["connection_type"],
   "allOf": [
     {
       "if": {
         "properties": {
-          "connection_type": {
-            "const": "manual"
-          }
+          "connection_type": { "const": "manual" }
         }
       },
       "then": {
-        "required": [
-          "host",
-          "port",
-          "username",
-          "password",
-          "ssl_certificate"
-        ],
+        "required": ["host", "port", "username", "password"],
         "allOf": [
           {
             "if": {
               "properties": {
-                "ssl_certificate": {
-                  "const": "ca_certificate"
-                }
+                "ssl_enabled": { "const": "enabled" }
               }
             },
             "then": {
-              "required": [
-                "ca_cert"
-              ]
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "ssl_certificate": {
-                  "const": "self_signed"
+              "required": ["ssl_certificate"],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "ssl_certificate": { "const": "ca_certificate" }
+                    }
+                  },
+                  "then": { "required": ["ca_cert"] }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "ssl_certificate": { "const": "self_signed" }
+                    }
+                  },
+                  "then": { "required": ["client_key", "client_cert", "root_cert"] }
                 }
-              }
-            },
-            "then": {
-              "required": [
-                "client_key",
-                "client_cert",
-                "root_cert"
               ]
             }
           }
@@ -161,164 +184,446 @@
     {
       "if": {
         "properties": {
-          "connection_type": {
-            "const": "string"
-          }
+          "connection_type": { "const": "string" }
         }
       },
       "then": {
-        "required": [
-          "connection_string"
-        ]
+        "required": ["connection_string"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssh_enabled": { "const": "enabled" }
+        }
+      },
+      "then": {
+        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
       }
     }
   ],
   "tj:ui:properties": {
     "connection_type": {
+      "order": 1,
       "$ref": "#/properties/connection_type",
       "key": "connection_type",
       "label": "Connection type",
       "description": "Single select dropdown for connection_type",
       "widget": "dropdown-component-flip",
       "list": [
-        {
-          "name": "Manual connection",
-          "value": "manual"
-        },
-        {
-          "name": "Connection string",
-          "value": "string"
-        }
-      ],
-      "commonFields": {
-        "allow_dynamic_connection_parameters": {
-          "$ref": "#/properties/allow_dynamic_connection_parameters",
-          "key": "allow_dynamic_connection_parameters",
-          "label": "Allow dynamic connection parameters",
-          "description": "Turning this on will allow dynamically setting host name and database from application",
-          "widget": "toggle"
-        }
-      }
+        { "name": "Manual connection", "value": "manual" },
+        { "name": "Connection string", "value": "string" }
+      ]
     },
     "manual": {
-      "ssl_certificate": {
-        "$ref": "#/properties/ssl_certificate",
-        "key": "ssl_certificate",
-        "label": "SSL certificate",
-        "description": "Single select dropdown for choosing certificates",
-        "widget": "dropdown-component-flip",
-        "list": [
-          {
-            "value": "ca_certificate",
-            "name": "CA certificate"
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "Enter host",
+        "widget": "text-v3",
+        "required": true
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "Enter port",
+        "widget": "text-v3",
+        "required": true,
+        "help_text": "Default PostgreSQL port is 5432"
+      },
+      "database": {
+        "order": 30,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database name",
+        "description": "Enter name of the database",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 40,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3",
+        "required": true
+      },
+      "password": {
+        "order": 50,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "required": true,
+        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+      },
+      "connection_options": {
+        "order": 60,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
+      "ssl_enabled": {
+        "order": 70,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL/TLS",
+        "description": "Connect using SSL",
+        "widget": "toggle-flip",
+        "help_text": "Enable encrypted connections to PostgreSQL server",
+        "default": "disabled",
+        "enabled": {
+          "ssl_certificate": {
+            "order": 80,
+            "$ref": "#/properties/ssl_certificate",
+            "key": "ssl_certificate",
+            "label": "SSL certificate",
+            "description": "Single select dropdown for choosing certificates",
+            "widget": "dropdown-component-flip",
+            "list": [
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "self_signed", "name": "Self-signed certificate" },
+              { "value": "none", "name": "None" }
+            ]
           },
-          {
-            "value": "self_signed",
-            "name": "Self-signed certificate"
-          },
-          {
-            "value": "none",
-            "name": "None"
-          }
-        ],
-        "commonFields": {
-          "host": {
-            "$ref": "#/properties/host",
-            "key": "host",
-            "label": "Host",
-            "description": "Enter host",
+          "ca_certificate": {
+              "ca_cert": {
+                "order": 90,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA Cert",
+                "description": "Enter ca certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "self_signed": {
+              "client_key": {
+                "order": 90,
+                "$ref": "#/properties/client_key",
+                "key": "client_key",
+                "label": "Client Key",
+                "description": "Enter client key",
+                "widget": "password-v3-textarea"
+              },
+              "client_cert": {
+                "order": 100,
+                "$ref": "#/properties/client_cert",
+                "key": "client_cert",
+                "label": "Client Cert",
+                "description": "Enter client certificate",
+                "widget": "password-v3-textarea"
+              },
+              "root_cert": {
+                "order": 110,
+                "$ref": "#/properties/root_cert",
+                "key": "root_cert",
+                "label": "Root Cert",
+                "description": "Enter root certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "none": {}
+        },
+        "disabled": {}
+      },
+      "ssh_enabled": {
+        "order": 120,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH Tunnel",
+        "description": "Connect through an SSH server",
+        "help_text": "Connect through an SSH server to access databases in private networks",
+        "widget": "toggle-flip",
+        "default": "disabled",
+        "enabled": {
+          "ssh_host": {
+            "order": 130,
+            "$ref": "#/properties/ssh_host",
+            "key": "ssh_host",
+            "label": "SSH Host",
+            "description": "ssh.example.com",
             "widget": "text-v3",
-            "required": true
+            "help_text": "SSH server hostname or IP address"
           },
-          "port": {
-            "$ref": "#/properties/port",
-            "key": "port",
-            "label": "Port",
-            "description": "Enter port",
+          "ssh_port": {
+            "order": 140,
+            "$ref": "#/properties/ssh_port",
+            "key": "ssh_port",
+            "label": "SSH Port",
+            "description": "Default SSH port is 22",
             "widget": "text-v3",
-            "required": true
+            "help_text": "Default SSH port is 22"
           },
-          "ssl_enabled": {
-            "$ref": "#/properties/ssl_enabled",
-            "key": "ssl_enabled",
-            "label": "SSL",
-            "description": "Toggle for ssl_enabled",
-            "widget": "toggle"
-          },
-          "database": {
-            "$ref": "#/properties/database",
-            "key": "database",
-            "label": "Database name",
-            "description": "Name of the database",
+          "ssh_username": {
+            "order": 150,
+            "$ref": "#/properties/ssh_username",
+            "key": "ssh_username",
+            "label": "SSH Username",
+            "description": "SSH Username",
             "widget": "text-v3"
           },
-          "username": {
-            "$ref": "#/properties/username",
-            "key": "username",
-            "label": "Username",
-            "description": "Enter username",
-            "widget": "text-v3",
-            "required": true
+          "ssh_auth_type": {
+            "order": 175,
+            "$ref": "#/properties/ssh_auth_type",
+            "key": "ssh_auth_type",
+            "label": "Authentication Type",
+            "widget": "dropdown-component-flip",
+            "default": "private_key",
+            "list": [
+              { "value": "private_key", "name": "Private Key" },
+              { "value": "password", "name": "Password" }
+            ]
           },
-          "password": {
-            "$ref": "#/properties/password",
-            "key": "password",
-            "label": "Password",
-            "description": "Enter password",
-            "widget": "password-v3",
-            "required": true
-          },
-          "connection_options": {
-            "$ref": "#/properties/connection_options",
-            "key": "connection_options",
-            "label": "Connection options",
-            "widget": "react-component-headers",
-            "width": "316px",
-            "required": true
-          }
-        }
-      },
-      "ca_certificate": {
-        "ca_cert": {
-          "$ref": "#/properties/ca_cert",
-          "key": "ca_cert",
-          "label": "CA Cert",
-          "description": "Enter ca certificate",
-          "widget": "password-v3-textarea"
-        }
-      },
-      "self_signed": {
-        "client_key": {
-          "$ref": "#/properties/client_key",
-          "key": "client_key",
-          "label": "Client Key",
-          "description": "Enter client key",
-          "widget": "password-v3-textarea"
+          "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
+            }
         },
-        "client_cert": {
-          "$ref": "#/properties/client_cert",
-          "key": "client_cert",
-          "label": "Client Cert",
-          "description": "Enter client certificate",
-          "widget": "password-v3-textarea"
-        },
-        "root_cert": {
-          "$ref": "#/properties/root_cert",
-          "key": "root_cert",
-          "label": "Root Cert",
-          "description": "Enter root certificate",
-          "widget": "password-v3-textarea"
-        }
+        "disabled": {}
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 200,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting host name and database from application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default host and database at query runtime"
       }
     },
     "string": {
       "connection_string": {
+        "order": 2,
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
         "label": "Connection string",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
         "widget": "password-v3-textarea",
         "required": true
+      },
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "Enter host",
+        "widget": "text-v3"
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "Enter port",
+        "widget": "text-v3",
+        "help_text": "Default PostgreSQL port is 5432"
+      },
+      "database": {
+        "order": 30,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database name",
+        "description": "Enter name of the database",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 40,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 50,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+      },
+      "connection_options": {
+        "order": 60,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
+      "ssl_enabled": {
+        "order": 70,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL/TLS",
+        "description": "Connect using SSL",
+        "widget": "toggle-flip",
+        "help_text": "Enable encrypted connections to PostgreSQL server",
+        "default": "disabled",
+        "enabled": {
+          "ssl_certificate": {
+            "order": 80,
+            "$ref": "#/properties/ssl_certificate",
+            "key": "ssl_certificate",
+            "label": "SSL certificate",
+            "description": "Single select dropdown for choosing certificates",
+            "widget": "dropdown-component-flip",
+            "list": [
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "self_signed", "name": "Self-signed certificate" },
+              { "value": "none", "name": "None" }
+            ]
+          },
+          "ca_certificate": {
+              "ca_cert": {
+                "order": 90,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA Cert",
+                "description": "Enter ca certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "self_signed": {
+              "client_key": {
+                "order": 90,
+                "$ref": "#/properties/client_key",
+                "key": "client_key",
+                "label": "Client Key",
+                "description": "Enter client key",
+                "widget": "password-v3-textarea"
+              },
+              "client_cert": {
+                "order": 100,
+                "$ref": "#/properties/client_cert",
+                "key": "client_cert",
+                "label": "Client Cert",
+                "description": "Enter client certificate",
+                "widget": "password-v3-textarea"
+              },
+              "root_cert": {
+                "order": 110,
+                "$ref": "#/properties/root_cert",
+                "key": "root_cert",
+                "label": "Root Cert",
+                "description": "Enter root certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "none": {}
+        },
+        "disabled": {}
+      },
+      "ssh_enabled": {
+        "order": 120,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH Tunnel",
+        "description": "Connect through an SSH server",
+        "widget": "toggle-flip",
+        "help_text": "Connect through an SSH server to access databases in private networks",
+        "default": "disabled",
+        "enabled": {
+          "ssh_host": {
+            "order": 130,
+            "$ref": "#/properties/ssh_host",
+            "key": "ssh_host",
+            "label": "SSH Host",
+            "description": "ssh.example.com",
+            "widget": "text-v3",
+            "help_text": "SSH server hostname or IP address"
+          },
+          "ssh_port": {
+            "order": 140,
+            "$ref": "#/properties/ssh_port",
+            "key": "ssh_port",
+            "label": "SSH Port",
+            "description": "Default SSH port is 22",
+            "widget": "text-v3",
+            "help_text": "Default SSH port is 22"
+          },
+          "ssh_username": {
+            "order": 150,
+            "$ref": "#/properties/ssh_username",
+            "key": "ssh_username",
+            "label": "SSH Username",
+            "description": "SSH Username",
+            "widget": "text-v3"
+          },
+          "ssh_auth_type": {
+            "order": 175,
+            "$ref": "#/properties/ssh_auth_type",
+            "key": "ssh_auth_type",
+            "label": "Authentication Type",
+            "widget": "dropdown-component-flip",
+            "default": "private_key",
+            "list": [
+              { "value": "private_key", "name": "Private Key" },
+              { "value": "password", "name": "Password" }
+            ]
+          },
+          "private_key": {
+              "ssh_private_key": {
+                "order": 180,
+                "$ref": "#/properties/ssh_private_key",
+                "key": "ssh_private_key",
+                "label": "SSH Private Key",
+                "widget": "password-v3-textarea"
+              },
+              "ssh_passphrase": {
+                "order": 190,
+                "$ref": "#/properties/ssh_passphrase",
+                "key": "ssh_passphrase",
+                "label": "SSH Passphrase",
+                "widget": "password-v3"
+              }
+            },
+            "password": {
+              "ssh_password": {
+                "order": 180,
+                "$ref": "#/properties/ssh_password",
+                "key": "ssh_password",
+                "label": "SSH Password",
+                "widget": "password-v3"
+              }
+            }
+        },
+        "disabled": {}
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 130,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting host name and database from application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default host and database at query runtime"
       }
     }
   }
