@@ -14,12 +14,15 @@ import { ERROR_HANDLER } from '@modules/group-permissions/constants/error';
 import { RolesRepository } from './repository';
 import { AddUserRoleObject } from '@modules/group-permissions/types';
 import { IRolesUtilService } from './interfaces/IUtilService';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class RolesUtilService implements IRolesUtilService {
   constructor(
     protected groupPermissionsRepository: GroupPermissionsRepository,
-    protected roleRepository: RolesRepository
+    protected roleRepository: RolesRepository,
+    protected licenseTermsService: LicenseTermsService
   ) {}
 
   async changeEndUserToEditor(
@@ -211,7 +214,7 @@ export class RolesUtilService implements IRolesUtilService {
         return false;
       }
 
-      const hasBuilderLevelEnvironments = allPermission
+      const hasNonReleasedEnvironments = allPermission
         .filter((permissions) => permissions.type === ResourceType.APP)
         .some((permissions) => {
           const appPermission = permissions.appsGroupPermissions;
@@ -222,7 +225,15 @@ export class RolesUtilService implements IRolesUtilService {
           );
         });
 
-      return hasBuilderLevelEnvironments;
+      if (hasNonReleasedEnvironments) {
+        const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          organizationId
+        );
+        return !hasMultiEnvironment;
+      }
+
+      return false;
     }, manager);
   }
 }

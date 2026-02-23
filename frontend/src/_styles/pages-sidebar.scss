@@ -210,7 +210,7 @@
     }
 
     .accordion-body {
-        gap: 4px;
+        gap: 12px;
         display: flex;
         flex-direction: column;
     }
@@ -225,6 +225,7 @@
         display: flex;
         flex-direction: column;
         box-sizing: content-box;
+        
         &.no-preview-settings {
             height: 100% !important;
         }
@@ -319,6 +320,10 @@
 
                 .tj-list-item {
                     margin-top: 6px !important;
+                }
+
+                &.collapsed {
+                    display: none;
                 }
             }
         }
@@ -725,6 +730,10 @@
                 .tj-list-item {
                   margin-top: 6px !important;
                 }
+
+                &.collapsed {
+                    display: none;
+                }
               }
             }
     
@@ -870,7 +879,7 @@
     justify-content: center;
     border-radius: 6px;
     width: 28px;
-    height: 28px;
+    height: 32px;
     cursor: pointer;
 
     &:hover {

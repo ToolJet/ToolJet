@@ -118,7 +118,7 @@ const SlugInput = () => {
           )}
         </div>
       </div>
-      <div className="col modal-main tj-app-input mt-2">
+      <div className="col modal-main tj-app-input">
         <label className="field-name" data-cy="app-link-label">
           App link
         </label>

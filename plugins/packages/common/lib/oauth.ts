@@ -7,6 +7,7 @@ import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
 import { isEmpty } from 'lodash';
+import { validateUrlForSSRF, getSSRFProtectionOptions } from './ssrf-protection';
 
 export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
   const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
@@ -122,7 +123,7 @@ async function validateAndMaybeSetOAuthHeaders(
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
     const grantType = sourceOptions['grant_type'];
     const tokenData = sourceOptions['tokenData'];
-    const isAppPublic = context?.app.isPublic;
+    const isAppPublic = context?.app?.isPublic;
     const userData = context?.user;
     const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
 
@@ -177,6 +178,9 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
     throw new Error('Missing required fields in sourceOptions');
   }
 
+  // SSRF Protection: Validate access token URL
+  await validateUrlForSSRF(sourceOptions.access_token_url);
+
   const headersObject = sanitizeParams(sourceOptions.access_token_custom_headers);
   const clientAuth = sourceOptions.client_auth?.toLowerCase();
 
@@ -205,11 +209,18 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
       };
     }
 
-    const response = await got.post(sourceOptions.access_token_url, {
-      headers,
-      form: bodyData,
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    const requestOptions = {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...(Object.keys(headersObject).length > 0 && headersObject),
+      },
+      body: bodyData,
       responseType: 'json',
-    });
+    };
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
+    const response = await got.post(sourceOptions.access_token_url, finalOptions);
 
     return response.body;
   } catch (error) {
@@ -287,6 +298,10 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
     throw new QueryError('Refresh token not found', error.response, {});
   }
   const accessTokenUrl = sourceOptions['access_token_url'];
+
+  // SSRF Protection: Validate access token URL
+  await validateUrlForSSRF(accessTokenUrl);
+
   const clientId = sourceOptions['client_id'];
   const clientSecret = sourceOptions['client_secret'];
   const grantType = 'refresh_token';
@@ -303,16 +318,20 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
   const accessTokenDetails = {};
   let result: any, response: any;
 
+  // Apply SSRF protection options (custom DNS lookup + redirect validation)
+  const requestOptions = {
+    method: 'post',
+    headers: {
+      'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
+      ...customAccessTokenHeaders,
+    },
+    form: isUrlEncoded ? data : undefined,
+    json: !isUrlEncoded ? data : undefined,
+  };
+  const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
   try {
-    response = await got(accessTokenUrl, {
-      method: 'post',
-      headers: {
-        'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-        ...customAccessTokenHeaders,
-      },
-      form: isUrlEncoded ? data : undefined,
-      json: !isUrlEncoded ? data : undefined,
-    });
+    response = await got(accessTokenUrl, finalOptions);
     result = JSON.parse(response.body);
   } catch (error) {
     console.error(

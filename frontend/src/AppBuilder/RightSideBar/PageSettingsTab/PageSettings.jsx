@@ -21,6 +21,7 @@ import Select from '@/_ui/Select';
 import { DeletePageConfirmationModal } from './PageMenu/DeletePageConfirmationModal';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Button } from '@/components/ui/Button/Button';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { ToolTip as InspectorTooltip } from '../Inspector/Elements/Components/ToolTip';
@@ -35,7 +36,6 @@ export const PageSettings = () => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
-  const isVersionReleased = useStore((state) => state.isVersionReleased);
   const switchPage = useStore((state) => state.switchPage);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const { moduleId } = useModuleContext();
@@ -156,52 +156,52 @@ export const PageSettings = () => {
   return (
     <div className="inspector pages-settings">
       <div>
-        <div className="row inspector-component-title-input-holder d-flex align-items-center">
-          <div style={{ padding: '7px 6px' }} className={`col-9 ${isVersionReleased && 'disabled'}`}>
-            Pages and navigation
-          </div>
-          <div className="d-flex icon-holder">
-            <div className="icon-btn cursor-pointer flex-shrink-0 p-2 h-4 w-4" onClick={handleToggle}>
-              <SolidIcon fill="var(--icon-strong)" name={'remove03'} width="16" viewBox="0 0 16 16" />
-            </div>
+        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
+          <span className="panel-header-title">Pages and navigation</span>
+          <div className="panel-header-actions">
+            <Button
+              iconOnly
+              leadingIcon="x"
+              onClick={handleToggle}
+              variant="ghost"
+              size="medium"
+              isLucid={true}
+              data-cy="pages-close-button"
+            />
           </div>
         </div>
-        <div>
+        <div className={cx({ disabled: shouldFreeze })}>
           <Tabs defaultActiveKey={'properties'} id="page-settings">
             <Tab className="page-selector-panel-body" eventKey="properties" title="Properties">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 ">
-                  <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
-                  <Accordion items={appHeaderMenuItems} />
-                  {/* <Accordion items={devices} /> */}
-                </div>
+              <div className="tj-text-xsm color-slate12 ">
+                <Accordion className="pages-and-groups-list" items={pagesAndMenuItems} />
+                <Accordion items={appHeaderMenuItems} />
+                {/* <Accordion items={devices} /> */}
               </div>
             </Tab>
             <Tab eventKey="styles" title="Styles">
-              <div className={cx({ disabled: isVersionReleased || shouldFreeze })}>
-                <div className="tj-text-xsm color-slate12 settings-tab ">
-                  <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
-                </div>
+              <div className="tj-text-xsm color-slate12 settings-tab ">
+                <RenderStyles pagesMeta={pagesMeta} renderCustomStyles={renderCustomStyles} />
               </div>
             </Tab>
           </Tabs>
-          <DeletePageConfirmationModal darkMode={darkMode} />
-          {appPagePermissionEnabled && (
-            <AppPermissionsModal
-              modalType="page"
-              resourceId={editingPageId}
-              resourceName={editingPageName}
-              showModal={showPagePermissionModal}
-              toggleModal={togglePagePermissionModal}
-              darkMode={darkMode}
-              fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
-              createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
-              updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
-              deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
-              onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
-            />
-          )}
         </div>
+        <DeletePageConfirmationModal darkMode={darkMode} />
+        {appPagePermissionEnabled && (
+          <AppPermissionsModal
+            modalType="page"
+            resourceId={editingPageId}
+            resourceName={editingPageName}
+            showModal={showPagePermissionModal}
+            toggleModal={togglePagePermissionModal}
+            darkMode={darkMode}
+            fetchPermission={(id, appId) => appPermissionService.getPagePermission(appId, id)}
+            createPermission={(id, appId, body) => appPermissionService.createPagePermission(appId, id, body)}
+            updatePermission={(id, appId, body) => appPermissionService.updatePagePermission(appId, id, body)}
+            deletePermission={(id, appId) => appPermissionService.deletePagePermission(appId, id)}
+            onSuccess={(data) => updatePageWithPermissions(editingPageId, data)}
+          />
+        )}
       </div>
     </div>
   );

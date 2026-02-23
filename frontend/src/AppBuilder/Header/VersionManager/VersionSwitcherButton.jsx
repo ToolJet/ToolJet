@@ -1,8 +1,13 @@
 import React from 'react';
 import cx from 'classnames';
+
+import useStore from '@/AppBuilder/_stores/store';
+
 import './version-switcher-button.scss';
 
 const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionId, isOpen, darkMode }) => {
+  const isAiBuildingApp = useStore((state) => state.ai?.isLoading ?? false);
+
   const isDraft = version?.status === 'DRAFT';
   const isReleased = version?.id === releasedVersionId;
 
@@ -29,6 +34,7 @@ const VersionSwitcherButton = ({ version, environment, onClick, releasedVersionI
         'theme-dark': darkMode,
       })}
       onClick={onClick}
+      disabled={isAiBuildingApp}
       data-cy="version-switcher-button"
     >
       <div className="button-content">
