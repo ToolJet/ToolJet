@@ -229,6 +229,30 @@ export const EventManager = ({
     return componentOptions;
   }
 
+  function isChildOfModal(componentId) {
+    const parentId = components[componentId]?.component?.parent?.slice(0, 36);
+    if (!parentId) return false;
+    const parentComponent = components[parentId];
+    if (!parentComponent) return false;
+    if (parentComponent.component.component === 'Modal' || parentComponent.component.component === 'ModalV2') {
+      return true;
+    }
+    return isChildOfModal(parentId);
+  }
+
+  function getComponentsOptionsWithoutModalChilds() {
+    let componentOptions = [];
+    Object.keys(components || {}).forEach((key) => {
+      if (!isChildOfModal(key)) {
+        componentOptions.push({
+          name: components[key].component.name,
+          value: key,
+        });
+      }
+    });
+    return componentOptions;
+  }
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
@@ -954,6 +978,69 @@ export const EventManager = ({
                 getPages={() => getPageOptions(event)}
                 darkMode={darkMode}
               />
+            )}
+            {event.actionId === 'scroll-component-into-view' && (
+              <>
+                <div className="row">
+                  <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={getComponentsOptionsWithoutModalChilds()}
+                      value={event.componentId}
+                      search={true}
+                      onChange={(value) => {
+                        handlerChanged(index, 'componentId', value);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-2">
+                  <div className="col-3 p-1">Behaviour</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={[
+                        { name: 'Smooth', value: 'smooth' },
+                        { name: 'Instant', value: 'instant' },
+                        { name: 'Auto', value: 'auto' },
+                      ]}
+                      value={event.scrollBehavior ?? 'smooth'}
+                      search={false}
+                      onChange={(value) => handlerChanged(index, 'scrollBehavior', value)}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+                <div className="row mt-2">
+                  <div className="col-3 p-1">Block</div>
+                  <div className="col-9">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={[
+                        { name: 'Nearest', value: 'nearest' },
+                        { name: 'Start', value: 'start' },
+                        { name: 'Center', value: 'center' },
+                        { name: 'End', value: 'end' },
+                      ]}
+                      value={event.scrollBlock ?? 'nearest'}
+                      search={false}
+                      onChange={(value) => handlerChanged(index, 'scrollBlock', value)}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
+                </div>
+              </>
             )}
             {event.actionId === 'control-component' && (
               <>

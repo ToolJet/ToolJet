@@ -3,7 +3,6 @@ import { IOrganizationPaymentService } from './interfaces/IService';
 import { OrganizationSubscription } from '@entities/organization_subscription.entity';
 import { OrganizationSubscriptionInvoice } from '@entities/organization_subscription_invoice.entity';
 import { ProrationDto, PortalDto, PaymentRedirectDto } from './dto';
-import Stripe from 'stripe';
 
 @Injectable()
 export class OrganizationPaymentService implements IOrganizationPaymentService {
@@ -31,7 +30,7 @@ export class OrganizationPaymentService implements IOrganizationPaymentService {
   }
   UpdateOrInsertCloudLicense(
     organizationSubscription: OrganizationSubscription,
-    invoiceObject: Stripe.Response<Stripe.Invoice>,
+    period: { start: Date; end: Date },
     manager?: any
   ): Promise<void> {
     throw new Error('Method not implemented.');

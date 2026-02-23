@@ -54,6 +54,7 @@ const uploadToS3 = async () => {
     }
     console.log(`[${new Date().toLocaleTimeString()}] ℹ Scanning directory for files...`);
     const fileArray = await getDirectoryFilesRecursive(directoryPath, [
+      'node_modules',
       'common',
       '.DS_Store',
       '.gitignore',

@@ -12,6 +12,7 @@ import * as nodemailer from 'nodemailer';
 import { centsToUSD } from '@helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
+import { OrganizationsLicense } from '@entities/organization_license.entity';
 
 handlebars.registerHelper('capitalize', function (value) {
   return value.charAt(0);
@@ -19,7 +20,6 @@ handlebars.registerHelper('capitalize', function (value) {
 
 @Injectable()
 export class EmailUtilService implements IEmailUtilService {
-  private FROM_EMAIL;
   protected TOOLJET_HOST;
   protected NODE_ENV;
   protected WHITE_LABEL_TEXT;
@@ -250,20 +250,29 @@ export class EmailUtilService implements IEmailUtilService {
   }
 
   sendSubscriptionStartInfoToToolJet(paymentObj) {
-    return this.sendEmail(
-      [this.FROM_EMAIL, 'adish@tooljet.com', 'midhun.gs@tooljet.com'],
-      '[Important] Selfhost Subscription started',
-      {
-        bodyContent: `<div><div>${JSON.stringify(
-          paymentObj
-        )}</div><a href='https://dashboard.stripe.com/subscriptions/${
-          paymentObj?.subscription
-        }'>Subscription Link</a></div>`,
-        footerText: '',
-        whiteLabelText: this.WHITE_LABEL_TEXT,
-        whiteLabelLogo: this.WHITE_LABEL_LOGO,
-      }
-    );
+    return this.sendEmail(['adish@tooljet.com', 'midhun.gs@tooljet.com'], '[Important] Selfhost Subscription started', {
+      bodyContent: `<div><div>${JSON.stringify(paymentObj)}</div><a href='https://dashboard.stripe.com/subscriptions/${
+        paymentObj?.subscription
+      }'>Subscription Link</a></div>`,
+      footerText: '',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  licenseUpdateEmailInternal(
+    oldOrganizationLicense: OrganizationsLicense,
+    newOrganizationLicense: Partial<OrganizationsLicense>,
+    period: { start: Date; end: Date }
+  ) {
+    return this.sendEmail(['adish@tooljet.com', 'midhun.gs@tooljet.com'], '[Important] Cloud License Updated', {
+      bodyContent: `<div><div>Old: ${JSON.stringify(oldOrganizationLicense)}</div><div>New: ${JSON.stringify(
+        newOrganizationLicense
+      )}</div>Data from stripe: ${period ? `Start - ${period.start}, End - ${period.end}` : 'N/A'}</div>`,
+      footerText: '',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
   }
 
   async sendPaymentConfirmationEmail(to: string, firstName: string, invoiceLink: string, amount: string) {
