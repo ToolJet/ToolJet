@@ -126,24 +126,19 @@ export class VersionService implements IVersionService {
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     const versionToDelete = app.appVersions[0];
-    try {
-      await this.versionsUtilService.deleteVersion(app, user, manager);
-
-      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
-        userId: user.id,
-        organizationId: user.organizationId,
-        resourceId: app.id,
-        resourceName: app.name,
-        metadata: {
-          data: {
-            versionId: versionToDelete.id,
-            deletedAppVersionName: versionToDelete.name,
-          },
+    await this.versionsUtilService.deleteVersion(app, user, manager);
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceName: app.name,
+      metadata: {
+        data: {
+          versionId: versionToDelete.id,
+          deletedAppVersionName: versionToDelete.name,
         },
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(`Failed to delete version "${versionToDelete.name}": ${error.message}`);
-    }
+      },
+    });
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {
