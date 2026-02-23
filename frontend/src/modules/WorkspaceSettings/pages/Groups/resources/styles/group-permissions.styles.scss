@@ -295,9 +295,18 @@
   margin-right: 2px;
   height: 20px;
   padding: 0 0;
-  background: none !important;
-  background-color: none !important;
-  box-shadow: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:disabled {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .manage-granular-permission-header {

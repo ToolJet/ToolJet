@@ -229,7 +229,7 @@ export function AppsSelect(props) {
         if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
         return props.onChange(selected.filter((app) => !app?.isAllField));
       }}
-      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options]}
+      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options].filter(Boolean)}
       styles={selectStyles}
       placeholder={resourceConfig.placeholder}
       noOptionsMessage={() => resourceConfig.noOptionsMessage}
