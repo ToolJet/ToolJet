@@ -109,7 +109,7 @@ export const verifyAccessTab = (isPlanEnabled = false) => {
     );
 
     const toggleIcon =
-      label === "Workflows"
+      label === "Workflows" || label === "Google" || label === "GitHub"
         ? licenseSelectors.circularToggleEnabledIcon
         : isPlanEnabled
           ? licenseSelectors.circularToggleEnabledIcon
