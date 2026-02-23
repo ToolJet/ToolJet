@@ -149,7 +149,7 @@ jobs:
           SERVE_CLIENT: ${{ secrets.CLOUD_SERVE_CLIENT }}
           SERVER_IP: ${{ secrets.CLOUD_SERVER_IP }}
           TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_TJDB_SQL_MODE_DISABLE }}
-          TOOLJET_SERVER_URL: ${{ secrets.CLOUD_TOOLJET_SERVER_URL }}
+          TOOLJET_SERVER_URL: https://apphistory-backend.tooljet.dev
           WEBSITE_SIGNUP_URL: https://website-stage.tooljet.ai/signup
           TOOLJET_EDITION: cloud
 
