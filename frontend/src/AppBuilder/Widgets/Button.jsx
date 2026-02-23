@@ -6,8 +6,9 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-export const Button = function Button(props) {
+export const Button = function Button (props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
     backgroundColor,
@@ -188,7 +189,7 @@ export const Button = function Button(props) {
         className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
-        data-cy={dataCy}
+        data-cy={`${generateCypressDataCy(label)}-button`}
         type="default"
         onMouseOver={() => {
           //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
