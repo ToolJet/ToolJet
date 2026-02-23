@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
@@ -46,6 +47,10 @@ export const BaseInput = ({
   isDynamicHeightEnabled,
   id,
   classes = null,
+  showClearBtn,
+  onClear,
+  clearButtonRightOffset = 0,
+  getCustomStyles,
 }) => {
   const {
     padding,
@@ -70,6 +75,10 @@ export const BaseInput = ({
   const { label, placeholder } = properties;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
@@ -93,6 +102,45 @@ export const BaseInput = ({
       alignSelf: 'start',
     };
   }
+
+  const finalStyles = getCustomStyles ? getCustomStyles(inputStyles) : inputStyles;
+  const clearButtonBaseRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonRight =
+    clearButtonRightOffset > 0 ? `calc(${clearButtonBaseRight} + ${clearButtonRightOffset}px)` : clearButtonBaseRight;
+  const clearButtonTop =
+    inputType === 'textarea'
+      ? defaultAlignment === 'top'
+        ? '30px'
+        : '10px'
+      : defaultAlignment === 'top' && hasLabel
+      ? 'calc(50% + 10px)'
+      : '50%';
+  const clearButtonTransform = inputType === 'textarea' ? 'none' : 'translateY(-50%)';
+  const clearButton = shouldShowClearBtn ? (
+    <button
+      type="button"
+      className="tj-input-clear-btn"
+      aria-label="Clear"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClear?.();
+      }}
+      style={{
+        position: 'absolute',
+        right: clearButtonRight,
+        top: clearButtonTop,
+        transform: clearButtonTransform,
+        zIndex: 3,
+      }}
+    >
+      <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+    </button>
+  ) : null;
 
   return (
     <>
@@ -205,7 +253,7 @@ export const BaseInput = ({
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             placeholder={placeholder}
-            style={inputStyles}
+            style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
             aria-disabled={disable || loading}
@@ -215,7 +263,7 @@ export const BaseInput = ({
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
           />
-
+          {clearButton}
           {loading ? <Loader classes={classes} style={loaderStyle} absolute={false} width="16" /> : rightIcon}
         </div>
       </div>

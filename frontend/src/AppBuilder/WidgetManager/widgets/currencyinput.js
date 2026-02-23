@@ -48,6 +48,12 @@ export const currencyinputConfig = {
       displayName: 'Show currency flag',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -317,6 +323,7 @@ export const currencyinputConfig = {
       showFlag: { value: '{{true}}' },
       decimalPlaces: { value: '2' },
       numberFormat: { value: 'us' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {

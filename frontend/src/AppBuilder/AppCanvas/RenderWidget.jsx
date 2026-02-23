@@ -44,9 +44,15 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Tags',
   'CircularProgressBar',
   'Kanban',
+  'ProgressBar',
   'AudioRecorder',
   'Camera',
+  'JSONExplorer',
+  'JSONEditor',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
+  'KeyValuePair',
 ];
 
 const RenderWidget = ({
@@ -211,7 +217,7 @@ const RenderWidget = ({
         }
         overlay={(props) =>
           renderTooltip({
-            props,
+            props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
             text: inCanvas
               ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
                 ? resolvedProperties?.tooltip

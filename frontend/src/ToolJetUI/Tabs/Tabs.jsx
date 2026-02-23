@@ -32,36 +32,34 @@ const Tabs = ({
   // Extract Tab children
   const tabs = Children.toArray(children).filter(isValidElement);
 
-  if (hidden) {
-    return null;
-  }
-
   return (
     <div className={cx('tj-tabs', className, { 'theme-dark dark-theme': darkMode })} id={id} {...restProps}>
       {closeIcon && closeIcon()}
       {/* Tab Navigation */}
-      <div className="nav-tabs" role="tablist">
-        {tabs.map((tab) => {
-          const { eventKey, title, disabled } = tab.props;
-          const isActive = activeKey === eventKey;
+      {!hidden && (
+        <div className="nav-tabs" role="tablist">
+          {tabs.map((tab) => {
+            const { eventKey, title, disabled } = tab.props;
+            const isActive = activeKey === eventKey;
 
-          return (
-            <div key={eventKey} className="nav-item">
-              <button
-                type="button"
-                role="tab"
-                className={cx('nav-link', { active: isActive, disabled })}
-                onClick={() => !disabled && handleTabClick(eventKey)}
-                aria-selected={isActive}
-                tabIndex={isActive ? 0 : -1}
-                disabled={disabled}
-              >
-                <span className="tab-label">{title}</span>
-              </button>
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <div key={eventKey} className="nav-item">
+                <button
+                  type="button"
+                  role="tab"
+                  className={cx('nav-link', { active: isActive, disabled })}
+                  onClick={() => !disabled && handleTabClick(eventKey)}
+                  aria-selected={isActive}
+                  tabIndex={isActive ? 0 : -1}
+                  disabled={disabled}
+                >
+                  <span className="tab-label">{title}</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {/* Tab Content */}
       <div className="tab-content">
         {tabs.map((tab) => {
