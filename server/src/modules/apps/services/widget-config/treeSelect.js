@@ -253,13 +253,13 @@ export const treeSelectConfig = {
       params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
-      handle: 'checkOptions',
-      displayName: 'Check option(s)',
+      handle: 'selectOptions',
+      displayName: 'Select option(s)',
       params: [{ handle: 'values', displayName: 'Values', defaultValue: '{{[]}}', type: 'code' }],
     },
     {
-      handle: 'uncheckOptions',
-      displayName: 'Uncheck option(s)',
+      handle: 'deselectOptions',
+      displayName: 'Deselect option(s)',
       params: [{ handle: 'values', displayName: 'Values', defaultValue: '{{[]}}', type: 'code' }],
     },
   ],
@@ -295,6 +295,8 @@ export const treeSelectConfig = {
             value: 'asia',
             visible: { value: true },
             disable: { value: false },
+            expanded: { value: true },
+            selected: { value: true },
             children: [
               {
                 label: 'China',

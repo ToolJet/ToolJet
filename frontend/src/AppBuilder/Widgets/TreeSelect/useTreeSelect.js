@@ -80,7 +80,7 @@ export function useTreeSelect({
         setIsDisabled(!!value);
         setExposedVariable('isDisabled', !!value);
       },
-      checkOptions: async function (values) {
+      selectOptions: async function (values) {
         const updated = normalizeValues(values);
         setChecked(updated);
         setExposedVariables(computeExposedVars(updated));
@@ -90,7 +90,7 @@ export function useTreeSelect({
           setExposedVariable('isValid', result.isValid);
         }
       },
-      uncheckOptions: async function (values) {
+      deselectOptions: async function (values) {
         const toRemove = new Set(normalizeValues(values));
         setChecked((prev) => {
           const updated = prev.filter((v) => !toRemove.has(v));

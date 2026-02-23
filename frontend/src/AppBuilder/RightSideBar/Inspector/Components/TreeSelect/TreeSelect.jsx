@@ -116,8 +116,8 @@ export const TreeSelect = ({ componentMeta, darkMode, ...restProps }) => {
           {isAdvanced && createRenderElement('data')}
           {!isAdvanced && _renderTreeItems()}
           {createRenderElement('allowIndependentSelection')}
-          {createRenderElement('checkedData')}
-          {createRenderElement('expandedData')}
+          {isAdvanced && createRenderElement('checkedData')}
+          {isAdvanced && createRenderElement('expandedData')}
         </>
       ),
     },

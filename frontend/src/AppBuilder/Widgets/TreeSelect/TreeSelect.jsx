@@ -73,26 +73,71 @@ const TreeSelect = ({
 
   const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
 
-  // Recursively filter hidden items and resolve per-node disabled state
-  const processNodes = (items) => {
-    if (!Array.isArray(items)) return items;
-    return items
-      .filter((item) => getResolvedValue(item.visible?.value) !== false)
-      .map((item) => ({
-        ...item,
-        disabled: getResolvedValue(item.disable?.value) === true,
-        children: item.children ? processNodes(item.children) : undefined,
-      }));
-  };
+  // Helper to determine which nodes have checked descendants
+  const getHalfCheckedValues = (nodes, checkedSet) => {
+    const halfChecked = new Set();
+    const traverse = (nodeList) => {
+      let hasCheckedDescendant = false;
+      for (const node of nodeList) {
+        let childHasChecked = false;
+        if (node.children?.length > 0) {
+          childHasChecked = traverse(node.children);
+        }
 
-  const data = !advanced
-    ? processNodes(options)
-    : isExpectedDataType(properties.data, 'array')
-    ? processNodes(properties.data)
-    : [];
+        // A node contributes to its parent's half-checked state if:
+        // 1. It is explicitly checked itself, OR
+        // 2. Any of its descendants are checked (which makes childHasChecked true)
+        if (checkedSet.has(node.value) || childHasChecked) {
+          hasCheckedDescendant = true;
+          // If this node is NOT explicitly checked, but has checked descendants, it's half-checked
+          if (!checkedSet.has(node.value) && childHasChecked) {
+            halfChecked.add(node.value);
+          }
+        }
+      }
+      return hasCheckedDescendant;
+    };
+    traverse(nodes);
+    return halfChecked;
+  };
 
   const checkedData = isExpectedDataType(properties.checkedData, 'array');
   const expandedData = isExpectedDataType(properties.expandedData, 'array');
+
+  const derivedChecked = [];
+  const derivedExpanded = [];
+
+  // Recursively filter hidden items and resolve per-node disabled state
+  // We do not map the custom labels yet so useTreeSelect creates the correct path/leaf maps
+  const filterNodes = (items) => {
+    if (!Array.isArray(items)) return items;
+    return items
+      .filter((item) => getResolvedValue(item.visible) !== false)
+      .map((item) => {
+        if (!advanced) {
+          if (getResolvedValue(item.selected)) {
+            derivedChecked.push(item.value);
+          }
+          if (getResolvedValue(item.expanded)) {
+            derivedExpanded.push(item.value);
+          }
+        }
+        return {
+          ...item,
+          disabled: getResolvedValue(item.disable) === true,
+          children: item.children ? filterNodes(item.children) : undefined,
+        };
+      });
+  };
+
+  const rawData = !advanced
+    ? filterNodes(options)
+    : isExpectedDataType(properties.data, 'array')
+    ? filterNodes(properties.data)
+    : [];
+
+  const evaluatedCheckedData = !advanced ? derivedChecked : checkedData;
+  const evaluatedExpandedData = !advanced ? derivedExpanded : expandedData;
 
   const {
     checked,
@@ -106,9 +151,9 @@ const TreeSelect = ({
     showValidationError,
     isMandatory,
   } = useTreeSelect({
-    data,
-    checkedData,
-    expandedData,
+    data: rawData,
+    checkedData: evaluatedCheckedData,
+    expandedData: evaluatedExpandedData,
     allowIndependentSelection,
     visibility,
     disabledState,
@@ -118,6 +163,109 @@ const TreeSelect = ({
     validate,
     validation,
   });
+
+  const checkedSet = new Set(checked);
+  // Compute half-checked state based on current checked items from hook
+  const halfCheckedValues = getHalfCheckedValues(rawData, checkedSet);
+
+  const handleCustomCheck = (nodeValue, isCurrentlyChecked) => {
+    let newChecked;
+    if (allowIndependentSelection) {
+      if (isCurrentlyChecked) {
+        newChecked = checked.filter((v) => v !== nodeValue);
+      } else {
+        newChecked = [...checked, nodeValue];
+      }
+    } else {
+      const newCheckedSet = new Set(checked);
+      let targetNode = null;
+      let targetPath = [];
+      const findNode = (nodes, val, path = []) => {
+        for (const node of nodes) {
+          if (node.value === val) {
+            targetNode = node;
+            targetPath = [...path, node];
+            return true;
+          }
+          if (node.children) {
+            if (findNode(node.children, val, [...path, node])) return true;
+          }
+        }
+        return false;
+      };
+      findNode(rawData, nodeValue);
+
+      if (targetNode) {
+        if (isCurrentlyChecked) {
+          const removeDescendants = (node) => {
+            newCheckedSet.delete(node.value);
+            if (node.children) node.children.forEach(removeDescendants);
+          };
+          removeDescendants(targetNode);
+          targetPath.forEach((p) => newCheckedSet.delete(p.value));
+        } else {
+          const addDescendants = (node) => {
+            newCheckedSet.add(node.value);
+            if (node.children) node.children.forEach(addDescendants);
+          };
+          addDescendants(targetNode);
+          for (let i = targetPath.length - 2; i >= 0; i--) {
+            const parent = targetPath[i];
+            const allChildrenChecked = parent.children.every((child) => newCheckedSet.has(child.value));
+            if (allChildrenChecked) newCheckedSet.add(parent.value);
+            else break;
+          }
+        }
+      }
+      newChecked = Array.from(newCheckedSet);
+    }
+    handleCheck(newChecked);
+    fireEvent(isCurrentlyChecked ? 'onUnCheck' : 'onCheck');
+    fireEvent('onChange');
+  };
+
+  // Map over nodes to inject custom label component if independent selection
+  // This is required to show intermediate state of parent nodes
+  const processNodes = (items) => {
+    if (!Array.isArray(items)) return items;
+    return items.map((item) => {
+      const isHalfChecked = halfCheckedValues.has(item.value);
+      const isChecked = checkedSet.has(item.value);
+
+      const processedItem = { ...item };
+
+      processedItem.showCheckbox = false;
+      processedItem.label = (
+        <div
+          className="d-flex align-items-center"
+          style={{ width: '100%', cursor: processedItem.disabled ? 'not-allowed' : 'pointer' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (processedItem.disabled) return;
+            handleCustomCheck(item.value, isChecked);
+          }}
+        >
+          <SharedCheckbox
+            className="me-2"
+            checked={isChecked}
+            isHalfCheck={isHalfChecked}
+            checkboxColor={checkedBackground}
+            uncheckedColor={uncheckedBackground}
+            borderColor={borderColor}
+            handleColor={checkmarkColor}
+            size={18}
+          />
+          {item.label}
+        </div>
+      );
+
+      processedItem.children = item.children ? processNodes(item.children) : undefined;
+      return processedItem;
+    });
+  };
+
+  const data = processNodes(rawData);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -161,7 +309,6 @@ const TreeSelect = ({
       </div>
     );
   }
-
   return (
     <div
       ref={containerRef}
@@ -215,7 +362,7 @@ const TreeSelect = ({
             onCheck={onCheck}
             onExpand={onExpand}
             checkModel="all"
-            noCascade={allowIndependentSelection}
+            noCascade={true}
             disabled={isDisabled}
             id={`component-${id}`}
             icons={{
@@ -239,7 +386,8 @@ const TreeSelect = ({
               ),
               halfCheck: (
                 <SharedCheckbox
-                  checked={true}
+                  checked={false}
+                  isHalfCheck={true}
                   checkboxColor={checkedBackground}
                   uncheckedColor={uncheckedBackground}
                   borderColor={borderColor}
@@ -248,12 +396,12 @@ const TreeSelect = ({
                 />
               ),
               expandOpen: (
-                <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
+                <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
                   <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
                 </span>
               ),
               expandClose: (
-                <span style={{ display: 'inline-flex', transform: 'rotate(180deg)' }}>
+                <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}>
                   <Triangle width={10} height={10} fill={'var(--icon-strong)'} />
                 </span>
               ),

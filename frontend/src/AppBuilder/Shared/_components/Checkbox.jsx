@@ -19,6 +19,7 @@ import React from 'react';
  */
 const Checkbox = ({
   checked = false,
+  isHalfCheck = false,
   onChange,
   disabled = false,
   checkboxColor = 'var(--primary)',
@@ -34,7 +35,7 @@ const Checkbox = ({
   const isInteractive = typeof onChange === 'function';
 
   const resolvedBorderColor =
-    borderColor === '#CCD1D5' ? (checked ? 'transparent' : 'var(--borders-default)') : borderColor;
+    borderColor === '#CCD1D5' ? (checked || isHalfCheck ? 'transparent' : 'var(--borders-default)') : borderColor;
 
   const checkboxStyle = {
     display: 'inline-flex',
@@ -42,7 +43,7 @@ const Checkbox = ({
     justifyContent: 'center',
     cursor: disabled ? 'not-allowed' : isInteractive ? 'pointer' : 'default',
     border: `1px solid ${resolvedBorderColor}`,
-    backgroundColor: checked ? checkboxColor : uncheckedColor,
+    backgroundColor: checked || isHalfCheck ? checkboxColor : uncheckedColor,
     borderRadius: '5px',
     height: `${size}px`,
     width: `${size}px`,
@@ -58,7 +59,7 @@ const Checkbox = ({
   };
 
   const checkmarkStyle = {
-    visibility: checked ? 'visible' : 'hidden',
+    visibility: checked || isHalfCheck ? 'visible' : 'hidden',
     height: `${iconSize}px`,
     width: `${iconSize}px`,
     display: 'flex',
@@ -86,7 +87,7 @@ const Checkbox = ({
       {...rest}
     >
       <div style={checkmarkStyle}>
-        {checked && (
+        {checked && !isHalfCheck && (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="icon-tabler icon-tabler-check"
@@ -101,6 +102,23 @@ const Checkbox = ({
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M5 12l5 5l10 -10" />
+          </svg>
+        )}
+        {isHalfCheck && (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon-tabler icon-tabler-minus"
+            width={iconSize}
+            height={iconSize}
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke={handleColor}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12h14" />
           </svg>
         )}
       </div>
