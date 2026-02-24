@@ -69,6 +69,8 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  accordionConfig,
+  reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
   keyValuePairConfig,
@@ -90,6 +92,7 @@ export const widgets = [
   formConfig,
   modalV2Config,
   containerConfig,
+  accordionConfig,
   tabsConfig,
   listviewConfig,
   calendarConfig,
@@ -163,6 +166,7 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  reorderableListConfig,
   jsonEditorConfig,
 
   //Legacy
