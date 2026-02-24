@@ -6,6 +6,7 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
+import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
 import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
@@ -370,8 +371,10 @@ const DynamicFormV2 = ({
         return Textarea;
       case 'toggle':
         return Toggle;
+      case 'toggle-v2':
+        return ToggleV2;
       case 'toggle-flip':
-        return Toggle;
+        return ToggleV2;
       case 'checkbox':
         return Checkbox;
       case 'checkbox-group':
@@ -517,11 +520,24 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
-          defaultChecked: currentValue === 'enabled',
-          checked: currentValue === 'enabled',
+          defaultChecked: isEnabled,
+          checked: isEnabled,
+          label: label,
           helpText: helpText,
-          onChange: (e) => handleOptionChange(key, e.target.checked ? 'enabled' : 'disabled', true),
+          onChange: (e) => {
+            const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
+            handleOptionChange(key, e.target.checked ? (booleanMode ? true : 'enabled') : (booleanMode ? false : 'disabled'), true);
+          },
+        };
+      case 'toggle-v2':
+        return {
+          checked: currentValue,
+          label:label,
+          helpText: helpText,
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -668,6 +684,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
+                    widget !== 'toggle-v2' && 
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -738,7 +755,8 @@ const DynamicFormV2 = ({
                 })}
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
-                {(flipComponentDropdown.label || isHorizontalLayout) && (
+                {flipComponentDropdown.widget !== 'toggle-flip' &&
+                (flipComponentDropdown.label || isHorizontalLayout) && (
                   <label
                     className={cx('form-label')}
                     data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
@@ -752,7 +770,7 @@ const DynamicFormV2 = ({
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
                   {flipComponentDropdown.widget === 'toggle-flip' ? (
-                    <Toggle {...getElementProps(flipComponentDropdown)} />
+                    <ToggleV2 {...getElementProps(flipComponentDropdown)} />
                   ) : (
                     <Select
                       {...getElementProps(flipComponentDropdown)}

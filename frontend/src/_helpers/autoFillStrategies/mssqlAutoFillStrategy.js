@@ -3,41 +3,81 @@ export const mssqlAutoFillStrategy = {
   connectionStringKey: 'connection_string',
   connectionTypeKey: 'connection_type',
   activeConnectionTypeValue: 'string',
-  autoFillableFields: ['host', 'port', 'database', 'username', 'password'],
+  autoFillableFields: ['host', 'port', 'database', 'username', 'password','azure', 'instance_name'],
 
   parse(connectionString) {
     const params = {};
-    const pairs = connectionString.split(';').filter(p => p.trim());
-    
-    pairs.forEach(pair => {
-      if (!pair.includes('=')) return;
-      const [key, ...valueParts] = pair.split('=');
-      const value = valueParts.join('=');
-      const lowerKey = key.trim().toLowerCase();
-      
-      if (lowerKey === 'server' || lowerKey === 'data source') {
-        const [host, port] = value.trim().split(',');
-        params.host = host;
-        if (port) params.port = parseInt(port);
-      } else if (lowerKey === 'database' || lowerKey === 'initial catalog') {
-        params.database = value.trim();
-      } else if (lowerKey === 'user id' || lowerKey === 'uid' || lowerKey === 'user') {
-        params.username = value.trim();
-      } else if (lowerKey === 'password' || lowerKey === 'pwd') {
-        params.password = value.trim();
+    if (!connectionString) return params;
+
+    const trimmed = connectionString.trim();
+
+    const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
+      ? trimmed.replace(/^sqlserver:\/\//i, '')
+      : trimmed;
+
+    const looksLikeHybrid = withoutScheme.includes(';') &&
+      !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+
+    if (looksLikeHybrid) {
+      const firstSemi = withoutScheme.indexOf(';');
+      const hostSegment = withoutScheme.slice(0, firstSemi);
+      const rest = withoutScheme.slice(firstSemi + 1);
+
+      const hostMatch = hostSegment.match(/^([^:\\,]+)(?::(\d+))?(?:\\([^,]*))?(?:,(\d+))?/);
+      if (hostMatch) {
+        if (hostMatch[1]) params.host = hostMatch[1].trim();
+        if (hostMatch[2]) params.port = parseInt(hostMatch[2], 10);
+        if (hostMatch[3]) params.instance_name = hostMatch[3].trim();
+        if (hostMatch[4]) params.port = parseInt(hostMatch[4], 10);
       }
-    });
-    
+
+      rest.split(';').forEach(pair => {
+        if (!pair.includes('=')) return;
+        const [key, ...valueParts] = pair.split('=');
+        const value = valueParts.join('=').trim();
+        const lowerKey = key.trim().toLowerCase();
+
+        if (lowerKey === 'database' || lowerKey === 'initial catalog') {
+          params.database = value;
+        } else if (lowerKey === 'user id' || lowerKey === 'uid' || lowerKey === 'user') {
+          params.username = value;
+        } else if (lowerKey === 'password' || lowerKey === 'pwd') {
+          params.password = value;
+        } else if (lowerKey === 'encrypt') {
+          params.azure = ['true', '1', 'yes'].includes(value.toLowerCase());
+        } else if (lowerKey === 'port') {
+          params.port = parseInt(value, 10);
+        } else if (lowerKey === 'instance' || lowerKey === 'instance name') {
+          params.instance_name = value;
+        }
+      });
+
+      return params;
+    }
+
     return params;
   },
 
-  validate(connectionString, options) {
+  validate(connectionString) {
     if (!connectionString || !connectionString.trim()) {
       return { valid: false, error: 'Connection string is required' };
     }
-    if (!connectionString.toLowerCase().includes('server=')) {
-      return { valid: false, error: 'Connection string must include Server' };
+
+    const trimmed = connectionString.trim();
+    const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
+      ? trimmed.replace(/^sqlserver:\/\//i, '')
+      : trimmed;
+
+    const looksLikeHybrid = withoutScheme.includes(';') &&
+      !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+
+    if (!looksLikeHybrid) {
+      return {
+        valid: false,
+        error: 'Connection string must be in host;key=value format or sqlserver://host;key=value format',
+      };
     }
+
     return { valid: true, error: '' };
   },
 

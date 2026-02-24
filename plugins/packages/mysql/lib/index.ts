@@ -152,7 +152,9 @@ export default class MysqlQueryService implements QueryService {
     try {
       knexInstance = await this.getConnection(sourceOptions, {}, false);
       await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-
+      if (knexInstance) {
+          try { await knexInstance.destroy(); } catch (_) {}
+      }
       return { status: 'ok' };
     } catch (err) {
       const errorMessage = err?.message || 'An unknown error occurred';
@@ -169,11 +171,7 @@ export default class MysqlQueryService implements QueryService {
       }
 
       throw new QueryError('Connection test failed', errorMessage, errorDetails);
-    } finally {
-      if (knexInstance) {
-          try { await knexInstance.destroy(); } catch (_) {}
-      }
-    }
+    } 
   }
 
   private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
@@ -245,7 +243,14 @@ export default class MysqlQueryService implements QueryService {
         }
 
         const socket = url.searchParams.get('socket') || url.searchParams.get('socketPath');
-        if (socket) parsed.socketPath = socket;
+        if (socket) parsed.socket_path = socket;
+        const sslParam = url.searchParams.get('ssl')
+          || url.searchParams.get('sslmode')
+          || url.searchParams.get('ssl_mode');
+        if (sslParam !== null) {
+          parsed.ssl_enabled = ['true', '1', 'require', 'required', 'verify-ca', 'verify-full']
+            .includes(sslParam.toLowerCase()) as any;
+        }
 
         return parsed;
       }
@@ -302,7 +307,12 @@ export default class MysqlQueryService implements QueryService {
 
         if (Object.keys(q).length) parsed.params = q;
         if (q['socket'] || q['socketPath']) {
-          parsed.socketPath = q['socket'] || q['socketPath'];
+          parsed.socket_path = q['socket'] || q['socketPath'];
+          const sslMode = q['ssl'] || q['sslmode'] || q['ssl_mode'];
+          if (sslMode !== undefined) {
+            parsed.ssl_enabled = ['true', '1', 'require', 'required', 'verify-ca', 'verify-full']
+              .includes(sslMode.toLowerCase()) as any;
+          }
         }
       }
 
@@ -332,7 +342,11 @@ export default class MysqlQueryService implements QueryService {
       } else if (lowerKey === 'pwd' || lowerKey === 'password') {
         parsed.password = value;
       } else if (lowerKey === 'socket' || lowerKey === 'socketpath') {
-        parsed.socketPath = value;
+        parsed.socket_path = value;
+      }else if (lowerKey === 'ssl' || lowerKey === 'sslmode' || lowerKey === 'ssl_mode' || lowerKey === 'usessl') {
+        const v = value.toLowerCase();
+        parsed.ssl_enabled = ['true', '1', 'require', 'required', 'verify-ca', 'verify-full']
+          .includes(v) as any;
       } else {
         if (!parsed.params) parsed.params = {};
         parsed.params[key.trim()] = value;
@@ -348,11 +362,13 @@ export default class MysqlQueryService implements QueryService {
   let effectiveOptions = { ...sourceOptions };
   if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
     const parsed = this.parseConnectionString(sourceOptions.connection_string);
-      effectiveOptions.host=parsed.host || effectiveOptions.host;
-      effectiveOptions.port=parsed.port || effectiveOptions.port;
-      effectiveOptions.database=parsed.database || effectiveOptions.database;
-      effectiveOptions.username=parsed.username || effectiveOptions.username;
-      effectiveOptions.password=parsed.password || effectiveOptions.password;
+      effectiveOptions.host= effectiveOptions.host || parsed.host;
+      effectiveOptions.port= effectiveOptions.port|| parsed.port;
+      effectiveOptions.database=effectiveOptions.database || parsed.database;
+      effectiveOptions.username=effectiveOptions.username || parsed.username;
+      effectiveOptions.password=effectiveOptions.password || parsed.password;
+      if (parsed.socket_path) effectiveOptions.socket_path =effectiveOptions.socket_path ||  parsed.socket_path;
+      if (parsed.ssl_enabled !== undefined) effectiveOptions.ssl_enabled = effectiveOptions.ssl_enabled || parsed.ssl_enabled;
   }
 
   const shouldUseSSL = effectiveOptions.ssl_enabled;
