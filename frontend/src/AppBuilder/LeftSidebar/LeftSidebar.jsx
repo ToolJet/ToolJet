@@ -212,7 +212,7 @@ export const BaseLeftSidebar = ({
     <div
       className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999 , maxWidth: '304px'}}
+      style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems()}
       <Popover

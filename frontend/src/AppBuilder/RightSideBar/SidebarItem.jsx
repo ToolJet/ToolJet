@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
 import { useTranslation } from 'react-i18next';
+import { generateCypressDataCy } from '../../modules/common/helpers/cypressHelpers';
 
 // TODO: remove refs and related dependancies
 export const SidebarItem = forwardRef(
@@ -28,11 +29,11 @@ export const SidebarItem = forwardRef(
           variant="ghost"
           size="default"
           iconOnly
+          data-cy={`right-sidebar-${generateCypressDataCy(typeof tip === 'object' ? icon : tip) || 'unknown'}-button`}
         >
           {children && (
             <div
               className={`sidebar-svg-icon  position-relative ${selectedSidebarItem && 'sidebar-item'}`}
-              data-cy={`right-sidebar-${icon.toLowerCase()}-button`}
             >
               {children}
             </div>

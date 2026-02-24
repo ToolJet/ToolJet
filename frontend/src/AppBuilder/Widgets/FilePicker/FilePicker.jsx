@@ -195,7 +195,7 @@ const FilePicker = (props) => {
       ) : (
         <>
           <div className={topSectionClasses}>
-            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`}>
+            <h3 className="file-picker-title" style={{ color: 'var(--file-picker-text-primary)' }} id={`${id}-label`} data-cy={`${dataCy}-upload-files-label`}>
               {labelText}
             </h3>
             <ValidationBar
@@ -205,6 +205,7 @@ const FilePicker = (props) => {
               minFileCount={minFileCount}
               maxFileCount={maxFileCount}
               enableMultiple={enableMultiple}
+              dataCy={dataCy}
             />
             <UploadArea
               getRootProps={getRootProps}
@@ -230,6 +231,7 @@ const FilePicker = (props) => {
               isVisible={isVisible}
               isLoading={isLoading}
               isMandatory={isMandatory}
+              dataCy={dataCy}
             />
           </div>
           {selectedFiles.length > 0 && (
@@ -267,9 +269,9 @@ FilePicker.defaultProps = {
   darkMode: false,
   styles: {},
   properties: {},
-  fireEvent: () => {},
-  setExposedVariable: () => {},
-  setExposedVariables: () => {},
+  fireEvent: () => { },
+  setExposedVariable: () => { },
+  setExposedVariables: () => { },
 };
 
 export default FilePicker;

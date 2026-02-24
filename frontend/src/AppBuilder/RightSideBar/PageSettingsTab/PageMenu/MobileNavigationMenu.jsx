@@ -2,8 +2,10 @@ import React, { useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import useStore from '@/AppBuilder/_stores/store';
-import { buildTree } from './Tree/utilities';
+import { buildTree } from '@/_ui/SortableTree';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+
+const PAGE_PROPERTY_NAMES = { isGroup: 'isPageGroup', parentId: 'pageGroupId' };
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
@@ -35,7 +37,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
   const pagesVisibilityState = useStore((state) => state.resolvedStore.modules[moduleId]?.others?.pages || {}, shallow);
 
   const pagesTree = useMemo(
-    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages) : pages),
+    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, PAGE_PROPERTY_NAMES) : pages),
     [hasAppPagesAddNavGroupEnabled, pages]
   );
 
