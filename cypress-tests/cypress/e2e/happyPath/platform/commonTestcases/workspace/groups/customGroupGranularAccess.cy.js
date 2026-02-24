@@ -80,7 +80,7 @@ const createWorkspaceOnboardUser = ({
 
     cy.apiCreateApp(data.appName);
     cy.apiCreateApp(appName2);
-    createAndReleaseApp(appName3, undefined, appSlug, data.workspaceSlug);
+    createAndReleaseApp(appName3, {}, appSlug, data.workspaceSlug);
 };
 
 const configureAppGranularPermissions = (groupName, apps) => {
