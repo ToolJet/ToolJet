@@ -2,8 +2,6 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/_ui/LeftSidebar';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
 import { kebabCase } from 'lodash';
@@ -17,18 +15,21 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { Button } from '@/components/ui/Button/Button';
 
 const POPOVER_TITLES = {
   add: {
     default: 'New page',
     app: 'New nav item with app',
     url: 'New nav item with URL',
+    custom: 'New custom nav item',
     group: 'New nav group',
   },
   edit: {
     default: 'Edit page',
     app: 'Edit nav item',
     url: 'Edit nav item',
+    custom: 'Edit nav item',
     group: 'Edit nav group',
   },
 };
@@ -37,13 +38,6 @@ const OPEN_APP_MODES = [
   { label: 'New tab', value: 'new_tab' },
   { label: 'Same tab', value: 'same_tab' },
 ];
-
-const POPOVER_ACTIONS = {
-  default: 'page',
-  url: 'page',
-  app: 'page',
-  group: 'group',
-};
 
 export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const { moduleId } = useModuleContext();
@@ -79,7 +73,6 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const [hasAutoSaved, setHasAutoSaved] = useState(false);
   const [error, setError] = useState(null);
 
-  const allpages = pages.filter((p) => p.id !== page?.id);
   const isHomePage = page?.id === homePageId;
 
   //Nav item with app
@@ -189,6 +182,29 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
     }
   }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
 
+  //Custom nav item
+  useEffect(() => {
+    if (mode === 'add' && type === 'custom' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Custom ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Custom ${index}`;
+      }
+      const pageObj = { type: 'custom' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
+
   //Nav item with group
   useEffect(() => {
     if (mode === 'add' && type === 'group' && !hasAutoSaved) {
@@ -259,310 +275,215 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         <div className="d-flex justify-content-between align-items-center">
           <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
           <div className="actions-container">
-            {type !== 'group' && (
+            {!['group', 'custom'].includes(type) && (
               <>
                 <ToolTip message={'Go to page'} placement="bottom">
-                  <div onClick={handlePageSwitch} className="icon-btn">
-                    <SolidIcon name="arrowright01" />
-                  </div>
+                  <Button
+                    key="go-to-page-btn"
+                    fill="var(--icon-strong)"
+                    leadingIcon="arrowright01"
+                    iconOnly
+                    variant="ghost"
+                    size="medium"
+                    onClick={handlePageSwitch}
+                  />
                 </ToolTip>
               </>
             )}
 
-            <ToolTip message={`Duplicate ${POPOVER_ACTIONS[type]}`} placement="bottom">
-              <div onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))} className="icon-btn">
-                <SolidIcon name="duplicatepage" />
-              </div>
+            <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="duplicate-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="duplicatepage"
+                iconOnly
+                variant="ghost"
+                size="medium"
+                onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
+              />
             </ToolTip>
 
-            <ToolTip message={`Delete ${POPOVER_ACTIONS[type]}`} placement="bottom">
-              <div
+            <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="delete-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="delete01"
+                iconOnly
+                variant="ghost"
+                size="medium"
                 onClick={() => {
                   openPageEditPopover(page);
                   toggleDeleteConfirmationModal(true);
                 }}
-                className="icon-btn"
-              >
-                <SolidIcon name="delete01" />
-              </div>
+              />
             </ToolTip>
           </div>
         </div>
       </Popover.Header>
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
+        <div className="pb-2">
+          <div className="col">
+            <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
+            <input
+              type="text"
+              className="form-control"
+              value={pageName}
+              autoFocus={true}
+              onChange={(e) => setPageName(e.target.value)}
+              onBlur={() => {
+                pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+              }}
+              minLength="1"
+              maxLength="32"
+            />
+          </div>
+        </div>
         {type === 'default' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Page name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Handle</label>
-                <input
-                  type="text"
-                  className={`form-control ${error ? 'is-invalid' : ''}`}
-                  onChange={(e) => onChangePageHandleValue(e)}
-                  onBlur={(e) => handleSave(e)}
-                  value={handle}
-                  minLength="1"
-                  maxLength="32"
-                />
-                <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
-                  {error}
-                </div>
-              </div>
-            </div>
-            <div className="pb-1">
-              <div className="d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFile'}
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Mark as home</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={isHomePage}
-                    onChange={() => markAsHomePage(page?.id)}
-                    disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
-                  />
-                </label>
-              </div>
-              <HidePageOnNavigation
-                hidden={page?.hidden}
-                disabled={page?.disabled}
-                page={page}
-                updatePageVisibility={updatePageVisibility}
-                darkMode={darkMode}
-                isHomePage={isHomePage}
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">Handle</label>
+              <input
+                type="text"
+                className={`form-control ${error ? 'is-invalid' : ''}`}
+                onChange={(e) => onChangePageHandleValue(e)}
+                onBlur={() => handleSave()}
+                value={handle}
+                minLength="1"
+                maxLength="32"
               />
-              <div className=" d-flex justify-content-between align-items-center pb-2">
-                <label className="form-label font-weight-400 mb-0">Disable page</label>
-                <label className={`form-switch`}>
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={page?.disabled}
-                    onChange={(e) => disableOrEnablePage(page?.id, !page.disabled)}
-                    disabled={isHomePage}
-                  />
-                </label>
+              <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
+                {error}
               </div>
             </div>
-            <PageEvents page={page} allPages={pages} />
-          </>
+          </div>
         )}
         {type === 'url' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
-                <input
-                  type="text"
-                  onChange={(e) => setPageName(e.target.value)}
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">URL</label>
-                <textarea
-                  onChange={(e) => setPageURL(e.target.value)}
-                  className="form-control"
-                  value={pageURL}
-                  onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
-                  minLength="1"
-                />
-              </div>
-            </div>
-
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Open URL in</label>
-              <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
-                <ToggleGroup
-                  onValueChange={(value) => {
-                    updatePageTarget(page?.id, value);
-                  }}
-                  defaultValue={page?.openIn}
-                >
-                  {OPEN_APP_MODES.map((mode) => (
-                    <ToggleGroupItem key={mode.value} value={mode.value}>
-                      {mode.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFile'}
-                />
-              </div>
-            </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-          </>
-        )}
-        {type === 'app' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
-                <input
-                  type="text"
-                  onChange={(e) => setPageName(e.target.value)}
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onBlur={(e) => {
-                    pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
-                  }}
-                  minLength="1"
-                  maxLength="32"
-                />
-              </div>
-            </div>
-            <div className="pb-2">
-              <div className="col d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Select app</label>
-                <Select
-                  options={appOptions}
-                  search={true}
-                  value={page?.appId}
-                  onChange={(value) => {
-                    updatePageAppId(page?.id, value);
-                  }}
-                  isLoading={appOptionsLoading}
-                  placeholder={'Select...'}
-                  useMenuPortal={false}
-                  width={'168px'}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-                />
-              </div>
-            </div>
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Icon</label>
-              <Icon
-                isVisibilityEnabled={false}
-                onChange={(value) => updatePageIcon(page?.id, value)}
-                value={page?.icon || 'IconFile'}
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">URL</label>
+              <textarea
+                onChange={(e) => setPageURL(e.target.value)}
+                className="form-control"
+                value={pageURL}
+                onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                minLength="1"
               />
             </div>
-            <div className="d-flex justify-content-between align-items-center pb-2">
-              <label className="form-label font-weight-400 mb-0">Open app in</label>
-              <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
-                <ToggleGroup
-                  onValueChange={(value) => {
-                    updatePageTarget(page?.id, value);
-                  }}
-                  defaultValue={page?.openIn}
-                >
-                  {OPEN_APP_MODES.map((mode) => (
-                    <ToggleGroupItem key={mode.value} value={mode.value}>
-                      {mode.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-          </>
+          </div>
         )}
-        {type === 'group' && (
-          <>
-            <div className="pb-2">
-              <div className="col">
-                <label className="form-label font-weight-400 mb-0">Label</label>
+        {type === 'app' && (
+          <div className="pb-2">
+            <div className="col d-flex justify-content-between align-items-center">
+              <label className="form-label">Select app</label>
+              <Select
+                options={appOptions}
+                search={true}
+                value={page?.appId}
+                onChange={(value) => {
+                  updatePageAppId(page?.id, value);
+                }}
+                isLoading={appOptionsLoading}
+                placeholder={'Select...'}
+                useMenuPortal={false}
+                width={'168px'}
+                borderRadius="6px"
+                styles={{ border: '1px solid var(--border-default) !important' }}
+                className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
+              />
+            </div>
+          </div>
+        )}
+        {['url', 'app'].includes(type) && (
+          <div className="d-flex justify-content-between align-items-center pb-2">
+            <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
+            <div className="ms-auto position-relative app-mode-switch">
+              <ToggleGroup
+                onValueChange={(value) => {
+                  updatePageTarget(page?.id, value);
+                }}
+                defaultValue={page?.openIn}
+              >
+                {OPEN_APP_MODES.map((mode) => (
+                  <ToggleGroupItem key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          </div>
+        )}
+        <div className="pb-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <label className="form-label font-weight-400 mb-0">Icon</label>
+            <Icon
+              isVisibilityEnabled={false}
+              onChange={(value) => updatePageIcon(page?.id, value)}
+              value={page?.icon || 'IconFile'}
+            />
+          </div>
+        </div>
+        <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
+          {type === 'default' && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Mark as home</label>
+              <label className={`form-switch`}>
                 <input
-                  type="text"
-                  className="form-control"
-                  value={pageName}
-                  autoFocus={true}
-                  onChange={(e) => setPageName(e.target.value)}
-                  onBlur={(e) => pageName && pageName !== page?.name && updatePageName(page?.id, pageName, true)}
-                  minLength="1"
-                  maxLength="32"
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isHomePage}
+                  onChange={() => markAsHomePage(page?.id)}
+                  disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
                 />
-              </div>
+              </label>
             </div>
-            <div className="pb-2">
-              <div className="d-flex justify-content-between align-items-center">
-                <label className="form-label font-weight-400 mb-0">Icon</label>
-                <Icon
-                  isVisibilityEnabled={false}
-                  onChange={(value) => updatePageIcon(page?.id, value)}
-                  value={page?.icon || 'IconFolder'}
+          )}
+          <HidePageOnNavigation
+            hidden={page?.hidden}
+            disabled={['default', 'custom'].includes(type) ? page?.disabled : false}
+            page={page}
+            updatePageVisibility={updatePageVisibility}
+            darkMode={darkMode}
+            isHomePage={isHomePage}
+          />
+          {['default', 'custom'].includes(type) && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Disable page</label>
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={page?.disabled}
+                  onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
+                  disabled={isHomePage}
                 />
-              </div>
+              </label>
             </div>
-            <HidePageOnNavigation
-              hidden={page?.hidden}
-              page={page}
-              updatePageVisibility={updatePageVisibility}
-              darkMode={darkMode}
-              isHomePage={isHomePage}
-            />
-          </>
-        )}
+          )}
+        </div>
+        {['default', 'custom'].includes(type) && <PageEvents type={type} page={page} allPages={pages} />}
       </Popover.Body>
     </Popover>
   );
 });
 
-const PageEvents = ({ page, allPages }) => {
+const PageEvents = ({ type, page, allPages }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
+
+  const eventMapping = {
+    default: {
+      title: 'Page events',
+      event: { onPageLoad: { displayName: 'On page load' } },
+    },
+    custom: {
+      title: 'Events',
+      event: { onClick: { displayName: 'On click' } },
+    },
+  };
+
   return (
     <div className="page-events">
-      <div className="section-header pb-2">Page events</div>
-      {/* <div className="page-empty-events">
-        <SolidIcon name="nopageevents" />
-        <span className="tj-text-xsm">No events added</span>
-      </div> */}
+      <div className="section-header pb-2">{eventMapping[type].title}</div>
       <div>
         <EventManager
           component={{
@@ -574,7 +495,7 @@ const PageEvents = ({ page, allPages }) => {
           }}
           sourceId={page?.id}
           eventSourceType="page"
-          eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
           components={components}
           pages={allPages}
           popOverCallback={(showing) => showing}
@@ -594,8 +515,9 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-              }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
           />
         </div>
         <div className={`flex-grow-1`}>

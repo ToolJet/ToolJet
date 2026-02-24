@@ -2,13 +2,13 @@ import React, { useMemo } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import useStore from '@/AppBuilder/_stores/store';
-import { buildTree } from './Tree/utilities';
+import { buildTree } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/Tree/utilities';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import AppLogo from '@/_components/AppLogo';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/components/ui/sidebar';
-import { RenderPageAndPageGroup } from '@/AppBuilder/RightSideBar/PageSettingsTab/PageMenu/PageGroup';
+import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
 import { shallow } from 'zustand/shallow';
 import Header from '@/AppBuilder/Viewer/Header';
 
@@ -162,12 +162,13 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
       sheetProps={{
         container: document.getElementsByClassName('canvas-wrapper')[0],
         overlayClassName: 'tw-absolute tw-h-dvh',
-        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${isMobilePreviewMode && !isPreviewInEditor
-          ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
-          : currentMode === 'view' && !isMobilePreviewMode
+        className: `tw-absolute tw-p-0 mobile-page-menu-popup ${
+          isMobilePreviewMode && !isPreviewInEditor
+            ? 'tw-h-[calc(100%_-_44px)]' // To account for the preview settings header height
+            : currentMode === 'view' && !isMobilePreviewMode
             ? 'tw-h-dvh' // In released app, the height should equal to mobile browsers viewport height
             : 'tw-h-full'
-          }`,
+        }`,
         style: bgStyles,
       }}
       className="group-data-[side=left]:!tw-border-r-0"
