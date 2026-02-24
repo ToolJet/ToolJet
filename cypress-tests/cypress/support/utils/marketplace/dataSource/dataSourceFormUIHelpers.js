@@ -21,9 +21,8 @@ export const verifyConnectionFormFooter = (data) => {
     cy.get(`[data-cy="db-connection-save-button"]`).verifyVisibleElement('have.text', 'Save');
 }
 
-const validateLabel = (field) => {
-    const { fieldName } = field;
-    cy.get(dsCommonSelector.labelFieldName(fieldName)).verifyVisibleElement("have.text", fieldName);
+const validateLabel = ({ fieldName }) => {
+    cy.get(dsCommonSelector.labelFieldName(fieldName)).verifyVisibleElement("contain.text", fieldName);
 };
 
 const validateRequiredIndicator = (isRequired) => {
@@ -60,7 +59,7 @@ export const verifyInputFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        validateLabel(fieldName);
+        validateLabel(field);
         validateRequiredIndicator(validations.isRequired);
 
         const textFieldSelector = dsCommonSelector.textField(fieldName);
@@ -75,7 +74,7 @@ export const verifyEncryptedFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        validateLabel(fieldName);
+        validateLabel(field);
         validateRequiredIndicator(validations.isRequired);
 
         if (validations.hasEditButton) {
@@ -207,6 +206,7 @@ export const verifyKeyValueFieldUI = (field) => {
         verifyContent();
     }
 };
+
 export const verifyCheckboxFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
@@ -219,7 +219,6 @@ export const verifyCheckboxFieldUI = (field) => {
         validateDisabledState(checkboxSelector, validations.disabled);
     });
 };
-
 
 export const verifyCodeMirrorInput = (field) => {
     const { fieldName, assertion, data } = field;

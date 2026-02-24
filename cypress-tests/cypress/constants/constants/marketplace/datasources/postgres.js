@@ -28,6 +28,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Port",
@@ -38,6 +39,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Database name",
@@ -48,6 +50,7 @@ export const postgresUIConfig = {
                 disabled: false
             }
         },
+
         {
             type: "input",
             fieldName: "Username",
