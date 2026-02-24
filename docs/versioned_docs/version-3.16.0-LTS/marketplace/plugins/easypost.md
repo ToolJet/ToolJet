@@ -9,7 +9,7 @@ Using the **EasyPost** plugin in your ToolJet application, you can simplify mana
 
 To connect **EasyPost** with ToolJet, you will need an EasyPost API Key. Follow this [guide](https://support.easypost.com/hc/en-us/articles/360004588571-API-Keys) to generate the required API key.
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/easypost/connection.png" alt="Marketplace EasyPost Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/easypost/connection.png" alt="Marketplace EasyPost Plugin"/>
 
 ## Supported Operations
 
@@ -141,16 +141,16 @@ To create a new parcel, use the `POST /parcels` operation and provide the parcel
 
 ```js
 {
-  "length": "10",
-  "width": "5",
-  "height": "8",
-  "weight": "15.5"
+  "length": "12",
+  "width": "8",
+  "height": "6",
+  "weight": "10.5"
 }
 ```
 
 This will create a parcel object that can be referenced later when creating shipments or orders.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/easypost/parcel-object.png" alt="Marketplace EasyPost Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/easypost/parcel-query.png" alt="Marketplace EasyPost Plugin"/>
 
 <details id="tj-dropdown">
 <summary>**Query Response Example**</summary>
@@ -158,13 +158,13 @@ This will create a parcel object that can be referenced later when creating ship
 {
   "id": "prcl_30106aae68104ea6a1e20eb01c927548",
   "object": "Parcel",
-  "created_at": "2025-09-04T11:11:41Z",
-  "updated_at": "2025-09-04T11:11:41Z",
-  "length": 10,
-  "width": 5,
-  "height": 8,
+  "created_at": "2026-01-28T15:55:03Z",
+  "updated_at": "2026-01-28T15:55:03Z",
+  "length": 12,
+  "width": 8,
+  "height": 6,
   "predefined_package": null,
-  "weight": 15.5,
+  "weight": 10.5,
   "mode": "test"
 }
 ```
@@ -209,14 +209,14 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
 }
 ```
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/easypost/create-shipment.png" alt="Marketplace EasyPost Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/easypost/shipment-query.png" alt="Marketplace EasyPost Plugin"/>
 
 <details id="tj-dropdown">
 <summary>**Query Response Example**</summary>
 ```
 {
   "id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
-  "created_at": "2025-09-04T11:19:22Z",
+  "created_at": "2026-01-28T15:58:19Z",
   "is_return": false,
   "messages": [
     {
@@ -239,7 +239,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "reference": null,
   "status": "unknown",
   "tracking_code": null,
-  "updated_at": "2025-09-04T11:19:24Z",
+  "updated_at": "2026-01-28T15:58:21Z",
   "batch_id": null,
   "batch_status": null,
   "batch_message": null,
@@ -247,8 +247,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "from_address": {
     "id": "adr_022b9a51898111f08a19ac1f6bc53342",
     "object": "Address",
-    "created_at": "2025-09-04T11:19:22+00:00",
-    "updated_at": "2025-09-04T11:19:22+00:00",
+    "created_at": "2026-01-28T15:58:19+00:00",
+    "updated_at": "2026-01-28T15:58:19+00:00",
     "name": "Jane Smith",
     "company": null,
     "street1": "456 Oak Ave",
@@ -271,8 +271,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "parcel": {
     "id": "prcl_0104a31bbadf4be0a19f9aab1eb61a0a",
     "object": "Parcel",
-    "created_at": "2025-09-04T11:19:22Z",
-    "updated_at": "2025-09-04T11:19:22Z",
+    "created_at": "2026-01-28T15:58:19Z",
+    "updated_at": "2026-01-28T15:58:19Z",
     "length": 10,
     "width": 5,
     "height": 8,
@@ -285,8 +285,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_53dafadd71634f03a7a56fc1d0b8fada",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "Express",
       "carrier": "USPS",
@@ -307,8 +307,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_87dcdeb5586a4ef3b210a854effc7637",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "Priority",
       "carrier": "USPS",
@@ -329,8 +329,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_884f44e916c14689ac463cfbdefdcaf4",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:22Z",
       "mode": "test",
       "service": "GroundAdvantage",
       "carrier": "USPS",
@@ -351,8 +351,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_5875b39ef7ec4e96803314f1cc5724b3",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:22Z",
+      "updated_at": "2026-01-28T15:58:22Z",
       "mode": "test",
       "service": "FIRST_OVERNIGHT",
       "carrier": "FedExDefault",
@@ -364,7 +364,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 1,
-      "delivery_date": "2025-09-05T08:00:00Z",
+      "delivery_date": "2026-01-29T09:10:00Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 1,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -373,8 +373,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_d23c8352107649c796ca416294f9703e",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "PRIORITY_OVERNIGHT",
       "carrier": "FedExDefault",
@@ -386,7 +386,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 1,
-      "delivery_date": "2025-09-05T10:30:00Z",
+      "delivery_date": "2026-01-29T11:30:00Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 1,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -395,8 +395,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_b0befae2ff004f95969b7a82690ef2c6",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "STANDARD_OVERNIGHT",
       "carrier": "FedExDefault",
@@ -417,8 +417,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_35eacb6a31db425dbc537e2983ae58cc",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FEDEX_2_DAY_AM",
       "carrier": "FedExDefault",
@@ -430,7 +430,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 3,
-      "delivery_date": "2025-09-08T10:30:00Z",
+      "delivery_date": "2026-01-30T10:30:00Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 3,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -439,8 +439,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_1d5f09237282402ebd87cb5de104d241",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FEDEX_2_DAY",
       "carrier": "FedExDefault",
@@ -452,7 +452,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 4,
-      "delivery_date": "2025-09-08T17:00:00Z",
+      "delivery_date": "2026-01-30T14:00:00Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 4,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -461,8 +461,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_cfbeea8ad6d442ceaf0a8afcb41e2147",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FEDEX_GROUND",
       "carrier": "FedExDefault",
@@ -474,7 +474,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 2,
-      "delivery_date": "2025-09-08T23:59:00Z",
+      "delivery_date": "2026-01-30T17:40:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 2,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -483,8 +483,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_9a14fea5c30241abac36dd2577feff2d",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FEDEX_EXPRESS_SAVER",
       "carrier": "FedExDefault",
@@ -496,7 +496,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 5,
-      "delivery_date": "2025-09-09T17:00:00Z",
+      "delivery_date": "2026-01-29T15:58:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 5,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -505,8 +505,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_689fb275a85f43c5ba83df7356619e2e",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19ZZ",
       "mode": "test",
       "service": "SMART_POST",
       "carrier": "FedExDefault",
@@ -518,7 +518,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "easypost",
       "delivery_days": 3,
-      "delivery_date": "2025-09-09T23:59:00Z",
+      "delivery_date": "2026-01-30T15:58:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 3,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -527,8 +527,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_6f21a86890f844e7994cfd045ee7c893",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FIRST_OVERNIGHT",
       "carrier": "FedEx",
@@ -540,7 +540,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 1,
-      "delivery_date": "2025-09-05T08:00:00Z",
+      "delivery_date": "2026-01-28T15:58:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 1,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -549,8 +549,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_3283af8eca614c59958c450738621a08",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "PRIORITY_OVERNIGHT",
       "carrier": "FedEx",
@@ -562,7 +562,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 1,
-      "delivery_date": "2025-09-05T10:30:00Z",
+      "delivery_date": "2026-01-29T15:50:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 1,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -571,8 +571,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_8c52023e7a2f4708a48556b7504e04df",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "STANDARD_OVERNIGHT",
       "carrier": "FedEx",
@@ -584,7 +584,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 1,
-      "delivery_date": "2025-09-05T17:00:00Z",
+      "delivery_date": "2026-01-29T11:28:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 1,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -593,8 +593,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_2b997ddca0934e8d97ca4db5b73f6afb",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:58:19Z",
+      "updated_at": "2026-01-28T15:58:19Z",
       "mode": "test",
       "service": "FEDEX_2_DAY_AM",
       "carrier": "FedEx",
@@ -606,7 +606,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 3,
-      "delivery_date": "2025-09-08T10:30:00Z",
+      "delivery_date": "2026-01-28T10:58:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 3,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -615,8 +615,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_210d72d23ed04e8bbaedcda329066c79",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T15:59:19Z",
+      "updated_at": "2026-01-28T15:59:19Z",
       "mode": "test",
       "service": "FEDEX_2_DAY",
       "carrier": "FedEx",
@@ -628,7 +628,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 4,
-      "delivery_date": "2025-09-08T17:00:00Z",
+      "delivery_date": "2026-01-31T09:18:19Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 4,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -637,8 +637,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_7e43fdca91624dec94d6473a5ad77ffd",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T16:01:10Z",
+      "updated_at": "2026-01-28T16:01:10Z",
       "mode": "test",
       "service": "FEDEX_GROUND",
       "carrier": "FedEx",
@@ -650,7 +650,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 2,
-      "delivery_date": "2025-09-08T23:59:00Z",
+      "delivery_date": "2026-01-30T10:01:00Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 2,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -659,8 +659,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
     {
       "id": "rate_27dd6d63b8b341139ffe8c2b004d46f8",
       "object": "Rate",
-      "created_at": "2025-09-04T11:19:24Z",
-      "updated_at": "2025-09-04T11:19:24Z",
+      "created_at": "2026-01-28T16:01:10Z",
+      "updated_at": "2026-01-28T16:01:10Z",
       "mode": "test",
       "service": "FEDEX_EXPRESS_SAVER",
       "carrier": "FedEx",
@@ -672,7 +672,7 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
       "list_currency": "USD",
       "billing_type": "carrier",
       "delivery_days": 5,
-      "delivery_date": "2025-09-09T17:00:00Z",
+      "delivery_date": "2026-01-31T08:05:10Z",
       "delivery_date_guaranteed": true,
       "est_delivery_days": 5,
       "shipment_id": "shp_5a60ff01f56e45c18edd5f8a03ba989b",
@@ -686,8 +686,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "to_address": {
     "id": "adr_0228f879898111f08a14ac1f6bc53342",
     "object": "Address",
-    "created_at": "2025-09-04T11:19:22+00:00",
-    "updated_at": "2025-09-04T11:19:22+00:00",
+    "created_at": "2026-01-28T16:02:12Z",
+    "updated_at": "2026-01-28T16:02:12Z",
     "name": "John Doe",
     "company": null,
     "street1": "123 Main St",
@@ -709,8 +709,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "return_address": {
     "id": "adr_022b9a51898111f08a19ac1f6bc53342",
     "object": "Address",
-    "created_at": "2025-09-04T11:19:22+00:00",
-    "updated_at": "2025-09-04T11:19:22+00:00",
+    "created_at": "2026-01-28T16:02:12Z",
+    "updated_at": "2026-01-28T16:02:12Z",
     "name": "Jane Smith",
     "company": null,
     "street1": "456 Oak Ave",
@@ -731,8 +731,8 @@ To create a shipment, use the `POST /shipments` operation and provide the shipme
   "buyer_address": {
     "id": "adr_0228f879898111f08a14ac1f6bc53342",
     "object": "Address",
-    "created_at": "2025-09-04T11:19:22+00:00",
-    "updated_at": "2025-09-04T11:19:22+00:00",
+    "created_at": "2026-01-28T16:02:12Z",
+    "updated_at": "2026-01-28T16:02:12Z",
     "name": "John Doe",
     "company": null,
     "street1": "123 Main St",
