@@ -3,51 +3,33 @@ id: marketplace-plugin-engagespot
 title: Engagespot
 ---
 
-# Engagespot
-
 ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
 
 :::info
 **NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Connection
 
 - Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
-
 - Enter your Engagespot API key and API secret into their designated fields. To generate user tokens directly from ToolJet, you can optionally provide a signing key.
-
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/connection.png" alt="Engagespot conenction" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/connection.png" alt="Engagespot conenction" />
 
 :::info
 You can change your Engagespot BaseURL by enable custom endpoint.
 :::
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ## Querying Engagespot
 
-Click on `+Add` button of the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
-
-<div style={{textAlign: 'center'}}>
+Click on **+ Add** button of the [query manager](/docs/app-builder/connecting-with-data-sources/creating-managing-queries) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/listops.png" alt="engagespot supported operations" />
-
-</div>
 
 :::info
 Query results can be transformed using transformations. Read our [transformations documentation](/docs/app-builder/custom-code/transform-data).
 :::
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Supported Operations
 
@@ -57,15 +39,13 @@ You can create query for Engagespot data source to perform several actions such 
 2. **[Send Notification](#send-notification)**
 3. **[Generate User Token](#generate-user-token)**
 
-</div>
-
 ### Create OR Update User
 
-#### Required Parameters:
+#### Required Parameters
 
 - **User Identifier** - Unique user identifier.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/create-query.png" alt="engagespot create user" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/create-query.png" alt="engagespot create user" />
 
 :::info
 The user profile column accepts any key-value pairs in valid JSON object format.
@@ -73,12 +53,12 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 
 ### Send Notification
 
-#### Required Parameters:
+#### Required Parameters
 
 - **Reciepient** - Unique user identifier.
 - **Notification Title** - The title for your notification.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/send-query.png" alt="engagespot send notitication"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/send-query.png" alt="engagespot send notitication"/>
 
 ### Generate User Token
 
@@ -86,7 +66,7 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 
 - **User Identifier** - Unique user identifier.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/generate-query.png" alt="engagespot generate token" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/generate-query.png" alt="engagespot generate token" />
 
 :::info
 To generate user tokens, ensure you provide a Signing Key when establishing a connection to your Engagespot data source.

@@ -155,8 +155,6 @@ History :
  }]
 ```
 
-
-
 <img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat-query.png" alt="Cohere Chat" />
 
 <details id="tj-dropdown">
