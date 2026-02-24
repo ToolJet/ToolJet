@@ -153,6 +153,9 @@ export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: Licen
     case LICENSE_FIELD.OBSERVABILITY_ENABLED:
       return licenseInstance.observabilityEnabled;
 
+    case LICENSE_FIELD.APP_HISTORY:
+      return licenseInstance.appHistory;
+
     default:
       return licenseInstance.terms;
   }

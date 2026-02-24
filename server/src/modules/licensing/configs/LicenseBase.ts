@@ -470,6 +470,12 @@ export default class LicenseBase {
     }
     return this._isScimEnabled;
   }
+  public get appHistory(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
+    }
+    return !!this._app?.features?.history;
+  }
 
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
@@ -540,6 +546,7 @@ export default class LicenseBase {
       externalApis: this.externalApis,
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
+      appHistory: this.appHistory,
     };
   }
 
@@ -575,6 +582,7 @@ export default class LicenseBase {
       workspacesCount: this.workspaces,
       workflows: this.workflows,
       startDate: this.startDate,
+      appHistoryEnabled: this.appHistory,
     };
   }
 
