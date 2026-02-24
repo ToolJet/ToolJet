@@ -45,7 +45,7 @@ export default class LicenseBase {
   private _isCustomGroups: boolean;
   private _modules: object;
   private _permissions: object;
-  private _app: object;
+  private _app: Terms['app'];
   private BASIC_PLAN_TERMS: Partial<Terms>;
   private _isModulesEnabled: boolean;
   private _isScimEnabled: boolean;
@@ -430,6 +430,12 @@ export default class LicenseBase {
     }
     return this._isScimEnabled;
   }
+  public get appHistory(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
+    }
+    return !!this._app?.features?.history;
+  }
 
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
@@ -492,6 +498,7 @@ export default class LicenseBase {
       appPermissionQuery: this.appPermissionQuery,
       appPermissionPages: this.appPermissionPages,
       workflowsEnabled: this.getWorkflowsEnabled(),
+      appHistory: this.appHistory,
     };
   }
 
@@ -527,6 +534,7 @@ export default class LicenseBase {
       workspacesCount: this.workspaces,
       workflows: this.workflows,
       startDate: this.startDate,
+      appHistoryEnabled: this.appHistory,
     };
   }
 

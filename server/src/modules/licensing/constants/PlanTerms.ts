@@ -58,6 +58,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       query: false,
       pages: false,
     },
+    features: {
+      history: false,
+    },
   },
   modules: {
     enabled: false,

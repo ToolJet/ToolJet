@@ -54,6 +54,9 @@ export interface Terms {
       query: boolean;
       pages: boolean;
     };
+    features?: {
+      history: boolean;
+    };
   };
   modules?: {
     enabled: boolean;
