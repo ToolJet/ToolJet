@@ -87,39 +87,61 @@ export const StringColumn = ({
         onMouseLeave={() => setHovered(false)}
         className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
       >
-        <div
-          ref={ref}
-          contentEditable={true}
-          className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
-            darkMode ? 'textarea-dark-theme' : ''
-          } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
-          style={{
-            color: cellTextColor || 'inherit',
-            outline: 'none',
-            border: 'none',
-            background: 'inherit',
-            position: 'relative',
-            height: '100%',
-          }}
-          onBlur={(e) => {
-            setIsEditing(false);
-            if (cellValue !== e.target.textContent) {
-              handleCellValueChange(row.index, column.key || column.name, e.target.textContent, row.original);
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.target.blur();
-            }
-          }}
-          onFocus={(e) => {
-            setIsEditing(true);
-            e.stopPropagation();
-          }}
-          suppressContentEditableWarning={true}
-        >
-          <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
-        </div>
+        {isEditing ? (
+          <div
+            ref={ref}
+            contentEditable={true}
+            className={`${
+              !isValid ? 'is-invalid' : ''
+            } h-100 text-container long-text-input d-flex align-items-center ${
+              darkMode ? 'textarea-dark-theme' : ''
+            } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+            style={{
+              color: cellTextColor || 'inherit',
+              outline: 'none',
+              border: 'none',
+              background: 'inherit',
+              position: 'relative',
+              height: '100%',
+            }}
+            onBlur={(e) => {
+              setIsEditing(false);
+              if (cellValue !== e.target.textContent) {
+                handleCellValueChange(row.index, column.key || column.name, e.target.textContent, row.original);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.target.blur();
+              }
+            }}
+            onFocus={(e) => {
+              setIsEditing(true);
+              e.stopPropagation();
+            }}
+            suppressContentEditableWarning={true}
+            dangerouslySetInnerHTML={{ __html: cellValue }}
+          />
+        ) : (
+          <div
+            onClick={() => setIsEditing(true)}
+            className={`${
+              !isValid ? 'is-invalid' : ''
+            } h-100 text-container long-text-input d-flex align-items-center ${
+              darkMode ? 'textarea-dark-theme' : ''
+            } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+            style={{
+              color: cellTextColor || 'inherit',
+              outline: 'none',
+              border: 'none',
+              background: 'inherit',
+              position: 'relative',
+              height: '100%',
+            }}
+          >
+            <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
+          </div>
+        )}
       </div>
       {!isValid && (
         <div className="invalid-feedback text-truncate" onClick={focusInput}>

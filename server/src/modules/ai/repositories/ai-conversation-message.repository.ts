@@ -25,7 +25,7 @@ export class AiConversationMessageRepository extends Repository<AiConversationMe
   async findById(id: string): Promise<AiConversationMessage> {
     return await this.findOne({
       where: { id },
-      relations: ['conversation', 'votes'],
+      relations: ['aiResponseVote', 'aiConversation'],
     });
   }
 

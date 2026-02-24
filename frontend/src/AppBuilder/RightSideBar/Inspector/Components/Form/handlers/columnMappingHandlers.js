@@ -14,6 +14,8 @@ export const createColumnMappingHandler = ({
   performBatchComponentOperations,
   saveDataSection,
   setOpenModal,
+  // New parameters for batching form component update
+  getFormComponentDiff,
 }) => {
   return (columns, isSingleUpdate = false) => {
     const newColumns = isSingleUpdate ? formFields.filter((field) => field.componentId !== columns[0].componentId) : [];
@@ -126,7 +128,19 @@ export const createColumnMappingHandler = ({
         Object.keys(operations.added).length > 0 ||
         operations.deleted.length > 0
       ) {
+        // Include the Form component update in the batch operation to make a single API call
+        const formComponentDiff = getFormComponentDiff?.(cleanupFormFields(newColumns));
+        if (formComponentDiff) {
+          operations.updated[component.id] = formComponentDiff;
+        }
         performBatchComponentOperations(operations);
+
+        // Fallback: if getFormComponentDiff returned null, save form data separately
+        if (!formComponentDiff) {
+          saveDataSection(cleanupFormFields(newColumns));
+        }
+      } else {
+        // No child component changes, but still need to save form data section
         saveDataSection(cleanupFormFields(newColumns));
       }
       setOpenModal(false);

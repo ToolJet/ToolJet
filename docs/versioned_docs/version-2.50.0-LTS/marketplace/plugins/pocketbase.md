@@ -3,12 +3,10 @@ id: marketplace-plugin-pocketbase
 title: PocketBase
 ---
 
-# PocketBase
-
 ToolJet connects to your PocketBase database, allowing you to directly interact with your PocketBase backend from the convenience of your ToolJet application.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
 
 ## Connection
@@ -21,9 +19,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
-</div>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
 
 ## Querying PocketBase
 
@@ -34,11 +30,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 
 - Enter the collection name and other required parameters for the selected operation and click on **Run** button to run the query.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/add_query.gif" alt="PocketBase query" />
-
-</div>
 
 <br/>
 
@@ -49,75 +41,60 @@ Query results can be transformed using transformations. Read our [transformation
 ## Supported Operations
 
 You can create query for PocketBase data source to perform several operations such as:
-  1. **[List Records](#list-records)**
-  2. **[Get Record](#get-record)**
-  3. **[Add Record to Collection](#add-record-to-collection)** 
-  4. **[Update Record to Collection](#update-record-to-collection)** 
-  5. **[Delete Record](#delete-record)** 
+
+1. **[List Records](#list-records)**
+2. **[Get Record](#get-record)**
+3. **[Add Record to Collection](#add-record-to-collection)**
+4. **[Update Record to Collection](#update-record-to-collection)**
+5. **[Delete Record](#delete-record)**
 
 ### List Records
 
-  #### Required parameters:
+#### Required parameters:
 
-  - **Collection Name** - Collection name in the database.
+- **Collection Name** - Collection name in the database.
 
+#### Optional Parameters:
 
+- **Limit** - Number of records to be fetched.
+- **Sort** - Sort the records based on a sort rule. Add `-` / `+`(default) in front of the attribute for DESC / ASC order.
+- **Where** - Filter the records based on a filter conditions.
 
-  #### Optional Parameters:
-
-  - **Limit** - Number of records to be fetched.
-  - **Sort** - Sort the records based on a sort rule. Add `-` / `+`(default) in front of the attribute for DESC / ASC order.
-  - **Where** - Filter the records based on a filter conditions.
-
-
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
-  </div>
-
+<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
 
 ### Get Record
 
-  #### Required parameters:
-  - **Collection Name** - Collection name in the database.
-  - **Record ID** - ID of the record to be fetched.
+#### Required parameters:
 
+- **Collection Name** - Collection name in the database.
+- **Record ID** - ID of the record to be fetched.
 
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
-</div>
+<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
 
 ### Add Record to Collection
 
-  #### Required parameters:
-  - **Collection Name** - Collection name in the database.
-  - **Body** - Data to be added to the collection. It should be in valid JSON format.
-  
+#### Required parameters:
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
-</div>
+- **Collection Name** - Collection name in the database.
+- **Body** - Data to be added to the collection. It should be in valid JSON format.
+
+<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
 
 ### Update Record to Collection
 
-  #### Required parameters:
-  - **Collection Name** - Collection name in the database.
-  - **Record ID** - ID of the record to be updated.
-  - **Body** - Data to be updated in the collection. It should be in valid JSON format.
+#### Required parameters:
 
+- **Collection Name** - Collection name in the database.
+- **Record ID** - ID of the record to be updated.
+- **Body** - Data to be updated in the collection. It should be in valid JSON format.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
-</div>
+<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
 
 ### Delete Record
 
-  #### Required parameters:
-  - **Collection Name** - Collection name in the database.
-  - **Record ID** - ID of the record to be deleted.
+#### Required parameters:
 
+- **Collection Name** - Collection name in the database.
+- **Record ID** - ID of the record to be deleted.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />
-</div>
-
-
+<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />

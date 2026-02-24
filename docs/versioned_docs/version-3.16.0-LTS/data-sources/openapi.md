@@ -15,7 +15,7 @@ You can also configure different hosts for different environments from the confi
 
 You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own OpenAPI account securely.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/openapi/openapiconnect-v5.png" alt="OpenAPI" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/openapi/connection-v6.png" alt="OpenAPI data source connection" />
 
 ## Querying OpenAPI
 
@@ -31,4 +31,4 @@ You can toggle on **Authentication required for all users** in the configuration
 - **Host**
 - **Operation**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/openapi/query.png" alt="OpenAPI" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/openapi/get-query.png" alt="OpenAPI" />

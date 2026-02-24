@@ -101,7 +101,10 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
 
   const sensors = useSensors(
     useSensor(CustomPointerSensor, {
-      activationConstraint: { delay: 150 },
+      activationConstraint: {
+        delay: 250,
+        distance: 10,
+      },
     })
   );
 
@@ -170,7 +173,7 @@ export function SortableTree({ collapsible, indicator = false, indentationWidth 
               indentationWidth={indentationWidth}
               indicator={indicator}
               collapsed={Boolean(collapsed && children.length)}
-              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => {}}
+              onCollapse={collapsible && children.length ? () => handleCollapse(id) : () => { }}
             />
           );
         })}

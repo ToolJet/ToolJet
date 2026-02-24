@@ -48,99 +48,139 @@
         {
           "type": "category",
           "label": "Deployment",
-          "link": {
-            "type": "doc",
-            "id": "setup/index"
-          },
           "items": [
             {
               "type": "category",
-              "label": "PostgreSQL 13 → 16 Upgrade",
+              "label": "Overview",
+              "link": {
+                "type": "doc",
+                "id": "setup/overview/setup"
+              },
               "items": [
+                "setup/overview/setup",
+                "setup/overview/system-requirements",
+                "setup/overview/choose-your-tooljet",
+                "setup/overview/try-tooljet"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Configuration",
+              "items": [
+                "setup/configuration/env-vars",
+                "setup/configuration/http-proxy",
+                "setup/configuration/tooljet-subpath"
+              ]
+            },
+            "setup/docker",
+            {
+              "type": "category",
+              "label": "Managed Cloud",
+              "items": [
+                "setup/managed-cloud/digitalocean",
                 {
                   "type": "category",
                   "label": "AWS",
                   "items": [
-                    "setup/postgresql-13-16/aws/overview",
-                    "setup/postgresql-13-16/aws/db-upgrade",
+                    "setup/managed-cloud/aws/ami",
+                    "setup/managed-cloud/aws/ecs"
+                  ]
+                },
+                "setup/managed-cloud/azure-container",
+                "setup/managed-cloud/google-cloud-run"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Kubernetes",
+              "items": [
+                "setup/kubernetes/kubernetes",
+                "setup/kubernetes/openshift",
+                "setup/kubernetes/helm",
+                "setup/kubernetes/kubernetes-gke",
+                "setup/kubernetes/kubernetes-aks",
+                "setup/kubernetes/kubernetes-eks"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Migrations & Upgrades",
+              "items": [
+                "setup/migration/upgrade-to-lts",
+                {
+                  "type": "category",
+                  "label": "PostgreSQL 13 → 16 Upgrade",
+                  "items": [
                     {
                       "type": "category",
-                      "label": "Deployment Specific",
+                      "label": "AWS",
                       "items": [
-                        "setup/postgresql-13-16/aws/deployment/docker",
-                        "setup/postgresql-13-16/aws/deployment/ami",
-                        "setup/postgresql-13-16/aws/deployment/ecs",
-                        "setup/postgresql-13-16/aws/deployment/eks"
+                        "setup/migration/postgresql-13-16/aws/overview",
+                        "setup/migration/postgresql-13-16/aws/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/aws/deployment/docker",
+                            "setup/migration/postgresql-13-16/aws/deployment/ami",
+                            "setup/migration/postgresql-13-16/aws/deployment/ecs",
+                            "setup/migration/postgresql-13-16/aws/deployment/eks"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/aws/verification",
+                        "setup/migration/postgresql-13-16/aws/best-practices"
                       ]
                     },
-                    "setup/postgresql-13-16/aws/verification",
-                    "setup/postgresql-13-16/aws/best-practices"
+                    {
+                      "type": "category",
+                      "label": "Azure",
+                      "items": [
+                        "setup/migration/postgresql-13-16/azure/overview",
+                        "setup/migration/postgresql-13-16/azure/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/azure/deployment/aks",
+                            "setup/migration/postgresql-13-16/azure/deployment/container"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/azure/verification",
+                        "setup/migration/postgresql-13-16/azure/best-practices"
+                      ]
+                    },
+                    {
+                      "type": "category",
+                      "label": "GCP",
+                      "items": [
+                        "setup/migration/postgresql-13-16/gcp/overview",
+                        "setup/migration/postgresql-13-16/gcp/db-upgrade",
+                        {
+                          "type": "category",
+                          "label": "Deployment Specific",
+                          "items": [
+                            "setup/migration/postgresql-13-16/gcp/deployment/docker",
+                            "setup/migration/postgresql-13-16/gcp/deployment/gke",
+                            "setup/migration/postgresql-13-16/gcp/deployment/cloud-run"
+                          ]
+                        },
+                        "setup/migration/postgresql-13-16/gcp/verification",
+                        "setup/migration/postgresql-13-16/gcp/best-practices"
+                      ]
+                    }
                   ]
                 },
                 {
                   "type": "category",
-                  "label": "Azure",
+                  "label": "Version Migrations",
                   "items": [
-                    "setup/postgresql-13-16/azure/overview",
-                    "setup/postgresql-13-16/azure/db-upgrade",
-                    {
-                      "type": "category",
-                      "label": "Deployment Specific",
-                      "items": [
-                        "setup/postgresql-13-16/azure/deployment/aks",
-                        "setup/postgresql-13-16/azure/deployment/container"
-                      ]
-                    },
-                    "setup/postgresql-13-16/azure/verification",
-                    "setup/postgresql-13-16/azure/best-practices"
-                  ]
-                },
-                {
-                  "type": "category",
-                  "label": "GCP",
-                  "items": [
-                    "setup/postgresql-13-16/gcp/overview",
-                    "setup/postgresql-13-16/gcp/db-upgrade",
-                    {
-                      "type": "category",
-                      "label": "Deployment Specific",
-                      "items": [
-                        "setup/postgresql-13-16/gcp/deployment/docker",
-                        "setup/postgresql-13-16/gcp/deployment/gke",
-                        "setup/postgresql-13-16/gcp/deployment/cloud-run"
-                      ]
-                    },
-                    "setup/postgresql-13-16/gcp/verification",
-                    "setup/postgresql-13-16/gcp/best-practices"
+                    "setup/migration/upgrade-to-v3",
+                    "setup/migration/upgrade-to-v3.16",
+                    "setup/migration/workflow-temporal-to-bullmq-migration"
                   ]
                 }
               ]
-            },
-            "setup/try-tooljet",
-            "setup/choose-your-tooljet",
-            "setup/system-requirements",
-            "setup/digitalocean",
-            "setup/docker",
-            "setup/ami",
-            "setup/ecs",
-            "setup/openshift",
-            "setup/helm",
-            "setup/kubernetes",
-            "setup/kubernetes-gke",
-            "setup/kubernetes-aks",
-            "setup/kubernetes-eks",
-            "setup/azure-container",
-            "setup/google-cloud-run",
-            "setup/env-vars",
-            "setup/http-proxy",
-            "setup/tooljet-subpath",
-            "setup/v2-migration-guide",
-            "setup/upgrade-to-lts",
-            "setup/upgrade-to-v3",
-            "setup/cloud-v3-migration",
-            "setup/upgrade-to-v3.16",
-            "setup/workflow-temporal-to-bullmq-migration",
-            "setup/tooljet-domain-change"
+            }
           ]
         }
       ]
@@ -206,6 +246,10 @@
             {
               "type": "category",
               "label": "Events and Actions",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/events/overview"
+              },
               "items": [
                 "app-builder/events/overview",
                 "app-builder/events/event-triggers",
@@ -236,9 +280,16 @@
             {
               "type": "category",
               "label": "Dynamic Access Rules",
+              "link": {
+                "type": "doc",
+                "id": "app-builder/dynamic-access-rule/overview"
+              },
               "items": [
-                "app-builder/walkthrough/row-level-security",
-                "app-builder/walkthrough/permissions"
+                "app-builder/dynamic-access-rule/overview",
+                "app-builder/dynamic-access-rule/component-level",
+                "app-builder/dynamic-access-rule/page-level",
+                "app-builder/dynamic-access-rule/query-level",
+                "app-builder/dynamic-access-rule/row-level-security"
               ]
             }
           ]
@@ -255,6 +306,10 @@
         {
           "type": "category",
           "label": "Modules",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/modules/overview"
+              },
           "items": [
             "app-builder/modules/overview",
             "app-builder/modules/create-module",
@@ -262,7 +317,19 @@
             "app-builder/modules/data-flow"
           ]
         },
-        "app-builder/embed-application",
+        {
+          "type": "category",
+          "label": "Embed Application",
+          "link": {
+                "type": "doc",
+                "id": "app-builder/embed-app/overview"
+              },
+          "items": [
+            "app-builder/embed-app/overview",
+            "app-builder/embed-app/public-app",
+            "app-builder/embed-app/private-app"
+          ]
+        },
         {
           "type": "category",
           "label": "References",
@@ -271,10 +338,12 @@
               "type": "category",
               "label": "Component Catalog",
               "items": [
+                "widgets/audio-recorder",
                 "widgets/bounded-box",
                 "widgets/button",
                 "widgets/button-group",
                 "widgets/calendar",
+                "widgets/camera",
                 {
                   "type": "category",
                   "label": "Chart",
@@ -323,7 +392,10 @@
                 "widgets/icon",
                 "widgets/iframe",
                 "widgets/image",
+                "widgets/json-editor",
+                "widgets/json-explorer",
                 "widgets/kanban",
+                "widgets/key-value-pair",
                 "widgets/link",
                 "widgets/listview",
                 "widgets/map",
@@ -335,6 +407,7 @@
                 "widgets/pdf",
                 "widgets/phone-input",
                 "widgets/popover-menu",
+                "widgets/progress-bar",
                 "widgets/qr-scanner",
                 "widgets/radio-button-v2",
                 "widgets/range-slider",
@@ -366,6 +439,7 @@
                 },
                 "widgets/tabs",
                 "widgets/tags",
+                "widgets/tags-input",
                 "widgets/text-input",
                 "widgets/text",
                 "widgets/text-area",
@@ -383,6 +457,7 @@
               "label": "Actions Reference",
               "items": [
                 "actions/run-query",
+                "actions/reset-query",
                 "actions/show-alert",
                 "actions/control-component",
                 "actions/show-modal",
@@ -437,6 +512,7 @@
             "data-sources/elasticsearch",
             "data-sources/gcs",
             "data-sources/googlesheets",
+            "data-sources/googlesheetsv2",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/grpcv2",
@@ -462,7 +538,8 @@
                 "data-sources/restapi/configuration",
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
-                "data-sources/restapi/metadata-and-cookies"
+                "data-sources/restapi/metadata-and-cookies",
+                "data-sources/restapi/multipart-form-data-rest-api"
               ]
             },
             "data-sources/soap-api",
@@ -485,6 +562,10 @@
           "type": "category",
           "label": "Marketplace",
           "collapsed": true,
+          "link": {
+                "type": "doc",
+                "id": "marketplace/marketplace-overview"
+              },
           "items": [
             "marketplace/marketplace-overview",
             {
@@ -501,6 +582,7 @@
                 "marketplace/plugins/marketplace-plugin-azurerepos",
                 "marketplace/plugins/marketplace-plugin-clickup",
                 "marketplace/plugins/marketplace-plugin-cohere",
+                "marketplace/plugins/marketplace-plugin-couchbase",
                 "marketplace/plugins/marketplace-plugin-easypost",
                 "marketplace/plugins/marketplace-plugin-engagespot",
                 "marketplace/plugins/marketplace-plugin-fedex",
@@ -571,11 +653,13 @@
           "label": "Nodes",
           "items": [
             "workflows/nodes/start-trigger",
+            "workflows/nodes/agent",
             {
               "type": "category",
               "label": "Logic Nodes",
               "items": [
                 "workflows/nodes/logic/js",
+                "workflows/nodes/logic/py",
                 "workflows/nodes/logic/if-else",
                 "workflows/nodes/logic/loop"
               ]
@@ -593,6 +677,14 @@
             "workflows/triggers/app",
             "workflows/triggers/webhook",
             "workflows/triggers/scheduler"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Importing External Libraries",
+          "items": [
+            "workflows/external-libraries/js",
+            "workflows/external-libraries/py"
           ]
         }
       ]
@@ -637,7 +729,21 @@
           ]
         },
         "tj-setup/whitelist-cdn-domains",
-        "tj-setup/observability-otel",
+        {
+          "type": "category",
+          "label": "Observability",
+          "link": {
+            "type": "doc",
+            "id": "tj-setup/observability/observability-otel"
+          },
+          "items": [
+            "tj-setup/observability/observability-otel",
+            "tj-setup/observability/datadog",
+            "tj-setup/observability/new-relic",
+            "tj-setup/observability/grafana",
+            "tj-setup/observability/last9"
+          ]
+        },
         "tj-setup/lockbox-master-key-rotation"
       ]
     },
@@ -652,6 +758,10 @@
         {
           "type": "category",
           "label": "Onboard and Offboard Users",
+          "link": {
+            "type": "doc",
+            "id": "user-management/onboard-users/overview"
+          },
           "items": [
             "user-management/onboard-users/overview",
             "user-management/onboard-users/invite-user",
@@ -710,6 +820,8 @@
                 "user-management/sso/oidc/azuread",
                 "user-management/sso/oidc/okta",
                 "user-management/sso/oidc/google",
+                "user-management/sso/oidc/onelogin",
+                "user-management/sso/oidc/auth0",
                 "user-management/sso/oidc/ssouserinfo"
               ]
             },
@@ -723,7 +835,8 @@
               },
               "items": [
                 "user-management/sso/saml/setup",
-                "user-management/sso/saml/okta"
+                "user-management/sso/saml/okta",
+                "user-management/sso/saml/entra-id"
               ]
             },
             {
@@ -796,6 +909,10 @@
         {
           "type": "category",
           "label": "GitSync",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/gitsync/overview"
+          },
           "items": [
             "development-lifecycle/gitsync/overview",
             {
@@ -823,6 +940,10 @@
         {
           "type": "category",
           "label": "GitSync CI/CD",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/cicd/overview"
+          },
           "items": [
             "development-lifecycle/cicd/overview",
             "development-lifecycle/cicd/example"
@@ -861,6 +982,10 @@
         {
           "type": "category",
           "label": "Backup",
+          "link": {
+            "type": "doc",
+            "id": "development-lifecycle/backup/gitsync-backup"
+          },
           "items": [
             "development-lifecycle/backup/gitsync-backup"
           ]
@@ -894,6 +1019,10 @@
         {
           "type": "category",
           "label": "Audit Logs",
+          "link": {
+            "type": "doc",
+            "id": "security/audit-logs/audit-logs"
+          },
           "items": [
             "security/audit-logs/audit-logs",
             "security/audit-logs/stream-audit-to-datadog"

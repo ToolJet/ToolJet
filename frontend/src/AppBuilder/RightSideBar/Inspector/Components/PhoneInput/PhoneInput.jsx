@@ -25,8 +25,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
-  const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
-  const defaultCountry = resolvedProperties?.defaultCountry || 'US';
+  const defaultCountry = componentMeta?.definition?.properties?.defaultCountry?.value || 'US';
   const isDefaultCountryFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
 
   const options = useMemo(

@@ -120,6 +120,6 @@ export class OrganizationUsersController implements IOrganizationUsersController
   @Get()
   async getUsers(@User() user, @Query() query) {
     const response = await this.organizationUsersService.getUsers(user, query);
-    return decamelizeKeys(response);
+    return response;
   }
 }

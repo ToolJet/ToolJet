@@ -11,7 +11,7 @@ import { EditUserRoleDto } from '@modules/roles/dto';
 
 export interface IExternalApisController {
   // Gets list of all users in the system
-  getAllUsers(): Promise<any>;
+  getAllUsers(groupNamesString?: string): Promise<any>;
 
   // Retrieves a single user by ID
   getUser(id: string): Promise<any>;

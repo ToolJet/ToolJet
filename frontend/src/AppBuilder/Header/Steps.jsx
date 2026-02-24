@@ -9,11 +9,11 @@ function Step({ stepNo, label, active, completed }) {
   return (
     <div className="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1">
       {completed ? (
-        <CheckCircle />
+        <CheckCircle width="16" height="16" />
       ) : (
         <span
           className={cn(
-            'tw-bg-text-placeholder tw-text-white tw-text-[0.625rem] tw-rounded-full tw-size-3.5 tw-flex tw-justify-center tw-items-center',
+            'tw-bg-text-placeholder tw-text-white tw-text-[0.625rem] tw-leading-none tw-rounded-full tw-size-3.5 tw-flex tw-justify-center tw-items-center',
             { '!tw-bg-black': active }
           )}
         >
@@ -22,7 +22,7 @@ function Step({ stepNo, label, active, completed }) {
       )}
 
       <p
-        className={cn('tw-text-base tw-text-text-placeholder tw-font-medium tw-mb-0', {
+        className={cn('tw-text-text-placeholder tw-font-title-default tw-mb-0', {
           'tw-text-text-primary': completed || active,
         })}
       >
@@ -39,12 +39,12 @@ function Connector({ completed }) {
 }
 
 // sequential steps
-export default function Steps({ steps, activeStep }) {
+export default function Steps({ steps, activeStep, classes = null }) {
   const activeStepIndex = steps.findIndex((step) => step.value === activeStep);
   const currentStepIdx = activeStepIndex === -1 ? 0 : activeStepIndex;
 
   return (
-    <div className="tw-flex tw-items-center tw-gap-1 tw-py-2">
+    <div className={cn('tw-flex tw-items-center tw-gap-1 tw-py-2', classes?.stepsContainer)}>
       {Children.toArray(
         steps.map((step, index) => {
           const isActive = index === currentStepIdx;

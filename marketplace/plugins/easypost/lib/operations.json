@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "EasyPost Datasource",
+  "description": "A schema defining EasyPost datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "easypost_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": "https://raw.githubusercontent.com/adishM98/base-repo-testing/main/easypost-openapi.yaml"
+    }
+  }
+}

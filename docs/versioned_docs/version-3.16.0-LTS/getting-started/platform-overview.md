@@ -5,7 +5,7 @@ title: Platform Overview
 
 ## What is ToolJet?
 
-ToolJet is an AI-native platform for building applications and agents. Teams can generate full apps from natural language prompts, create intelligent agents to automate workflows, and refine them visually with pre-built UI components. ToolJet integrates with 75+ data sources and APIs out of the box, and offers role-based access control with group sync for secure, enterprise-grade user management.  
+ToolJet is an AI-native platform for building applications and agents. Teams can generate full apps from natural language prompts, create intelligent agents to automate workflows, and refine them visually with pre-built UI components. ToolJet integrates with 80+ data sources and APIs out of the box, and offers role-based access control with group sync for secure, enterprise-grade user management.  
 
 ## How ToolJet Works:
 
@@ -17,7 +17,7 @@ ToolJet is an AI-native platform for building applications and agents. Teams can
 
 2. **Build Visually**: Extend apps with drag-and-drop components, themes, and custom logic in JavaScript or Python.
 
-3. **Connect Data Sources**: Integrate 75+ databases, APIs, and services.
+3. **Connect Data Sources**: Integrate 80+ databases, APIs, and services.
 
 4. **Automate with Agents**: Deploy AI agents that can query data, take actions, and orchestrate workflows.
 
@@ -46,7 +46,7 @@ Build and refine interfaces with a drag-and-drop editor and 60+ pre-built compon
 <img  className="img-full screenshot-full" src="/img/platform-overview/v2/visual-app-builder.png" alt="Platform Overview - Visual App Builder" />
 
 ### Integrations  
-Connect instantly to 75+ data sources, APIs, and services. ToolJet also provides a CLI and plugin system to extend integrations.  
+Connect instantly to 80+ data sources, APIs, and services. ToolJet also provides a CLI and plugin system to extend integrations.  
 
 <img  className="img-full screenshot-full" src="/img/platform-overview/v2/integrations.png" alt="Platform Overview - Integrations List" />
 

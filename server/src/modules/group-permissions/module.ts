@@ -8,7 +8,7 @@ import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 
 export class GroupPermissionsModule extends SubModule {
-  static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
+  static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
     const {
       GroupPermissionsService,
       GroupPermissionsUtilService,
@@ -32,7 +32,7 @@ export class GroupPermissionsModule extends SubModule {
     return {
       module: GroupPermissionsModule,
       imports: [await RolesModule.register(configs)],
-      controllers: [GranularPermissionsController, GroupPermissionsControllerV2],
+      controllers: isMainImport ? [GranularPermissionsController, GroupPermissionsControllerV2] : [],
       providers: [
         GranularPermissionsService,
         GroupPermissionsService,

@@ -1,0 +1,103 @@
+---
+id: choose-your-tooljet
+title: Deployment Version
+slug: /setup/choose-your-tooljet/
+---
+
+import '../../homepage.css';
+import Link from '@docusaurus/Link';
+
+export const Card = ({ className = '', href, children, isExternal }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                {children}
+            </div>
+        </div>
+    );
+    return href ? (
+        isExternal ? (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="no-underline hover:no-underline block h-full" style={{ textDecoration: 'none' }}>
+                {cardContent}
+            </a>
+        ) : (
+            <Link to={href} className="no-underline hover:no-underline block h-full" style={{ textDecoration: 'none' }}>
+                {cardContent}
+            </Link>
+        )
+    ) : cardContent;
+};
+
+export const HorizontalCard = ({ iconId, title, description, href }) => (
+    <Card href={href} isExternal={true} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="w-10 h-10 shrink-0 rounded-lg shadow-md flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                <img src={`/img/setup/icons/${iconId}.svg`} alt={title} style={{ width: '22px', height: '22px', boxShadow: 'none', borderRadius: '0' }} />
+            </div>
+            <div className="flex flex-col">
+                <span className="text-sm font-semibold text-black dark:text-white" style={{ textDecoration: 'none' }}>{title}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400" style={{ textDecoration: 'none' }}>{description}</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="ml-auto shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </div>
+    </Card>
+);
+
+ToolJet versions are categorized into two main types: **Long-Term Support (LTS)** and **Past versions**. Understanding these categories helps users choose the most suitable version for their needs.
+
+## Long-Term Support (LTS) Versions
+
+We highly recommend using LTS versions for most users. These versions are prioritized for bug fixes, updates, and overall stability, ensuring a reliable experience. LTS versions are ideal for production environments where stability and consistent performance are crucial.
+
+<div style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+    <HorizontalCard iconId="docker" title="Docker Hub — LTS Versions" description="Browse all available LTS tags for ToolJet on Docker Hub." href="https://hub.docker.com/r/tooljet/tooljet/tags?page_size=&ordering=&name=ee-lts" />
+</div>
+
+:::info
+To use the ToolJet AI feature, you will have to upgrade to **`v3.20.00-ee-lts`** or higher. Checkout the **[Build with AI](/docs/build-with-ai/overview)** section for more information. If you have any questions feel free to join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA) or email us at support@tooljet.com.
+:::
+
+### Latest Patch
+
+| Version | Release Date | Docker Pull Command |
+| ------- | ----------------- | -------------------------------------------- |
+| [v3.20.98-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.98-lts/images/sha256-16c435fc9a374a702b453b1ccb7eb8e4034dfb7bd70b2f22832a63e2463525fb) | February 18, 2026 | `docker pull tooljet/tooljet:v3.20.98-lts` |
+| [v3.20.97-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.97-lts/images/sha256-7aec3880b6aaa217af7bfc55192027bfcb7ce03a4cd4d2c163e97b6225099ee6) | February 18, 2026 | `docker pull tooljet/tooljet:v3.20.97-lts` |
+| [v3.20.96-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.96-lts/images/sha256-5267425ec3e1cb3f59cc2e052314887b81be79c8f97da0dbad990923472e2042) | February 17, 2026 | `docker pull tooljet/tooljet:v3.20.96-lts` |
+| [v3.20.95-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.95-lts/images/sha256-ab0386f703ce49bef915c53e93d3736ab3bf6d8cd67c69bd9ac32ee83f228500) | February 17, 2026 | `docker pull tooljet/tooljet:v3.20.95-lts` |
+| [v3.20.94-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.94-lts/images/sha256-13830fe84dec66d15f824f9d69aaed36b5df9067b83c0716f65da50e012d0ce3) | February 13, 2026 | `docker pull tooljet/tooljet:v3.20.94-lts` |
+| [v3.20.93-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.93-lts/images/sha256-e88a81a2a13fb41773a06d7dd808dcf2944763923a0dc4fc185038dace828abc) | February 12, 2026 | `docker pull tooljet/tooljet:v3.20.93-lts` |
+| [v3.16.33-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.16.33-lts/images/sha256-1ab63fe65a7194b69baaad373fcd911d0f1a8934f09ad0c4e19f3e44e4fd8a15) | September 19, 2025    | `docker pull tooljet/tooljet:v3.16.33-lts`    |
+| [v3.5.77-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.77-ee-lts/images/sha256-f389b5e03a084a8ed0723f871584b4f8701a8ed8d616dd5cbf0b14abacb454de) | September 23, 2025 | `docker pull tooljet/tooljet:v3.5.77-ee-lts`  |
+| [v3.0.24-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.24-ee-lts/images/sha256-33494c8ee72c440ce0ded925cdeb15507cd87f2b7c3fe172dd1cbee790e3b96f?context=explore) | January 3, 2025   | `docker pull tooljet/tooljet:v3.0.24-ee-lts` |
+
+### Base Versions
+
+| Version | Release Date | Docker Pull Command |
+| ------- | ----------------- | -------------------------------------------- |
+| Latest EE-LTS | N/A               | `docker pull tooljet/tooljet:ee-lts-latest`  |
+| [v3.20.0-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.20.0-lts/images/sha256-bd711c4f2ac97da39dcbd42f679f5153381e474535c355f7e0f8d428b537f7f4) | September 23, 2025    | `docker pull tooljet/tooljet:v3.16.0-lts`    |
+| [v3.16.0-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.16.0-lts/images/sha256-626a6463504f74659e1468a69edbdacc264eded5867ae159a18358fc43d47b48) | August 3, 2025    | `docker pull tooljet/tooljet:v3.16.0-lts`    |
+| [v3.5.0-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.0-ee-lts/images/sha256-9580d2377d17ce0c26fca0535eca51bce899015f26bfc81769d032b4b15a5da5)                   | February 12, 2025 | `docker pull tooljet/tooljet:v3.5.0-ee-lts`  |
+| [v3.0.0-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.0-ee-lts/images/sha256-989f1370c502e97555dd7e669f896ef6ba2ad1d4f317c53335105bf937b5b189?context=explore)   | November 12, 2024 | `docker pull tooljet/tooljet:v3.0.0-ee-lts`  |
+
+:::info
+Users are encouraged to upgrade to the latest LTS version to ensure they benefit from the latest improvements and maintain a secure and efficient environment.
+:::
+
+## Past versions (Not maintained anymore)
+
+Past versions of ToolJet are those that are no longer actively maintained or supported. These versions may still be available but are not recommended, especially in production environments, as they do not receive updates, bug fixes, or security patches.
+
+| Version | Release Date | Docker Pull Command |
+| ------- | ----------------- | -------------------------------------------- |
+| [EE-LTS-2.50.0.0](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.0.0/images/sha256-4d93e4d338bd358ca72e4cf7388c699e62072c80766716156b32b6fd74db48b6) | May 24, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.0.0` |

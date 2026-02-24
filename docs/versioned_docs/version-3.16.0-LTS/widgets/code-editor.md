@@ -183,11 +183,15 @@ The following actions of the component can be controlled using the component-spe
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Styles </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
-|:----------- |:----------- |:----------- |
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}` |
-| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}` |
-| Border radius | Modifies the border radius of the editor. The field expects only numerical value from `1` to `100`. | Default is `0`. |
+### Container
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Visibility | Controls component visibility. | Toggle on or off, or set programmatically using **fx**. |
+| Disable | Locks the component and makes it non-functional. | Toggle on or off, or set programmatically using **fx**. |
+| Border radius | Sets the corner radius of the editor. | Enter a numeric value (default: `6`) or set it programmatically using **fx**. |
+| Border color | Sets the border color of the editor. | Select a color from the color picker or set it programmatically using **fx**. |
+| Background | Sets the background color of the editor. | Select a color from the color picker or set it programmatically using **fx**. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.

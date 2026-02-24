@@ -1,8 +1,6 @@
-import React, { useEffect, useCallback } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import Branch from '@assets/images/icons/branch.svg';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
 const FreezeVersionInfo = ({
@@ -11,22 +9,6 @@ const FreezeVersionInfo = ({
 }) => {
   const isViewOnly = useStore((state) => state.getShouldFreeze());
   const isAiOperationInProgress = useStore((state) => state?.ai?.isLoading);
-
-  // const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
-  //   (state) => ({
-  //     isUserEditingTheVersion: state.isUserEditingTheVersion,
-  //     disableReleasedVersionPopupState: state.actions.disableReleasedVersionPopupState,
-  //   }),
-  //   shallow
-  // );
-  // const changeBackTheState = useCallback(() => {
-  //   isUserEditingTheVersion && disableReleasedVersionPopupState();
-  // }, [isUserEditingTheVersion, disableReleasedVersionPopupState]);
-
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => changeBackTheState(), 2000);
-  //   return () => intervalId && clearInterval(intervalId);
-  // }, [isUserEditingTheVersion, changeBackTheState]);
 
   if (!isViewOnly || hide || isAiOperationInProgress) return null;
 

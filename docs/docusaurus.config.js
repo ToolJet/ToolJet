@@ -283,6 +283,7 @@ module.exports = {
       apiKey: process.env.ALGOLIA_API_KEY || 'development', // Public API key: it is safe to commit it
       indexName: 'tooljet',
       contextualSearch: true,
+      insights: true,
       externalUrlRegex: 'external\\.com|domain\\.com',
     },
   },
@@ -305,6 +306,7 @@ module.exports = {
             //   badge: false,
             // },
             "2.50.0-LTS": {
+              label: '2.50.0-LTS (Legacy)',
               banner: 'none',
               badge: false
             },
@@ -508,6 +510,10 @@ module.exports = {
           {
             to: '/docs/widgets/table/',
             from: '/docs/widgets/table/table-properties',
+          },
+          {
+            to: '/docs/setup/upgrade-to-v3',
+            from: '/docs/setup/cloud-v3-migration',
           },
           // {
           //   to: '/docs/workflows/how-to/trigger-workflow-from-app',

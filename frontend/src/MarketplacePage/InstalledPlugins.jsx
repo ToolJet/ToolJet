@@ -13,7 +13,7 @@ export const InstalledPlugins = () => {
   const [allPlugins, setAllPlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState([]);
   const [fetching, setFetching] = React.useState(false);
-  const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
+  const ENABLE_MARKETPLACE_DEV_MODE = window.public_config?.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   React.useEffect(() => {
     marketplaceService
@@ -157,13 +157,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
       });
   };
 
-  const pluginDeleteMessage = (
-    <>
-      Deleting <strong>{capitalizeFirstLetter(name)}</strong> plugin will result in the permanent removal of all
-      associated datasources and its dataqueries. This action cannot be undone. Are you sure you wish to proceed with
-      the deletion?
-    </>
-  );
+  const pluginDeleteMessage = <>Do you want to uninstall?</>;
 
   return (
     <>
@@ -177,10 +171,10 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
         </div>
       </Modal>
       <ConfirmDialog
-        title={'Delete plugin'}
+        title={'Uninstall plugin'}
         show={isDeleteModalVisible}
         message={pluginDeleteMessage}
-        confirmButtonText={'Delete'}
+        confirmButtonText={'Uninstall'}
         confirmButtonLoading={isDeletingPlugin}
         onConfirm={executePluginDeletion}
         onCancel={cancelDeletePlugin}
