@@ -96,6 +96,10 @@ export default class MssqlQueryService implements QueryService {
 
     if (!MssqlQueryService._instance) {
       MssqlQueryService._instance = this;
+      process.on('uncaughtException', (err: any) => {
+        if (err?.code === 'ESOCKET') return;
+        throw err;
+      });
     }
     return MssqlQueryService._instance;
   }
@@ -115,8 +119,7 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     try {
-      const checkCache = sourceOptions.ssh_enabled=='disabled';
-      const knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
+      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
       switch (queryOptions.mode) {
         case 'sql':
@@ -175,62 +178,101 @@ export default class MssqlQueryService implements QueryService {
     try {
       knexInstance = await this.getConnection(sourceOptions, {}, false);
       await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
-
+      try { await knexInstance.destroy(); } catch (_) {};
       return {
         status: 'ok',
       };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err?.message : 'An unknown error occurred';
-      const errorDetails: any = {};
+    } catch (err: any) {
+      let message = 'Connection test failed';
+      let details: any = {};
 
-      if (err && err instanceof Error) {
-        const msSqlError = err as any;
-        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
-        errorDetails.code = code || null;
-        errorDetails.severity = severity || null;
-        errorDetails.state = state || null;
-        errorDetails.number = number || null;
-        errorDetails.lineNumber = lineNumber || null;
-        errorDetails.serverName = serverName || null;
-        errorDetails.class = errorClass || null;
+      if (err?.code || err?.number || err?.serverName) {
+        message = err.message;
+        details = {
+          code: err.code ?? null,
+          severity: err.severity ?? null,
+          state: err.state ?? null,
+          number: err.number ?? null,
+          lineNumber: err.lineNumber ?? null,
+          serverName: err.serverName ?? null,
+          class: err.class ?? null,
+        };
       }
-      throw new QueryError('Connection test failed', errorMessage, errorDetails);
+      else if (err?.code === 'ESOCKET' || err?.code === 'ECONNREFUSED' || err?.code === 'ETIMEDOUT') {
+        message = `Network error: ${err.message}`;
+      }
+      else if (err?.code === 'ELOGIN') {
+        message = `Authentication failed: ${err.message}`;
+      }
+      else if (err?.message?.includes('SSH')) {
+        message = `SSH connection failed: ${err.message}`;
+      }
+      else if (err?.name === 'KnexTimeoutError') {
+        message = 'Database connection timeout. Please check host/port/firewall';
+      }
+      else if (err?.message) {
+        message = err.message;
+      }
+
+      throw new QueryError('Connection test failed', message, details);
     } finally {
       if (knexInstance) {
-       try { await knexInstance.destroy(); } catch (_) {}
+        try { await knexInstance.destroy(); } catch (_) {}
       }
     }
   }
 
-  private parseConnectionString(connStr: string): Partial<SourceOptions> {
-    const params: Partial<SourceOptions> = {};
-    
-    const pairs = connStr.split(';').filter(p => p.trim());
-    
-    pairs.forEach(pair => {
+private parseConnectionString(connectionString: string): Partial<SourceOptions> {
+  const parsed: Partial<SourceOptions> = {};
+
+  if (!connectionString) return parsed;
+
+  const trimmed = connectionString.trim();
+
+  const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
+    ? trimmed.replace(/^sqlserver:\/\//i, '')
+    : trimmed;
+
+  const looksLikeHybrid = withoutScheme.includes(';') &&
+    !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+
+  if (looksLikeHybrid) {
+    const firstSemi = withoutScheme.indexOf(';');
+    const hostSegment = withoutScheme.slice(0, firstSemi);
+    const rest = withoutScheme.slice(firstSemi + 1);
+
+    const hostMatch = hostSegment.match(/^([^:\\,]+)(?::(\d+))?(?:\\([^,]*))?(?:,(\d+))?/);
+    if (hostMatch) {
+      if (hostMatch[1]) parsed.host = hostMatch[1].trim();
+      if (hostMatch[2]) parsed.port = (parseInt(hostMatch[2], 10));
+      if (hostMatch[3]) parsed.instanceName = hostMatch[3].trim();
+      if (hostMatch[4]) parsed.port = (parseInt(hostMatch[4], 10));
+    }
+
+    rest.split(';').forEach(pair => {
       if (!pair.includes('=')) return;
-      
       const [key, ...valueParts] = pair.split('=');
-      const value = valueParts.join('=');
+      const value = valueParts.join('=').trim();
       const lowerKey = key.trim().toLowerCase();
-       
-      if (lowerKey === 'server' || lowerKey === 'data source') {
-        const [host, port] = value.trim().split(',');
-        params.host = host;
-        if (port) params.port = parseInt(port);
-      } else if (lowerKey === 'database' || lowerKey === 'initial catalog') {
-        params.database = value.trim();
+
+      if (lowerKey === 'database' || lowerKey === 'initial catalog') {
+        parsed.database = value;
       } else if (lowerKey === 'user id' || lowerKey === 'uid' || lowerKey === 'user') {
-        params.username = value.trim();
+        parsed.username = value;
       } else if (lowerKey === 'password' || lowerKey === 'pwd') {
-        params.password = value.trim();
+        parsed.password = value;
       } else if (lowerKey === 'encrypt') {
-        params.azure = value.trim().toLowerCase() === 'true';
+        parsed.azure = ['true', '1', 'yes'].includes(value.toLowerCase()) as any;
+      } else if (lowerKey === 'port') {
+        parsed.port = (parseInt(value, 10));
+      } else if (lowerKey === 'instance' || lowerKey === 'instance name') {
+        parsed.instanceName = value;
       }
     });
-    
-    return params;
   }
+
+  return parsed;
+}
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
     let finalOptions: SourceOptions;
@@ -238,24 +280,16 @@ export default class MssqlQueryService implements QueryService {
     if (sourceOptions.connection_type === 'string') {
       const parsedOptions = this.parseConnectionString(sourceOptions.connection_string || '');
       
-      finalOptions = {
-        host:  parsedOptions.host || 'localhost',
-        port: parsedOptions.port || 1433,
-        database:  parsedOptions.database || '',
-        username:  parsedOptions.username || '',
-        password:  parsedOptions.password || '',
-        azure: parsedOptions.azure !== undefined ? parsedOptions.azure : sourceOptions.azure,
-        instanceName: sourceOptions.instanceName,
-        connection_options: sourceOptions.connection_options,
-        connection_type: sourceOptions.connection_type,
-        connection_string: sourceOptions.connection_string,
-        ssh_enabled: sourceOptions.ssh_enabled,
-        ssh_host: sourceOptions.ssh_host,
-        ssh_port: sourceOptions.ssh_port,
-        ssh_username: sourceOptions.ssh_username,
-        ssh_auth_type: sourceOptions.ssh_auth_type,
-        ssh_private_key: sourceOptions.ssh_private_key,
-      } as SourceOptions;
+
+       finalOptions = { ...sourceOptions };
+        if (parsedOptions.host) finalOptions.host= finalOptions.host || parsedOptions.host;
+        if (parsedOptions.port) finalOptions.port=finalOptions.port || parsedOptions.port;
+        if (parsedOptions.database) finalOptions.database=finalOptions.database || parsedOptions.database;
+        if (parsedOptions.username) finalOptions.username=finalOptions.username || parsedOptions.username;
+        if (parsedOptions.password) finalOptions.password=finalOptions.password || parsedOptions.password;
+        if (parsedOptions.instanceName) finalOptions.instanceName =finalOptions.instanceName|| parsedOptions.instanceName;
+        if (parsedOptions.azure !== undefined) finalOptions.azure=finalOptions.azure|| parsedOptions.azure;
+
     } else {
       finalOptions = sourceOptions;
     }
@@ -287,7 +321,13 @@ export default class MssqlQueryService implements QueryService {
           instanceName: finalOptions.instanceName,
           ...(finalOptions.connection_options && this.sanitizeOptions(finalOptions.connection_options)),
         },
-        pool: { min: 0 },
+      },
+      pool: {
+        min: 0,
+        afterCreate: (conn: any, done: (err: Error | null, conn: any) => void) => {
+          conn.on('error', (_err: Error) => {});
+          done(null, conn);
+        },
       },
     };
 

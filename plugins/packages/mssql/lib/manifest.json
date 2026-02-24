@@ -25,7 +25,7 @@
     "host": {
       "type": "string",
       "title": "Host",
-      "description": "Enter host",
+      "description": "localhost",
       "default": "localhost"
     },
     "instanceName": {
@@ -36,12 +36,12 @@
     "port": {
       "type": "number",
       "title": "Port",
-      "description": "Enter port",
+      "description": "1433",
       "default": 1433
     },
     "database": {
       "type": "string",
-      "title": "Database name",
+      "title": "Database",
       "description": "Enter name of the database"
     },
     "username": {
@@ -95,24 +95,16 @@
       "type": "string",
       "title": "SSH Password"
     },
+    "ssh_private_key": {
+      "type": "string",
+      "title": "SSH Private Key"
+    },
     "ssh_passphrase": {
       "type": "string",
       "title": "SSH Passphrase"
     }
   },
   "allOf": [
-    {
-      "if": {
-        "properties": {
-          "connection_type": {
-            "const": "manual"
-          }
-        }
-      },
-      "then": {
-        "required": ["database", "username", "password"]
-      }
-    },
     {
       "if": {
         "properties": {
@@ -142,7 +134,8 @@
     "password",
     "ssh_private_key",
     "ssh_password",
-    "ssh_passphrase"
+    "ssh_passphrase",
+    "connection_string"
   ],
   "required": [
     "connection_type"
@@ -172,7 +165,7 @@
         "$ref": "#/properties/host",
         "key": "host",
         "label": "Host",
-        "description": "Enter host",
+        "description": "localhost",
         "widget": "text-v3",
         "required": true
       },
@@ -181,7 +174,7 @@
         "$ref": "#/properties/port",
         "key": "port",
         "label": "Port",
-        "description": "Enter port",
+        "description": "1433",
         "widget": "text-v3",
         "required": true
       },
@@ -197,10 +190,9 @@
         "order": 40,
         "$ref": "#/properties/database",
         "key": "database",
-        "label": "Database name",
+        "label": "Database",
         "description": "Enter name of the database",
-        "widget": "text-v3",
-        "required": true
+        "widget": "text-v3"
       },
       "username": {
         "order": 50,
@@ -208,8 +200,7 @@
         "key": "username",
         "label": "Username",
         "description": "Enter username",
-        "widget": "text-v3",
-        "required": true
+        "widget": "text-v3"
       },
       "password": {
         "order": 60,
@@ -218,7 +209,7 @@
         "label": "Password",
         "description": "Enter password",
         "widget": "password-v3",
-        "required": true
+        "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
       },
       "connection_options": {
         "order": 70,
@@ -235,7 +226,7 @@
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
         "default": false,
-        "helpText": "Enable this to connect through an SSH tunnel."
+        "help_text": "Connect through an SSH server to access databases in private networks."
 
       },
       "enabled": {
@@ -244,7 +235,8 @@
           "$ref": "#/properties/ssh_host",
           "key": "ssh_host",
           "label": "SSH Host",
-          "description": "SSH server hostname or IP address",
+          "description": "ssh.example.com",
+          "help_text": "SSH server hostname or IP address",
           "widget": "text-v3"
         },
         "ssh_port": {
@@ -252,7 +244,8 @@
           "$ref": "#/properties/ssh_port",
           "key": "ssh_port",
           "label": "SSH Port",
-          "description": "Default SSH port is 22",
+          "description": "22",
+          "help_text": "Default SSH port is 22",
           "widget": "text-v3"
         },
         "ssh_username": {
@@ -308,7 +301,8 @@
         "key": "azure",
         "label": "Azure (encrypt connection)",
         "description": "Toggle for azure",
-        "widget": "toggle"
+        "help_text": "Enable encrypted connection for Azure SQL Database",
+        "widget": "toggle-v2"
       }
     },
     "string": {
@@ -318,7 +312,7 @@
         "key": "connection_string",
         "label": "Connection string",
         "description": "Enter encoded connection string",
-        "widget": "text-v3",
+        "widget": "password-v3-textarea",
         "required": true
       },
       "host": {
@@ -326,24 +320,34 @@
         "$ref": "#/properties/host",
         "key": "host",
         "label": "Host",
-        "description": "Enter host",
-        "widget": "text-v3"
+        "description": "localhost",
+        "widget": "text-v3",
+        "required": true
       },
       "port": {
         "order": 20,
         "$ref": "#/properties/port",
         "key": "port",
         "label": "Port",
-        "description": "Enter port",
-        "widget": "text-v3"
+        "description": "1433",
+        "widget": "text-v3",
+        "required": true
       },
       "database": {
-        "order": 30,
+        "order": 35,
         "$ref": "#/properties/database",
         "key": "database",
-        "label": "Database name",
+        "label": "Database",
         "description": "Enter database",
         "widget": "text-v3"
+      },
+      "instanceName": {
+        "order": 30,
+        "$ref": "#/properties/instanceName",
+        "key": "instance_name",
+        "label": "Instance",
+        "description": "Enter the name of the database instance",
+        "widget": "text"
       },
       "username": {
         "order": 40,
@@ -359,7 +363,8 @@
         "key": "password",
         "label": "Password",
         "description": "Enter password",
-        "widget": "password-v3"
+        "widget": "password-v3",
+        "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
       },
       "connection_options": {
         "order": 60,
@@ -376,7 +381,7 @@
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
         "default": false,
-        "helpText": "Enable this to connect through an SSH tunnel."
+        "help_text": "Connect through an SSH server to access databases in private networks."
 
       },
       "enabled": {
@@ -385,7 +390,8 @@
           "$ref": "#/properties/ssh_host",
           "key": "ssh_host",
           "label": "SSH Host",
-          "description": "SSH server hostname or IP address",
+          "description": "ssh.example.com",
+          "help_text": "SSH server hostname or IP address",
           "widget": "text-v3"
         },
         "ssh_port": {
@@ -393,7 +399,8 @@
           "$ref": "#/properties/ssh_port",
           "key": "ssh_port",
           "label": "SSH Port",
-          "description": "Default SSH port is 22",
+          "description": "22",
+          "help_text": "Default SSH port is 22",
           "widget": "text-v3"
         },
         "ssh_username": {
@@ -449,7 +456,8 @@
         "key": "azure",
         "label": "Azure (encrypt connection)",
         "description": "Toggle for azure",
-        "widget": "toggle"
+        "widget": "toggle-v2",
+        "help_text": "Enable encrypted connection for Azure SQL Database"
       }
     }
   }

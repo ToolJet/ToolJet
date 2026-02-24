@@ -3,7 +3,7 @@ export const mysqlAutoFillStrategy = {
   connectionStringKey: 'connection_string',
   connectionTypeKey: 'connection_type',
   activeConnectionTypeValue: 'string',
-  autoFillableFields: ['host', 'port', 'database', 'username', 'password'],
+  autoFillableFields: ['host', 'port', 'database', 'username', 'password', 'protocol', 'ssl_enabled', 'socket_path'],
 
   parse(connectionString) {
     const params = {};
@@ -41,7 +41,26 @@ export const mysqlAutoFillStrategy = {
           url.searchParams.get('socket') ||
           url.searchParams.get('socketPath');
 
-        if (socket) params.socketPath = socket;
+        if (socket) params.socket_path = socket;
+        params.protocol = socket ? 'socket' : 'hostname';                          
+
+        const sslParam = url.searchParams.get('ssl')                                
+          || url.searchParams.get('sslmode')                                        
+          || url.searchParams.get('ssl_mode') 
+          || url.searchParams.get('ssl-mode');                                     
+        if (sslParam !== null) {                                                    
+          params.ssl_enabled = ['true', '1', 'disabled', 'preferred', 'require',
+            'required', 'verify-ca', 'verify_ca', 'verify-full',
+            'verify_identity', 'verify-identity'].includes(sslParam.toLowerCase());           
+        } 
+        if (!params.ssl_enabled) {
+            const hasSslFields =
+              url.searchParams.get('ssl-ca') || url.searchParams.get('ssl_ca') ||
+              url.searchParams.get('ssl-cert') || url.searchParams.get('ssl_cert') ||
+              url.searchParams.get('ssl-key') || url.searchParams.get('ssl_key') ||
+              url.searchParams.get('tls-version') || url.searchParams.get('tls_version');
+            if (hasSslFields) params.ssl_enabled = true;
+          }
 
         return params;
       }
@@ -96,9 +115,24 @@ export const mysqlAutoFillStrategy = {
 
         if (Object.keys(q).length) params.params = q;
         if (q.socket || q.socketPath) {
-          params.socketPath = q.socket || q.socketPath;
+          params.socket_path = q.socket || q.socketPath;
         }
+
+        const sslMode = q.ssl || q.sslmode || q.ssl_mode || q['ssl-mode'];                     
+        if (sslMode !== undefined) {                                            
+          params.ssl_enabled = ['true', '1', 'disabled', 'preferred', 'require',
+            'required', 'verify-ca', 'verify_ca', 'verify-full',
+            'verify_identity', 'verify-identity'].includes(sslMode.toLowerCase());        
+        }
+        if (!params.ssl_enabled) {
+            if (q['ssl-ca'] || q['ssl_ca'] || q['ssl-cert'] || q['ssl_cert'] ||
+                q['ssl-key'] || q['ssl_key'] || q['tls-version'] || q['tls_version']) {
+              params.ssl_enabled = true;
+            }
+          } 
       }
+       params.protocol = params.socket_path ? 'socket' : 'hostname';  
+
 
       return params;
     }
@@ -128,12 +162,22 @@ export const mysqlAutoFillStrategy = {
       } else if (lowerKey === 'pwd' || lowerKey === 'password') {
         params.password = value;
       } else if (lowerKey === 'socket' || lowerKey === 'socketpath') {
-        params.socketPath = value;
-      } else {
+        params.socket_path = value;
+      }else if (lowerKey === 'ssl' || lowerKey === 'sslmode'          
+        || lowerKey === 'ssl_mode' || lowerKey === 'ssl-mode' || lowerKey === 'usessl') {         
+        const v = value.toLowerCase();                                 
+              params.ssl_enabled = ['true', '1', 'disabled', 'preferred', 'require',
+        'required', 'verify-ca', 'verify_ca', 'verify-full',
+        'verify_identity', 'verify-identity'].includes(v);                     
+      }else if (['ssl-ca','ssl_ca','sslca','ssl-cert','ssl_cert','sslcert',
+                      'ssl-key','ssl_key','sslkey','tls-version','tls_version','tlsversion'].includes(lowerKey)) {
+            params.ssl_enabled = true;
+          } else {
         if (!params.params) params.params = {};
         params.params[key.trim()] = value;
       }
     });
+    params.protocol = params.socket_path ? 'socket' : 'hostname';
 
     return params;
   },
