@@ -63,6 +63,25 @@ export class ComponentsService implements IComponentsService {
     return result;
   }
 
+  /**
+   * Create components using an external EntityManager (for use within existing transactions)
+   * Use this when creating components within a transaction that has also created pages,
+   * so both operations share the same transaction and can see each other's uncommitted changes.
+   */
+  async createWithManager(
+    componentDiff: object,
+    pageId: string,
+    appVersionId: string,
+    manager: EntityManager,
+    skipHistoryCapture: boolean = false
+  ): Promise<void> {
+    await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
+
+    if (!skipHistoryCapture) {
+      await this.afterComponentCreate(null, componentDiff, pageId, appVersionId);
+    }
+  }
+
   async update(componentDiff: object, appVersionId: string) {
     const componentIds = Object.keys(componentDiff);
 
@@ -108,7 +127,9 @@ export class ComponentsService implements IComponentsService {
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+        const doesComponentExist = await manager.findAndCount(Component, {
+          where: { id: componentId },
+        });
 
         if (doesComponentExist[1] === 0) {
           return {
@@ -121,7 +142,9 @@ export class ComponentsService implements IComponentsService {
         const { layouts, component } = componenstLayoutDiff[componentId];
 
         for (const type in layouts) {
-          const componentLayout = await manager.findOne(Layout, { where: { componentId, type } });
+          const componentLayout = await manager.findOne(Layout, {
+            where: { componentId, type },
+          });
 
           if (componentLayout) {
             const layout = {
@@ -151,7 +174,9 @@ export class ComponentsService implements IComponentsService {
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
         .where('component.pageId = :pageId', { pageId })
-        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .andWhere('layout.type IN (:...types)', {
+          types: ['desktop', 'mobile'],
+        })
         .orderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
         .getMany();
@@ -272,7 +297,9 @@ export class ComponentsService implements IComponentsService {
       create?: { diff: object; pageId: string };
       update?: { diff: object };
       delete?: { diff: string[]; is_component_cut?: boolean };
-      layout?: { diff: Record<string, { layouts: LayoutData; component?: { parent: string } }> };
+      layout?: {
+        diff: Record<string, { layouts: LayoutData; component?: { parent: string } }>;
+      };
       events?: CreateEventHandlerDto[];
     },
     appVersionId: string
@@ -374,7 +401,9 @@ export class ComponentsService implements IComponentsService {
     for (const componentId in diff) {
       const { component } = diff[componentId];
 
-      const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+      const doesComponentExist = await manager.findAndCount(Component, {
+        where: { id: componentId },
+      });
 
       if (doesComponentExist[1] === 0) {
         return {
@@ -471,7 +500,9 @@ export class ComponentsService implements IComponentsService {
     manager: EntityManager
   ) {
     for (const componentId in layoutDiff) {
-      const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
+      const doesComponentExist = await manager.findAndCount(Component, {
+        where: { id: componentId },
+      });
 
       if (doesComponentExist[1] === 0) {
         return {
@@ -484,7 +515,9 @@ export class ComponentsService implements IComponentsService {
       const { layouts, component } = layoutDiff[componentId];
 
       for (const type in layouts) {
-        const componentLayout = await manager.findOne(Layout, { where: { componentId, type } });
+        const componentLayout = await manager.findOne(Layout, {
+          where: { componentId, type },
+        });
 
         if (componentLayout) {
           const layout = {

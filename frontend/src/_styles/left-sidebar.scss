@@ -14,11 +14,11 @@
   flex: 1 1 auto;
   background-clip: border-box;
   padding-top: 8px;
-  background: var(--page-weak) !important;
   display: flex;
   flex-direction: column;
   align-items: center;
   border-right: 1px solid var(--border-weak);
+  background-color: var(--background-surface-layer-01);
 
   .accordion-item {
     border: solid var(--slate5);
@@ -448,7 +448,7 @@
 
 .debugger-content {
   padding: 0px 16px;
-  background-color: var(--base);
+  background-color: var(--background-surface-layer-01);
   cursor: pointer;
 
   hr {
@@ -457,7 +457,7 @@
   }
 
   &:hover {
-    background-color: var(--slate3);
+    background-color: var(--interactive-overlays-fill-hover);
   }
 
   .error-target,
@@ -1032,7 +1032,7 @@
 .sidebar-h-100-popover {
   position: relative;
   height: 100vh;
-  overflow-y: scroll !important;
+  overflow-y:auto !important;
   margin-top: 0px;
   border-radius: 0px !important;
   box-shadow: none !important;

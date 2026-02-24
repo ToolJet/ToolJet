@@ -6,6 +6,8 @@ import { OptionsList } from './components';
 import { useOptionsManager } from './hooks/useOptionsManager';
 import './styles.scss';
 
+const POPOVER_MENU_FIELDS = ['format', 'label', 'description', 'value', 'icon', 'visibility', 'disable'];
+
 export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
@@ -63,6 +65,7 @@ export const PopoverMenu = ({ componentMeta, darkMode, ...restProps }) => {
         onDragEnd={onDragEnd}
         getResolvedValue={getResolvedValue}
         getItemStyle={getItemStyle}
+        popoverFields={POPOVER_MENU_FIELDS}
         {...restProps}
       />
     );

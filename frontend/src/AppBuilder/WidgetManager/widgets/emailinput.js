@@ -35,6 +35,12 @@ export const emailinputConfig = {
         defaultValue: 'Default value',
       },
     },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -297,6 +303,7 @@ export const emailinputConfig = {
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      showClearBtn: { value: '{{false}}' },
     },
     events: [],
     styles: {

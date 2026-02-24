@@ -12,7 +12,8 @@ import { authenticationService, tooljetService } from '@/_services';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 /**
  * ViewerApp - Isolated router for viewer routes ONLY
@@ -38,28 +39,35 @@ import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
  */
 const ViewerApp = () => {
   const { isAppDarkMode } = useAppDarkMode();
+  const { updateIsTJDarkMode } = useStore(
+    (state) => ({
+      updateIsTJDarkMode: state.updateIsTJDarkMode,
+    }),
+    shallow
+  );
   const location = useLocation();
   const metadataFetchedRef = useRef(false);
 
   // Toast options for viewer
   const toastOptions = isAppDarkMode
     ? {
-      className: 'toast-dark-mode',
-      style: {
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-        wordBreak: 'break-all',
-      },
-    }
+        className: 'toast-dark-mode',
+        style: {
+          borderRadius: '10px',
+          background: '#333',
+          color: '#fff',
+          wordBreak: 'break-all',
+        },
+      }
     : {
-      style: {
-        wordBreak: 'break-all',
-      },
-    };
+        style: {
+          wordBreak: 'break-all',
+        },
+      };
 
   // Simple dark mode switcher for viewer
   const switchDarkMode = (newMode) => {
+    updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
   };
 
@@ -90,9 +98,6 @@ const ViewerApp = () => {
 
     // Authorize workspace session
     authorizeWorkspace();
-
-    // Load HubSpot (analytics)
-    hubspotHelper.loadHubspot();
 
     // Fetch instance metadata
     fetchMetadata();
@@ -163,4 +168,3 @@ const ViewerApp = () => {
 };
 
 export default ViewerApp;
-

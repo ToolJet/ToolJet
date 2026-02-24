@@ -175,6 +175,7 @@ export class DataQueriesController implements IDataQueriesController {
     @Res({ passthrough: true }) response: Response
   ) {
     const dataQuery: DataQuery = dataSource.dataQueries[0];
+
     const { options, query } = updateDataQueryDto;
     const dataQueryEntity = Object.assign(new DataQuery(), {
       ...dataQuery,
@@ -183,7 +184,9 @@ export class DataQueriesController implements IDataQueriesController {
       app,
     });
 
-    return this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
+    const result = await this.dataQueriesService.preview(user, dataQueryEntity, environmentId, options, response, app);
+
+    return result;
   }
 
   @InitFeature(FEATURE_KEY.UPDATE_DATA_SOURCE)

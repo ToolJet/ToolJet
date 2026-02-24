@@ -1,18 +1,16 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { findAllEntityReferences } from '@/_stores/utils';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
-import { isQueryRunnable, isValidUUID, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
-import urlJoin from 'url-join';
 import { useCallback } from 'react';
-import { navigate } from '@/AppBuilder/_utils/misc';
 import moment from 'moment';
+import { getSubpath } from '@/_helpers/routes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -400,6 +398,11 @@ export const createEventsSlice = (set, get) => ({
           'onRecordingStart',
           'onRecordingSave',
           'onImageSave',
+          'onExpand',
+          'onCollapse',
+          'onSaveKeyValuePairChanges',
+          'onFieldValueChanged',
+          'onCancelKeyValuePairChanges',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -459,8 +462,9 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
-            }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
+            event.actionId ? `[Action ${event.actionId}]` : ''
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -590,7 +594,7 @@ export const createEventsSlice = (set, get) => ({
               const resolvedParams = {};
               if (params) {
                 Object.keys(params).map(
-                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined, moduleId))
+                  (param) => (resolvedParams[param] = getResolvedValue(params[param], customVariables, moduleId))
                 );
               }
               // !Todo tackle confirm query part once done
@@ -650,11 +654,15 @@ export const createEventsSlice = (set, get) => ({
 
                 if (queryPart.length > 0) url = url + `?${queryPart}`;
               }
+
+              const path = getSubpath();
+              if (path) url = path + url;
+
               if (mode === 'view') {
-                navigate(url);
+                window.open(url, '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+                  window.open(url);
                 }
               }
               return Promise.resolve();
@@ -899,6 +907,27 @@ export const createEventsSlice = (set, get) => ({
               return Promise.reject(error);
             }
           }
+          case 'scroll-component-into-view': {
+            try {
+              const componentId = event.componentId;
+              if (!componentId) {
+                throw new Error('No component selected for scroll-component-into-view action.');
+              }
+              const element = document.getElementById(componentId);
+              if (!element) {
+                throw new Error('Component element not found in DOM.');
+              }
+              const behavior = event.scrollBehavior || 'smooth';
+              const block = event.scrollBlock || 'nearest';
+              element.scrollIntoView({ behavior, block });
+              return Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('scroll_to_component', 'scroll-component-into-view', error, eventObj, {
+                eventId: event.eventId,
+              });
+              return Promise.reject(error);
+            }
+          }
           case 'toggle-app-mode': {
             const {
               updateIsTJDarkMode,
@@ -1090,7 +1119,6 @@ export const createEventsSlice = (set, get) => ({
             modal = key;
           }
         }
-
         const event = {
           actionId: 'show-modal',
           modal,
@@ -1279,6 +1307,23 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const scrollComponentInToView = (componentName, eventObj, moduleId = 'canvas') => {
+        let componentId = '';
+        const { behaviour = 'smooth', block = 'nearest' } = eventObj;
+        for (const [key, value] of currentComponents) {
+          if (value.component.name === componentName) {
+            componentId = key;
+          }
+        }
+        const event = {
+          actionId: 'scroll-component-into-view',
+          componentId,
+          scrollBehaviour: behaviour,
+          scrollBlock: block,
+        };
+        return executeAction(event, mode, {}, moduleId);
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1303,6 +1348,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        scrollComponentInToView,
       };
     },
     // Selectors
@@ -1326,27 +1372,34 @@ export const createEventsSlice = (set, get) => ({
     performDeletionUpdationAndCreationOfEvents: (eventsInfo, moduleId = 'canvas') => {
       if (!(eventsInfo?.delete?.length || eventsInfo?.update?.length || eventsInfo?.create?.length)) return;
 
-      const eventIdsToDelete = new Set(eventsInfo.delete?.map((event) => event.id) ?? []);
+      const eventIdsToDelete = new Set(eventsInfo.delete ?? []);
       const eventToUpdate = new Map(eventsInfo.update?.map((event) => [event.id, event]) ?? []);
       const eventsToCreate = eventsInfo.create ?? [];
+
+      const isCreateOnly = !eventIdsToDelete.size && !eventToUpdate.size && eventsToCreate.length > 0;
 
       set(
         (state) => {
           const eventsValueInState = state.eventsSlice.module[moduleId].events;
 
-          const updatedEventsValue = eventsValueInState;
+          if (isCreateOnly) {
+            eventsValueInState.push(...eventsToCreate);
+            return;
+          }
 
-          // Delete events
-          if (eventIdsToDelete.size) updatedEventsValue.filter((event) => !eventIdsToDelete.has(event.id));
+          const updatedEvents = [];
 
-          // Update events
-          if (eventToUpdate.size)
-            updatedEventsValue.map((event) => (eventToUpdate.has(event.id) ? eventToUpdate.get(event.id) : event));
+          for (const event of eventsValueInState) {
+            if (eventIdsToDelete.has(event.id)) continue; // Skip pushing event if it's present in eventIdsToDelete
 
-          // Create/Add events
-          eventsToCreate.length && updatedEventsValue.push(...eventsToCreate);
+            // Use updated event if exists, otherwise keep original
+            updatedEvents.push(eventToUpdate.get(event.id) ?? event);
+          }
 
-          state.eventsSlice.module[moduleId].events = updatedEventsValue;
+          // Append new events
+          if (eventsToCreate.length) updatedEvents.push(...eventsToCreate);
+
+          state.eventsSlice.module[moduleId].events = updatedEvents;
         },
         false,
         'performDeletionUpdationAndCreationOfEvents'
