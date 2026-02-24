@@ -2,8 +2,6 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { Button } from '@/_ui/LeftSidebar';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
 import { EventManager } from '../../Inspector/EventManager';
 import { kebabCase } from 'lodash';
@@ -17,6 +15,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
 import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { Button } from '@/components/ui/Button/Button';
 
 const POPOVER_TITLES = {
   add: {
@@ -279,29 +278,44 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             {!['group', 'custom'].includes(type) && (
               <>
                 <ToolTip message={'Go to page'} placement="bottom">
-                  <div onClick={handlePageSwitch} className="icon-btn">
-                    <SolidIcon name="arrowright01" />
-                  </div>
+                  <Button
+                    key="go-to-page-btn"
+                    fill="var(--icon-strong)"
+                    leadingIcon="arrowright01"
+                    iconOnly
+                    variant="ghost"
+                    size="medium"
+                    onClick={handlePageSwitch}
+                  />
                 </ToolTip>
               </>
             )}
 
             <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
-              <div onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))} className="icon-btn">
-                <SolidIcon name="duplicatepage" />
-              </div>
+              <Button
+                key="duplicate-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="duplicatepage"
+                iconOnly
+                variant="ghost"
+                size="medium"
+                onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
+              />
             </ToolTip>
 
             <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
-              <div
+              <Button
+                key="delete-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="delete01"
+                iconOnly
+                variant="ghost"
+                size="medium"
                 onClick={() => {
                   openPageEditPopover(page);
                   toggleDeleteConfirmationModal(true);
                 }}
-                className="icon-btn"
-              >
-                <SolidIcon name="delete01" />
-              </div>
+              />
             </ToolTip>
           </div>
         </div>
@@ -309,14 +323,14 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
       <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className="pb-2">
           <div className="col">
-            <label className="form-label font-weight-400 mb-0">{type === 'default' ? 'Page name' : 'Label'}</label>
+            <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
             <input
               type="text"
               className="form-control"
               value={pageName}
               autoFocus={true}
               onChange={(e) => setPageName(e.target.value)}
-              onBlur={(e) => {
+              onBlur={() => {
                 pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
               }}
               minLength="1"
@@ -327,12 +341,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         {type === 'default' && (
           <div className="pb-2">
             <div className="col">
-              <label className="form-label font-weight-400 mb-0">Handle</label>
+              <label className="form-label">Handle</label>
               <input
                 type="text"
                 className={`form-control ${error ? 'is-invalid' : ''}`}
                 onChange={(e) => onChangePageHandleValue(e)}
-                onBlur={(e) => handleSave(e)}
+                onBlur={() => handleSave()}
                 value={handle}
                 minLength="1"
                 maxLength="32"
@@ -346,7 +360,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         {type === 'url' && (
           <div className="pb-2">
             <div className="col">
-              <label className="form-label font-weight-400 mb-0">URL</label>
+              <label className="form-label">URL</label>
               <textarea
                 onChange={(e) => setPageURL(e.target.value)}
                 className="form-control"
@@ -360,7 +374,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
         {type === 'app' && (
           <div className="pb-2">
             <div className="col d-flex justify-content-between align-items-center">
-              <label className="form-label font-weight-400 mb-0">Select app</label>
+              <label className="form-label">Select app</label>
               <Select
                 options={appOptions}
                 search={true}
@@ -372,15 +386,17 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                 placeholder={'Select...'}
                 useMenuPortal={false}
                 width={'168px'}
-                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                borderRadius="6px"
+                styles={{ border: '1px solid var(--border-default) !important' }}
+                className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
           </div>
         )}
         {['url', 'app'].includes(type) && (
           <div className="d-flex justify-content-between align-items-center pb-2">
-            <label className="form-label font-weight-400 mb-0">Open {type === 'url' ? 'URL' : 'app'} in</label>
-            <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
+            <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
+            <div className="ms-auto position-relative app-mode-switch">
               <ToggleGroup
                 onValueChange={(value) => {
                   updatePageTarget(page?.id, value);
@@ -396,7 +412,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             </div>
           </div>
         )}
-        <div className="pb-2">
+        <div className="pb-3">
           <div className="d-flex justify-content-between align-items-center">
             <label className="form-label font-weight-400 mb-0">Icon</label>
             <Icon
@@ -406,7 +422,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             />
           </div>
         </div>
-        <div className={`${['default', 'custom'].includes(type) ? 'pb-2' : ''}`}>
+        <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
           {type === 'default' && (
             <div className=" d-flex justify-content-between align-items-center pb-2">
               <label className="form-label font-weight-400 mb-0">Mark as home</label>
@@ -437,7 +453,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   className="form-check-input"
                   type="checkbox"
                   checked={page?.disabled}
-                  onChange={(e) => disableOrEnablePage(page?.id, !page.disabled)}
+                  onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
                   disabled={isHomePage}
                 />
               </label>
