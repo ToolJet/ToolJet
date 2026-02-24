@@ -23,6 +23,7 @@ const routes = [
   { path: '/settings/license', breadcrumb: 'Settings' },
   { path: '/settings/smtp', breadcrumb: 'Settings' },
   { path: '/settings/instance-login', breadcrumb: 'Settings' },
+  { path: '/settings/support-logs', breadcrumb: 'Settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
   { path: '/integrations/installed', breadcrumb: 'Integrations' },
   { path: '/integrations/marketplace', breadcrumb: 'Integrations' },
