@@ -272,7 +272,7 @@ Cypress.Commands.add("scrollToElement", (selector) => {
 });
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });
+  cy.get(selector).parent().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
