@@ -217,7 +217,7 @@ const RenderWidget = ({
         }
         overlay={(props) =>
           renderTooltip({
-            props,
+            props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
             text: inCanvas
               ? `${
                   SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)

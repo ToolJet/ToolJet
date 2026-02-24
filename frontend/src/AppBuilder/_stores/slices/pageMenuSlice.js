@@ -42,26 +42,26 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
 };
 
 const createPageUpdateCommand =
-  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
-  (pageId, values) => {
-    return (set, get) => {
-      set((state) => {
-        const page = state.modules.canvas.pages.find((p) => p.id === pageId);
-        if (page) {
-          updatePaths.forEach((path, index) => {
-            _.set(page, path, values[index]);
-          });
-          state.editingPage = page;
-          afterUpdateFn(state);
-        }
-      });
+  (updatePaths, afterUpdateFn = () => { }, enableSave = true) =>
+    (pageId, values) => {
+      return (set, get) => {
+        set((state) => {
+          const page = state.modules.canvas.pages.find((p) => p.id === pageId);
+          if (page) {
+            updatePaths.forEach((path, index) => {
+              _.set(page, path, values[index]);
+            });
+            state.editingPage = page;
+            afterUpdateFn(state);
+          }
+        });
 
-      const { appStore, currentVersionId } = get();
-      const app = appStore.modules.canvas.app;
-      const diff = _.zipObject(updatePaths, values);
-      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
+        const { appStore, currentVersionId } = get();
+        const app = appStore.modules.canvas.app;
+        const diff = _.zipObject(updatePaths, values);
+        if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
+      };
     };
-  };
 
 export const createPageMenuSlice = (set, get) => {
   const updatePageVisibility = createPageUpdateCommand(['hidden']);
@@ -79,7 +79,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageTarget = createPageUpdateCommand(['openIn']);
   const updatePageAppId = createPageUpdateCommand(['appId']);
 
-  const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
+  const updatePageGroupName = createPageUpdateCommand(['name'], (state) => { });
 
   const updatePageHandle = createPageUpdateCommand(['handle'], (state) => {
     state.showRenamePageHandleModal = false;
@@ -87,7 +87,7 @@ export const createPageMenuSlice = (set, get) => {
     state.editingPage = null;
   });
 
-  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => { }, false);
 
   return {
     editingPage: null,
@@ -418,8 +418,8 @@ export const createPageMenuSlice = (set, get) => {
         isPageGroup,
         ...(isPageGroup
           ? {
-              icon: `IconFolder`,
-            }
+            icon: `IconFolder`,
+          }
           : {}),
       };
       set((state) => {
@@ -551,11 +551,11 @@ export const createPageMenuSlice = (set, get) => {
 
       if (page?.type === 'app') {
         if (page?.appId) {
-          const baseUrl = `${getHostURL()}/applications/${page.appId}`;
+          const appUrl = `${getHostURL()}/applications/${page.appId}`;
           if (page.openIn === 'new_tab') {
-            window.open(baseUrl, '_blank');
+            window.open(appUrl, '_blank');
           } else {
-            window.location.href = baseUrl;
+            window.location.href = appUrl;
           }
         } else {
           toast.error('No app selected');
