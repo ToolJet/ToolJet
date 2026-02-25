@@ -352,6 +352,9 @@ module.exports = {
   },
   plugins,
   devServer: {
+    // Uncomment these to test custom domains locally (allows non-localhost hostnames):
+    // host: "0.0.0.0",
+    // allowedHosts: "all",
     historyApiFallback: { index: ASSET_PATH },
     static: {
       directory: path.resolve(__dirname, 'assets'),
@@ -360,6 +363,10 @@ module.exports = {
     client: {
       overlay: false,
     },
+    // Uncomment to disable caching during custom domain testing:
+    // headers: {
+    //   'Cache-Control': 'no-store',
+    // },
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
