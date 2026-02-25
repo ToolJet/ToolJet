@@ -38,7 +38,7 @@ const FormComponent = (props) => {
     darkMode,
     fireEvent,
     properties,
-    resetComponent = () => {},
+    resetComponent = () => { },
     dataCy,
     adjustComponentPositions,
     currentLayout,
@@ -319,11 +319,11 @@ const FormComponent = (props) => {
     }
   };
 
-  function onComponentOptionChangedForSubcontainer(component, key, value, id = '') {
+  function onComponentOptionChangedForSubcontainer (component, key, value, id = '') {
     onOptionChange(key, value, id, component);
   }
 
-  function onComponentOptionsChangedForSubcontainer(component, exposedValues, id) {
+  function onComponentOptionsChangedForSubcontainer (component, exposedValues, id) {
     onOptionsChange(exposedValues, id, component);
   }
 
@@ -413,12 +413,13 @@ const FormComponent = (props) => {
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
       <div
-        className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
-          isDynamicHeightEnabled && `dynamic-${id}`
-        }`}
+        className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${isDynamicHeightEnabled && `dynamic-${id}`
+          }`}
+        data-cy={`${dataCy}-body-section`}
         style={formContent}
       >
         {isLoading ? (
@@ -492,6 +493,7 @@ const FormComponent = (props) => {
           onResize={updateFooterSizeInStore}
           isActive={activeSlot === `${id}-footer`}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
     </form>
