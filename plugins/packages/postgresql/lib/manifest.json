@@ -297,7 +297,7 @@
                 "order": 90,
                 "$ref": "#/properties/ca_cert",
                 "key": "ca_cert",
-                "label": "CA Cert",
+                "label": "CA cert",
                 "description": "Enter ca certificate",
                 "widget": "password-v3-textarea"
               }
@@ -307,7 +307,7 @@
                 "order": 90,
                 "$ref": "#/properties/client_key",
                 "key": "client_key",
-                "label": "Client Key",
+                "label": "Client key",
                 "description": "Enter client key",
                 "widget": "password-v3-textarea"
               },
@@ -315,7 +315,7 @@
                 "order": 100,
                 "$ref": "#/properties/client_cert",
                 "key": "client_cert",
-                "label": "Client Cert",
+                "label": "Client cert",
                 "description": "Enter client certificate",
                 "widget": "password-v3-textarea"
               },
@@ -323,7 +323,7 @@
                 "order": 110,
                 "$ref": "#/properties/root_cert",
                 "key": "root_cert",
-                "label": "Root Cert",
+                "label": "Root cert",
                 "description": "Enter root certificate",
                 "widget": "password-v3-textarea"
               }
@@ -336,7 +336,7 @@
         "order": 120,
         "$ref": "#/properties/ssh_enabled",
         "key": "ssh_enabled",
-        "label": "SSH Tunnel",
+        "label": "SSH tunnel",
         "description": "Connect through an SSH server",
         "help_text": "Connect through an SSH server to access databases in private networks",
         "widget": "toggle-flip",
@@ -346,7 +346,7 @@
             "order": 130,
             "$ref": "#/properties/ssh_host",
             "key": "ssh_host",
-            "label": "SSH Host",
+            "label": "SSH host",
             "description": "ssh.example.com",
             "widget": "text-v3",
             "help_text": "SSH server hostname or IP address"
@@ -355,8 +355,8 @@
             "order": 140,
             "$ref": "#/properties/ssh_port",
             "key": "ssh_port",
-            "label": "SSH Port",
-            "description": "Default SSH port is 22",
+            "label": "SSH port",
+            "description": "22",
             "widget": "text-v3",
             "help_text": "Default SSH port is 22"
           },
@@ -364,7 +364,7 @@
             "order": 150,
             "$ref": "#/properties/ssh_username",
             "key": "ssh_username",
-            "label": "SSH Username",
+            "label": "SSH username",
             "description": "SSH Username",
             "widget": "text-v3"
           },
@@ -372,7 +372,7 @@
             "order": 175,
             "$ref": "#/properties/ssh_auth_type",
             "key": "ssh_auth_type",
-            "label": "Authentication Type",
+            "label": "Authentication type",
             "widget": "dropdown-component-flip",
             "default": "private_key",
             "list": [
@@ -385,14 +385,14 @@
                 "order": 180,
                 "$ref": "#/properties/ssh_private_key",
                 "key": "ssh_private_key",
-                "label": "SSH Private Key",
+                "label": "SSH private key",
                 "widget": "password-v3-textarea"
               },
               "ssh_passphrase": {
                 "order": 190,
                 "$ref": "#/properties/ssh_passphrase",
                 "key": "ssh_passphrase",
-                "label": "SSH Passphrase",
+                "label": "SSH passphrase",
                 "widget": "password-v3"
               }
             },
@@ -401,7 +401,7 @@
                 "order": 180,
                 "$ref": "#/properties/ssh_password",
                 "key": "ssh_password",
-                "label": "SSH Password",
+                "label": "SSH password",
                 "widget": "password-v3"
               }
             }
@@ -505,7 +505,7 @@
                 "order": 90,
                 "$ref": "#/properties/ca_cert",
                 "key": "ca_cert",
-                "label": "CA Cert",
+                "label": "CA cert",
                 "description": "Enter ca certificate",
                 "widget": "password-v3-textarea"
               }
@@ -515,7 +515,7 @@
                 "order": 90,
                 "$ref": "#/properties/client_key",
                 "key": "client_key",
-                "label": "Client Key",
+                "label": "Client key",
                 "description": "Enter client key",
                 "widget": "password-v3-textarea"
               },
@@ -523,7 +523,7 @@
                 "order": 100,
                 "$ref": "#/properties/client_cert",
                 "key": "client_cert",
-                "label": "Client Cert",
+                "label": "Client cert",
                 "description": "Enter client certificate",
                 "widget": "password-v3-textarea"
               },
@@ -531,7 +531,7 @@
                 "order": 110,
                 "$ref": "#/properties/root_cert",
                 "key": "root_cert",
-                "label": "Root Cert",
+                "label": "Root cert",
                 "description": "Enter root certificate",
                 "widget": "password-v3-textarea"
               }
@@ -544,7 +544,7 @@
         "order": 120,
         "$ref": "#/properties/ssh_enabled",
         "key": "ssh_enabled",
-        "label": "SSH Tunnel",
+        "label": "SSH tunnel",
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
         "help_text": "Connect through an SSH server to access databases in private networks",
@@ -554,7 +554,7 @@
             "order": 130,
             "$ref": "#/properties/ssh_host",
             "key": "ssh_host",
-            "label": "SSH Host",
+            "label": "SSH host",
             "description": "ssh.example.com",
             "widget": "text-v3",
             "help_text": "SSH server hostname or IP address"
@@ -563,8 +563,8 @@
             "order": 140,
             "$ref": "#/properties/ssh_port",
             "key": "ssh_port",
-            "label": "SSH Port",
-            "description": "Default SSH port is 22",
+            "label": "SSH port",
+            "description": "22",
             "widget": "text-v3",
             "help_text": "Default SSH port is 22"
           },
@@ -572,7 +572,7 @@
             "order": 150,
             "$ref": "#/properties/ssh_username",
             "key": "ssh_username",
-            "label": "SSH Username",
+            "label": "SSH username",
             "description": "SSH Username",
             "widget": "text-v3"
           },
@@ -580,7 +580,7 @@
             "order": 175,
             "$ref": "#/properties/ssh_auth_type",
             "key": "ssh_auth_type",
-            "label": "Authentication Type",
+            "label": "Authentication type",
             "widget": "dropdown-component-flip",
             "default": "private_key",
             "list": [
@@ -593,14 +593,14 @@
                 "order": 180,
                 "$ref": "#/properties/ssh_private_key",
                 "key": "ssh_private_key",
-                "label": "SSH Private Key",
+                "label": "SSH private key",
                 "widget": "password-v3-textarea"
               },
               "ssh_passphrase": {
                 "order": 190,
                 "$ref": "#/properties/ssh_passphrase",
                 "key": "ssh_passphrase",
-                "label": "SSH Passphrase",
+                "label": "SSH passphrase",
                 "widget": "password-v3"
               }
             },
@@ -609,7 +609,7 @@
                 "order": 180,
                 "$ref": "#/properties/ssh_password",
                 "key": "ssh_password",
-                "label": "SSH Password",
+                "label": "SSH password",
                 "widget": "password-v3"
               }
             }
