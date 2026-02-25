@@ -3,17 +3,17 @@ id: integrating-data
 title: Integrating Data
 ---
 
-ToolJet AI can read and understand your existing database schema to build applications with queries and data bindings already configured.
+ToolJet AI can read and understand your existing database schema to build applications with queries and data bindings already configured. Internal tools are often built to solve the problem of scattered data, information spread across multiple databases, APIs, and services. By connecting your real data sources, you can build on top of your existing data and create production-ready applications with AI rather than just prototypes with mock data.
 
 ## How It Works
 
-When you provide a prompt, ToolJet AI asks whether you want to use your existing data or proceed with sample data. If you choose existing data, the AI reads through your database tables or API endpoints to identify the entities relevant to your application. It then presents an **entity mapping** for your approval before generating the final application.
+When you provide a prompt, ToolJet AI asks whether you want to use your existing data or proceed with sample data. If you choose existing data, it will ask you to select your data source and then AI will be able to read through your database tables or API endpoints to identify the entities relevant to your application. It then presents an **entity mapping** for your approval before generating the final application.
 
-The overall flow is:
+A typical flow looks like this:
 
 **Prompt → Spec Doc → Select Data Source → Entity Mapping → App Generation**
 
-Since the data layer is already connected, the AI skips the layout-only step with dummy data and generates the final application directly with real data bindings.
+The exact sequence can vary based on the kind of prompt you provide or how you progress through each step.
 
 :::note Data Privacy
 1. ToolJet AI does not access your data, it only uses the table schema for generating applications. 
@@ -44,16 +44,6 @@ If you start with sample data, you can connect your existing data sources at any
 4. **Review entity mapping**: The AI maps your application's entities to the relevant tables. If there's missing information, the AI will ask whether it should update the schema or create new tables as needed.
 5. **Approve and regenerate**: Once you approve the mapping, the AI regenerates the application with real data bindings.
 
-### Using Detailed Technical Prompts
-
-If your initial prompt includes enough technical detail (e.g., specific table names, schema references, or data source information), the AI can skip the confirmation step and directly generate the spec doc, since it already knows you're working with existing data.
-
-1. **Enter a detailed prompt**: Include specifics about your data structure and requirements.
-2. **Review the spec doc**: Approve or modify the generated specifications.
-3. **Select data source**: Choose the relevant data source for the application.
-4. **Review entity mapping**: Approve or modify the entity-to-table mapping.
-5. **App generation**: The final application is generated with real data bindings.
-
 ## Entity Mapping
 
 Entity mapping is the step where the AI shows you which database tables or API data sources it will use for each entity in your application.
@@ -62,8 +52,6 @@ Entity mapping is the step where the AI shows you which database tables or API d
 - **For APIs (OpenAPI)** — The mapping shows the data source name.
 
 An entity can use more than one table. For example, an *Orders* entity might pull from both an `orders` table and an `order_items` table.
-
-### Modifying Entity Mapping
 
 You can modify the entity mapping before approving it:
 
