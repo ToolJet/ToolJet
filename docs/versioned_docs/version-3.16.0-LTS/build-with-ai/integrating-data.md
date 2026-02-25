@@ -25,8 +25,7 @@ The exact sequence can vary based on the kind of prompt you provide or how you p
 ### Starting With Existing Data
 
 1. **Enter a prompt**: Describe the application you want to build in the prompt input on the dashboard.
-2. **Choose your data**: The AI will ask if you have an existing data source or want to proceed with sample data. Select **existing data**. <br/>
-    <img style={{marginTop:'15px'}} className="screenshot-full img-s"  src="/img/tooljet-ai/integrate-data/choose-data.png" alt="Choose Your Data" />
+2. **Choose your data**: The AI will ask if you have an existing data source or want to proceed with sample data. Select **existing data**.
 3. **Review the spec doc**: The AI generates a specification document outlining the features, navigation, and requirements. Review and approve it.
 4. **Select data source**: Choose data source needed for your application. You can select only one data sources. <br/>
     <img style={{marginTop:'15px'}} className="screenshot-full img-s"  src="/img/tooljet-ai/integrate-data/choose-ds.png" alt="Choose Your DS" />
