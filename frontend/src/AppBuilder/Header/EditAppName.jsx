@@ -22,7 +22,8 @@ function EditAppName() {
   );
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
-  const isRenameDisabled = !isDraftVersion;
+  const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
+  const isRenameDisabled = !isDraftVersion || isOnDefaultBranch;
 
   const [showRenameModal, setShowRenameModal] = useState(false);
 
@@ -35,7 +36,7 @@ function EditAppName() {
       return true;
     }
     try {
-      await appsService.saveApp(appId, { name: sanitizedName });
+      await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
       setAppName(sanitizedName);
       toast.success('App name has been updated!');
       return true;
@@ -53,7 +54,7 @@ function EditAppName() {
     <>
       <div className="tw-h-full tw-flex tw-items-start tw-justify-start">
         <ToolTip
-          message={isRenameDisabled ? 'Renaming of app is only allowed on draft versions' : appName}
+          message={isRenameDisabled ? 'Renaming of app is only allowed on sub branches' : appName}
           placement="bottom"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >

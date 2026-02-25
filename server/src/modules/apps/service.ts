@@ -223,14 +223,14 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    const { name } = appUpdateDto;
+    const { name, editingVersionId } = appUpdateDto;
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
       const draftVersion = await this.versionRepository.findOne({
         where: {
           appId: app.id,
-          versionType: AppVersionType.VERSION,
+          // versionType: AppVersionType.VERSION,
           status: AppVersionStatus.DRAFT,
         },
       });
@@ -247,6 +247,7 @@ export class AppsService implements IAppsService {
         organizationId: organizationId,
         app: app,
         appUpdateDto: appUpdateDto,
+        editingVersionId: editingVersionId,
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }
