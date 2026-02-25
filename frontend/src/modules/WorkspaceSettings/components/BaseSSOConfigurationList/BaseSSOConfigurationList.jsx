@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
 class BaseSSOConfigurationList extends React.Component {
-  protectedSSO = ['openid', 'ldap', 'saml', 'google', 'git'];
+  protectedSSO = ['openid', 'ldap', 'saml'];
   constructor(props) {
     super(props);
     this.state = {
