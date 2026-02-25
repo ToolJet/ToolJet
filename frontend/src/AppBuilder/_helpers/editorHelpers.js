@@ -61,6 +61,7 @@ import { Accordion } from '@/AppBuilder/Widgets/Accordion/Accordion';
 import { ReorderableList } from '@/AppBuilder/Widgets/ReorderableList/ReorderableList';
 import { JSONEditor } from '@/AppBuilder/Widgets/JSONEditor/JSONEditor';
 import { JSONExplorer } from '@/AppBuilder/Widgets/JSONExplorer/JSONExplorer';
+import { Navigation } from '@/AppBuilder/Widgets/Navigation';
 
 // Lazy load module components to reduce viewer bundle size
 const ModuleContainer = lazy(() =>
@@ -184,6 +185,7 @@ export const AllComponents = {
   JSONEditor,
   JSONExplorer,
   KeyValuePair,
+  Navigation,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = PDF;

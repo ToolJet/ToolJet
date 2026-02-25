@@ -76,6 +76,7 @@ import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { fileinputConfig } from './fileinput';
+import { navigationConfig } from './navigation';
 
 const widgets = {
   buttonConfig,
@@ -156,6 +157,7 @@ const widgets = {
   reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {

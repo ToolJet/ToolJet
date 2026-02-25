@@ -173,8 +173,8 @@ export class TooljetDbDataOperationsService implements QueryService {
         }
         if (!isEmpty(whereQuery)) query.push(whereQuery);
         if (!isEmpty(orderQuery)) query.push(orderQuery);
-        if (!isEmpty(limit)) query.push(`limit=${limit}`);
-        if (!isEmpty(offset)) query.push(`offset=${offset}`);
+        if (limit != null && limit !== '') query.push(`limit=${limit}`);
+        if (offset != null && offset !== '') query.push(`offset=${offset}`);
       }
 
       const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };

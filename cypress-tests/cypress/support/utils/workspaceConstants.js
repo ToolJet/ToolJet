@@ -365,9 +365,9 @@ export const verifyInputValues = (
   timeout = 10000
 ) => {
   for (let i = start; i <= end; i++) {
-    cy.wait(500);
+    cy.wait(750);
     cy.get(
-      commonWidgetSelector.draggableWidget(`textinput${i}`)
+      `[data-cy="textinput${i}-input"]`
     ).verifyVisibleElement("have.value", expectedValue, { timeout });
   }
 };
@@ -400,7 +400,7 @@ export const importConstantsApp = (filePath, app = true) => {
 
 export const verifySecretConstantNotResolved = (inputWidget) => {
   cy.openComponentSidebar();
-  cy.get(commonWidgetSelector.draggableWidget(inputWidget))
+  cy.get(`[data-cy="${inputWidget}-input"]`)
     .verifyVisibleElement("have.value", "")
     .click();
 };
@@ -439,9 +439,9 @@ export const previewAppAndVerify = (start, end, expectedValue) => {
     "be.visible"
   );
   for (let i = end; i >= start; i--) {
-    cy.wait(500);
+    cy.wait(750);
     cy.get(
-      commonWidgetSelector.draggableWidget(`textinput${i}`)
+      `[data-cy="textinput${i}-input"]`
     ).verifyVisibleElement("have.value", expectedValue, { timeout: 10000 });
   }
   cy.go("back");
@@ -459,7 +459,7 @@ export const promoteEnvAndVerify = (
   cy.waitForElement(versionModalSelector.versionLockInfoText)
   cy.wait(2000);
   cy.get(
-    commonWidgetSelector.draggableWidget("textinput1")
+    `[data-cy="textinput1-input"]`
   ).verifyVisibleElement("have.value", "customHeader");
   verifyInputValues(start, end, expectedValue);
   verifySecretConstantNotResolved("textinput2");

@@ -238,6 +238,7 @@ const RenderWidget = ({
               ? 'disabled'
               : ''
             }`} //required for custom CSS
+          data-cy={`draggable-widget-${componentName}`}
         >
           <TrackedSuspense fallback={null}>
             <ComponentToRender
@@ -257,7 +258,7 @@ const RenderWidget = ({
               componentName={componentName}
               adjustComponentPositions={adjustComponentPositions}
               componentCount={componentCount}
-              dataCy={`draggable-widget-${componentName}`}
+              dataCy={`${componentName}`}
               currentMode={currentMode}
               subContainerIndex={subContainerIndex}
             />
