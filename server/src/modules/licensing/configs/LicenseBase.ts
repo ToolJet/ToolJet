@@ -470,12 +470,6 @@ export default class LicenseBase {
     }
     return this._isScimEnabled;
   }
-  public get appHistory(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
-    }
-    return !!this._app?.features?.history;
-  }
 
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
@@ -629,5 +623,16 @@ export default class LicenseBase {
       return true;
     }
     return !!this._app?.features?.release;
+  }
+
+  public get appHistory(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.history;
+    }
+
+    if (this._app?.features?.history === undefined) {
+      return true;
+    }
+    return !!this._app?.features?.history;
   }
 }
