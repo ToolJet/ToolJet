@@ -28,13 +28,33 @@ export const authorizeWorkspace = async () => {
   /* Default APIs */
   let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
 
-  // Resolve custom domain to workspace slug if on a custom domain
-  if (!workspaceIdOrSlug && isCustomDomain()) {
+  // On a custom domain, resolve which workspace owns it
+  if (isCustomDomain()) {
     try {
       const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
-      workspaceIdOrSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+      const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+
+      if (!workspaceIdOrSlug) {
+        // No slug in URL — use the resolved workspace
+        workspaceIdOrSlug = resolvedSlug;
+      } else if (workspaceIdOrSlug !== resolvedSlug) {
+        // URL workspace doesn't match this custom domain — redirect to main host
+        const tooljetHost = window?.public_config?.TOOLJET_HOST;
+        if (tooljetHost) {
+          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+          return;
+        }
+      }
     } catch (e) {
-      // Custom domain resolution failed - fall through to normal flow
+      // Domain not registered — if no slug to fall back on, redirect to main host
+      if (!workspaceIdOrSlug) {
+        const tooljetHost = window?.public_config?.TOOLJET_HOST;
+        if (tooljetHost) {
+          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+          return;
+        }
+      }
+      // If there's a slug in the URL, fall through and use it directly
     }
   }
 

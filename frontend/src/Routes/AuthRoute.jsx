@@ -61,14 +61,33 @@ export const AuthRoute = ({ children }) => {
     const shouldGetConfigs = !isSuperAdminLogin;
     authenticationService.deleteAllAuthCookies();
     if (shouldGetConfigs) {
-      // If on a custom domain and no org slug from URL params, resolve domain first
-      if (!organizationSlug && isCustomDomain()) {
+      // On a custom domain, resolve which workspace owns it
+      if (isCustomDomain()) {
         customDomainService
           .resolveCustomDomain(window.location.hostname)
           .then((resolved) => {
-            fetchOrganizationDetails(resolved?.organizationSlug || resolved?.organizationId);
+            const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId;
+            if (organizationSlug && organizationSlug !== resolvedSlug) {
+              // URL workspace doesn't match this custom domain — redirect to main host
+              const tooljetHost = window?.public_config?.TOOLJET_HOST;
+              if (tooljetHost) {
+                window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+                return;
+              }
+            }
+            fetchOrganizationDetails(resolvedSlug);
           })
-          .catch(() => fetchOrganizationDetails());
+          .catch(() => {
+            // Domain not registered — if no slug to fall back on, redirect to main host
+            if (!organizationSlug) {
+              const tooljetHost = window?.public_config?.TOOLJET_HOST;
+              if (tooljetHost) {
+                window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+                return;
+              }
+            }
+            fetchOrganizationDetails();
+          });
       } else {
         fetchOrganizationDetails();
       }
