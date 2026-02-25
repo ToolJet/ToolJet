@@ -27,9 +27,8 @@ export class LicenseController implements ILicenseController {
         isLicenseValid: false,
         isExpired: false,
       },
-      github: true,
-      google: true,
-
+      github: false,
+      google: false,
     });
   }
   getDomains(@Req() req: Request): Promise<{ domains: any; licenseStatus: any }> {
