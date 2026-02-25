@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import '../style.scss';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, isUploading, isUploaded }) => {
   const itemClasses = clsx('file-list-item', {
@@ -14,10 +15,10 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
   return (
     <div className={itemClasses} onClick={onClick}>
       <div className="file-details">
-        <span className="file-name" title={fileName}>
+        <span className="file-name" data-cy={`${generateCypressDataCy(fileName).replace(/\.[^/.]+$/, '')}-file-name`} title={fileName}>
           {typeof fileName === 'string' ? fileName.replace(/\.[^/.]+$/, '') : fileName}
         </span>
-        <span className="file-meta">
+        <span className="file-meta" data-cy={`${generateCypressDataCy(fileType)}-${generateCypressDataCy(fileSize).replace(/\.[^/.]+$/, '')}-file-meta`}>
           {fileType} {fileSize}
         </span>
       </div>
@@ -31,6 +32,7 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
             event.stopPropagation();
             onDelete();
           }}
+          data-cy={`${generateCypressDataCy(fileName)}-file-delete-button`}
         >
           <Trash width={12} fill="var(--icon-strong)" />
         </ButtonSolid>

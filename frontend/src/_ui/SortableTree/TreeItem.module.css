@@ -48,7 +48,7 @@
         left: 0;
         right: 0;
         height: 2px;
-        background-color: #3D63DC;
+        background-color: var(--indigo9, #3D63DC);
       }
     }
 
@@ -67,11 +67,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: var(--vertical-padding) 10px;
-  color: #222;
+  padding: 0;
+  color: var(--text-default);
   box-sizing: border-box;
 }
-
 
 .Text {
   flex-grow: 1;
@@ -91,10 +90,10 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #2389ff;
+  background-color: var(--indigo9, #2389ff);
   font-size: 0.8rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-on-solid);
 }
 
 .disableInteraction {
@@ -124,8 +123,7 @@
   position: absolute;
   width: 1px;
   height: 100%;
-  background-color: var(--slate7);
+  background-color: var(--border-weak);
   z-index: 1;
   top: -4px;
-
 }

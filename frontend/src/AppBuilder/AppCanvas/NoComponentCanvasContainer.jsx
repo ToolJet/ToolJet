@@ -38,24 +38,24 @@ const NoComponentCanvasContainer = () => {
     <div style={{ paddingTop: '10%' }}>
       <div className="row empty-box-cont">
         <div className="col-md-4 dotted-cont">
-          <div className="box-icon">
+          <div className="box-icon" data-cy="drag-and-drop-a-component-icon">
             <BulkIcon name="addtemplate" width="25" viewBox="0 0 28 28" />
           </div>
-          <div className={`title-text`} data-cy="empty-editor-text">
+          <div className={`title-text`} data-cy="drag-and-drop-a-component-label">
             Drag and drop a component
           </div>
-          <div className="title-desc">
+          <div className="title-desc" data-cy="drag-and-drop-a-component-description">
             Choose a component from the right side panel or use our pre-built templates to get started quickly!
           </div>
         </div>
         <div className="col-md-4 dotted-cont">
-          <div className="box-icon">
+          <div className="box-icon" data-cy="create-a-query-icon">
             <SolidIcon name="datasource" fill="#3E63DD" width="25" />
           </div>
-          <div className={`title-text`}>Create a Query</div>
-          <div className="title-desc">{queryBoxText}</div>
+          <div className={`title-text`} data-cy="create-a-query-label">Create a Query</div>
+          <div className="title-desc" data-cy="create-a-query-description">{queryBoxText}</div>
           {!!sampleDataSource && !shouldFreeze && (
-            <div className="box-link">
+            <div className="box-link" data-cy="connect-to-sample-data-source-link">
               <div className="child">
                 <a className="link-but" onClick={handleConnectSampleDB}>
                   Connect to sample data source{' '}
@@ -70,14 +70,14 @@ const NoComponentCanvasContainer = () => {
         </div>
 
         <div className="col-md-4 dotted-cont">
-          <div className="box-icon">
+          <div className="box-icon" data-cy="share-your-application-icon">
             <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
           </div>
-          <div className={`title-text `}>Share your application!</div>
-          <div className="title-desc">
+          <div className={`title-text `} data-cy="share-your-application-label">Share your application!</div>
+          <div className="title-desc" data-cy="share-your-application-description">
             Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
           </div>
-          <div className="box-link">
+          <div className="box-link" data-cy="invite-collaborators-link">
             <div className="child">
               <a className="link-but" onClick={openAddUserWorkspaceSetting}>
                 Invite collaborators{' '}

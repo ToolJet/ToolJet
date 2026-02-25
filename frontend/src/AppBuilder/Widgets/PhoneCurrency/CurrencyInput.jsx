@@ -35,7 +35,7 @@ export const parseValueToNumber = (val, numberFormat) => {
 };
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -133,26 +133,26 @@ export const CurrencyInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
     paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
@@ -163,8 +163,8 @@ export const CurrencyInput = (props) => {
   const loaderStyle = {
     right:
       direction === 'right' &&
-      defaultAlignment === 'side' &&
-      hasLabel
+        defaultAlignment === 'side' &&
+        hasLabel
         ? `${labelWidth + 11}px`
         : '11px',
     top:
@@ -246,13 +246,11 @@ export const CurrencyInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex phone-input-widget ${
-          defaultAlignment === 'top' &&
+        className={`text-input d-flex phone-input-widget ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : 'align-items-center'
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : 'align-items-center'
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
@@ -277,8 +275,10 @@ export const CurrencyInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -315,13 +315,13 @@ export const CurrencyInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <ReactCurrencyInput
             ref={inputRef}
             placeholder={placeholder}
-            className={`tj-text-input-widget ${
-              !isValid && showValidationError ? 'is-invalid' : ''
-            } validation-without-icon`}
+            className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
+              } validation-without-icon`}
             value={value}
             decimalsLimit={decimalPlaces}
             groupSeparator={separators.groupSeparator}
@@ -343,6 +343,7 @@ export const CurrencyInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
         {shouldShowClearBtn && (
@@ -373,7 +374,7 @@ export const CurrencyInput = (props) => {
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(dataCy).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',
