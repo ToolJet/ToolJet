@@ -299,9 +299,9 @@
         "order": 140,
         "$ref": "#/properties/azure",
         "key": "azure",
-        "label": "Azure (encrypt connection)",
+        "label": "Azure encrypt connection",
         "description": "Toggle for azure",
-        "help_text": "Enable encrypted connection for Azure SQL Database",
+        "help_text": "Enable encrypted connection for Azure SQL Database.",
         "widget": "toggle-v2"
       }
     },
@@ -454,10 +454,10 @@
         "order": 130,
         "$ref": "#/properties/azure",
         "key": "azure",
-        "label": "Azure (encrypt connection)",
+        "label": "Azure encrypt connection",
         "description": "Toggle for azure",
         "widget": "toggle-v2",
-        "help_text": "Enable encrypted connection for Azure SQL Database"
+        "help_text": "Enable encrypted connection for Azure SQL Database."
       }
     }
   }
