@@ -8,7 +8,7 @@ const ErrorMessage = ({ message }) => {
       <span className="error-icon">
         <Information fill="var(--status-error-strong)" width="16" />
       </span>
-      <span className="error-text">{message}</span>
+      <span className="error-text" data-cy="file-picker-error-message">{message}</span>
     </div>
   );
 };

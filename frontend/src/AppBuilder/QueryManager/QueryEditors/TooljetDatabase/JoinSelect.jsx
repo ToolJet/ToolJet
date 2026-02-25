@@ -366,7 +366,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
               onClick={addNewColumnOptionsPair}
               className={`cursor-pointer fit-content mt-2}`}
               disabled={_.isEmpty(options)}
-              data-cy="button-add-column"
+              data-cy="tooljetdb-join-select-add-column-button"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

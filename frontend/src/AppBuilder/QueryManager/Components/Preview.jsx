@@ -6,6 +6,7 @@ import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -160,7 +161,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
               marginRight: '4px',
             }}
           />
-          <span data-cy="preview-label">Preview</span>
+          <span data-cy="preview-section-label">Preview</span>
         </div>
         {previewPanelExpanded && (
           <div className="right" data-cy="preview-tabs-container">
@@ -180,10 +181,10 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                         disabled={!queryPreviewData || (tab == 'JSON' && !isJson)}
                         style={{ minWidth: '74px', textAlign: 'center' }}
                         className="rounded"
-                        data-cy={`preview-tab-${String(tab).toLowerCase()}-item`}
+                        data-cy={`preview-tab-${generateCypressDataCy(tab)}-item`}
                       >
                         <span
-                          data-cy={`preview-tab-${String(tab).toLowerCase()}`}
+                          data-cy={`preview-tab-${generateCypressDataCy(tab)}`}
                           style={{ width: '100%' }}
                           className="rounded"
                         >

@@ -300,7 +300,7 @@ class Restapi extends React.Component {
               <p
                 className="text-placeholder font-weight-medium"
                 style={{ width: '100px', marginRight: '16px', marginBottom: '0px' }}
-                data-cy="label-request"
+                data-cy="restapi-request-label"
               >
                 Request
               </p>
@@ -311,7 +311,7 @@ class Restapi extends React.Component {
                   className={`me-2 ${isWorkflowNode ? 'mb-2' : ''}`}
                   style={{ width: isWorkflowNode ? '150px' : '124px', height: '32px' }}
                 >
-                  <label className="font-weight-medium color-slate12" data-cy="method-label">
+                  <label className="font-weight-medium color-slate12" data-cy="restapi-method-label">
                     Method
                   </label>
                   <Select
@@ -346,7 +346,7 @@ class Restapi extends React.Component {
                   className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
                   style={{ width: isWorkflowNode ? '100%' : 'calc(100% - 248px)' }}
                 >
-                  <div className="font-weight-medium color-slate12" data-cy="label-url">
+                  <div className="font-weight-medium color-slate12" data-cy="restapi-url-label">
                     URL
                   </div>
                   <div className="d-flex h-100 w-100">

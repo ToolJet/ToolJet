@@ -61,7 +61,7 @@ function ControlledTabs({
               variant="ghost"
               leadingIcon="plus"
               id="runjs-param-add-btn"
-              data-cy={`restapi-${key}-add-button`}
+              data-cy={`restapi-${generateCypressDataCy(key)}-add-button`}
               disabled={bodyToggle && key === 'body'}
               onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
             />
