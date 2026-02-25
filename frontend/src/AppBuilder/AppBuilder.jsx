@@ -34,6 +34,8 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
   const navigate = useNavigate();
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
 
   const changeToDarkMode = (newMode) => {
     updateIsTJDarkMode(newMode);
@@ -64,7 +66,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
             <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
           </Suspense>
 
-          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
+          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+            <RealtimeCursors />
+          )}
           <DndProvider backend={HTML5Backend}>
             <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
             <QueryPanel darkMode={darkMode} />

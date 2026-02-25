@@ -67,7 +67,9 @@ export const BaseLeftSidebar = ({
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
-  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();

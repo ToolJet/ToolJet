@@ -6,7 +6,7 @@ import { FilterFooter } from './FilterFooter';
 import { FilterHeader } from './FilterHeader';
 import { debounce, isEqual } from 'lodash';
 
-export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) => {
+export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, componentName }) => {
   const { t } = useTranslation();
   const [localFilters, setLocalFilters] = useState(table.getState().columnFilters);
 
@@ -31,10 +31,10 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
         prevFilters.map((f, i) =>
           i === index
             ? {
-                ...f,
-                id: filter.value,
-                value: { ...f.value, column: filter.name },
-              }
+              ...f,
+              id: filter.value,
+              value: { ...f.value, column: filter.name },
+            }
             : f
         )
       );
@@ -55,12 +55,12 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
     const newFilters = localFilters.map((filter, i) =>
       i === index
         ? {
-            ...filter,
-            value: {
-              ...filter.value,
-              condition: value,
-            },
-          }
+          ...filter,
+          value: {
+            ...filter.value,
+            condition: value,
+          },
+        }
         : filter
     );
 
@@ -83,12 +83,12 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
     const newFilters = localFilters.map((filter, i) =>
       i === index
         ? {
-            ...filter,
-            value: {
-              ...filter.value,
-              value: value,
-            },
-          }
+          ...filter,
+          value: {
+            ...filter.value,
+            value: value,
+          },
+        }
         : filter
     );
     setLocalFilters(newFilters);
@@ -148,7 +148,7 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
   }, [debouncedFilterChanged, localFilters]);
 
   return (
-    <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}>
+    <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`} data-cy={`${componentName}-filter-panel`}>
       <FilterHeader setShowFilter={setShowFilter} />
       <div className="card-body">
         {localFilters.map((filter, index) => (
@@ -168,7 +168,7 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter }) 
         {localFilters.length === 0 && (
           <div>
             <center>
-              <span data-cy={`label-no-filters`}>no filters yet.</span>
+              <span data-cy={`no-filters-yet-label`}>no filters yet.</span>
             </center>
           </div>
         )}
