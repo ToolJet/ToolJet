@@ -37,6 +37,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const commonBackgroundColor = component?.component?.definition?.styles?.commonBackgroundColor?.value;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const getContainerChildrenMapping = useStore((state) => state.getContainerChildrenMapping, shallow);
 
   const [tabItems, setTabItems] = useState([]);
   const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
@@ -174,7 +175,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         return;
       }
 
-      const allComponents = useStore.getState().getCurrentPageComponents();
       const tabsComponentId = component.id;
       const oldTabId = item.id;
       const newTabId = value;
@@ -183,9 +183,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       const newParentId = `${tabsComponentId}-${newTabId}`;
 
       // Collect all child components that need to be reparented
-      const childIdsToReparent = Object.entries(allComponents)
-        .filter(([, childDef]) => childDef?.component?.parent === oldParentId)
-        .map(([childId]) => childId);
+      const childIdsToReparent = getContainerChildrenMapping(oldParentId);
 
       // Batch update all parent changes together using setComponentLayout
       if (childIdsToReparent.length > 0) {
