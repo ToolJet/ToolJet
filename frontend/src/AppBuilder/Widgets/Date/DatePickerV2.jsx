@@ -30,7 +30,8 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat, showClearBtn } = properties;
+  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const placeholder = placeholderProp || 'Select date';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -56,7 +57,7 @@ export const DatePickerV2 = ({
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : ''
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
@@ -72,7 +73,7 @@ export const DatePickerV2 = ({
 
   const handleClear = () => {
     setInputValue(null);
-    setDisplayTimestamp('Select date');
+    setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
@@ -108,7 +109,7 @@ export const DatePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : 'Select date');
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, dateFormat) : '');
   }, [selectedTimestamp, dateFormat, textInputFocus]);
 
   useEffect(() => {
@@ -219,6 +220,7 @@ export const DatePickerV2 = ({
     validationError,
     showClearBtn,
     onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   return (

@@ -175,6 +175,14 @@ const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
       'DaterangePicker',
 ];
 
+const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
+  Datepicker: 'Select date',
+  DatePickerV2: 'Select date',
+  DatetimePickerV2: 'Select date and time',
+  TimePicker: 'Select time',
+  DaterangePicker: 'Select Date Range',
+};
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -2866,6 +2874,11 @@ function migrateProperties(
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {
       properties.showClearBtn = { value: '{{false}}' };
+    }
+
+    const placeholderDefault = PLACEHOLDER_DATE_TIME_COMPONENT[componentType];
+    if (placeholderDefault && properties.placeholder === undefined) {
+      properties.placeholder = { value: placeholderDefault };
     }
   }
 

@@ -43,6 +43,14 @@ export const timePickerConfig = {
       },
       accordian: 'Data',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select time',
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -334,6 +342,7 @@ export const timePickerConfig = {
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '00:00' },
+      placeholder: { value: 'Select time' },
       timeFormat: { value: 'HH:mm' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
