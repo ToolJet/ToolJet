@@ -2,6 +2,7 @@ import React from 'react';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import EmptyTabContent from './EmptyTabContent';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export default ({
   options = [],
@@ -21,7 +22,7 @@ export default ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="tab-content-wrapper" data-cy={`${tabType}-tab-content`}>
+    <div className="tab-content-wrapper" data-cy={`${generateCypressDataCy(tabType)}-tab-content`}>
       {options.length === 0 && !bodyToggle && (
         <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
       )}
@@ -29,7 +30,7 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container query-manager-border-color" key={index} data-cy={`${tabType}-row-${index}`}>
+              <div className="row-container query-manager-border-color" key={index} data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}>
                 <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
@@ -61,7 +62,7 @@ export default ({
                     onClick={() => {
                       removeKeyValuePair(paramType, index);
                     }}
-                    data-cy={`${tabType}-delete-${index}`}
+                    data-cy={`${generateCypressDataCy(tabType)}-delete-${index}`}
                   >
                     <Trash fill="var(--slate9)" style={{ height: '16px' }} />
                   </button>

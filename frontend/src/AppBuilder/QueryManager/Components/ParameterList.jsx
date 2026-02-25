@@ -59,7 +59,7 @@ const ParameterList = ({
       <p
         className="text-placeholder font-weight-medium"
         style={{ marginRight: '16px', marginBottom: '0px', width: '100px' }}
-        data-cy="label-parameter"
+        data-cy="query-parameter-label"
       >
         Parameters
       </p>

@@ -585,7 +585,7 @@ const ToolJetDbOperations = ({
         <div
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
-          <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-tooljetdb-mode">
+          <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-mode-label">
             Mode
           </label>
           <div
@@ -651,7 +651,7 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-table-name">
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-table-name-label">
                 Table name
               </label>
               <div
@@ -688,7 +688,7 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')} data-cy="label-operations">
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-operations-label">
                 Operations
               </label>
               <div
