@@ -88,7 +88,7 @@ This operation retrieves details of a specific Jira issue.
 #### Sample Example:
 
 ```yaml
-Issue Key: 10001
+Issue Key: 10004
 Params/Body:
 {
     "fields": "summary,description,created",
@@ -286,7 +286,7 @@ Recommended: Yes
 This operation retrieves the worklogs for a specific issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-issue-worklogs.png" alt="Jira Get Issue Worklogs"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-worklogs-query.png" alt="Jira Get Issue Worklogs"/>
 </div>
 
 #### Parameters:
@@ -312,7 +312,7 @@ Started before: 1726228754515
 This operation adds a new worklog entry to an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/add-worklog.png" alt="Jira Add Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/add-worklog-query.png" alt="Jira Add Worklog"/>
 </div>
 
 #### Parameters:
@@ -326,12 +326,12 @@ This operation adds a new worklog entry to an issue.
 Issue Key: SCRUM-1
 Params/Body:
 {
-  "comment": "I did some work here.",
-  "created": "2017-03-14T10:35:37.097+0000",
+  "comment": "It's important to keep the team motivated!",
+  "created": "2026-02-25T10:56:25.035+0000",
   "id": "100028",
   "issueId": "SCRUM-1",
-  "started": "2017-03-14T10:35:37.097+0000",
-  "timeSpent": "3h 20m"
+  "started": "2026-02-25T10:59:49.015+0000",
+  "timeSpent": "2h 47m"
 }
 ```
 
@@ -340,7 +340,7 @@ Params/Body:
 This operation deletes a specific worklog entry from an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/delete-worklog.png" alt="Jira Delete Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-worklog-query.png" alt="Jira Delete Worklog"/>
 </div>
 
 #### Parameters:
@@ -368,7 +368,7 @@ Params/Body:
 This operation retrieves issues from a board's backlog.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/backlog-issues.png" alt="Jira Backlog Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-board-backlog.png" alt="Jira Backlog Issues"/>
 </div>
 
 #### Parameters:
@@ -382,13 +382,13 @@ This operation retrieves issues from a board's backlog.
 #### Example:
 
 ```yaml
-Board id: 1
+Board id: 001
 Start at: 1
 Max results: 10
-Expand: changelog
+Expand: widget
 Params/Body:
 {
-    "fields": ["summary", "description", "created"],
+    "fields": ["color", "transparency", "color_radius"]
 }
 ```
 
@@ -397,7 +397,7 @@ Params/Body:
 This operation retrieves all boards visible to the user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/all-boards.png" alt="Jira All Boards"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-all-boards.png" alt="Jira All Boards"/>
 </div>
 
 #### Parameters:
@@ -413,7 +413,7 @@ This operation retrieves all boards visible to the user.
 ```yaml
 Project key: PROJ
 Start at: 1
-Name: SCRUM
+Name: SCRUM board
 Max results: 10
 Expand: projects
 ```
@@ -423,7 +423,7 @@ Expand: projects
 This operation retrieves all issues from a specific board.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/board-issues.png" alt="Jira Board Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issues-board.png" alt="Jira Board Issues"/>
 </div>
 
 #### Parameters:
@@ -437,12 +437,12 @@ This operation retrieves all issues from a specific board.
 #### Example:
 
 ```yaml
-Board id: 1
+Board id: 05
 Start at: 1
 Max results: 10
-Expand: changelog
+Expand: projects
 Params/Body:
 {
-    "fields": ["summary", "description", "created"],
+    "fields": ["scope", "budget", "quality"]
 }
 ```
