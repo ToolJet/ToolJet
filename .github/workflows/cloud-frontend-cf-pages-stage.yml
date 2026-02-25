@@ -125,7 +125,13 @@ jobs:
         run: echo "/* /index.html 200" > repo/frontend/build/_redirects
 
       - name: 🚀 Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy frontend/build --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} --branch=main --commit-dirty=true
+        run: |
+          echo "📦 Built from branch: ${{ github.event.inputs.branch }}"
+          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+          npx wrangler pages deploy frontend/build \
+            --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} \
+            --branch=${{ github.event.inputs.branch }} \
+            --commit-dirty=true
         working-directory: repo
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
