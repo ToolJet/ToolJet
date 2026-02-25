@@ -601,6 +601,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   return (
     <>
       <Moveable
+        // Point Moveable's geometric container explicitly to .canvas-content so it aligns targets exactly against its DOM location
         dragTargetSelf={true}
         dragTarget={isGroupHandleHoverd ? document.getElementById('multiple-components-config-handle') : undefined}
         ref={moveableRef}
@@ -1294,7 +1295,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         // snapThreshold={GRID_HEIGHT}
-        bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
+        // bounds={virtualTarget ? CANVAS_BOUNDS : canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{

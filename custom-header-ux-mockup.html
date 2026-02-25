@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolJet Custom Header UX Mockup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .canvas-bg {
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: #f3f4f6;
+        }
+        .toggle-switch-on {
+            background-color: #3b82f6;
+        }
+        .toggle-switch-on .knob {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex bg-gray-100 overflow-hidden text-sm text-gray-800">
+
+    <!-- Left Sidebar Toolbar -->
+    <div class="w-16 h-full bg-slate-900 flex flex-col items-center py-4 space-y-6 border-r border-slate-700 z-10">
+        <div class="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold">TJ</div>
+        <div class="w-6 h-6 rounded bg-slate-700"></div>
+        <div class="w-6 h-6 rounded bg-slate-700"></div>
+        <div class="w-6 h-6 rounded bg-slate-700"></div>
+    </div>
+
+    <!-- Main Editor Area -->
+    <div class="flex-1 flex flex-col h-full bg-gray-100">
+        <!-- Editor Topbar -->
+        <div class="h-12 bg-white border-b border-gray-200 flex items-center px-4 justify-between shadow-sm z-10">
+            <div class="font-medium text-gray-700">Swiggy Admin Dashboard <span class="text-gray-400 mx-2">/</span> New Page</div>
+            <div class="flex space-x-2">
+                <button class="px-3 py-1.5 bg-gray-100 rounded text-gray-600 font-medium">Preview</button>
+                <button class="px-3 py-1.5 bg-blue-600 rounded text-white font-medium">Release</button>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="flex-1 canvas-bg p-8 flex justify-center overflow-auto">
+            <div class="w-full max-w-5xl h-full flex flex-col shadow-sm bg-white border border-gray-200" style="min-height: 800px;">
+                
+                <!-- NEW: Custom Header Dropzone (Empty State) -->
+                <div class="h-20 w-full border-2 border-dashed border-blue-400 bg-blue-50/50 flex flex-col items-center justify-center relative group">
+                    <span class="absolute top-1 left-2 text-xs font-semibold text-blue-500 uppercase tracking-wider">Custom Header</span>
+                    
+                    <div class="flex items-center space-x-3 mt-2">
+                        <span class="text-gray-500 text-sm">Header is empty.</span>
+                        <button class="flex items-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 shadow-sm rounded hover:bg-gray-50 transition-colors text-blue-600 font-medium text-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <span>Copy from Home page</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Canvas Dropzone -->
+                <div class="flex-1 w-full border border-dashed border-gray-200 bg-white flex items-center justify-center">
+                    <p class="text-gray-400">Drag and drop components here</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar (Pages and Navigation) -->
+    <div class="w-80 h-full bg-white border-l border-gray-200 flex flex-col z-10 shadow-xl">
+        <div class="h-12 border-b border-gray-200 flex items-center px-4 justify-between font-semibold text-gray-800">
+            Pages and navigation
+            <button class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200">
+            <div class="w-1/2 py-3 text-center border-b-2 border-blue-600 text-blue-600 font-medium">Properties</div>
+            <div class="w-1/2 py-3 text-center text-gray-500 hover:text-gray-700 cursor-pointer">Styles</div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+            
+            <!-- Pages List -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-semibold text-gray-700 text-xs uppercase tracking-wider">Pages And Menu</h3>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center px-3 py-2 bg-gray-50 rounded text-gray-700">
+                        <span class="mr-2 text-gray-400">🏠</span> Home
+                    </div>
+                    <div class="flex items-center px-3 py-2 bg-blue-50 border border-blue-100 rounded text-blue-700 font-medium">
+                        <span class="mr-2 text-blue-400">📄</span> New Page
+                    </div>
+                </div>
+                <button class="w-full mt-3 py-2 border border-gray-300 rounded flex items-center justify-center text-gray-600 font-medium hover:bg-gray-50">
+                    <span class="mr-1">+</span> New page
+                </button>
+            </div>
+
+            <hr class="border-gray-100" />
+
+            <!-- Header And Navigation settings -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-700 text-xs uppercase tracking-wider">Header And Navigation</h3>
+                </div>
+
+                <!-- Legacy Native App Header -->
+                <div class="space-y-4 mb-6">
+                    <div class="text-xs font-medium text-gray-400 text-center relative border-b border-gray-200 mb-4 opacity-70">
+                        <span class="bg-white px-2 relative top-2">Native App Header</span>
+                    </div>
+
+                    <div class="flex items-center justify-between opacity-50">
+                        <span class="text-gray-600">Show app header 👑</span>
+                        <div class="w-9 h-5 bg-gray-200 rounded-full p-0.5 cursor-pointer">
+                            <div class="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between opacity-50">
+                        <span class="text-gray-600">Hide navigation menu</span>
+                        <div class="w-9 h-5 toggle-switch-on rounded-full p-0.5 cursor-pointer flex relative transition-colors">
+                            <div class="w-4 h-4 bg-white rounded-full shadow-sm knob transition-transform"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW Custom Canvas Header settings -->
+                <div class="space-y-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-semibold text-blue-900 text-sm flex items-center gap-1">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                            Custom Canvas Header
+                        </h4>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-700 font-medium">Enable header</span>
+                        <!-- Toggle ON -->
+                        <div class="w-9 h-5 toggle-switch-on rounded-full p-0.5 cursor-pointer flex relative transition-colors">
+                            <div class="w-4 h-4 bg-white rounded-full shadow-sm knob transition-transform"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-gray-600 text-xs font-medium">Height (px)</label>
+                        <input type="number" value="80" class="w-full border border-gray-300 rounded px-3 py-1.5 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

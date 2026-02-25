@@ -181,7 +181,41 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 isCurrentVersionLocked={isCurrentVersionLocked}
               />
             )}
-            <div className="tw-h-full" style={{ minWidth: minCanvasWidth }}>
+            <div
+              id="app-canvas-container"
+              className="tw-h-full tw-flex tw-flex-col tw-relative"
+              style={{ minWidth: minCanvasWidth }}
+            >
+              {/* === OPTION A: RENDER FULL-WIDTH HEADER HERE === */}
+              {SHOW_CANVAS_HEADER && appType !== 'module' && (
+                <div
+                  className="canvas-header-slot"
+                  style={{
+                    flexShrink: 0,
+                    padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+                    height: `${CANVAS_HEADER_HEIGHT}px`,
+                    borderBottom: '1px solid var(--cc-default-border)',
+                    backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
+                    width: '100%',
+                  }}
+                >
+                  <Container
+                    id={`${moduleId}-header`}
+                    canvasHeight={CANVAS_HEADER_HEIGHT / 10}
+                    canvasWidth={window.innerWidth} /* full viewer width calculated */
+                    darkMode={isAppDarkMode}
+                    allowContainerSelect={false}
+                    styles={{
+                      margin: 0,
+                      backgroundColor: 'transparent',
+                      overflow: 'hidden',
+                    }}
+                    componentType="AppCanvas"
+                    hasNoScroll={true}
+                  />
+                </div>
+              )}
+              {/* === MAIN WORKSPACE WRAPPER === */}
               <div
                 className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
                   'tw-flex-col': position === 'top' || isPagesSidebarHidden || currentLayout === 'mobile',
@@ -239,33 +273,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         >
                           {currentMode === 'view' && appType !== 'module' && (
                             <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
-                          )}
-                          {SHOW_CANVAS_HEADER && appType !== 'module' && (
-                            <div
-                              className="canvas-header-slot"
-                              style={{
-                                flexShrink: 0,
-                                padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-                                height: `${CANVAS_HEADER_HEIGHT}px`,
-                                borderBottom: '1px solid var(--cc-default-border)',
-                                backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
-                              }}
-                            >
-                              <Container
-                                id={`${moduleId}-header`}
-                                canvasHeight={CANVAS_HEADER_HEIGHT / 10}
-                                canvasWidth={canvasWidth}
-                                darkMode={isAppDarkMode}
-                                allowContainerSelect={false}
-                                styles={{
-                                  margin: 0,
-                                  backgroundColor: 'transparent',
-                                  overflow: 'hidden',
-                                }}
-                                componentType="AppCanvas"
-                                hasNoScroll={true}
-                              />
-                            </div>
                           )}
                           <Container
                             id={moduleId}
