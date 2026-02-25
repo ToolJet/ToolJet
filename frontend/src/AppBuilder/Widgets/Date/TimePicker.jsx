@@ -197,6 +197,7 @@ export const TimePicker = ({
       customDateInputProps={customDateInputProps}
       id={id}
       showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };

@@ -102,6 +102,8 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
           {_renderMenuItems()}
           {createRenderElement('orientation')}
           {createRenderElement('displayStyle')}
+          {createRenderElement('horizontalAlignment')}
+          {createRenderElement('verticalAlignment')}
         </>
       ),
     },

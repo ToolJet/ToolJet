@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import cx from 'classnames';
+import { OverlayTrigger } from 'react-bootstrap';
 import Loader from '../../Loader';
 import useTableStore from '../../../_stores/tableStore';
 import { flexRender } from '@tanstack/react-table';
@@ -11,11 +12,15 @@ import { determineJustifyContentValue } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
+
+  const headerTextRef = useRef(null);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
@@ -26,6 +31,13 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 
   const column = header.column.columnDef.meta;
   const isEditable = getResolvedValue(column.isEditable);
+
+  const isOverflowing = () => {
+    if (!headerTextRef.current) return false;
+    return headerTextRef.current.clientWidth < headerTextRef.current.scrollWidth;
+  };
+
+  const isDataColumn = column.columnType !== 'selector';
 
   const style = {
     opacity: isDragging ? 0.8 : 1,
@@ -68,34 +80,55 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
       >
         <div
-          className={`d-flex thead-editable-icon-header-text-wrapper ${
-            column.columnType === 'selector'
-              ? 'justify-content-center'
-              : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
-          } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+          className={`d-flex thead-editable-icon-header-text-wrapper ${column.columnType === 'selector'
+            ? 'justify-content-center'
+            : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
+            } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
           <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
               <IconPencil size="16px" color="var(--cc-secondary-icon, var(--icon-default))" />
             )}
           </div>
-          <div
-            className={cx('header-text tw-w-full', {
-              'selector-column': column.id === 'selection' && column.columnType === 'selector',
-              'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
-              'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
-            })}
-            style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              isOverflowing() && isDataColumn ? (
+                <div className={`overlay-cell-table ${darkMode ? 'dark-theme' : ''}`}>
+                  <span className="tw-text-text-default">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </span>
+                </div>
+              ) : (
+                <div />
+              )
+            }
+            trigger={isOverflowing() && isDataColumn && ['hover', 'focus']}
+            rootClose={true}
+            show={isOverflowing() && isDataColumn && showOverlay}
           >
-            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-          </div>
+            <div
+              ref={headerTextRef}
+              className={cx('header-text tw-w-full', {
+                'selector-column': column.id === 'selection' && column.columnType === 'selector',
+                'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
+                'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
+              })}
+              data-cy={`${generateCypressDataCy(column.name)}-column-header`}
+              style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
+              onMouseEnter={() => setShowOverlay(true)}
+              onMouseLeave={() => setShowOverlay(false)}
+            >
+              {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+            </div>
+          </OverlayTrigger>
         </div>
         {header.column.getIsSorted() && (
           <div className="tw-flex-shrink-0">
             {header.column.getIsSorted() === 'desc' ? (
-              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`} />
             ) : (
-              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" />
+              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`} />
             )}
           </div>
         )}
@@ -111,6 +144,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
             style={{
               display: header.column.getIsResizing() ? 'block' : 'none',
             }}
+            data-cy={`${generateCypressDataCy(column.name)}-column-resizer`}
           ></div>
         </div>
       )}

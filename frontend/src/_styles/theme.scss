@@ -9,6 +9,7 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
 @import "./dropdown-custom.scss";
+@import "./editor/react-select-search.scss";
 @import "./ui-operations.scss";
 @import "./license.scss";
 @import "react-loading-skeleton/dist/skeleton.css";
@@ -15375,7 +15376,7 @@ textarea.tj-text-input-widget {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: var(--cc-surface1-surface) !important;
+  background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface)) !important;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 

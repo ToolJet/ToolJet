@@ -27,6 +27,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     customThemes: false,
     serverSideGlobalResolve: false,
     scim: false,
+    observability: false,
   },
   domains: [],
   workflows: {
@@ -48,6 +49,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   app: {
     pages: {
       enabled: false,
+      count: '',
       features: {
         appHeaderAndLogo: false,
         addNavGroup: false,
@@ -58,12 +60,19 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       query: false,
       pages: false,
     },
+    features: {
+      promote: false,
+      release: false,
+    },
   },
   modules: {
     enabled: false,
   },
   permissions: {
     customGroups: false,
+  },
+  observability: {
+    enabled: false,
   },
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/navigation-menu';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
 import { findItemById, findParentGroup } from './utils';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
 // Render individual nav item - uses tj-list-item class like page navigation
@@ -212,6 +215,7 @@ const RenderNavGroup = ({
 
 export const Navigation = function Navigation(props) {
   const {
+    id,
     width,
     properties,
     styles,
@@ -220,6 +224,7 @@ export const Navigation = function Navigation(props) {
     setExposedVariable,
     setExposedVariables,
     darkMode,
+    currentMode,
   } = props;
 
   const {
@@ -228,6 +233,8 @@ export const Navigation = function Navigation(props) {
     loadingState,
     disabledState,
     visibility,
+    horizontalAlignment = 'left',
+    verticalAlignment = 'top',
   } = properties;
 
   const {
@@ -299,12 +306,10 @@ export const Navigation = function Navigation(props) {
   // Shared selection logic — updates exposed variables and ref
   const applySelection = (item) => {
     const parentGroup = findParentGroup(menuItems, item.id);
-    const index = menuItems.findIndex((mi) => mi.id === item.id);
 
     const clickData = {
       id: item.id,
       label: item.label,
-      index: index !== -1 ? index : null,
       groupId: parentGroup?.id || null,
       groupLabel: parentGroup?.label || null,
     };
@@ -398,19 +403,64 @@ export const Navigation = function Navigation(props) {
     '--nav-item-pill-radius': `${pillBorderRadius}px`,
   }), [unselectedTextColor, styles, hoverPillBackgroundColor, pillBorderRadius]);
 
+  // Map alignment values to CSS flex values
+  const mapAlignment = (value) => {
+    const map = { left: 'flex-start', center: 'center', right: 'flex-end', top: 'flex-start', bottom: 'flex-end' };
+    return map[value] || 'flex-start';
+  };
+
+  // Map alignment values to Tailwind justify/align classes (needed because radix NavigationMenuList
+  // uses tw-justify-center internally, and tailwind-merge in cn() resolves class conflicts)
+  const justifyTwClass = {
+    left: 'tw-justify-start',
+    center: 'tw-justify-center',
+    right: 'tw-justify-end',
+  }[horizontalAlignment] || 'tw-justify-start';
+
+  // In viewer mode, the canvasWidth state can be inflated beyond the actual #real-canvas width
+  // (by the sidebar effect in AppCanvas), causing gridWidth and widget widths to be too large.
+  // Fix: read real-canvas.clientWidth directly — HotkeyProvider constrains it with maxWidth,
+  // so clientWidth reflects the true canvas width. Then cap the widget accordingly.
+  const gridColumns = useStore(
+    (state) => state.getComponentDefinition(id, 'canvas')?.layouts?.[state.currentLayout]?.width,
+    shallow
+  );
+
+  const [viewerMaxWidth, setViewerMaxWidth] = useState(undefined);
+  useLayoutEffect(() => {
+    if (currentMode !== 'view' || orientation !== 'horizontal') {
+      setViewerMaxWidth(undefined);
+      return;
+    }
+    if (!gridColumns) return;
+
+    const realCanvas = document.getElementById('real-canvas');
+    if (!realCanvas || realCanvas.clientWidth <= 0) return;
+
+    const expectedWidth = (realCanvas.clientWidth / NO_OF_GRIDS) * gridColumns;
+    if (width > expectedWidth) {
+      setViewerMaxWidth(Math.round(expectedWidth));
+    } else {
+      setViewerMaxWidth(undefined);
+    }
+  }, [currentMode, orientation, width, gridColumns]);
+
   // Container styles
   const containerStyle = useMemo(() => {
-    const parsedPadding = parseInt(padding, 10) || 8;
+    const parsedPadding = parseInt(padding, 10) || 2;
     const parsedBorderRadius = parseInt(borderRadius, 10) || 8;
     const bgColor = backgroundColor || 'var(--cc-surface1-surface)';
     const bdrColor = borderColor || 'var(--cc-weak-border)';
 
+    const isHorizontal = orientation === 'horizontal';
+
     return {
       display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
-      flexDirection: orientation === 'horizontal' ? 'row' : 'column',
-      alignItems: orientation === 'horizontal' ? 'center' : 'stretch',
+      flexDirection: isHorizontal ? 'row' : 'column',
+      alignItems: isHorizontal ? mapAlignment(verticalAlignment) : undefined,
       width: '100%',
       height: '100%',
+      maxWidth: viewerMaxWidth ? `${viewerMaxWidth}px` : undefined,
       backgroundColor: bgColor,
       border: `1px solid ${bdrColor}`,
       borderRadius: `${parsedBorderRadius}px`,
@@ -420,7 +470,7 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding]);
+  }, [exposedVariablesTemporaryState.isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, verticalAlignment, viewerMaxWidth]);
 
   // Loading state
   if (exposedVariablesTemporaryState.isLoading) {
@@ -443,8 +493,8 @@ export const Navigation = function Navigation(props) {
   const renderContent = () => {
     if (orientation === 'horizontal') {
       return (
-        <NavigationMenu viewport={false} className="navigation-horizontal-menu" style={{ flex: 'none' }}>
-          <NavigationMenuList className="navigation-horizontal-list" style={{ ...navItemStyles, flex: 'none' }}>
+        <NavigationMenu viewport={false} className={`navigation-horizontal-menu ${justifyTwClass}`} style={{ flex: 'none' }}>
+          <NavigationMenuList className={`navigation-horizontal-list ${justifyTwClass}`} style={{ ...navItemStyles, flex: 'none' }}>
             {links.visible.map((item) => {
               if (item.isGroup) {
                 return (
@@ -519,8 +569,18 @@ export const Navigation = function Navigation(props) {
     }
 
     // Vertical orientation - use visibleMenuItems (deduplicated and filtered)
+    // Auto-margins handle alignment without clipping scrollable content:
+    // center → auto margins on both sides; end → auto margin on start side only
+    const verticalMenuStyle = {
+      ...navItemStyles,
+      marginTop: verticalAlignment === 'center' ? 'auto' : verticalAlignment === 'bottom' ? 'auto' : undefined,
+      marginBottom: verticalAlignment === 'center' ? 'auto' : undefined,
+      marginLeft: horizontalAlignment === 'center' ? 'auto' : horizontalAlignment === 'right' ? 'auto' : undefined,
+      marginRight: horizontalAlignment === 'center' ? 'auto' : undefined,
+    };
+
     return (
-      <div className="navigation-vertical-menu" style={navItemStyles}>
+      <div className="navigation-vertical-menu" style={verticalMenuStyle}>
         {visibleMenuItems.map((item) => {
           if (item.isGroup) {
             return (

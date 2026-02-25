@@ -16,7 +16,7 @@ export interface IAppsUtilService {
   ): Promise<AppEnvironment>;
   getAppOrganizationDetails(app: App): Promise<Organization>;
   update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager): Promise<void>;
-  all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]>;
+  all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]>;
   count(user: User, searchKey: string, type: string): Promise<number>;
   mergeDefaultComponentData(pages: any[]): any[];
 }

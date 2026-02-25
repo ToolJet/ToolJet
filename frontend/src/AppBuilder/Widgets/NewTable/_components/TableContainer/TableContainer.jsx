@@ -164,6 +164,7 @@ export const TableContainer = ({
         table={table}
         setFilters={handleFilterChange}
         appliedFiltersLength={table.getState().columnFilters.length}
+        componentName={componentName}
       />
       <TableData
         id={id}
@@ -176,6 +177,7 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         lastClickedRowRef={lastClickedRowRef}
+        componentName={componentName}
         loadingState={loadingState}
       />
       <Footer

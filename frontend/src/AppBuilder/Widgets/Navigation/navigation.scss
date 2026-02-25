@@ -29,17 +29,15 @@
       margin: 0px !important;
       height: 32px;
       width: 100%;
-      justify-content: start;
       gap: 6px;
     }
   }
 
   // Vertical menu - uses pages-wrapper styling
   .navigation-vertical-menu {
-    width: 100%;
+    width: max-content;
     padding: 0 8px;
     display: flex;
-    align-items: center;
     flex-direction: column;
     gap: 6px;
   }
@@ -353,24 +351,68 @@
     }
   }
 
+  // Scrollbar behavior for vertical mode — match editor canvas pattern:
+  // hidden by default, thin styled scrollbar appears on hover
+  &.navigation-vertical {
+    scrollbar-width: none; // Firefox: hide by default
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      background: transparent;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 4px;
+    }
+
+    &:hover {
+      scrollbar-width: thin; // Firefox: show on hover
+      scrollbar-color: var(--interactive-hover) transparent;
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--interactive-hover);
+      }
+    }
+  }
+
   // Vertical mode adjustments
   &.navigation-vertical {
     .tj-list-item {
       height: 36px;
       padding: 8px 12px;
       gap: 10px;
-      width: 100%;
+      width: auto;
     }
 
     .page-group-wrapper {
       height: 36px;
       padding: 8px 12px;
+      width: auto;
+      justify-content: start;
+      gap: 4px;
 
       .group-info {
+        width: auto;
         gap: 10px;
       }
     }
+
+    .accordion-item {
+      width: auto;
+    }
   }
+}
+
+// Elevate the widget wrapper's z-index when a Navigation dropdown is open.
+// Each widget wrapper uses `transform` which creates a stacking context,
+// so the dropdown can't appear above sibling widgets without this.
+// Consistent with `.target.hovered { z-index: 2 }` in Grid.css.
+.target:has(.navigation-widget [data-state='open']),
+.nested-target:has(.navigation-widget [data-state='open']) {
+  z-index: 3;
 }
 
 // Dark theme adjustments
