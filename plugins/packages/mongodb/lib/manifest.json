@@ -36,7 +36,8 @@
     },
     "port": {
       "type": "number",
-      "title": "Port"
+      "title": "Port",
+      "default": 27017
     },
     "database": {
       "type": "string",
@@ -50,6 +51,13 @@
     "password": {
       "type": "string",
       "title": "Password"
+    },
+    "use_ssl": {
+      "type": "string",
+      "title": "TLS/SSL",
+      "description": "Connect using TLS/SSL",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
     },
     "tls_certificate": {
       "type": "string",
@@ -73,49 +81,106 @@
       "title": "Client cert",
       "description": "Enter client certificate"
     },
-    "use_ssl": {
-      "type": "boolean",
-      "title": "",
-      "description": "Enable SSL connection",
-      "default": false
+    "ssh_enabled": {
+      "type": "string",
+      "title": "SSH Tunnel",
+      "description": "Connect through an SSH server",
+      "enum": ["enabled", "disabled"],
+      "default": "disabled"
+    },
+    "ssh_host": {
+      "type": "string",
+      "title": "SSH Host"
+    },
+    "ssh_port": {
+      "type": "number",
+      "title": "SSH Port",
+      "default": 22
+    },
+    "ssh_username": {
+      "type": "string",
+      "title": "SSH Username"
+    },
+    "ssh_auth_type": {
+      "type": "string",
+      "title": "SSH Authentication Type",
+      "enum": ["private_key", "password"],
+      "default": "private_key"
+    },
+    "ssh_private_key": {
+      "type": "string",
+      "title": "SSH Private Key"
+    },
+    "ssh_password": {
+      "type": "string",
+      "title": "SSH Password"
+    },
+    "ssh_passphrase": {
+      "type": "string",
+      "title": "SSH Passphrase"
+    },
+    "ssh_dst_host": {
+      "type": "string",
+      "title": "MongoDB Host (via SSH)"
     }
   },
-  "tj:encrypted": ["password", "ca_cert", "client_key", "client_cert","connection_string"],
-  "required": ["connection_type","host"],
+  "tj:encrypted": [
+    "password",
+    "ca_cert",
+    "client_key",
+    "client_cert",
+    "connection_string",
+    "ssh_private_key",
+    "ssh_password",
+    "ssh_passphrase"
+  ],
+  "required": ["connection_type"],
   "allOf": [
     {
       "if": {
         "properties": {
-          "connection_type": {
-            "const": "manual"
-          }
+          "connection_type": { "const": "manual" }
         }
       },
       "then": {
-        "required": ["host", "tls_certificate"],
+        "required": ["host"],
         "allOf": [
           {
             "if": {
               "properties": {
-                "tls_certificate": {
-                  "const": "ca_certificate"
-                }
+                "connection_format": { "const": "mongodb" }
               }
             },
             "then": {
-              "required": ["ca_cert"]
+              "required": ["port"]
             }
           },
           {
             "if": {
               "properties": {
-                "tls_certificate": {
-                  "const": "client_certificate"
-                }
+                "use_ssl": { "const": "enabled" }
               }
             },
             "then": {
-              "required": ["client_key", "client_cert", "ca_cert"]
+              "required": ["tls_certificate"],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "tls_certificate": { "const": "ca_certificate" }
+                    }
+                  },
+                  "then": { "required": ["ca_cert"] }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "tls_certificate": { "const": "client_certificate" }
+                    }
+                  },
+                  "then": { "required": ["client_key", "client_cert", "ca_cert"] }
+                }
+              ]
             }
           }
         ]
@@ -132,10 +197,21 @@
       "then": {
         "required": ["connection_string"]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "ssh_enabled": { "const": "enabled" }
+        }
+      },
+      "then": {
+        "required": ["ssh_host", "ssh_port", "ssh_username", "ssh_auth_type"]
+      }
     }
   ],
   "tj:ui:properties": {
     "connection_type": {
+      "order": 1,
       "$ref": "#/properties/connection_type",
       "key": "connection_type",
       "label": "Connection type",
@@ -154,232 +230,423 @@
     },
     "manual": {
       "connection_format": {
+        "order": 10,
         "$ref": "#/properties/connection_format",
         "key": "connection_format",
         "label": "Connection format",
         "description": "Select the connection protocol format",
         "widget": "dropdown-component-flip",
         "list": [
-          {
-            "name": "Standard (mongodb)",
-            "value": "mongodb"
-          },
-          {
-            "name": "DNS Seed list (mongodb+srv)",
-            "value": "mongodb+srv"
-          }
-        ]
-      },
-      "mongodb": {
-        "port": {
-          "$ref": "#/properties/port",
-          "key": "port",
-          "label": "Port",
-          "description": "Enter port",
-          "widget": "text-v3",
-          "required": true
-        }
-      },
-      "tls_certificate": {
-        "label": "TLS/SSL certificate",
-        "$ref": "#/properties/tls_certificate",
-        "key": "tls_certificate",
-        "description": "Single select dropdown for choosing certificates",
-        "widget": "dropdown-component-flip",
-        "list": [
-          {
-            "value": "ca_certificate",
-            "name": "CA certificate"
-          },
-          {
-            "value": "client_certificate",
-            "name": "Client certificate"
-          },
-          {
-            "value": "none",
-            "name": "None"
-          }
+          { "name": "Standard (mongodb)", "value": "mongodb" },
+          { "name": "DNS Seed list (mongodb+srv)", "value": "mongodb+srv" }
         ],
-        "commonFields": {
-          "host": {
-            "$ref": "#/properties/host",
-            "key": "host",
-            "label": "Host",
-            "description": "Enter host",
+        "mongodb": {
+          "port": {
+            "order": 30,
+            "$ref": "#/properties/port",
+            "key": "port",
+            "label": "Port",
+            "description": "Enter port",
             "widget": "text-v3",
             "required": true
+          }
+        },
+        "mongodb+srv": {}
+      },
+      "host": {
+        "order": 20,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "Enter host",
+        "widget": "text-v3",
+        "required": true
+      },
+      "database": {
+        "order": 40,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database name",
+        "description": "Enter name of the database",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 50,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 60,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+      },
+      "use_ssl": {
+        "order": 70,
+        "$ref": "#/properties/use_ssl",
+        "key": "use_ssl",
+        "label": "TLS/SSL",
+        "description": "Connect using TLS/SSL",
+        "help_text": "Enable encrypted connections to MongoDB server",
+        "widget": "toggle-flip",
+        "default": "disabled",
+        "enabled": {
+          "tls_certificate": {
+            "order": 80,
+            "$ref": "#/properties/tls_certificate",
+            "key": "tls_certificate",
+            "label": "TLS/SSL certificate",
+            "description": "Single select dropdown for choosing certificates",
+            "widget": "dropdown-component-flip",
+            "list": [
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "client_certificate", "name": "Client certificate" },
+              { "value": "none", "name": "None" }
+            ]
           },
-          "database": {
-            "label": "Database name",
-            "$ref": "#/properties/database",
-            "key": "database",
-            "description": "Name of the database",
+            "ca_certificate": {
+              "ca_cert": {
+                "order": 90,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA cert",
+                "description": "Enter CA certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "client_certificate": {
+              "client_key": {
+                "order": 90,
+                "$ref": "#/properties/client_key",
+                "key": "client_key",
+                "label": "Client key",
+                "description": "Enter client key",
+                "widget": "password-v3-textarea"
+              },
+              "client_cert": {
+                "order": 100,
+                "$ref": "#/properties/client_cert",
+                "key": "client_cert",
+                "label": "Client cert",
+                "description": "Enter client certificate",
+                "widget": "password-v3-textarea"
+              },
+              "ca_cert": {
+                "order": 110,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA cert",
+                "description": "Enter CA certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "none": {}
+        },
+        "disabled": {}
+      },
+      "ssh_enabled": {
+        "order": 120,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH tunnel",
+        "description": "Connect through an SSH server",
+        "help_text": "Connect through an SSH server to access databases in private networks",
+        "widget": "toggle-flip",
+        "default": "disabled",
+        "enabled": {
+          "ssh_host": {
+            "order": 130,
+            "$ref": "#/properties/ssh_host",
+            "key": "ssh_host",
+            "label": "SSH host",
+            "description": "ssh.example.com",
+            "widget": "text-v3",
+            "help_text": "SSH server hostname or IP address"
+          },
+          "ssh_port": {
+            "order": 140,
+            "$ref": "#/properties/ssh_port",
+            "key": "ssh_port",
+            "label": "SSH port",
+            "description": "22",
+            "help_text": "Default SSH port is 22",
             "widget": "text-v3"
           },
-          "username": {
-            "$ref": "#/properties/username",
-            "key": "username",
-            "label": "Username",
-            "description": "Enter username",
+          "ssh_username": {
+            "order": 150,
+            "$ref": "#/properties/ssh_username",
+            "key": "ssh_username",
+            "label": "SSH username",
+            "description": "SSH Username",
             "widget": "text-v3"
+          },
+          "ssh_dst_host": {
+            "order": 155,
+            "$ref": "#/properties/ssh_dst_host",
+            "key": "ssh_dst_host",
+            "label": "SSH dst host",
+            "description": "localhost",
+            "widget": "text-v3"
+          },
+          "ssh_auth_type": {
+            "order": 160,
+            "$ref": "#/properties/ssh_auth_type",
+            "key": "ssh_auth_type",
+            "label": "Authentication type",
+            "widget": "dropdown-component-flip",
+            "default": "private_key",
+            "list": [
+              { "value": "private_key", "name": "Private Key" },
+              { "value": "password", "name": "Password" }
+            ]
+          },
+          "private_key": {
+            "ssh_private_key": {
+              "order": 170,
+              "$ref": "#/properties/ssh_private_key",
+              "key": "ssh_private_key",
+              "label": "SSH private key",
+              "widget": "password-v3-textarea"
+            },
+            "ssh_passphrase": {
+              "order": 180,
+              "$ref": "#/properties/ssh_passphrase",
+              "key": "ssh_passphrase",
+              "label": "SSH passphrase",
+              "widget": "password-v3"
+            }
           },
           "password": {
-            "$ref": "#/properties/password",
-            "key": "password",
-            "label": "Password",
-            "description": "Enter password",
-            "widget": "password-v3",
-            "required": false
+            "ssh_password": {
+              "order": 170,
+              "$ref": "#/properties/ssh_password",
+              "key": "ssh_password",
+              "label": "SSH password",
+              "widget": "password-v3"
+            }
           }
-        }
-      },
-      "ca_certificate": {
-        "ca_cert": {
-          "label": "CA cert",
-          "$ref": "#/properties/ca_cert",
-          "key": "ca_cert",
-          "description": "Enter CA certificate",
-          "widget": "password-v3-textarea"
-        }
-      },
-      "client_certificate": {
-        "client_key": {
-          "label": "Client key",
-          "$ref": "#/properties/client_key",
-          "key": "client_key",
-          "description": "Enter client key",
-          "widget": "password-v3-textarea"
         },
-        "client_cert": {
-          "label": "Client cert",
-          "$ref": "#/properties/client_cert",
-          "key": "client_cert",
-          "description": "Enter client certificate",
-          "widget": "password-v3-textarea"
-        },
-        "ca_cert": {
-          "label": "CA cert",
-          "$ref": "#/properties/ca_cert",
-          "key": "ca_cert",
-          "description": "Enter CA certificate",
-          "widget": "password-v3-textarea"
-        }
+        "disabled": {}
       }
     },
     "string": {
+      "connection_string": {
+        "order": 2,
+        "$ref": "#/properties/connection_string",
+        "key": "connection_string",
+        "label": "Connection string",
+        "description": "mongodb://username:password@hostname:port/database",
+        "widget": "password-v3-textarea",
+        "required": true
+      },
       "connection_format": {
+        "order": 10,
         "$ref": "#/properties/connection_format",
         "key": "connection_format",
         "label": "Connection format",
         "description": "Select the connection protocol format",
         "widget": "dropdown-component-flip",
         "list": [
-          {
-            "name": "Standard (mongodb)",
-            "value": "mongodb"
-          },
-          {
-            "name": "DNS Seed list (mongodb+srv)",
-            "value": "mongodb+srv"
-          }
+          { "name": "Standard (mongodb)", "value": "mongodb" },
+          { "name": "DNS Seed list (mongodb+srv)", "value": "mongodb+srv" }
         ],
-        "commonFields": {
-          "connection_string": {
-            "$ref": "#/properties/connection_string",
-            "key": "connection_string",
-            "label": "Connection string",
-            "placeholder": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
-            "description": "mongodb://admin:SecureP@ss2024!prod-db-1.company.com:27017/customer_data",
-            "widget": "password-v3-textarea",
-            "required": true
+        "mongodb": {
+          "port": {
+            "order": 30,
+            "$ref": "#/properties/port",
+            "key": "port",
+            "label": "Port",
+            "description": "Enter port",
+            "widget": "text-v3"
           }
-        }
+        },
+        "mongodb+srv": {}
       },
-      "mongodb": {
-        "host": {
-          "$ref": "#/properties/host",
-          "key": "host",
-          "label": "Host",
-          "description": "prod-db-1.company.com",
-          "widget": "text-v3",
-          "required": true
-        },
-        "port": {
-          "$ref": "#/properties/port",
-          "key": "port",
-          "label": "Port",
-          "description": "27017",
-          "widget": "text-v3",
-          "required": true
-        },
-        "database": {
-          "label": "Database name",
-          "$ref": "#/properties/database",
-          "key": "database",
-          "description": "customer_data",
-          "widget": "text-v3"
-        },
-        "username": {
-          "$ref": "#/properties/username",
-          "key": "username",
-          "label": "Username",
-          "description": "admin",
-          "widget": "text-v3"
-        },
-        "password": {
-          "$ref": "#/properties/password",
-          "key": "password",
-          "label": "Password",
-          "description": "Enter password",
-          "widget": "password-v3",
-          "required": false
-        },
-        "use_ssl": {
-          "$ref": "#/properties/use_ssl",
-          "key": "use_ssl",
-          "label": "Use SSL/TLS",
-          "description": "Enable SSL connection",
-          "widget": "checkbox"
-        }
+      "host": {
+        "order": 20,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "Enter host",
+        "widget": "text-v3"
       },
-      "mongodb+srv": {
-        "host": {
-          "$ref": "#/properties/host",
-          "key": "host",
-          "label": "Host",
-          "description": "prod-db-1.company.com",
-          "widget": "text-v3",
-          "required": true
+      "database": {
+        "order": 40,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database name",
+        "description": "Name of the database",
+        "widget": "text-v3"
+      },
+      "username": {
+        "order": 50,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 60,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3",
+        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+      },
+      "use_ssl": {
+        "order": 70,
+        "$ref": "#/properties/use_ssl",
+        "key": "use_ssl",
+        "label": "TLS/SSL",
+        "description": "Connect using TLS/SSL",
+        "help_text": "Enable encrypted connections to MongoDB server",
+        "widget": "toggle-flip",
+        "default": "disabled",
+        "enabled": {
+          "tls_certificate": {
+            "order": 80,
+            "$ref": "#/properties/tls_certificate",
+            "key": "tls_certificate",
+            "label": "TLS/SSL certificate",
+            "description": "Single select dropdown for choosing certificates",
+            "widget": "dropdown-component-flip",
+            "list": [
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "client_certificate", "name": "Client certificate" },
+              { "value": "none", "name": "None" }
+            ],
+            "ca_certificate": {
+              "ca_cert": {
+                "order": 90,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA cert",
+                "description": "Enter CA certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "client_certificate": {
+              "client_key": {
+                "order": 90,
+                "$ref": "#/properties/client_key",
+                "key": "client_key",
+                "label": "Client key",
+                "description": "Enter client key",
+                "widget": "password-v3-textarea"
+              },
+              "client_cert": {
+                "order": 100,
+                "$ref": "#/properties/client_cert",
+                "key": "client_cert",
+                "label": "Client cert",
+                "description": "Enter client certificate",
+                "widget": "password-v3-textarea"
+              },
+              "ca_cert": {
+                "order": 110,
+                "$ref": "#/properties/ca_cert",
+                "key": "ca_cert",
+                "label": "CA cert",
+                "description": "Enter CA certificate",
+                "widget": "password-v3-textarea"
+              }
+            },
+            "none": {}
+          }
         },
-        "database": {
-          "label": "Database name",
-          "$ref": "#/properties/database",
-          "key": "database",
-          "description": "customer_data",
-          "widget": "text-v3"
+        "disabled": {}
+      },
+      "ssh_enabled": {
+        "order": 120,
+        "$ref": "#/properties/ssh_enabled",
+        "key": "ssh_enabled",
+        "label": "SSH tunnel",
+        "description": "Connect through an SSH server",
+        "help_text": "Connect through an SSH server to access databases in private networks",
+        "widget": "toggle-flip",
+        "default": "disabled",
+        "enabled": {
+          "ssh_host": {
+            "order": 130,
+            "$ref": "#/properties/ssh_host",
+            "key": "ssh_host",
+            "label": "SSH host",
+            "description": "ssh.example.com",
+            "widget": "text-v3",
+            "help_text": "SSH server hostname or IP address"
+          },
+          "ssh_port": {
+            "order": 140,
+            "$ref": "#/properties/ssh_port",
+            "key": "ssh_port",
+            "label": "SSH port",
+            "description": "22",
+            "widget": "text-v3",
+            "help_text": "Default SSH port is 22"
+          },
+          "ssh_username": {
+            "order": 150,
+            "$ref": "#/properties/ssh_username",
+            "key": "ssh_username",
+            "label": "SSH username",
+            "description": "SSH Username",
+            "widget": "text-v3"
+          },
+          "ssh_dst_host": {
+            "order": 155,
+            "$ref": "#/properties/ssh_dst_host",
+            "key": "ssh_dst_host",
+            "label": "SSH dst host",
+            "description": "localhost",
+            "widget": "text-v3"
+          },
+          "ssh_auth_type": {
+            "order": 160,
+            "$ref": "#/properties/ssh_auth_type",
+            "key": "ssh_auth_type",
+            "label": "Authentication type",
+            "widget": "dropdown-component-flip",
+            "default": "private_key",
+            "list": [
+              { "value": "private_key", "name": "Private Key" },
+              { "value": "password", "name": "Password" }
+            ]
+          },
+          "private_key": {
+            "ssh_private_key": {
+              "order": 170,
+              "$ref": "#/properties/ssh_private_key",
+              "key": "ssh_private_key",
+              "label": "SSH private key",
+              "widget": "password-v3-textarea"
+            },
+            "ssh_passphrase": {
+              "order": 180,
+              "$ref": "#/properties/ssh_passphrase",
+              "key": "ssh_passphrase",
+              "label": "SSH passphrase",
+              "widget": "password-v3"
+            }
+          },
+          "password": {
+            "ssh_password": {
+              "order": 170,
+              "$ref": "#/properties/ssh_password",
+              "key": "ssh_password",
+              "label": "SSH password",
+              "widget": "password-v3"
+            }
+          }
         },
-        "username": {
-          "$ref": "#/properties/username",
-          "key": "username",
-          "label": "Username",
-          "description": "admin",
-          "widget": "text-v3"
-        },
-        "password": {
-          "$ref": "#/properties/password",
-          "key": "password",
-          "label": "Password",
-          "description": "Enter password",
-          "widget": "password-v3",
-          "required": false
-        },
-        "use_ssl": {
-          "$ref": "#/properties/use_ssl",
-          "key": "use_ssl",
-          "label": "Use SSL/TLS",
-          "description": "Enable SSL connection",
-          "widget": "checkbox"
-        }
+        "disabled": {}
       }
     }
   }
