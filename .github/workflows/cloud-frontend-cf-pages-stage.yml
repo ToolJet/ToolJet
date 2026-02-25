@@ -126,11 +126,11 @@ jobs:
 
       - name: 🚀 Deploy to Cloudflare Pages
         run: |
-          echo "📦 Built from branch: ${{ github.event.inputs.branch }}"
-          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+          echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
+          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ secrets.CF_PAGES_PRODUCTION_BRANCH }})"
           npx wrangler pages deploy frontend/build \
             --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} \
-            --branch=${{ github.event.inputs.branch }} \
+            --branch=${{ secrets.CF_PAGES_PRODUCTION_BRANCH }} \
             --commit-dirty=true
         working-directory: repo
         env:
