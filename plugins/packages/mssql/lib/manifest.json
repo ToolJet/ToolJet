@@ -184,7 +184,7 @@
         "key": "instance_name",
         "label": "Instance",
         "description": "Enter the name of the database instance",
-        "widget": "text"
+        "widget": "text-v3"
       },
       "database": {
         "order": 40,
@@ -222,7 +222,7 @@
         "order": 80,
         "$ref": "#/properties/ssh_enabled",
         "key": "ssh_enabled",
-        "label": "SSH Tunnel",
+        "label": "SSH tunnel",
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
         "default": false,
@@ -234,7 +234,7 @@
           "order": 90,
           "$ref": "#/properties/ssh_host",
           "key": "ssh_host",
-          "label": "SSH Host",
+          "label": "SSH host",
           "description": "ssh.example.com",
           "help_text": "SSH server hostname or IP address",
           "widget": "text-v3"
@@ -243,7 +243,7 @@
           "order": 100,
           "$ref": "#/properties/ssh_port",
           "key": "ssh_port",
-          "label": "SSH Port",
+          "label": "SSH port",
           "description": "22",
           "help_text": "Default SSH port is 22",
           "widget": "text-v3"
@@ -252,19 +252,19 @@
           "order": 110,
           "$ref": "#/properties/ssh_username",
           "key": "ssh_username",
-          "label": "SSH Username",
-          "description": "SSH Username",
+          "label": "SSH username",
+          "description": "SSH username",
           "widget": "text-v3"
         },
         "ssh_auth_type": {
           "order": 175,
           "$ref": "#/properties/ssh_auth_type",
           "key": "ssh_auth_type",
-          "label": "Authentication Type",
+          "label": "Authentication type",
           "widget": "dropdown-component-flip",
           "default": "private_key",
           "list": [
-            { "value": "private_key", "name": "Private Key" },
+            { "value": "private_key", "name": "Private key" },
             { "value": "password", "name": "Password" }
           ]
         },
@@ -273,14 +273,14 @@
             "order": 180,
             "$ref": "#/properties/ssh_private_key",
             "key": "ssh_private_key",
-            "label": "SSH Private Key",
+            "label": "SSH private key",
             "widget": "password-v3-textarea"
           },
           "ssh_passphrase": {
             "order": 190,
             "$ref": "#/properties/ssh_passphrase",
             "key": "ssh_passphrase",
-            "label": "SSH Passphrase",
+            "label": "SSH passphrase",
             "widget": "password-v3"
           }
         },
@@ -289,7 +289,7 @@
             "order": 180,
             "$ref": "#/properties/ssh_password",
             "key": "ssh_password",
-            "label": "SSH Password",
+            "label": "SSH password",
             "widget": "password-v3"
           }
         }
@@ -347,7 +347,7 @@
         "key": "instance_name",
         "label": "Instance",
         "description": "Enter the name of the database instance",
-        "widget": "text"
+        "widget": "text-v3"
       },
       "username": {
         "order": 40,
@@ -377,7 +377,7 @@
         "order": 80,
         "$ref": "#/properties/ssh_enabled",
         "key": "ssh_enabled",
-        "label": "SSH Tunnel",
+        "label": "SSH tunnel",
         "description": "Connect through an SSH server",
         "widget": "toggle-flip",
         "default": false,
@@ -389,7 +389,7 @@
           "order": 90,
           "$ref": "#/properties/ssh_host",
           "key": "ssh_host",
-          "label": "SSH Host",
+          "label": "SSH host",
           "description": "ssh.example.com",
           "help_text": "SSH server hostname or IP address",
           "widget": "text-v3"
@@ -398,7 +398,7 @@
           "order": 100,
           "$ref": "#/properties/ssh_port",
           "key": "ssh_port",
-          "label": "SSH Port",
+          "label": "SSH port",
           "description": "22",
           "help_text": "Default SSH port is 22",
           "widget": "text-v3"
@@ -407,7 +407,7 @@
           "order": 110,
           "$ref": "#/properties/ssh_username",
           "key": "ssh_username",
-          "label": "SSH Username",
+          "label": "SSH username",
           "description": "SSH Username",
           "widget": "text-v3"
         },
@@ -415,11 +415,11 @@
           "order": 175,
           "$ref": "#/properties/ssh_auth_type",
           "key": "ssh_auth_type",
-          "label": "Authentication Type",
+          "label": "Authentication type",
           "widget": "dropdown-component-flip",
           "default": "private_key",
           "list": [
-            { "value": "private_key", "name": "Private Key" },
+            { "value": "private_key", "name": "Private key" },
             { "value": "password", "name": "Password" }
           ]
         },
@@ -428,14 +428,14 @@
             "order": 180,
             "$ref": "#/properties/ssh_private_key",
             "key": "ssh_private_key",
-            "label": "SSH Private Key",
+            "label": "SSH private key",
             "widget": "password-v3-textarea"
           },
           "ssh_passphrase": {
             "order": 190,
             "$ref": "#/properties/ssh_passphrase",
             "key": "ssh_passphrase",
-            "label": "SSH Passphrase",
+            "label": "SSH passphrase",
             "widget": "password-v3"
           }
         },
@@ -444,7 +444,7 @@
             "order": 180,
             "$ref": "#/properties/ssh_password",
             "key": "ssh_password",
-            "label": "SSH Password",
+            "label": "SSH password",
             "widget": "password-v3"
           }
         }
