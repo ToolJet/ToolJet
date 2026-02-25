@@ -18,6 +18,8 @@ import {
   cookiesToString,
   sanitizeSearchParams,
   getAuthUrl,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 const FormData = require('form-data');
 const JSON5 = require('json5');
@@ -53,6 +55,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url);
+
     const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,
@@ -64,8 +70,12 @@ export default class RestapiQueryService implements QueryService {
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
     const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
     try {
-      const response = await got(url, requestOptions);
+      const response = await got(url, finalOptions);
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {

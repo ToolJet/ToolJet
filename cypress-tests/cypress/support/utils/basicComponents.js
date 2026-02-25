@@ -21,7 +21,7 @@ export const verifyComponentinrightpannel = (widgetName) => {
         .is(":visible");
 
       if (!isSearchVisible) {
-        cy.get('[data-cy="right-sidebar-plus-button"]').click();
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
         cy.wait(500);
       }
     })
