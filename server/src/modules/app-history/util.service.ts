@@ -109,6 +109,10 @@ export class AppHistoryUtilService {
     throw new Error('Method not implemented.');
   }
 
+  async isAppHistoryEnabled(): Promise<boolean> {
+    return false;
+  }
+
   async isHistoryEnabled(appVersionId: string): Promise<boolean> {
     throw new Error('Method not implemented.');
   }

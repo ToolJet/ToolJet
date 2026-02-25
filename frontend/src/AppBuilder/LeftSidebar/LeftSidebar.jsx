@@ -181,12 +181,14 @@ export const BaseLeftSidebar = ({
         })}
 
         {renderCommonItems()}
-        <AppHistoryIcon
-          darkMode={darkMode}
-          selectedSidebarItem={selectedSidebarItem}
-          handleSelectedSidebarItem={handleSelectedSidebarItem}
-          setSideBarBtnRefs={setSideBarBtnRefs}
-        />
+        {featureAccess?.appHistory && (
+          <AppHistoryIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
         <SidebarItem
           icon="settings"
           selectedSidebarItem={selectedSidebarItem}
