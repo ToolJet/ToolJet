@@ -124,6 +124,25 @@ jobs:
       - name: 📝 Add SPA routing redirect rule
         run: echo "/* /index.html 200" > repo/frontend/build/_redirects
 
+      - name: 🗂️ Upload large assets (>25MB) to S3 and remove from build
+        run: |
+          echo "🔍 Finding files larger than 25MB in frontend/build..."
+          find frontend/build -size +25M -type f | while read file; do
+            echo "⬆️ Uploading $file to S3..."
+            relative_path="${file#frontend/build/}"
+            aws s3 cp "$file" "s3://${{ secrets.LARGE_ASSETS_S3_BUCKET }}/$relative_path" \
+              --acl public-read \
+              --cache-control "public, max-age=31536000, immutable"
+            echo "🗑️ Removing $file from build (CF Pages 25MB limit)"
+            rm "$file"
+          done
+          echo "✅ Large asset handling complete"
+        working-directory: repo
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-west-1
+
       - name: 🚀 Deploy to Cloudflare Pages
         run: |
           echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
