@@ -23,6 +23,7 @@ export const ListviewSubcontainer = ({
   currentLayout,
   visibility,
   parentHeight,
+  dataCy,
 }) => {
   const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
   const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
@@ -52,7 +53,7 @@ export const ListviewSubcontainer = ({
         ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
       }}
       key={index}
-      // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
+      data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
       onClickCapture={(event) => {
         onRecordOrRowClicked(index);
       }}
