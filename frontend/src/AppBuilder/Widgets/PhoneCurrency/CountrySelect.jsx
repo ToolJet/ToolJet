@@ -6,7 +6,7 @@ import { CustomOption } from './CustomOption';
 import { CustomValueContainer } from './CustomValueContainer';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const CountrySelect = ({ value, onChange, options, ...rest }) => {
+export const CountrySelect = ({ value, onChange, options, dataCy, ...rest }) => {
   const {
     isCountryChangeEnabled,
     isCurrencyInput = false,
@@ -63,9 +63,8 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       borderBottomLeftRadius: `${borderRadius}px`,
       borderTopRightRadius: '0px',
       borderBottomRightRadius: '0px',
-      borderColor: `${
-        !isValid && showValidationError ? 'var(--status-error-strong)' : computedStyles?.borderColor
-      } !important`,
+      borderColor: `${!isValid && showValidationError ? 'var(--status-error-strong)' : computedStyles?.borderColor
+        } !important`,
       backgroundColor: `${computedStyles?.backgroundColor} !important`,
     }),
     menu: (provided) => ({
@@ -122,8 +121,10 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         }
       }}
       ref={dropdownRef}
+      data-cy={`${String(dataCy).toLowerCase()}-country-select-dropdown`}
     >
       <Select
+
         options={options}
         value={value}
         styles={customStyles}
@@ -144,14 +145,14 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
             !isCountryChangeEnabled || disabledState
               ? () => null
               : () => (
-                  <div style={{ position: 'relative', display: 'flex', left: '-2px' }}>
-                    {menuIsOpen ? (
-                      <SolidIcon name="TriangleDownCenter" fill="var(--cc-default-icon)" width="16" height="16" />
-                    ) : (
-                      <SolidIcon name="TriangleUpCenter" fill="var(--cc-default-icon)" width="16" height="16" />
-                    )}
-                  </div>
-                ),
+                <div style={{ position: 'relative', display: 'flex', left: '-2px' }}>
+                  {menuIsOpen ? (
+                    <SolidIcon name="TriangleDownCenter" fill="var(--cc-default-icon)" width="16" height="16" />
+                  ) : (
+                    <SolidIcon name="TriangleUpCenter" fill="var(--cc-default-icon)" width="16" height="16" />
+                  )}
+                </div>
+              ),
         }}
         darkMode={darkMode}
         isDisabled={disabledState}

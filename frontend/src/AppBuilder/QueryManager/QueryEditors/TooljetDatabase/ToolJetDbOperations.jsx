@@ -58,6 +58,8 @@ const ToolJetDbOperations = ({
   const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
   const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
 
+  const skipJoinTableUpdateRef = useRef(false);
+
   // Check if SQL mode should be disabled
   const isSqlModeDisabled = () => {
     // Check legacy environment variable for backward compatibility
@@ -173,6 +175,10 @@ const ToolJetDbOperations = ({
 
   useEffect(() => {
     const tableSet = new Set();
+    if (selectedTableId) {
+      tableSet.add(selectedTableId);
+    }
+
     const joinOptions = options['join_table']?.['joins'];
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;
@@ -190,12 +196,18 @@ const ToolJetDbOperations = ({
 
     const tables = [...tableSet];
     tables.forEach((tableId) => tableId && loadTableInformation(tableId));
-  }, [options['join_table']?.['joins'], tables]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options['join_table']?.['joins'], tables, selectedTableId]);
 
   useEffect(() => {
-    selectedTableId && fetchTableInformation(selectedTableId, false, tables);
+    if (selectedTableId && tables.length > 0) {
+      const tableDetails = findTableDetails(selectedTableId);
+      if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+        setColumns(tableInfo[tableDetails.table_name]);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTableId]);
+  }, [selectedTableId, tableInfo, tables]);
 
   useEffect(() => {
     if (mounted) {
@@ -233,6 +245,10 @@ const ToolJetDbOperations = ({
   }, [updateRowsOptions]);
 
   useEffect(() => {
+    if (skipJoinTableUpdateRef.current) {
+      skipJoinTableUpdateRef.current = false;
+      return;
+    }
     mounted && optionchanged('join_table', joinTableOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinTableOptions]);
@@ -334,10 +350,6 @@ const ToolJetDbOperations = ({
     });
   };
 
-  const findTableDetailsWithTableList = (tableId, tableList) => {
-    return tableList.find((table) => table.table_id == tableId);
-  };
-
   const findTableDetails = (tableId) => {
     return tables.find((table) => table.table_id == tableId);
   };
@@ -428,61 +440,6 @@ const ToolJetDbOperations = ({
       const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
-        fetchTableInformation(selectedTableInfo.id, false, tableList);
-      }
-    }
-  };
-
-  /**
-   * TODO: This function to be removed and replaced with loadTableInformation function everywhere
-   */
-  const fetchTableInformation = async (tableId, isNewTableAdded, tableList) => {
-    const tableDetails = findTableDetailsWithTableList(tableId, tableList);
-    if (tableDetails?.table_name) {
-      const { table_name } = tableDetails;
-      const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table_name);
-
-      if (error) {
-        toast.error(error?.message ?? 'Failed to fetch table information');
-        return;
-      }
-
-      if (data?.result?.columns?.length > 0) {
-        const columnList = data?.result?.columns.map(({ column_name, data_type, keytype, ...rest }) => ({
-          Header: column_name,
-          accessor: column_name,
-          dataType: data_type,
-          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-          ...rest,
-        }));
-        setColumns(columnList);
-        setTableInfo((prevTableInfo) => ({ ...prevTableInfo, [table_name]: columnList }));
-
-        setTableForeignKeyInfo((fk_info) => ({
-          ...fk_info,
-          [table_name]: data?.result?.foreign_keys || [],
-        }));
-
-        if (isNewTableAdded) {
-          setJoinTableOptions((joinOptions) => {
-            const { fields } = joinOptions;
-            const newFields = deepClone(fields).filter((field) => field.table !== tableId);
-            newFields.push(
-              ...(data?.result?.columns
-                ? data.result.columns.map((col) => ({
-                  name: col.column_name,
-                  table: tableId,
-                  // alias: `${tableId}_${col.column_name}`,
-                }))
-                : [])
-            );
-
-            return {
-              ...joinOptions,
-              fields: newFields,
-            };
-          });
-        }
       }
     }
   };
@@ -497,34 +454,36 @@ const ToolJetDbOperations = ({
   };
 
   const handleTableNameSelect = (tableId) => {
-    setSelectedTableId(tableId);
-    fetchTableInformation(tableId, true, tables);
-    optionchanged('table_id', tableId);
-
-    setJoinTableOptions(() => {
-      return {
-        joins: [
-          {
-            id: new Date().getTime(),
-            conditions: {
-              operator: 'AND',
-              conditionsList: [
-                {
-                  operator: '=',
-                  leftField: { table: tableId },
-                },
-              ],
-            },
-            joinType: 'INNER',
+    const newJoinOptions = {
+      joins: [
+        {
+          id: new Date().getTime(),
+          conditions: {
+            operator: 'AND',
+            conditionsList: [
+              {
+                operator: '=',
+                leftField: { table: tableId },
+              },
+            ],
           },
-        ],
-        from: {
-          name: tableId,
-          type: 'Table',
+          joinType: 'INNER',
         },
-        fields: [],
-      };
+      ],
+      from: {
+        name: tableId,
+        type: 'Table',
+      },
+      fields: [],
+    };
+
+    optionsChanged({
+      table_id: tableId,
+      join_table: newJoinOptions,
     });
+    skipJoinTableUpdateRef.current = true;
+    setSelectedTableId(tableId);
+    setJoinTableOptions(newJoinOptions);
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
