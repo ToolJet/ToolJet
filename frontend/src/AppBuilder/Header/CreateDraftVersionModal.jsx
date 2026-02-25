@@ -157,7 +157,7 @@ const CreateDraftVersionModal = ({
         if (error?.data?.code === '23505') {
           toast.error('Version name already exists.');
         } else {
-          toast.error(error);
+          toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
         }
         setIsCreatingVersion(false);
       }
