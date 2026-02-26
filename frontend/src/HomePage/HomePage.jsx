@@ -714,15 +714,19 @@ class HomePageComponent extends React.Component {
     } else if (this.props.appType === 'front-end') {
       // Check folder-level permissions based on the app's actual folder(s)
       // An app can have folder permissions if:
-      // 1. User has is_all_edit_apps permission (can edit apps in all folders)
+      // 1. User has is_all_edit_apps permission (can edit apps in all folders) AND app is actually in a folder
       // 2. Any of the app's folders is in the user's edit_apps_in_folders_id list
+      // Apps not in any folder are NOT affected by folder-level permissions
       const appFolderIds = app?.folder_ids || [];
+      const isAppInFolder = appFolderIds.length > 0;
       const hasFolderEditApps =
         folder_group_permissions &&
+        isAppInFolder &&
         (folder_group_permissions.is_all_edit_apps ||
           appFolderIds.some((folderId) => folder_group_permissions.edit_apps_in_folders_id?.includes(folderId)));
       const hasFolderViewApps =
         folder_group_permissions &&
+        isAppInFolder &&
         (folder_group_permissions.is_all_viewable ||
           appFolderIds.some((folderId) => folder_group_permissions.viewable_folders_id?.includes(folderId)));
 

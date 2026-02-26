@@ -134,12 +134,6 @@ export function AppsSelect(props) {
       ...base,
       display: 'none',
     }),
-    option: (base) => ({
-      ...base,
-      '.select-option': {
-        margin: '0px 10px',
-      },
-    }),
     multiValue: (base) => ({
       ...base,
       borderRadius: '6px',
@@ -183,12 +177,13 @@ export function AppsSelect(props) {
     }),
     menu: (base) => ({
       ...base,
-      background: 'var(--slate1)',
+      background: darkMode ? '#1c1f26' : 'var(--slate1)',
+      color: darkMode ? '#c1c8cd' : 'inherit',
       '.add-group-btn': {
         display: 'flex',
         justifyContent: 'flex-end',
         padding: '8px',
-        borderTop: '1px solid var(--slate5)',
+        borderTop: `1px solid ${darkMode ? '#2c3038' : 'var(--slate5)'}`,
         '.create-group': {
           background: 'none !important',
           '.rectangle-add-icon': {
@@ -196,6 +191,18 @@ export function AppsSelect(props) {
             height: '20px',
           },
         },
+      },
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 1060,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? (darkMode ? '#2c3038' : 'var(--slate3)') : 'transparent',
+      color: darkMode ? '#c1c8cd' : 'inherit',
+      '.select-option': {
+        margin: '0px 10px',
       },
     }),
   };
@@ -229,8 +236,12 @@ export function AppsSelect(props) {
         if (isCurrentSelectAll && !isSelectAllPresentInSelection) return props.onChange([]);
         return props.onChange(selected.filter((app) => !app?.isAllField));
       }}
-      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options].filter(Boolean)}
+      options={[props.allowSelectAll && props.options?.length > 0 ? props.allOption : null, ...props.options].filter(
+        Boolean
+      )}
       styles={selectStyles}
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
       placeholder={resourceConfig.placeholder}
       noOptionsMessage={() => resourceConfig.noOptionsMessage}
     />

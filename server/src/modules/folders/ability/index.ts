@@ -19,7 +19,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
-    const { superAdmin, userPermission, isAdmin, user } = UserAllPermissions;
+    const { superAdmin, userPermission, isAdmin, isBuilder, user } = UserAllPermissions;
     const canCreateFolder = userPermission.folderCreate;
     const canDeleteFolder = userPermission.folderDelete;
 
@@ -27,12 +27,17 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.CREATE_FOLDER, FEATURE_KEY.DELETE_FOLDER, FEATURE_KEY.UPDATE_FOLDER], Folder);
     } else {
       if (canCreateFolder) {
-        can([FEATURE_KEY.CREATE_FOLDER, FEATURE_KEY.UPDATE_FOLDER], Folder);
+        can([FEATURE_KEY.CREATE_FOLDER], Folder);
         // folder creators can delete their own folders
         can([FEATURE_KEY.DELETE_FOLDER], Folder, { createdBy: user.id });
       }
       if (canDeleteFolder) {
         can([FEATURE_KEY.DELETE_FOLDER], Folder);
+      }
+      // UPDATE_FOLDER (rename) requires granular canEditFolder permission or folder ownership.
+      // This is a coarse guard — the service enforces the per-folder granular check.
+      if (isBuilder || canCreateFolder) {
+        can([FEATURE_KEY.UPDATE_FOLDER], Folder);
       }
     }
   }

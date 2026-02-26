@@ -115,7 +115,12 @@ export class AbilityService extends IAbilityService {
   }
 
   createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
-    const userFolderPermissions: UserFolderPermissions = { ...DEFAULT_USER_FOLDER_PERMISSIONS };
+    const userFolderPermissions: UserFolderPermissions = {
+      ...DEFAULT_USER_FOLDER_PERMISSIONS,
+      editableFoldersId: [],
+      viewableFoldersId: [],
+      editAppsInFoldersId: [],
+    };
 
     for (const gp of folderGranularPermissions) {
       const folderPerms = gp.foldersGroupPermissions;

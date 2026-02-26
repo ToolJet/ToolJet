@@ -234,7 +234,7 @@ class BaseManageGranularAccess extends React.Component {
           ...environmentPermissions,
         }),
         ...(type == RESOURCE_TYPE.DATA_SOURCES && { action: initialPermissionStateDs }),
-        ...(type == RESOURCE_TYPE.FOLDERS && { action: initialPermissionStateFolder }),
+        ...(type == RESOURCE_TYPE.FOLDERS && { ...initialPermissionStateFolder }),
         resourcesToAdd: resourcesToAdd,
       },
     };
@@ -534,13 +534,12 @@ class BaseManageGranularAccess extends React.Component {
     const type = currentEditingPermissions.type;
     let currentResource;
     if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
-      currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => app.app.id);
+      currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => app.app.id) ?? [];
     } else if (type === RESOURCE_TYPE.FOLDERS) {
-      currentResource = currentEditingPermissions?.foldersGroupPermission?.groupFolders?.map((f) => f.folder.id);
+      currentResource = currentEditingPermissions?.foldersGroupPermission?.groupFolders?.map((f) => f.folder.id) ?? [];
     } else {
-      currentResource = currentEditingPermissions?.dataSourcesGroupPermission?.groupDataSources?.map(
-        (ds) => ds.dataSource.id
-      );
+      currentResource =
+        currentEditingPermissions?.dataSourcesGroupPermission?.groupDataSources?.map((ds) => ds.dataSource.id) ?? [];
     }
     const selectedResourceEnitities = this.getSelectedResources();
     const selectedResource = selectedResourceEnitities

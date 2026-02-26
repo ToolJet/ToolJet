@@ -67,11 +67,12 @@ export const Folders = function Folders({
   };
 
   // Determine if user can update/delete a specific folder
-  // Uses master permission OR granular permission OR ownership (creator can delete their own folders)
+  // Rename: requires granular canEditFolder OR (folderCreate + ownership)
+  // Delete: requires master Delete OR (folderCreate + ownership)
   const canUpdateSpecificFolder = (folderId, folder) =>
-    canUpdateFolder || canEditSpecificFolder(folderId) || isOwnerOfFolder(folder);
+    canEditSpecificFolder(folderId) || (canCreateFolder && isOwnerOfFolder(folder));
   const canDeleteSpecificFolder = (folderId, folder) =>
-    canDeleteFolder || canEditSpecificFolder(folderId) || isOwnerOfFolder(folder);
+    canDeleteFolder || (canCreateFolder && isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);

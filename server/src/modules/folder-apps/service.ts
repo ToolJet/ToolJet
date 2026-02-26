@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
-import { AppGitSync } from '../../entities/app_git_sync.entity'
+import { AppGitSync } from '../../entities/app_git_sync.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { decamelizeKeys } from 'humps';
@@ -26,14 +26,12 @@ export class FolderAppsService implements IFolderAppsService {
 
   async remove(folderId: string, appId: string): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
-    const gitSyncedApp = await manager.findOne(AppGitSync, {
+      const gitSyncedApp = await manager.findOne(AppGitSync, {
         where: { appId },
-        select: ['id'], 
+        select: ['id'],
       });
-    if (gitSyncedApp) {
-        throw new BadRequestException(
-          "Apps connected to git can't be removed from folders."
-        );
+      if (gitSyncedApp) {
+        throw new BadRequestException("Apps connected to git can't be removed from folders.");
       }
       // TODO: folder under user.organizationId
       return await manager.delete(FolderApp, { folderId, appId });
@@ -58,12 +56,12 @@ export class FolderAppsService implements IFolderAppsService {
       const type = query.type;
       const searchKey = query.searchKey;
       const resourceType = this.getResourceTypefromAppType(type as APP_TYPES);
-      const userAppPermissions = (
-        await this.abilityService.resourceActionsPermission(user, {
-          resources: [{ resource: resourceType }],
-          organizationId: user.organizationId,
-        })
-      )?.[resourceType];
+      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
+        organizationId: user.organizationId,
+      });
+      const userAppPermissions = userPermissions?.[resourceType];
+      const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
 
       const allFolderList = await this.foldersUtilService.allFolders(user, manager, type);
       if (allFolderList.length === 0) {
@@ -86,12 +84,48 @@ export class FolderAppsService implements IFolderAppsService {
           allFolderList[index].generateCount();
         }
       });
-      return decamelizeKeys({
-        folders:
-          user.roleGroup === USER_ROLE.END_USER
-            ? allFolderList.filter((folder) => folder.folderApps.length > 0)
-            : allFolderList,
-      });
+
+      // Filter folders based on user role and permissions
+      const visibleFolders = this.filterFoldersByPermissions(
+        allFolderList,
+        user,
+        userPermissions?.isAdmin,
+        userFolderPermissions
+      );
+
+      return decamelizeKeys({ folders: visibleFolders });
     });
+  }
+
+  /**
+   * Filters the folder list based on user role and folder permissions.
+   * - Admin: sees all folders
+   * - End user: sees only folders with apps they can access
+   * - Builder: if folder permissions are configured, sees only folders they have access to;
+   *   otherwise sees all folders (CE / unconfigured EE fallback)
+   */
+  protected filterFoldersByPermissions(folders: any[], user: User, isAdmin: boolean, folderPermissions: any): any[] {
+    if (isAdmin) return folders;
+
+    if (user.roleGroup === USER_ROLE.END_USER) {
+      return folders.filter((folder) => folder.folderApps.length > 0);
+    }
+
+    // For builders: filter based on granular folder permissions
+    if (folderPermissions) {
+      const accessibleFolderIds = new Set([
+        ...(folderPermissions.editableFoldersId || []),
+        ...(folderPermissions.editAppsInFoldersId || []),
+        ...(folderPermissions.viewableFoldersId || []),
+      ]);
+
+      if (accessibleFolderIds.size > 0) {
+        // Show folders with explicit granular access OR folders created by this user
+        return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id);
+      }
+    }
+
+    // No specific folder permissions → show all folders (including ones they created)
+    return folders;
   }
 }

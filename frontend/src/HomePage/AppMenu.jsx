@@ -2,6 +2,7 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
+import { authenticationService } from '@/_services';
 
 export const AppMenu = function AppMenu({
   deleteApp,
@@ -19,6 +20,15 @@ export const AppMenu = function AppMenu({
 }) {
   const { t } = useTranslation();
   const isModuleApp = appType === 'module';
+
+  // Check folder edit permissions from session
+  const folderGroupPermissions = authenticationService.currentSessionValue?.folder_group_permissions;
+  const canEditAnyFolder =
+    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
+  const canEditCurrentFolder =
+    currentFolder?.id &&
+    (folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id));
+
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {
       document.body.click();
@@ -68,20 +78,17 @@ export const AppMenu = function AppMenu({
                     onClick={() => openAppActionModal('change-icon')}
                   />
                 )}
-                {canCreateApp && appType !== 'module' && (
-                  <>
-                    <Field
-                      text={t('homePage.appCard.addToFolder', 'Add to folder')}
-                      onClick={() => openAppActionModal('add-to-folder')}
-                    />
-
-                    {currentFolder.id && (
-                      <Field
-                        text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-                        onClick={() => openAppActionModal('remove-app-from-folder')}
-                      />
-                    )}
-                  </>
+                {canEditAnyFolder && appType !== 'module' && (
+                  <Field
+                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                    onClick={() => openAppActionModal('add-to-folder')}
+                  />
+                )}
+                {canEditCurrentFolder && appType !== 'module' && (
+                  <Field
+                    text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                    onClick={() => openAppActionModal('remove-app-from-folder')}
+                  />
                 )}
                 {canUpdateApp && canCreateApp && appType !== 'workflow' && (
                   <>

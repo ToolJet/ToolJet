@@ -609,19 +609,20 @@ export class AppsService implements IAppsService {
         return false;
       }
 
-      // If user can edit apps in all folders, they have edit permission
-      if (folderPermissions.isAllEditApps) {
-        return true;
-      }
-
       // Get the folders this app belongs to
       const folderApps = await manager
         .createQueryBuilder(FolderApp, 'folder_apps')
         .where('folder_apps.app_id = :appId', { appId })
         .getMany();
 
+      // Apps not in any folder should NOT get folder-level edit permission
       if (!folderApps || folderApps.length === 0) {
         return false;
+      }
+
+      // If user can edit apps in all folders AND app is in at least one folder, grant edit
+      if (folderPermissions.isAllEditApps) {
+        return true;
       }
 
       // Check if any of the app's folders are in the list of folders where user can edit apps

@@ -190,7 +190,7 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     createFolderPermissionsObj: CreateResourcePermissionObject<ResourceType.FOLDER>,
     manager: EntityManager
   ): Promise<void> {
-    const { resourcesToAdd, canEditFolder, canEditApps } = createFolderPermissionsObj;
+    const { resourcesToAdd, canEditFolder, canEditApps, canViewApps } = createFolderPermissionsObj;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Validate end-user constraints: can only have canViewApps
@@ -202,12 +202,11 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
         },
         manager
       );
-      const action = (createFolderPermissionsObj as any)?.action ?? createFolderPermissionsObj;
       const foldersGroupPermissions = await manager.save(
         manager.create(FoldersGroupPermissions, {
-          canEditFolder: action.canEditFolder ?? false,
-          canEditApps: action.canEditApps ?? false,
-          canViewApps: action.canViewApps ?? false,
+          canEditFolder: canEditFolder ?? false,
+          canEditApps: canEditApps ?? false,
+          canViewApps: canViewApps ?? false,
           granularPermissionId: granularPermissions.id,
         })
       );
@@ -249,7 +248,8 @@ export class GranularPermissionsUtilService implements IGranularPermissionsUtilS
     if (endUsers.length) {
       throw new BadRequestException({
         message: {
-          error: 'End-users cannot have Edit Folder or Edit Apps permissions',
+          error:
+            'End-users cannot have Edit Folder or Edit Apps permissions. If you wish to add this permission, kindly change the following users role from end-user to builder.',
           data: endUsers.map((user) => user.email),
           title: 'Cannot add this permission to the group',
           type: 'USER_ROLE_CHANGE_ADD_PERMISSIONS',
