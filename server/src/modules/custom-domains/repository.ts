@@ -33,4 +33,12 @@ export class CustomDomainRepository extends Repository<CustomDomain> {
       .take(limit)
       .getMany();
   }
+
+  async findStalePendingDomains(cutoffDate: Date, limit: number): Promise<CustomDomain[]> {
+    return this.createQueryBuilder('cd')
+      .where('cd.status IN (:...statuses)', { statuses: ['pending_verification', 'pending_ssl'] })
+      .andWhere('cd.updated_at < :cutoff', { cutoff: cutoffDate })
+      .take(limit)
+      .getMany();
+  }
 }
