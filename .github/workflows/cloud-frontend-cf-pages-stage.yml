@@ -105,7 +105,7 @@ jobs:
         working-directory: repo
 
       - name: 🛠️ Build the project
-        run: npm run build:cloud
+        run: npm run build:plugins:prod && npm run build:frontend:cloud
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
