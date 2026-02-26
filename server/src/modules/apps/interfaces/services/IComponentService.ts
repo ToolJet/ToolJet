@@ -17,14 +17,16 @@ export interface ComponentUpdateContext {
   componentIds: string[];
   componentDiff: object;
   oldComponentDtos: any[];
-  pageName: string;
+  pageName?: string;
+  pageId?: string;
   componentNames: string[];
 }
 
 export interface ComponentDeleteContext {
   componentIds: string[];
   componentNames: string[];
-  pageName: string;
+  pageName?: string;
+  pageId?: string;
   layoutIds: string[];
 }
 
