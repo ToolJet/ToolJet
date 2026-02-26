@@ -194,6 +194,7 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/integrating-data",
         "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
