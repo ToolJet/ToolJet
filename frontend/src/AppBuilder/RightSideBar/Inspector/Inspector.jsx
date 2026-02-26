@@ -50,7 +50,9 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { ReorderableList } from './Components/ReorderableList';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
+import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import '../ComponentManagerTab/styles.scss';
@@ -140,6 +142,9 @@ export const NEW_REVAMPED_COMPONENTS = [
   'JSONEditor',
   'KeyValuePair',
   'IFrame',
+  'Accordion',
+  'ReorderableList',
+  'Navigation',
 ];
 
 export const Inspector = ({
@@ -917,9 +922,13 @@ const GetAccordion = React.memo(
         return <ModuleViewerInspector {...restProps} />;
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
-
+      case 'ReorderableList':
+        return <ReorderableList {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
+
+      case 'Navigation':
+        return <Navigation {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

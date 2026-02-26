@@ -6,6 +6,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -72,8 +73,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -188,7 +189,7 @@ export const Button = function Button(props) {
         className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
-        data-cy={dataCy}
+        data-cy={`${generateCypressDataCy(dataCy)}-button`}
         type="default"
         onMouseOver={() => {
           //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
@@ -224,6 +225,7 @@ export const Button = function Button(props) {
                 <p
                   className="tj-text-sm"
                   style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  data-cy={`${dataCy}-label`}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -240,6 +242,7 @@ export const Button = function Button(props) {
                       color: computedIconColor,
                     }}
                     stroke={1.5}
+                    data-cy={`${dataCy}-icon`}
                   />
                 )}
               </div>

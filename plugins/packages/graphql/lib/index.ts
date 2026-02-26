@@ -14,6 +14,8 @@ import {
   getRefreshedToken,
   getAuthUrl,
   redactHeaders,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
 } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 
@@ -28,6 +30,10 @@ export default class GraphqlQueryService implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     const url = sourceOptions.url;
+
+    // SSRF Protection: Validate URL before making request
+    await validateUrlForSSRF(url);
+
     const { query, variables } = queryOptions;
     const json = {
       query,
@@ -65,12 +71,16 @@ export default class GraphqlQueryService implements QueryService {
     if (status === 'needs_oauth') return authValidatedRequestOptions;
     const requestOptions = data as OptionsOfTextResponseBody;
 
+    // Apply SSRF protection options (custom DNS lookup + redirect validation)
+    // Pass requestOptions to properly merge hooks and other options
+    const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
+
     let result = {};
     let requestObject = {};
     let responseObject = {};
 
     try {
-      const response = await this.sendRequest(url, requestOptions);
+      const response = await this.sendRequest(url, finalOptions);
       result = JSON.parse(response.body);
 
       requestObject = {

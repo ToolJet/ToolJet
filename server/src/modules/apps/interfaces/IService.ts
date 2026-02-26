@@ -15,7 +15,7 @@ export interface IAppsService {
   validateReleasedApp(ability: any, app: App): { id: string; slug: string };
   update(app: App, appUpdateDto: AppUpdateDto, user: User): Promise<any>;
   delete(app: App, user: User): Promise<void>;
-  getAllApps(user: User, appListDto: AppListDto): Promise<any>;
+  getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any>;
   findTooljetDbTables(appId: string): Promise<{ table_id: string }[]>;
   getOne(app: App, user: User): Promise<any>;
   getBySlug(app: App, user: User): Promise<any>;

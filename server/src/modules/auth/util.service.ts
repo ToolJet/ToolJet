@@ -295,23 +295,33 @@ export class AuthUtilService implements IAuthUtilService {
           }
         }
       } else {
-        // No role specified -> finding role
-        newRole = await this.findUserRoleFromGroups(customGroups, manager);
-        if (newRole === USER_ROLE.END_USER) {
-          // If new role is end user and but user is app owner, assign editor role
-          const appCounts = await manager.count(App, {
-            where: {
-              userId: userId,
-              organizationId: organizationId,
-            },
-          });
-          if (appCounts > 0) {
-            newRole = USER_ROLE.END_USER;
+        // No explicit role group mapped from IdP — preserve the user's current role
+        // to avoid demoting admins/builders when only custom groups are synced.
+        const existingRoleObj = await this.rolesRepository.getUserRole(userId, organizationId, manager);
+        const existingRole = existingRoleObj?.name as USER_ROLE;
+
+        if (existingRole) {
+          // User already has a role — keep it (group sync should be additive)
+          newRole = existingRole;
+        } else {
+          // New user with no existing role — infer from custom group permissions
+          newRole = await this.findUserRoleFromGroups(customGroups, manager);
+          if (newRole === USER_ROLE.END_USER) {
+            // If new role is end user but user is app owner, assign editor role
+            const appCounts = await manager.count(App, {
+              where: {
+                userId: userId,
+                organizationId: organizationId,
+              },
+            });
+            if (appCounts > 0) {
+              newRole = USER_ROLE.END_USER;
+            }
           }
         }
       }
 
-      // Remove user from existing role
+      // Remove user from existing custom groups (will be re-added below from IdP mapping)
       await this.groupPermissionsUtilService.deleteFromAllCustomGroupUser(userId, organizationId);
 
       /* Sync LDAP / SAML / OIDC groups before signup to the workspace */

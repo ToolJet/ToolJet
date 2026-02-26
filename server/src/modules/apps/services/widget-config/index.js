@@ -71,8 +71,13 @@ import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
+import { accordionConfig } from './accordion';
+import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
+import { navigationConfig } from './navigation';
+
+
 const widgets = {
   buttonConfig,
   tableConfig,
@@ -147,8 +152,11 @@ const widgets = {
   progressbarConfig,
   audioRecorderConfig,
   cameraConfig,
+  accordionConfig,
+  reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {

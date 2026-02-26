@@ -10,8 +10,10 @@ import { DarkModeToggle } from '@/_components';
 import { RenderPageAndPageGroup } from './PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
-import { buildTree } from './Tree/utilities';
+import { buildTree } from '@/_ui/SortableTree';
 import { RIGHT_SIDE_BAR_TAB } from '../../rightSidebarConstants';
+
+const PAGE_PROPERTY_NAMES = { isGroup: 'isPageGroup', parentId: 'pageGroupId' };
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import {
   Sidebar as SidebarWrapper,
@@ -88,8 +90,8 @@ export const PagesSidebarNavigation = ({
   );
 
   const pagesTree = useMemo(
-    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, !!labelStyle?.label?.hidden) : pages),
-    [hasAppPagesAddNavGroupEnabled, pages, labelStyle?.label?.hidden]
+    () => (hasAppPagesAddNavGroupEnabled ? buildTree(pages, PAGE_PROPERTY_NAMES) : pages),
+    [hasAppPagesAddNavGroupEnabled, pages]
   );
 
   const mainNavBarPages = useMemo(() => {
@@ -510,11 +512,6 @@ export const PagesSidebarNavigation = ({
               return '1px solid var(--cc-weak-border, #E4E7EB)';
             }
             return `1px solid ${styles?.borderColor?.value}`;
-          })(),
-          maxWidth: (() => {
-            if (moduleId === 'canvas' && position === 'top' && !isMobileDevice) {
-              return canvasMaxWidth;
-            }
           })(),
         }}
         onClick={handleSidebarClick}

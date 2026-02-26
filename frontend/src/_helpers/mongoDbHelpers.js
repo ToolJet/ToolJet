@@ -5,34 +5,34 @@ export const validateMongoDBConnectionString = (connectionString, selectedFormat
 
   const trimmedString = connectionString.trim();
 
-  const hasValidProtocol = 
-    trimmedString.startsWith('mongodb://') || 
-    trimmedString.startsWith('mongodb+srv://');
+  const hasValidProtocol = trimmedString.startsWith('mongodb://') || trimmedString.startsWith('mongodb+srv://');
 
   if (!hasValidProtocol) {
-    return { 
-      valid: false, 
-      error: "Invalid protocol. Connection string must start with 'mongodb://' or 'mongodb+srv://'"
+    return {
+      valid: false,
+      error: "Invalid protocol. Connection string must start with 'mongodb://' or 'mongodb+srv://'",
     };
   }
 
   const protocol = trimmedString.match(/^([a-z+]+):\/\//)?.[1];
-  const isStandard = protocol === "mongodb";
-  const isSrv = protocol === "mongodb+srv";
+  const isStandard = protocol === 'mongodb';
+  const isSrv = protocol === 'mongodb+srv';
 
   if (selectedFormat) {
     const normalizedFormat = selectedFormat === 'mongodb+srv' ? 'mongodb+srv' : 'mongodb';
-    
+
     if (normalizedFormat === 'mongodb' && isSrv) {
       return {
         valid: false,
-        error: "Connection format mismatch. Selected format is 'Standard (mongodb://)' but connection string uses 'mongodb+srv://'"
+        error:
+          "Connection format mismatch. Selected format is 'Standard (mongodb://)' but connection string uses 'mongodb+srv://'",
       };
     }
     if (normalizedFormat === 'mongodb+srv' && isStandard) {
       return {
         valid: false,
-        error: "Connection format mismatch. Selected format is 'SRV (mongodb+srv://)' but connection string uses 'mongodb://'"
+        error:
+          "Connection format mismatch. Selected format is 'SRV (mongodb+srv://)' but connection string uses 'mongodb://'",
       };
     }
   }
@@ -42,52 +42,52 @@ export const validateMongoDBConnectionString = (connectionString, selectedFormat
 
   const regex = isStandard ? mongodbStandardRegex : mongodbSrvRegex;
   const match = trimmedString.match(regex);
-  
+
   if (!match) {
-    return { 
-      valid: false, 
-      error: 'Malformed MongoDB connection string' 
+    return {
+      valid: false,
+      error: 'Malformed MongoDB connection string',
     };
   }
 
   const [, username, password, hosts] = match;
 
   if (!hosts || hosts.trim() === '') {
-    return { 
-      valid: false, 
-      error: 'Missing host information in connection string'
+    return {
+      valid: false,
+      error: 'Missing host information in connection string',
     };
   }
 
   if (isSrv && hosts.includes(':')) {
-    return { 
-      valid: false, 
-      error: "Invalid SRV connection string. 'mongodb+srv://' must not contain port numbers" 
+    return {
+      valid: false,
+      error: "Invalid SRV connection string. 'mongodb+srv://' must not contain port numbers",
     };
   }
 
   if (isStandard) {
     const hostList = hosts.split(',');
-    
+
     for (const hostEntry of hostList) {
       const hostEntry_trimmed = hostEntry.trim();
-      
+
       if (hostEntry_trimmed.includes(':')) {
         const [host, portStr] = hostEntry_trimmed.split(':');
-        
+
         if (!host || !portStr || host.trim() === '' || portStr.trim() === '') {
-          return { 
-            valid: false, 
-            error: 'Invalid host or port format. Expected format: host:port' 
+          return {
+            valid: false,
+            error: 'Invalid host or port format. Expected format: host:port',
           };
         }
 
         const port = parseInt(portStr);
-        
+
         if (isNaN(port) || port < 1 || port > 65535) {
-          return { 
-            valid: false, 
-            error: 'Invalid port number. Port must be between 1 and 65535' 
+          return {
+            valid: false,
+            error: 'Invalid port number. Port must be between 1 and 65535',
           };
         }
       }
@@ -110,15 +110,11 @@ export const parseMongoDBConnectionString = (connectionString) => {
     return null;
   }
 
-  const standardConnectionRegex =
-    /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
+  const standardConnectionRegex = /^mongodb:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^/?]+)(?:\/([^?]*))?(\?.*)?$/;
 
-  const srvConnectionRegex =
-    /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
+  const srvConnectionRegex = /^mongodb\+srv:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:/?]+)(?:\/([^?]*))?(\?.*)?$/;
 
-  const activeRegex = isStandardFormat
-    ? standardConnectionRegex
-    : srvConnectionRegex;
+  const activeRegex = isStandardFormat ? standardConnectionRegex : srvConnectionRegex;
 
   const parsedParts = trimmed.match(activeRegex);
 
@@ -126,8 +122,7 @@ export const parseMongoDBConnectionString = (connectionString) => {
     return null;
   }
 
-  const [, username, password, hostsSection, databaseName, querySection] =
-    parsedParts;
+  const [, username, password, hostsSection, databaseName, querySection] = parsedParts;
 
   let primaryHost = '';
   let primaryPort = '';
@@ -171,18 +166,18 @@ export const parseMongoDBConnectionString = (connectionString) => {
     database: databaseName || '',
     connection_format: isSrvFormat ? 'mongodb+srv' : 'mongodb',
     use_ssl: useSsl,
-    query_params: querySection || ''
+    query_params: querySection || '',
   };
 };
 
 export const detectConnectionStringChange = (oldString, newString) => {
   if (!oldString || !newString) return null;
-  
+
   const oldParsed = parseMongoDBConnectionString(oldString);
   const newParsed = parseMongoDBConnectionString(newString);
-  
+
   if (!oldParsed || !newParsed) return null;
-  
+
   const changes = {
     protocol: oldParsed.connection_format !== newParsed.connection_format,
     host: oldParsed.host !== newParsed.host,
@@ -191,8 +186,8 @@ export const detectConnectionStringChange = (oldString, newString) => {
     password: oldParsed.password !== newParsed.password,
     database: oldParsed.database !== newParsed.database,
     ssl: oldParsed.use_ssl !== newParsed.use_ssl,
-    query: oldParsed.query_params !== newParsed.query_params
+    query: oldParsed.query_params !== newParsed.query_params,
   };
-  
+
   return { changes, newParsed };
 };

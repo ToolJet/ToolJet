@@ -18,8 +18,6 @@ import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 
-import ArtifactPreview from './ArtifactPreview';
-
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
 // const AppCanvas = lazy(() => import('@/AppBuilder/AppCanvas'));
@@ -35,10 +33,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const isModuleEditor = appType === 'module';
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode, shallow);
-  const appBuilderMode = useStore((state) => state.appStore.modules[moduleId]?.app?.appBuilderMode ?? 'visual');
   const navigate = useNavigate();
-
-  const isUserInZeroToOneFlow = appBuilderMode === 'ai';
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
 
   const changeToDarkMode = (newMode) => {
     updateIsTJDarkMode(newMode);
@@ -64,28 +61,21 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       <ErrorBoundary>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
+            <EditorHeader darkMode={darkMode} />
 
-            <LeftSidebar
-              switchDarkMode={changeToDarkMode}
-              darkMode={darkMode}
-              isUserInZeroToOneFlow={isUserInZeroToOneFlow}
-            />
+            <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
           </Suspense>
-          {isUserInZeroToOneFlow ? (
-            <ArtifactPreview darkMode={darkMode} isUserInZeroToOneFlow={isUserInZeroToOneFlow} />
-          ) : (
-            <>
-              {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
-              <DndProvider backend={HTML5Backend}>
-                <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
-                <QueryPanel darkMode={darkMode} />
-                <RightSidebarToggle darkMode={darkMode} />
-                <RightSideBar darkMode={darkMode} />
-              </DndProvider>
-              <Popups darkMode={darkMode} />
-            </>
+
+          {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled && (
+            <RealtimeCursors />
           )}
+          <DndProvider backend={HTML5Backend}>
+            <AppCanvas moduleId={moduleId} appId={appId} switchDarkMode={switchDarkMode} darkMode={darkMode} />
+            <QueryPanel darkMode={darkMode} />
+            <RightSidebarToggle darkMode={darkMode} />
+            <RightSideBar darkMode={darkMode} />
+          </DndProvider>
+          <Popups darkMode={darkMode} />
         </ModuleProvider>
       </ErrorBoundary>
     </div>

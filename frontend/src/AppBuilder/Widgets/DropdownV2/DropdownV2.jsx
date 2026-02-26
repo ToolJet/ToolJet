@@ -112,6 +112,12 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  const menuBackgroundColor = getInputBackgroundColor({
+    fieldBackgroundColor,
+    darkMode,
+    isLoading: isDropdownLoading,
+    isDisabled: isDropdownDisabled,
+  });
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
@@ -362,8 +368,8 @@ export const DropdownV2 = ({
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
-          ? 'var(--text-disabled)'
-          : 'var(--text-primary)',
+            ? 'var(--text-disabled)'
+            : 'var(--text-primary)',
       maxWidth:
         ref?.current?.offsetWidth -
         (iconVisibility ? INDICATOR_CONTAINER_WIDTH + ICON_WIDTH : INDICATOR_CONTAINER_WIDTH),
@@ -403,13 +409,17 @@ export const DropdownV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
+      backgroundColor: _state.isFocused
+        ? 'var(--interactive-overlays-fill-hover)'
+        : menuBackgroundColor || 'var(--cc-surface1-surface)',
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled
+          ? menuBackgroundColor || 'var(--cc-surface1-surface)'
+          : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       display: 'flex',
@@ -424,13 +434,14 @@ export const DropdownV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--cc-surface1-surface)',
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
       borderRadius: '8px',
       boxShadow: 'unset',
-      margin: 0,
+      marginTop: '5px',
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
@@ -438,11 +449,10 @@ export const DropdownV2 = ({
     <>
       <div
         ref={dropdownRef}
-        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) ||
+              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -462,6 +472,7 @@ export const DropdownV2 = ({
         }}
       >
         <Label
+          dataCy={dataCy}
           label={label}
           width={labelWidth}
           labelRef={labelRef}
@@ -476,6 +487,7 @@ export const DropdownV2 = ({
           id={`${id}-label`}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="px-0 h-100 dropdownV2-widget"
           ref={ref}
           onClick={handleClickInsideSelect}
@@ -534,6 +546,7 @@ export const DropdownV2 = ({
             iconColor={iconColor}
             isSearchable={false}
             darkMode={darkMode}
+            menuBackgroundColor={menuBackgroundColor}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
             onKeyDown={(e) => {

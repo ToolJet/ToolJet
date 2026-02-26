@@ -22,6 +22,7 @@ export const RadioButtonV2 = ({
   validation,
   id,
   subContainerIndex,
+  dataCy
 }) => {
   const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
@@ -193,12 +194,11 @@ export const RadioButtonV2 = ({
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()} `}
         data-disabled={isDisabled}
         className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) ||
-            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ((labelWidth != 0 && label?.length != 0) ||
+              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : '']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -221,6 +221,7 @@ export const RadioButtonV2 = ({
         aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
       >
         <Label
+          dataCy={`${dataCy}`}
           label={label}
           width={labelWidth}
           labelRef={labelRef}
@@ -249,25 +250,26 @@ export const RadioButtonV2 = ({
             <div className="">
               {selectOptions.map((option, index) => {
                 const isChecked = checkedValue == option.value;
-                const inputId = `${id}${
-                  subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-                }-option-${index}`;
+                const inputId = `${id}${subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
+                  }-option-${index}`;
 
                 return (
                   <label key={index} className="radio-button-container" htmlFor={inputId}>
                     <span
+                      data-cy={`${dataCy}-option-label-${index}`}
                       style={{
                         color:
                           optionsTextColor !== '#1B1F24'
                             ? optionsTextColor
                             : isDisabled || isLoading
-                            ? 'var(--text-disabled)'
-                            : 'var(--text-primary)',
+                              ? 'var(--text-disabled)'
+                              : 'var(--text-primary)',
                       }}
                     >
                       {getSafeRenderableValue(option.label)}
                     </span>
                     <input
+                      data-cy={`${dataCy}-option-input-${index}`}
                       style={{
                         marginTop: '1px',
                         backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',

@@ -30,7 +30,7 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat } = properties;
+  const { label, defaultValue, dateFormat, showClearBtn } = properties;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -68,6 +68,11 @@ export const DatePickerV2 = ({
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
     if (skipFireEvent) return;
     fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null);
+    setDisplayTimestamp('Select date');
   };
 
   const onDateSelect = (date) => {
@@ -212,6 +217,8 @@ export const DatePickerV2 = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
   };
 
   return (
@@ -231,6 +238,8 @@ export const DatePickerV2 = ({
       customHeaderProps={customHeaderProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };
