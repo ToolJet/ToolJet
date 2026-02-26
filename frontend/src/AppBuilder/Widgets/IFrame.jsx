@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 
@@ -22,7 +22,7 @@ export const IFrame = function IFrame({
     isDisabled: disabledState,
     url: source,
   });
-  const [reloadKey, setReloadKey] = useState(0);
+  const iframeRef = useRef(null);
 
   // ===== HELPER FUNCTIONS =====
   const updateExposedVariablesState = (key, value) => {
@@ -89,7 +89,17 @@ export const IFrame = function IFrame({
         setExposedVariable('isLoading', !!value);
       },
       reload: async function () {
-        setReloadKey((prev) => prev + 1);
+        try {
+          iframeRef.current?.contentWindow?.location?.reload();
+        } catch (e) {
+          // Cross-origin iframe — fallback to re-assigning src
+          const iframe = iframeRef.current;
+          if (iframe) {
+            const src = iframe.src;
+            iframe.src = '';
+            iframe.src = src;
+          }
+        }
       },
     };
 
@@ -112,7 +122,8 @@ export const IFrame = function IFrame({
         </div>
       ) : (
         <iframe
-          key={reloadKey}
+          ref={iframeRef}
+          key={exposedVariablesTemporaryState.url}
           width={width - 4}
           height={height}
           src={exposedVariablesTemporaryState.url}
