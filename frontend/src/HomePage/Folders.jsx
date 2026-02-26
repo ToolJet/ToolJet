@@ -49,6 +49,31 @@ export const Folders = function Folders({
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  // Get folder granular permissions from session
+  const folderGroupPermissions = authenticationService.currentSessionValue?.folder_group_permissions;
+  // Get current user ID for ownership check
+  const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+
+  // Check if user can edit a specific folder (granular permission)
+  const canEditSpecificFolder = (folderId) => {
+    if (!folderGroupPermissions) return false;
+    return folderGroupPermissions.is_all_editable || folderGroupPermissions.editable_folders_id?.includes(folderId);
+  };
+
+  // Check if user is the owner of a specific folder
+  const isOwnerOfFolder = (folder) => {
+    return folder?.created_by === currentUserId;
+  };
+
+  // Determine if user can update/delete a specific folder
+  // Rename: requires granular canEditFolder OR (folderCreate + ownership)
+  // Delete: requires master Delete OR (folderCreate + ownership)
+  const canUpdateSpecificFolder = (folderId, folder) =>
+    canEditSpecificFolder(folderId) || (canCreateFolder && isOwnerOfFolder(folder));
+  const canDeleteSpecificFolder = (folderId, folder) =>
+    canDeleteFolder || (canCreateFolder && isOwnerOfFolder(folder));
+
   useEffect(() => {
     setLoadingStatus(foldersLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,15 +382,15 @@ export const Folders = function Folders({
                 {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </div>
             </ToolTip>
-            {(canDeleteFolder || canUpdateFolder) && (
+            {(canDeleteSpecificFolder(folder.id, folder) || canUpdateSpecificFolder(folder.id, folder)) && (
               <div
                 onClick={(e) => {
                   e.stopPropagation(); // Stop the click event from bubbling up to the <a> tag
                 }}
               >
                 <FolderMenu
-                  canDeleteFolder={canDeleteFolder}
-                  canUpdateFolder={canUpdateFolder}
+                  canDeleteFolder={canDeleteSpecificFolder(folder.id, folder)}
+                  canUpdateFolder={canUpdateSpecificFolder(folder.id, folder)}
                   deleteFolder={() => deleteFolder(folder)}
                   editFolder={() => updateFolder(folder)}
                   darkMode={darkMode}

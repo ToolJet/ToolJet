@@ -1,9 +1,7 @@
-import { GroupPermissions } from '@entities/group_permissions.entity';
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const manager = queryRunner?.manager;
     await queryRunner.addColumns('permission_groups', [
       new TableColumn({
         name: 'app_promote',
@@ -19,37 +17,48 @@ export class AddPromoteAndReleaseAppColumn1749810303901 implements MigrationInte
       }),
     ]);
 
-    const permissionGroups = await manager.find(GroupPermissions);
+    // Using raw SQL instead of entity queries to avoid dependency on current entity schema
+    const permissionGroups = await queryRunner.query(`
+      SELECT id, name, type, app_create, app_delete 
+      FROM permission_groups
+    `);
 
     for (const group of permissionGroups) {
-      const { name, type, appCreate, appDelete } = group;
-      const hasAppPermissions = appCreate === true || appDelete === true;
+      const { id, name, type, app_create, app_delete } = group;
+      const hasAppPermissions = app_create === true || app_delete === true;
+
+      let appPromote = false;
+      let appRelease = false;
 
       // For custom groups and builders :
       // If the group has  -> app create || app delete permissions  : assign promote and release permissions to the group otherwise false
       if (type === 'default') {
         switch (name) {
           case 'admin':
-            group.appPromote = true;
-            group.appRelease = true;
+            appPromote = true;
+            appRelease = true;
             break;
           case 'end-user':
-            group.appPromote = false;
-            group.appRelease = false;
+            appPromote = false;
+            appRelease = false;
             break;
           case 'builder':
-            group.appPromote = hasAppPermissions;
-            group.appRelease = hasAppPermissions;
+            appPromote = hasAppPermissions;
+            appRelease = hasAppPermissions;
             break;
           default:
             break;
         }
       } else if (type === 'custom') {
-        group.appPromote = hasAppPermissions;
-        group.appRelease = hasAppPermissions;
+        appPromote = hasAppPermissions;
+        appRelease = hasAppPermissions;
       }
 
-      await manager.save(group);
+      await queryRunner.query(`
+        UPDATE permission_groups 
+        SET app_promote = $1, app_release = $2 
+        WHERE id = $3
+      `, [appPromote, appRelease, id]);
     }
   }
   public async down(queryRunner: QueryRunner): Promise<void> {}
