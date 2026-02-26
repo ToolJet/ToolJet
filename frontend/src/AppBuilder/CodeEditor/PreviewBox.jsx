@@ -614,7 +614,7 @@ const PreviewContainer = ({
       {!isPortalOpen && (
         <Overlay
           key={overlayKey}
-          placement={isInsideQueryManager ? 'auto-start' : previewPlacement || 'left'}
+          placement={isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left'}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
