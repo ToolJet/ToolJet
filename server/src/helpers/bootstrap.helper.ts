@@ -281,7 +281,10 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
         logger.warn(`Blocked mutation ${req.method} ${req.path} from origin: ${origin}`);
         res.status(403).json({ statusCode: 403, message: 'Origin not allowed' });
       })
-      .catch(() => next());
+      .catch((err) => {
+        logger.error(`CSRF origin check DB error — blocking request: ${err.message}`);
+        res.status(403).json({ statusCode: 403, message: 'Origin not allowed' });
+      });
   });
 }
 
