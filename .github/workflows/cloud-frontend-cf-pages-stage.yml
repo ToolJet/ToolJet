@@ -105,7 +105,7 @@ jobs:
         working-directory: repo
 
       - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
+        run: npm run build:plugins:prod && npm run build:frontend:cloud
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -124,8 +124,32 @@ jobs:
       - name: 📝 Add SPA routing redirect rule
         run: echo "/* /index.html 200" > repo/frontend/build/_redirects
 
+      - name: 🔧 Set CF Pages production branch to input branch
+        run: |
+          echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
+          response=$(curl -s -w "\n%{http_code}" -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
+
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Production branch updated to: ${{ github.event.inputs.branch }}"
+          else
+            echo "❌ Failed to update production branch (HTTP $http_code)"
+            echo "$response"
+            exit 1
+          fi
+
       - name: 🚀 Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy frontend/build --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} --branch=main --commit-dirty=true
+        run: |
+          echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
+          echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+          npx wrangler pages deploy frontend/build \
+            --project-name=${{ secrets.CF_PAGES_PROJECT_NAME }} \
+            --branch=${{ github.event.inputs.branch }} \
+            --commit-dirty=true
         working-directory: repo
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
