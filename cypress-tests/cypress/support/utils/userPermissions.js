@@ -235,7 +235,7 @@ export const verifyPreviewAccess = (
   };
 
   if (canEdit) {
-    cy.get(commonWidgetSelector.previewButton).first().should("have.attr", "href");
+    cy.get(commonWidgetSelector.editorPreviewLink).first().should("have.attr", "href");
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
   } else {
     if (canAllView === false) return;

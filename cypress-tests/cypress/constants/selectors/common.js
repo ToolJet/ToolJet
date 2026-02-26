@@ -409,6 +409,7 @@ export const commonWidgetSelector = {
   inputBoxShadow: "[data-cy= 'input-box-shadow']",
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
+  editorPreviewLink: '[data-cy="editor-preview-Link"]',
   previewButton: `[data-cy="editor-preview-button"]`,
   defaultValueInputField: '[data-cy="default-value-input-field"]',
   alertInfoText: '[data-cy="alert-info-text"]',
