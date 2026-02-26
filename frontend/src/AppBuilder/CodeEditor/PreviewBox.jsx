@@ -356,6 +356,9 @@ const PreviewContainer = ({
   previewRef,
   showPreview,
   onAiSuggestionAccept,
+  wrapperWidth,
+  overlayKey,
+  isInsideQueryManager,
   ...restProps
 }) => {
   const {
@@ -483,8 +486,12 @@ const PreviewContainer = ({
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && !validationFn && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
-          width: '250px',
-          maxWidth: '350px',
+          ...(wrapperWidth
+            ? { width: wrapperWidth }
+            : {
+                width: '250px',
+                maxWidth: '350px',
+              }),
         }}
       >
         <div>
@@ -606,7 +613,8 @@ const PreviewContainer = ({
     <>
       {!isPortalOpen && (
         <Overlay
-          placement={previewPlacement || 'left'}
+          key={overlayKey}
+          placement={isInsideQueryManager ? 'auto-start' : previewPlacement || 'left'}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
