@@ -23,13 +23,19 @@ import { UserRepository } from '@modules/users/repositories/repository';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
-    const { ExternalApisController, ExternalApisService, ExternalApiUtilService, ExternalApisAppsController } =
-      await this.getProviders(configs, 'external-apis', [
-        'controller',
-        'service',
-        'util.service',
-        'controllers/apps.controller',
-      ]);
+    const {
+      ExternalApisController,
+      ExternalApisService,
+      ExternalApiUtilService,
+      ExternalApisAppsController,
+      ExternalApisGroupsController,
+    } = await this.getProviders(configs, 'external-apis', [
+      'controller',
+      'service',
+      'util.service',
+      'controllers/apps.controller',
+      'controllers/groups.controller',
+    ]);
 
     return {
       module: ExternalApiModule,
@@ -61,7 +67,9 @@ export class ExternalApiModule extends SubModule {
         UserRepository,
         AppsRepository,
       ],
-      controllers: isMainImport ? [ExternalApisController, ExternalApisAppsController] : [],
+      controllers: isMainImport
+        ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController]
+        : [],
       exports: [ExternalApiUtilService],
     };
   }

@@ -17,6 +17,7 @@ export enum FEATURE_KEY {
   EXPORT_APP = 'EXPORT_APP',
   GENERATE_PAT = 'GENERATE_PAT',
   VALIDATE_PAT_SESSION = 'VALIDATE_PAT_SESSION',
+  CREATE_GROUP = 'CREATE_GROUP',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
