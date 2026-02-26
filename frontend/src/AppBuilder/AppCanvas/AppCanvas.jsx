@@ -186,91 +186,95 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
               className="tw-h-full tw-flex tw-flex-col tw-relative"
               style={{ minWidth: minCanvasWidth }}
             >
-              {/* === OPTION A: RENDER FULL-WIDTH HEADER HERE === */}
-              {SHOW_CANVAS_HEADER && appType !== 'module' && (
-                <div
-                  className="canvas-header-slot"
-                  style={{
-                    flexShrink: 0,
-                    padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-                    height: `${CANVAS_HEADER_HEIGHT}px`,
-                    borderBottom: '1px solid var(--cc-default-border)',
-                    backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
-                    width: '100%',
-                  }}
-                >
-                  <Container
-                    id={`${moduleId}-header`}
-                    canvasHeight={CANVAS_HEADER_HEIGHT / 10}
-                    canvasWidth={window.innerWidth} /* full viewer width calculated */
-                    darkMode={isAppDarkMode}
-                    allowContainerSelect={false}
-                    styles={{
-                      margin: 0,
-                      backgroundColor: 'transparent',
-                      overflow: 'hidden',
-                    }}
-                    componentType="AppCanvas"
-                    hasNoScroll={true}
-                  />
-                </div>
-              )}
-              {/* === MAIN WORKSPACE WRAPPER === */}
+              {/* === MAIN WORKSPACE: everything inside scroll area for Moveable coordinate alignment === */}
               <div
-                className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
-                  'tw-flex-col': position === 'top' || isPagesSidebarHidden || currentLayout === 'mobile',
-                  '!tw-w-[450px] tw-mx-auto':
-                    currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
-                  'tw-relative tw-overflow-x-hidden': currentLayout === 'mobile',
-                })}
+                ref={canvasContentRef}
+                style={{
+                  overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  width: '100%',
+                  ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
+                }}
+                className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
               >
-                {appType !== 'module' && (
-                  <>
-                    <PagesSidebarNavigation
-                      isMobileDevice={currentLayout === 'mobile'}
-                      currentPageId={currentPageId ?? homePageId}
-                      switchDarkMode={switchDarkMode}
-                      isSidebarPinned={isViewerSidebarPinned}
-                      setIsSidebarPinned={setIsSidebarPinned}
-                      darkMode={darkMode}
-                      canvasMaxWidth={canvasMaxWidth}
-                      canvasContentRef={canvasContentRef}
-                    />
-                    <MobileNavigationHeader
-                      isMobileDevice={currentLayout === 'mobile'}
-                      currentPageId={currentPageId ?? homePageId}
-                      switchDarkMode={switchDarkMode}
-                      darkMode={darkMode}
-                      canvasMaxWidth={canvasMaxWidth}
-                    />
-                  </>
-                )}
-                <div
-                  ref={canvasContentRef}
-                  style={{
-                    overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
-                    width: '100%',
-                    ...(appType === 'module' && isModuleMode && { height: 'inherit' }),
-                  }}
-                  className={cx(`app-${appId} _tooljet-page-${getPageId()} canvas-content`)}
+                <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
+                <HotkeyProvider
+                  mode={currentMode}
+                  canvasMaxWidth={canvasMaxWidth}
+                  currentLayout={currentLayout}
+                  isModuleMode={isModuleMode}
                 >
-                  <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
-                  <HotkeyProvider
-                    mode={currentMode}
-                    canvasMaxWidth={canvasMaxWidth}
-                    currentLayout={currentLayout}
-                    isModuleMode={isModuleMode}
-                  >
-                    {environmentLoadingState !== 'loading' && (
-                      <SuspenseCountProvider
-                        onAllResolved={handleAllSuspenseResolved}
-                        deferCheck={isModuleMode || appType === 'module'}
+                  {environmentLoadingState !== 'loading' && (
+                    <SuspenseCountProvider
+                      onAllResolved={handleAllSuspenseResolved}
+                      deferCheck={isModuleMode || appType === 'module'}
+                    >
+                      <div
+                        key={pageKey}
+                        className={cx({ 'h-100': isModuleMode })}
+                        style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
                       >
+                        {/* === STICKY HEADER: full width, inside positioned div for Moveable alignment === */}
+                        {SHOW_CANVAS_HEADER && appType !== 'module' && (
+                          <div
+                            className="canvas-header-slot"
+                            style={{
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 10,
+                              flexShrink: 0,
+                              padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+                              height: `${CANVAS_HEADER_HEIGHT}px`,
+                              borderBottom: '1px solid var(--cc-default-border)',
+                              backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
+                              width: '100%',
+                            }}
+                          >
+                            <Container
+                              id={`${moduleId}-header`}
+                              canvasHeight={CANVAS_HEADER_HEIGHT / 10}
+                              canvasWidth={window.innerWidth}
+                              darkMode={isAppDarkMode}
+                              allowContainerSelect={false}
+                              styles={{
+                                margin: 0,
+                                backgroundColor: 'transparent',
+                                overflow: 'hidden',
+                              }}
+                              componentType="AppCanvas"
+                              hasNoScroll={true}
+                            />
+                          </div>
+                        )}
+                        {/* === CONTENT AREA: sidebar + main canvas in flex row === */}
                         <div
-                          key={pageKey}
-                          className={cx({ 'h-100': isModuleMode })}
-                          style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+                          className={cx('canvas-wrapper tw-w-full tw-h-full d-flex', {
+                            'tw-flex-col': position === 'top' || isPagesSidebarHidden || currentLayout === 'mobile',
+                            '!tw-w-[450px] tw-mx-auto':
+                              currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
+                            'tw-relative tw-overflow-x-hidden': currentLayout === 'mobile',
+                          })}
                         >
+                          {appType !== 'module' && (
+                            <>
+                              <PagesSidebarNavigation
+                                isMobileDevice={currentLayout === 'mobile'}
+                                currentPageId={currentPageId ?? homePageId}
+                                switchDarkMode={switchDarkMode}
+                                isSidebarPinned={isViewerSidebarPinned}
+                                setIsSidebarPinned={setIsSidebarPinned}
+                                darkMode={darkMode}
+                                canvasMaxWidth={canvasMaxWidth}
+                                canvasContentRef={canvasContentRef}
+                              />
+                              <MobileNavigationHeader
+                                isMobileDevice={currentLayout === 'mobile'}
+                                currentPageId={currentPageId ?? homePageId}
+                                switchDarkMode={switchDarkMode}
+                                darkMode={darkMode}
+                                canvasMaxWidth={canvasMaxWidth}
+                              />
+                            </>
+                          )}
                           {currentMode === 'view' && appType !== 'module' && (
                             <SuspenseLoadingOverlay darkMode={isAppDarkMode} />
                           )}
@@ -286,24 +290,24 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                             pagePositionType={position}
                             appType={appType}
                           />
-                          {currentMode === 'edit' && (
-                            <>
-                              <DragResizeGhostWidget />
-                            </>
-                          )}
-                          <div id="component-portal" />
-                          {appType !== 'module' && <div id="component-portal" />}
                         </div>
-                      </SuspenseCountProvider>
-                    )}
+                        {currentMode === 'edit' && (
+                          <>
+                            <DragResizeGhostWidget />
+                          </>
+                        )}
+                        <div id="component-portal" />
+                        {appType !== 'module' && <div id="component-portal" />}
+                      </div>
+                    </SuspenseCountProvider>
+                  )}
 
-                    {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-                      <Suspense fallback={null}>
-                        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                      </Suspense>
-                    )}
-                  </HotkeyProvider>
-                </div>
+                  {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
+                    <Suspense fallback={null}>
+                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+                    </Suspense>
+                  )}
+                </HotkeyProvider>
               </div>
             </div>
           </div>

@@ -1160,10 +1160,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
 
-          e.target.setAttribute(
-            'widget-pos2',
-            `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
-          );
+          // e.target.setAttribute(
+          //   'widget-pos2',
+          //   `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
+          // );
 
           positionGhostElement(e.target, 'moveable-ghost-widget');
 
