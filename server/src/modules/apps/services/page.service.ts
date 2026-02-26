@@ -19,9 +19,9 @@ import {
   PageUpdateContext,
   PageDeleteContext,
   PageReorderContext,
+  DeletePageOptions,
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
-import { ACTION_TYPE } from '@modules/app-history/constants';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -547,7 +547,7 @@ export class PageService implements IPageService {
     organizationId: string,
     options: DeletePageOptions = {}
   ): Promise<void> {
-    const { skipHistoryCapture = false, skipReorder = false, deleteAssociatedPages = false } = options;
+    const { skipReorder = false, deleteAssociatedPages = false } = options;
 
     const pageExists = await manager.findOne(Page, {
       where: { id: pageId },
