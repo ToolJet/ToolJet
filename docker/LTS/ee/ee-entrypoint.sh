@@ -11,7 +11,47 @@ fi
 # Start Redis server only if REDIS_HOST is localhost or not set
 if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
   echo "Starting Redis server locally..."
-  redis-server /etc/redis/redis.conf &
+
+  REDIS_STARTED=false
+
+  # Try to start Redis with custom BullMQ-optimized config if it exists
+  if [ -f /etc/redis/redis.conf ]; then
+    redis-server /etc/redis/redis.conf >> /var/log/redis/redis.log 2>&1 &
+    REDIS_PID=$!
+
+    # Give Redis a moment to start
+    sleep 2
+
+    # Check if Redis started successfully with custom config
+    if ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=10 2>/dev/null; then
+      echo "Redis started successfully"
+      REDIS_STARTED=true
+    else
+      echo "Warning: Redis failed to start, falling back to default configuration"
+      # Kill the failed Redis process if it's still running
+      kill $REDIS_PID 2>/dev/null || true
+      sleep 1
+    fi
+  else
+    echo "Warning: Redis configuration file not found at /etc/redis/redis.conf"
+    echo "Falling back to default Redis configuration"
+  fi
+
+  # Fallback: Start Redis with default configuration
+  if [ "$REDIS_STARTED" = false ]; then
+    echo "Starting Redis with default configuration..."
+    redis-server --daemonize no >> /var/log/redis/redis.log 2>&1 &
+    REDIS_PID=$!
+
+    # Wait for Redis to be ready with default config
+    if ! ./server/scripts/wait-for-it.sh "localhost:6379" --strict --timeout=30; then
+      echo "Error: Redis failed to start even with default configuration"
+      exit 1
+    fi
+
+    echo "Redis started successfully with default config (PID: $REDIS_PID)"
+    echo "WARNING: Running without BullMQ optimizations (no AOF persistence, default eviction policy)"
+  fi
 elif [ -n "$REDIS_URL" ]; then
   echo "REDIS_URL connection is set: $REDIS_URL"
 else
