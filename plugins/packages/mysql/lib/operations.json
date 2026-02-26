@@ -79,7 +79,7 @@
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
-          "fxEnabled": true,
+          "fxEnabled": false,
           "autoFetch": true,
           "operation": {
             "invokeMethod": "getTables",
