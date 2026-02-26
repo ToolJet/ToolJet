@@ -266,7 +266,7 @@
         "order": 40,
         "$ref": "#/properties/database",
         "key": "database",
-        "label": "Database name",
+        "label": "Database",
         "description": "Enter name of the database",
         "widget": "text-v3"
       },
@@ -480,7 +480,7 @@
         "order": 40,
         "$ref": "#/properties/database",
         "key": "database",
-        "label": "Database name",
+        "label": "Database",
         "description": "Name of the database",
         "widget": "text-v3"
       },

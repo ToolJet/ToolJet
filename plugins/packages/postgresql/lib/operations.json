@@ -79,14 +79,14 @@
           "label": "Table",
           "key": "table",
           "type": "dynamic-selector",
-          "fxEnabled": true,
+          "fxEnabled": false,
           "autoFetch": true,
           "operation": {
             "invokeMethod": "getTables",
             "label": "Fetch Tables"
           },
           "lineNumbers": false,
-          "description": "Select a table from the dropdown or enter manually",
+          "description": "Select a table from the dropdown",
           "width": "320px",
           "height": "36px",
           "className": "codehinter-plugins",
