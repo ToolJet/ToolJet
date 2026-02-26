@@ -21,6 +21,7 @@ import {
   PageReorderContext,
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
+import { ACTION_TYPE } from '@modules/app-history/constants';
 
 @Injectable()
 export class PageService implements IPageService {
@@ -57,11 +58,7 @@ export class PageService implements IPageService {
   /**
    * Hook called before page update - override in EE to capture state for history
    */
-  protected async beforePageUpdate(
-    pageId: string,
-    diff: any,
-    appVersionId: string
-  ): Promise<PageUpdateContext | null> {
+  protected async beforePageUpdate(pageId: string, diff: any, appVersionId: string): Promise<PageUpdateContext | null> {
     return null; // No-op in CE, EE overrides
   }
 
@@ -81,10 +78,7 @@ export class PageService implements IPageService {
   /**
    * Hook called before page deletion - override in EE to capture state for history
    */
-  protected async beforePageDelete(
-    pageId: string,
-    appVersionId: string
-  ): Promise<PageDeleteContext | null> {
+  protected async beforePageDelete(pageId: string, appVersionId: string): Promise<PageDeleteContext | null> {
     return null; // No-op in CE, EE overrides
   }
 
@@ -177,8 +171,9 @@ export class PageService implements IPageService {
     }, appVersionId);
 
     const operationTimestamp = Date.now();
-    this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message));
+    this.afterPageCreate(context, result, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageCreate failed:', err.message)
+    );
 
     return result;
   }
@@ -238,8 +233,9 @@ export class PageService implements IPageService {
 
     const operationTimestamp = Date.now();
     if (clonedPage) {
-      this.afterPageClone(context, [clonedPage], appVersionId, historyUserId, operationTimestamp)
-        .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message));
+      this.afterPageClone(context, [clonedPage], appVersionId, historyUserId, operationTimestamp).catch((err) =>
+        console.error('[AppHistory] Fire-and-forget afterPageClone failed:', err.message)
+      );
     }
 
     // Fetch pages and events after transaction completes
@@ -286,7 +282,9 @@ export class PageService implements IPageService {
     };
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { where: { pageId } });
+      const pageComponents = await manager.find(Component, {
+        where: { pageId },
+      });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
@@ -330,7 +328,9 @@ export class PageService implements IPageService {
             });
           }
 
-          const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
+          const componentLayouts = await manager.find(Layout, {
+            where: { componentId: component.id },
+          });
           // CORRECTED: Use manager.create(Layout, ...) to ensure entity instances are created
           const clonedLayouts = componentLayouts.map((layout) =>
             manager.create(Layout, {
@@ -451,8 +451,9 @@ export class PageService implements IPageService {
     const result = await this.pageHelperService.reorderPages(diff, appVersionId, organizationId);
 
     const operationTimestamp = Date.now();
-    this.afterPageReorder(context, diff, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message));
+    this.afterPageReorder(context, diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageReorder failed:', err.message)
+    );
 
     return result;
   }
@@ -477,8 +478,9 @@ export class PageService implements IPageService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterPageUpdate(context, pageUpdates.diff, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message));
+    this.afterPageUpdate(context, pageUpdates.diff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageUpdate failed:', err.message)
+    );
 
     return result;
   }
@@ -524,10 +526,83 @@ export class PageService implements IPageService {
     }, appVersionId);
 
     const operationTimestamp = Date.now();
-    this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message));
+    this.afterPageDelete(context, pageId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterPageDelete failed:', err.message)
+    );
 
     return result;
+  }
+
+  /**
+   * Delete a page using an existing EntityManager (for use within transactions).
+   * This method performs the core deletion logic without creating a new transaction.
+   * @param pageId - The ID of the page to delete
+   * @param manager - The EntityManager to use for the deletion
+   * @param organizationId - The organization ID for license validation
+   * @param options - Optional deletion options
+   */
+  async deletePageWithManager(
+    pageId: string,
+    manager: EntityManager,
+    organizationId: string,
+    options: DeletePageOptions = {}
+  ): Promise<void> {
+    const { skipHistoryCapture = false, skipReorder = false, deleteAssociatedPages = false } = options;
+
+    const pageExists = await manager.findOne(Page, {
+      where: { id: pageId },
+    });
+
+    if (!pageExists) {
+      throw new Error('Page not found');
+    }
+
+    // Handle page group deletion (EE feature - will be overridden in EE service)
+    if (pageExists.isPageGroup) {
+      await this.deletePageGroupWithManager(pageExists, manager, organizationId, {
+        deleteAssociatedPages,
+        skipReorder,
+      });
+      return;
+    }
+
+    // Cascade delete events for the page
+    await this.cascadeDeleteEventsWithManager(pageExists.id, manager);
+
+    // Delete the page
+    const deleteResult = await manager.delete(Page, pageId);
+
+    if (deleteResult.affected === 0) {
+      throw new Error('Page not deleted');
+    }
+
+    // Rearrange page order after deletion (unless skipped for bulk operations)
+    if (!skipReorder) {
+      await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager, organizationId);
+    }
+  }
+
+  /**
+   * Delete a page group with an existing EntityManager.
+   * Base implementation throws error - EE service will override this.
+   */
+  protected async deletePageGroupWithManager(
+    page: Page,
+    manager: EntityManager,
+    organizationId: string,
+    options: { deleteAssociatedPages?: boolean; skipReorder?: boolean }
+  ): Promise<void> {
+    throw new Error('Page groups are an enterprise feature');
+  }
+
+  /**
+   * Cascade delete events for a source ID using an existing EntityManager.
+   */
+  protected async cascadeDeleteEventsWithManager(sourceId: string, manager: EntityManager): Promise<void> {
+    const allEvents = await manager.find(EventHandler, {
+      where: { sourceId },
+    });
+    await manager.remove(allEvents);
   }
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {

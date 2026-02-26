@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import {BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException} from '@nestjs/common';
 import { VersionRepository } from './repository';
 import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DraftVersionDto, PromoteVersionDto, VersionCreateDto } from './dto';
@@ -185,7 +185,20 @@ export class VersionService implements IVersionService {
   }
 
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
-    return await this.versionsUtilService.deleteVersion(app, user, manager);
+    const versionToDelete = app.appVersions[0];
+    await this.versionsUtilService.deleteVersion(app, user, manager);
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: app.id,
+      resourceName: app.name,
+      metadata: {
+        data: {
+          versionId: versionToDelete.id,
+          deletedAppVersionName: versionToDelete.name,
+        },
+      },
+    });
   }
 
   async getVersion(app: App, user: User, mode?: string): Promise<any> {

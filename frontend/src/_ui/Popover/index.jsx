@@ -15,18 +15,22 @@ const PopoverComponent = ({
   side = 'bottom',
   showArrow = false,
   popoverContentHeight = '',
+  popoverContentWidth = '', // 'auto' or number in px
   onInteractOutside,
   contentProps = {},
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const computeStyle = () => {
-    if (popoverContentHeight) {
-      return {
-        height: popoverContentHeight === 'auto' ? 'auto' : `${popoverContentHeight}vh`,
-        overflow: 'auto',
-      };
+    var styles = {};
+    if (popoverContentWidth) {
+      styles.width = popoverContentWidth === 'auto' ? 'auto' : `${popoverContentWidth}px`;
     }
-    return {};
+
+    if (popoverContentHeight) {
+      styles.height = popoverContentHeight === 'auto' ? 'auto' : `${popoverContentHeight}vh`;
+      styles.overflow = 'auto';
+    }
+    return styles;
   };
   return (
     <Popover.Root {...(open && { open })} onOpenChange={handleToggle && handleToggle}>

@@ -8,20 +8,15 @@ import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
 import { decamelizeKeys } from 'humps';
 import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from './dto';
-import { DataQueriesUtilService } from './util.service';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
 import { DataQuery } from '@entities/data_query.entity';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
-import {
-  IDataQueriesService,
-  QueryCreateContext,
-  QueryUpdateContext,
-  QueryDeleteContext,
-} from './interfaces/IService';
+import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDeleteContext } from './interfaces/IService';
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -159,8 +154,9 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message));
+    this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message)
+    );
 
     return result;
   }
@@ -181,8 +177,9 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     const operationTimestamp = Date.now();
-    this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message));
+    this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message)
+    );
   }
 
   async delete(dataQueryId: string) {
@@ -196,8 +193,9 @@ export class DataQueriesService implements IDataQueriesService {
 
     const operationTimestamp = Date.now();
     const appVersionId = (context as any)?.appVersionId || null;
-    this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp)
-      .catch((err) => console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message));
+    this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message)
+    );
   }
 
   async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
@@ -233,7 +231,9 @@ export class DataQueriesService implements IDataQueriesService {
   ) {
     const { options, resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+    });
 
     if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
@@ -243,10 +243,18 @@ export class DataQueriesService implements IDataQueriesService {
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
   }
 
-  async runQueryForApp(user: User, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto, response: Response, app?: App) {
+  async runQueryForApp(
+    user: User,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    response: Response,
+    app?: App
+  ) {
     const { resolvedOptions } = updateDataQueryDto;
 
-    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, { dataSource: true });
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+    });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
   }
@@ -327,7 +335,9 @@ export class DataQueriesService implements IDataQueriesService {
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const newDataSource = await this.dataSourceRepository.findOneOrFail({ where: { id: newDataSourceId } });
+      const newDataSource = await this.dataSourceRepository.findOneOrFail({
+        where: { id: newDataSourceId },
+      });
       // FIXME: Disabling this check as workflows can change data source of a query with different kind
       // if (dataSource.kind !== newDataSource.kind && dataSource) {
       //   throw new BadRequestException();

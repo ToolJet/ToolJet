@@ -69,6 +69,13 @@ import {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  accordionConfig,
+  reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  keyValuePairConfig,
+  progressbarConfig,
+  navigationConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -80,11 +87,13 @@ export const widgets = [
   //Data
   tableConfig,
   chartConfig,
+  keyValuePairConfig,
 
   // Layouts
   formConfig,
   modalV2Config,
   containerConfig,
+  accordionConfig,
   tabsConfig,
   listviewConfig,
   calendarConfig,
@@ -120,6 +129,7 @@ export const widgets = [
   daterangepickerConfig,
 
   //Navigation
+  navigationConfig,
   linkConfig,
   stepsConfig,
   paginationConfig,
@@ -137,12 +147,14 @@ export const widgets = [
   textConfig,
   tagsConfig,
   circularProgressbarConfig,
+  progressbarConfig,
   dividerConfig,
   verticalDividerConfig,
   statisticsConfig,
   timelineConfig,
   timerConfig,
   spinnerConfig,
+  jsonExplorerConfig,
 
   //Custom
   customComponentConfig,
@@ -156,6 +168,8 @@ export const widgets = [
   boundedBoxConfig,
   qrscannerConfig,
   chatConfig,
+  reorderableListConfig,
+  jsonEditorConfig,
 
   //Legacy
   modalConfig,

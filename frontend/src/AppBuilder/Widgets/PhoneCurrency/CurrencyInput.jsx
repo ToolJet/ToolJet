@@ -2,14 +2,40 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-const tinycolor = require('tinycolor2');
+
+// Parse value to number based on the number format
+// Always returns a number for consistent exposed value
+export const parseValueToNumber = (val, numberFormat) => {
+  if (val === undefined || val === null || val === '') return 0;
+
+  const strVal = String(val);
+
+  // Check if value is a raw number (no commas, just digits and optionally one decimal point)
+  // This handles the case after format switch when we store "1234.56"
+  if (/^-?\d+\.?\d*$/.test(strVal)) {
+    return parseFloat(strVal) || 0;
+  }
+
+  let normalized;
+  if (numberFormat === 'eu') {
+    // European format: dot is group separator, comma is decimal
+    // e.g., "1.234,56" → "1234.56"
+    normalized = strVal.replace(/\./g, '').replace(',', '.');
+  } else {
+    // US/UK format: comma is group separator, dot is decimal
+    // e.g., "1,234.56" → "1234.56"
+    normalized = strVal.replace(/,/g, '');
+  }
+  return parseFloat(normalized) || 0;
+};
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -35,7 +61,27 @@ export const CurrencyInput = (props) => {
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US', showFlag = true } = properties;
+  const {
+    label,
+    placeholder,
+    decimalPlaces,
+    isCountryChangeEnabled,
+    defaultCountry = 'US',
+    showFlag = true,
+    numberFormat = 'us',
+    showClearBtn,
+  } = properties;
+
+  // Track previous number format to detect format changes
+  const previousNumberFormat = useRef(numberFormat);
+  // Get separators based on number format
+  const separators = useMemo(() => {
+    if (numberFormat === 'eu') {
+      return { groupSeparator: '.', decimalSeparator: ',' };
+    }
+    // Default: US/UK style
+    return { groupSeparator: ',', decimalSeparator: '.' };
+  }, [numberFormat]);
 
   const handleKeyUp = (e) => {
     if (e.key === 'Enter') {
@@ -75,35 +121,40 @@ export const CurrencyInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel =
+    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const computedStyles = {
     height: '100%',
     borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-      ? 'var(--text-disabled)'
-      : 'var(--text-primary)',
+        ? 'var(--text-disabled)'
+        : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-      ? borderColor
-      : disabledState
-      ? '1px solid var(--borders-disabled-on-white)'
-      : 'var(--borders-default)',
+        ? borderColor
+        : disabledState
+          ? '1px solid var(--borders-disabled-on-white)'
+          : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-        ? darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-        : 'var(--surfaces-surface-01)',
+          ? darkMode
+            ? 'var(--surfaces-app-bg-default)'
+            : 'var(--surfaces-surface-03)'
+          : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
@@ -112,27 +163,26 @@ export const CurrencyInput = (props) => {
   const loaderStyle = {
     right:
       direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        defaultAlignment === 'side' &&
+        hasLabel
         ? `${labelWidth + 11}px`
         : '11px',
     top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
+      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
     transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
     return formatValue({
       value: `${value}`,
-      groupSeparator: ',',
-      decimalSeparator: '.',
+      groupSeparator: separators.groupSeparator,
+      decimalSeparator: separators.decimalSeparator,
     });
   };
 
@@ -140,7 +190,22 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setCountry(defaultCountry);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
+
+  // Normalize value when number format changes
+  useEffect(() => {
+    if (!isInitialRender.current && previousNumberFormat.current !== numberFormat && value) {
+      // Convert value from old format to raw number, then the component will re-render with new format
+      const rawNumber = parseValueToNumber(value, previousNumberFormat.current);
+      if (!isNaN(rawNumber) && rawNumber !== 0) {
+        // Store as raw number string - the component will format it with new separators
+        handlePhoneCurrencyInputChange(String(rawNumber));
+      }
+    }
+    previousNumberFormat.current = numberFormat;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [numberFormat]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
@@ -149,29 +214,31 @@ export const CurrencyInput = (props) => {
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
       });
     }
-  }, [country]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value, numberFormat]);
 
   useEffect(() => {
     if (!isInitialRender.current) {
       setExposedVariables({
-        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
+        value: parseValueToNumber(value, numberFormat),
       });
     }
-  }, [value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, numberFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
         formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: Number(value),
+        value: parseValueToNumber(value, numberFormat),
         setCountryCode: (code) => {
           setCountry(code);
         },
       });
       isInitialRender.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
@@ -179,13 +246,11 @@ export const CurrencyInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex phone-input-widget ${
-          defaultAlignment === 'top' &&
+        className={`text-input d-flex phone-input-widget ${defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-            ? 'flex-column'
-            : 'align-items-center'
-        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+          ? 'flex-column'
+          : 'align-items-center'
+          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
@@ -210,8 +275,10 @@ export const CurrencyInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -245,29 +312,26 @@ export const CurrencyInput = (props) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
                 fireEvent('onChange');
-                setExposedVariables({
-                  country: selectedOption.value,
-                  formattedValue: `${CurrencyMap[selectedOption.value]?.prefix} ${selectedOption.value}`,
-                });
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <ReactCurrencyInput
             ref={inputRef}
             placeholder={placeholder}
-            className={`tj-text-input-widget ${
-              !isValid && showValidationError ? 'is-invalid' : ''
-            } validation-without-icon`}
+            className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
+              } validation-without-icon`}
             value={value}
             decimalsLimit={decimalPlaces}
+            groupSeparator={separators.groupSeparator}
+            decimalSeparator={separators.decimalSeparator}
             style={computedStyles}
             data-ignore-hover={true}
             onValueChange={(newVal) => {
               if (newVal === value) return;
               onInputValueChange(newVal);
             }}
-            // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             prefix={''}
             onBlur={handleBlur}
             onFocus={handleFocus}
@@ -279,13 +343,38 @@ export const CurrencyInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(dataCy).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',
