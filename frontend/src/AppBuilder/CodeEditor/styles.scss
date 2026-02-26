@@ -1,5 +1,10 @@
 @import "../../_styles/colors.scss";
 
+.query-manger-input-preview-popover-card{
+    border: 1px solid var(--border-success-weak) !important;
+    box-shadow: var(--elevation-300-box-shadow) !important;
+}
+
 .codehinter-input-wrapper {
     display: flex;
     padding: 6px 0px;
