@@ -173,12 +173,11 @@ const Authentication = ({
     return (
       <div>
         {/* Credential Provider Chain Toggle */}
-        <div className="col-md-12 my-2">
+        <div className="col-md-12 my-3">
           <Toggle
             checked={useCredentialProviderChain}
             onChange={(e) => optionchanged('use_credential_provider_chain', e.target.checked)}
             text="Connect using credential provider chain"
-            subtext="Reads credentials from environment variables or ~/.aws/credentials on the server"
             disabled={isDisabled}
           />
         </div>
@@ -187,16 +186,24 @@ const Authentication = ({
         {!useCredentialProviderChain && (
           <>
             <div className="col-md-12 my-2" data-cy="aws-access-key-id-section">
-              <label className="form-label">Access Key ID</label>
-              <Input
-                type="text"
-                className="form-control"
-                placeholder="AKIAIOSFODNN7EXAMPLE"
-                value={options?.aws_access_key_id?.value || ''}
-                onChange={(e) => optionchanged('aws_access_key_id', e.target.value)}
-                workspaceConstants={workspaceConstants}
-                disabled={isDisabled}
-              />
+              <EncryptedFieldWrapper
+                options={options}
+                selectedDataSource={selectedDataSource}
+                optionchanged={optionchanged}
+                optionsChanged={optionsChanged}
+                name="aws_access_key_id"
+                label="Access key ID"
+              >
+                <Input
+                  type="text"
+                  className="form-control"
+                  placeholder="AKIAIOSFODNN7EXAMPLE"
+                  value={options?.aws_access_key_id?.value || ''}
+                  onChange={(e) => optionchanged('aws_access_key_id', e.target.value)}
+                  workspaceConstants={workspaceConstants}
+                  disabled={isDisabled}
+                />
+              </EncryptedFieldWrapper>
             </div>
 
             <div className="col-md-12 my-2" data-cy="aws-secret-access-key-section">
@@ -206,7 +213,7 @@ const Authentication = ({
                 optionchanged={optionchanged}
                 optionsChanged={optionsChanged}
                 name="aws_secret_access_key"
-                label="Secret Access Key"
+                label="Secret access key"
               >
                 <Input
                   type="password"
