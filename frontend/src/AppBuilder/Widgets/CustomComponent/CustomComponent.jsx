@@ -164,6 +164,7 @@ export const CustomComponent = (props) => {
         border: `1px solid var(--cc-custom-component-border-color) !important`,
         borderRadius: `${borderRadius}px`,
         overflow: 'clip',
+        outline: 'none', // To override outline coming from card.scss
       }}
       data-cy={dataCy}
     >
