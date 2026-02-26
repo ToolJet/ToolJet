@@ -266,7 +266,7 @@
         "widget": "dropdown-component-flip",
         "list": [
           {
-            "name": "TCP/IP",
+            "name": "HTTP/HTTPS",
             "value": "hostname"
           },
           {
@@ -317,7 +317,7 @@
           "label": "Password",
           "description": "Enter password",
           "widget": "password-v3",
-          "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
         },
         "allow_dynamic_connection_parameters": {
           "order": 200,
@@ -524,7 +524,7 @@
           "label": "Password",
           "description": "Enter password",
           "widget": "password-v3",
-          "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
         },
         "connection_options": {
           "order": 70,
@@ -716,7 +716,7 @@
         "widget": "dropdown-component-flip",
         "list": [
           {
-            "name": "TCP/IP",
+            "name": "HTTP/HTTPS",
             "value": "hostname"
           },
           {
@@ -767,7 +767,7 @@
           "label": "Password",
           "description": "Enter password",
           "widget": "password-v3",
-          "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
         },
         "connection_options": {
           "order": 70,
@@ -974,7 +974,7 @@
           "label": "Password",
           "description": "password from connection string",
           "widget": "password-v3",
-          "help_text": "Supports workspace constants (e.g., {{constants.db_password}})"
+          "help_text": "Supports secrets (e.g., {{secrets.db_password}})"
         },
         "allow_dynamic_connection_parameters": {
           "order": 200,
