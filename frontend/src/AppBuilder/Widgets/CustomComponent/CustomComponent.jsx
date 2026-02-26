@@ -46,7 +46,41 @@ export const CustomComponent = (props) => {
               parameters: JSON.parse(e.data.parameters),
               queryName: e.data.queryName,
             };
-            onEvent('onTrigger', [], options);
+            // requestId is used to correlate the response back to the correct runQuery call in the iframe
+            const requestId = e.data.requestId;
+            // Run the query and post the result back to the iframe
+            // Result structure matches queries.queryName.run() — always resolves with { status, data, ... }
+            onEvent('onTrigger', [], options)
+              .then((result) => {
+                if (iFrameRef.current?.contentWindow) {
+                  iFrameRef.current.contentWindow.postMessage(
+                    {
+                      message: 'RUN_QUERY_RESPONSE',
+                      componentId: id,
+                      requestId,
+                      queryResult: result,
+                    },
+                    '*'
+                  );
+                }
+              })
+              .catch((error) => {
+                // Safety net for unexpected JS exceptions — queryPanel.runQuery normally always resolves
+                if (iFrameRef.current?.contentWindow) {
+                  iFrameRef.current.contentWindow.postMessage(
+                    {
+                      message: 'RUN_QUERY_RESPONSE',
+                      componentId: id,
+                      requestId,
+                      queryResult: {
+                        status: 'failed',
+                        message: error?.message || 'Query execution failed',
+                      },
+                    },
+                    '*'
+                  );
+                }
+              });
           } else {
             sendMessageToIframe(e.data);
           }
