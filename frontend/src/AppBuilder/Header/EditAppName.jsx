@@ -25,6 +25,16 @@ function EditAppName() {
   const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
   const isRenameDisabled = !isDraftVersion || isOnDefaultBranch;
 
+  const getDisabledTooltipMessage = () => {
+    if (isOnDefaultBranch) {
+      return "Renaming isn't allowed on master. Switch branch to update name.";
+    }
+    if (!isDraftVersion) {
+      return 'Renaming of app is only allowed on draft versions';
+    }
+    return appName;
+  };
+
   const [showRenameModal, setShowRenameModal] = useState(false);
 
   const handleRenameApp = async (newAppName, appId) => {
@@ -54,7 +64,7 @@ function EditAppName() {
     <>
       <div className="tw-h-full tw-flex tw-items-start tw-justify-start">
         <ToolTip
-          message={isRenameDisabled ? 'Renaming of app is only allowed on sub branches' : appName}
+          message={getDisabledTooltipMessage()}
           placement="bottom"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >
