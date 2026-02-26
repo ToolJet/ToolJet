@@ -105,7 +105,7 @@ jobs:
         working-directory: repo
 
       - name: 🛠️ Build the project
-        run: npm run build:plugins:prod && npm run build:frontend
+        run: npm run build:cloud
         working-directory: repo
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_GOOGLE_MAPS_API_KEY }}
@@ -123,7 +123,6 @@ jobs:
 
       - name: 📝 Add SPA routing redirect rule
         run: echo "/* /index.html 200" > repo/frontend/build/_redirects
-
 
       - name: 🚀 Deploy to Cloudflare Pages
         run: |
