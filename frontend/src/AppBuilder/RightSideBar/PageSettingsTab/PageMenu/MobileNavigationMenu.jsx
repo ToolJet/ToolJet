@@ -124,8 +124,10 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
     const { toggleSidebar } = useSidebar();
 
     const switchPageWrapper = (page, currentPageId) => {
-      switchPage(page, currentPageId);
-      toggleSidebar();
+      const isPageSwitched = switchPage(page, currentPageId);
+      if (isPageSwitched) {
+        toggleSidebar();
+      }
     };
 
     return (
