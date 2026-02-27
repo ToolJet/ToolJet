@@ -18,7 +18,7 @@ export interface IWorkflowSchedulesController {
     }
   ): Promise<WorkflowSchedule>;
 
-  findAll(user: any, appVersionId: string): Promise<WorkflowSchedule[]>;
+  findAll(user: any, appId: string): Promise<WorkflowSchedule[]>;
 
   findOne(user: any, id: string): Promise<WorkflowSchedule>;
 
@@ -27,6 +27,7 @@ export interface IWorkflowSchedulesController {
     id: string,
     updateWorkflowScheduleDto: Partial<{
       environmentId: string;
+      workflowId: string;
       type: string;
       timezone: string;
       details: {

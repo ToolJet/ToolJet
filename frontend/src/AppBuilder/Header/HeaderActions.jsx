@@ -69,6 +69,7 @@ const HeaderActions = function HeaderActions ({ darkMode, showFullWidth, showPre
           rel="noreferrer"
           className="text-decoration-none"
           style={{ color: 'var(--text-default)' }}
+          data-cy="editor-preview-Link"
         >
           <ButtonComponent
             isLucid

@@ -20,6 +20,7 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
     @Param('id') id: any,
     @Body() workflowParams,
     @Query('environment') environment: string,
+    @Query('version') version: string,
     @Res({ passthrough: true }) response: Response,
     @Req() req: Request
   ): Promise<any> {
@@ -33,6 +34,7 @@ export class WorkflowWebhooksController implements IWorkflowWebhooksController {
     @Param('idOrName') idOrName: string,
     @Body() workflowParams: Record<string, unknown>,
     @Query('environment') environment: string,
+    @Query('version') version: string,
     @Req() req: Request
   ): Promise<any> {
     throw new Error('Method not implemented.');
