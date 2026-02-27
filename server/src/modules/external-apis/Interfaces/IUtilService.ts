@@ -11,15 +11,15 @@ export interface IExternalApiUtilService {
   ): Promise<void>;
 
   updateUserMetadata(
-    workspaceIdentifier: string,
-    userIdentifier: string,
+    workspaceId: string,
+    userId: string,
     userDetails: UserDetailKeyValueDto[],
     manager?: EntityManager
   ): Promise<any>;
 
   getUserMetadata(
-    workspaceIdentifier: string,
-    userIdentifier: string,
+    workspaceId: string,
+    userId: string,
     manager?: EntityManager
   ): Promise<any>;
 }

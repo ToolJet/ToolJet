@@ -18,8 +18,8 @@ export class ExternalApiUtilService implements IExternalApiUtilService {
   }
 
   async updateUserMetadata(
-    workspaceIdentifier: string,
-    userIdentifier: string,
+    workspaceId: string,
+    userId: string,
     userDetails: UserDetailKeyValueDto[],
     manager?: EntityManager
   ): Promise<any> {
@@ -27,8 +27,8 @@ export class ExternalApiUtilService implements IExternalApiUtilService {
   }
 
   async getUserMetadata(
-    workspaceIdentifier: string,
-    userIdentifier: string,
+    workspaceId: string,
+    userId: string,
     manager?: EntityManager
   ): Promise<any> {
     throw new Error('Method not implemented.');
