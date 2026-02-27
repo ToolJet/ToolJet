@@ -124,7 +124,7 @@ export const createResolvedSlice = (set, get) => ({
       'setVariables'
     );
     get().updateDependencyValues(`variables.${key}`, moduleId);
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildVariableHints(moduleId);
   },
 
   getVariable: (key, moduleId = 'canvas') => {
@@ -141,6 +141,7 @@ export const createResolvedSlice = (set, get) => ({
     );
     get().removeNode(`variables.${key}`, moduleId);
     get().updateDependencyValues(`variables.${key}`, moduleId);
+    get().rebuildVariableHints(moduleId);
   },
 
   unsetAllVariables: (moduleId = 'canvas') => {
@@ -156,6 +157,7 @@ export const createResolvedSlice = (set, get) => ({
       get().removeNode(`variables.${key}`);
       get().updateDependencyValues(`variables.${key}`);
     });
+    get().rebuildVariableHints(moduleId);
   },
 
   // page.variables
@@ -168,7 +170,7 @@ export const createResolvedSlice = (set, get) => ({
       'setPageVariable'
     );
     get().updateDependencyValues(`page.variables.${key}`, moduleId);
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildVariableHints(moduleId);
   },
 
   getPageVariable: (key, moduleId = 'canvas') => {
@@ -184,6 +186,7 @@ export const createResolvedSlice = (set, get) => ({
     );
     get().removeNode(`page.variables.${key}`, moduleId);
     get().updateDependencyValues(`page.variables.${key}`, moduleId);
+    get().rebuildVariableHints(moduleId);
   },
 
   unsetAllPageVariables: (moduleId = 'canvas') => {
@@ -199,6 +202,7 @@ export const createResolvedSlice = (set, get) => ({
       get().removeNode(`page.variables.${key}`);
       get().updateDependencyValues(`page.variables.${key}`);
     });
+    get().rebuildVariableHints(moduleId);
   },
 
   setResolvedQuery: (queryId, details, moduleId = 'canvas', replaceObject = false) => {
@@ -218,8 +222,7 @@ export const createResolvedSlice = (set, get) => ({
         if (typeof value !== 'function') get().updateDependencyValues(`queries.${queryId}.${key}`, moduleId);
       }
     });
-    // Flag to update the codehinter suggestions
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildQueryHints(moduleId, queryId);
   },
   initialiseResolvedQuery: (querIds, moduleId = 'canvas') => {
     const defaultObject = {};
@@ -440,10 +443,11 @@ export const createResolvedSlice = (set, get) => ({
     if (['Form', 'Listview'].includes(parentComponentType)) return;
     const exposedVariables = component.exposedVariables || {};
     get().setExposedValues(id, 'components', exposedVariables, moduleId);
+    get().rebuildComponentHints(moduleId);
   },
 
   updateCustomResolvables: (componentId, data, key, moduleId = 'canvas', parentIndices = []) => {
-    const { updateDependencyValues, updateChildComponentsLength } = get();
+    const { updateDependencyValues, updateChildComponentsLength, invalidateContextHintsCache } = get();
     set((state) => {
       if (parentIndices.length === 0) {
         state.resolvedStore.modules[moduleId].customResolvables[componentId] = data;
@@ -464,6 +468,7 @@ export const createResolvedSlice = (set, get) => ({
     });
     updateChildComponentsLength(componentId, data.length, data, moduleId, parentIndices);
     updateDependencyValues(`components.${componentId}.${key}`, moduleId, parentIndices);
+    invalidateContextHintsCache();
   },
 
   updateChildComponentsLength: (parentId, length, data = [], moduleId = 'canvas', parentIndices = []) => {
