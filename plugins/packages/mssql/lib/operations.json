@@ -58,13 +58,20 @@
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "codehinter",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "getTables",
+            "label": "Fetch Tables"
+          },
           "lineNumbers": false,
-          "description": "Enter table",
+          "description": "Select a table from the dropdown",
           "width": "320px",
           "height": "36px",
           "className": "codehinter-plugins",
-          "placeholder": "Enter table"
+          "placeholder": "Select table",
+          "order": 20
         },
         "primary_key_column": {
           "label": "Primary key column",
