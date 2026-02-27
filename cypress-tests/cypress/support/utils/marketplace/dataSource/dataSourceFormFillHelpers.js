@@ -131,7 +131,7 @@ export const fillDSConnectionEncryptedField = (field) => {
   if (encrypted) {
     cy.get(fieldSelector).then(($field) => {
       if ($field.is(':disabled')) {
-        cy.get('[data-cy="button-edit"]').should('be.visible').click();
+        cy.get('[data-cy="edit-button"]').should('be.visible').click();
         cy.wait(500);
       }
     });
@@ -139,6 +139,27 @@ export const fillDSConnectionEncryptedField = (field) => {
 
   cy.clearAndType(fieldSelector, field.text);
 };
+
+export const fillDataOnCodeMirrorInput = (field) => {
+  const selector = dsCommonSelector.codeMirrorField(field.fieldName);
+  cy.get(selector).clearAndTypeOnCodeMirror(field.text);
+};
+
+export const fillCodeMirrorKeyValuePairs = (field) => {
+  field.keyValueData.forEach((pair, index) => {
+    cy.get(dsCommonSelector.button(field.addButtonFieldName))
+      .should('be.visible')
+      .click();
+    cy.wait(500);
+
+    cy.get(dsCommonSelector.codeMirrorField(`key-${index}`))
+      .clearAndTypeOnCodeMirror(pair.key);
+
+    cy.get(dsCommonSelector.codeMirrorField(`value-${index}`))
+      .clearAndTypeOnCodeMirror(pair.value);
+  });
+};
+
 
 const processFields = (fields) => {
   fields.forEach((field) => {
@@ -164,13 +185,19 @@ const processFields = (fields) => {
       case 'checkbox':
         selectDSConnectionCheckbox(field);
         break;
+      case 'codeMirrorInput':
+        fillDataOnCodeMirrorInput(field);
+        break;
+      case 'codeMirrorKeyValue':
+        fillCodeMirrorKeyValuePairs(field);
+        break;
       default:
         throw new Error(`Unsupported field type: ${field.type}`);
     }
   });
 };
 
-export function fillDSConnectionForm (formConfig, invalidFields = []) {
+export function fillDSConnectionForm(formConfig, invalidFields = []) {
   if (Array.isArray(formConfig) && formConfig.length > 0 && typeof formConfig[0] === 'object' && formConfig[0].type) {
     processFields(formConfig);
     return;
@@ -188,4 +215,5 @@ export function fillDSConnectionForm (formConfig, invalidFields = []) {
     processFields(invalidFields);
   }
 }
+
 

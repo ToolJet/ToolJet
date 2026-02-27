@@ -1,4 +1,5 @@
 import { dsCommonSelector, cyParamName } from "Selectors/marketplace/common";
+import { commonWidgetSelector } from "Selectors/common";
 
 export const verifyConnectionFormHeader = (data) => {
     cy.waitForElement('[data-cy="data-source-name-input-field"]')
@@ -20,8 +21,8 @@ export const verifyConnectionFormFooter = (data) => {
     cy.get(`[data-cy="db-connection-save-button"]`).verifyVisibleElement('have.text', 'Save');
 }
 
-const validateLabel = (fieldName) => {
-    cy.get(dsCommonSelector.labelFieldName(fieldName)).should('be.visible');
+const validateLabel = ({ fieldName }) => {
+    cy.get(dsCommonSelector.labelFieldName(fieldName)).verifyVisibleElement("contain.text", fieldName);
 };
 
 const validateRequiredIndicator = (isRequired) => {
@@ -58,7 +59,7 @@ export const verifyInputFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        validateLabel(fieldName);
+        validateLabel(field);
         validateRequiredIndicator(validations.isRequired);
 
         const textFieldSelector = dsCommonSelector.textField(fieldName);
@@ -73,11 +74,11 @@ export const verifyEncryptedFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        validateLabel(fieldName);
+        validateLabel(field);
         validateRequiredIndicator(validations.isRequired);
 
         if (validations.hasEditButton) {
-            cy.get('[data-cy="button-edit"]').should('be.visible').and('have.text', 'Edit');
+            cy.get('[data-cy="edit-button"]').should('be.visible').and('have.text', 'Edit');
         }
         if (validations.showEncrypted) {
             cy.get('[data-cy="encrypted-text"]').should('be.visible').and('contain.text', 'Encrypted');
@@ -98,7 +99,9 @@ export const verifyDropdownFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(dsCommonSelector.dropdownLabel(fieldName)).should('be.visible');
+        if (fieldName !== '') {
+            cy.get(dsCommonSelector.dropdownLabel(fieldName)).should('be.visible');
+        }
         validateRequiredIndicator(validations.isRequired);
 
         const dropdownSelector = dsCommonSelector.dropdownField(fieldName);
@@ -123,7 +126,7 @@ export const verifyToggleFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+        cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
 
         const toggleSelector = dsCommonSelector.toggleInput(fieldName);
         validateCheckedState(toggleSelector, validations.value);
@@ -136,7 +139,7 @@ export const verifyRadioButtonFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+        cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
 
         const radioSelector = dsCommonSelector.radioButtonInput(fieldName);
         validateCheckedState(radioSelector, validations.value);
@@ -148,8 +151,10 @@ export const verifyRadioButtonFieldUI = (field) => {
 export const verifyKeyValueFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
-    cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+    const verifyContent = () => {
+        if (fieldName) {
+            cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
+        }
 
         if (validations.isEmpty) {
             cy.contains('There are no key value pairs added').should('be.visible');
@@ -167,15 +172,16 @@ export const verifyKeyValueFieldUI = (field) => {
 
         if (validations.rows) {
             validations.rows.forEach((row, index) => {
+                const keyAssertion = row.keyAssertion || 'have.value';
+                const valueAssertion = row.valueAssertion || 'have.value';
+
                 if (row.key !== undefined) {
                     cy.get(dsCommonSelector.keyInputField(fieldName, index))
-                        .should('be.visible')
-                        .and('have.value', row.key);
+                        .verifyVisibleElement(keyAssertion, row.key);
                 }
                 if (row.value !== undefined) {
                     cy.get(dsCommonSelector.valueInputField(fieldName, index))
-                        .should('be.visible')
-                        .and('have.value', row.value);
+                        .verifyVisibleElement(valueAssertion, row.value);
                 }
                 if (row.hasDeleteButton) {
                     cy.get(dsCommonSelector.deleteKeyValueButton(fieldName, index)).should('be.visible');
@@ -190,8 +196,17 @@ export const verifyKeyValueFieldUI = (field) => {
                 }
             });
         }
-    });
+    };
+
+    if (fieldName) {
+        cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
+            verifyContent();
+        });
+    } else {
+        verifyContent();
+    }
 };
+
 export const verifyCheckboxFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
@@ -204,6 +219,17 @@ export const verifyCheckboxFieldUI = (field) => {
         validateDisabledState(checkboxSelector, validations.disabled);
     });
 };
+
+export const verifyCodeMirrorInput = (field) => {
+    const { fieldName, assertion, data } = field;
+    cy.get(commonWidgetSelector.parameterInputField(fieldName)).verifyVisibleElement(assertion, ...([].concat(data)));
+}
+
+export const verifyButtonUI = (field) => {
+    const { fieldName, validations = {} } = field;
+    cy.get(dsCommonSelector.button(fieldName)).verifyVisibleElement('contain.text', fieldName);
+    validateDisabledState(dsCommonSelector.button(fieldName), validations.disabled);
+}
 
 export const verifyConnectionFormUI = (fields) => {
     fields.forEach((field) => {
@@ -229,6 +255,15 @@ export const verifyConnectionFormUI = (fields) => {
                 break;
             case 'checkbox':
                 verifyCheckboxFieldUI(field);
+                break;
+            case 'codeMirror':
+                verifyCodeMirrorInput(field);
+                break;
+            case 'label':
+                validateLabel(field);
+                break;
+            case 'button':
+                verifyButtonUI(field);
                 break;
             default:
                 throw new Error(`Unsupported field type: ${field.type}`);

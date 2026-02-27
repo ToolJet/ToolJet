@@ -194,7 +194,7 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
@@ -220,7 +220,7 @@ Cypress.Commands.add(
     };
 
     if (Array.isArray(value)) {
-      cy.wrap(subject).last().realType(value, {
+      cy.wrap(subject).last().realType(value.join(""), {
         parseSpecialCharSequences: false,
         delay: 0,
         force: true,
