@@ -285,7 +285,7 @@
         "label": "Password",
         "description": "Enter password",
         "widget": "password-v3",
-        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+        "help_text": "Supports secrets (e.g.,{{secrets.db_password}})"
       },
       "use_ssl": {
         "order": 70,
@@ -499,7 +499,7 @@
         "label": "Password",
         "description": "Enter password",
         "widget": "password-v3",
-        "help_text": "Supports workspace constants (e.g.,{{constants.db_passwrod}})"
+        "help_text": "Supports secrets (e.g.,{{secrets.db_password}})"
       },
       "use_ssl": {
         "order": 70,
