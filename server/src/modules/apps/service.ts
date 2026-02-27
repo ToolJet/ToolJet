@@ -240,6 +240,21 @@ export class AppsService implements IAppsService {
       }
     }
 
+    // Check if name is being changed - require draft version to exist
+    if (name && name !== app.name) {
+      const draftVersion = await this.versionRepository.findOne({
+        where: {
+          appId: app.id,
+          versionType: AppVersionType.VERSION,
+          status: AppVersionStatus.DRAFT,
+        },
+      });
+
+      if (!draftVersion) {
+        throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+      }
+    }
+
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
       const appRenameDto = {

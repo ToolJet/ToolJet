@@ -1,6 +1,6 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
@@ -10,6 +10,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
+import { AppGitSync } from '../../entities/app_git_sync.entity';
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
