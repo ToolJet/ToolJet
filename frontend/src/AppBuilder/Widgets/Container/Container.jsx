@@ -27,6 +27,7 @@ export const Container = ({
   componentCount = 0,
   currentMode,
   subContainerIndex,
+  dataCy,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -134,6 +135,7 @@ export const Container = ({
               isActive={activeSlot === `${id}-header`}
               onResize={updateHeaderSizeInStore}
               componentType="Container"
+              dataCy={dataCy}
             />
           )}
           <div

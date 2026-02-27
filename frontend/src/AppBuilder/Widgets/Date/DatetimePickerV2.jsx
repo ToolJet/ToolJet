@@ -483,6 +483,7 @@ export const DatetimePickerV2 = ({
       customDateInputProps={customDateInputProps}
       id={id}
       showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };
