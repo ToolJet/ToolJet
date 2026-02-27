@@ -13,14 +13,18 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { FeatureAbilityFactory } from './ability';
 import { UserSessionRepository } from './repository';
+import { SSOConfigsRepository } from '@modules/login-configs/repository';
 
 export class SessionModule extends SubModule {
   static async register(config: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
-    const { SessionService, SessionController, SessionUtilService, JwtStrategy } = await this.getProviders(
-      config,
-      'session',
-      ['service', 'controller', 'util.service', 'jwt/jwt.strategy']
-    );
+    const { SessionService, SessionController, SessionUtilService, JwtStrategy, OidcRefreshService } =
+      await this.getProviders(config, 'session', [
+        'service',
+        'controller',
+        'util.service',
+        'jwt/jwt.strategy',
+        'oidc-refresh.service',
+      ]);
 
     const providerImports = [
       RolesRepository,
@@ -34,6 +38,8 @@ export class SessionModule extends SubModule {
       JwtStrategy,
       FeatureAbilityFactory,
       UserSessionRepository,
+      OidcRefreshService,
+      SSOConfigsRepository,
     ];
 
     return {
