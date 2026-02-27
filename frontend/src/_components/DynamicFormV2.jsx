@@ -6,6 +6,7 @@ import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
+import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
 import { filter, find, isEmpty } from 'lodash';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
@@ -303,7 +304,7 @@ const DynamicFormV2 = ({
           }
 
           if (typeof field === 'object') {
-            if (field.widget === 'dropdown-component-flip') {
+            if (field.widget === 'dropdown-component-flip' || field.widget === 'toggle-flip') {
               const selectedOption = options?.[field.key]?.value;
 
               if (field.commonFields) {
@@ -370,15 +371,16 @@ const DynamicFormV2 = ({
         return Textarea;
       case 'toggle':
         return Toggle;
+      case 'toggle-v2':
+        return ToggleV2;
+      case 'toggle-flip':
+        return ToggleV2;
       case 'checkbox':
         return Checkbox;
       case 'checkbox-group':
         return CheckboxGroup;
       case 'react-component-headers':
         return Headers;
-      // TODO: Move dropdown component flip logic to be handled here
-      // case 'dropdown-component-flip':
-      //   return Select;
       default:
         return null;
     }
@@ -513,6 +515,29 @@ const DynamicFormV2 = ({
           defaultChecked: currentValue,
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
+        };
+      case 'toggle-v2':
+        return {
+          checked: currentValue,
+          label: label,
+          helpText: helpText,
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          onChange: (e) => handleOptionChange(key, e.target.checked, true),
+        };
+      case 'toggle-flip':
+        return {
+          checked: currentValue === 'enabled',
+          label: label,
+          helpText: helpText,
+          disabled:
+            !canUpdateDataSource(selectedDataSource?.id) &&
+            !canDeleteDataSource(),
+          onChange: (e) =>
+            handleOptionChange(
+              key,
+              e.target.checked ? 'enabled' : 'disabled',
+              true
+            ),
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -659,6 +684,7 @@ const DynamicFormV2 = ({
                     widget !== 'password-v3-textarea' &&
                     widget !== 'checkbox' &&
                     widget !== 'checkbox-group' &&
+                    widget !== 'toggle-v2' && 
                     renderLabel(label, uiProperties[key].tooltip, widget)}
                 </div>
               )}
@@ -695,7 +721,9 @@ const DynamicFormV2 = ({
   };
 
   const FlipComponentDropdown = (uiProperties) => {
-    const flipComponentDropdowns = filter(uiProperties, ['widget', 'dropdown-component-flip']).sort((a, b) => {
+    const flipComponentDropdowns = Object.values(uiProperties || {})
+    .filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+    .sort((a, b) => {
       const orderA = a?.order ?? Number.MAX_SAFE_INTEGER;
       const orderB = b?.order ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
@@ -705,12 +733,15 @@ const DynamicFormV2 = ({
     const allComponents = [];
     let insertIndex = 0;
 
-    // Add dropdown components with their order
+    // Add dropdown/toggle-flip components with their order
     flipComponentDropdowns.forEach((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+      const scopedChildren = flipComponentDropdown[selector];
+      const parentChildren = uiProperties[selector];
+      const childrenToRender = scopedChildren !== undefined ? scopedChildren : parentChildren;
 
       allComponents.push({
-        order: flipComponentDropdown.order, // Keep undefined if not set
+        order: flipComponentDropdown.order,
         insertIndex: insertIndex++,
         key: `dropdown-${flipComponentDropdown.key}`,
         element: (
@@ -727,7 +758,8 @@ const DynamicFormV2 = ({
                 })}
                 data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
               >
-                {(flipComponentDropdown.label || isHorizontalLayout) && (
+                {flipComponentDropdown.widget !== 'toggle-flip' &&
+ (flipComponentDropdown.label || isHorizontalLayout) && (
                   <label
                     className={cx('form-label')}
                     data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
@@ -740,12 +772,17 @@ const DynamicFormV2 = ({
                   data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
-                  <Select
-                    {...getElementProps(flipComponentDropdown)}
-                    styles={{}}
-                    useCustomStyles={false}
-                    dataCy={generateCypressDataCy(flipComponentDropdown.label)}
-                  />
+                  {flipComponentDropdown.widget === 'toggle-flip' ? (
+                    <ToggleV2 {...getElementProps(flipComponentDropdown)} />
+                  ) : (
+                    <Select
+                      {...getElementProps(flipComponentDropdown)}
+                      styles={{}}
+                      useCustomStyles={false}
+                      isSearchable={false}
+                      dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                    />
+                  )}
                 </div>
                 {flipComponentDropdown.helpText && (
                   <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
@@ -753,7 +790,7 @@ const DynamicFormV2 = ({
               </div>
             </div>
 
-            {getLayout(uiProperties[selector])}
+            {getLayout(childrenToRender)}
           </div>
         ),
       });
@@ -764,7 +801,7 @@ const DynamicFormV2 = ({
       const component = uiProperties[key];
       const componentType = component.widget || component.type;
 
-      if (componentType && componentType !== 'dropdown-component-flip') {
+      if (componentType && componentType !== 'dropdown-component-flip' && componentType !== 'toggle-flip') {
         allComponents.push({
           order: component.order, // Keep undefined if not set
           insertIndex: insertIndex++,
@@ -797,7 +834,9 @@ const DynamicFormV2 = ({
   };
 
   const isFlipComponentDropdown = (uiProperties) => {
-    const checkFlipComponents = filter(uiProperties, ['widget', 'dropdown-component-flip']);
+    const checkFlipComponents = uiProperties
+      ? Object.values(uiProperties).filter(c => c.widget === 'dropdown-component-flip' || c.widget === 'toggle-flip')
+      : [];
     if (checkFlipComponents.length > 0) {
       return FlipComponentDropdown(uiProperties);
     } else {

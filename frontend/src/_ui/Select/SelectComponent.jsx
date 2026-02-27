@@ -70,7 +70,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
       value={currentValue}
-      isSearchable={hasSearch}
+      isSearchable={restProps.isSearchable ?? hasSearch}
       onChange={handleOnChange}
       placeholder={placeholder}
       styles={customStyles}

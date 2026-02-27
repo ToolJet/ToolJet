@@ -4,6 +4,117 @@ const JSON5 = require('json5');
 import { EJSON } from 'bson';
 import { SourceOptions, QueryOptions } from './types';
 import tls from 'tls';
+import { Client as SSHClient } from 'ssh2';
+import net from 'net';
+
+function getAvailablePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+  const srv = net.createServer();
+    srv.unref();
+    srv.listen(0, '127.0.0.1', () => {
+      const port = (srv.address() as net.AddressInfo).port;
+      srv.close((err) => (err ? reject(err) : resolve(port)));
+    });
+    srv.on('error', reject);
+  });
+}
+
+async function createSSHTunnel(sshConfig: {
+  host: string;
+  port?: number;
+  username: string;
+  authType: 'password' | 'private_key';
+  password?: string;
+  privateKey?: string;
+  passphrase?: string;
+  dstHost: string;
+  dstPort: number;
+  localPort: number;
+}): Promise<{ ssh: SSHClient; server: net.Server }> {
+  return new Promise((resolve, reject) => {
+    const ssh = new SSHClient();
+    let server: net.Server;
+
+    ssh.on('ready', () => {
+      server = net.createServer((socket) => {
+        ssh.forwardOut('127.0.0.1', 0, sshConfig.dstHost, sshConfig.dstPort, (err, stream) => {
+          if (err) {
+            socket.destroy();
+            return;
+          }
+
+          const cleanup = () => {
+            if (!socket.destroyed) socket.destroy();
+            try { stream.close(); } catch (_) { /* ignore */ }
+          };
+
+          stream.on('error', cleanup);
+          socket.on('error', cleanup);
+          stream.on('close', () => { if (!socket.destroyed) socket.destroy(); });
+          socket.on('close', () => { try { stream.close(); } catch (_) { /* ignore */ } });
+
+          socket.pipe(stream).pipe(socket);
+        });
+      });
+
+      server.on('error', (err) => {
+        ssh.end();
+        reject(err);
+      });
+
+      ssh.on('close', () => { server.close(); });
+
+      server.listen(sshConfig.localPort, '127.0.0.1', () => {
+        resolve({ ssh, server });
+      });
+    });
+
+    ssh.on('error', reject);
+
+    const connectConfig: any = {
+      host: sshConfig.host,
+      port: sshConfig.port ?? 22,
+      username: sshConfig.username,
+      keepaliveInterval: 10000,
+      keepaliveCountMax: 3,
+      readyTimeout: 20000,
+    };
+
+    if (sshConfig.authType === 'password') {
+      connectConfig.password = sshConfig.password;
+    } else {
+      connectConfig.privateKey = sshConfig.privateKey;
+      if (sshConfig.passphrase) connectConfig.passphrase = sshConfig.passphrase;
+    }
+
+    ssh.connect(connectConfig);
+  });
+}
+
+function closeSshResources(sshResources: { ssh: SSHClient; server: net.Server } | null): void {
+  if (!sshResources) return;
+  try { sshResources.server.close(); } catch (_) { /* ignore */ }
+  try { sshResources.ssh.end(); } catch (_) { /* ignore */ }
+}
+
+function validateSSHOptions(sourceOptions: SourceOptions): void {
+  if (sourceOptions.ssh_enabled !== 'enabled') return;
+  if (!sourceOptions.ssh_host) {
+    throw new QueryError('Invalid SSH config', 'ssh_host is required when SSH is enabled', {});
+  }
+  if (!sourceOptions.ssh_username) {
+    throw new QueryError('Invalid SSH config', 'ssh_username is required when SSH is enabled', {});
+  }
+  if (!sourceOptions.ssh_auth_type) {
+    throw new QueryError('Invalid SSH config', 'ssh_auth_type is required when SSH is enabled', {});
+  }
+  if (sourceOptions.ssh_auth_type === 'password' && !sourceOptions.ssh_password) {
+    throw new QueryError('Invalid SSH config', 'ssh_password is required for password-based SSH auth', {});
+  }
+  if (sourceOptions.ssh_auth_type === 'private_key' && !sourceOptions.ssh_private_key) {
+    throw new QueryError('Invalid SSH config', 'ssh_private_key is required for key-based SSH auth', {});
+  }
+}
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -206,15 +317,44 @@ export default class MongodbService implements QueryService {
 async getConnection(sourceOptions: SourceOptions): Promise<any> {
   let db = null;
   let client;
+  let sshResources: { ssh: SSHClient; server: net.Server } | null = null;
   const connectionType = sourceOptions['connection_type'];
+
+  validateSSHOptions(sourceOptions);
 
   if (connectionType === 'manual') {
     const format = sourceOptions.connection_format || 'mongodb';
     const database = sourceOptions.database;
-    const host = sourceOptions.host;
-    const port = sourceOptions.port || undefined;
-    const username = encodeURIComponent(sourceOptions.username);
-    const password = encodeURIComponent(sourceOptions.password);
+    let host = sourceOptions.host;
+    let port = Number(sourceOptions.port) || 27017;
+    const username = encodeURIComponent(sourceOptions.username || '');
+    const password = encodeURIComponent(sourceOptions.password || '');
+
+    if (format === 'mongodb+srv' && sourceOptions.ssh_enabled === 'enabled') {
+      throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
+    }
+
+    if (sourceOptions.ssh_enabled === 'enabled') {
+      const localPort = sourceOptions.ssh_local_port || await getAvailablePort();
+      const dstHost = sourceOptions.ssh_dst_host || host;
+      const dstPort = sourceOptions.ssh_dst_port || port;
+
+      sshResources = await createSSHTunnel({
+        host: sourceOptions.ssh_host,
+        port: sourceOptions.ssh_port || 22,
+        username: sourceOptions.ssh_username,
+        authType: sourceOptions.ssh_auth_type,
+        password: sourceOptions.ssh_password,
+        privateKey: sourceOptions.ssh_private_key,
+        passphrase: sourceOptions.ssh_passphrase || undefined,
+        dstHost,
+        dstPort,
+        localPort,
+      });
+
+      host = '127.0.0.1';
+      port = localPort;
+    }
 
     const needsAuthentication = username !== '' && password !== '';
     let uri = '';
@@ -229,7 +369,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
         : `mongodb+srv://${host}`;
     }
 
-    let clientOptions = {};
+    let clientOptions: any = {};
 
     if (sourceOptions.tls_certificate === 'client_certificate') {
       const secureContext = tls.createSecureContext({
@@ -259,6 +399,11 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
         secureContext,
       };
     }
+
+    if (!clientOptions.tls && sourceOptions.use_ssl === 'enabled') {
+      clientOptions.tls = true;
+    }
+
     client = new MongoClient(uri, clientOptions);
     await client.connect();
     db = client.db(database);
@@ -276,9 +421,9 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const protocol = protocolMatch ? protocolMatch[1] : explicitFormat;
 
   const withoutProtocol = connStr.replace(/^(mongodb(?:\+srv)?):\/\//, "");
-  const authSplit = withoutProtocol.split("@");
-  const authPart = authSplit.length > 1 ? authSplit[0] : "";
-  const restPart = authSplit.length > 1 ? authSplit[1] : authSplit[0];
+  const lastAt = withoutProtocol.lastIndexOf("@");
+  const authPart = lastAt !== -1 ? withoutProtocol.slice(0, lastAt) : "";
+  const restPart = lastAt !== -1 ? withoutProtocol.slice(lastAt + 1) : withoutProtocol;
 
   const restSplit = restPart.split("/");
   const hostsPart = restSplit[0];
@@ -293,25 +438,49 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   let connPass = "";
 
   if (authPart.includes(":")) {
-    const [u, p] = authPart.split(":");
-    connUser = decodeURIComponent(u);
-    connPass = decodeURIComponent(p);
+    const colonIdx = authPart.indexOf(":");
+    connUser = decodeURIComponent(authPart.slice(0, colonIdx));
+    connPass = decodeURIComponent(authPart.slice(colonIdx + 1));
   }
 
   const finalUser = explicitUser || connUser || "";
   const finalPass = explicitPass || connPass || "";
   const needsAuth = finalUser !== "" && finalPass !== "";
-  const hostsList = hostsPart.split(",");
+  const hostsList = explicitHost
+    ? (() => {
+        const list = hostsPart.split(",");
+        const newPort = explicitPort ? `:${explicitPort}` : "";
+        const existingPort = list[0].includes(":") ? `:${list[0].split(":")[1]}` : "";
+        list[0] = newPort ? `${explicitHost}${newPort}` : `${explicitHost}${existingPort}`;
+        return list;
+      })()
+    : hostsPart.split(",");
 
-  if (explicitHost) {
-    const newPort = explicitPort ? `:${explicitPort}` : "";
-    const existingPort = hostsList[0].includes(":")
-      ? `:${hostsList[0].split(":")[1]}`
-      : "";
+  if (sourceOptions.ssh_enabled === 'enabled') {
+    if (protocol === 'mongodb+srv') {
+      throw new QueryError('Invalid configuration', 'SSH tunnel is not supported with mongodb+srv format', {});
+    }
 
-    hostsList[0] = newPort
-      ? `${explicitHost}${newPort}`
-      : `${explicitHost}${existingPort}`;
+    const localPort = sourceOptions.ssh_local_port || await getAvailablePort();
+    const firstHostname = (hostsList[0] || '').split(':')[0] || 'localhost';
+    const firstPort = Number((hostsList[0] || '').split(':')[1]) || 27017;
+    const dstHost = sourceOptions.ssh_dst_host || firstHostname;
+    const dstPort = sourceOptions.ssh_dst_port || firstPort;
+
+    sshResources = await createSSHTunnel({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      authType: sourceOptions.ssh_auth_type,
+      password: sourceOptions.ssh_password,
+      privateKey: sourceOptions.ssh_private_key,
+      passphrase: sourceOptions.ssh_passphrase || undefined,
+      dstHost,
+      dstPort,
+      localPort,
+    });
+
+    hostsList.splice(0, hostsList.length, `127.0.0.1:${localPort}`);
   }
 
   const finalHosts = hostsList.join(",");
@@ -339,11 +508,10 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
   const hasSSLInParams = paramsLower.includes('ssl=') || paramsLower.includes('tls=');
 
   const clientOptions: any = {};
- const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
-  if (typeof sourceOptions.use_ssl === "boolean") {
-    clientOptions.tls = sourceOptions.use_ssl;
-  } else if (hasSSLInParams) {
-  } else if (isSrvConnection) {
+  const isSrvConnection = sourceOptions.connection_format === 'mongodb+srv';
+  if (sourceOptions.use_ssl === 'enabled') {
+    clientOptions.tls = true;
+  } else if (!hasSSLInParams && isSrvConnection) {
     clientOptions.tls = true;
   }
   client = new MongoClient(finalUri, clientOptions);
@@ -354,6 +522,7 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
     db,
     close: async () => {
       await client?.close?.();
+      closeSshResources(sshResources);
     },
   };
 }
