@@ -61,7 +61,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
         variant="ghostBlue"
         size="sm"
         onClick={() => addNewKeyValuePair(options)}
-        data-cy={`button-${generateCypressDataCy(buttonText)}`}
+        data-cy={`${generateCypressDataCy(buttonText)}-button`}
       >
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; {buttonText}
