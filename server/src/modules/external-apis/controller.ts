@@ -55,20 +55,20 @@ export class ExternalApisController implements IExternalApisController {
   }
 
   @UseGuards(ExternalApiSecurityGuard)
-  @Patch('workspace/:workspace_identifier/user/:user_identifier')
+  @Patch('workspace/:workspaceId/user/:userId')
   async updateUserMetadata(
-    @Param('workspace_identifier') workspaceIdentifier: string,
-    @Param('user_identifier') userIdentifier: string,
+    @Param('workspaceId') workspaceId: string,
+    @Param('userId') userId: string,
     @Body() updateUserMetadataDto: UpdateUserMetadataDto
   ) {
     throw new NotFoundException();
   }
 
   @UseGuards(ExternalApiSecurityGuard)
-  @Get('workspace/:workspace_identifier/user/:user_identifier')
+  @Get('workspace/:workspaceId/user/:userId')
   async getUserMetadata(
-    @Param('workspace_identifier') workspaceIdentifier: string,
-    @Param('user_identifier') userIdentifier: string
+    @Param('workspaceId') workspaceId: string,
+    @Param('userId') userId: string
   ) {
     throw new NotFoundException();
   }
