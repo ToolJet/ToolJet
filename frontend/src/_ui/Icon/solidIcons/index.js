@@ -286,8 +286,8 @@ import Json from './Json.jsx';
 import AITopup from './AITopup.jsx';
 import AITopupWhite from './AITopupWhite.jsx';
 import AITopupGrey from './AITopupGrey.jsx';
-import MobileEmptyStateIcon from './MobileEmptyStateIcon';
-import MobileEmptyStateIconDark from './MobileEmptyStateIconDark';
+import MobileEmptyStateIcon from './MobileEmptyStateIcon.jsx';
+import MobileEmptyStateIconDark from './MobileEmptyStateIconDark.jsx';
 import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
@@ -849,6 +849,22 @@ const Icon = (props) => {
       return <MobileEmptyStateIcon {...props} />;
     case 'mobile-empty-state-dark':
       return <MobileEmptyStateIconDark {...props} />;
+    case 'workflows-empty-state':
+      return <WorkflowsEmptyStateIcon {...props} />;
+    case 'workflows-empty-state-dark':
+      return <WorkflowsEmptyStateIconDark {...props} />;
+    case 'data-sources-empty-state':
+      return <DataSourcesEmptyStateIcon {...props} />;
+    case 'data-sources-empty-state-dark':
+      return <DataSourcesEmptyStateIconDark {...props} />;
+    case 'failed-to-load':
+      return <FailedToLoadIcon {...props} />;
+    case 'failed-to-load-dark':
+      return <FailedToLoadIconDark {...props} />;
+    case 'modules-empty-state':
+      return <ModulesEmptyStateIcon {...props} />;
+    case 'modules-empty-state-dark':
+      return <ModulesEmptyStateIconDark {...props} />;
 
     case 'play01':
       return <Play01 {...props} />;

@@ -46,7 +46,8 @@ jobs:
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
                 "buildCommand": "npm i && npx storybook build",
-                "publishPath": "storybook-static/"
+                "publishPath": "storybook-static/",
+                "url": "https://storybook-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
 
@@ -213,3 +214,5 @@ jobs:
             } catch (e) {
               console.log(e)
             }
+
+# dummy PR
