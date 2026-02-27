@@ -9,8 +9,8 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 
 export class PromoteAndReleaseExistingWorkflowVersionsToProductionAndRelease1771581051295 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
-        if (getTooljetEdition() === TOOLJET_EDITIONS.CE) {
-            console.log('Skipping migration: workflows are not available in CE edition');
+        if (getTooljetEdition() === TOOLJET_EDITIONS.CE || getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+            console.log('Skipping migration: workflows are not available in CE or Cloud edition');
             return;
         }
 
