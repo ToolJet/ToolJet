@@ -18,8 +18,8 @@ export class PreviewWorkflowNodeDto {
   app?: string;
 
   @IsString()
-  @IsOptional()
-  appEnvId?: string;
+  @IsNotEmpty()
+  appEnvId: string;
 
   @IsObject()
   @IsOptional()

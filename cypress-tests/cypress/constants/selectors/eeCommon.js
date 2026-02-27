@@ -145,6 +145,7 @@ export const multiEnvSelector = {
   envArrow: '[data-cy="env-arrow"]',
   selectedEnvName: '[data-cy="selected-current-env-name"]',
   envNameList: '[data-cy="env-name-list"]',
+  envNameDropdown: '[data-cy="env-name-dropdown"]',
   appVersionLabel: '[data-cy="app-version-label"]',
   currentVersion: '[data-cy="current-version"]',
   createNewVersionButton: '[data-cy="create-new-version-button"]',

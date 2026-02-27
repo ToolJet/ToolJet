@@ -48,7 +48,7 @@ const CreateVersionModal = ({
       developmentVersions: state.developmentVersions,
       featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
       currentMode: state.currentMode,
