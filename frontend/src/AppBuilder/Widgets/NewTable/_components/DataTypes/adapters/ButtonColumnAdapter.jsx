@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/Button/Button';
 import * as TablerIcons from '@tabler/icons-react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
-import useTableStore from '../../../_stores/tableStore';
 
 export const ButtonColumn = ({
-  id,
   buttonLabel,
   buttonType,
   disableButton,
@@ -22,19 +20,14 @@ export const ButtonColumn = ({
   borderColor,
   borderRadius,
   tooltip,
-  horizontalAlignment,
   onClick,
 }) => {
-  const { getTableColumnEvents } = useTableStore();
-
   const handleClick = useCallback(
     (e) => {
       e.stopPropagation();
-      if (onClick) {
-        onClick(getTableColumnEvents(id));
-      }
+      if (onClick) onClick();
     },
-    [onClick, id, getTableColumnEvents]
+    [onClick]
   );
 
   const variant = buttonType === 'outline' ? 'outline' : 'primary';
@@ -89,21 +82,19 @@ export const ButtonColumn = ({
 
   const hasTooltip = tooltip && tooltip.toString().trim();
 
-  return (
-    <div className="h-100 d-flex align-items-center" style={{ padding: '0 6px', justifyContent: horizontalAlignment === 'center' ? 'center' : horizontalAlignment === 'right' ? 'flex-end' : 'flex-start' }}>
-      {hasTooltip ? (
-        <OverlayTrigger
-          placement="auto"
-          delay={{ show: 500, hide: 0 }}
-          overlay={<Tooltip>{tooltip}</Tooltip>}
-        >
-          <div style={{ display: 'flex' }}>{buttonElement}</div>
-        </OverlayTrigger>
-      ) : (
-        buttonElement
-      )}
-    </div>
-  );
+  if (hasTooltip) {
+    return (
+      <OverlayTrigger
+        placement="auto"
+        delay={{ show: 500, hide: 0 }}
+        overlay={<Tooltip>{tooltip}</Tooltip>}
+      >
+        <div style={{ display: 'flex' }}>{buttonElement}</div>
+      </OverlayTrigger>
+    );
+  }
+
+  return buttonElement;
 };
 
 export default ButtonColumn;

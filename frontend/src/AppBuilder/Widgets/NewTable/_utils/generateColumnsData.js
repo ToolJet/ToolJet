@@ -16,6 +16,7 @@ import {
   MarkdownColumn,
   HTMLColumn,
   ButtonColumn,
+  ButtonColumnGroup,
   // Deprecated columns
   TagsColumn,
   RadioColumn,
@@ -416,31 +417,37 @@ export default function generateColumnsData({
 
             case 'button': {
               if (columnForAddNewRow) return <span />;
+              const columnKey = column?.key || column?.name;
+              const buttons = column.buttons || [];
+
               return (
-                <ButtonColumn
+                <ButtonColumnGroup
                   id={id}
-                  buttonLabel={getResolvedValue(column.buttonLabel, { cellValue, rowData }) || 'Button'}
-                  buttonType={getResolvedValue(column.buttonType, { cellValue, rowData }) || 'solid'}
-                  disableButton={getResolvedValue(column.disableButton, { cellValue, rowData })}
-                  loadingState={getResolvedValue(column.loadingState, { cellValue, rowData })}
-                  backgroundColor={getResolvedValue(column.buttonBackgroundColor, { cellValue, rowData })}
-                  labelColor={getResolvedValue(column.buttonLabelColor, { cellValue, rowData })}
-                  iconName={getResolvedValue(column.buttonIconName, { cellValue, rowData })}
-                  iconVisibility={getResolvedValue(column.buttonIconVisibility, { cellValue, rowData })}
-                  iconColor={getResolvedValue(column.buttonIconColor, { cellValue, rowData })}
-                  iconAlignment={getResolvedValue(column.buttonIconAlignment, { cellValue, rowData }) || 'left'}
-                  loaderColor={getResolvedValue(column.buttonLoaderColor, { cellValue, rowData })}
-                  borderColor={getResolvedValue(column.buttonBorderColor, { cellValue, rowData })}
-                  borderRadius={getResolvedValue(column.buttonBorderRadius, { cellValue, rowData })}
-                  tooltip={getResolvedValue(column.buttonTooltip, { cellValue, rowData })}
+                  buttons={buttons}
                   horizontalAlignment={column?.horizontalAlignment}
-                  onClick={(tableColumnEvents) => {
-                    const columnEvents = tableColumnEvents.filter(
-                      (event) => event?.event?.ref === (column?.key || column?.name)
+                  cellBackgroundColor={getResolvedValue(column.cellBackgroundColor, { cellValue, rowData })}
+                  cellValue={cellValue}
+                  rowData={rowData}
+                  onClick={(buttonId, tableColumnEvents) => {
+                    const buttonEvents = tableColumnEvents.filter(
+                      (event) => event?.event?.ref === `${columnKey}::${buttonId}`
                     );
+
+                    // Dynamic mode: merge inline events from button data
+                    const useDynamicColumn =
+                      useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
+                    if (useDynamicColumn) {
+                      const button = buttons.find((b) => b.id === buttonId);
+                      const inlineEvents = (button?.events || []).map((evt) => ({
+                        event: { ...evt, ref: `${columnKey}::${buttonId}` },
+                      }));
+                      buttonEvents.push(...inlineEvents);
+                    }
+
                     fireEvent('OnTableButtonColumnClicked', {
                       column,
-                      tableColumnEvents: columnEvents,
+                      buttonId,
+                      tableColumnEvents: buttonEvents,
                     });
                   }}
                 />
