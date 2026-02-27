@@ -122,10 +122,10 @@ export class DataSourcesRepository extends Repository<DataSource> {
     });
   }
 
-  async findById(dataSourceId: string, manager?: EntityManager): Promise<DataSource> {
+  async findById(dataSourceId: string, organizationId: string, manager?: EntityManager): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.findOneOrFail(DataSource, {
-        where: { id: dataSourceId },
+        where: { id: dataSourceId, organizationId },
         relations: ['plugin', 'apps', 'dataSourceOptions'],
       });
     }, manager || this.manager);
