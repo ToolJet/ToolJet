@@ -632,7 +632,7 @@ const DynamicForm = ({
           data-cy={
             fieldType === 'dropdown'
               ? `${generateCypressDataCy(label)}-dropdown-label`
-              : `label-${generateCypressDataCy(label)}`
+              : `${generateCypressDataCy(label)}-label`
           }
           style={{
             textDecoration: tooltip ? 'underline 2px dashed' : 'none',
@@ -717,9 +717,9 @@ const DynamicForm = ({
                           rel="noreferrer"
                           disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                           onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                          data-cy={`button-${generateCypressDataCy(
+                          data-cy={`${generateCypressDataCy(
                             computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
-                          )}`}
+                          )}-button`}
                         >
                           {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                         </ButtonSolid>
