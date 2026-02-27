@@ -10,7 +10,7 @@ import { PenLine } from 'lucide-react';
 
 function EditAppName() {
   const { moduleId } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
@@ -18,17 +18,19 @@ function EditAppName() {
       state.appStore.modules[moduleId].app.creationMode,
       state.selectedVersion,
       state.orgGit,
+      state.appGit,
     ],
     shallow
   );
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
-  const isRenameDisabled = isGitSyncEnabled ? !isDraftVersion || isOnDefaultBranch : !isDraftVersion;
+  const isRenameDisabled = isGitSyncEnabled && isAppCommittedToGit ? !isDraftVersion || isOnDefaultBranch : !isDraftVersion;
 
   const getDisabledTooltipMessage = () => {
-    if (isGitSyncEnabled && isOnDefaultBranch) {
+    if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
       return "Renaming isn't allowed on master. Switch branch to update name.";
     }
     if (!isDraftVersion) {
