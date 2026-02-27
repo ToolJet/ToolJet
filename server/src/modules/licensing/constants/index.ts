@@ -133,6 +133,11 @@ export enum LICENSE_FIELD {
   APP_PERMISSIONS_COMPONENT = 'appPermissionComponentEnabled',
   APP_PERMISSIONS_QUERY = 'appPermissionQueryEnabled',
   APP_PERMISSIONS_PAGES = 'appPermissionPagesEnabled',
+  APP_PAGES_LIMIT = 'appPagesLimit',
+  GOOGLE = 'googleEnabled',
+  GITHUB = 'githubEnabled',
+  OBSERVABILITY_ENABLED = 'observabilityEnabled',
+  MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

@@ -19,6 +19,7 @@ export const HorizontalSlot = React.memo(
     onResize,
     maxHeight,
     componentType,
+    dataCy,
   }) => {
     const { moduleId } = useModuleContext();
     const isEditing = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'edit', shallow);
@@ -30,7 +31,7 @@ export const HorizontalSlot = React.memo(
       maxHeight: maxHeight || 400,
       maxWidth: '100%',
       stepHeight: 10, // Height will change in steps of 10px
-      onResize: () => {},
+      onResize: () => { },
       onDragEnd: (values) => {
         onResize(values);
       },
@@ -54,15 +55,14 @@ export const HorizontalSlot = React.memo(
 
     return (
       <div
-        className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${
-          isEditing ? 'tw-select-none' : ''
-        }`}
+        className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${isEditing ? 'tw-select-none' : ''
+          }`}
+        data-cy={`${dataCy}-${slotName}-section`}
         style={slotStyle}
       >
         <div
-          className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}  ${isEditing && 'is-editing'} ${
-            isDragging ? 'dragging' : ''
-          }`}
+          className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}  ${isEditing && 'is-editing'} ${isDragging ? 'dragging' : ''
+            }`}
           {...getRootProps()}
         >
           <SubContainer
@@ -87,7 +87,7 @@ export const HorizontalSlot = React.memo(
             id={`${id}-disabled`}
             className="tj-form-disabled-overlay"
             style={{ height: resizedHeight || '100%' }}
-            onClick={() => {}}
+            onClick={() => { }}
             onDrop={(e) => e.stopPropagation()}
           />
         )}

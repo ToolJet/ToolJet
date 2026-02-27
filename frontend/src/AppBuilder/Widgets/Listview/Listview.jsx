@@ -168,12 +168,10 @@ export const Listview = function Listview({
       id={id}
       ref={parentRef}
       style={computedStyles}
-      data-cy={dataCy}
     >
       <div
-        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${
-          isDynamicHeightEnabled ? 'flex-grow-1' : ''
-        }`}
+        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${isDynamicHeightEnabled ? 'flex-grow-1' : ''
+          }`}
       >
         {filteredData.map((listItem, index) => (
           <ListviewSubcontainer
@@ -194,6 +192,7 @@ export const Listview = function Listview({
             currentLayout={currentLayout}
             visibility={visibility}
             parentHeight={height}
+            dataCy={dataCy}
           />
         ))}
       </div>

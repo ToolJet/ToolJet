@@ -239,6 +239,7 @@ export const DatePickerV2 = ({
       customDateInputProps={customDateInputProps}
       id={id}
       showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };

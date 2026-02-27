@@ -440,12 +440,14 @@ const FormComponent = (props) => {
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
       <div
         className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
           isDynamicHeightEnabled && `dynamic-${id}`
         }`}
+        data-cy={`${dataCy}-body-section`}
         style={formContent}
       >
         {isLoading ? (
@@ -517,6 +519,7 @@ const FormComponent = (props) => {
           onResize={updateFooterSizeInStore}
           isActive={activeSlot === `${id}-footer`}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
     </form>
