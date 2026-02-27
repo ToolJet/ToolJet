@@ -18,9 +18,9 @@ To connect Prometheus with ToolJet, you’ll need the following details:
 - **Prometheus server URL**
 - **Username**
 - **Password**
-- **CA certificate**
+- **CA certificate** or **Client Certificate**
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/prometheus/connection.png" alt="Configuring Prometheus in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/connection.png" alt="Configuring Prometheus in ToolJet" />
 
 Once connected, you can start using instant and range queries to fetch metric data from your server.
 
@@ -44,7 +44,16 @@ Fetches the current value of a metric at a single point in time.
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
 - **Limit**: Restricts the number of results returned.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/instant.png" alt="Instant Query with PromQL in ToolJet" />
+<img style={{  marginBottom: "15px" }}  className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/instant-query.png" alt="Instant Query with PromQL in ToolJet" />
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+status : "success"
+    data : {} 3 keys
+```
+</details>
 
 ### Range Query with PromQL
 
@@ -63,4 +72,13 @@ Retrieves metric data over a specified time range.
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
 - **Limit**: Restricts the number of results returned.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/range.png" alt="Range Query with PromQL in ToolJet" />
+<img style={{  marginBottom: "15px" }} className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/range-query.png" alt="Range Query with PromQL in ToolJet" />
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+status : "success"
+    data : {} 2 keys
+```
+</details>
