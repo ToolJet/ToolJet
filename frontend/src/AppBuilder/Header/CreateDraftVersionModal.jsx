@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -92,9 +92,16 @@ const CreateDraftVersionModal = ({
   }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
   // Update version name when selectedVersionForCreation changes or when modal opens
+  const hasInitializedVersionName = useRef(false);
+
   useEffect(() => {
-    if (showCreateAppVersion && selectedVersionForCreation?.name) {
+    if (!showCreateAppVersion) {
+      hasInitializedVersionName.current = false;
+      return;
+    }
+    if (!hasInitializedVersionName.current && selectedVersionForCreation?.name) {
       setVersionName(selectedVersionForCreation.name);
+      hasInitializedVersionName.current = true;
     }
   }, [selectedVersionForCreation, showCreateAppVersion]);
 
