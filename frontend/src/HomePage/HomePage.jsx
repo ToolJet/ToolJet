@@ -1334,6 +1334,28 @@ class HomePageComponent extends React.Component {
     return options;
   };
 
+  getSelectedVersionCommitInfo = () => {
+    const { selectedVersionOption, latestCommitData, tags } = this.state;
+    const isLatest = !selectedVersionOption || selectedVersionOption === 'latest';
+
+    if (isLatest) {
+      return {
+        message: latestCommitData?.latestCommit[0]?.message,
+        author: latestCommitData?.latestCommit[0]?.author,
+        date: latestCommitData?.latestCommit[0]?.date,
+        versionName: latestCommitData?.gitVersionName,
+      };
+    }
+
+    const selectedTag = tags?.find((t) => t.name === selectedVersionOption);
+    return {
+      message: selectedTag?.message,
+      author: selectedTag?.tagger?.name,
+      date: selectedTag?.tagger?.date,
+      versionName: selectedVersionOption?.split('/')?.pop(),
+    };
+  };
+
   renderVersionOption = (option) => {
     return (
       <div className="version-option-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1784,14 +1806,16 @@ class HomePageComponent extends React.Component {
                           <>
                             <div className="message-info">
                               <div data-cy="last-commit-message">
-                                {latestCommitData?.latestCommit[0]?.message || 'No commits yet'}
+                                {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
                               </div>
-                              <div data-cy="last-commit-version">{latestCommitData?.gitVersionName}</div>
+                              <div data-cy="last-commit-version">
+                                {this.getSelectedVersionCommitInfo().gitVersionName}
+                              </div>
                             </div>
-                            {latestCommitData?.latestCommit[0]?.author && latestCommitData?.latestCommit[0]?.date && (
+                            {this.getSelectedVersionCommitInfo().author && this.getSelectedVersionCommitInfo().date && (
                               <div className="author-info" data-cy="auther-info">
-                                {`Done by ${latestCommitData?.latestCommit[0]?.author} at ${moment(
-                                  new Date(latestCommitData?.latestCommit[0]?.date)
+                                {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
+                                  new Date(this.getSelectedVersionCommitInfo().date)
                                 ).format('DD MMM YYYY, h:mm a')}`}
                               </div>
                             )}

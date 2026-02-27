@@ -10,19 +10,35 @@ import { PenLine } from 'lucide-react';
 
 function EditAppName() {
   const { moduleId } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode, selectedVersion] = useStore(
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
       state.setAppName,
       state.appStore.modules[moduleId].app.creationMode,
       state.selectedVersion,
+      state.orgGit,
+      state.appGit,
     ],
     shallow
   );
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
-  const isRenameDisabled = !isDraftVersion;
+  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const isAppCommittedToGit = !!appGit?.id;
+  const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
+  const isRenameDisabled =
+    isGitSyncEnabled && isAppCommittedToGit ? !isDraftVersion || isOnDefaultBranch : !isDraftVersion;
+
+  const getDisabledTooltipMessage = () => {
+    if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
+      return "Renaming isn't allowed on master. Switch branch to update name.";
+    }
+    if (!isDraftVersion) {
+      return 'Renaming of app is only allowed on draft versions';
+    }
+    return appName;
+  };
 
   const [showRenameModal, setShowRenameModal] = useState(false);
 
@@ -35,7 +51,7 @@ function EditAppName() {
       return true;
     }
     try {
-      await appsService.saveApp(appId, { name: sanitizedName });
+      await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
       setAppName(sanitizedName);
       toast.success('App name has been updated!');
       return true;
@@ -53,7 +69,7 @@ function EditAppName() {
     <>
       <div className="tw-h-full tw-flex tw-items-start tw-justify-start">
         <ToolTip
-          message={isRenameDisabled ? 'Renaming of app is only allowed on draft versions' : appName}
+          message={getDisabledTooltipMessage()}
           placement="bottom"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >

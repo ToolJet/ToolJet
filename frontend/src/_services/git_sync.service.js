@@ -28,6 +28,7 @@ export const gitSyncService = {
   updateGitConfigs,
   getGitConfigs,
   createGitTag,
+  checkTagExists,
 };
 
 function create(organizationId, gitUrl, gitType) {
@@ -357,5 +358,24 @@ function createGitTag(appId, versionId, versionDescription) {
     body: JSON.stringify({ message: versionDescription }),
   };
   return fetch(`${config.apiUrl}/app-git/${appId}/versions/${versionId}/tag`, requestOptions).then(handleResponse);
+}
+
+/**
+ * Check if a git tag already exists for the given app and version name.
+ * This should be called BEFORE saving the version locally to ensure
+ * local save and tag creation stay in sync.
+ * @param {string} appId - Application ID
+ * @param {string} versionName - Version name to check
+ * @returns {Promise<{ exists: boolean, tag_name: string }>} Promise resolving to tag existence check
+ */
+function checkTagExists(appId, versionName) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/app-git/${appId}/check-tag/${encodeURIComponent(versionName)}`, requestOptions).then(
+    handleResponse
+  );
 }
 // Remove all app-git api's to separate service from here.

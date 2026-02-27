@@ -223,14 +223,27 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    const { name } = appUpdateDto;
+    const { name, editingVersionId } = appUpdateDto;
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
+      const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
+      const isGitSyncEnabled = orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled;
+
+      // Block rename if git sync is enabled and app has been pushed
+      if (isGitSyncEnabled) {
+        const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
+        if (appGitSync) {
+          throw new BadRequestException(
+            "Renaming isn't allowed on master. Switch branch in app builder to update name."
+          );
+        }
+      }
+
       const draftVersion = await this.versionRepository.findOne({
         where: {
           appId: app.id,
-          versionType: AppVersionType.VERSION,
+          // versionType: AppVersionType.VERSION,
           status: AppVersionStatus.DRAFT,
         },
       });
@@ -247,6 +260,7 @@ export class AppsService implements IAppsService {
         organizationId: organizationId,
         app: app,
         appUpdateDto: appUpdateDto,
+        editingVersionId: editingVersionId,
       };
       await this.eventEmitter.emit('app-rename-commit', appRenameDto);
     }

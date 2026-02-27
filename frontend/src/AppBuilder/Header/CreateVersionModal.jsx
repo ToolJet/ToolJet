@@ -149,6 +149,26 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      // Pre-check: If git sync + branching is enabled, verify tag doesn't already exist
+      // This ensures local save and tag creation stay IN SYNC
+      if (isGitSyncEnabled && isBranchingEnabled) {
+        try {
+          const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
+          if (tagCheck.exists) {
+            toast.error(
+              `Cannot save: Tag '${tagCheck.tagName}' already exists. ` +
+                `Please rename your version to a unique name before saving.`
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
+        } catch (error) {
+          // If check fails, log warning but allow save to proceed
+          // (tag creation will fail separately if there's an issue)
+          console.warn('Tag existence check failed, proceeding with save', error);
+        }
+      }
+
       // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
@@ -156,29 +176,41 @@ const CreateVersionModal = ({
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
-      if (isGitSyncEnabled) {
-        // The backend's version-rename-commit event is suppressed when the status is
-        // also changing to PUBLISHED (save-version flow), so there's no competing push.
-        // We always handle the commit here with the correct "Version Created" message.
-        const updatedVersionData = {
-          ...selectedVersionForCreation,
-          name: versionName,
-          description: versionDescription,
-        };
-        handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
-          .then((commitDone) => {
-            if (!commitDone) return;
-            if (isBranchingEnabled) {
-              return gitSyncService.createGitTag(
-                appId,
-                selectedVersionForCreation.id,
-                versionDescription || `Version ${versionName.trim()} created`
-              );
-            }
-          })
+      // if (isGitSyncEnabled) {
+      //   // The backend's version-rename-commit event is suppressed when the status is
+      //   // also changing to PUBLISHED (save-version flow), so there's no competing push.
+      //   // We always handle the commit here with the correct "Version Created" message.
+      //   const updatedVersionData = {
+      //     ...selectedVersionForCreation,
+      //     name: versionName,
+      //     description: versionDescription,
+      //   };
+      //   handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
+      //     .then((commitDone) => {
+      //       if (!commitDone) return;
+      //       if (isBranchingEnabled) {
+      //         return gitSyncService.createGitTag(
+      //           appId,
+      //           selectedVersionForCreation.id,
+      //           versionDescription || `Version ${versionName.trim()} created`
+      //         );
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.error('Commit or tag failed:', error);
+      //       toast.error(error?.data?.message || 'Commit or tag failed');
+      //     });
+      // }
+
+      if (isGitSyncEnabled && isBranchingEnabled) {
+        gitSyncService
+          .createGitTag(
+            appId,
+            selectedVersionForCreation.id,
+            versionDescription || `Version ${versionName.trim()} created`
+          )
           .catch((error) => {
-            console.error('Commit or tag failed:', error);
-            toast.error(error?.data?.message || 'Commit or tag failed');
+            toast.error(error?.data?.message || 'Tag creation failed');
           });
       }
 

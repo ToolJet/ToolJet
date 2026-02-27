@@ -179,22 +179,9 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         where: { appId },
       });
 
+      // If app is already in a folder, remove it first (apps can only be in one folder)
       if (existingFolderApp) {
-        throw new BadRequestException(
-          'Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.'
-        );
-      }
-
-      // Skip this check when called from app import flow
-      if (!skipGitSyncCheck) {
-        const gitSyncedApp = await manager.findOne(AppGitSync, {
-          where: { appId },
-          select: ['id'],
-        });
-
-        if (gitSyncedApp) {
-          throw new BadRequestException('Git-synced app cannot be moved to the folder');
-        }
+        await manager.delete(FolderApp, { id: existingFolderApp.id });
       }
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
