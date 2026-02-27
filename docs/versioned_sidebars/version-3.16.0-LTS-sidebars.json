@@ -610,7 +610,8 @@
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",
-                "marketplace/plugins/marketplace-plugin-weaviate"
+                "marketplace/plugins/marketplace-plugin-weaviate",
+                "marketplace/plugins/marketplace-plugin-xero"
               ]
             }
           ]
