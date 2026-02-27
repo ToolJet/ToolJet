@@ -24,7 +24,7 @@ To connect to your PrestoDB database, the following details are required:
 - **Extra Headers** (optional)
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/prestodb/connect.png" alt="PrestoDB Connect" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/prestodb/connection-v2.png" alt="PrestoDB data source configuration" />
 </div>
 
 ## Querying PrestoDB
@@ -44,16 +44,81 @@ ToolJet supports executing SQL queries on PrestoDB databases.
 
 This operation allows you to execute SQL queries on your PrestoDB database.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/prestodb/query.png" alt="PrestoDB Query"/>
-</div>
-
 #### Parameters:
 
 - **SQL Query**: The SQL query to execute.
 
-#### Example:
+#### Example 1:
 
 ```sql
 SELECT * FROM my_table WHERE column_name = 'value' LIMIT 10
 ```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/prestodb/query1.png" alt="PrestoDB Query"/>
+</div>
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Alice",
+    "column_name": "value",
+    "created_at": "2025-02-01 10:00:00"
+  },
+  {
+    "id": 2,
+    "name": "Bob",
+    "column_name": "value",
+    "created_at": "2025-02-01 11:30:00"
+  }
+]
+```
+</details>
+
+#### Example 2 :
+
+Use this query to group and count rows by a specific column in a table (e.g., count records per status). Replace **your_table_name** and **status_column** with your actual table and column names.
+
+```sql
+-- Example: Count rows by status in a PrestoDB table
+SELECT status_column,
+       COUNT(*) AS total_count
+FROM your_table_name
+WHERE status_column IS NOT NULL
+GROUP BY status_column
+ORDER BY total_count DESC
+LIMIT 20;
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/prestodb/query2.png" alt="PrestoDB Query"/>
+</div>
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "status_column": "Completed",
+    "total_count": 245
+  },
+  {
+    "status_column": "Pending",
+    "total_count": 180
+  },
+  {
+    "status_column": "Failed",
+    "total_count": 52
+  },
+  {
+    "status_column": "Cancelled",
+    "total_count": 21
+  }
+]
+```
+</details>
