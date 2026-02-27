@@ -104,7 +104,7 @@ const useAppData = (
   const setEnvironmentLoadingState = useStore((state) => state.setEnvironmentLoadingState);
   const updateReleasedVersionId = useStore((state) => state.updateReleasedVersionId);
   const resetUndoRedoStack = useStore((state) => state.resetUndoRedoStack);
-  const checkAndSetTrueBuildSuggestionsFlag = useStore((state) => state.checkAndSetTrueBuildSuggestionsFlag);
+  const initSuggestions = useStore((state) => state.initSuggestions);
   const cleanUpStore = useStore((state) => state.cleanUpStore);
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
@@ -187,10 +187,11 @@ const useAppData = (
       setPageSwitchInProgress(false);
       setTimeout(() => {
         handleEvent('onPageLoad', currentPageEvents, {});
-        checkAndSetTrueBuildSuggestionsFlag();
+        // Rebuild all suggestion segments for the new page's components/queries/variables
+        mode === 'edit' && initSuggestions(moduleId);
       }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode]);
+  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -539,7 +540,6 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
 
-        !moduleMode && checkAndSetTrueBuildSuggestionsFlag();
         return () => {
           document.title = retrieveWhiteLabelText();
         };
@@ -550,16 +550,17 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession]);
+  }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
     if (isComponentLayoutReady) {
+      mode === 'edit' && initSuggestions(moduleId);
       runOnLoadQueries(moduleId).then(() => {
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
       });
     }
-  }, [isComponentLayoutReady, moduleId]);
+  }, [isComponentLayoutReady, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;

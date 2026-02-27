@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import SubcontainerContext, { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 export const ListviewSubcontainer = ({
   index,
@@ -11,8 +12,6 @@ export const ListviewSubcontainer = ({
   positiveColumns,
   showBorder,
   onRecordOrRowClicked,
-  onOptionChange,
-  onOptionsChange,
   computeCanvasBackgroundColor,
   darkMode,
   id,
@@ -25,6 +24,12 @@ export const ListviewSubcontainer = ({
   parentHeight,
   dataCy,
 }) => {
+  const parentContext = useSubcontainerContext();
+  const contextValue = useMemo(
+    () => ({ contextPath: [...parentContext.contextPath, { containerId: id, index }] }),
+    [parentContext.contextPath, id, index]
+  );
+
   const temporaryLayout = useStore((state) => state.temporaryLayouts?.[`${id}-${index}`], shallow);
   const transformedRowHeight = isDynamicHeightEnabled ? temporaryLayout?.height ?? rowHeight : rowHeight;
 
@@ -41,37 +46,37 @@ export const ListviewSubcontainer = ({
   });
 
   return (
-    <div
-      className={`list-item ${mode == 'list' && 'w-100'}`}
-      style={{
-        position: 'relative',
-        height: `${transformedRowHeight}px`,
-        width: `${100 / positiveColumns}%`,
-        padding: '0px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
-      }}
-      key={index}
-      data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
-      onClickCapture={(event) => {
-        onRecordOrRowClicked(index);
-      }}
-    >
-      <SubContainer
-        index={index}
-        id={id}
-        key={`${id}-${index}`}
-        canvasHeight={transformedRowHeight}
-        canvasWidth={width}
-        onOptionChange={onOptionChange}
-        onOptionsChange={onOptionsChange}
-        styles={computeCanvasBackgroundColor}
-        columns={positiveColumns}
-        listViewMode={mode}
-        darkMode={darkMode}
-        componentType="Listview"
-      />
-    </div>
+    <SubcontainerContext.Provider value={contextValue}>
+      <div
+        className={`list-item ${mode == 'list' && 'w-100'}`}
+        style={{
+          position: 'relative',
+          height: `${transformedRowHeight}px`,
+          width: `${100 / positiveColumns}%`,
+          padding: '0px',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          ...(showBorder && mode == 'list' && { borderBottom: `1px solid var(--cc-default-border)` }),
+        }}
+        key={index}
+        data-cy={`${String(dataCy).toLowerCase()}-row-${index}`}
+        onClickCapture={(event) => {
+          onRecordOrRowClicked(index);
+        }}
+      >
+        <SubContainer
+          index={index}
+          id={id}
+          key={`${id}-${index}`}
+          canvasHeight={transformedRowHeight}
+          canvasWidth={width}
+          styles={computeCanvasBackgroundColor}
+          columns={positiveColumns}
+          listViewMode={mode}
+          darkMode={darkMode}
+          componentType="Listview"
+        />
+      </div>
+    </SubcontainerContext.Provider>
   );
 };
