@@ -10,7 +10,7 @@ export const dsCommonSelector = {
         return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`;
     },
     labelFieldName: (fieldName) => {
-        return `[data-cy="label-${cyParamName(fieldName)}"]`;
+        return `[data-cy="${cyParamName(fieldName)}-label"]`;
     },
     textField: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-text-field"]`;
@@ -32,7 +32,7 @@ export const dsCommonSelector = {
         return `[data-cy="${cyParamName(toggleName)}-toggle-input"]`;
     },
     button: (buttonName) => {
-        return `[data-cy="button-${cyParamName(buttonName)}"]`;
+        return `[data-cy="${cyParamName(buttonName)}-button"]`;
     },
     dataSourceNameInputField: (fieldName) => {
         return `[data-cy="${cyParamName(fieldName)}-input-field"]`;

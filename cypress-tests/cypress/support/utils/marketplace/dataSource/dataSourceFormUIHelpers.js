@@ -78,7 +78,7 @@ export const verifyEncryptedFieldUI = (field) => {
         validateRequiredIndicator(validations.isRequired);
 
         if (validations.hasEditButton) {
-            cy.get('[data-cy="button-edit"]').should('be.visible').and('have.text', 'Edit');
+            cy.get('[data-cy="edit-button"]').should('be.visible').and('have.text', 'Edit');
         }
         if (validations.showEncrypted) {
             cy.get('[data-cy="encrypted-text"]').should('be.visible').and('contain.text', 'Encrypted');
@@ -126,7 +126,7 @@ export const verifyToggleFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+        cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
 
         const toggleSelector = dsCommonSelector.toggleInput(fieldName);
         validateCheckedState(toggleSelector, validations.value);
@@ -139,7 +139,7 @@ export const verifyRadioButtonFieldUI = (field) => {
     const { fieldName, validations = {} } = field;
 
     cy.get(dsCommonSelector.subSection(fieldName)).within(() => {
-        cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+        cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
 
         const radioSelector = dsCommonSelector.radioButtonInput(fieldName);
         validateCheckedState(radioSelector, validations.value);
@@ -153,7 +153,7 @@ export const verifyKeyValueFieldUI = (field) => {
 
     const verifyContent = () => {
         if (fieldName) {
-            cy.get(`[data-cy="label-${cyParamName(fieldName)}"]`).should('be.visible');
+            cy.get(`[data-cy="${cyParamName(fieldName)}-label"]`).should('be.visible');
         }
 
         if (validations.isEmpty) {

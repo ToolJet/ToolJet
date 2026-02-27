@@ -131,7 +131,7 @@ export const fillDSConnectionEncryptedField = (field) => {
   if (encrypted) {
     cy.get(fieldSelector).then(($field) => {
       if ($field.is(':disabled')) {
-        cy.get('[data-cy="button-edit"]').should('be.visible').click();
+        cy.get('[data-cy="edit-button"]').should('be.visible').click();
         cy.wait(500);
       }
     });
