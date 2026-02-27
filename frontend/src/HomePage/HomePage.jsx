@@ -368,12 +368,6 @@ class HomePageComponent extends React.Component {
   };
 
   renameApp = async (newAppName, appId) => {
-    if (this.props.appType === 'front-end') {
-      toast.error("Renaming isn't allowed on master. Switch branch in app builder to update name.");
-      this.setState({ showRenameAppModal: false });
-      return true;
-    }
-
     newAppName = newAppName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ renamingApp: true });
