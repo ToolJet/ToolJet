@@ -1,19 +1,25 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
+import { UserAppsPermissions, UserFolderPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
-import { AppGitSync } from '../../entities/app_git_sync.entity';
+import { AppGitSync } from '@entities/app_git_sync.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { GroupUsers } from '@entities/group_users.entity';
+import { GroupFolders } from '@entities/group_folders.entity';
 
 @Injectable()
-export class FolderAppsUtilService implements IFolderAppsUtilService {
+class FolderAppsUtilService implements IFolderAppsUtilService {
+  private readonly logger = new Logger(FolderAppsUtilService.name);
   constructor(protected readonly abilityService: AbilityService) {}
 
   async allFoldersWithAppCount(
@@ -141,11 +147,12 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         .getMany();
 
       const userPermission = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: MODULES.APP }],
+        resources: [{ resource: MODULES.APP }, { resource: MODULES.FOLDER }],
         organizationId: user.organizationId,
       });
-      const userAppPermissions = userPermission?.[MODULES.APP];
 
+      const userAppPermissions = userPermission?.[MODULES.APP];
+      const userFolderPermissions = userPermission?.[MODULES.FOLDER];
       const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
       if (folderAppIds.length == 0) {
         return {
@@ -155,7 +162,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       }
 
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey);
-      this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
+      this.addViewableFrontendFilter(
+        viewableAppsInFolder,
+        folderAppIds,
+        userAppPermissions,
+        userFolderPermissions,
+        folder.id
+      );
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder
@@ -206,17 +219,35 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         updatedAt: new Date(),
       });
 
-      const folderApp = await manager.save(FolderApp, newFolderApp);
-
-      return folderApp;
+      return await manager.save(FolderApp, newFolderApp);
     });
   }
 
   protected addViewableFrontendFilter(
     query: SelectQueryBuilder<AppBase>,
     folderAppIds: string[],
-    userAppPermissions: UserAppsPermissions
+    userAppPermissions: UserAppsPermissions,
+    userFolderPermissions: UserFolderPermissions,
+    folderId?: string
   ): SelectQueryBuilder<AppBase> {
+    // check for folder-level access
+    if (folderId) {
+      const canEditFolder =
+        userFolderPermissions?.isAllEditable || userFolderPermissions?.editableFoldersId?.includes(folderId);
+
+      const canEditApps =
+        userFolderPermissions?.isAllEditApps || userFolderPermissions?.editAppsInFoldersId?.includes(folderId);
+
+      const canViewApps =
+        userFolderPermissions?.isAllViewable || userFolderPermissions?.viewableFoldersId?.includes(folderId);
+
+      if (canEditFolder || canEditApps || canViewApps) {
+        // User has explicit folder-level access — show all apps in folder
+        query.where('apps.id IN (:...folderAppIds)', { folderAppIds });
+        return query;
+      }
+    }
+
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
 
     const viewableAppsTotal = isAllEditable
@@ -243,4 +274,37 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     return query;
   }
+
+  protected async getFolderLevelPermissions(
+    user: User,
+    folder: Folder,
+    manager: EntityManager
+  ): Promise<{
+    canEditFolderOrApps: boolean;
+    canViewApps: boolean;
+  }> {
+    this.logger.debug(`viewableAppsInFolder ${folder.id}, userId: ${user.id}`);
+    const folderGroupPerms = await manager
+      .createQueryBuilder(FoldersGroupPermissions, 'fgp')
+      .select(['fgp.id', 'fgp.canEditFolder', 'fgp.canEditApps', 'fgp.canViewApps'])
+      .innerJoin(GranularPermissions, 'gp', 'gp.id = fgp.granular_permission_id')
+      .innerJoin(GroupPermissions, 'grp', 'grp.id = gp.group_id')
+      .innerJoin(GroupUsers, 'gu', 'gu.group_id = grp.id')
+      .innerJoin(GroupFolders, 'gf', 'gf.folders_group_permissions_id = fgp.id AND gf.folder_id = :folderId', {
+        folderId: folder.id,
+      })
+      .where('gu.user_id = :userId', {
+        userId: user.id,
+      })
+      .getMany();
+
+    this.logger.debug(`folderGroupPerms ${folderGroupPerms.length}, values: ${JSON.stringify(folderGroupPerms)}`);
+
+    return {
+      canEditFolderOrApps: folderGroupPerms.some((p) => p.canEditFolder || p.canEditApps),
+      canViewApps: folderGroupPerms.some((p) => p.canViewApps),
+    };
+  }
 }
+
+export default FolderAppsUtilService

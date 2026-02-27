@@ -3,7 +3,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select, { components } from 'react-select';
-import { FilterPreview } from '@/_components';
 import './appSelect.theme.scss';
 
 export const RESOURCE_TYPE = {
@@ -130,6 +129,9 @@ export function AppsSelect(props) {
   };
 
   const selectStyles = {
+    menuPortal: (base) => {
+      return { ...base, zIndex: 9999 };
+    },
     indicatorSeparator: (base) => ({
       ...base,
       display: 'none',
@@ -219,16 +221,11 @@ export function AppsSelect(props) {
       className={darkMode && 'theme-dark dark-theme'}
       components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
       {...props}
+      menuPosition="fixed"
       onChange={(selected) => {
         const isCurrentSelectAll = props.value.find((app) => app?.isAllField)?.isAllField;
         const isSelectAllPresentInSelection = selected.find((app) => app?.isAllField)?.isAllField;
-        if (
-          props.allowSelectAll &&
-          selected !== null &&
-          selected.length > 0 &&
-          isSelectAllPresentInSelection &&
-          !isCurrentSelectAll
-        ) {
+        if (props.allowSelectAll && selected.length > 0 && isSelectAllPresentInSelection && !isCurrentSelectAll) {
           if (props.value.find((app) => app?.isAllField)?.isAllField)
             props.onChange(selected.filter((app) => !app?.isAllField));
           return props.onChange([...props.options, props.allOption]);

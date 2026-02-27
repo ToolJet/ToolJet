@@ -33,6 +33,8 @@ export class ValidAppGuard implements CanActivate {
       throw new NotFoundException('App not found. Invalid app id or slug');
     }
 
+    request.tj_folder = await this.appRepository.findFolderByAppId(app.id);
+
     // Attach the found app to the request
     request.tj_app = app;
     request.tj_resource_id = app.id;

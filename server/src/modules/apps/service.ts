@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   HttpException,
   HttpStatus,
-  Injectable,
+  Injectable, Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
@@ -31,7 +31,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
-import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
+import FolderAppsUtilService from '@modules/folder-apps/util.service';
 import { PageService } from './services/page.service';
 import { EventsService } from './services/event.service';
 import { ComponentsService } from './services/component.service';
@@ -48,9 +48,11 @@ import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { Folder } from '@entities/folder.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
+  private readonly logger = new Logger(AppsService.name);
   constructor(
     protected readonly appsUtilService: AppsUtilService,
     protected readonly licenseTermsService: LicenseTermsService,
@@ -105,6 +107,7 @@ export class AppsService implements IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ) {
+    this.logger.debug('validateAppAccessDto', app);
     const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
@@ -114,6 +117,9 @@ export class AppsService implements IAppsService {
     // Check permissions - first check app-level, then folder-level
     let hasEditPermission = ability.can(FEATURE_KEY.UPDATE, App, app.id);
     const hasViewPermission = ability.can(FEATURE_KEY.GET_BY_SLUG, App, app.id);
+
+    let hasFolderLevelEditPermission = ability.can(FEATURE_KEY.UPDATE, Folder, app.id);
+    this.logger.debug(`validateAppAccess: ${hasEditPermission}, folder-level edit: ${hasFolderLevelEditPermission}, view: ${hasViewPermission} for user ${user.id} on app ${app.id}`);
 
     // If no app-level edit permission, check folder-level edit apps permission
     if (!hasEditPermission) {

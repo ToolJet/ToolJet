@@ -22,6 +22,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     request?: any
   ): void {
     const resourceId = request?.tj_resource_id;
-    createVersionAbility(can, UserAllPermissions, resourceId);
+    const folderId = request?.tj_folder?.folderId;
+    createVersionAbility(can, UserAllPermissions, resourceId, folderId);
   }
 }

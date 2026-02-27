@@ -4,6 +4,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { FolderApp } from '@entities/folder_app.entity';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -99,5 +100,15 @@ export class AppsRepository extends Repository<App> {
         relations: ['appVersions'],
       });
     }, manager || this.manager);
+  }
+
+  async findFolderByAppId(appId: string, manager?: EntityManager) {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(FolderApp, 'fa')
+        .select(['fa.folderId'])
+        .where('fa.appId = :appId', { appId })
+        .getOne();
+    }, manager);
   }
 }
