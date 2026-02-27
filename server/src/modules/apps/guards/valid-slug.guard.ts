@@ -1,6 +1,6 @@
-import { Injectable, CanActivate, ExecutionContext, BadRequestException } from '@nestjs/common';
-import { AppsUtilService } from '../util.service';
-import { User } from '@entities/user.entity';
+import {BadRequestException, CanActivate, ExecutionContext, Injectable} from '@nestjs/common';
+import {AppsUtilService} from '../util.service';
+import {User} from '@entities/user.entity';
 
 // Assuming Slug passed can be Id or Slug
 @Injectable()
@@ -19,6 +19,11 @@ export class ValidSlugGuard implements CanActivate {
 
     // Fetch the app associated with the provided slug for the user's organization
     const app = await this.appsUtilService.findAppWithIdOrSlug(slug, user.organizationId);
+
+    // Find the folder that the app belongs to, if any, and attach it to the request
+    if (app) {
+      request.tj_folder = await this.appsUtilService.findFolderByAppId(app.id);
+    }
 
     // If no app is found, throw a BadRequestException
     if (!app) {

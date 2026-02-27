@@ -8,11 +8,29 @@ import { MODULES } from '@modules/app/constants/modules';
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string
+  resourceId?: string,
+  folderId?: string
 ): void {
   const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[resource[0].resourceType];
+  const userFolderPermissions = userPermission?.[MODULES.FOLDER];
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+
+  const appFolderId: string | undefined = folderId;
+
+  // Folder-level permission checks
+  const hasFolderEditAccess =
+    !!appFolderId &&
+    (userFolderPermissions?.isAllEditable ||
+      userFolderPermissions?.isAllEditApps ||
+      userFolderPermissions?.editableFoldersId?.includes(appFolderId) ||
+      userFolderPermissions?.editAppsInFoldersId?.includes(appFolderId));
+
+  const hasFolderViewAccess =
+    !!appFolderId &&
+    (userFolderPermissions?.isAllViewable || userFolderPermissions?.viewableFoldersId?.includes(appFolderId));
+
+  console.log(`hasFolderEditAccess: ${hasFolderEditAccess}, hasFolderViewAccess: ${hasFolderViewAccess}`);
 
   if (isAdmin || superAdmin) {
     can(
@@ -86,9 +104,10 @@ export function defineAppVersionAbility(
       App
     );
   } else if (
-    userAppPermissions?.editableAppsId?.length &&
-    resourceId &&
-    userAppPermissions.editableAppsId.includes(resourceId)
+    (userAppPermissions?.editableAppsId?.length &&
+      resourceId &&
+      userAppPermissions.editableAppsId.includes(resourceId)) ||
+    hasFolderEditAccess
   ) {
     can(
       [
@@ -143,7 +162,7 @@ export function defineAppVersionAbility(
         FEATURE_KEY.CREATE_EVENT,
         FEATURE_KEY.UPDATE_EVENT,
         FEATURE_KEY.DELETE_EVENT,
-        FEATURE_KEY.GET_ONE
+        FEATURE_KEY.GET_ONE,
       ],
       App
     );

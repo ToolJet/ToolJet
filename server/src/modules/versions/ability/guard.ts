@@ -16,13 +16,18 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return App;
   }
 
-  protected getResource(): ResourceDetails {
+  protected getResource(): ResourceDetails | ResourceDetails[] {
     const resource: App = this.getResourceObject();
     switch (resource?.type) {
       case APP_TYPES.FRONT_END:
-        return {
-          resourceType: MODULES.APP,
-        };
+        return [
+          {
+            resourceType: MODULES.APP,
+          },
+          {
+            resourceType: MODULES.FOLDER,
+          },
+        ];
       case APP_TYPES.WORKFLOW:
         return {
           resourceType: MODULES.WORKFLOWS,

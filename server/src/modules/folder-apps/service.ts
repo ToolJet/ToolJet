@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FolderApp } from '../../entities/folder_app.entity';
-import { AppGitSync } from '../../entities/app_git_sync.entity';
+import { FolderApp } from '@entities/folder_app.entity';
+import { AppGitSync } from '@entities/app_git_sync.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
-import { FolderAppsUtilService } from './util.service';
+import FolderAppsUtilService from './util.service';
 import { IFolderAppsService } from './interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
 import { AbilityService } from '@modules/ability/interfaces/IService';

@@ -8,16 +8,36 @@ import { FeatureAbility } from './index';
 export function defineDataQueryAppAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  app: App
+  app: App,
+  folderId?: string
 ): void {
   const appId = app?.id;
   const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourcePermissions = userPermission?.[MODULES.APP];
+  const folderPermissions = userPermission?.[MODULES.FOLDER];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
   const isCanCreate = userPermission.appCreate;
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+
+  console.log(`DQ request.tj_folder: ${folderId}`);
+
+  // App's folder ID from ValidSlugGuard → tj_folder
+  const appFolderId: string | undefined = folderId;
+
+  // Folder-level permission checks
+  const hasFolderEditAccess =
+    !!appFolderId &&
+    (folderPermissions?.isAllEditable ||
+      folderPermissions?.isAllEditApps ||
+      folderPermissions?.editableFoldersId?.includes(appFolderId) ||
+      folderPermissions?.editAppsInFoldersId?.includes(appFolderId));
+
+  const hasFolderViewAccess =
+    !!appFolderId && (folderPermissions?.isAllViewable || folderPermissions?.viewableFoldersId?.includes(appFolderId));
+
+  console.log(`hasFolderEditAccess: ${hasFolderEditAccess}, hasFolderViewAccess: ${hasFolderViewAccess}`);
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
@@ -41,7 +61,7 @@ export function defineDataQueryAppAbility(
     return;
   }
 
-  if (isAllEditable || isCanCreate || isCanDelete) {
+  if (isAllEditable || isCanCreate || isCanDelete || hasFolderEditAccess) {
     can(
       [
         FEATURE_KEY.GET,
@@ -77,12 +97,15 @@ export function defineDataQueryAppAbility(
     return;
   }
 
-  if (isAllViewable) {
+  if (isAllViewable || hasFolderViewAccess) {
     can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 
-  if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
+  if (
+    (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) ||
+    hasFolderViewAccess
+  ) {
     can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }

@@ -41,6 +41,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
+import {FolderApp} from "@entities/folder_app.entity";
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -741,5 +742,15 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     return shouldFreezeEditor;
+  }
+
+  async findFolderByAppId(appId: string, manager?: EntityManager): Promise<any> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(FolderApp, 'fa')
+        .select(['fa.folderId'])
+        .where('fa.appId = :appId', { appId })
+        .getOne();
+    }, manager);
   }
 }

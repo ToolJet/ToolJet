@@ -8,13 +8,18 @@ import { APP_TYPES } from '../constants';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
-  protected getResource(): ResourceDetails {
+  protected getResource(): ResourceDetails[] | ResourceDetails {
     const resource = this.getResourceObject();
     switch (resource?.type) {
       case APP_TYPES.FRONT_END:
-        return {
-          resourceType: MODULES.APP,
-        };
+        return [
+          {
+            resourceType: MODULES.APP,
+          },
+          {
+            resourceType: MODULES.FOLDER,
+          },
+        ];
       case APP_TYPES.MODULE:
         return {
           resourceType: MODULES.MODULES,

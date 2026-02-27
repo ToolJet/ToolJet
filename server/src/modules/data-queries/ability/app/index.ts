@@ -25,14 +25,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   ): void {
     const resourceId = request?.tj_resource_id;
     const app = request?.tj_app as App;
+    const folderId = request?.tj_folder.folderId;
     const resourceType = UserAllPermissions.resource[0].resourceType;
 
     switch (resourceType) {
       case MODULES.APP:
-        defineDataQueryAppAbility(can, UserAllPermissions, app);
+        defineDataQueryAppAbility(can, UserAllPermissions, app, folderId);
         break;
       case MODULES.MODULES:
-        defineDataQueryAppAbility(can, UserAllPermissions, resourceId);
+        defineDataQueryAppAbility(can, UserAllPermissions, resourceId, folderId);
         break;
       case MODULES.WORKFLOWS:
         defineDataQueryWorkflowAbility(can, UserAllPermissions, resourceId);

@@ -13,11 +13,31 @@ export function defineAppAbility(
 ): void {
   const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const userAppPermissions = userPermission?.[MODULES.APP];
+  const userFolderPermissions = userPermission?.[MODULES.FOLDER];
   const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
   const isAllAppsCreatable = !!userPermission?.appCreate;
   const isAllAppsDeletable = !!userPermission?.appDelete;
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+
+  console.log(`request.tj_folder: ${JSON.stringify(request?.tj_folder)}`);
+
+  // App's folder ID from ValidSlugGuard → tj_folder
+  const appFolderId: string | undefined = request?.tj_folder?.folderId;
+
+  // Folder-level permission checks
+  const hasFolderEditAccess =
+    !!appFolderId &&
+    (userFolderPermissions?.isAllEditable ||
+      userFolderPermissions?.isAllEditApps ||
+      userFolderPermissions?.editableFoldersId?.includes(appFolderId) ||
+      userFolderPermissions?.editAppsInFoldersId?.includes(appFolderId));
+
+  const hasFolderViewAccess =
+    !!appFolderId &&
+    (userFolderPermissions?.isAllViewable || userFolderPermissions?.viewableFoldersId?.includes(appFolderId));
+
+  console.log(`hasFolderEditAccess: ${hasFolderEditAccess}, hasFolderViewAccess: ${hasFolderViewAccess}`);
 
   // Check if user is the owner of the app
   const app = request?.tj_app;
@@ -69,7 +89,8 @@ export function defineAppAbility(
   }
   if (
     isAllAppsEditable ||
-    (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
+    (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId)) ||
+    hasFolderEditAccess
   ) {
     const permissions = [
       FEATURE_KEY.UPDATE,
@@ -96,7 +117,8 @@ export function defineAppAbility(
 
   if (
     isAllAppsViewable ||
-    (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
+    (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId)) ||
+    hasFolderViewAccess
   ) {
     // Viewers (both builders and end-users with view-only permission) can access apps
     const permissions = [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG];
