@@ -11,9 +11,19 @@ At its core, Qdrant operates with points, which are records consisting of a vect
 
 To connect with Qdrant, you will need Qdrant URL and an API key, which can be generated from [Qdrant Cloud Dashboard](https://qdrant.to/cloud).
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/config.png" alt="Qdrant Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/connection-v2.png" alt="Qdrant Configuration" />
 
 ## Supported Operations
+
+1. **[Get Collection Info](#get-collection-info)**
+2. **[List Collection](#list-collection)**
+3. **[Get Points](#get-points)**
+4. **[Upsert Points](#upsert-points)**
+5. **[Delete Points](#delete-points)**
+6. **[Query Points](#query-points)**
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/listops.png" alt="Qdrant supported operations" />
+
 
 ### Get Collection Info
 
@@ -23,7 +33,7 @@ Use this operation to retrieve metadata and configuration details about a specif
 
 - **Collection Name:** Refers to the specific dataset stored in Qdrant.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/get-collection-query.png" alt="Get Collection Info" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -31,50 +41,21 @@ Use this operation to retrieve metadata and configuration details about a specif
 {
     "status": "green",
     "optimizer_status": "ok",
-    "indexed_vectors_count": 5417,
-    "points_count": 5412,
+    "indexed_vectors_count": 0,
+    "points_count": 0,
     "segments_count": 2,
-    "config": {
-        "params": {
-            "vectors": {
-                "size": 512,
-                "distance": "Cosine"
-            },
-            "shard_number": 1,
-            "replication_factor": 1,
-            "write_consistency_factor": 1,
-            "on_disk_payload": true
-        },
-        "hnsw_config": {
-            "m": 16,
-            "ef_construct": 100,
-            "full_scan_threshold": 10000,
-            "max_indexing_threads": 0,
-            "on_disk": false
-        },
-        "optimizer_config": {
-            "deleted_threshold": 0.2,
-            "vacuum_min_vector_number": 1000,
-            "default_segment_number": 2,
-            "max_segment_size": null,
-            "memmap_threshold": null,
-            "indexing_threshold": 1000,
-            "flush_interval_sec": 5,
-            "max_optimization_threads": null
-        },
-        "wal_config": {
-            "wal_capacity_mb": 1,
-            "wal_segments_ahead": 0
-        },
-        "quantization_config": null,
-        "strict_mode_config": {
-            "enabled": false
-        }
-    },
+    "config": {} 6keys
     "payload_schema": {}
+    "update_queue": {} 1key
 }
 ```
 </details>
+
+### List Collections
+
+Use this operation to retrieve all available collections in the connected Qdrant instance.
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/list-collection-query.png" alt="List Collection" />
 
 ### Get Points
 
