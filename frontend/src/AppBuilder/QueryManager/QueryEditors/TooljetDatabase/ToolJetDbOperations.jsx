@@ -130,9 +130,9 @@ const ToolJetDbOperations = ({
           ...acc,
           ...(tableInfo[newTable]
             ? tableInfo[newTable].map((col) => ({
-                name: col.Header,
-                table: newTable,
-              }))
+              name: col.Header,
+              table: newTable,
+            }))
             : []),
         ],
         []
@@ -173,12 +173,12 @@ const ToolJetDbOperations = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {    
+  useEffect(() => {
     const tableSet = new Set();
     if (selectedTableId) {
-        tableSet.add(selectedTableId);
+      tableSet.add(selectedTableId);
     }
-    
+
     const joinOptions = options['join_table']?.['joins'];
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;
@@ -201,12 +201,12 @@ const ToolJetDbOperations = ({
 
   useEffect(() => {
     if (selectedTableId && tables.length > 0) {
-       const tableDetails = findTableDetails(selectedTableId);
-       if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
-         setColumns(tableInfo[tableDetails.table_name]);
-       }
+      const tableDetails = findTableDetails(selectedTableId);
+      if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+        setColumns(tableInfo[tableDetails.table_name]);
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId, tableInfo, tables]);
 
   useEffect(() => {
@@ -246,8 +246,8 @@ const ToolJetDbOperations = ({
 
   useEffect(() => {
     if (skipJoinTableUpdateRef.current) {
-        skipJoinTableUpdateRef.current = false; 
-        return;
+      skipJoinTableUpdateRef.current = false;
+      return;
     }
     mounted && optionchanged('join_table', joinTableOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -322,10 +322,10 @@ const ToolJetDbOperations = ({
           newFields.push(
             ...(data?.result?.columns
               ? data.result.columns.map((col) => ({
-                  name: col.column_name,
-                  table: tableId,
-                  // alias: `${tableId}_${col.column_name}`,
-                }))
+                name: col.column_name,
+                table: tableId,
+                // alias: `${tableId}_${col.column_name}`,
+              }))
               : [])
           );
 
@@ -455,35 +455,35 @@ const ToolJetDbOperations = ({
 
   const handleTableNameSelect = (tableId) => {
     const newJoinOptions = {
-        joins: [
-          {
-            id: new Date().getTime(),
-            conditions: {
-              operator: 'AND',
-              conditionsList: [
-                {
-                  operator: '=',
-                  leftField: { table: tableId },
-                },
-              ],
-            },
-            joinType: 'INNER',
+      joins: [
+        {
+          id: new Date().getTime(),
+          conditions: {
+            operator: 'AND',
+            conditionsList: [
+              {
+                operator: '=',
+                leftField: { table: tableId },
+              },
+            ],
           },
-        ],
-        from: {
-          name: tableId,
-          type: 'Table',
+          joinType: 'INNER',
         },
-        fields: [],
+      ],
+      from: {
+        name: tableId,
+        type: 'Table',
+      },
+      fields: [],
     };
 
-    optionsChanged({ 
-        table_id: tableId,
-        join_table: newJoinOptions 
+    optionsChanged({
+      table_id: tableId,
+      join_table: newJoinOptions,
     });
     skipJoinTableUpdateRef.current = true;
     setSelectedTableId(tableId);
-    setJoinTableOptions(newJoinOptions); 
+    setJoinTableOptions(newJoinOptions);
   };
 
   //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
@@ -544,12 +544,15 @@ const ToolJetDbOperations = ({
         <div
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
-          <label className={cx('form-label', 'flex-shrink-0')}>Mode</label>
+          <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-mode-label">
+            Mode
+          </label>
           <div
             className={cx('d-flex align-items-center justify-content-start gap-2', {
               'row-tabs-dark': darkMode,
               'row-tabs': !darkMode,
             })}
+            data-cy="tooljetdb-mode-tabs"
           >
             <div
               onClick={() => handleTabClick('GUI mode')}
@@ -558,16 +561,17 @@ const ToolJetDbOperations = ({
                   activeTab === 'GUI mode' && !darkMode
                     ? 'white'
                     : activeTab === 'GUI mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'GUI mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'GUI mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
+              data-cy="tooljetdb-gui-mode-tab"
             >
               GUI mode
             </div>
@@ -579,16 +583,17 @@ const ToolJetDbOperations = ({
                   activeTab === 'SQL mode' && !darkMode
                     ? 'white'
                     : activeTab === 'SQL mode' && darkMode
-                    ? '#242f3c'
-                    : 'transparent',
+                      ? '#242f3c'
+                      : 'transparent',
                 color:
                   activeTab === 'SQL mode' && !darkMode
                     ? '#3E63DD'
                     : activeTab === 'SQL mode' && darkMode
-                    ? 'white'
-                    : '#687076',
+                      ? 'white'
+                      : '#687076',
               }}
               className="row-tab-content"
+              data-cy="tooljetdb-sql-mode-tab"
             >
               SQL mode
             </div>
@@ -605,7 +610,9 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-table-name-label">
+                Table name
+              </label>
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
@@ -640,7 +647,9 @@ const ToolJetDbOperations = ({
                 'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
               })}
             >
-              <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
+              <label className={cx('form-label', 'flex-shrink-0')} data-cy="tooljetdb-operations-label">
+                Operations
+              </label>
               <div
                 className={cx(
                   { 'flex-grow-1': isHorizontalLayout },
@@ -673,7 +682,10 @@ const ToolJetDbOperations = ({
         </>
       )}
       {activeTab === 'SQL mode' && (
-        <div className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+        <div
+          className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+          data-cy="tooljetdb-sql-mode-section"
+        >
           {/*<label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>*/}
           <CodeHinter
             type="multiline"
@@ -687,6 +699,7 @@ const ToolJetDbOperations = ({
             delayOnChange={false}
             className="w-100"
             renderCopilot={renderCopilot}
+            cyLabel="tooljetdb-sql-query-input"
           />
         </div>
       )}

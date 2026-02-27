@@ -4,20 +4,21 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, buttonText }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <div>
       {options.length === 0 && (
-        <div className="empty-key-value">
+        <div className="empty-key-value" data-cy="empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
-          <span>There are no key value pairs added</span>
+          <span data-cy="empty-key-value-message">There are no key value pairs added</span>
         </div>
       )}
       {options.map((option, index) => {
         return (
-          <div className="d-flex" key={index}>
+          <div className="d-flex" key={index} data-cy={`key-value-pair-${index}`}>
             <div className="d-flex mb-2 justify-content-between w-100">
               <div className="w-100">
                 <CodeHinter
@@ -27,6 +28,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                   placeholder="Key"
                   onChange={(value) => keyValuePairValueChanged(value, 0, index)}
                   componentName={`HttpHeaders::key::${index}`}
+                  cyLabel={`key-${index}`}
                 />
               </div>
               <div className="w-100">
@@ -37,24 +39,30 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                   placeholder="Value"
                   onChange={(value) => keyValuePairValueChanged(value, 1, index)}
                   componentName={`HttpHeaders::value::${index}`}
+                  cyLabel={`value-${index}`}
                 />
               </div>
             </div>
             <button
-              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${
-                darkMode ? 'delete-field-option-dark' : ''
-              }`}
+              className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end border-start rounded-start rounded-end trash ${darkMode ? 'delete-field-option-dark' : ''
+                }`}
               role="button"
               onClick={() => {
                 removeKeyValuePair(index);
               }}
+              data-cy={`delete-button-${index}`}
             >
               <Trash fill="var(--slate9)" style={{ height: '16px' }} />
             </button>
           </div>
         );
       })}
-      <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)}>
+      <ButtonSolid
+        variant="ghostBlue"
+        size="sm"
+        onClick={() => addNewKeyValuePair(options)}
+        data-cy={`${generateCypressDataCy(buttonText)}-button`}
+      >
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; {buttonText}
       </ButtonSolid>

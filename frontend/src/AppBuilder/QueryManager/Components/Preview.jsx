@@ -6,6 +6,7 @@ import ArrowDownTriangle from '@/_ui/Icon/solidIcons/ArrowDownTriangle';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const Preview = ({ darkMode, calculatePreviewHeight }) => {
   const [key, setKey] = useState('raw');
@@ -150,6 +151,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
             calculatePreviewHeight(height, !previewPanelExpanded);
           }}
           className="left"
+          data-cy="preview-toggle-button"
         >
           <ArrowDownTriangle
             width={15}
@@ -159,10 +161,10 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
               marginRight: '4px',
             }}
           />
-          <span>Preview</span>
+          <span data-cy="preview-section-label">Preview</span>
         </div>
         {previewPanelExpanded && (
-          <div className="right">
+          <div className="right" data-cy="preview-tabs-container">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
               <Row className="m-0">
                 <Col className="keys text-center d-flex align-items-center">
@@ -170,6 +172,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                     className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}
                     variant="flush"
                     style={{ backgroundColor: '#ECEEF0', padding: '2px' }}
+                    data-cy="preview-tabs-list"
                   >
                     {tabs.map((tab) => (
                       <ListGroup.Item
@@ -178,9 +181,10 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                         disabled={!queryPreviewData || (tab == 'JSON' && !isJson)}
                         style={{ minWidth: '74px', textAlign: 'center' }}
                         className="rounded"
+                        data-cy={`preview-tab-${generateCypressDataCy(tab)}-item`}
                       >
                         <span
-                          data-cy={`preview-tab-${String(tab).toLowerCase()}`}
+                          data-cy={`preview-tab-${generateCypressDataCy(tab)}`}
                           style={{ width: '100%' }}
                           className="rounded"
                         >
@@ -195,12 +199,12 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
           </div>
         )}
       </div>
-      <div className="preview-content">
+      <div className="preview-content" data-cy="preview-content">
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative h-100">
             {previewLoading && (
-              <center style={{ display: 'grid', placeItems: 'center' }} className="position-absolute w-100 h-100">
-                <div className="spinner-border text-azure" role="status"></div>
+              <center style={{ display: 'grid', placeItems: 'center' }} className="position-absolute w-100 h-100" data-cy="preview-loading-container">
+                <div className="spinner-border text-azure" role="status" data-cy="preview-loading-spinner"></div>
               </center>
             )}
             <Tab.Content
@@ -210,8 +214,9 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                 border: '1px solid var(--slate5)',
                 height: '100%',
               }}
+              data-cy="preview-tab-content"
             >
-              <Tab.Pane eventKey="json" transition={false}>
+              <Tab.Pane eventKey="json" transition={false} data-cy="preview-json-pane">
                 <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                   <JSONTree
                     theme={theme}
@@ -222,7 +227,7 @@ const Preview = ({ darkMode, calculatePreviewHeight }) => {
                   />
                 </div>
               </Tab.Pane>
-              <Tab.Pane eventKey="raw" transition={false}>
+              <Tab.Pane eventKey="raw" transition={false} data-cy="preview-raw-pane">
                 <div
                   style={{ padding: '1rem' }}
                   className={`raw-container preview-data-container`}
