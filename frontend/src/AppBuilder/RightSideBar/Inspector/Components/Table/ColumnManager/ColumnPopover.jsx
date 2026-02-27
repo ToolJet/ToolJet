@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
+import { IconArrowLeft } from '@tabler/icons-react';
 
 export const ColumnPopoverContent = ({
   column,
@@ -17,6 +18,7 @@ export const ColumnPopoverContent = ({
   handleEventManagerPopoverCallback,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
+  const [selectedButtonId, setSelectedButtonId] = useState(null);
   const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
   const popoverRef = useRef(null);
 
@@ -67,10 +69,7 @@ export const ColumnPopoverContent = ({
       }
     };
 
-    // Check position after a short delay to ensure popover is rendered
     const timeoutId = setTimeout(checkPopoverPosition, 100);
-
-    // Also check on window resize
     window.addEventListener('resize', checkPopoverPosition);
 
     return () => {
@@ -79,9 +78,25 @@ export const ColumnPopoverContent = ({
     };
   }, [index]);
 
+  const isButtonColumn = column.columnType === 'button';
+  const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
+
   return (
     <>
       <Popover.Header>
+        {isButtonDetailView && (
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            style={{ paddingBottom: '8px' }}
+            onClick={() => {
+              setSelectedButtonId(null);
+              setActiveTab('propertiesTab');
+            }}
+          >
+            <IconArrowLeft size={16} stroke={1.5} />
+            <span className="ms-1 tj-text-xsm font-weight-500">Edit action button</span>
+          </div>
+        )}
         <div className="d-flex custom-gap-4 align-self-stretch tj-text tj-text-xsm font-weight-500 text-secondary cursor-pointer">
           <div
             className={`${activeTab === 'propertiesTab' && 'active-column-tab'} column-header-tab`}
@@ -119,6 +134,8 @@ export const ColumnPopoverContent = ({
             columnEventChanged={columnEventChanged}
             timeZoneOptions={timeZoneOptions}
             handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+            selectedButtonId={selectedButtonId}
+            setSelectedButtonId={setSelectedButtonId}
           />
         ) : (
           <StylesTabElements
@@ -129,6 +146,7 @@ export const ColumnPopoverContent = ({
             onColumnItemChange={onColumnItemChange}
             getPopoverFieldSource={getPopoverFieldSource}
             component={component}
+            selectedButtonId={selectedButtonId}
           />
         )}
       </Popover.Body>

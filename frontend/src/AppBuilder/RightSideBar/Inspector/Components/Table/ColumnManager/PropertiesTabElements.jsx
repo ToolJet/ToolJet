@@ -21,6 +21,9 @@ import Check from '@/_ui/Icon/solidIcons/Check';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import RatingIconToggle from './RatingColumn/RatingIconToggle';
 import RatingColumnProperties from './RatingColumn/RatingColumnProperties';
+import { ButtonListManager } from './ButtonListManager';
+import { ButtonPropertiesTab } from './ButtonPropertiesTab';
+import { useButtonManager } from '../hooks/useButtonManager';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -75,8 +78,15 @@ export const PropertiesTabElements = ({
   columnEventChanged,
   timeZoneOptions,
   handleEventManagerPopoverCallback,
+  selectedButtonId,
+  setSelectedButtonId,
 }) => {
   const { t } = useTranslation();
+  const { addButton, removeButton, updateButtonProperty, reorderButtons, getButton } = useButtonManager({
+    column,
+    index,
+    onColumnItemChange,
+  });
 
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),
@@ -212,73 +222,9 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
-      {column.columnType === 'button' && (
+      {column.columnType === 'button' && !selectedButtonId && (
         <>
-          <div className="field mb-2 px-3">
-            <label className="form-label">Button label</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column?.buttonLabel ?? 'Button'}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'Button label'}
-              onChange={(value) => onColumnItemChange(index, 'buttonLabel', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'buttonLabel')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('buttonLabel', showing);
-              }}
-            />
-          </div>
-          <div className="field mb-2 px-3">
-            <label className="form-label">Tooltip</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column?.buttonTooltip ?? ''}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'Enter tooltip text'}
-              onChange={(value) => onColumnItemChange(index, 'buttonTooltip', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'buttonTooltip')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('buttonTooltip', showing);
-              }}
-            />
-          </div>
           <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px' }}>
-            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
-              <ProgramaticallyHandleProperties
-                label="Disable button"
-                currentState={currentState}
-                index={index}
-                darkMode={darkMode}
-                callbackFunction={onColumnItemChange}
-                property="disableButton"
-                props={column}
-                component={component}
-                paramMeta={{ type: 'toggle', displayName: 'Disable button' }}
-                paramType="properties"
-              />
-            </div>
-          </div>
-          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
-            <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
-              <ProgramaticallyHandleProperties
-                label="Loading state"
-                currentState={currentState}
-                index={index}
-                darkMode={darkMode}
-                callbackFunction={onColumnItemChange}
-                property="loadingState"
-                props={column}
-                component={component}
-                paramMeta={{ type: 'toggle', displayName: 'Loading state' }}
-                paramType="properties"
-              />
-            </div>
-          </div>
-          <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
             <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
               <ProgramaticallyHandleProperties
                 label="Visibility"
@@ -294,35 +240,28 @@ export const PropertiesTabElements = ({
               />
             </div>
           </div>
-          <div style={{ borderTop: '1px solid var(--border-weak)' }}>
-          <Accordion
-            items={[
-              {
-                title: 'Events',
-                isOpen: true,
-                children: (
-                  <EventManager
-                    sourceId={props?.component?.id}
-                    eventSourceType="table_column"
-                    customEventRefs={{ ref: column.key || column.name }}
-                    hideEmptyEventsAlert={false}
-                    eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
-                    currentState={currentState}
-                    dataQueries={props.dataQueries}
-                    components={props.components}
-                    eventsChanged={(events) => columnEventChanged(column, events)}
-                    apps={props.apps}
-                    popOverCallback={(showing) => {
-                      handleEventManagerPopoverCallback(showing);
-                    }}
-                    pages={props.pages}
-                  />
-                ),
-              },
-            ]}
+          <ButtonListManager
+            buttons={column.buttons || []}
+            onAddButton={addButton}
+            onReorderButtons={reorderButtons}
+            onSelectButton={setSelectedButtonId}
           />
-          </div>
         </>
+      )}
+      {column.columnType === 'button' && selectedButtonId && (
+        <ButtonPropertiesTab
+          button={getButton(selectedButtonId)}
+          column={column}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          onButtonPropertyChange={(property, value) => updateButtonProperty(selectedButtonId, property, value)}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          props={props}
+          columnEventChanged={columnEventChanged}
+          handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+        />
       )}
       {(column.columnType === 'dropdown' ||
         column.columnType === 'multiselect' ||
