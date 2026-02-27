@@ -5,8 +5,12 @@ export class DummyMigration1772175417356 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         const entityManager = queryRunner.manager;
         const appVersions = await entityManager.find(AppVersion);
+        const total = appVersions.length;
 
-        for (const version of appVersions) {
+        console.log(`[START] Update Text component textSize | Total: ${total}`);
+
+        for (let i = 0; i < appVersions.length; i++) {
+            const version = appVersions[i];
             const definition = version['definition'];
 
             if (definition) {
@@ -34,7 +38,15 @@ export class DummyMigration1772175417356 implements MigrationInterface {
 
                 await entityManager.update(AppVersion, { id: version.id }, { definition });
             }
+
+            const current = i + 1;
+            if (total > 0 && Math.floor(current * 10 / total) > Math.floor((current - 1) * 10 / total)) {
+                const percentage = Math.round((current / total) * 100);
+                console.log(`[PROGRESS] ${current}/${total} (${percentage}%)`);
+            }
         }
+
+        console.log(`[SUCCESS] Update Text component textSize finished.`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> { }
