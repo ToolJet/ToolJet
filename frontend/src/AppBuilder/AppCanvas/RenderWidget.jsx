@@ -113,8 +113,10 @@ const RenderWidget = ({
   // resolveIndex = [outerIdx, middleIdx, innerIdx] → parentOuterIndices = [outerIdx, middleIdx]
   // The last index is the immediate parent's row index (subContainerIndex)
   const parentOuterIndices = useMemo(() => {
-    if (!resolveIndex || resolveIndex.length <= 1) return [];
-    return resolveIndex.slice(0, -1);
+    if (!resolveIndex) return [];
+    const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
+    if (indices.length <= 1) return [];
+    return indices.slice(0, -1);
   }, [resolveIndex]);
 
   const customResolvables = useStore((state) => {
@@ -249,17 +251,18 @@ const RenderWidget = ({
               ? null
               : ['hover', 'focus']
             : !resolvedGeneralProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
+            ? null
+            : ['hover', 'focus']
         }
         overlay={(props) =>
           renderTooltip({
             props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
             text: inCanvas
-              ? `${SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                ? resolvedProperties?.tooltip
-                : resolvedGeneralProperties?.tooltip
-              }`
+              ? `${
+                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
+                    ? resolvedProperties?.tooltip
+                    : resolvedGeneralProperties?.tooltip
+                }`
               : `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
@@ -269,11 +272,13 @@ const RenderWidget = ({
             height: '100%',
             padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
-          className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-            } ${!['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+          className={`canvas-component ${
+            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
+          } ${
+            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
               ? 'disabled'
               : ''
-            }`} //required for custom CSS
+          }`} //required for custom CSS
           data-cy={`draggable-widget-${componentName}`}
         >
           <TrackedSuspense fallback={null}>

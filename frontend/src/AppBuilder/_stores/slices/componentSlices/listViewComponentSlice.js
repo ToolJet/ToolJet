@@ -44,7 +44,7 @@ export const listViewComponentSlice = (set, get) => ({
 
     // Derive the ListView's children/data exposed values (used by {{components.listview1.data}})
     const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
-    const nearestListviewId = parentId ? get().findNearestListviewAncestor(parentId, moduleId) : null;
+    const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
     if (nearestListviewId) {
       get()._deriveListviewChain(nearestListviewId, indices, moduleId);
     }
@@ -96,7 +96,7 @@ export const listViewComponentSlice = (set, get) => ({
 
     // Derive ListView children/data
     const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
-    const nearestListviewId = parentId ? get().findNearestListviewAncestor(parentId, moduleId) : null;
+    const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
     if (nearestListviewId) {
       get()._deriveListviewChain(nearestListviewId, indices, moduleId);
     }
@@ -321,7 +321,7 @@ export const listViewComponentSlice = (set, get) => ({
   // Walk up the ListView ancestor chain, deriving children/data at each level.
   // indices = the per-row indices from the child write (e.g., [outerRow, innerRow])
   _deriveListviewChain: (nearestListviewId, indices, moduleId = 'canvas') => {
-    const { findNearestListviewAncestor, getComponentDefinition, deriveListviewExposedData } = get();
+    const { findNearestSubcontainerAncestor, getComponentDefinition, deriveListviewExposedData } = get();
 
     let currentLV = nearestListviewId;
     let currentIndices = [...indices];
@@ -334,7 +334,7 @@ export const listViewComponentSlice = (set, get) => ({
       // Move up to outer ListView
       const lvDef = getComponentDefinition(currentLV, moduleId);
       const lvParent = lvDef?.component?.parent;
-      currentLV = lvParent ? findNearestListviewAncestor(lvParent, moduleId) : null;
+      currentLV = lvParent ? findNearestSubcontainerAncestor(lvParent, moduleId) : null;
       currentIndices = outerIndices;
     }
   },
