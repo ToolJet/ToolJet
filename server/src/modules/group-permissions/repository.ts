@@ -181,7 +181,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   createGroupUser(userId: string, groupId: string, manager?: EntityManager): Promise<GroupUsers> {
     return dbTransactionWrap((manager: EntityManager) => {
       return catchDbException(() => {
-        return manager.save(manager.create(GroupUsers, { groupId: userId }));
+        return manager.save(manager.create(GroupUsers, { userId: groupId }));
       }, [DATA_BASE_CONSTRAINTS.GROUP_USER_UNIQUE]);
     }, manager);
   }
