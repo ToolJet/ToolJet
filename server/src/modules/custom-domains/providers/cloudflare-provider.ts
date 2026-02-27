@@ -11,7 +11,7 @@ export class CloudflareProvider implements IDomainProvider {
     throw new Error('Method not implemented.');
   }
 
-  async getHostnameStatus(_hostnameId: string): Promise<DomainProviderResult> {
+  async getHostnameStatus(_hostnameId: string): Promise<DomainProviderResult | null> {
     throw new Error('Method not implemented.');
   }
 

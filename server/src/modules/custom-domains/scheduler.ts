@@ -44,12 +44,24 @@ export class CustomDomainStatusScheduler {
           const statusMap: Record<string, string> = {
             pending: 'pending_verification',
             active: 'active',
+            active_redeploying: 'active',
+            blocked: 'failed',
             moved: 'failed',
             deleted: 'deleted',
           };
 
+          const sslStatusMap: Record<string, string> = {
+            pending_validation: 'pending',
+            pending_issuance: 'pending',
+            pending_deployment: 'pending',
+            active: 'active',
+            pending_deletion: 'deleted',
+            deleted: 'deleted',
+          };
+
           const newStatus = statusMap[data.result.status] || 'pending_verification';
-          const newSslStatus = data.result.ssl?.status || null;
+          const rawSslStatus = data.result.ssl?.status;
+          const newSslStatus = rawSslStatus ? (sslStatusMap[rawSslStatus] || 'pending') : null;
 
           if (newStatus !== domain.status || newSslStatus !== domain.sslStatus) {
             await manager.update(CustomDomain, domain.id, {

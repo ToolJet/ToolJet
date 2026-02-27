@@ -18,7 +18,7 @@ export interface FeaturesConfig {
 export interface VerifyDomainResult {
   valid: boolean;
   providerStatus: string;
-  sslStatus: string;
+  sslStatus: string | null;
   verificationErrors?: any;
   dnsStatus: 'not_checked' | 'resolved' | 'no_records' | 'failed';
   connectivityStatus: 'not_checked' | 'reachable' | 'unreachable';
