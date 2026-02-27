@@ -15,7 +15,7 @@ This node executes securely on the server, so it can handle data manipulation at
 
 **Note:** The code must include a return statement to pass results to subsequent nodes.
 
-## Example: Fine-Tuning Your Response Using JavaScript
+## Example 1: Fine-Tuning Your Response Using JavaScript
 
 Refine your response by manipulating the data using JavaScript functions. For example, the slice function can be used to select a subset of data:
 
@@ -27,3 +27,47 @@ return
 ```
 
 <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/fineTune.png" alt="JS Node Fine Tune" />
+
+## Example 2: Auto Assign Ticket Priority
+
+Consider a workflow that automatically assigns a priority tag to a ticket based on the message length.
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/sneakPeek.png" alt="Ticket Categoriser Sneak Peek" />
+
+For this example, the data that the workflow receives is in the following format:
+```js
+{
+    "subject": "Login issue",
+    "message": "I am unable to access my dashboard since yesterday.",
+    "email": "johndoe@gmail.com"
+}
+```
+
+#### Categorising Tasks Using a JavaScript Node.
+Add the following code to the JavaScript node. This code checks for the message length and returns the original parameters along with a priority based on message length.
+
+```js
+const inputs = startTrigger.params;
+const { message } = inputs;
+const length = message.length;
+
+let priority;
+
+if (length < 20) {
+    priority = "low";
+} else if (length < 80) {
+    priority = "medium";
+} else {
+    priority = "high";
+}
+
+return {
+    inputs, priority
+}
+```
+
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/categoriseDataCode.png" alt="categoriseData Code" />
+
+#### Output
+The output will be an object containing the input field and the priority.
+<img className="screenshot-full img-full" src="/img/workflows/nodes/logic/js/ticketCategoriser/output.png" alt="Output" />
