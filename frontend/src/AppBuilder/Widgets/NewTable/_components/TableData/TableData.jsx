@@ -20,6 +20,7 @@ export const TableData = ({
   setExposedVariables,
   fireEvent,
   lastClickedRowRef,
+  componentName,
   loadingState,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -154,6 +155,7 @@ export const TableData = ({
                 fireEvent={fireEvent}
                 rowStyles={rowStyles}
                 measureElement={rowVirtualizer.measureElement}
+                componentName={componentName}
               />
             );
           })}

@@ -125,8 +125,9 @@ describe("Workspace constants", () => {
         cy.wait(2000);
         // Verify constants in textinput1 and range
         cy.get(
-            commonWidgetSelector.draggableWidget("textinput1")
+            '[data-cy="textinput1-input"]'
         ).verifyVisibleElement("have.value", "customHeader");
+
         verifyInputValues(3, 16, "Development environment testing");
 
         // Secret constant in UI

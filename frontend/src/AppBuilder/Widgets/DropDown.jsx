@@ -44,18 +44,18 @@ export const DropDown = function DropDown({
   try {
     selectOptions = advanced
       ? [
-          ...schema
-            .filter((data) => data.visible)
-            .map((value) => ({
-              ...value,
-              isDisabled: value.disable,
-            })),
-        ]
+        ...schema
+          .filter((data) => data.visible)
+          .map((value) => ({
+            ...value,
+            isDisabled: value.disable,
+          })),
+      ]
       : [
-          ...values.map((value, index) => {
-            return { label: display_values[index], value: value };
-          }),
-        ];
+        ...values.map((value, index) => {
+          return { label: display_values[index], value: value };
+        }),
+      ];
   } catch (err) {
     console.log(err);
   }
@@ -236,37 +236,37 @@ export const DropDown = function DropDown({
 
       const styles = darkMode
         ? {
-            color: 'white',
-            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-            ':hover': {
-              backgroundColor: state.isDisabled
-                ? 'transparent'
-                : state.value === currentValue
+          color: 'white',
+          backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+          ':hover': {
+            backgroundColor: state.isDisabled
+              ? 'transparent'
+              : state.value === currentValue
                 ? hoverBgColorValue
                 : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
-            },
-            maxWidth: 'auto',
-            minWidth: 'max-content',
-          }
+                  state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                  'hover'
+                ),
+          },
+          maxWidth: 'auto',
+          minWidth: 'max-content',
+        }
         : {
-            backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-            color: state.value === currentValue ? 'white' : 'var(--cc-primary-text)',
-            ':hover': {
-              backgroundColor: state.isDisabled
-                ? 'transparent'
-                : state.value === currentValue
+          backgroundColor: state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+          color: state.value === currentValue ? 'white' : 'var(--cc-primary-text)',
+          ':hover': {
+            backgroundColor: state.isDisabled
+              ? 'transparent'
+              : state.value === currentValue
                 ? hoverBgColorValue
                 : getModifiedColor(
-                    state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
-                    'hover'
-                  ),
-            },
-            maxWidth: 'auto',
-            minWidth: 'max-content',
-          };
+                  state.value === currentValue ? 'var(--cc-primary-brand)' : 'var(--cc-surface1-surface)',
+                  'hover'
+                ),
+          },
+          maxWidth: 'auto',
+          minWidth: 'max-content',
+        };
       return {
         ...provided,
         justifyContent,
@@ -296,6 +296,7 @@ export const DropDown = function DropDown({
       >
         <div className="col-auto my-auto">
           <label
+            data-cy={`${String(dataCy).toLowerCase()}-label`}
             style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
             className="form-label py-0 my-0"
             id={`${id}-label`}

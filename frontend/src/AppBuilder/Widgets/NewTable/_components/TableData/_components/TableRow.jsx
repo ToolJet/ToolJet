@@ -4,6 +4,7 @@ import { flexRender } from '@tanstack/react-table';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const TableRow = ({
   id,
@@ -19,6 +20,7 @@ export const TableRow = ({
   fireEvent,
   rowStyles,
   measureElement,
+  componentName,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
@@ -52,6 +54,7 @@ export const TableRow = ({
           fireEvent('onRowHovered');
         }
       }}
+      data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
@@ -76,6 +79,7 @@ export const TableRow = ({
         return (
           <td
             key={cell.id}
+            data-cy={`${generateCypressDataCy(componentName)}-${generateCypressDataCy(typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id)}-row-${virtualRow.index}`}
             style={cellStyles}
             className={cx('table-cell td', {
               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
@@ -127,9 +131,8 @@ export const TableRow = ({
             }}
           >
             <div
-              className={`td-container ${
-                cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
-              } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
+              className={`td-container ${cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
+                } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
             >
               {flexRender(cell.column?.columnDef?.cell, cell.getContext())}
             </div>

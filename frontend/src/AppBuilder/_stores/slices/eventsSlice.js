@@ -1,18 +1,16 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { findAllEntityReferences } from '@/_stores/utils';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
-import { isQueryRunnable, isValidUUID, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
+import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
-import urlJoin from 'url-join';
 import { useCallback } from 'react';
-import { navigate } from '@/AppBuilder/_utils/misc';
 import moment from 'moment';
+import { getSubpath } from '@/_helpers/routes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -296,7 +294,8 @@ export const createEventsSlice = (set, get) => ({
         const { queryName, parameters } = options;
         const queryId = queries.filter((query) => query.name === queryName && isQueryRunnable(query))?.[0]?.id;
         if (!queryId) return;
-        runQuery(queryId, queryName, true, mode, parameters, undefined, undefined, false, false, moduleId);
+        // Return the query result promise so it can be passed back to the custom component iframe
+        return runQuery(queryId, queryName, true, mode, parameters, undefined, undefined, false, false, moduleId);
       }
       if (eventName === 'onTableActionButtonClicked') {
         const { action, tableActionEvents } = options;
@@ -670,11 +669,15 @@ export const createEventsSlice = (set, get) => ({
 
                 if (queryPart.length > 0) url = url + `?${queryPart}`;
               }
+
+              const path = getSubpath();
+              if (path) url = path + url;
+
               if (mode === 'view') {
-                navigate(url);
+                window.open(url, '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                  window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+                  window.open(url);
                 }
               }
               return Promise.resolve();

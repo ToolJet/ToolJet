@@ -53,18 +53,19 @@ export const RadioButton = function RadioButton({
       data-disabled={disabledState}
       className="row py-1"
       style={{ height, display: visibility ? '' : 'none', boxShadow }}
-      data-cy={dataCy}
       id={`component-${id}`}
       role="radiogroup"
       aria-labelledby={`${id}-label`}
     >
-      <span className="form-check-label col-auto py-0" style={{ color: textColor }} id={`${id}-label`}>
+      <span className="form-check-label col-auto py-0" style={{ color: textColor }} id={`${id}-label`}
+        data-cy={`${dataCy}-label`}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">
         {selectOptions.map((option, index) => (
           <label key={index} className="form-check form-check-inline">
             <input
+              data-cy={`${dataCy}-option-input-${index}`}
               style={{
                 marginTop: '1px',
                 backgroundColor: checkedValue === option.value ? `${activeColor}` : 'var(--cc-surface1-surface)',
@@ -79,7 +80,7 @@ export const RadioButton = function RadioButton({
               aria-hidden={!visibility}
               aria-labelledby={`${id}-option-${index}-label`}
             />
-            <span className="form-check-label" style={{ color: textColor }} id={`${id}-option-${index}-label`}>
+            <span className="form-check-label" style={{ color: textColor }} id={`${id}-option-${index}-label`} data-cy={`${dataCy}-option-label-${index}`}>
               {option.name}
             </span>
           </label>

@@ -17,6 +17,7 @@ import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import { ToolTip } from '@/_components';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 
 export const PAGE_TYPES = {
   default: '',
@@ -299,7 +300,7 @@ export const PageMenuItem = withRouter(
               </>
             ) : (
               <>
-                <div ref={optionBtnRef} className="left" data-cy={`pages-name-${page.name.toLowerCase()}`}>
+                <div ref={optionBtnRef} className="left" data-cy={`pages-name-${generateCypressDataCy(page?.name)}`}>
                   <div className="main-page-icon-wrapper">{icon()}</div>
                   <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                     {page.name}
