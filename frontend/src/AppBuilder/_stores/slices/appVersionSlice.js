@@ -9,6 +9,7 @@ const initialState = {
   isAppVersionPromoted: false,
   currentAppVersionEnvironment: null,
   restoredAppHistoryId: null, // Used to trigger app refresh flow after restoring app history
+  restoreTimestamp: null, // Timestamp to ensure re-fetch even when restoring to same entry twice
 };
 
 export const createAppVersionSlice = (set, get) => ({
@@ -71,6 +72,7 @@ export const createAppVersionSlice = (set, get) => ({
     set(
       (state) => {
         state.restoredAppHistoryId = id;
+        state.restoreTimestamp = Date.now(); // Always update timestamp to trigger re-fetch
       },
       false,
       'setRestoredAppHistoryId'

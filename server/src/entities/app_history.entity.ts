@@ -17,10 +17,7 @@ import { User } from './user.entity';
 @Index('IDX_UNIQUE_SEQ_PER_APP_VERSION', ['appVersionId', 'sequenceNumber'], { unique: true })
 @Check(
   'check_history_payload_type',
-  `
-  (history_type = 'snapshot' AND jsonb_typeof(change_payload) = 'object') OR
-  (history_type = 'delta' AND jsonb_typeof(change_payload) = 'array')
-`
+  `jsonb_typeof(change_payload) = 'object'`
 )
 export class AppHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')

@@ -18,13 +18,16 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { IVersionService } from './interfaces/IService';
+import {
+  IVersionService,
+  VersionCreateContext,
+  VersionUpdateContext,
+  VersionSettingsUpdateContext,
+} from './interfaces/IService';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
-import { AppHistoryUtilService } from '@modules/app-history/util.service';
-import { ACTION_TYPE } from '@modules/app-history/constants';
 
 @Injectable()
 export class VersionService implements IVersionService {
@@ -39,9 +42,77 @@ export class VersionService implements IVersionService {
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository,
-    protected readonly appHistoryUtilService: AppHistoryUtilService
+    protected readonly appGitRepository: AppGitRepository
   ) {}
+
+  /**
+   * Hook called before version creation - override in EE to capture state for history
+   */
+  protected async beforeVersionCreate(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto
+  ): Promise<VersionCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version creation - override in EE to queue history
+   */
+  protected async afterVersionCreate(
+    context: VersionCreateContext | null,
+    createdVersion: any,
+    app: App,
+    user: User
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version update - override in EE to capture state for history
+   */
+  protected async beforeVersionUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version update - override in EE to queue history
+   */
+  protected async afterVersionUpdate(
+    context: VersionUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before version settings update - override in EE to capture state for history
+   */
+  protected async beforeVersionSettingsUpdate(
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<VersionSettingsUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after version settings update - override in EE to queue history
+   */
+  protected async afterVersionSettingsUpdate(
+    context: VersionSettingsUpdateContext | null,
+    app: App,
+    user: User,
+    appVersionUpdateDto: AppVersionUpdateDto
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
   async getAllVersions(app: App): Promise<{ versions: Array<AppVersion> }> {
     const result = await this.versionRepository.getVersionsInApp(app.id);
 
@@ -58,6 +129,8 @@ export class VersionService implements IVersionService {
       throw new BadRequestException('Version name cannot be empty.');
     }
     const { organizationId } = user;
+
+    const context = await this.beforeVersionCreate(app, user, versionCreateDto);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const versionFrom = await manager.findOneOrFail(AppVersion, {
@@ -102,24 +175,7 @@ export class VersionService implements IVersionService {
       return decamelizeKeys(appVersion);
     });
 
-    // Queue initial history capture for the created version
-    try {
-      await this.appHistoryUtilService.queueHistoryCapture(
-        result.id,
-        ACTION_TYPE.INITIAL_SNAPSHOT,
-        {
-          operation: 'version_create',
-          versionName: versionCreateDto.versionName,
-          versionFromId: versionCreateDto.versionFromId,
-          appId: app.id,
-          appName: app.name,
-        },
-        false,
-        user.id
-      );
-    } catch (error) {
-      console.error('Failed to queue initial history capture for version creation:', error);
-    }
+    await this.afterVersionCreate(context, result, app, user);
 
     return result;
   }
@@ -226,6 +282,8 @@ export class VersionService implements IVersionService {
   }
 
   async update(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
@@ -242,8 +300,7 @@ export class VersionService implements IVersionService {
       await this.eventEmitter.emit('version-rename-commit', versionRenameDto);
     }
 
-    // Queue history capture if homepage or settings are being updated
-    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+    await this.afterVersionUpdate(context, app, user, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,
@@ -256,12 +313,13 @@ export class VersionService implements IVersionService {
   }
 
   async updateSettings(app: App, user: User, appVersionUpdateDto: AppVersionUpdateDto) {
+    const context = await this.beforeVersionSettingsUpdate(app, user, appVersionUpdateDto);
+
     const appVersion = await this.versionRepository.findById(app.appVersions[0].id, app.id);
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
-    // Queue history capture for settings changes AFTER successful update
-    await this.appHistoryUtilService.captureSettingsUpdateHistory(appVersion, appVersionUpdateDto);
+    await this.afterVersionSettingsUpdate(context, app, user, appVersionUpdateDto);
 
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
       userId: user.id,

@@ -61,6 +61,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
       pages: false,
     },
     features: {
+      history: false,
       promote: false,
       release: false,
     },

@@ -58,10 +58,11 @@ export interface Terms {
       query: boolean;
       pages: boolean;
     };
-    features? :{
+    features?: {
+      history: boolean;
       promote: boolean;
       release: boolean;
-    }
+    };
   };
   modules?: {
     enabled: boolean;

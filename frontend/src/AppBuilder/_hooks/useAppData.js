@@ -142,8 +142,8 @@ const useAppData = (
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
 
   // Used to trigger app refresh flow after restoring app history
-  const restoredAppHistoryId = useStore((state) => state.restoredAppHistoryId);
-  const previousAppHistoryId = usePrevious(restoredAppHistoryId);
+  const restoreTimestamp = useStore((state) => state.restoreTimestamp);
+  const previousRestoreTimestamp = usePrevious(restoreTimestamp);
 
   const location = useRouter().location;
 
@@ -605,7 +605,7 @@ const useAppData = (
     const isEnvChanged =
       selectedEnvironment?.id && previousEnvironmentId && previousEnvironmentId != selectedEnvironment?.id;
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
-    const isAppHistoryChanged = restoredAppHistoryId != previousAppHistoryId;
+    const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
     if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
@@ -718,7 +718,7 @@ const useAppData = (
         setEditorLoading(false, moduleId);
       });
     }
-  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoredAppHistoryId]);
+  }, [selectedEnvironment?.id, currentVersionId, moduleMode, moduleId, restoreTimestamp]);
 
   useEffect(() => {
     if (moduleMode) return;
