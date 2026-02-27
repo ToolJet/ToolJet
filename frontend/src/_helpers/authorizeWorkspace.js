@@ -6,11 +6,13 @@ import {
   getPathname,
   getRedirectToWithParams,
   redirectToErrorPage,
+  isCustomDomain,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
+import { customDomainService } from '@/_services/custom-domain.service';
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -22,9 +24,40 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
     CASE-4. If the page is app viewer and there is no valid session. consider the app is public 
 */
 
-export const authorizeWorkspace = () => {
+export const authorizeWorkspace = async () => {
   /* Default APIs */
-  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+
+  // On a custom domain, resolve which workspace owns it
+  if (isCustomDomain()) {
+    try {
+      const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
+      const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
+
+      if (!workspaceIdOrSlug) {
+        // No slug in URL — use the resolved workspace
+        workspaceIdOrSlug = resolvedSlug;
+      } else if (workspaceIdOrSlug !== resolvedSlug) {
+        // URL workspace doesn't match this custom domain — redirect to main host
+        const tooljetHost = window?.public_config?.TOOLJET_HOST;
+        if (tooljetHost) {
+          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+          return;
+        }
+      }
+    } catch (e) {
+      // Domain not registered — if no slug to fall back on, redirect to main host
+      if (!workspaceIdOrSlug) {
+        const tooljetHost = window?.public_config?.TOOLJET_HOST;
+        if (tooljetHost) {
+          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+          return;
+        }
+      }
+      // If there's a slug in the URL, fall through and use it directly
+    }
+  }
+
   // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({

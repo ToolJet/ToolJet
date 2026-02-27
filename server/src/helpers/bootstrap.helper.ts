@@ -9,6 +9,8 @@ import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import * as Sentry from '@sentry/nestjs';
+import { DataSource } from 'typeorm';
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * Creates a logger instance with a specific context
@@ -193,6 +195,100 @@ export function initSentry(logger: any, configService: ConfigService) {
 }
 
 /**
+ * Fetches active custom domain origins from the database.
+ * Returns a Set of allowed origins (e.g., "https://app.company.com").
+ */
+async function fetchCustomDomainOrigins(dataSource: DataSource, logger: any): Promise<Set<string>> {
+  try {
+    const rows: { domain: string }[] = await dataSource.query(
+      `SELECT domain FROM custom_domains WHERE status = 'active'`
+    );
+    const origins = new Set<string>();
+    for (const row of rows) {
+      // Custom domains are stored as bare hostnames; build https origins
+      origins.add(`https://${row.domain}`);
+    }
+    logger.log(`Loaded ${origins.size} active custom domain origin(s) for CORS check`);
+    return origins;
+  } catch (error) {
+    logger.error('Failed to fetch custom domains for CORS:', error);
+    return new Set<string>();
+  }
+}
+
+/**
+ * Middleware that validates the Origin header on mutation requests when custom domains are enabled.
+ *
+ * With custom domains, cookies must use SameSite=None, which means any site can send
+ * authenticated cross-site POST/DELETE requests. While CORS blocks reading responses,
+ * it doesn't block sending requests — and form POSTs with urlencoded content bypass
+ * CORS preflight entirely.
+ *
+ * This middleware rejects mutation requests whose Origin doesn't match TOOLJET_HOST
+ * or an active custom domain.
+ */
+export function setupCsrfOriginCheck(app: NestExpressApplication, configService: ConfigService) {
+  if (configService.get<string>('ENABLE_CUSTOM_DOMAINS') !== 'true') return;
+  if (configService.get<string>('ENABLE_CORS') === 'true') return;
+
+  const logger = createLogger('CsrfOriginCheck');
+  const tooljetHost = configService.get<string>('TOOLJET_HOST');
+  const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+  const exemptPrefixes = [
+    '/health',
+    '/api/health',
+    '/jobs',
+    '/api/v2/webhooks/',
+    '/api/organization/payment/webhooks',
+    '/api/scim/',
+    '/api/ext/',
+    '/api/sso/saml/',
+    '/api/oauth/saml/',
+  ];
+
+  let dataSource: DataSource | null = null;
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (safeMethods.has(req.method)) return next();
+    if (exemptPrefixes.some((p) => req.path === p || req.path.startsWith(p))) return next();
+
+    let origin = req.headers.origin as string | undefined;
+    if (!origin && req.headers.referer) {
+      try {
+        origin = new URL(req.headers.referer as string).origin;
+      } catch {
+        // malformed referer — treat as no origin
+      }
+    }
+    if (!origin) {
+      // No Origin header. Normal for server-to-server, cURL, Postman.
+      // But if the browser sent Sec-Fetch-Site: cross-site, this is a browser
+      // request with a stripped/null Origin — block it.
+      const secFetchSite = req.headers['sec-fetch-site'] as string | undefined;
+      if (secFetchSite === 'cross-site') {
+        logger.warn(`Blocked cross-site mutation ${req.method} ${req.path} with no Origin`);
+        return res.status(403).json({ statusCode: 403, message: 'Origin not allowed' });
+      }
+      return next();
+    }
+
+    if (origin === tooljetHost) return next();
+
+    if (!dataSource) dataSource = app.get(DataSource);
+    fetchCustomDomainOrigins(dataSource, logger)
+      .then((allowed) => {
+        if (allowed.has(origin!)) return next();
+        logger.warn(`Blocked mutation ${req.method} ${req.path} from origin: ${origin}`);
+        res.status(403).json({ statusCode: 403, message: 'Origin not allowed' });
+      })
+      .catch((err) => {
+        logger.error(`CSRF origin check DB error — blocking request: ${err.message}`);
+        res.status(403).json({ statusCode: 403, message: 'Origin not allowed' });
+      });
+  });
+}
+
+/**
  * Sets up security headers including CORS and CSP
  */
 export function setSecurityHeaders(app: NestExpressApplication, configService: ConfigService, logger: any) {
@@ -202,13 +298,53 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     const host = new URL(tooljetHost);
     const domain = host.hostname;
+    const corsWildcard = configService.get<string>('ENABLE_CORS') === 'true';
 
     logger.log(`Configuring CORS for domain: ${domain}`);
-    logger.log(`CORS enabled: ${configService.get<string>('ENABLE_CORS') === 'true'}`);
+    logger.log(`CORS wildcard enabled: ${corsWildcard}`);
 
-    // Enable CORS
+    // Lazily capture the DataSource so we can query custom_domains on each request
+    let dataSource: DataSource | null = null;
+    const getDataSource = (): DataSource => {
+      if (!dataSource) {
+        dataSource = app.get<DataSource>(DataSource);
+      }
+      return dataSource;
+    };
+
+    // Enable CORS with a dynamic origin function
     app.enableCors({
-      origin: configService.get<string>('ENABLE_CORS') === 'true' || tooljetHost,
+      origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
+        // Allow requests with no origin (same-origin, server-to-server, curl, etc.)
+        if (!requestOrigin) {
+          return callback(null, true);
+        }
+
+        // If ENABLE_CORS is true, allow all origins
+        if (corsWildcard) {
+          return callback(null, true);
+        }
+
+        // Always allow the default TOOLJET_HOST origin
+        if (requestOrigin === tooljetHost) {
+          return callback(null, true);
+        }
+
+        // Check custom domains (async DB lookup)
+        fetchCustomDomainOrigins(getDataSource(), logger)
+          .then((allowedOrigins) => {
+            if (allowedOrigins.has(requestOrigin)) {
+              return callback(null, true);
+            }
+
+            logger.warn(`CORS: Rejected origin ${requestOrigin}`);
+            return callback(null, false);
+          })
+          .catch((error) => {
+            logger.error('CORS origin check failed, falling back to deny:', error);
+            return callback(null, false);
+          });
+      },
       credentials: true,
       maxAge: 86400,
     });

@@ -53,6 +53,7 @@ import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-re
 import { SampleDBScheduler } from '@modules/data-sources/schedulers/sample-db.scheduler';
 import { SessionScheduler } from '@modules/session/scheduler';
 import { AuditLogsClearScheduler } from '@modules/audit-logs/scheduler';
+import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
@@ -64,6 +65,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { MetricsModule } from '@modules/metrices/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ScimModule } from '@modules/scim/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
@@ -143,6 +145,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await InMemoryCacheModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
+      await CustomDomainsModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -179,6 +182,7 @@ export class AppModule implements OnModuleInit, NestModule {
         SessionScheduler,
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
+        CustomDomainStatusScheduler,
       ],
     };
   }

@@ -23,6 +23,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   handleLicensingInit,
   replaceSubpathPlaceHoldersInStaticAssets,
+  setupCsrfOriginCheck,
   setSecurityHeaders,
   buildVersion,
   rawBodyBuffer,
@@ -102,6 +103,9 @@ async function bootstrap() {
     appLogger.log('Setting up body parsers...');
     setupBodyParsers(app, configService);
     appLogger.log('✅ Body parsers configured');
+
+    // Setup CSRF origin check (only active when custom domains are enabled)
+    setupCsrfOriginCheck(app, configService);
 
     // Enable versioning
     appLogger.log('Enabling API versioning...');

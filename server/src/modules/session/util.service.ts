@@ -114,6 +114,13 @@ export class SessionUtilService {
         cookieOptions.sameSite = 'none';
         cookieOptions.secure = true;
       }
+
+      if (this.configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
+        // Custom domains require cross-origin cookie support (only over HTTPS;
+        // sameSite=none requires secure=true, which browsers reject on plain HTTP)
+        cookieOptions.sameSite = 'none';
+        cookieOptions.secure = true;
+      }
       let signedPat;
       if (isPatLogin) {
         signedPat = this.sign(JWTPayload);
@@ -338,6 +345,13 @@ export class SessionUtilService {
 
     if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
       // disable cookie security
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+
+    if (this.configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
+      // Custom domains require cross-origin cookie support (only over HTTPS;
+      // sameSite=none requires secure=true, which browsers reject on plain HTTP)
       cookieOptions.sameSite = 'none';
       cookieOptions.secure = true;
     }

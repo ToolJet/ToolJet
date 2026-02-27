@@ -271,6 +271,7 @@
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
     "build": "webpack --mode=production && cp -a ./assets/. ./build/assets/",
+    "build:cloud": "webpack --mode=production && cp -a ./assets/. ./build/assets/ && rm -rf ./build/assets/libs/pyodide-0.23.2",
     "analyze": "ANALYZE=true webpack --mode=production",
     "analyze:dev": "ANALYZE=true webpack --mode=development",
     "analyze:stats": "webpack --mode=production --json > bundle-stats.json && webpack-bundle-analyzer bundle-stats.json",
