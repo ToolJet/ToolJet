@@ -64,6 +64,22 @@ export const ProgramaticallyHandleProperties = ({
         return props?.selectedBgColorHearts;
       case 'unselectedBgColor':
         return props?.unselectedBgColor;
+      case 'disableButton':
+        return props?.disableButton;
+      case 'loadingState':
+        return props?.loadingState;
+      case 'buttonBackgroundColor':
+        return props?.buttonBackgroundColor;
+      case 'buttonLabelColor':
+        return props?.buttonLabelColor;
+      case 'buttonIconColor':
+        return props?.buttonIconColor;
+      case 'buttonLoaderColor':
+        return props?.buttonLoaderColor;
+      case 'buttonBorderColor':
+        return props?.buttonBorderColor;
+      case 'buttonBorderRadius':
+        return props?.buttonBorderRadius;
       default:
         return;
     }
@@ -84,7 +100,7 @@ export const ProgramaticallyHandleProperties = ({
       return value || '{{true}}';
     }
     if (property === 'cellBackgroundColor') {
-      return definitionObj?.value ?? '';
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
@@ -108,6 +124,30 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'jsonIndentation') {
       return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'disableButton') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'loadingState') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'buttonBackgroundColor') {
+      return definitionObj?.value ?? 'var(--cc-primary-brand)';
+    }
+    if (property === 'buttonLabelColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonIconColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonLoaderColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonBorderColor') {
+      return definitionObj?.value ?? 'var(--cc-weak-border)';
+    }
+    if (property === 'buttonBorderRadius') {
+      return definitionObj?.value ?? '6';
     }
     return definitionObj?.value ?? `{{false}}`;
   };

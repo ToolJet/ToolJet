@@ -43,6 +43,27 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       };
     }
 
+    // Handle button column initialization
+    if (property === 'columnType' && value === 'button') {
+      modifiedColumn = {
+        ...modifiedColumn,
+        buttonLabel: 'Button',
+        buttonType: 'solid',
+        disableButton: false,
+        loadingState: false,
+        buttonBackgroundColor: 'var(--cc-primary-brand)',
+        buttonLabelColor: 'var(--cc-surface1-surface)',
+        buttonIconName: 'IconHome2',
+        buttonIconVisibility: false,
+        buttonIconColor: 'var(--cc-surface1-surface)',
+        buttonIconAlignment: 'left',
+        buttonLoaderColor: 'var(--cc-surface1-surface)',
+        buttonBorderColor: 'var(--cc-weak-border)',
+        buttonBorderRadius: '6',
+        buttonTooltip: '',
+      };
+    }
+
     return modifiedColumn;
   }, []);
 
@@ -75,6 +96,9 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       typeProp: 'columnType',
       nonEditableTypes: ['link', 'image'],
       namePrefix: 'new_column',
+      defaultItemProps: {
+        includeKey: true,
+      },
       onPropertyChange: handlePropertyChange,
       onRemove: handleRemove,
     },

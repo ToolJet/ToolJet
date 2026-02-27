@@ -95,8 +95,9 @@ export const TableRow = ({
               'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
               [cellHeight]: true,
               'overflow-hidden':
-                ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
-                !contentWrap,
+                cell.column.columnDef?.meta?.columnType === 'button' ||
+                (['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
+                  !contentWrap),
               'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
               'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
               'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
