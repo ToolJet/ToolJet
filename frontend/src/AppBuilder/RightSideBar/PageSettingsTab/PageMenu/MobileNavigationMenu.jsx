@@ -25,7 +25,7 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
   const pages = useStore((state) => state.modules.canvas.pages, shallow);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
   const switchToHomePage = useStore((state) => state.switchToHomePage);
-  const switchPageWrapper = useStore((state) => state.switchPageWrapper);
+  const switchPage = useStore((state) => state.switchPageWrapper);
 
   const hasAppPagesAddNavGroupEnabled = useStore((state) => state.license?.featureAccess?.appPagesAddNavGroupEnabled);
 
@@ -121,6 +121,13 @@ const MobileNavigationMenu = ({ currentPageId, darkMode, switchDarkMode, bgStyle
   };
 
   const Body = () => {
+    const { toggleSidebar } = useSidebar();
+
+    const switchPageWrapper = (page, currentPageId) => {
+      switchPage(page, currentPageId);
+      toggleSidebar();
+    };
+
     return (
       <RenderPageAndPageGroup
         isLicensed={hasAppPagesAddNavGroupEnabled}
