@@ -21,8 +21,8 @@ const NEW_WIDGETS = [
   'ReorderableList',
   'JSONExplorer',
   'JSONEditor',
-  'KeyValuePair',
   'Navigation',
+  'KeyValuePair',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

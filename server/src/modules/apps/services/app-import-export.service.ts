@@ -97,7 +97,8 @@ type NewRevampedComponent =
   | 'Chat'
   | 'CurrencyInput'
   | 'PhoneInput'
-  | 'IFrame';
+  | 'IFrame'
+  | 'TreeSelect'
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -140,6 +141,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'CurrencyInput',
   'PhoneInput',
   'IFrame',
+  'TreeSelect',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = ['CodeEditor', 'PDF', 'Calendar', 'CustomComponent'];
@@ -163,16 +165,16 @@ const INPUT_WIDGET_TYPES = [
 ];
 
 const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
-      'TextInput',
-      'NumberInput',
-      'EmailInput',
-      'CurrencyInput',
-      'PhoneInput',
-      'Datepicker',
-      'DatePickerV2',
-      'DatetimePickerV2',
-      'TimePicker',
-      'DaterangePicker',
+  'TextInput',
+  'NumberInput',
+  'EmailInput',
+  'CurrencyInput',
+  'PhoneInput',
+  'Datepicker',
+  'DatePickerV2',
+  'DatetimePickerV2',
+  'TimePicker',
+  'DaterangePicker',
 ];
 
 @Injectable()
@@ -2861,6 +2863,17 @@ function migrateProperties(
       }
       if (properties.numberFormat == undefined) {
         properties.numberFormat = { value: 'us' };
+      }
+    }
+
+    // TreeSelect
+    if (componentType === 'TreeSelect') {
+      if (!styles.labelColor) {
+        styles.labelColor = { value: styles?.textColor };
+      }
+      if (!styles.alignment) {
+        styles.alignment = { value: 'top' };
+        styles.direction = { value: 'left' };
       }
     }
 

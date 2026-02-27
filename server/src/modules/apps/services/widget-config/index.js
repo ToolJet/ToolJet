@@ -77,7 +77,6 @@ import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { navigationConfig } from './navigation';
 
-
 const widgets = {
   buttonConfig,
   tableConfig,

@@ -72,7 +72,8 @@ export function renderCustomStyles(
     componentConfig.component == 'PopoverMenu' ||
     componentConfig.component == 'ReorderableList' ||
     componentConfig.component == 'KeyValuePair' ||
-    componentConfig.component == 'ProgressBar'
+    componentConfig.component == 'ProgressBar' ||
+    componentConfig.component == 'TreeSelect'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

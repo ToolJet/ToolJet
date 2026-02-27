@@ -121,9 +121,10 @@
 
 .ChildIndentation {
   position: absolute;
-  width: 1px;
+  width: 0;
   height: 100%;
-  background-color: var(--border-weak);
+  border-left: 1px dashed var(--icon-weak);
   z-index: 1;
-  top: -4px;
+  top: 0;
+  bottom: 0;
 }
