@@ -25,6 +25,7 @@ import {
   RatingColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
+import { normalizeButtonEvent } from './normalizeButtonEvent';
 import SelectSearch from 'react-select-search';
 
 export default function generateColumnsData({
@@ -438,9 +439,13 @@ export default function generateColumnsData({
                       useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
                     if (useDynamicColumn) {
                       const button = buttons.find((b) => b.id === buttonId);
-                      const inlineEvents = (button?.events || []).map((evt) => ({
-                        event: { ...evt, ref: `${columnKey}::${buttonId}` },
-                      }));
+                      const inlineEvents = (button?.events || [])
+                        .map((evt) => {
+                          const normalized = normalizeButtonEvent(evt, buttonId);
+                          if (!normalized) return null;
+                          return { event: { ...normalized, ref: `${columnKey}::${buttonId}` } };
+                        })
+                        .filter(Boolean);
                       buttonEvents.push(...inlineEvents);
                     }
 
