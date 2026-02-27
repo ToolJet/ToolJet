@@ -20,8 +20,8 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     menuId,
     showSearchInput,
     menuBackgroundColor,
-  } =
-    selectProps;
+    menuWidthStyle,
+  } = selectProps;
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
@@ -64,6 +64,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       onTouchEnd={(e) => e.stopPropagation()}
       style={{
         ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
+        ...(menuWidthStyle || {}),
         '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
       }}
     >
@@ -103,6 +104,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           className="dropdown-multiselect-widget-custom-menu-list-body"
           style={{
             maxHeight: selectProps.maxMenuHeight || 300,
+            ...(menuWidthStyle || {}),
           }}
         >
           <div

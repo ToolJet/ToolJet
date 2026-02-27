@@ -67,6 +67,8 @@ const selectCustomStyles = (width) => {
       backgroundColor: state.isFocused ? '#F0F4FF !important' : 'white',
       color: '#11181C',
       borderRadius: '6px',
+      display: 'flex',
+      alignItems: 'center',
     }),
     singleValue: (provided) => ({
       ...provided,
