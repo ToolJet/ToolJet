@@ -374,9 +374,8 @@ function checkTagExists(appId, versionName) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(
-    `${config.apiUrl}/app-git/${appId}/check-tag/${encodeURIComponent(versionName)}`,
-    requestOptions
-  ).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/${appId}/check-tag/${encodeURIComponent(versionName)}`, requestOptions).then(
+    handleResponse
+  );
 }
 // Remove all app-git api's to separate service from here.

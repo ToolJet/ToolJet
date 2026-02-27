@@ -1354,12 +1354,12 @@ class HomePageComponent extends React.Component {
     }
 
     const selectedTag = tags?.find((t) => t.name === selectedVersionOption);
-      return {
-        message: selectedTag?.message,
-        author: selectedTag?.tagger?.name,
-        date: selectedTag?.tagger?.date,
-        versionName: selectedVersionOption?.split('/')?.pop(),
-      };
+    return {
+      message: selectedTag?.message,
+      author: selectedTag?.tagger?.name,
+      date: selectedTag?.tagger?.date,
+      versionName: selectedVersionOption?.split('/')?.pop(),
+    };
   };
 
   renderVersionOption = (option) => {
@@ -1814,7 +1814,9 @@ class HomePageComponent extends React.Component {
                               <div data-cy="last-commit-message">
                                 {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
                               </div>
-                              <div data-cy="last-commit-version">{this.getSelectedVersionCommitInfo().gitVersionName}</div>
+                              <div data-cy="last-commit-version">
+                                {this.getSelectedVersionCommitInfo().gitVersionName}
+                              </div>
                             </div>
                             {this.getSelectedVersionCommitInfo().author && this.getSelectedVersionCommitInfo().date && (
                               <div className="author-info" data-cy="auther-info">
