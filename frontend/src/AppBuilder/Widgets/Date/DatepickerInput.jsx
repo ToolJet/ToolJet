@@ -38,28 +38,14 @@ export const DatepickerInput = forwardRef(
     clearButtonRightOffset = 0,
     dataCy,
   }) => {
-    // Check if value is a placeholder text (not an actual date/time value)
-    const isPlaceholderValue =
-      value === inputPlaceholder ||
-      value === 'Select date' ||
-      value === 'Select time' ||
-      value === 'Select date and time' ||
-      value === 'Select Date Range' ||
-      (typeof value === 'string' && value.includes('→') && value.trim() === '→');
+    const isPlaceholderValue = value === null || value === undefined || value === '';
 
     const computedInputStyles = {
       ...inputStyles,
       color: isPlaceholderValue ? 'var(--cc-placeholder-text)' : inputStyles?.color,
     };
 
-    const placeholderValues = new Set([
-      inputPlaceholder,
-      'Select date',
-      'Select time',
-      'Select date and time',
-      'Select Date Range',
-    ]);
-    const hasValue = value !== null && value !== undefined && value !== '' && !placeholderValues.has(value);
+    const hasValue = value !== null && value !== undefined && value !== '';
     const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
     const clearButtonBaseRight = loaderStyles?.right ?? '11px';
     const clearButtonRight =
