@@ -80,6 +80,18 @@ export const BaseInput = ({
     (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const hasValue = value !== '' && value !== null && value !== undefined;
   const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const computedIconColor = shouldUsePlaceholderTextColorForIcon
+    ? placeholderTextColor
+    : iconColor !== '#CFD3D859'
+      ? iconColor
+      : 'var(--icons-weak-disabled)';
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
@@ -89,7 +101,7 @@ export const BaseInput = ({
         : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
-    ...(placeholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
+    ...(shouldOverridePlaceholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
   };
 
   let loaderStyle;
@@ -232,7 +244,7 @@ export const BaseInput = ({
               style={{
                 width: '16px',
                 height: '16px',
-                color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
+                color: computedIconColor,
                 zIndex: 3,
                 ...(inputType === 'textarea' && { alignSelf: 'start' }),
               }}

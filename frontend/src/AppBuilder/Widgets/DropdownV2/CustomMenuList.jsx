@@ -11,8 +11,18 @@ const { MenuList } = components;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput, menuBackgroundColor, placeholderTextColor } =
-    selectProps;
+  const {
+    onInputChange,
+    onMenuInputFocus,
+    optionsLoadingState,
+    darkMode,
+    inputValue,
+    menuId,
+    showSearchInput,
+    menuBackgroundColor,
+    placeholderTextColor,
+    iconColor,
+  } = selectProps;
 
   const parentRef = useRef(null);
   const hasScrolledOnOpenRef = useRef(null);
@@ -33,6 +43,14 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   const firstSelectedIndex = props?.options?.findIndex(
     (opt) => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value)
   );
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForSearchIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const searchIconColor = shouldUsePlaceholderTextColorForSearchIcon ? placeholderTextColor : 'var(--cc-default-icon)';
 
   useEffect(() => {
     if (!selectProps?.menuIsOpen) {
@@ -61,7 +79,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       {showSearchInput && (
         <div className="dropdown-multiselect-widget-search-box-wrapper">
           <span>
-            <SolidIcon name="search01" width="14" fill="var(--cc-default-icon)" />
+            <SolidIcon name="search01" width="14" fill={searchIconColor} />
           </span>
           <input
             autoCorrect="off"
@@ -85,7 +103,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             onFocus={onMenuInputFocus}
             placeholder="Search"
             className="dropdown-multiselect-widget-search-box"
-            style={{ ...(placeholderTextColor && { '--cc-placeholder-text': placeholderTextColor }) }}
+            style={shouldOverridePlaceholderTextColor ? { '--cc-placeholder-text': placeholderTextColor } : undefined}
           />
         </div>
       )}
