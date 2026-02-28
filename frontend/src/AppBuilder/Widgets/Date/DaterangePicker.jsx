@@ -23,7 +23,8 @@ export const DaterangePicker = ({
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const [datepickerMode, setDatePickerMode] = useState('date');
-  const { defaultStartDate, defaultEndDate, format, label, showClearBtn } = properties;
+  const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
+  const placeholder = placeholderProp || 'Select Date Range';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -60,7 +61,7 @@ export const DaterangePicker = ({
     const isValidStartDate = startDate && moment(startDate).isValid();
     const isValidEndDate = endDate && moment(endDate).isValid();
     if (!isValidStartDate && !isValidEndDate) {
-      return 'Select Date Range';
+      return '';
     } else if (isValidStartDate && !isValidEndDate) {
       return `${moment(startDate).format(format)} → `;
     } else if (!isValidStartDate && isValidEndDate) {
@@ -175,7 +176,7 @@ export const DaterangePicker = ({
   const handleClear = () => {
     setStartDate(null);
     setEndDate(null);
-    setDisplayRange('Select Date Range');
+    setDisplayRange('');
     setExposedVariables({
       startDate: null,
       startDateInUnix: null,
@@ -306,6 +307,7 @@ export const DaterangePicker = ({
     validationError,
     showClearBtn,
     onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   const customHeaderProps = {

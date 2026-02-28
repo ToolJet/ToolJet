@@ -71,6 +71,14 @@ export const datetimePickerV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'Data',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select date and time',
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -407,6 +415,7 @@ export const datetimePickerV2Config = {
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '01/01/2022' },
+      placeholder: { value: 'Select date and time' },
       dateFormat: { value: 'DD/MM/YYYY' },
       timeFormat: { value: 'HH:mm' },
       isTimezoneEnabled: { value: '{{false}}' },
