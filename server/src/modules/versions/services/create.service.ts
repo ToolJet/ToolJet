@@ -30,7 +30,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) {}
+  ) { }
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -292,6 +292,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
       }
     }
+
+    // Handle workflow definitions - remap DataQuery IDs in definition.queries
+    if (definition?.queries && Array.isArray(definition.queries)) {
+      definition.queries = definition.queries.map((query) => {
+        if (query.id && dataQueryMapping[query.id]) {
+          return {
+            ...query,
+            id: dataQueryMapping[query.id],
+          };
+        }
+        return query;
+      });
+    }
+
     return definition;
   }
 

@@ -544,9 +544,9 @@ export const createPageMenuSlice = (set, get) => {
           }
         } else {
           toast.error('No URL provided');
-          return;
+          return false;
         }
-        return;
+        return true;
       }
 
       if (page?.type === 'app') {
@@ -563,13 +563,13 @@ export const createPageMenuSlice = (set, get) => {
           }
         } else {
           toast.error('No app selected');
-          return;
+          return false;
         }
-        return;
+        return true;
       }
 
       if (currentPageId === page?.id) {
-        return;
+        return false;
       }
 
       const queryParams = {
@@ -583,6 +583,7 @@ export const createPageMenuSlice = (set, get) => {
         currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
       );
       currentMode !== 'view' && setCurrentPageHandle(page.handle);
+      return true;
     },
   };
 };
