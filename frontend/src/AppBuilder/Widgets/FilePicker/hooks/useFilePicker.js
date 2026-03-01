@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
-import { formatFileSize } from '@/_helpers/utils';
+import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 
@@ -17,6 +17,8 @@ export const useFilePicker = ({
   height,
   id, // id might be needed for events
   component, // component might be needed for events
+  focusFn, // optional external focus handler (e.g., for FileInput)
+  blurFn, // optional external blur handler (e.g., for FileInput)
 }) => {
   const isInitialRender = useRef(true);
 
@@ -481,7 +483,6 @@ export const useFilePicker = ({
     isTouched,
     uiErrorMessage,
     isDragActive,
-    setUiErrorMessage,
     minFileCount,
     enableMultiple,
     setExposedVariables,
@@ -500,7 +501,7 @@ export const useFilePicker = ({
       const legacySelectedFiles = [];
       const formattedSelectedFiles = [];
 
-      selectedFiles.forEach(file => {
+      for (const file of selectedFiles) {
         const { filePath, ...formattedFile } = file;
 
         legacySelectedFiles.push({
@@ -510,15 +511,16 @@ export const useFilePicker = ({
           dataURL: file.base64Data,
           base64Data: file.base64Data,
           parsedData: file.parsedData,
-          filePath: file.filePath
+          filePath: file.filePath,
         });
         formattedSelectedFiles.push(formattedFile);
-      })
+      }
 
       // useExposeState handles: isLoading, isVisible, isDisabled, setVisibility, setLoading, setDisable
       // We manually expose widget-specific items:
       setExposedVariables?.({
         clearFiles: clearFiles,
+        clear: clearFiles, // alias for clearFiles, aligned with CSA handle
         setFileName: setFileName,
         files: formattedSelectedFiles, // Contains parsedValue
         file: legacySelectedFiles, // Contains parsedValue
@@ -527,7 +529,25 @@ export const useFilePicker = ({
         isValid: currentIsValid,
         fileSize: totalFileSize,
         uiErrorMessage: uiErrorMessage,
+        ...(focusFn ? { setFocus: focusFn } : {}),
+        ...(blurFn ? { setBlur: blurFn } : {}),
       });
+
+      // Custom rule validation (FileInput/FilePicker)
+      const customRule = validation?.customRule?.value;
+      if (customRule) {
+        const resolvedCustomRule = resolveWidgetFieldValue(customRule, '', {
+          files: formattedSelectedFiles,
+        });
+        if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
+          setIsValid(false);
+          setUiErrorMessage(resolvedCustomRule);
+          setExposedVariables?.({
+            isValid: false,
+            uiErrorMessage: resolvedCustomRule,
+          });
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -540,7 +560,9 @@ export const useFilePicker = ({
     setFileName,
     setExposedVariables,
     uiErrorMessage,
-    dropzoneRejections,
+    focusFn,
+    blurFn,
+    validation?.customRule?.value,
   ]); // Multi-line dependencies
 
   useEffect(() => {
@@ -550,6 +572,7 @@ export const useFilePicker = ({
     // We manually expose widget-specific items initially:
     setExposedVariables?.({
       clearFiles: clearFiles,
+      clear: clearFiles, // alias for clearFiles, aligned with CSA handle
       setFileName: setFileName,
       files: [],
       file: [],
@@ -558,13 +581,15 @@ export const useFilePicker = ({
       isValid: initialIsValid,
       fileSize: 0,
       uiErrorMessage: '',
+      ...(focusFn ? { setFocus: focusFn } : {}),
+      ...(blurFn ? { setBlur: blurFn } : {}),
     });
 
     setIsMandatoryMet(!isMandatory);
     setIsValid(initialIsValid); // Set initial state using the calculated value
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory, clearFiles, setFileName, setExposedVariables]); // Multi-line dependencies
+  }, [isMandatory, clearFiles, setFileName, setExposedVariables, focusFn, blurFn]); // Multi-line dependencies
 
   useEffect(() => {
     // Update internal disablePicker based on isDisabled from useExposeState and other logic
@@ -576,10 +601,13 @@ export const useFilePicker = ({
     // Use isDisabled from useExposeState for dropzone disabled prop
   }, [selectedFiles.length, maxFileCount, enableMultiple, isDisabled]);
 
+  // Clear UI error message when isDisabled state changes.
+  // `setUiErrorMessage` is stable from useState, so we intentionally
+  // omit it from the dependency array to satisfy linter preferences.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: controlled dependency list
   useEffect(() => {
-    // Clear UI error message when isDisabled state changes
     setUiErrorMessage('');
-  }, [isDisabled, setUiErrorMessage]);
+  }, [isDisabled]);
 
   // --- Styles for Dropzone ---
   // Moved style calculation to component as it depends on drag states from useDropzone return

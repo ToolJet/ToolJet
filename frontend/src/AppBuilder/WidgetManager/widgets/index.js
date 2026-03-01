@@ -28,6 +28,7 @@ import { qrscannerConfig } from './qrscanner';
 import { starratingConfig } from './starrating';
 import { dividerConfig } from './divider';
 import { filepickerConfig } from './filepicker';
+import { fileinputConfig } from './fileinput';
 import { calendarConfig } from './calendar';
 import { iframeConfig } from './iframe';
 import { codeEditorConfig } from './codeEditor';
@@ -114,6 +115,7 @@ export {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
