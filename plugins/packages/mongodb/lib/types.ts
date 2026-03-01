@@ -13,6 +13,19 @@ export type SourceOptions = {
   use_ssl: boolean,
   query_params: string
   connection_string: string;
+
+  ssh_enabled: boolean;
+  ssh_host: string;
+  ssh_port: number;
+  ssh_username: string;
+  ssh_auth_type: 'password' | 'privateKey';
+  ssh_password: string;
+  ssh_private_key: string;
+  ssh_passphrase: string;
+  ssh_dst_host: string;
+  ssh_dst_port: number;
+  ssh_local_port: number;
+
 };
 export type QueryOptions = {
   operation: string;
