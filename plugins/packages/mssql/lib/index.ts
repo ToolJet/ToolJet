@@ -10,6 +10,14 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
+import { Client } from 'ssh2';
+import net from 'net';
+
+interface SSHTunnel {
+  client: Client;
+  server: net.Server;
+  localPort: number;
+}
 
 const recognizedBooleans = {
   true: true,
@@ -18,6 +26,60 @@ const recognizedBooleans = {
 
 function interpretValue(value: string): string | boolean | number {
   return recognizedBooleans[value.toLowerCase()] ?? (!isNaN(Number.parseInt(value)) ? Number.parseInt(value) : value);
+}
+
+function createSSHTunnel(sourceOptions: SourceOptions): Promise<SSHTunnel> {
+  return new Promise((resolve, reject) => {
+    const sshClient = new Client();
+
+    sshClient.on('ready', () => {
+      const server = net.createServer(socket => {
+        sshClient.forwardOut(
+          socket.remoteAddress || '127.0.0.1',
+          socket.remotePort || 0,
+          sourceOptions.host,           
+          Number(sourceOptions.port),   
+          (err, stream) => {
+            if (err) {
+              socket.destroy();
+              return;
+            }
+            socket.pipe(stream);
+            stream.pipe(socket);
+          }
+        );
+      });
+
+      server.on('error', err => {
+        sshClient.end();
+        reject(err);
+      });
+
+      server.listen(0, '127.0.0.1', () => {
+        const { port } = server.address() as net.AddressInfo;
+        resolve({ client: sshClient, server, localPort: port });
+      });
+    });
+
+    sshClient.on('error', reject);
+
+    sshClient.connect({
+      host: sourceOptions.ssh_host,
+      port: sourceOptions.ssh_port || 22,
+      username: sourceOptions.ssh_username,
+      readyTimeout: 20000,
+      keepaliveInterval: 10000,
+      ...(sourceOptions.ssh_auth_type === 'password'
+        ? { password: sourceOptions.ssh_password }
+        : {
+            privateKey: sourceOptions.ssh_private_key,
+            ...(sourceOptions.ssh_passphrase
+              ? { passphrase: sourceOptions.ssh_passphrase }
+              : {}),
+          }),
+    });
+
+  });
 }
 
 export default class MssqlQueryService implements QueryService {
@@ -51,7 +113,8 @@ export default class MssqlQueryService implements QueryService {
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
     try {
-      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+      const checkCache = !sourceOptions.ssh_enabled;
+      const knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
 
       switch (queryOptions.mode) {
         case 'sql':
@@ -116,25 +179,59 @@ export default class MssqlQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
-    const config: Knex.Config = {
-      client: 'mssql',
-      connection: {
-        host: sourceOptions.host,
-        user: sourceOptions.username,
-        password: sourceOptions.password,
-        database: sourceOptions.database,
-        port: +sourceOptions.port,
-        options: {
-          encrypt: sourceOptions.azure ?? false,
-          instanceName: sourceOptions.instanceName,
-          ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
-        },
-        pool: { min: 0 },
-      },
-    };
+  let tunnel: SSHTunnel | null = null;
 
-    return knex(config);
+  let host: string;
+  let port: number;
+
+  if (sourceOptions.ssh_enabled) {
+    tunnel = await createSSHTunnel(sourceOptions);
+    host = '127.0.0.1';
+    port = tunnel.localPort;
+  } else {
+    host = sourceOptions.host;
+    port = +sourceOptions.port;
   }
+
+  const config: Knex.Config = {
+    client: 'mssql',
+    connection: {
+      host,
+      port,
+      user: sourceOptions.username,
+      password: sourceOptions.password,
+      database: sourceOptions.database,
+      options: {
+        encrypt: sourceOptions.azure ?? false,
+        instanceName: sourceOptions.instanceName,
+        ...(sourceOptions.connection_options &&
+          this.sanitizeOptions(sourceOptions.connection_options)),
+      },
+      pool: { min: 0 },
+    },
+  };
+
+  const knexInstance = knex(config);
+
+ 
+  if (tunnel) {
+    const originalDestroy = knexInstance.destroy.bind(knexInstance);
+
+    Object.defineProperty(knexInstance, 'destroy', {
+      value: async function () {
+        try {
+          await originalDestroy();
+        } finally {
+          tunnel.server.close();
+          tunnel.client.end();
+        }
+      },
+    });
+  }
+
+  return knexInstance;
+}
+
 
   async getConnection(
     sourceOptions: SourceOptions,
