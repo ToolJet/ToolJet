@@ -59,9 +59,9 @@ export const customComponentConfig = {
         value: `{{{ title: 'Hi! There', buttonText: 'Update Title'}}}`,
       },
       code: {
-        value: `import React from 'https://cdn.skypack.dev/react';
-  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+        value: `import React, { useMemo, useState, useRef, useEffect, } from "https://esm.sh/react@18.2.0"; 
+import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
+import { Button, Container } from 'https://esm.sh/@material-ui/core?deps=react@18.2.0,react-dom@18.2.0';
   const MyCustomComponent = ({data, updateData, runQuery}) => (
     <Container>
         <h1>{data.title}</h1>
@@ -75,7 +75,8 @@ export const customComponentConfig = {
       </Container>
   );
   const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-  ReactDOM.render(<ConnectedComponent />, document.body);`,
+  const root = createRoot(document.body);
+  root.render(<ConnectedComponent />);`,
         skipResolve: true,
       },
     },
