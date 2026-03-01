@@ -20,8 +20,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { UserDetailsService } from '@modules/organization-users/services/user-details.service';
-import { EncryptionService } from '@modules/encryption/service';
+import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -47,6 +46,7 @@ export class ExternalApiModule extends SubModule {
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
+        await OrganizationUsersModule.register(configs)
       ],
       providers: [
         ExternalApiUtilService,
@@ -62,8 +62,6 @@ export class ExternalApiModule extends SubModule {
         UserPersonalAccessTokenRepository,
         UserRepository,
         AppsRepository,
-        UserDetailsService,
-        EncryptionService,
       ],
       controllers: isMainImport ? [ExternalApisController, ExternalApisAppsController] : [],
       exports: [ExternalApiUtilService],

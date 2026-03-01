@@ -44,7 +44,7 @@ export class OrganizationUsersModule extends SubModule {
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [OrganizationUsersUtilService],
+      exports: [OrganizationUsersUtilService, UserDetailsService],
     };
   }
 }
