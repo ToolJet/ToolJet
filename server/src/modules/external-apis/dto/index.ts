@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  ArrayNotEmpty,
   ValidateNested,
   MinLength,
   MaxLength,
@@ -288,4 +289,22 @@ export class ValidatePATSessionDto {
 
   @IsString()
   accessToken: string;
+}
+
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ArrayNotEmpty({ message: 'userDetails must be a non-empty array' })
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
 }
