@@ -14,6 +14,7 @@ const usePortal = ({ children, ...restProps }) => {
     dragResizePortal = false,
     callgpt,
     isCopilotEnabled = false,
+    title,
   } = restProps;
 
   const renderCustomComponent = ({ component, ...restProps }) => {
@@ -27,7 +28,7 @@ const usePortal = ({ children, ...restProps }) => {
       forceUpdate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName, isOpen]);
+  }, [componentName, isOpen, title]);
 
   const styleProps = optionalProps?.styles;
   return (
@@ -41,6 +42,7 @@ const usePortal = ({ children, ...restProps }) => {
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
+          title={title}
         >
           <div
             className={`editor-container codehinter-popup ${optionalProps.cls ?? ''}`}
