@@ -16,7 +16,7 @@ import { shallow } from 'zustand/shallow';
 import { Overlay } from 'react-bootstrap';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-
+import cx from 'classnames';
 import { findDefault } from '../_utils/component-properties-validation';
 import FixWithAi from './FixWithAi';
 
@@ -356,6 +356,9 @@ const PreviewContainer = ({
   previewRef,
   showPreview,
   onAiSuggestionAccept,
+  wrapperWidth,
+  overlayKey,
+  isInsideQueryManager,
   ...restProps
 }) => {
   const {
@@ -483,8 +486,12 @@ const PreviewContainer = ({
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && !validationFn && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
-          width: '250px',
-          maxWidth: '350px',
+          ...(wrapperWidth
+            ? { width: wrapperWidth }
+            : {
+                width: '250px',
+                maxWidth: '350px',
+              }),
         }}
       >
         <div>
@@ -537,7 +544,11 @@ const PreviewContainer = ({
                   Expected
                 </span>
               </div>
-              <Card className={darkMode && 'bg-slate2'}>
+              <Card
+                className={cx({
+                  'bg-slate2': darkMode,
+                })}
+              >
                 <Card.Body
                   className="p-1"
                   style={{
@@ -580,7 +591,10 @@ const PreviewContainer = ({
           )}
 
           <Card
-            className={darkMode && 'bg-slate2'}
+            className={cx({
+              'bg-slate2': darkMode,
+              'query-manger-input-preview-popover-card': isInsideQueryManager,
+            })}
             style={{
               borderColor: errorStateActive ? 'var(--tomato8)' : 'var(--slate6)',
             }}
@@ -602,11 +616,14 @@ const PreviewContainer = ({
     </Popover>
   );
 
+  const initialPlacement = isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left';
+
   return (
     <>
       {!isPortalOpen && (
         <Overlay
-          placement={previewPlacement || 'left'}
+          key={overlayKey}
+          placement={initialPlacement}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
@@ -616,6 +633,7 @@ const PreviewContainer = ({
             modifiers: [
               {
                 name: 'flip',
+                enabled: isInsideQueryManager,
                 options: {
                   fallbackPlacements: ['top', 'bottom', 'left', 'right'],
                   flipVariations: true,
