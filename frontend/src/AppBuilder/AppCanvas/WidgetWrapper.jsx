@@ -25,7 +25,7 @@ const WidgetWrapper = memo(
     parentId,
   }) => {
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
-    const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
+    const debouncedIncrementCanvasUpdater = useStore((state) => state.debouncedIncrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles,
       shallow
@@ -84,7 +84,7 @@ const WidgetWrapper = memo(
     });
 
     useEffect(() => {
-      incrementCanvasUpdater();
+      debouncedIncrementCanvasUpdater();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visibility]);
 
