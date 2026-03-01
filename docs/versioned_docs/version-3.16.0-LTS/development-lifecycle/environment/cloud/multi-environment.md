@@ -60,25 +60,67 @@ You can configure data sources and constants for each environment, and ToolJet w
 <img className="screenshot-full img-l" src="/img/development-lifecycle/environments/cloud-env.png" alt="self-hosted-env-concept" />
 
     
-### Impacted behavior with environment permission 
+## Environment Permissions
+
+### Environment Access Permission
+Admin can configure environment access for user groups or roles from the [Granular Access Control](/docs/user-management/role-based-access/access-control#granular-access-control) page.  
+Environment access determines the environment the user can access the app, while the user’s application permission (Edit or View) determines what they can do inside that environment.
+
+Final access is decided by both, App Permission (Edit/View) and Environment Access.
+
+| Environment                 | Edit Permission                                                                                                                     | View Permission                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Development Environment** | User can view and edit the application in Development Environment                                                                   | User can preview the application in Development Environment but cannot edit the application |
+| **Staging Environment**     | User can access the application in Staging Environment, run queries from the Query Panel, and inspect the application using ToolJet’s Inspector tool    | User can preview the application in Staging Environment only                        |
+| **Production Environment**  | User can access the application in Production, run queries from the Query Panel, and inspect the application using ToolJet’s Inspector tool | User can preview the application in Production Environment only                     |
+| **No Environment**          | User can open the application in any environment                                                                                            | User can preview the application in any environment                                             |
+
+
+#### Permission Priority
+
+A single group can have multiple permissions assigned for an application and its environments. When this happens, ToolJet combines these permissions, and **Edit permission always takes priority over View permission**.
+
+This means:
+
+- If a group provides both View and Edit permission for an app, the user gets Edit permission.
+- If a group provides Edit access in at least one environment and View access in others, the user receives Edit-level permission for the application overall and can access all environments assigned to that group.
+- If no environments are specified, the permission applies to all environments by default.
+
+#### Examples
+The following examples illustrate how different combinations of application permissions, environment access, and role defaults determine a user’s final permissions:
+
+1. **Builder with multiple permissions in the same group**  
+If a user receives both View and Edit permissions for an application within the same group, Edit takes priority. If the environment access is explicitly limited to Staging, the user can open the app in Staging and run queries, but cannot edit the UI or queries. They will not have access to Development or Production.
+
+2. **Builder with overlapping permissions across groups**  
+When a user belongs to multiple groups, ToolJet combines permissions. Edit overrides View, and environment access becomes the union of environments assigned across groups. If Staging is the only specified environment, the user can open and run queries in Staging but cannot access other environments.
+
+3. **Builder (default role) with no environment specified**  
+If no environment access is explicitly defined, the permission applies to all environments by default. A Builder with Edit permission can edit the application in Development and can open and run queries in Staging and Production, but cannot edit UI or queries in those environments.
+
+4. **End User (default role)**   
+An End User has View permission by default and can access only the released Production application. They cannot access Development or Staging unless explicitly granted preview access.
+
+5. **End User with explicit preview access**  
+If an End User is granted access to Development and Staging environments, they can preview the application in those environments but cannot edit it. They will not have access to Production unless the app is released to them.
+
+### Promote Application Permission
+
+Admin can configure the Promote Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another. In the example below, the user does not have permission to perform a release. Therefore, the Release button is disabled and cannot be used.
+
+<img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable Release"/>
+
+### Version Actions by Environment
 
 Each environment has a different impact on your application. Please refer the following table for details.
 
 | Action             | Development | Staging | Production |
 |--------------------|------------|---------|------------|
-| Edit versions     | ✅         | ❌      | ❌         |
-| Rename versions   | ✅         | ❌      | ❌         |
-| Delete versions   | ✅         | ❌      | ❌         |
-| Create new versions | ✅      | ❌      | ❌         |
-| Promote           | ✅         | ✅      | -          |
+| Edit versions     | ✅ (only draft versions)          | ❌      | ❌         |
+| Rename versions   | ✅ (only draft versions)        | ❌      | ❌         |
+| Delete versions   | ✅         | ✅      | ✅         |
+| Create new versions | ✅      | ✅      | ✅         |
 
 
-Checkout the [Environment-Example](/docs/development-lifecycle/environment/cloud/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
+Checkout the [Environment-Example](/docs/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.
 
-### Promote Application Permission
-
-Admin can configure the Promote Application permission from the [Permissions](/docs/user-management/role-based-access/user-roles#permissions-for-user-roles) page. This disables the **Promote** button for users who do not have the required permission, allowing only authorized roles, such as team leads, to promote the application from one environment to another.
-
-<img className="screenshot-full img-m" src="/img/development-lifecycle/release/release/draft-version/disable-release.png" alt="Disable release"/>
-
-    
