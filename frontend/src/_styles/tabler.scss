@@ -5454,11 +5454,15 @@ fieldset:disabled .btn {
 }
 
 .modal-fullscreen {
-    width: 100vw;
-    max-width: none;
+    width: 100%;
+    max-width: 100vw;
     height: 100%;
-    margin: 0
+    margin: 0;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
 }
+
 
 .real-canvas .modal-dialog.modal-fullscreen {
     width: 100%;
@@ -5490,10 +5494,13 @@ fieldset:disabled .btn {
 
 @media (max-width:575.98px) {
     .modal-fullscreen-sm-down {
-        width: 100vw;
-        max-width: none;
+        width: 100%;
+        max-width: 100vw;
         height: 100%;
-        margin: 0
+        margin: 0;
+        left: 0;
+        right: 0;
+        overflow-x: hidden;
     }
 
     .modal-fullscreen-sm-down .modal-content {
@@ -5516,12 +5523,16 @@ fieldset:disabled .btn {
 }
 
 @media (max-width:767.98px) {
-    .modal-fullscreen-md-down {
-        width: 100vw;
-        max-width: none;
-        height: 100%;
-        margin: 0
-    }
+.modal-fullscreen-md-down {
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    margin: 0;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+}
+
 
     .modal-fullscreen-md-down .modal-content {
         height: 100%;
@@ -5543,12 +5554,16 @@ fieldset:disabled .btn {
 }
 
 @media (max-width:991.98px) {
-    .modal-fullscreen-lg-down {
-        width: 100vw;
-        max-width: none;
-        height: 100%;
-        margin: 0
-    }
+.modal-fullscreen-lg-down {
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    margin: 0;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+}
+
 
     .modal-fullscreen-lg-down .modal-content {
         height: 100%;
@@ -5570,12 +5585,16 @@ fieldset:disabled .btn {
 }
 
 @media (max-width:1199.98px) {
-    .modal-fullscreen-xl-down {
-        width: 100vw;
-        max-width: none;
-        height: 100%;
-        margin: 0
-    }
+.modal-fullscreen-xl-down {
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    margin: 0;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+}
+
 
     .modal-fullscreen-xl-down .modal-content {
         height: 100%;
@@ -5597,12 +5616,16 @@ fieldset:disabled .btn {
 }
 
 @media (max-width:1399.98px) {
-    .modal-fullscreen-xxl-down {
-        width: 100vw;
-        max-width: none;
-        height: 100%;
-        margin: 0
-    }
+.modal-fullscreen-xxl-down {
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    margin: 0;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+}
+
 
     .modal-fullscreen-xxl-down .modal-content {
         height: 100%;
