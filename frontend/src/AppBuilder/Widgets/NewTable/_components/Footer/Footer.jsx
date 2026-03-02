@@ -75,9 +75,8 @@ export const Footer = memo(
     return (
       <>
         <div
-          className={`card-footer d-flex align-items-center jet-table-footer table-component-footer justify-content-center ${
-            darkMode && 'dark-theme'
-          }`}
+          className={`card-footer d-flex align-items-center jet-table-footer table-component-footer justify-content-center ${darkMode && 'dark-theme'
+            }`}
           style={{
             backgroundColor: containerBackgroundColor,
           }}
@@ -95,9 +94,9 @@ export const Footer = memo(
                 height={height}
               />
             )}
-            {editedRows.size > 0 && showBulkUpdateActions && (
-              <div className="d-flex custom-gap-4">{renderChangeSetUI()}</div>
-            )}
+            <div className="d-flex custom-gap-4">
+              {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
+            </div>
             <ControlButtons
               id={id}
               table={table}
@@ -119,6 +118,7 @@ export const Footer = memo(
             allColumns={allColumns}
             fireEvent={fireEvent}
             setExposedVariables={setExposedVariables}
+            componentName={componentName}
           />
         )}
       </>

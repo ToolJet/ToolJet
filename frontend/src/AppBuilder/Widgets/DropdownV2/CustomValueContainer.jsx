@@ -1,20 +1,19 @@
 import React from 'react';
 import { components } from 'react-select';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import './dropdownV2.scss';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
   return (
     <ValueContainer {...props}>
       <div className="d-inline-flex">
         {selectProps?.doShowIcon && (
           <div>
-            <IconElement
+            <TablerIcon
+              iconName={selectProps?.icon}
               style={{
                 width: '16px',
                 height: '16px',

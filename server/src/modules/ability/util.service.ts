@@ -108,7 +108,8 @@ export class AbilityUtilService {
 
     if (resources?.length) {
       const appsAndWorkflowResourcesList = resources.filter(
-        (item) => item.resource === MODULES.APP || item.resource === MODULES.WORKFLOWS
+        (item) =>
+          item.resource === MODULES.APP || item.resource === MODULES.WORKFLOWS || item.resource === MODULES.MODULES
       );
       const dataSourcesResourcesList = resources.filter((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE);
 

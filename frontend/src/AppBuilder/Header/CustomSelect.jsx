@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
@@ -7,12 +7,16 @@ import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
-import { CreateVersionModal, CreateDraftVersionModal } from '@/modules/Appbuilder/components';
 
 import useStore from '@/AppBuilder/_stores/store';
 
 import { Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button/Button';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const CreateDraftVersionModal = lazy(() =>
+  import('@/modules/Appbuilder/components').then((m) => ({ default: m.CreateDraftVersionModal }))
+);
 
 // TODO: edit version modal and add version modal
 const Menu = (props) => {
@@ -135,12 +139,14 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        <CreateDraftVersionModal
-          {...props}
-          showCreateAppVersion={showCreateAppVersion}
-          setShowCreateAppVersion={setShowCreateAppVersion}
-          onSelectVersion={onSelectVersion}
-        />
+        <Suspense fallback={null}>
+          <CreateDraftVersionModal
+            {...props}
+            showCreateAppVersion={showCreateAppVersion}
+            setShowCreateAppVersion={setShowCreateAppVersion}
+            onSelectVersion={onSelectVersion}
+          />
+        </Suspense>
       )}
 
       {isEditable && (

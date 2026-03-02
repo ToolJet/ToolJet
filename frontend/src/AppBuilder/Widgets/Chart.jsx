@@ -12,7 +12,7 @@ import { getCssVarValue, getModifiedColor } from './utils';
 
 var tinycolor = require('tinycolor2');
 
-export const Chart = function Chart({
+export default function Chart({
   width,
   height,
   darkMode,
@@ -26,7 +26,6 @@ export const Chart = function Chart({
   const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
   const themeChanged = useStore((state) => state.themeChanged);
-
 
   const getColor = (color) => {
     if (tinycolor(color).getBrightness() > 128) return '#000';
@@ -160,6 +159,30 @@ export const Chart = function Chart({
       },
       ...chartLayout.yaxis,
     },
+    // Dynamically add additional axes (xaxis2, yaxis2, yaxis3, etc.) from user layout
+    ...Object.keys(chartLayout)
+      .filter((key) => /^(xaxis|yaxis)\d+$/.test(key))
+      .reduce((acc, key) => {
+        acc[key] = {
+          showgrid: showGridLines,
+          showline: true,
+          color: fontColor,
+          automargin: true,
+          visible: showAxes,
+          gridcolor: modifiedGridLines,
+          linecolor: modifiedAxisColor,
+          title: {
+            font: {
+              color: modifiedTextColor,
+            },
+          },
+          tickfont: {
+            color: modifiedTextColor,
+          },
+          ...chartLayout[key],
+        };
+        return acc;
+      }, {}),
     margin: {
       l: padding,
       r: padding,
@@ -290,7 +313,7 @@ export const Chart = function Chart({
       )}
     </div>
   );
-};
+}
 
 // onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
 const PlotComponent = memo(

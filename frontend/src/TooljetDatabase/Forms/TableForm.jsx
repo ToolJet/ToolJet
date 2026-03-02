@@ -166,6 +166,26 @@ const TableForm = ({
     return true;
   };
 
+  const getTableNameHelperText = () => {
+    if (!tableName || tableName.length === 0) {
+      return "Table name can contain letters, numbers and underscores and must be within 32 characters";
+    }
+    if (tableName.length > 32) {
+      return "Table name must be maximum 32 characters";
+    }
+    if (/^[0-9]/.test(tableName)) {
+      return "Table name cannot start with a number";
+    }
+    const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!tableNameRegex.test(tableName)) {
+      return "Table name can only contain letters, numbers and underscores";
+    }
+    return "Table name can contain letters, numbers and underscores and must be within 32 characters";
+  };
+
+  const helperText = getTableNameHelperText();
+  const isErrorText = helperText !== "Table name can contain letters, numbers and underscores and must be within 32 characters";
+  
   const handleCreate = async () => {
     if (!validateTableName()) return;
     const columnNames = Object.values(columns).map((column) => column.column_name);
@@ -324,6 +344,12 @@ const TableForm = ({
                 }}
                 autoFocus
               />
+              <div 
+                className={cx("mt-1", isErrorText ? "text-danger" : "text-muted")} 
+                style={{ fontSize: '11px' }}
+              >
+                {helperText}
+              </div>
             </div>
           </div>
         </div>
@@ -358,7 +384,9 @@ const TableForm = ({
         }}
         onCreate={handleCreate}
         shouldDisableCreateBtn={
+          isErrorText ||
           isEmpty(tableName) ||
+          tableName.trim().length === 0 ||
           (!isEditMode && !Object.values(columns).every(isRequiredFieldsExistForCreateTableOperation)) ||
           isEmpty(columns) ||
           hasPrimaryKey !== true ||

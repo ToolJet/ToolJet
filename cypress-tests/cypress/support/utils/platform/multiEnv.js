@@ -40,6 +40,13 @@ export const createVersionFromDraft = (version) => {
   );
 
 };
+export const promoteEnv = (fromEnv) => {
+  cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+  cy.waitForElement(commonEeSelectors.promoteVersionButton);
+  cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+  cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
+  cy.reload();
+};
 
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {
@@ -302,10 +309,9 @@ export const verifyPageSettingsDisabled = () => {
     "have.text",
     "This version is locked. To make edits, create a draft version."
   );
-  cy.get("#page-settings-tabpane-properties .disabled", {
+  cy.get(".pages-settings .disabled", {
     timeout: 8000,
   }).should("exist");
-  cy.get("#page-settings-tabpane-styles .disabled").should("exist");
   cy.forceClickOnCanvas();
 };
 

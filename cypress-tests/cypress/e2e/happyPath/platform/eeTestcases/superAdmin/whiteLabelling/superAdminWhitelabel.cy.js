@@ -4,6 +4,7 @@ import {
   commonWidgetSelector,
 } from "Selectors/common";
 import { fake } from "Fixtures/fake";
+import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { fetchAndVisitInviteLink } from "Support/utils/manageUsers";
 import { whitelabelTestData, smtpConfig } from "Constants/constants/whitelabel";
@@ -128,7 +129,7 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.pageTitle,
       whitelabelTestData.logoIdentifier
     );
-
+    logout();
     cy.visit("/");
     cy.get(commonSelectors.forgotPasswordLink).click();
 
@@ -193,7 +194,7 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.pageTitle,
       whitelabelTestData.logoIdentifier
     );
-
+    logout();
     cy.visit(`/my-workspace`);
     cy.get(commonSelectors.forgotPasswordLink).click();
 
@@ -220,8 +221,8 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.pageTitle,
       whitelabelTestData.logoIdentifier
     );
-
     cy.visit(`/my-workspace`);
+    cy.wait(500);
     cy.get(onboardingSelectors.loginEmailInput, { timeout: 50000 }).should(
       "be.visible"
     );

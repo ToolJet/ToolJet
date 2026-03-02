@@ -1,7 +1,6 @@
-import * as jsPDFNamespace from 'jspdf';
-export default function generateFile(filename, data, fileType) {
+export default async function generateFile(filename, data, fileType) {
   if (fileType === 'pdf') {
-    generatePDF(filename, data);
+    await generatePDF(filename, data);
     return;
   }
 
@@ -20,8 +19,9 @@ export default function generateFile(filename, data, fileType) {
     window.URL.revokeObjectURL(elem.href);
   }
 }
-function generatePDF(filename, data) {
-  const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace;
+async function generatePDF(filename, data) {
+  const jsPDFNamespace = await import('jspdf');
+  const jsPDF = jsPDFNamespace.jsPDF || jsPDFNamespace.default;
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 10;

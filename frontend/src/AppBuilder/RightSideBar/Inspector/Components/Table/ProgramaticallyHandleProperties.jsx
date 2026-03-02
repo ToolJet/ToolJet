@@ -3,18 +3,12 @@ import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
-  darkMode,
-  // eslint-disable-next-line no-unused-vars
-  label,
   index,
   callbackFunction,
   property,
   props = {},
   component,
   paramMeta,
-  // eslint-disable-next-line no-unused-vars
-  paramType,
-  currentState,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
     switch (property) {
@@ -24,10 +18,14 @@ export const ProgramaticallyHandleProperties = ({
         return props.disableActionButton;
       case 'columnVisibility':
         return props.columnVisibility;
+      case 'fieldVisibility':
+        return props.fieldVisibility;
       case 'linkTarget':
         return props.linkTarget;
       case 'isAllColumnsEditable':
         return props?.isAllColumnsEditable;
+      case 'isAllFieldsEditable':
+        return props?.isAllFieldsEditable;
       case 'underlineColor':
         return props.underlineColor;
       case 'linkColor':
@@ -58,6 +56,14 @@ export const ProgramaticallyHandleProperties = ({
         return props?.labelColor;
       case 'optionColor':
         return props?.optionColor;
+      case 'allowHalfStar':
+        return props?.allowHalfStar;
+      case 'selectedBgColorStars':
+        return props?.selectedBgColorStars;
+      case 'selectedBgColorHearts':
+        return props?.selectedBgColorHearts;
+      case 'unselectedBgColor':
+        return props?.unselectedBgColor;
       default:
         return;
     }
@@ -65,6 +71,9 @@ export const ProgramaticallyHandleProperties = ({
 
   const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {
+      return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'fieldVisibility') {
       return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
@@ -104,6 +113,7 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   const value = getValueBasedOnProperty(property, props);
+
   const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
   let definition;
   let initialValue;
@@ -131,7 +141,7 @@ export const ProgramaticallyHandleProperties = ({
     //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
     const fxActive =
       props?.fxActive && resolveReferences(props.fxActive)
-        ? ['isEditable', 'columnVisibility', 'jsonIndentation', 'linkTarget']
+        ? ['isEditable', 'columnVisibility', 'fieldVisibility', 'jsonIndentation', 'linkTarget']
         : [];
 
     const checkFxActiveFieldIsArrray = (fxActiveFieldsProperty) => {

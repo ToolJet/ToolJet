@@ -90,6 +90,9 @@
       },
       "proto_files_pattern": {
         "type": "string"
+      },
+      "selected_services": {
+        "type": "array"
       }
     },
     "exposedVariables": {
@@ -186,6 +189,9 @@
     },
     "proto_files_pattern": {
       "value": "**/*.proto"
+    },
+    "selected_services": {
+      "value": []
     }
   },
   "properties": {
@@ -245,6 +251,17 @@
             }
           },
           "import_protos_from_filesystem": {
+            "selected_services": {
+              "label": "Services",
+              "key": "selected_services",
+              "type": "dynamic-selector",
+              "isMulti": true,
+              "autoFetch": true,
+              "operation": {
+                "invokeMethod": "listServices",
+                "label": "Discover Services"
+              }
+            },
             "metadata": {
               "label": "Metadata",
               "key": "metadata",

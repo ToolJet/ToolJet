@@ -4,6 +4,7 @@ import { GrpcReflection, serviceHelper, ServiceHelperOptionsType } from 'grpc-js
 import type { ListMethodsType } from 'grpc-js-reflection-client/dist/Types/ListMethodsType';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+import * as protobuf from 'protobufjs';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -19,11 +20,11 @@ const expandPath = (inputPath: string): string => {
   return path.resolve(inputPath);
 };
 
-export const getDefaultProtoDirectory = (): string => {
+const getDefaultProtoDirectory = (): string => {
   return path.join(os.homedir(), 'protos');
 };
 
-const validateFilesystemAccess = (directory: string): string => {
+export const validateFilesystemAccess = (directory: string): string => {
   // Expand ~ to home directory if needed
   const expandedDir = expandPath(directory);
 
@@ -43,45 +44,6 @@ const validateFilesystemAccess = (directory: string): string => {
   }
 
   return expandedDir;
-};
-
-export const loadProtosFromFilesystem = async (
-  directory: string,
-  pattern: string = '**/*.proto'
-): Promise<protoLoader.PackageDefinition> => {
-  try {
-    const expandedDir = validateFilesystemAccess(directory);
-
-    const protoFiles = await fg(pattern, {
-      cwd: expandedDir,
-      onlyFiles: true,
-      absolute: true
-    });
-
-    if (protoFiles.length === 0) {
-      throw new GrpcOperationError(
-        `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
-      );
-    }
-
-    // Load all proto files at once - proto-loader handles dependencies automatically
-    const packageDefinition = await protoLoader.load(protoFiles, {
-      keepCase: true,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-      includeDirs: [expandedDir] // Critical for handling proto imports
-    });
-
-    return packageDefinition;
-  } catch (error: unknown) {
-    if (error instanceof GrpcOperationError) {
-      throw error;
-    }
-    const err = toError(error);
-    throw new GrpcOperationError(`Failed to load proto files from filesystem: ${err.message}`, error);
-  }
 };
 
 export const buildReflectionClient = async (sourceOptions: SourceOptions, serviceName: string): Promise<GrpcClient> => {
@@ -182,10 +144,72 @@ export const buildFilesystemClient = async (sourceOptions: SourceOptions, servic
         '**/*.proto' :
         sourceOptions.proto_files_pattern;
 
-    const packageDefinition = await loadProtosFromFilesystem(
-      directory,
-      protoFilePattern
-    );
+    let packageDefinition: protoLoader.PackageDefinition;
+
+    // Try to use the mapping from last discovery to load only the specific file
+    const protoFile = lastServiceToFileMap.get(serviceName);
+
+    if (protoFile && fs.existsSync(protoFile)) {
+      // Load only the specific file containing this service
+      console.log(`[gRPC] Loading specific proto file for service '${serviceName}': ${path.basename(protoFile)}`);
+
+      const expandedDir = validateFilesystemAccess(directory);
+
+      // Build include directories: root + all parent directories from file to root
+      const fileDir = path.dirname(protoFile);
+      const includeDirs = [expandedDir];
+      let currentDir = fileDir;
+      while (currentDir.startsWith(expandedDir) && currentDir !== expandedDir) {
+        if (!includeDirs.includes(currentDir)) {
+          includeDirs.push(currentDir);
+        }
+        currentDir = path.dirname(currentDir);
+      }
+
+      packageDefinition = protoLoader.loadSync([protoFile], {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true,
+        includeDirs
+      });
+    } else {
+      // Fallback: Re-discover to find which file contains this service
+      console.warn(`[gRPC] Service mapping not found for '${serviceName}', re-discovering proto files...`);
+
+      const { serviceToFileMap } = await discoverServiceNamesFromFilesystem(directory, protoFilePattern);
+      const targetFile = serviceToFileMap.get(serviceName);
+
+      if (!targetFile) {
+        throw new GrpcOperationError(`Service ${serviceName} not found in any proto file`);
+      }
+
+      console.log(`[gRPC] Found service '${serviceName}' in file: ${path.basename(targetFile)}`);
+
+      const expandedDir = validateFilesystemAccess(directory);
+
+      // Build include directories: root + all parent directories from file to root
+      const fileDir = path.dirname(targetFile);
+      const includeDirs = [expandedDir];
+      let currentDir = fileDir;
+      while (currentDir.startsWith(expandedDir) && currentDir !== expandedDir) {
+        if (!includeDirs.includes(currentDir)) {
+          includeDirs.push(currentDir);
+        }
+        currentDir = path.dirname(currentDir);
+      }
+
+      packageDefinition = protoLoader.loadSync([targetFile], {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true,
+        includeDirs
+      });
+    }
+
     const grpcObject = grpc.loadPackageDefinition(packageDefinition);
 
     const service = findServiceInPackage(grpcObject, serviceName);
@@ -356,32 +380,130 @@ export const discoverServicesUsingProtoUrl = async (sourceOptions: SourceOptions
   }
 };
 
-export const discoverServicesUsingFilesystem = async (sourceOptions: SourceOptions): Promise<GrpcService[]> => {
-  try {
-    const directory =
-      isEmpty(sourceOptions.proto_files_directory) ?
-        getDefaultProtoDirectory() :
-        sourceOptions.proto_files_directory;
+// Module-level storage for service-to-file mapping (not cached with TTL, just per-discovery)
+let lastServiceToFileMap = new Map<string, string>();
 
-    const protoFilePattern =
-      isEmpty(sourceOptions.proto_files_pattern) ?
-        '**/*.proto' :
-        sourceOptions.proto_files_pattern;
+/**
+ * Lightweight service name discovery using protobufjs.parse().
+ */
+export const discoverServiceNamesFromFilesystem = async (
+  directory: string,
+  pattern: string
+): Promise<{ serviceNames: string[]; serviceToFileMap: Map<string, string>; failures: Array<{ file: string; error: string }> }> => {
+  const expandedDir = validateFilesystemAccess(directory);
 
-    const packageDefinition = await loadProtosFromFilesystem(
-      directory,
-      protoFilePattern
+  const protoFiles = await fg(pattern, {
+    cwd: expandedDir,
+    onlyFiles: true,
+    absolute: true
+  });
+
+  if (protoFiles.length === 0) {
+    throw new GrpcOperationError(
+      `No .proto files found in directory: ${expandedDir} with pattern: ${pattern}`
     );
-
-    const grpcObject = grpc.loadPackageDefinition(packageDefinition);
-    return extractServicesFromGrpcPackage(grpcObject);
-  } catch (error: unknown) {
-    if (error instanceof GrpcOperationError) {
-      throw error;
-    }
-    const err = toError(error);
-    throw new GrpcOperationError(`Service discovery via filesystem failed: ${err.message}`, error);
   }
+
+  const serviceNames: string[] = [];
+  const failures: Array<{ file: string; error: string }> = [];
+  const serviceToFileMap = new Map<string, string>();
+
+  for (const protoFile of protoFiles) {
+    try {
+      const source = fs.readFileSync(protoFile, 'utf8');
+      const parsed = protobuf.parse(source, { keepCase: true });
+
+      // Walk the parsed root to find Service instances
+      const walkNamespace = (ns: protobuf.NamespaceBase, prefix: string) => {
+        if (!ns.nested) return;
+
+        for (const [name, child] of Object.entries(ns.nested)) {
+          const fullName = prefix ? `${prefix}.${name}` : name;
+
+          if (child instanceof protobuf.Service) {
+            serviceNames.push(fullName);
+            serviceToFileMap.set(fullName, protoFile);
+          } else if (child instanceof protobuf.Namespace) {
+            walkNamespace(child, fullName);
+          }
+        }
+      };
+
+      walkNamespace(parsed.root, '');
+    } catch (error: unknown) {
+      const err = toError(error);
+      const fileName = path.basename(protoFile);
+      failures.push({ file: fileName, error: err.message });
+    }
+  }
+
+  // Store mapping for use in buildFilesystemClient
+  lastServiceToFileMap = serviceToFileMap;
+
+  return { serviceNames, serviceToFileMap, failures };
+};
+
+/**
+ * Discovers methods for a specific set of selected services using protobufjs.parse().
+ * Only parses the proto files that contain the requested services — very fast for small selections.
+ */
+export const discoverMethodsForSelectedServices = async (
+  directory: string,
+  pattern: string,
+  selectedServiceNames: string[]
+): Promise<{ services: GrpcService[]; failures: Array<{ file: string; error: string }> }> => {
+  // If we don't have a mapping yet, discover service names first to build it
+  if (lastServiceToFileMap.size === 0) {
+    await discoverServiceNamesFromFilesystem(directory, pattern);
+  }
+
+  // Find the proto files for requested services, de-duplicate
+  const filesToParse = new Set<string>();
+  for (const serviceName of selectedServiceNames) {
+    const file = lastServiceToFileMap.get(serviceName);
+    if (file) {
+      filesToParse.add(file);
+    }
+  }
+
+  const selectedSet = new Set(selectedServiceNames);
+  const services: GrpcService[] = [];
+  const failures: Array<{ file: string; error: string }> = [];
+
+  for (const protoFile of filesToParse) {
+    try {
+      const source = fs.readFileSync(protoFile, 'utf8');
+      const parsed = protobuf.parse(source, { keepCase: true });
+
+      const walkNamespace = (ns: protobuf.NamespaceBase, prefix: string) => {
+        if (!ns.nested) return;
+
+        for (const [name, child] of Object.entries(ns.nested)) {
+          const fullName = prefix ? `${prefix}.${name}` : name;
+
+          if (child instanceof protobuf.Service && selectedSet.has(fullName)) {
+            const methods: GrpcMethod[] = Object.values(child.methods).map((m) => ({
+              name: m.name,
+              requestStreaming: Boolean(m.requestStream),
+              responseStreaming: Boolean(m.responseStream),
+            }));
+
+            services.push({ name: fullName, methods });
+          } else if (child instanceof protobuf.Namespace) {
+            walkNamespace(child, fullName);
+          }
+        }
+      };
+
+      walkNamespace(parsed.root, '');
+    } catch (error: unknown) {
+      const err = toError(error);
+      const fileName = path.basename(protoFile);
+      failures.push({ file: fileName, error: err.message });
+    }
+  }
+
+  return { services, failures };
 };
 
 export const extractServicesFromGrpcPackage = (grpcObject: grpc.GrpcObject): GrpcService[] => {

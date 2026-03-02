@@ -41,6 +41,7 @@ type LDAP = {
     serverCert: string;
   };
   basedn: string;
+  enableGroupSync: boolean;
 };
 type SAML = {
   name: string;

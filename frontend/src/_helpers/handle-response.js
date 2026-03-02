@@ -91,7 +91,7 @@ export function handleResponse(
           edition: edition,
         });
 
-        if (!message?.includes('expired') || avoidUpgradeModal) {
+        if (!message?.includes('expired') && !avoidUpgradeModal) {
           ReactDOM.render(modalEl, document.getElementById('modal-div'));
         }
       } else if ([400].indexOf(response.status) !== -1) {

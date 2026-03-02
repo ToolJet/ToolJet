@@ -14,7 +14,15 @@ const NEW_WIDGETS = [
   'CurrencyInput',
   'RangeSliderV2',
   'PopoverMenu',
+  'AudioRecorder',
+  'Camera',
   'TagsInput',
+  'Accordion',
+  'ReorderableList',
+  'JSONExplorer',
+  'JSONEditor',
+  'KeyValuePair',
+  'Navigation',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

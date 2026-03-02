@@ -23,9 +23,16 @@ function EditAppName() {
   const [showRenameModal, setShowRenameModal] = useState(false);
 
   const handleRenameApp = async (newAppName, appId) => {
+    const sanitizedName = newAppName?.trim().replace(/\s+/g, ' ');
+
+    // Prevent unnecessary API call if the name effectively hasn't changed
+    if (sanitizedName === appName) {
+      setShowRenameModal(false);
+      return true;
+    }
     try {
-      await appsService.saveApp(appId, { name: newAppName });
-      setAppName(newAppName);
+      await appsService.saveApp(appId, { name: sanitizedName });
+      setAppName(sanitizedName);
       toast.success('App name has been updated!');
       return true;
     } catch (errorResponse) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { components } from 'react-select';
-import * as Icons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 const { ValueContainer, Placeholder } = components;
 import './multiselectV2.scss';
 
@@ -14,9 +14,6 @@ const CustomValueContainer = ({ children, ...props }) => {
       ?.filter((option) => option.value !== 'multiselect-custom-menulist-select-all') //Remove the Select all option if selected
       ?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
-
   // Need this useEffect to update the width of the value container when the options change or opened in modal
   useEffect(() => {
     // Update width when ref is available or changes
@@ -51,7 +48,8 @@ const CustomValueContainer = ({ children, ...props }) => {
           style={{ marginBottom: '2px' }}
         >
           {selectProps?.doShowIcon && (
-            <IconElement
+            <TablerIcon
+              iconName={selectProps?.icon ?? 'IconHome2'}
               style={{
                 width: '16px',
                 height: '16px',

@@ -286,7 +286,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'
+            dataSource.kind === 'zendesk'||
+            dataSource.kind === 'googlesheetsv2'
           ) {
             queryStatus.setSuccess('needs_oauth');
             const result = await this.dataSourceUtilService.getAuthUrl({

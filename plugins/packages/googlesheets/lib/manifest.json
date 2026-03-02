@@ -6,6 +6,7 @@
   "source": {
     "name": "Google Sheets",
     "kind": "googlesheets",
+    "tags": ["legacy"],
     "exposedVariables": {
       "isLoading": false,
       "data": {},

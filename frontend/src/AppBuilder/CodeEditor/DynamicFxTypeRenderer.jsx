@@ -20,7 +20,7 @@ import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 import DropdownMenu from '../CodeBuilder/Elements/DropdownMenu';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
 import { Query } from '../CodeBuilder/Elements/Query';
-import { ColorSwatches } from '@/modules/Appbuilder/components';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
 
 const AllElements = {
   Color,

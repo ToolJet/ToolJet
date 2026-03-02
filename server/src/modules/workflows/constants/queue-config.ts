@@ -88,3 +88,29 @@ export const WORKFLOW_TIMEOUT = {
  * Configurable via TOOLJET_WORKFLOW_CONCURRENCY environment variable
  */
 export const WORKFLOW_CONCURRENCY = parseInt(process.env.TOOLJET_WORKFLOW_CONCURRENCY || '5');
+
+/**
+ * Maps the DB execution status to the frontend display state.
+ *
+ * The DB stores: 'success', 'failure', 'terminated'
+ * The frontend expects: 'completed', 'failed', 'terminated'
+ *
+ * This mismatch exists because the DB schema predates the frontend display
+ * state naming. The mapping is centralised here so every sync-response
+ * caller uses the same translation.
+ */
+const DB_STATUS_TO_DISPLAY_STATE: Record<string, string> = {
+  success: 'completed',
+  failure: 'failed',
+  terminated: 'terminated',
+};
+
+export function mapDbStatusToDisplayState(dbStatus: string | undefined | null): string {
+  if (!dbStatus) return 'completed'; // fallback for legacy rows without status
+  const mapped = DB_STATUS_TO_DISPLAY_STATE[dbStatus];
+  if (!mapped) {
+    console.warn(`[WORKFLOW_STATUS] Unknown DB status "${dbStatus}", falling back to "completed"`);
+    return 'completed';
+  }
+  return mapped;
+}

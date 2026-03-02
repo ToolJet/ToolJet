@@ -1,5 +1,3 @@
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
-
 const initialState = {
   activeRightSideBarTab: null,
   isRightSidebarOpen: false,

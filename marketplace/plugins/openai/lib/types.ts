@@ -25,7 +25,6 @@ export type QueryOptions = {
 };
 
 export enum Operation {
-  Completion = 'completion',
   Chat = 'chat',
   ImageGeneration = 'image_generation',
   GenerateEmbedding = 'generate_embedding',

@@ -74,3 +74,34 @@ export const extractErrorObj = (errorResponse) => {
     errorDetails?.message?.message || errorDetails?.error || errorResponse?.error || 'something went wrong';
   return { ...errorDetails, message };
 };
+
+export const getPostSignupRedirectPath = ({
+  redirectTo,
+  organizationSlug,
+}) => {
+  const hasRedirect = Boolean(redirectTo);
+  const hasSlug = Boolean(organizationSlug);
+
+  const isApplicationRoute = /^\/applications\//.test(redirectTo || '');
+
+  if (hasRedirect) {
+
+    if (isApplicationRoute) {
+      return redirectTo;
+    }
+
+    // Default: prepend workspace slug
+    if (hasSlug) {
+      return `/${organizationSlug}${redirectTo.startsWith('/') ? '' : '/'}${redirectTo}`;
+    }
+
+    return redirectTo;
+  }
+
+  // No redirectTo
+  if (hasSlug) {
+    return `/${organizationSlug}`;
+  }
+
+  return '/home';
+};

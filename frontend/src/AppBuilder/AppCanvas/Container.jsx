@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import cx from 'classnames';
 import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
@@ -10,14 +10,18 @@ import {
   getSubContainerWidthAfterPadding,
   getSubContainerHeightAfterPadding,
 } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
+import { NO_OF_GRIDS, GRID_HEIGHT, HOVER_CLICK_OUTLINE_BORDER } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
-import { ModuleContainerBlank } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
+
+// Lazy load editor-only component to reduce viewer bundle size
+const ModuleContainerBlank = lazy(() =>
+  import('@/modules/Modules/components').then((m) => ({ default: m.ModuleContainerBlank }))
+);
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -155,7 +159,13 @@ const Container = React.memo(
 
       return (
         <div style={styles}>
-          {componentType === 'ModuleContainer' ? <ModuleContainerBlank /> : <NoComponentCanvasContainer />}
+          {componentType === 'ModuleContainer' ? (
+            <Suspense fallback={null}>
+              <ModuleContainerBlank />
+            </Suspense>
+          ) : (
+            <NoComponentCanvasContainer />
+          )}
         </div>
       );
     };
@@ -180,14 +190,7 @@ const Container = React.memo(
           maxWidth: (() => {
             // For Main Canvas
             if (id === 'canvas') {
-              if (currentLayout === 'mobile') {
-                return CANVAS_WIDTHS.deviceWindowWidth;
-              }
-              if (currentMode === 'view') {
-                return '100%';
-              } else {
-                return canvasMaxWidth;
-              }
+              return '100%';
             }
             // For Subcontainers
             return canvasWidth;

@@ -67,6 +67,16 @@ import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
 import { chatConfig } from './chat';
 import { popoverMenuConfig } from './popoverMenu';
+import { keyValuePairConfig } from './keyValuePair';
+import { progressbarConfig } from './progressbar';
+import { audioRecorderConfig } from './audioRecorder';
+import { cameraConfig } from './camera';
+import { accordionConfig } from './accordion';
+import { reorderableListConfig } from './reorderableList';
+import { jsonExplorerConfig } from './jsonExplorer';
+import { jsonEditorConfig } from './jsonEditor';
+import { navigationConfig } from './navigation';
+
 
 const widgets = {
   buttonConfig,
@@ -137,7 +147,16 @@ const widgets = {
   chatConfig,
   moduleContainerConfig,
   moduleViewerConfig,
-  popoverMenuConfig
+  popoverMenuConfig,
+  keyValuePairConfig,
+  progressbarConfig,
+  audioRecorderConfig,
+  cameraConfig,
+  accordionConfig,
+  reorderableListConfig,
+  jsonExplorerConfig,
+  jsonEditorConfig,
+  navigationConfig,
 };
 
 const universalProps = {

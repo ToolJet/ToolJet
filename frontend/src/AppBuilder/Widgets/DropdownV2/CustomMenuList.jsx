@@ -11,7 +11,16 @@ const { MenuList } = components;
 
 // This Menulist also used in MultiselectV2
 const CustomMenuList = ({ selectProps, ...props }) => {
-  const { onInputChange, onMenuInputFocus, optionsLoadingState, darkMode, inputValue, menuId, showSearchInput } =
+  const {
+    onInputChange,
+    onMenuInputFocus,
+    optionsLoadingState,
+    darkMode,
+    inputValue,
+    menuId,
+    showSearchInput,
+    menuBackgroundColor,
+  } =
     selectProps;
 
   const parentRef = useRef(null);
@@ -30,7 +39,9 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
   }, []);
 
-  const firstSelectedIndex = props?.options?.findIndex(opt => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value));
+  const firstSelectedIndex = props?.options?.findIndex(
+    (opt) => opt.value === (Array.isArray(selectProps?.value) ? selectProps.value[0]?.value : selectProps.value?.value)
+  );
 
   useEffect(() => {
     if (!selectProps?.menuIsOpen) {
@@ -51,6 +62,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
+      style={{
+        ...(/iPad|iPhone|iPod/.test(navigator.userAgent) && { fontSize: '16px' }),
+        '--dropdown-menu-bg': menuBackgroundColor || 'var(--cc-surface1-surface)',
+      }}
     >
       {showSearchInput && (
         <div className="dropdown-multiselect-widget-search-box-wrapper">

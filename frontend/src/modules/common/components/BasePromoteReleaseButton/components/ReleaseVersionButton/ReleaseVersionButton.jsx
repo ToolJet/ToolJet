@@ -13,7 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { ToolTip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
-const ReleaseVersionButton = function DeployVersionButton ({ version = null, variant = 'default', darkMode = false }) {
+const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
   const { moduleId } = useModuleContext();
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -27,7 +27,7 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
       name: version?.name || state?.selectedVersion?.name,
       isEditorFreezed: state.isEditorFreezed,
       updateReleasedVersionId: state.updateReleasedVersionId,
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appStore.modules[moduleId]?.app?.appId ?? state.appId,
       versionToBeReleased: version?.id || state.currentVersionId,
       // selectedVersionId: state.selectedVersion.id,
     }),
@@ -79,17 +79,19 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
               ? "You don't have access to release application. Contact admin to know more."
               : 'Release this version'
           }
-          placement="top"
-          show={true}
+          placement="left"
+          width="280px"
         >
-          <button
-            className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
-            disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
-            onClick={onReleaseButtonClick}
-            data-cy="release-version-button"
-          >
-            {isReleasing ? 'Releasing...' : 'Release'}
-          </button>
+          <span>
+            <button
+              className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+              disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
+              onClick={onReleaseButtonClick}
+              data-cy="release-version-button"
+            >
+              {isReleasing ? 'Releasing...' : 'Release'}
+            </button>
+          </span>
         </ToolTip>
       </>
     );
@@ -108,6 +110,7 @@ const ReleaseVersionButton = function DeployVersionButton ({ version = null, var
           message="You don't have access to release application. Contact admin to know more."
           placement="bottom"
           show={!isReleaseVersionEnabled}
+          width="280px"
         >
           <Button
             variant="secondary"

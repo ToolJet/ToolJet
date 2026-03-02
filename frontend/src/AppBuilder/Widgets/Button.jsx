@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
-import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
@@ -31,8 +32,6 @@ export const Button = function Button(props) {
   const [loading, setLoading] = useState(loadingState);
   const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
-  // eslint-disable-next-line import/namespace
-  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
   useEffect(() => {
     if (typeof properties.text === 'string') {
@@ -74,8 +73,8 @@ export const Button = function Button(props) {
         ? 'var(--cc-primary-brand)'
         : 'transparent'
       : type === 'primary'
-      ? backgroundColor
-      : 'transparent';
+        ? backgroundColor
+        : 'transparent';
 
   const computedStyles = {
     backgroundColor: computedBgColor,
@@ -190,7 +189,7 @@ export const Button = function Button(props) {
         className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
-        data-cy={dataCy}
+        data-cy={`${generateCypressDataCy(dataCy)}-button`}
         type="default"
         onMouseOver={() => {
           //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
@@ -226,6 +225,7 @@ export const Button = function Button(props) {
                 <p
                   className="tj-text-sm"
                   style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  data-cy={`${dataCy}-label`}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -234,13 +234,15 @@ export const Button = function Button(props) {
             {iconVisibility && (
               <div className="d-flex">
                 {!props.isResizing && !loading && (
-                  <IconElement
+                  <TablerIcon
+                    iconName={iconName}
                     style={{
                       width: '16px',
                       height: '16px',
                       color: computedIconColor,
                     }}
                     stroke={1.5}
+                    data-cy={`${dataCy}-icon`}
                   />
                 )}
               </div>

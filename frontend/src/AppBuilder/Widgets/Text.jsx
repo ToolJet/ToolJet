@@ -2,10 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -188,7 +191,7 @@ export const Text = function Text({
   };
 
   const commonScrollStyle = {
-    overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'hidden',
+    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
   };
 
   return (
@@ -197,7 +200,7 @@ export const Text = function Text({
       data-disabled={isDisabled}
       className="text-widget"
       style={computedStyles}
-      data-cy={dataCy}
+      data-cy={`${generateCypressDataCy(dataCy)}-text`}
       onMouseOver={() => {
         fireEvent('onHover');
       }}
@@ -210,7 +213,9 @@ export const Text = function Text({
           )}
           {textFormat === 'markdown' && (
             <div style={commonScrollStyle}>
-              <Markdown className={'reactMarkdown'}>{typeof text === 'object' ? JSON.stringify(text) : text}</Markdown>
+              <Markdown className={'reactMarkdown'} remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                {typeof text === 'object' ? JSON.stringify(text) : text}
+              </Markdown>
             </div>
           )}
           {(textFormat === 'html' || !textFormat) && (

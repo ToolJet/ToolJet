@@ -432,8 +432,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
+      ? queryNameIdMapping[entityName]
+      : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;
@@ -500,6 +500,7 @@ export function createReferencesLookup(
     'log',
     'logError',
     'toggleAppMode',
+    'scrollComponentInToView',
   ];
 
   const suggestionList = [];
@@ -786,7 +787,7 @@ export const baseTheme = {
         weak: {
           light: '#E4E7EB',
           dark: '#2B3036',
-        }
+        },
       },
     },
     systemStatus: {
@@ -826,4 +827,28 @@ export const baseTheme = {
       },
     },
   },
+};
+
+export const blobToDataURL = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const blobToBinary = (blob) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsBinaryString(blob);
+    reader.onloadend = () => resolve(reader.result);
+  });
+};
+
+export const formatSecondsToHHMMSS = (totalSeconds) => {
+  const seconds = Number.isFinite(totalSeconds) ? Math.max(0, Math.floor(totalSeconds)) : 0;
+  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
 };

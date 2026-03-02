@@ -101,31 +101,32 @@ export function defineAppAbility(
     // Viewers (both builders and end-users with view-only permission) can access apps
     const permissions = [FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG];
 
-    // Builders with view permission need VALIDATE_PRIVATE_APP_ACCESS to preview non-released environments
-    // End-users should NOT get this permission as they can only access released apps
-    if (isBuilder && appId) {
-      // Check if builder has access to any non-released environment (merge app-specific and default)
-      const appSpecific = userAppPermissions.appSpecificEnvironmentAccess?.[appId];
-      const defaultAccess = userAppPermissions.environmentAccess;
+    // Check if user has access to any non-released environment (merge app-specific and default)
+    const appSpecific = userAppPermissions.appSpecificEnvironmentAccess?.[appId];
+    const defaultAccess = userAppPermissions.environmentAccess;
 
-      const hasNonReleasedAccess =
-        appSpecific?.development ||
-        defaultAccess?.development ||
-        appSpecific?.staging ||
-        defaultAccess?.staging ||
-        appSpecific?.production ||
-        defaultAccess?.production;
+    const hasNonReleasedAccess =
+      appSpecific?.development ||
+      defaultAccess?.development ||
+      appSpecific?.staging ||
+      defaultAccess?.staging ||
+      appSpecific?.production ||
+      defaultAccess?.production;
 
-      if (hasNonReleasedAccess) {
-        permissions.push(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS);
-      }
+    // Both builders and end-users with non-released environment access need VALIDATE_PRIVATE_APP_ACCESS
+    // This allows end-users in paid plans to access staging/development/production environments
+    if (appId && hasNonReleasedAccess) {
+      permissions.push(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS);
+    }
 
-      // For builders: Only grant released access if they have released environment permission
+    // Grant released access based on explicit permissions or end-user defaults
+    if (isBuilder) {
+      // Builders: Only grant released access if they have explicit released environment permission
       if (appId && canAccessReleasedEnv(appId)) {
         permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
       }
     } else {
-      // For end-users: Grant released access if they have viewable app permission (already checked above)
+      // End-users: Always grant released access if they have viewable app permission (already checked above)
       permissions.push(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS);
     }
 

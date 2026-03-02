@@ -32,6 +32,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const paramListContainerRef = useRef(null);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
+  const creatingQueryInProcessId = useStore((state) => state.dataQuery.creatingQueryInProcessId);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
@@ -223,7 +224,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         <ElementToRender
           renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
+          key={creatingQueryInProcessId || selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}
@@ -233,6 +234,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           isEditMode={true} // Made TRUE always to avoid setting default options again
           queryName={queryName}
           currentEnvironment={currentEnvironment}
+          currentAppEnvironmentId={currentEnvironment?.id}
           onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
         />
       </div>

@@ -14,6 +14,7 @@ function AppPermissionsActions({
   groupName,
   isBuilderLevel,
   hasEndUsers,
+  isBasicPlan,
 }) {
   return (
     <>
@@ -123,6 +124,7 @@ function AppPermissionsActions({
           groupName={groupName}
           isBuilderLevel={isBuilderLevel}
           hasEndUsers={hasEndUsers}
+          isBasicPlan={isBasicPlan}
           data-cy="environment-select"
         />
       </div>

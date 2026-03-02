@@ -88,6 +88,9 @@ export class InvokeDataSourceMethodDto {
 
   @IsString()
   environmentId: string;
+
+  @IsOptional()
+  args?: any;
 }
 
 export type InvokeDataSourceMethodResponseDto = QueryResult;

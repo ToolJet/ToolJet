@@ -6,6 +6,7 @@ import RunpyIcon from '@/AppBuilder/QueryManager/Icons/Icons/runpy.svg';
 import ResponseIcon from '@assets/images/icons/response.svg';
 import IfIcon from '@assets/images/icons/if.svg';
 import LoopIcon from '@assets/images/icons/loop.svg';
+import AgentNodeIcon from '../../../../assets/images/icons/agent-node.svg';
 
 const DataSourceIcon = ({ source, height = 25, styles }) => {
   const iconFile = source?.plugin?.iconFile?.data ?? source?.plugin?.icon_file?.data;
@@ -24,6 +25,8 @@ const DataSourceIcon = ({ source, height = 25, styles }) => {
       return <LoopIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
     case 'response':
       return <ResponseIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
+    case 'agent':
+      return <AgentNodeIcon style={{ height: height, width: height, marginTop: '-3px' }} />;
     default:
       return <Icon />;
   }

@@ -44,7 +44,7 @@ export class SessionUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
-  ) {}
+  ) { }
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -79,8 +79,7 @@ export class SessionUtilService {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
-          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
-            request?.headers['user-agent'] || 'unknown'
+          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
           }`,
           manager
         );
@@ -296,10 +295,10 @@ export class SessionUtilService {
     const now = new Date();
     return new Date(
       now.getTime() +
-        (this.configService.get<string>('USER_SESSION_EXPIRY')
-          ? this.configService.get<number>('USER_SESSION_EXPIRY')
-          : 14400) *
-          60000
+      (this.configService.get<string>('USER_SESSION_EXPIRY')
+        ? this.configService.get<number>('USER_SESSION_EXPIRY')
+        : 14400) *
+      60000
     );
   }
 
@@ -315,8 +314,7 @@ export class SessionUtilService {
 
     const session: UserSessions = await this.createSession(
       user.id,
-      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
-        request?.headers['user-agent'] || 'unknown'
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
       }`,
       manager
     );
@@ -364,9 +362,9 @@ export class SessionUtilService {
         ? currentOrganization
           ? currentOrganization
           : await manager.findOneOrFail(Organization, {
-              where: { id: currentOrganizationId },
-              select: ['slug', 'name', 'id'],
-            })
+            where: { id: currentOrganizationId },
+            select: ['slug', 'name', 'id'],
+          })
         : null;
 
       const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);
