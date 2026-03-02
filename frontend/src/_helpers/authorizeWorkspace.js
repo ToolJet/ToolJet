@@ -28,9 +28,6 @@ function setRedirectAttempt() {
   sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
 }
 
-function clearRedirectAttempt() {
-  sessionStorage.removeItem(REDIRECT_KEY);
-}
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -46,9 +43,11 @@ function clearRedirectAttempt() {
 export const authorizeWorkspace = async () => {
   let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
 
-  // On a custom domain, clear redirect flag and resolve which workspace owns it
+  // On a custom domain, resolve which workspace owns it.
+  // Note: clearRedirectAttempt() is NOT called here because sessionStorage is
+  // origin-scoped — the custom domain cannot clear the base domain's flag.
+  // The base domain's cooldown expires naturally after REDIRECT_COOLDOWN_MS.
   if (isCustomDomain()) {
-    clearRedirectAttempt();
     try {
       const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
       const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
@@ -223,6 +222,15 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
   authenticationService
     .authorize()
     .then((data) => {
+      // Redirect to custom domain BEFORE any store updates to avoid a flash
+      // of authenticated UI (user avatar, org name) on the base domain.
+      if (data.custom_domain && !isCustomDomain() && !hasRecentRedirectAttempt()) {
+        const redirectPath = excludeWorkspaceIdFromURL(window.location.pathname);
+        setRedirectAttempt();
+        window.location.href = `https://${data.custom_domain}${redirectPath}${window.location.search}${window.location.hash}`;
+        return;
+      }
+
       useStore.getState().setUser({
         email: data.current_user.email,
         firstName: data.current_user.first_name,
@@ -237,15 +245,6 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       });
       /* CASE-1 */
       const { current_organization_name } = data;
-
-      // Redirect to custom domain before load_app to prevent flash of content
-      if (data.custom_domain && !isCustomDomain() && !hasRecentRedirectAttempt()) {
-        const redirectPath = excludeWorkspaceIdFromURL(window.location.pathname);
-        setRedirectAttempt();
-        window.location.href = `https://${data.custom_domain}${redirectPath}${window.location.search}${window.location.hash}`;
-        return;
-      }
-
       /* add the user details like permission and user previlliage details to the subject */
       updateCurrentSession({
         ...data,
