@@ -608,7 +608,7 @@ export const isHttpsEnabled = () => {
  * which browsers reject on plain HTTP — hence the isHttpsEnabled() guard.
  */
 export const applyCustomDomainCookieOptions = (
-  cookieOptions: { sameSite?: string; secure?: boolean },
+  cookieOptions: { sameSite?: string | boolean; secure?: boolean },
   configService: { get<T>(key: string): T }
 ) => {
   if (configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
