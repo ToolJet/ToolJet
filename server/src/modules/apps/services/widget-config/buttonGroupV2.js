@@ -56,7 +56,7 @@ export const buttonGroupV2Config = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     visibility: {
