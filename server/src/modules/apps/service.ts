@@ -234,9 +234,18 @@ export class AppsService implements IAppsService {
       if (isGitSyncEnabled) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
         if (appGitSync) {
-          throw new BadRequestException(
-            "Renaming isn't allowed on master. Switch branch in app builder to update name."
-          );
+          // Check if on default branch (not a feature branch)
+          const editingVersion = editingVersionId
+            ? await this.versionRepository.findById(editingVersionId, app.id)
+            : app.editingVersion;
+
+          const isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+
+          if (isOnDefaultBranch) {
+            throw new BadRequestException(
+              "Renaming isn't allowed on master. Switch branch in app builder to update name."
+            );
+          }
         }
       }
 
