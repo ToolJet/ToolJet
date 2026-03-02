@@ -18,6 +18,11 @@ export interface IAppEnvironmentUtilService {
     manager?: EntityManager
   ): Promise<{ shouldRenderPromoteButton: boolean; shouldRenderReleaseButton: boolean }>;
   getSelectedVersion(selectedEnvironmentId: string, appId: string, manager?: EntityManager): Promise<any>;
+  resolveEnvironmentId(
+    organizationId: string,
+    requestedEnvironmentId?: string,
+    manager?: EntityManager
+  ): Promise<string>;
   get(
     organizationId: string,
     id?: string,

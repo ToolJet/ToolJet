@@ -348,6 +348,10 @@ Cypress.Commands.add(
         canEdit: perms.canEdit ?? false,
         canView: perms.canView ?? true,
         hideFromDashboard: perms.hideFromDashboard ?? false,
+        canAccessDevelopment: perms.canAccessDevelopment ?? true,
+        canAccessStaging: perms.canAccessStaging ?? true,
+        canAccessProduction: perms.canAccessProduction ?? false,
+        canAccessReleased: perms.canAccessReleased ?? true,
         resourcesToAdd: formattedResources,
       };
     };
@@ -948,6 +952,71 @@ Cypress.Commands.add(
     });
   }
 );
+const defaultEnvPermissionBody = {
+  name: "Apps",
+  isAll: true,
+  actions: {
+    canEdit: true,
+    canView: false,
+    hideFromDashboard: false,
+    canAccessDevelopment: true,
+    canAccessStaging: true,
+    canAccessProduction: false,
+    canAccessReleased: true,
+  },
+  resourcesToAdd: [],
+  resourcesToDelete: [],
+};
+
+Cypress.Commands.add(
+  "apiUpdateEnvironmentPermission",
+  (groupName, bodyOverrides = {}, permissionName = "Apps") => {
+
+    const requestBody = {
+      ...defaultEnvPermissionBody,
+      ...bodyOverrides,
+      actions: {
+        ...defaultEnvPermissionBody.actions,
+        ...(bodyOverrides.actions || {}),
+      },
+    };
+
+    return cy.apiGetGroupId(groupName)
+      .then((groupId) => {
+        return cy.getAuthHeaders().then((headers) => {
+          return cy.request({
+            method: "GET",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}/granular-permissions`,
+            headers,
+          });
+        });
+      })
+      .then((response) => {
+        const permission = response.body.find(
+          (gp) => gp.type === "app"
+            && gp.name === permissionName
+        );
+
+        expect(permission).to.exist;
+        return permission.id;
+      })
+      .then((permissionId) => {
+        return cy.getAuthHeaders().then((headers) => {
+          return cy.request({
+            method: "PUT",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/granular-permissions/app/${permissionId}`,
+            headers,
+            body: requestBody,
+          });
+        });
+      })
+      .then((response) => {
+        expect(response.status).to.eq(200);
+        return response.body;
+      });
+  }
+);
+
 
 Cypress.Commands.add("getAuthHeaders", (returnCached = false) => {
   let headers = {};
