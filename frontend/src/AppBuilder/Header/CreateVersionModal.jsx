@@ -381,7 +381,8 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {isGitSyncEnabled && (
+            {/* Disabling autoCommit */}
+            {/* {isGitSyncEnabled && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
@@ -402,7 +403,8 @@ const CreateVersionModal = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
+
             <div className="mt-3">
               <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
                 <div

@@ -220,7 +220,8 @@ export function AppModal({
                   {`${appTypeName} name must be unique and max 50 characters`}
                 </small>
               )}
-              {orgGit?.is_enabled &&
+              {/* Disabling autoCommit */}
+              {/* {orgGit?.is_enabled &&
                 modalType !== 'create' &&
                 appType != APP_TYPE.WORKFLOW &&
                 appType != APP_TYPE.MODULE && (
@@ -244,7 +245,7 @@ export function AppModal({
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
             </div>
             {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>
