@@ -5,7 +5,7 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
+    valueSet: new Set(['Button', 'ButtonGroupV2', 'PopoverMenu']),
   },
   data: {
     title: 'Data',
