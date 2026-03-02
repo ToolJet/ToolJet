@@ -571,7 +571,7 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'run-query': {
             try {
-              const { queryId, queryName, component, eventId } = event;
+              const { queryId, queryName, component, eventId, callbackFns } = event;
               const params = event['parameters'];
               if (!queryId && !queryName) {
                 throw new Error('No query selected');
@@ -609,7 +609,8 @@ export const createEventsSlice = (set, get) => ({
                 eventId,
                 false,
                 false,
-                updatedModuleId
+                updatedModuleId,
+                callbackFns
               );
             } catch (error) {
               get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
@@ -1007,7 +1008,7 @@ export const createEventsSlice = (set, get) => ({
       const { executeAction } = eventsSlice;
       const currentComponents = Object.entries(getCurrentPageComponents(moduleId));
 
-      const runQuery = (queryName = '', parameters, moduleId = 'canvas') => {
+      const runQuery = (queryName = '', parameters, moduleId = 'canvas', callbackFns) => {
         const query = dataQuery.queries.modules[moduleId].find((query) => {
           const isFound = query.name === queryName;
           if (isPreview) {
@@ -1031,7 +1032,7 @@ export const createEventsSlice = (set, get) => ({
         }
 
         if (isPreview) {
-          return previewQuery(query, true, processedParams);
+          return previewQuery(query, true, processedParams, moduleId, callbackFns);
         }
 
         const event = {
@@ -1039,6 +1040,7 @@ export const createEventsSlice = (set, get) => ({
           queryId: query.id,
           queryName: query.name,
           parameters: processedParams,
+          callbackFns,
         };
 
         return executeAction(event, mode, {}, moduleId);
