@@ -356,8 +356,6 @@ module.exports = {
   },
   plugins,
   devServer: {
-    host: "0.0.0.0",
-    allowedHosts: "all",
     historyApiFallback: { index: ASSET_PATH },
     static: {
       directory: path.resolve(__dirname, 'assets'),
@@ -366,20 +364,6 @@ module.exports = {
     client: {
       overlay: false,
     },
-    proxy: [
-      {
-        context: ['/api', '/ws', '/yjs'],
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        onError(err, _req, res) {
-          if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') return;
-          if (res && !res.headersSent) {
-            res.writeHead(502);
-            res.end('Proxy error');
-          }
-        },
-      },
-    ],
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
