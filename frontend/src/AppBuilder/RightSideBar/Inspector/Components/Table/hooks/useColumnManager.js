@@ -48,7 +48,6 @@ export const useColumnManager = ({ component, paramUpdated, currentState }) => {
       modifiedColumn = {
         ...modifiedColumn,
         columnVisibility: true,
-        cellBackgroundColor: '',
         horizontalAlignment: 'left',
         buttons: [],
       };

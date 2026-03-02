@@ -64,6 +64,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.selectedBgColorHearts;
       case 'unselectedBgColor':
         return props?.unselectedBgColor;
+      case 'buttonVisibility':
+        return props?.buttonVisibility;
       case 'disableButton':
         return props?.disableButton;
       case 'loadingState':
@@ -100,7 +102,7 @@ export const ProgramaticallyHandleProperties = ({
       return value || '{{true}}';
     }
     if (property === 'cellBackgroundColor') {
-      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+      return definitionObj?.value || 'var(--cc-surface1-surface)';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
@@ -124,6 +126,9 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'jsonIndentation') {
       return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'buttonVisibility') {
+      return definitionObj?.value ?? '{{true}}';
     }
     if (property === 'disableButton') {
       return definitionObj?.value ?? '{{false}}';

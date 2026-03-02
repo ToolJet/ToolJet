@@ -25,7 +25,7 @@ export const ButtonColumnGroup = ({
         padding: '0 6px',
         gap: '6px',
         justifyContent,
-        backgroundColor: cellBackgroundColor || undefined,
+        backgroundColor: undefined,
       }}
     >
       {buttons.map((button) => {

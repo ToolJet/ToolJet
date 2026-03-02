@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
-import { IconArrowLeft } from '@tabler/icons-react';
+import { Button } from '@/components/ui/Button/Button';
+import { useButtonManager } from '../hooks/useButtonManager';
+import Tooltip from '@/components/ui/Tooltip/Tooltip';
 
 export const ColumnPopoverContent = ({
   column,
@@ -16,6 +18,8 @@ export const ColumnPopoverContent = ({
   props,
   columnEventChanged,
   handleEventManagerPopoverCallback,
+  onDuplicateColumn,
+  onDeleteColumn,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
   const [selectedButtonId, setSelectedButtonId] = useState(null);
@@ -81,22 +85,71 @@ export const ColumnPopoverContent = ({
   const isButtonColumn = column.columnType === 'button';
   const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
 
+  const { removeButton, duplicateButton } = useButtonManager({ column, index, onColumnItemChange });
+
+  const handleDelete = () => {
+    if (isButtonDetailView) {
+      removeButton(selectedButtonId);
+      setSelectedButtonId(null);
+    } else {
+      onDeleteColumn?.();
+    }
+  };
+
+  const handleDuplicate = () => {
+    if (isButtonDetailView) {
+      duplicateButton(selectedButtonId);
+    } else {
+      onDuplicateColumn?.();
+    }
+  };
+
   return (
     <>
-      <Popover.Header>
-        {isButtonDetailView && (
+      <Popover.Header style={{padding : "8px 16px 0 16px !important"}}>
+        
           <div
-            className="d-flex align-items-center cursor-pointer"
-            style={{ paddingBottom: '8px' }}
-            onClick={() => {
-              setSelectedButtonId(null);
-              setActiveTab('propertiesTab');
-            }}
+            className="d-flex align-items-center justify-content-between"
           >
-            <IconArrowLeft size={16} stroke={1.5} />
-            <span className="ms-1 tj-text-xsm font-weight-500">Edit action button</span>
+            <div className='d-flex gap-6 flex-row items-center justify-start'>
+              {isButtonDetailView && <Button
+                variant="ghost"
+                size="medium"
+                iconOnly={true}
+                isLucid={true}
+                trailingIcon="arrow-left"
+                onClick={() => { 
+                  setSelectedButtonId(null);
+                  setActiveTab('propertiesTab');
+                }}
+                 
+              />}
+              {!isButtonDetailView && <span className='tj-text tj-header-h8 d-flex align-items-center'>Edit Column</span>}
+              {isButtonDetailView && <span className='tj-text tj-header-h8 d-flex align-items-center'>Edit Button</span>}
+            </div>
+            
+            <div className='d-flex flex-row'>
+              <Button
+                variant="ghost"
+                size="medium"
+                iconOnly={true}
+                isLucid={true}
+                trailingIcon="copy"
+                onClick={handleDuplicate}
+                title={isButtonDetailView ? 'Duplicate button' : 'Duplicate column'}
+              />
+              <Button
+                variant="ghost"
+                size="medium"
+                iconOnly={true}
+                isLucid={true}
+                trailingIcon="trash"
+                onClick={handleDelete}
+                title={isButtonDetailView ? 'Delete button' : 'Delete column'}
+              />
+            </div>
           </div>
-        )}
+      
         <div className="d-flex custom-gap-4 align-self-stretch tj-text tj-text-xsm font-weight-500 text-secondary cursor-pointer">
           <div
             className={`${activeTab === 'propertiesTab' && 'active-column-tab'} column-header-tab`}

@@ -154,6 +154,8 @@ export const Table = (props) => {
           props={props}
           columnEventChanged={handleColumnEventChange}
           handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+          onDuplicateColumn={() => duplicateColumn(index)}
+          onDeleteColumn={() => removeColumn(index, `${column.name}-${index}`)}
         />
       </Popover>
     ),
@@ -167,6 +169,8 @@ export const Table = (props) => {
       props,
       handleColumnEventChange,
       handleEventManagerPopoverCallback,
+      duplicateColumn,
+      removeColumn,
     ]
   );
 

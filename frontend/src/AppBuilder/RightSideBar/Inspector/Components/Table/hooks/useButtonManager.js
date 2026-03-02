@@ -61,6 +61,18 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
     [index, onColumnItemChange]
   );
 
+  const duplicateButton = useCallback(
+    (buttonId) => {
+      const button = (column.buttons || []).find((b) => b.id === buttonId);
+      if (!button) return null;
+      const newButton = { ...button, id: uuidv4() };
+      const updatedButtons = [...(column.buttons || []), newButton];
+      onColumnItemChange(index, 'buttons', updatedButtons);
+      return newButton.id;
+    },
+    [column, index, onColumnItemChange]
+  );
+
   const getButton = useCallback(
     (buttonId) => {
       return (column.buttons || []).find((b) => b.id === buttonId);
@@ -68,5 +80,5 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
     [column]
   );
 
-  return { addButton, removeButton, updateButtonProperty, reorderButtons, getButton };
+  return { addButton, removeButton, duplicateButton, updateButtonProperty, reorderButtons, getButton };
 };

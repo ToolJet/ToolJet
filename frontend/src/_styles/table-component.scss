@@ -1207,6 +1207,7 @@
   z-index: 999 !important;
   min-width: 280px;
   max-height: 85vh !important;
+  background-color: var(--cc-surface1-surface);
 
   .popover-body {
     display: flex;
@@ -1214,7 +1215,7 @@
     padding: 16px 0px 16px !important;
     gap: 16px !important;
     align-self: stretch;
-    background-color: var(--slate1) !important;
+    // background-color: var(--slate1) !important;   
     border-radius: 0;
 
     .optional-properties-when-editable-true {
@@ -1258,8 +1259,12 @@
   }
 
   .popover-header {
-    padding: 4px 0 0 0 !important;
-    background-color: var(--slate3);
+    padding: 8px 16px 0px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: var(--cc-surface1-surface);
+    border-bottom: 1px solid var(--cc-weak-border) !important;
 
     .active-column-tab {
       border-bottom: 1px solid var(--indigo9);
