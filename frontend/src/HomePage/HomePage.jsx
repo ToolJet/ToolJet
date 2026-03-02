@@ -1296,31 +1296,19 @@ class HomePageComponent extends React.Component {
     const { latestCommitData, tags } = this.state;
     const options = [];
 
-    // Add latest commit as first option
     if (latestCommitData?.latestCommit?.[0]) {
-      const gitVersionName = latestCommitData?.gitVersionName;
-      // Check if the latest commit's version exists in tags (to determine if it's a draft)
-      const tagVersionNames = (tags || []).map((tag) => {
-        const [, version] = tag.name.split('/');
-        return version;
-      });
-      const isInTags = tagVersionNames.includes(gitVersionName);
-
       options.push({
-        label: isInTags ? gitVersionName : 'Draft version',
+        label: 'Draft version',
         value: 'latest',
         isLatest: true,
-        isDraft: !isInTags,
+        isDraft: true,
         sha: latestCommitData?.latestCommit?.[0]?.commitId,
       });
     }
 
     // Add tags - filter out tags that have the same SHA as the latest commit
     if (tags && tags.length > 0) {
-      const latestCommitSha = latestCommitData?.latestCommit?.[0]?.commitId;
-      const filteredTags = latestCommitSha ? tags.filter((tag) => tag.commit?.sha !== latestCommitSha) : tags;
-
-      filteredTags.forEach((tag) => {
+      tags.forEach((tag) => {
         const [, version] = tag.name.split('/');
         options.push({
           label: version,
