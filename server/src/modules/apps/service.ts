@@ -224,12 +224,13 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
+    const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
+    const isGitSyncEnabled = Boolean(
+      orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled
+    );
 
     // Check if name is being changed - require draft version to exist
     if (name && name !== app.name) {
-      const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
-      const isGitSyncEnabled = orgGit?.gitSsh?.isEnabled || orgGit?.gitHttps?.isEnabled || orgGit?.gitLab?.isEnabled;
-
       // Block rename if git sync is enabled and app has been pushed
       if (isGitSyncEnabled) {
         const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
@@ -257,7 +258,7 @@ export class AppsService implements IAppsService {
         },
       });
 
-      if (!draftVersion) {
+      if (!draftVersion && isGitSyncEnabled) {
         throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
       }
     }
