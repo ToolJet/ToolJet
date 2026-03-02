@@ -99,6 +99,86 @@ export const buttonGroupV2Config = {
     onClick: { displayName: 'On click' },
   },
   styles: {
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    alignment: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'side' },
+      options: [
+        { displayName: 'Side', value: 'side' },
+        { displayName: 'Top', value: 'top' },
+      ],
+      accordian: 'label',
+    },
+    direction: {
+      type: 'switch',
+      displayName: 'Direction',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
+    auto: {
+      type: 'checkbox',
+      displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    labelWidth: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+    },
     backgroundColor: {
       type: 'colorSwatches',
       displayName: 'Background',
@@ -106,7 +186,7 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -115,16 +195,16 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-default-border)',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     textColor: {
       type: 'colorSwatches',
-      displayName: 'Label',
+      displayName: 'Text',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-primary-text)',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     iconColor: {
       type: 'colorSwatches',
@@ -133,7 +213,7 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-default-icon)',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     selectedBackgroundColor: {
       type: 'colorSwatches',
@@ -142,16 +222,16 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-primary-brand)',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     selectedTextColor: {
       type: 'colorSwatches',
-      displayName: 'Selected label',
+      displayName: 'Selected text',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#FFFFFF',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     selectedIconColor: {
       type: 'colorSwatches',
@@ -160,7 +240,13 @@ export const buttonGroupV2Config = {
         schema: { type: 'string' },
         defaultValue: '#FFFFFF',
       },
-      accordian: 'General',
+      accordian: 'Buttons',
+    },
+    errTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Error Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
+      accordian: 'Buttons',
     },
     borderRadius: {
       type: 'number',
@@ -169,16 +255,16 @@ export const buttonGroupV2Config = {
         schema: { type: 'number' },
         defaultValue: false,
       },
-      accordian: 'General',
+      accordian: 'Buttons',
     },
     btnAlignment: {
       type: 'alignButtons',
-      displayName: 'Content alignment',
+      displayName: 'Alignment',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
-      accordian: 'Container',
+      accordian: 'Buttons',
     },
     boxShadow: {
       type: 'boxShadow',
@@ -191,7 +277,7 @@ export const buttonGroupV2Config = {
         key: 'buttonType',
         value: 'primary',
       },
-      accordian: 'Container',
+      accordian: 'Buttons',
     },
     padding: {
       type: 'switch',
@@ -289,10 +375,17 @@ export const buttonGroupV2Config = {
     },
     events: [],
     styles: {
+      labelColor: { value: 'var(--cc-primary-text)' },
+      labelWidth: { value: '33' },
+      auto: { value: '{{true}}' },
+      direction: { value: 'left' },
+      alignment: { value: 'side' },
+      widthType: { value: 'ofComponent' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       textColor: { value: 'var(--cc-primary-text)' },
       iconColor: { value: 'var(--cc-default-icon)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
       selectedBackgroundColor: { value: 'var(--cc-primary-brand)' },
       selectedTextColor: { value: '#FFFFFF' },
       selectedIconColor: { value: '#FFFFFF' },

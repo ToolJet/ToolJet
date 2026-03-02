@@ -7,6 +7,11 @@ import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import { cx } from 'class-variance-authority';
+import {
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -26,10 +31,17 @@ export const ButtonGroupV2 = (props) => {
   } = props;
 
   const {
+    labelColor,
+    alignment,
+    direction,
+    auto: labelAutoWidth,
+    labelWidth,
+    widthType,
     backgroundColor,
     borderColor,
     textColor,
     iconColor,
+    errTextColor,
     selectedBackgroundColor,
     selectedTextColor,
     selectedIconColor,
@@ -37,7 +49,6 @@ export const ButtonGroupV2 = (props) => {
     btnAlignment,
     boxShadow,
     padding,
-    errTextColor,
   } = styles;
 
   const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
@@ -210,6 +221,7 @@ export const ButtonGroupV2 = (props) => {
   // ===== COMPUTED STYLES =====
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const justifyContentByAlignment = btnAlignment === 'left' ? 'start' : btnAlignment === 'right' ? 'end' : 'center';
+  const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
 
   const groupStyles = {
     width: layout === 'wrap' ? '100%' : 'max-content',
@@ -218,9 +230,10 @@ export const ButtonGroupV2 = (props) => {
   };
 
   const groupWrapperStyles = {
-    height: `calc(100% - ${typeof label === 'string' && label !== '' ? '20px' : '0px'})`,
+    height: _height,
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
     overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
   };
 
   const commonStyles = {
@@ -274,8 +287,14 @@ export const ButtonGroupV2 = (props) => {
   return (
     <>
       <div
-        className={cx('button-group-widget')}
-        style={{ height: _height }}
+        className={cx('button-group-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : '']: true,
+          'd-none': !exposedVariablesTemporaryState.isVisible,
+        })}
         aria-hidden={!exposedVariablesTemporaryState.isVisible}
         aria-disabled={exposedVariablesTemporaryState.isDisabled}
         role="group"
@@ -286,62 +305,70 @@ export const ButtonGroupV2 = (props) => {
       >
         <Label
           label={label}
-          width={width}
+          width={labelWidth}
           labelRef={labelRef}
+          auto={labelAutoWidth}
           darkMode={darkMode}
-          color={'var(--cc-primary-text)'}
-          direction={btnAlignment}
-          defaultAlignment={'top'}
+          color={labelColor}
+          direction={direction}
+          defaultAlignment={alignment}
           isMandatory={isMandatory}
+          _width={_width}
+          widthType={widthType}
+          top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
         />
-        <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
-          <div className="button-group-content" style={groupStyles} ref={groupRef}>
-            {formattedOptions?.map((option, index) => (
-              <button
-                data-cy={`${dataCy}-button-${index}`}
-                style={{
-                  ...commonStyles,
-                  ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
-                  ...(option.isDisabled && disabledStyles),
-                }}
-                key={index}
-                disabled={option.isDisabled}
-                className={'button-group-button'}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleButtonClick(option.value);
-                }}
-              >
-                {option.iconVisibility && (
-                  <div className="tw-flex tw-w-[16px] tw-h-[16px] tw-shrink-0">
-                    <TablerIcon
-                      iconName={option.icon}
-                      style={{
-                        width: '16px',
-                        height: '16px',
-                        color: exposedVariablesTemporaryState.selected?.includes(option.value)
-                          ? selectedIconColor
-                          : iconColor,
-                      }}
-                      stroke={1.5}
-                      data-cy={`${dataCy}-icon`}
-                    />
-                  </div>
-                )}
-                {option.label}
-              </button>
-            ))}
+        {exposedVariablesTemporaryState.isLoading ? (
+          <Loader style={{ position: 'static', margin: '9px auto 0 auto'}} width="20" />
+        ) : (
+          <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
+            <div className="button-group-content" style={groupStyles} ref={groupRef}>
+              {formattedOptions?.map((option, index) => (
+                <button
+                  data-cy={`${dataCy}-button-${index}`}
+                  style={{
+                    ...commonStyles,
+                    ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
+                    ...(option.isDisabled && disabledStyles),
+                  }}
+                  key={index}
+                  disabled={option.isDisabled}
+                  className={'button-group-button'}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleButtonClick(option.value);
+                  }}
+                >
+                  {option.iconVisibility && (
+                    <div className="tw-flex tw-w-[16px] tw-h-[16px] tw-shrink-0">
+                      <TablerIcon
+                        iconName={option.icon}
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          color: exposedVariablesTemporaryState.selected?.includes(option.value)
+                            ? selectedIconColor
+                            : iconColor,
+                        }}
+                        stroke={1.5}
+                        data-cy={`${dataCy}-icon`}
+                      />
+                    </div>
+                  )}
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
       {userInteracted && exposedVariablesTemporaryState.isVisible && !isValid && (
         <div
           className="d-flex"
           style={{
             color: errTextColor,
-            justifyContent: btnAlignment === 'right' ? 'flex-start' : 'flex-end',
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',
