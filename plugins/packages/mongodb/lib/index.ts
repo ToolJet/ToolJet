@@ -271,7 +271,7 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async listTables(
+  async listCollections(
     sourceOptions: SourceOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
@@ -296,6 +296,41 @@ export default class MongodbService implements QueryService {
     } finally {
       await close();
     }
+  }
+  async invokeMethod(
+    methodName: string,
+    context: { user?: any; app?: any },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    if (methodName === 'listCollections') {
+      const dataSourceId = args?.dataSourceId || '';
+      const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+
+      const response = await this.listCollections(
+        sourceOptions,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+
+      const collections = (response?.data ?? []) as any[];
+
+      const formatted = collections.map((col: any) => ({
+        label: col.collection_name,
+        value: col.collection_name,
+      }));
+
+      return {
+        status: 'ok',
+        data: formatted,
+      };
+    }
+
+    throw new QueryError(
+      'Method not found',
+      `Method ${methodName} is not supported for Mongodb plugin`,
+      { availableMethods: ['listCollections'] }
+    );
   }
 
   parseEJSON(maybeEJSON?: string): any {
