@@ -8,6 +8,7 @@ import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -199,7 +200,7 @@ export const Text = function Text({
       data-disabled={isDisabled}
       className="text-widget"
       style={computedStyles}
-      data-cy={dataCy}
+      data-cy={`${generateCypressDataCy(dataCy)}-text`}
       onMouseOver={() => {
         fireEvent('onHover');
       }}

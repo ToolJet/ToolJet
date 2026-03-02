@@ -139,6 +139,8 @@ export const groupsSelector = {
   updateGroupNameModalTitle: '[data-cy="update-group-title"]',
   editGranularPermissionIcon: '[data-cy="edit-permission-button"]',
   granularAccessPermission: '[data-cy="apps-granular-access"]',
+  editGranularPermissionAccess: '[data-cy="edit-apps-granular-access"]',
+  environmentTags: '[data-cy="environment-tags"]',
   groupChip: (accessType) => `[data-cy="${cyParamName(accessType)}-group-chip"]`,
   resourceContainer: '[data-cy="resources-container"]',
   groupLink: (groupname) => {
@@ -149,6 +151,9 @@ export const groupsSelector = {
   },
   deleteGroupLink: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-delete-link"]`;
+  },
+  environmentName: (envName) => {
+    return `[data-cy="${cyParamName(envName)}-environment-name"]`;
   },
   mutiSelectAddButton: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-add-button"]`;
