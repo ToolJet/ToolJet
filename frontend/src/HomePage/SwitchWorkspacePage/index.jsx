@@ -137,7 +137,12 @@ export default function SwitchWorkspacePage({ darkMode, archived = false, isAppU
       if (targetDomain && targetDomain !== currentOrigin) {
         window.location.href = `${targetDomain}${newPath}`;
       } else if (!targetDomain && isCustomDomain()) {
-        window.location.href = `${window.public_config?.TOOLJET_HOST}${newPath}`;
+        const mainHost = window.public_config?.TOOLJET_HOST;
+        if (!mainHost) {
+          console.error('[SwitchWorkspace] TOOLJET_HOST not configured, cannot redirect from custom domain');
+          return;
+        }
+        window.location.href = `${mainHost}${newPath}`;
       } else {
         window.history.replaceState(null, null, newPath);
         window.location.reload();

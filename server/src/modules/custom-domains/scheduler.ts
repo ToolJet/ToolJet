@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CustomDomain } from '@entities/custom_domain.entity';
+import { CustomDomainCacheService } from './cache.service';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, In, LessThan } from 'typeorm';
 
@@ -8,12 +9,36 @@ const STALE_TTL_SECONDS = parseInt(process.env.CUSTOM_DOMAIN_STALE_TTL_SECONDS |
 const cronKey = process.env.CUSTOM_DOMAIN_CLEANUP_INTERVAL || 'EVERY_DAY_AT_MIDNIGHT';
 const CLEANUP_CRON = CronExpression[cronKey as keyof typeof CronExpression] || CronExpression.EVERY_DAY_AT_MIDNIGHT;
 
+// NOTE: These status maps must stay in sync with CloudflareProvider.mapStatus / mapSslStatus.
+// TODO: Refactor this scheduler to inject and use CloudflareProvider instead of raw fetch calls.
+const STATUS_MAP: Record<string, string> = {
+  pending: 'pending_verification',
+  active: 'active',
+  active_redeploying: 'active',
+  blocked: 'failed',
+  moved: 'failed',
+  deleted: 'deleted',
+};
+
+const SSL_STATUS_MAP: Record<string, string> = {
+  pending_validation: 'pending',
+  pending_issuance: 'pending',
+  pending_deployment: 'pending',
+  active: 'active',
+  pending_deletion: 'deleted',
+  deleted: 'deleted',
+};
+
 @Injectable()
 export class CustomDomainStatusScheduler {
   private readonly logger = new Logger(CustomDomainStatusScheduler.name);
 
+  constructor(@Optional() private readonly customDomainCacheService?: CustomDomainCacheService) {}
+
   @Cron(CronExpression.EVERY_10_MINUTES)
   async handleCron() {
+    if (process.env.ENABLE_CUSTOM_DOMAINS !== 'true') return;
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       const pendingDomains = await manager.find(CustomDomain, {
         where: { status: In(['pending_verification', 'pending_ssl']) },
@@ -39,29 +64,28 @@ export class CustomDomainStatusScheduler {
           );
 
           const data = await response.json();
-          if (!data.success) continue;
+          if (!data.success) {
+            this.logger.error(
+              `Cloudflare API error polling ${domain.domain} (hostnameId: ${domain.providerHostnameId}): ` +
+                `HTTP ${response.status}, errors: ${JSON.stringify(data.errors)}`
+            );
+            continue;
+          }
 
-          const statusMap: Record<string, string> = {
-            pending: 'pending_verification',
-            active: 'active',
-            active_redeploying: 'active',
-            blocked: 'failed',
-            moved: 'failed',
-            deleted: 'deleted',
-          };
+          const cfStatus = data.result.status;
+          const newStatus = STATUS_MAP[cfStatus] || 'pending_verification';
+          if (!STATUS_MAP[cfStatus]) {
+            this.logger.warn(`Unknown Cloudflare hostname status "${cfStatus}" for ${domain.domain}, defaulting to pending_verification`);
+          }
 
-          const sslStatusMap: Record<string, string> = {
-            pending_validation: 'pending',
-            pending_issuance: 'pending',
-            pending_deployment: 'pending',
-            active: 'active',
-            pending_deletion: 'deleted',
-            deleted: 'deleted',
-          };
-
-          const newStatus = statusMap[data.result.status] || 'pending_verification';
           const rawSslStatus = data.result.ssl?.status;
-          const newSslStatus = rawSslStatus ? (sslStatusMap[rawSslStatus] || 'pending') : null;
+          let newSslStatus: string | null = null;
+          if (rawSslStatus) {
+            newSslStatus = SSL_STATUS_MAP[rawSslStatus] || 'pending';
+            if (!SSL_STATUS_MAP[rawSslStatus]) {
+              this.logger.warn(`Unknown Cloudflare SSL status "${rawSslStatus}" for ${domain.domain}, defaulting to pending`);
+            }
+          }
 
           if (newStatus !== domain.status || newSslStatus !== domain.sslStatus) {
             await manager.update(CustomDomain, domain.id, {
@@ -70,6 +94,7 @@ export class CustomDomainStatusScheduler {
               verificationErrors: data.result.verification_errors || null,
             });
             this.logger.log(`Domain ${domain.domain}: ${domain.status} -> ${newStatus}`);
+            await this.customDomainCacheService?.invalidate(domain.organizationId);
           }
         } catch (error) {
           this.logger.error(`Failed to poll status for ${domain.domain}: ${error.message}`);
@@ -114,7 +139,10 @@ export class CustomDomainStatusScheduler {
             }
           }
 
+          // Mark as deleted first so it won't be retried if remove fails
+          await manager.update(CustomDomain, domain.id, { status: 'deleted' });
           await manager.remove(domain);
+          await this.customDomainCacheService?.invalidate(domain.organizationId);
           this.logger.log(
             `Cleaned up stale domain ${domain.domain} (org: ${domain.organizationId}, stale >${STALE_TTL_SECONDS}s)`
           );

@@ -268,7 +268,7 @@ The CNAME record **must** be set to **DNS only** (grey cloud icon), **NOT** Prox
 
 **How to toggle:** On the customer's zone → DNS → Records → find the CNAME record → click the orange cloud icon to toggle it to grey (DNS only).
 
-This is only an issue when both zones are on the same Cloudflare account (common during development/testing). In production, customers typically use external DNS providers where this doesn't apply.
+This is an issue whenever the customer's domain is on Cloudflare (regardless of which account). Cloudflare's proxy intercepts traffic before it reaches your origin. In production, many customers use external DNS providers where this doesn't apply.
 
 ---
 

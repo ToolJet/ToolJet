@@ -70,6 +70,7 @@ export const AuthRoute = ({ children }) => {
           .catch((e) => {
             console.error('[AuthRoute] Failed to resolve custom domain:', e);
             if (redirectToMainHost()) return;
+            // Could not redirect to main host (TOOLJET_HOST not configured) — fall back to normal flow
             fetchOrganizationDetails();
           });
       } else {

@@ -8,12 +8,30 @@ import {
   redirectToErrorPage,
   isCustomDomain,
   redirectToMainHost,
+  excludeWorkspaceIdFromURL,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 import { customDomainService } from '@/_services/custom-domain.service';
+const REDIRECT_KEY = 'tj_cd_redirect_ts';
+const REDIRECT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+function hasRecentRedirectAttempt() {
+  const ts = sessionStorage.getItem(REDIRECT_KEY);
+  if (!ts) return false;
+  return Date.now() - Number(ts) < REDIRECT_COOLDOWN_MS;
+}
+
+function setRedirectAttempt() {
+  sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
+}
+
+function clearRedirectAttempt() {
+  sessionStorage.removeItem(REDIRECT_KEY);
+}
+
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -28,8 +46,9 @@ import { customDomainService } from '@/_services/custom-domain.service';
 export const authorizeWorkspace = async () => {
   let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
 
-  // On a custom domain, resolve which workspace owns it
+  // On a custom domain, clear redirect flag and resolve which workspace owns it
   if (isCustomDomain()) {
+    clearRedirectAttempt();
     try {
       const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
       const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
@@ -218,6 +237,15 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       });
       /* CASE-1 */
       const { current_organization_name } = data;
+
+      // Redirect to custom domain before load_app to prevent flash of content
+      if (data.custom_domain && !isCustomDomain() && !hasRecentRedirectAttempt()) {
+        const redirectPath = excludeWorkspaceIdFromURL(window.location.pathname);
+        setRedirectAttempt();
+        window.location.href = `https://${data.custom_domain}${redirectPath}${window.location.search}${window.location.hash}`;
+        return;
+      }
+
       /* add the user details like permission and user previlliage details to the subject */
       updateCurrentSession({
         ...data,

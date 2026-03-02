@@ -20,7 +20,7 @@ export interface VerifyDomainResult {
   providerStatus: string;
   sslStatus: string | null;
   verificationErrors?: any;
-  dnsStatus: 'not_checked' | 'resolved' | 'no_records' | 'failed';
+  dnsStatus: 'not_checked' | 'resolved' | 'failed';
   connectivityStatus: 'not_checked' | 'reachable' | 'unreachable';
   message: string;
 }

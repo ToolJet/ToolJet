@@ -197,8 +197,18 @@ export function initSentry(logger: any, configService: ConfigService) {
 /**
  * Fetches active custom domain origins from the database.
  * Returns a Set of allowed origins (e.g., "https://app.company.com").
+ *
+ * Called on every non-GET request (CSRF check) and every CORS preflight.
+ * Results are cached in-memory with a short TTL to avoid per-request DB queries.
  */
+let _cachedOrigins: Set<string> | null = null;
+let _cacheExpiry = 0;
+const ORIGINS_CACHE_TTL_MS = 30_000; // 30 seconds
+
 async function fetchCustomDomainOrigins(dataSource: DataSource, logger: any): Promise<Set<string>> {
+  const now = Date.now();
+  if (_cachedOrigins && now < _cacheExpiry) return _cachedOrigins;
+
   try {
     const rows: { domain: string }[] = await dataSource.query(
       `SELECT domain FROM custom_domains WHERE status = 'active'`
@@ -208,10 +218,12 @@ async function fetchCustomDomainOrigins(dataSource: DataSource, logger: any): Pr
       // Custom domains are stored as bare hostnames; build https origins
       origins.add(`https://${row.domain}`);
     }
-    logger.log(`Loaded ${origins.size} active custom domain origin(s) for CORS check`);
+    _cachedOrigins = origins;
+    _cacheExpiry = now + ORIGINS_CACHE_TTL_MS;
+    logger.log(`Loaded ${origins.size} active custom domain origin(s) for CORS/CSRF check`);
     return origins;
   } catch (error) {
-    logger.error('Failed to fetch custom domains for CORS:', error);
+    logger.error('Failed to fetch custom domains for CORS — all custom domain origins will be rejected:', error);
     return new Set<string>();
   }
 }
@@ -232,8 +244,10 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   if (configService.get<string>('ENABLE_CORS') === 'true') return;
 
   const logger = createLogger('CsrfOriginCheck');
-  const tooljetHost = configService.get<string>('TOOLJET_HOST');
+  const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
   const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+  // These paths use non-cookie auth (API keys, SAML assertions, webhook signatures)
+  // and don't need Origin checks.
   const exemptPrefixes = [
     '/health',
     '/api/health',
@@ -295,7 +309,7 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
   logger.log('Setting up security headers...');
 
   try {
-    const tooljetHost = configService.get<string>('TOOLJET_HOST');
+    const tooljetHost = configService.get<string>('TOOLJET_HOST')?.replace(/\/+$/, '');
     const host = new URL(tooljetHost);
     const domain = host.hostname;
     const corsWildcard = configService.get<string>('ENABLE_CORS') === 'true';
