@@ -1,6 +1,6 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
@@ -180,9 +180,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       // If app is already in a folder, remove it first (apps can only be in one folder)
       if (existingFolderApp) {
-        throw new BadRequestException(
-          'Apps can only be in one folder at a time. To add this app here, remove it from its current folder first.'
-        );
+        await manager.delete(FolderApp, { id: existingFolderApp.id });
       }
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
