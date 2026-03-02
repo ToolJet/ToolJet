@@ -299,4 +299,5 @@ export {
   AppPermissionsDto,
   DataSourcePermissionsDto,
   WorkspacePermissionsDto,
+  WorkflowPermissionsDto,
 } from './groups.dto';

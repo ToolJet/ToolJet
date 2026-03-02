@@ -10,6 +10,8 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
+  Matches,
+  MaxLength,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -62,10 +64,14 @@ export class AppPermissionsDto {
   environments?: AppEnvironment[];
 }
 
-// Workflow-specific permissions — same shape as AppPermissionsDto
+// Workflow-specific permissions
 // canEdit = true  → internal: can_edit=true,  can_view=false
-// canEdit = false → internal: can_edit=false, can_view=true  (hideFromDashboard configurable)
-export class WorkflowPermissionsDto extends AppPermissionsDto {}
+// canEdit = false → internal: can_edit=false, can_view=true
+export class WorkflowPermissionsDto {
+  @IsBoolean()
+  @IsNotEmpty()
+  canEdit: boolean;
+}
 
 @ValidatorConstraint({ name: 'mutuallyExclusive', async: false })
 class MutuallyExclusiveConstraint implements ValidatorConstraintInterface {
@@ -204,6 +210,12 @@ export class CreateGroupExternalDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
+  @MaxLength(50, {
+    message: 'Group name cannot exceed 50 characters',
+  })
+  @Matches(/^[a-zA-Z0-9_ -]+$/, {
+    message: 'Group name can only contain letters, numbers, underscores, spaces and hyphens',
+  })
   name: string;
 
   @ValidateNested()
