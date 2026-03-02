@@ -27,14 +27,17 @@ function EditAppName() {
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = selectedVersion?.versionType !== 'branch';
-  const isRenameDisabled =
-    isGitSyncEnabled && isAppCommittedToGit ? !isDraftVersion || isOnDefaultBranch : !isDraftVersion;
+  const isRenameDisabled = !isGitSyncEnabled
+    ? false
+    : !isAppCommittedToGit
+    ? !isDraftVersion
+    : !isDraftVersion || isOnDefaultBranch;
 
   const getDisabledTooltipMessage = () => {
     if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
       return "Renaming isn't allowed on master. Switch branch to update name.";
     }
-    if (!isDraftVersion) {
+    if (!isDraftVersion && isGitSyncEnabled) {
       return 'Renaming of app is only allowed on draft versions';
     }
     return appName;
