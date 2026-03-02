@@ -604,7 +604,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options?.workflowId,
             query.options?.syncExecution,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            query.options?.workflowVersionId
           );
         } else {
           const isReleasedApp = appStore.modules.canvas.app?.isReleasedApp;
@@ -823,7 +824,8 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options.workflowId,
             query.options.syncExecution,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            query.options?.workflowVersionId
           );
         } else {
           queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
@@ -1323,7 +1325,7 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: undefined, status: 'failed' };
       }
     },
-    triggerWorkflow: async (moduleId, query, workflowAppId, syncExecution = true, params = {}, appEnvId) => {
+    triggerWorkflow: async (moduleId, query, workflowAppId, syncExecution = true, params = {}, appEnvId, workflowVersionId = null) => {
       const { getAllExposedValues } = get();
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
@@ -1355,7 +1357,8 @@ export const createQueryPanelSlice = (set, get) => ({
           resolvedParams,
           appEnvId,
           query.id,
-          syncExecution
+          syncExecution,
+          workflowVersionId
         );
         return { data: executionResponse.result, status: 'ok' };
       } catch (e) {
