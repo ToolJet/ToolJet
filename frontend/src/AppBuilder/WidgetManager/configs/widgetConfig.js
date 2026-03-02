@@ -76,12 +76,13 @@ import {
   keyValuePairConfig,
   progressbarConfig,
   navigationConfig,
+  buttonGroupV2Config,
 } from '../widgets';
 
 export const widgets = [
   // Buttons
   buttonConfig,
-  buttonGroupConfig,
+  buttonGroupV2Config,
   popoverMenuConfig,
 
   //Data
@@ -179,6 +180,7 @@ export const widgets = [
   dropdownConfig,
   multiselectConfig,
   rangeSliderConfig,
+  buttonGroupConfig,
 
   //Module
   moduleContainerConfig,

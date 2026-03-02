@@ -76,7 +76,7 @@ import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { navigationConfig } from './navigation';
-
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 const widgets = {
   buttonConfig,
@@ -157,6 +157,7 @@ const widgets = {
   jsonExplorerConfig,
   jsonEditorConfig,
   navigationConfig,
+  buttonGroupV2Config,
 };
 
 const universalProps = {
