@@ -128,7 +128,7 @@ jobs:
               run: |
                   echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
                   response=$(curl -s -w "\n%{http_code}" -X PATCH \
-                    "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID_PROD }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME_PROD }}" \
+                    "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME_PROD }}" \
                     -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN }}" \
                     -H "Content-Type: application/json" \
                     --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
@@ -153,7 +153,7 @@ jobs:
               working-directory: repo
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
-                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID_PROD }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID }}
 
     purge_cache:
         needs: deploy
