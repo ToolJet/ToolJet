@@ -1,0 +1,203 @@
+name: Deploy to Cloudflare Pages prod (Cloud Frontend)
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: 'Git branch to deploy (must start with "lts-", e.g., lts-3.6)'
+                required: true
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: ✅ Check user authorization
+              run: |
+                  allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+                  allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+                  allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+                  if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                        "${{ github.actor }}" != "$allowed_user2" && \
+                        "${{ github.actor }}" != "$allowed_user3" ]]; then
+                    echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+                    exit 1
+                  else
+                    echo "✅ User '${{ github.actor }}' is authorized."
+                  fi
+
+            - name: 📥 Manual Git checkout with submodules
+              run: |
+                  set -e
+
+                  BRANCH="${{ github.event.inputs.branch }}"
+                  REPO="https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+
+                  git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+                  git config --global http.version HTTP/1.1
+                  git config --global http.postBuffer 524288000
+
+                  echo "👉 Cloning $REPO (branch: $BRANCH)"
+                  git clone --recurse-submodules --depth=1 --branch "$BRANCH" "$REPO" repo
+                  cd repo
+
+                  echo "🔎 Main repo: verifying checkout"
+                  MAIN_CURRENT=$(git rev-parse --abbrev-ref HEAD)
+                  echo "✅ Main repo: successfully checked out branch $MAIN_CURRENT"
+                  echo "📍 Main repo: current commit $(git rev-parse --short HEAD): $(git log -1 --pretty=%s)"
+
+                  echo "🔁 Updating submodules"
+                  git submodule update --init --recursive
+
+                  echo "🔀 Attempting to checkout '$BRANCH' in each submodule and validating"
+
+                  BRANCH="$BRANCH" git submodule foreach --recursive bash -c '
+                    name="$sm_path"
+                    echo ""
+                    echo "Entering '\''$name'\''"
+                    echo "↪ $name: trying to checkout branch '\''$BRANCH'\''"
+
+                    if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+                      git fetch origin "$BRANCH:$BRANCH" || {
+                        echo "❌ $name: fetch failed for $BRANCH"
+                        exit 1
+                      }
+
+                      PREV=$(git rev-parse --short HEAD || echo "unknown")
+                      git checkout "$BRANCH" || {
+                        echo "❌ $name: checkout failed for $BRANCH"
+                        exit 1
+                      }
+
+                      echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+                      echo "✅ $name: checked out branch $BRANCH"
+                    else
+                      echo "⚠️ $name: branch '$BRANCH' not found on origin. Falling back to 'lts-3.16'"
+                      PREV=$(git rev-parse --short HEAD || echo "unknown")
+                      git fetch origin lts-3.16:lts-3.16 || {
+                        echo "❌ $name: fetch failed for lts-3.16"
+                        exit 1
+                      }
+                      git checkout lts-3.16 || {
+                        echo "❌ $name: fallback to lts-3.16 failed"
+                        exit 1
+                      }
+                      echo "Previous HEAD position was $PREV: $(git log -1 --pretty=%s || echo 'unknown')"
+                      echo "✅ $name: now on branch lts-3.16"
+                    fi
+
+                    CURRENT=$(git rev-parse --abbrev-ref HEAD)
+                    echo "🔎 $name: current branch = $CURRENT"
+                    if [ "$CURRENT" != "$BRANCH" ] && [ "$CURRENT" != "lts-3.16" ]; then
+                      echo "❌ $name: unexpected branch state — wanted '$BRANCH' or fallback 'lts-3.16', got '$CURRENT'"
+                      exit 1
+                    fi
+                  '
+
+            - name: 🧰 Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 22.15.1
+
+            - name: 📦 Install dependencies
+              run: npm install
+              working-directory: repo
+
+            - name: 🛠️ Build the project
+              run: npm run build:plugins:prod && npm run build:frontend:cloud
+              working-directory: repo
+              env:
+                  GOOGLE_MAPS_API_KEY: ${{ secrets.CLOUD_PROD_CLOUD_GOOGLE_MAPS_API_KEY }}
+                  NODE_ENV: ${{ secrets.CLOUD_PROD_CLOUD_NODE_ENV }}
+                  NODE_OPTIONS: ${{ secrets.CLOUD_PROD_CLOUD_NODE_OPTIONS }}
+                  SENTRY_AUTH_TOKEN: ${{ secrets.CLOUD_PROD_CLOUD_SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: ${{ secrets.CLOUD_PROD_CLOUD_SENTRY_ORG }}
+                  SENTRY_PROJECT: ${{ secrets.CLOUD_PROD_CLOUD_SENTRY_PROJECT }}
+                  SERVE_CLIENT: ${{ secrets.CLOUD_PROD_CLOUD_SERVE_CLIENT }}
+                  SERVER_IP: ${{ secrets.CLOUD_PROD_CLOUD_SERVER_IP }}
+                  TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_PROD_CLOUD_TJDB_SQL_MODE_DISABLE }}
+                  TOOLJET_SERVER_URL: ${{ secrets.CLOUD_PROD_CLOUD_TOOLJET_SERVER_URL }}
+                  WEBSITE_SIGNUP_URL: https://www.tooljet.com/create-account
+                  TOOLJET_EDITION: cloud
+
+            - name: 📝 Add SPA routing redirect rule
+              run: echo "/* /index.html 200" > repo/frontend/build/_redirects
+
+            - name: 🔧 Set CF Pages production branch to input branch
+              run: |
+                  echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
+                  response=$(curl -s -w "\n%{http_code}" -X PATCH \
+                    "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID_PROD }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME_PROD }}" \
+                    -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN_PROD }}" \
+                    -H "Content-Type: application/json" \
+                    --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
+
+                  http_code=$(echo "$response" | tail -n1)
+                  if [ "$http_code" = "200" ]; then
+                    echo "✅ Production branch updated to: ${{ github.event.inputs.branch }}"
+                  else
+                    echo "❌ Failed to update production branch (HTTP $http_code)"
+                    echo "$response"
+                    exit 1
+                  fi
+
+            - name: 🚀 Deploy to Cloudflare Pages
+              run: |
+                  echo "📦 Built from source branch: ${{ github.event.inputs.branch }}"
+                  echo "🎯 Targeting CF Pages production slot (branch alias: ${{ github.event.inputs.branch }})"
+                  npx wrangler pages deploy frontend/build \
+                    --project-name=${{ secrets.CF_PAGES_PROJECT_NAME_PROD }} \
+                    --branch=${{ github.event.inputs.branch }} \
+                    --commit-dirty=true
+              working-directory: repo
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN_PROD }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_PAGES_ACCOUNT_ID_PROD }}
+
+    purge_cache:
+        needs: deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: ✅ Check user authorization
+              run: |
+                  allowed_user1=${{ secrets.ALLOWED_USER1_USERNAME }}
+                  allowed_user2=${{ secrets.ALLOWED_USER2_USERNAME }}
+                  allowed_user3=${{ secrets.ALLOWED_USER3_USERNAME }}
+
+                  if [[ "${{ github.actor }}" != "$allowed_user1" && \
+                        "${{ github.actor }}" != "$allowed_user2" && \
+                        "${{ github.actor }}" != "$allowed_user3" ]]; then
+                    echo "❌ User '${{ github.actor }}' is not authorized to trigger this workflow."
+                    exit 1
+                  else
+                    echo "✅ User '${{ github.actor }}' is authorized."
+                  fi
+
+            - name: 🧹 Purge Cloudflare Cache
+              continue-on-error: true
+              run: |
+                  echo "🔄 Purging Cloudflare cache for specific URLs..."
+                  response=$(curl -s -w "\n%{http_code}" -X POST \
+                    "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID_PROD }}/purge_cache" \
+                    -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN_PROD }}" \
+                    -H "Content-Type: application/json" \
+                    --data '{
+                      "files": [
+                        "${{ secrets.CLOUDFLARE_CONFIG_URL_PROD }}",
+                        "${{ secrets.CLOUDFLARE_METADATA_URL_PROD }}"
+                      ]
+                    }')
+
+                  http_code=$(echo "$response" | tail -n1)
+                  body=$(echo "$response" | sed '$d')
+
+                  if [ "$http_code" = "200" ]; then
+                    echo "✅ Cloudflare cache purged successfully for specified URLs"
+                    echo "$body"
+                  else
+                    echo "⚠️ Cloudflare cache purge failed with status code: $http_code"
+                    echo "$body"
+                    exit 1
+                  fi
