@@ -77,6 +77,11 @@ export const deleteAppandDatasourceAfterExecution = (
   deleteDatasource(datasourceName);
 };
 
+export const deleteWorkflowAndDS = (appName, datasourceName) => {
+  cy.deleteWorkflow(appName);
+  deleteDatasource(datasourceName);
+};
+
 export const closeDSModal = () => {
   cy.get("body").then(($body) => {
     cy.wait(500);

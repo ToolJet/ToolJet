@@ -156,8 +156,7 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
           type: type as ResourceType,
         };
       }
-
-      return manager.find(GranularPermissions, findOptions);
+      return await manager.find(GranularPermissions, findOptions);
     }, manager || this.manager);
   }
 

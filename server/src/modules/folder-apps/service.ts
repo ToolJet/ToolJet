@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
+import { AppGitSync } from '../../entities/app_git_sync.entity'
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { decamelizeKeys } from 'humps';
@@ -20,32 +21,20 @@ export class FolderAppsService implements IFolderAppsService {
   ) {}
 
   async create(folderId: string, appId: string): Promise<FolderApp> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId, folderId },
-      });
-
-      if (existingFolderApp) {
-        throw new BadRequestException('App has already been added to the folder');
-      }
-
-      // TODO: check if folder under user.organizationId and user has edit permission on app
-
-      const newFolderApp = manager.create(FolderApp, {
-        folderId,
-        appId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const folderApp = await manager.save(FolderApp, newFolderApp);
-
-      return folderApp;
-    });
+    return this.folderAppsUtilService.create(folderId, appId);
   }
 
   async remove(folderId: string, appId: string): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+    const gitSyncedApp = await manager.findOne(AppGitSync, {
+        where: { appId },
+        select: ['id'], 
+      });
+    if (gitSyncedApp) {
+        throw new BadRequestException(
+          "Apps connected to git can't be removed from folders."
+        );
+      }
       // TODO: folder under user.organizationId
       return await manager.delete(FolderApp, { folderId, appId });
     });

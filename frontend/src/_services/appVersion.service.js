@@ -46,12 +46,13 @@ function getAppVersionData(appId, versionId, mode) {
   );
 }
 
-function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId) {
+function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {
   const body = {
     versionName,
     versionDescription,
     versionFromId,
     environmentId: currentEnvironmentId,
+    versionType,
   };
 
   const requestOptions = {
@@ -150,10 +151,10 @@ function autoSaveApp(
   const body = !type
     ? { ...diff }
     : bodyMappings[type]?.[operation] || {
-        is_user_switched_version: isUserSwitchedVersion,
-        pageId,
-        diff,
-      };
+      is_user_switched_version: isUserSwitchedVersion,
+      pageId,
+      diff,
+    };
 
   if (type === 'components' && operation === 'delete' && isComponentCutProcess) {
     body['is_component_cut'] = true;

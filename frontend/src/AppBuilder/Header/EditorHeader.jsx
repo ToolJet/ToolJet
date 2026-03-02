@@ -6,21 +6,25 @@ import LogoNavDropdown from '@/modules/Appbuilder/components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
-import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
+import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { BranchDropdown } from './BranchDropdown';
 import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased } = useStore(
+  const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
+      appId: state.appStore.modules[moduleId].app.appId,
+      organizationId: state.appStore.modules[moduleId].app.organizationId,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
@@ -51,7 +55,7 @@ export const EditorHeader = ({ darkMode }) => {
                       <LogoNavDropdown darkMode={darkMode} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
-                      {isModuleEditor && <ModuleEditorBanner />}
+                      {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
                       <EditAppName />
                     </div>
                     <div>
@@ -78,9 +82,14 @@ export const EditorHeader = ({ darkMode }) => {
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
                   {!isModuleEditor && (
                     <>
-                      <VersionManagerErrorBoundary>
-                        <VersionManagerDropdown darkMode={darkMode} />
-                      </VersionManagerErrorBoundary>
+                      <PreviewAndShareIcons />
+                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
+                      {/* Hide version dropdown when on a feature branch */}
+                      {selectedVersion?.versionType !== 'branch' && (
+                        <VersionManagerErrorBoundary>
+                          <VersionManagerDropdown darkMode={darkMode} />
+                        </VersionManagerErrorBoundary>
+                      )}
                       <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                     </>
                   )}
