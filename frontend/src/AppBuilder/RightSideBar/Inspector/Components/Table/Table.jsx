@@ -16,6 +16,8 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+import { ToolTip } from '@/_components/ToolTip';
+import Icon from '@/_ui/Icon/solidIcons/index';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -559,9 +561,31 @@ export const Table = (props) => {
           </div>
         ),
       },
-      // Action buttons section
+      // Action buttons section (deprecated — replaced by button column type)
       {
-        title: 'Action buttons',
+        title: (() => {
+          const isDeprecatedProperty = true;
+          return (
+            <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+              <span>Action buttons</span>
+              {isDeprecatedProperty && (
+                <ToolTip
+                  message={
+                    <div style={{ padding: '8px 4px', textAlign: 'left', width: '185px' }}>
+                      This Action buttons are deprecated and will be removed in a future update. Use the new Button column instead by adding a new column and selecting type as a button.
+                    </div>
+                  }
+                  show={true}
+                  placement="bottom"
+                >
+                  <span>
+                    <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+                  </span>
+                </ToolTip>
+              )}
+            </div>
+          );
+        })(),
         children: (
           <div className="field">
             <div className="row g-2">
