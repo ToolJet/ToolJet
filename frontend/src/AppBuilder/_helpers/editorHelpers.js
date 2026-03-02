@@ -40,6 +40,7 @@ import { Timeline } from '@/AppBuilder/Widgets/Timeline';
 import { SvgImage } from '@/AppBuilder/Widgets/SvgImage';
 import { Html } from '@/AppBuilder/Widgets/Html';
 import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
+import { ButtonGroupV2 } from '@/AppBuilder/Widgets/ButtonGroupV2/ButtonGroupV2';
 import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
 import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
 import { Steps } from '@/AppBuilder/Widgets/Steps';
@@ -152,6 +153,7 @@ export const AllComponents = {
   SvgImage,
   Html,
   ButtonGroup,
+  ButtonGroupV2,
   CustomComponent,
   VerticalDivider,
   ColorPicker,
