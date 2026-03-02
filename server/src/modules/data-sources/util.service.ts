@@ -33,7 +33,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
     protected readonly inMemoryCacheService: InMemoryCacheService
-  ) { }
+  ) {}
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = manager.create(DataSource, {
@@ -200,7 +200,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     options: Array<object>,
     environmentId?: string
   ): Promise<void> {
-    const dataSource = await this.dataSourceRepository.findById(dataSourceId);
+    const dataSource = await this.dataSourceRepository.findById(dataSourceId, organizationId);
 
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot update configuration of sample data source');
@@ -475,9 +475,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       return this.resolveValue(arr, organization_id, environment_id);
     }
 
-    return Promise.all(
-      arr.map((item) => this.resolveValue(item, organization_id, environment_id))
-    );
+    return Promise.all(arr.map((item) => this.resolveValue(item, organization_id, environment_id)));
   }
 
   async resolveValue(value, organization_id, environment_id) {
