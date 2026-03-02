@@ -147,7 +147,27 @@ export default class PostgresqlQueryService implements QueryService {
     if (methodName === 'getTables') {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
-      return await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt);
+      const result = await this.listTables(
+        sourceOptions,
+        dataSourceId,
+        dataSourceUpdatedAt
+      );
+
+      // safely unwrap possible structures
+      const tables =
+        (result as any)?.data?.data ??
+        (result as any)?.data ??
+        [];
+
+      const formattedTables = tables.map((row:any)=>({
+        label: String(row.table_name),
+        value: String(row.table_name),
+      }));
+
+      return {
+        status:'ok',
+        data: formattedTables,
+      };
     }
 
     throw new QueryError(
