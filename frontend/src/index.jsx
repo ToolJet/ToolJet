@@ -14,9 +14,10 @@ import config from 'config';
 
 // When on a custom domain, use relative API path so requests go through the
 // Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
+// Compare hostnames (not origins) so local dev with different ports is unaffected.
 try {
-  const apiOrigin = new URL(config.apiUrl, window.location.origin).origin;
-  if (apiOrigin !== window.location.origin) {
+  const apiHostname = new URL(config.apiUrl, window.location.origin).hostname;
+  if (apiHostname !== window.location.hostname) {
     config.apiUrl = '/api';
   }
 } catch {
