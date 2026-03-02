@@ -330,7 +330,7 @@ export const FileInput = (props) => {
           className="tw-text-sm tw-w-full"
           style={{
             color: errTextColor,
-            textAlign: direction ?? 'left',
+            textAlign: direction === 'right' ? 'left' : 'right',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',
