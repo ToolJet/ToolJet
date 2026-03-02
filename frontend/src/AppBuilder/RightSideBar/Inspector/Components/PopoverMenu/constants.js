@@ -1,5 +1,5 @@
 /**
- * Single config for all inspector variants (ButtonGroup, PopoverMenu, ReorderableList).
+ * Single config for all inspector variants (PopoverMenu, ButtonGroupV2, ReorderableList).
  */
 export const COMPONENT_INSPECTOR_CONFIG = {
   PopoverMenu: {
