@@ -602,6 +602,21 @@ export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
 };
 
+/**
+ * Applies SameSite=None; Secure cookie options when custom domains are enabled over HTTPS.
+ * Custom domains require cross-origin cookie support. SameSite=None requires Secure=true,
+ * which browsers reject on plain HTTP — hence the isHttpsEnabled() guard.
+ */
+export const applyCustomDomainCookieOptions = (
+  cookieOptions: { sameSite?: string; secure?: boolean },
+  configService: { get<T>(key: string): T }
+) => {
+  if (configService.get<string>('ENABLE_CUSTOM_DOMAINS') === 'true' && isHttpsEnabled()) {
+    cookieOptions.sameSite = 'none';
+    cookieOptions.secure = true;
+  }
+};
+
 export function areAllUnique(array) {
   const set = new Set(array);
   return set.size === array.length;

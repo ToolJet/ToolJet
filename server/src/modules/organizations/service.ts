@@ -36,49 +36,57 @@ export class OrganizationsService implements IOrganizationsService {
     perPageCount?: number,
     name?: string
   ): Promise<{ organizations: OrganizationWithPlan[] | Organization[]; totalCount: number }> {
+    let organizations: Organization[];
+    let totalCount: number;
+
     if (isSuperAdmin(user)) {
-      return this.organizationRepository.fetchOrganizationsForSuperAdmin(status, currentPage, perPageCount, name);
+      ({ organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForSuperAdmin(
+        status,
+        currentPage,
+        perPageCount,
+        name
+      ));
     } else {
-      const edition = getTooljetEdition();
-      const { organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForRegularUser(
+      ({ organizations, totalCount } = await this.organizationRepository.fetchOrganizationsForRegularUser(
         user,
         status,
         currentPage,
         perPageCount,
         name
-      );
-
-      let updatedOrganizations = organizations;
-
-      if (edition === TOOLJET_EDITIONS.Cloud) {
-        const orgIds = organizations.map((o) => o.id);
-        const activeDomains = this.customDomainRepository
-          ? await this.customDomainRepository.find({
-              where: { organizationId: In(orgIds), status: 'active' },
-            })
-          : [];
-        const domainMap = new Map(activeDomains.map((d) => [d.organizationId, d.domain]));
-
-        //For organization license tags
-        updatedOrganizations = await Promise.all(
-          organizations.map(async (org) => {
-            const licensePlan = await this.licenseTermsService.getLicenseTerms(
-              [LICENSE_FIELD.PLAN, LICENSE_FIELD.STATUS],
-              org.id
-            );
-            const orgWithPlan = new OrganizationWithPlan();
-            Object.assign(orgWithPlan, org);
-            orgWithPlan.plan = licensePlan?.plan;
-            orgWithPlan.license_type = licensePlan?.status;
-            orgWithPlan.customDomain = domainMap.get(org.id) || null;
-
-            return orgWithPlan;
-          })
-        );
-      }
-
-      return { organizations: updatedOrganizations, totalCount };
+      ));
     }
+
+    const edition = getTooljetEdition();
+    let updatedOrganizations: OrganizationWithPlan[] | Organization[] = organizations;
+
+    if (edition === TOOLJET_EDITIONS.Cloud) {
+      const orgIds = organizations.map((o) => o.id);
+      const activeDomains = this.customDomainRepository
+        ? await this.customDomainRepository.find({
+            where: { organizationId: In(orgIds), status: 'active' },
+          })
+        : [];
+      const domainMap = new Map(activeDomains.map((d) => [d.organizationId, d.domain]));
+
+      //For organization license tags
+      updatedOrganizations = await Promise.all(
+        organizations.map(async (org) => {
+          const licensePlan = await this.licenseTermsService.getLicenseTerms(
+            [LICENSE_FIELD.PLAN, LICENSE_FIELD.STATUS],
+            org.id
+          );
+          const orgWithPlan = new OrganizationWithPlan();
+          Object.assign(orgWithPlan, org);
+          orgWithPlan.plan = licensePlan?.plan;
+          orgWithPlan.license_type = licensePlan?.status;
+          orgWithPlan.custom_domain = domainMap.get(org.id) || null;
+
+          return orgWithPlan;
+        })
+      );
+    }
+
+    return { organizations: updatedOrganizations, totalCount };
   }
 
   async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
