@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { getAvatar } from '@/_helpers/utils';
-import { appendWorkspaceId, getQueryParams } from '@/_helpers/routes';
+import { appendWorkspaceId, getQueryParams, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import cx from 'classnames';
 import { organizationService } from '@/_services';
 import { useLocation } from 'react-router-dom';
@@ -127,11 +127,21 @@ export default function SwitchWorkspacePage({ darkMode, archived = false, isAppU
     organizationService.getOrganizations().then((response) => setOrganizations(response.organizations));
   };
 
-  const switchOrganization = ({ id, slug }) => {
+  const switchOrganization = (org) => {
+    const { id, slug } = org;
     if (slug || id) {
       const newPath = appendWorkspaceId(slug || id, location.pathname, true);
-      window.history.replaceState(null, null, newPath);
-      window.location.reload();
+      const targetDomain = getTargetDomainURL(org);
+      const currentOrigin = window.location.origin;
+
+      if (targetDomain && targetDomain !== currentOrigin) {
+        window.location.href = `${targetDomain}${newPath}`;
+      } else if (!targetDomain && isCustomDomain()) {
+        window.location.href = `${window.public_config?.TOOLJET_HOST}${newPath}`;
+      } else {
+        window.history.replaceState(null, null, newPath);
+        window.location.reload();
+      }
     }
   };
   const { t } = useTranslation();

@@ -296,3 +296,10 @@ export const isCustomDomain = () => {
     return false;
   }
 };
+
+export const getTargetDomainURL = (organization) => {
+  const customDomain = organization?.custom_domain;
+  if (!customDomain) return null;
+  if (organization?.license_type?.is_expired) return null;
+  return `https://${customDomain}`;
+};

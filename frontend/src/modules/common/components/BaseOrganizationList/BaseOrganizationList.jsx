@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authenticationService } from '@/_services';
 import { getAvatar, decodeEntities } from '@/_helpers/utils';
-import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 import { shallow } from 'zustand/shallow';
@@ -37,7 +37,18 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
     const organization = organizationList.find((org) => org.id === id);
     if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
       const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
-      newTab ? window.open(newPath, '_blank') : (window.location = newPath);
+      const targetDomain = getTargetDomainURL(organization);
+      const currentOrigin = window.location.origin;
+
+      if (targetDomain && targetDomain !== currentOrigin) {
+        const url = `${targetDomain}${newPath}`;
+        newTab ? window.open(url, '_blank') : (window.location.href = url);
+      } else if (!targetDomain && isCustomDomain()) {
+        const url = `${window.public_config?.TOOLJET_HOST}${newPath}`;
+        newTab ? window.open(url, '_blank') : (window.location.href = url);
+      } else {
+        newTab ? window.open(newPath, '_blank') : (window.location = newPath);
+      }
     }
   };
   const handleOnChange = (id) => {

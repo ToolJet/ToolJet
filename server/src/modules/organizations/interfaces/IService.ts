@@ -30,4 +30,5 @@ export interface IOrganizationsService {
 export class OrganizationWithPlan extends Organization {
   plan: string;
   license_type: string;
+  customDomain: string;
 }

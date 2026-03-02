@@ -1,8 +1,8 @@
-import { ConflictException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/organizations/dto';
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
@@ -17,6 +17,7 @@ import { OrganizationWithPlan } from '@modules/organizations/interfaces/IService
 import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
+import { CustomDomainRepository } from '@modules/custom-domains/repository';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
@@ -24,7 +25,8 @@ export class OrganizationsService implements IOrganizationsService {
     protected organizationRepository: OrganizationRepository,
     protected readonly licenseOrganizationService: LicenseOrganizationService,
     protected readonly licenseTermsService: LicenseTermsService,
-    protected readonly licenseUserService: LicenseUserService
+    protected readonly licenseUserService: LicenseUserService,
+    @Optional() protected readonly customDomainRepository: CustomDomainRepository
   ) {}
 
   async fetchOrganizations(
@@ -49,6 +51,14 @@ export class OrganizationsService implements IOrganizationsService {
       let updatedOrganizations = organizations;
 
       if (edition === TOOLJET_EDITIONS.Cloud) {
+        const orgIds = organizations.map((o) => o.id);
+        const activeDomains = this.customDomainRepository
+          ? await this.customDomainRepository.find({
+              where: { organizationId: In(orgIds), status: 'active' },
+            })
+          : [];
+        const domainMap = new Map(activeDomains.map((d) => [d.organizationId, d.domain]));
+
         //For organization license tags
         updatedOrganizations = await Promise.all(
           organizations.map(async (org) => {
@@ -60,6 +70,7 @@ export class OrganizationsService implements IOrganizationsService {
             Object.assign(orgWithPlan, org);
             orgWithPlan.plan = licensePlan?.plan;
             orgWithPlan.license_type = licensePlan?.status;
+            orgWithPlan.customDomain = domainMap.get(org.id) || null;
 
             return orgWithPlan;
           })
