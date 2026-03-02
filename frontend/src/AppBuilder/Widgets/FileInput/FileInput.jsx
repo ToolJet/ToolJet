@@ -57,6 +57,7 @@ export const FileInput = (props) => {
     labelWidth = 0,
     auto: labelAutoWidth = true,
     icon = 'IconFileSearch',
+    iconVisibility,
     iconColor = 'var(--cc-default-icon)',
   } = styles;
 
@@ -153,6 +154,8 @@ export const FileInput = (props) => {
       width: '100%',
       height: '100%',
       borderRadius: Number.isNaN(Number(borderRadius)) ? borderRadius : `${borderRadius}px`,
+      borderWidth: '1px',
+      borderStyle: 'solid',
       borderColor: hasError
         ? errTextColor
         : borderColor !== '#CCD1D5'
@@ -226,100 +229,117 @@ export const FileInput = (props) => {
   if (!isVisible) return null;
 
   return (
-    <div
-      data-cy={dataCy}
-      className={clsx('tw-flex', {
-        'tw-flex-col': alignment === 'top',
-        'tw-flex-row': alignment === 'side',
-        'tw-flex-row-reverse': direction === 'right' && alignment === 'side',
-        'tw-text-right': direction === 'right' && alignment === 'top',
-      })}
-      style={{ width: '100%', height: '100%' }}
-    >
-      <Label
-        label={label}
-        width={labelWidth}
-        darkMode={darkMode}
-        color={labelColor}
-        defaultAlignment={alignment}
-        direction={direction}
-        auto={labelAutoWidth}
-        isMandatory={isMandatory}
-        _width={_width}
-        widthType={widthType}
-        inputId={`component-${id}`}
-        style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
-      />
-
+    <>
       <div
-        className="tw-px-0 tw-h-full tw-min-h-0 tw-w-full tw-flex tw-items-center"
-        style={{
-          ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
-        }}
+        data-cy={dataCy}
+        className={clsx('tw-flex', {
+          'tw-flex-col': alignment === 'top',
+          'tw-flex-row': alignment === 'side',
+          'tw-flex-row-reverse': direction === 'right' && alignment === 'side',
+          'tw-text-right': direction === 'right' && alignment === 'top',
+        })}
+        style={{ width: '100%', height: '100%' }}
       >
-        <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
-          <input {...inputProps} className="tw-hidden" />
+        <Label
+          label={label}
+          width={labelWidth}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={labelAutoWidth}
+          isMandatory={isMandatory}
+          _width={_width}
+          widthType={widthType}
+          inputId={`component-${id}`}
+          style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
+        />
 
-          <div
-            className="tw-flex tw-items-center tw-gap-2 tw-border-l-0 tw-border-t-0 tw-border-b-0 tw-border-r tw-border-solid tw-border-border-default tw-px-0"
-            style={{ height: '100%' }}
-          >
-            {isLoading ? (
-              <div
-                className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-px-2 tw-rounded-none tw-justify-center"
-                style={{ height: '100%' }}
-              >
-                <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                size="default"
-                className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none"
-                style={{ height: '100%' }}
-                disabled={disabledState || disablePicker}
-              >
-                <TablerIcon iconName={icon} size={16} color={iconColor} className="cursor-pointer clear-indicator" />
-                <span className="tw-text-lg">Browse</span>
-              </Button>
-            )}
-          </div>
-          <div
-            className="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-px-2.5"
-            style={{ height: '100%', minWidth: 0, overflow: 'hidden' }}
-          >
-            <span
-              className={clsx('tw-text-lg tw-truncate tw-inline-block tw-w-full', {
-                'tw-text-[color:var(--text-placeholder)]': selectedFiles.length === 0,
-              })}
+        <div
+          className="tw-px-0 tw-h-full tw-min-h-0 tw-min-w-0 tw-w-full tw-flex tw-items-center"
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          }}
+        >
+          <div {...rootProps} ref={combinedRootRef} style={computedStyles} id={`component-${id}`}>
+            <input {...inputProps} className="tw-hidden" />
+
+            <div
+              className="tw-flex tw-items-center tw-gap-2 tw-border-l-0 tw-border-t-0 tw-border-b-0 tw-border-r tw-border-solid tw-border-border-default tw-px-0"
+              style={{ height: '100%' }}
             >
-              {selectedSummary}
-            </span>
-            {selectedFiles.length > 0 && enableClearSelection && (
-              <Button
-                variant="ghost"
-                iconOnly
-                size="small"
-                disabled={disabledState}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearFiles();
-                }}
-                style={{ flexShrink: 0 }}
+              {isLoading ? (
+                <div
+                  className="tw-flex tw-items-center tw-min-w-[80px] tw-gap-1.5 tw-px-2 tw-rounded-none tw-justify-center"
+                  style={{ height: '100%' }}
+                >
+                  <Loader color="var(--borders-strong)" width={14} className="tw-inline-block" />
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="default"
+                  className="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-rounded-none"
+                  style={{ height: '100%' }}
+                  disabled={disabledState || disablePicker}
+                >
+                  {iconVisibility && (
+                    <TablerIcon
+                      iconName={icon}
+                      size={16}
+                      color={iconColor}
+                      className="cursor-pointer clear-indicator"
+                    />
+                  )}
+                  <span className="tw-text-lg">Browse</span>
+                </Button>
+              )}
+            </div>
+            <div
+              className="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-px-2.5"
+              style={{ height: '100%', minWidth: 0, overflow: 'hidden' }}
+            >
+              <span
+                className={clsx('tw-text-lg tw-truncate tw-inline-block tw-w-full', {
+                  'tw-text-[color:var(--text-placeholder)]': selectedFiles.length === 0,
+                })}
               >
-                <IconX width={16} className="cursor-pointer" color={'var(--icon-weak)'} />
-              </Button>
-            )}
+                {selectedSummary}
+              </span>
+              {selectedFiles.length > 0 && enableClearSelection && (
+                <Button
+                  variant="ghost"
+                  iconOnly
+                  size="small"
+                  disabled={disabledState}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearFiles();
+                  }}
+                  style={{ flexShrink: 0 }}
+                >
+                  <IconX width={16} className="cursor-pointer" color={'var(--icon-default)'} />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-
-        {hasError && (
-          <div className="tw-mt-1 tw-text-[11px]" style={{ color: errTextColor }}>
-            {uiErrorMessage}
-          </div>
-        )}
       </div>
-    </div>
+      {hasError && (
+        <div
+          className="tw-text-sm tw-w-full"
+          style={{
+            color: errTextColor,
+            textAlign: direction ?? 'left',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {uiErrorMessage}
+        </div>
+      )}
+    </>
   );
 };
 

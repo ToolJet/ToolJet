@@ -484,6 +484,7 @@ export const fileinputConfig = {
       alignment: { value: 'top' },
       widthType: { value: 'ofComponent' },
       icon: { value: 'IconFileSearch' },
+      iconVisibility: { value: false },
       iconColor: { value: 'var(--cc-default-icon)' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
