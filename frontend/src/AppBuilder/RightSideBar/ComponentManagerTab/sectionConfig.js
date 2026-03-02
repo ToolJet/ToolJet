@@ -82,7 +82,16 @@ const sectionConfig = {
   },
   legacy: {
     title: 'Legacy',
-    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect', 'RangeSlider']),
+    valueSet: new Set([
+      'Modal',
+      'Datepicker',
+      'RadioButton',
+      'ToggleSwitch',
+      'DropDown',
+      'Multiselect',
+      'RangeSlider',
+      'ButtonGroup',
+    ]),
   },
 };
 

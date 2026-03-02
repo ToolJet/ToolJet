@@ -134,7 +134,7 @@ const widgets = {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
   pdfConfig,
   stepsConfig,
   kanbanConfig,
