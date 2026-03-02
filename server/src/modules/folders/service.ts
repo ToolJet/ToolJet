@@ -21,17 +21,6 @@ export class FoldersService implements IFoldersService {
     const folderId = id;
     const folderName = updateFolderDto.name;
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const gitSyncedAppInFolder = await manager
-        .createQueryBuilder(AppGitSync, 'ags')
-        .innerJoin(FolderApp, 'fa', 'fa.app_id = ags.app_id')
-        .where('fa.folder_id = :folderId', { folderId })
-        .select('ags.id')
-        .getOne();
-
-      if (gitSyncedAppInFolder) {
-        throw new BadRequestException('Folders with git-synced apps cannot be edited');
-      }
-
       const folder = await catchDbException(async () => {
         return manager.update(Folder, { id: folderId }, { name: folderName });
       }, [
