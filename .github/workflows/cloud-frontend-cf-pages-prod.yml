@@ -129,7 +129,7 @@ jobs:
                   echo "🔄 Updating CF Pages production branch to: ${{ github.event.inputs.branch }}"
                   response=$(curl -s -w "\n%{http_code}" -X PATCH \
                     "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_PAGES_ACCOUNT_ID_PROD }}/pages/projects/${{ secrets.CF_PAGES_PROJECT_NAME_PROD }}" \
-                    -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN_PROD }}" \
+                    -H "Authorization: Bearer ${{ secrets.CF_PAGES_API_TOKEN }}" \
                     -H "Content-Type: application/json" \
                     --data '{"production_branch": "${{ github.event.inputs.branch }}"}')
 
