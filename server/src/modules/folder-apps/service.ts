@@ -30,9 +30,6 @@ export class FolderAppsService implements IFolderAppsService {
         where: { appId },
         select: ['id'],
       });
-      if (gitSyncedApp) {
-        throw new BadRequestException("Apps connected to git can't be removed from folders.");
-      }
       // TODO: folder under user.organizationId
       return await manager.delete(FolderApp, { folderId, appId });
     });
