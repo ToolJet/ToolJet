@@ -68,7 +68,7 @@ export const buttonGroupV2Config = {
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     tooltip: {
