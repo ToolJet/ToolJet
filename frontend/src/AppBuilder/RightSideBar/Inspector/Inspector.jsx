@@ -145,6 +145,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Accordion',
   'ReorderableList',
   'Navigation',
+  'ButtonGroupV2',
 ];
 
 export const Inspector = ({
@@ -920,6 +921,8 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
       case 'PopoverMenu':
         return <PopoverMenu {...restProps} />;
       case 'ReorderableList':
