@@ -7,6 +7,7 @@ import {
   getRedirectToWithParams,
   redirectToErrorPage,
   isCustomDomain,
+  redirectToMainHost,
 } from './routes';
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
@@ -25,7 +26,6 @@ import { customDomainService } from '@/_services/custom-domain.service';
 */
 
 export const authorizeWorkspace = async () => {
-  /* Default APIs */
   let workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
 
   // On a custom domain, resolve which workspace owns it
@@ -35,30 +35,16 @@ export const authorizeWorkspace = async () => {
       const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
 
       if (!workspaceIdOrSlug) {
-        // No slug in URL — use the resolved workspace
         workspaceIdOrSlug = resolvedSlug;
       } else if (workspaceIdOrSlug !== resolvedSlug) {
-        // URL workspace doesn't match this custom domain — redirect to main host
-        const tooljetHost = window?.public_config?.TOOLJET_HOST;
-        if (tooljetHost) {
-          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
-          return;
-        }
+        if (redirectToMainHost()) return;
       }
     } catch (e) {
-      // Domain not registered — if no slug to fall back on, redirect to main host
-      if (!workspaceIdOrSlug) {
-        const tooljetHost = window?.public_config?.TOOLJET_HOST;
-        if (tooljetHost) {
-          window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
-          return;
-        }
-      }
-      // If there's a slug in the URL, fall through and use it directly
+      console.error('[authorizeWorkspace] Failed to resolve custom domain:', e);
+      if (redirectToMainHost()) return;
     }
   }
 
-  // fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
   if (!isThisExistedRoute()) {
     updateCurrentSession({
       triggeredOnce: true,
@@ -163,7 +149,6 @@ export const authorizeWorkspace = async () => {
         }
       });
   }
-  // });
 };
 
 const isThisExistedRoute = () => {

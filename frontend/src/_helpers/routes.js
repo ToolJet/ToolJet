@@ -297,6 +297,16 @@ export const isCustomDomain = () => {
   }
 };
 
+/** Redirect to the main TOOLJET_HOST, preserving the current path and query string. Returns true if redirected. */
+export const redirectToMainHost = () => {
+  const tooljetHost = window?.public_config?.TOOLJET_HOST;
+  if (tooljetHost) {
+    window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+    return true;
+  }
+  return false;
+};
+
 export const getTargetDomainURL = (organization) => {
   const customDomain = organization?.custom_domain;
   if (!customDomain) return null;

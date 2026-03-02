@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { getPathname, getRedirectURL, isCustomDomain } from '@/_helpers/routes';
+import { getPathname, getRedirectURL, isCustomDomain, redirectToMainHost } from '@/_helpers/routes';
 import { authenticationService, loginConfigsService, sessionService } from '@/_services';
 import { customDomainService } from '@/_services/custom-domain.service';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import {
-  resetToDefaultWhiteLabels,
-  retrieveWhiteLabelFavicon,
-  retrieveWhiteLabelText,
-  setFaviconAndTitle,
-} from '@white-label/whiteLabelling';
+import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 
 export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
@@ -68,24 +63,13 @@ export const AuthRoute = ({ children }) => {
           .then((resolved) => {
             const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId;
             if (organizationSlug && organizationSlug !== resolvedSlug) {
-              // URL workspace doesn't match this custom domain — redirect to main host
-              const tooljetHost = window?.public_config?.TOOLJET_HOST;
-              if (tooljetHost) {
-                window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
-                return;
-              }
+              if (redirectToMainHost()) return;
             }
             fetchOrganizationDetails(resolvedSlug);
           })
-          .catch(() => {
-            // Domain not registered — if no slug to fall back on, redirect to main host
-            if (!organizationSlug) {
-              const tooljetHost = window?.public_config?.TOOLJET_HOST;
-              if (tooljetHost) {
-                window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
-                return;
-              }
-            }
+          .catch((e) => {
+            console.error('[AuthRoute] Failed to resolve custom domain:', e);
+            if (redirectToMainHost()) return;
             fetchOrganizationDetails();
           });
       } else {
@@ -94,17 +78,10 @@ export const AuthRoute = ({ children }) => {
     } else {
       setGettingConfig(false);
     }
-    const pathname = location.pathname;
-    verifyWhiteLabeling(pathname);
+    verifyWhiteLabeling();
   };
 
-  const verifyWhiteLabeling = (pathname) => {
-    // TODO: assume this code only needs for cloud.
-    // const signupRegex = /^\/signup\/[^/]+$/;
-    // const loginRegex = /^\/login\/[^/]+$/;
-    // if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
-    //   resetToDefaultWhiteLabels();
-    // }
+  const verifyWhiteLabeling = () => {
     setFaviconAndTitle(location);
   };
 
