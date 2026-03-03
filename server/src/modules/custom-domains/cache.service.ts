@@ -65,4 +65,53 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
       this.logger.error(`Failed to invalidate cache for org ${organizationId}: ${error.message}`);
     }
   }
+
+  // --- CORS origins set (cross-pod shared cache) ---
+
+  private readonly ORIGINS_KEY = 'custom_domain:cors_origins';
+  private readonly ORIGINS_TTL_SECONDS = 300; // 5 minutes safety net
+
+  /**
+   * Rebuilds the Redis Set of all active custom domain origins.
+   * Called whenever a domain is activated, deactivated, or deleted.
+   * Uses a pipeline for atomicity: DEL + SADD + EXPIRE.
+   */
+  async rebuildOriginsSet(): Promise<void> {
+    try {
+      const activeDomains = await this.repository.find({ where: { status: 'active' }, select: ['domain'] });
+      const origins = activeDomains.map((d) => `https://${d.domain}`);
+      const pipeline = this.redis.pipeline();
+      pipeline.del(this.ORIGINS_KEY);
+      if (origins.length > 0) {
+        pipeline.sadd(this.ORIGINS_KEY, ...origins);
+        pipeline.expire(this.ORIGINS_KEY, this.ORIGINS_TTL_SECONDS);
+      }
+      const results = await pipeline.exec();
+      if (results) {
+        for (const [err] of results) {
+          if (err) {
+            this.logger.error(`Pipeline command failed during CORS origins rebuild: ${err.message}`);
+          }
+        }
+      }
+      this.logger.log(`Rebuilt CORS origins set in Redis: ${origins.length} origin(s)`);
+    } catch (error) {
+      this.logger.error(`Failed to rebuild CORS origins set: ${error.message}`);
+    }
+  }
+
+  /**
+   * Returns the Set of active custom domain origins from Redis.
+   * Returns null if Redis is empty/down (caller should fall back to DB).
+   */
+  async getOriginsSet(): Promise<Set<string> | null> {
+    try {
+      const members = await this.redis.smembers(this.ORIGINS_KEY);
+      if (members.length === 0) return null;
+      return new Set(members);
+    } catch (error) {
+      this.logger.error(`Failed to read CORS origins from Redis: ${error.message}`);
+      return null;
+    }
+  }
 }
