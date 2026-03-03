@@ -26,6 +26,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
+import { initializeLibraries, executeSetupScript } from '@/AppBuilder/_helpers/libraryLoader';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -111,6 +112,8 @@ const useAppData = (
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
+  const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -554,10 +557,34 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady) {
-      runOnLoadQueries(moduleId).then(() => {
+      const loadLibrariesAndRun = async () => {
+        // Load JS libraries from globalSettings before running queries
+        const globalSettings = useStore.getState().globalSettings;
+        const jsLibraries = globalSettings?.jsLibraries || [];
+        const setupScript = globalSettings?.setupScript || '';
+
+        if (jsLibraries.length > 0 || setupScript) {
+          setJsLibraryLoading(true);
+          try {
+            const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
+            setJsLibraryRegistry(registry);
+
+            // Execute setup script with loaded libraries (runs even with no custom libraries)
+            if (setupScript) {
+              await executeSetupScript(setupScript, registry);
+            }
+          } catch (error) {
+            console.error('Failed to initialize JS libraries:', error);
+          } finally {
+            setJsLibraryLoading(false);
+          }
+        }
+
+        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
         handleEvent('onPageLoad', currentPageEvents, {});
-      });
+      };
+      loadLibrariesAndRun();
     }
   }, [isComponentLayoutReady, moduleId]);
 
