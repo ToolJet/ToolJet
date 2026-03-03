@@ -1298,7 +1298,7 @@ class HomePageComponent extends React.Component {
 
     if (latestCommitData?.latestCommit?.[0]) {
       options.push({
-        label: 'Draft version',
+        label: 'Latest commit',
         value: 'latest',
         isLatest: true,
         isDraft: true,
@@ -1348,28 +1348,6 @@ class HomePageComponent extends React.Component {
     return (
       <div className="version-option-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span className="version-option-name">{option.label}</span>
-        <div className="version-option-tags" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {option.isLatest && (
-            <span
-              className="version-tag version-tag-latest"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '10px',
-                fontWeight: 500,
-                lineHeight: '14px',
-                whiteSpace: 'nowrap',
-                backgroundColor: '#E6EDFE',
-                color: '#3451B2',
-              }}
-            >
-              Latest
-            </span>
-          )}
-        </div>
       </div>
     );
   };

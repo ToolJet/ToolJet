@@ -42,6 +42,7 @@ const CreateVersionModal = ({
     currentEnvironment,
     environments,
     setIsEditorFreezed,
+    appGit,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -58,6 +59,7 @@ const CreateVersionModal = ({
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
+      appGit: state.appGit,
     }),
     shallow
   );
@@ -149,9 +151,15 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
-      // Pre-check: If git sync + branching is enabled, verify tag doesn't already exist
-      // This ensures local save and tag creation stay IN SYNC
       if (isGitSyncEnabled && isBranchingEnabled) {
+        if (!appGit?.git_app_name || !appGit?.id) {
+          toast.error(
+            "Empty apps can't be versioned. Build your app first and then save your work through version control."
+          );
+          setIsCreatingVersion(false);
+          return;
+        }
+
         try {
           const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
           if (tagCheck.exists) {
