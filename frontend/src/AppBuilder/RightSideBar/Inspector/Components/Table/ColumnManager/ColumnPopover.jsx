@@ -4,7 +4,6 @@ import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
 import { Button } from '@/components/ui/Button/Button';
 import { useButtonManager } from '../hooks/useButtonManager';
-import Tooltip from '@/components/ui/Tooltip/Tooltip';
 
 export const ColumnPopoverContent = ({
   column,

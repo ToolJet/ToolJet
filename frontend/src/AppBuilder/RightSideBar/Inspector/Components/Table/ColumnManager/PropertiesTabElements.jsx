@@ -14,7 +14,6 @@ import DeprecatedColumnTypeMsg, {
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Accordion from '@/_ui/Accordion';
 import { getColumnIcon } from '../utils';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
