@@ -128,7 +128,7 @@ export class DataQueriesService implements IDataQueriesService {
     const { kind, name, options, app_version_id: appVersionId } = dataQueryDto;
 
     await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
-      user.defaultOrganizationId,
+      user.organizationId,
       appVersionId,
       'You cannot create queries in the promoted version.'
     );
@@ -165,7 +165,7 @@ export class DataQueriesService implements IDataQueriesService {
     const { name, options } = updateDataQueryDto;
 
     await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
-      user.defaultOrganizationId,
+      user.organizationId,
       versionId,
       'You cannot update queries in the promoted version.'
     );
@@ -289,18 +289,18 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
-          metadata: error.metadata,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
+          metadata: error?.metadata,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
-          message: 'Internal server error',
-          description: error.message,
-          data: {},
+          message: error?.message || 'Internal server error',
+          description: error?.message,
+          data: error?.data || {},
         };
       }
     }
@@ -316,16 +316,16 @@ export class DataQueriesService implements IDataQueriesService {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',
-          message: error.message,
-          description: error.description,
-          data: error.data,
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
         };
       } else {
-        console.log(error);
+        console.error(error);
         result = {
           status: 'failed',
           message: 'Internal server error',
-          description: error.message,
+          description: error?.message,
           data: {},
         };
       }
@@ -336,7 +336,7 @@ export class DataQueriesService implements IDataQueriesService {
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const newDataSource = await this.dataSourceRepository.findOneOrFail({
-        where: { id: newDataSourceId },
+        where: { id: newDataSourceId, organizationId: user.organizationId },
       });
       // FIXME: Disabling this check as workflows can change data source of a query with different kind
       // if (dataSource.kind !== newDataSource.kind && dataSource) {

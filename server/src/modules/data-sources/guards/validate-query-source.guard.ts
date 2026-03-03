@@ -28,7 +28,7 @@ export class ValidateDataSourceGuard implements CanActivate {
       throw new ForbiddenException();
     }
 
-    const dataSource = await this.dataSourceRepository.findById(id);
+    const dataSource = await this.dataSourceRepository.findById(id, user.organizationId);
 
     // If app is not found, throw NotFoundException
     if (!dataSource) {
