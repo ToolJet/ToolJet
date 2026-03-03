@@ -87,6 +87,9 @@ export class Page {
   })
   type: PageType;
 
+  @Column({ name: 'page_header', default: false })
+  pageHeader: boolean;
+
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;
 

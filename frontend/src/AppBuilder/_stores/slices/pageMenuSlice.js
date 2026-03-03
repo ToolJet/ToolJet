@@ -68,6 +68,8 @@ export const createPageMenuSlice = (set, get) => {
 
   const disableOrEnablePage = createPageUpdateCommand(['disabled']);
 
+  const togglePageHeader = createPageUpdateCommand(['pageHeader']);
+
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
     state.showEditingPopover = false;
@@ -178,6 +180,7 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    togglePageHeader: (pageId, value) => togglePageHeader(pageId, [value])(set, get),
     updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);

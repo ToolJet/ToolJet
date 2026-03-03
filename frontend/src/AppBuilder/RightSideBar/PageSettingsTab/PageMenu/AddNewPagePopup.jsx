@@ -66,6 +66,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
   const updatePageVisibility = useStore((state) => state.updatePageVisibility);
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
+  const togglePageHeader = useStore((state) => state.togglePageHeader);
   const updatePageAppId = useStore((state) => state.updatePageAppId);
   const currentPageId = useStore((state) => state.currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
@@ -369,6 +370,17 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   />
                 </label>
               </div>
+              <div className=" d-flex justify-content-between align-items-center pb-2">
+                <label className="form-label font-weight-400 mb-0">Page header</label>
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={page?.pageHeader}
+                    onChange={(e) => togglePageHeader(page?.id, e.target.checked)}
+                  />
+                </label>
+              </div>
             </div>
             <PageEvents page={page} allPages={pages} />
           </>
@@ -594,8 +606,9 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
         <div className={`field`}>
           <InspectorTooltip
             label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
-            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${darkMode && 'color-whitish-darkmode'
-              }`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
           />
         </div>
         <div className={`flex-grow-1`}>

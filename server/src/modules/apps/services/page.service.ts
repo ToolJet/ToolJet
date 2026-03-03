@@ -24,7 +24,7 @@ export class PageService implements IPageService {
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService,
     protected appHistoryUtilService: AppHistoryUtilService
-  ) {}
+  ) { }
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
@@ -115,6 +115,7 @@ export class PageService implements IPageService {
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
+      newPage.pageHeader = pageToClone.pageHeader;
 
       const clonedpage = await manager.save(newPage);
 
@@ -402,7 +403,7 @@ export class PageService implements IPageService {
     // Queue history capture after successful page update
     try {
       // Check if this is a page settings update (non-layout properties)
-      const settingsProperties = ['disabled', 'hidden', 'url', 'openIn', 'type', 'icon', 'name', 'handle'];
+      const settingsProperties = ['disabled', 'hidden', 'url', 'openIn', 'type', 'icon', 'name', 'handle', 'pageHeader'];
       const isSettingsUpdate = Object.keys(pageUpdates.diff).some((key) => settingsProperties.includes(key));
 
       const actionType = isSettingsUpdate ? ACTION_TYPE.PAGE_SETTINGS_UPDATE : ACTION_TYPE.PAGE_UPDATE;

@@ -9,7 +9,6 @@ import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS, CONTAINER_FORM_CANVAS_PADDING } from './appCanvasConstants';
 
 // TODO: Move these to page settings / global settings when ready
-const SHOW_CANVAS_HEADER = true;
 const CANVAS_HEADER_HEIGHT = 80;
 import cx from 'classnames';
 import { computeCanvasContainerHeight } from '../_helpers/editorHelpers';
@@ -18,6 +17,7 @@ import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import useAppCanvasMaxWidth from './Hooks/useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './Hooks/useSidebarMargin';
+import useAppPageSidebarHeight from './Hooks/useAppPageSidebarHeight';
 import PagesSidebarNavigation from '../RightSideBar/PageSettingsTab/PageMenu/PagesSidebarNavigation';
 import MobileNavigationHeader from '../RightSideBar/PageSettingsTab/PageMenu/MobileNavigationHeader';
 import { DragResizeGhostWidget } from './GhostWidgets';
@@ -37,6 +37,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
+  const sideBarVisibleHeight = useAppPageSidebarHeight(canvasContentRef);
+
   useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
@@ -78,6 +80,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   );
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
+  const showCanvasHeader = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader,
+    shallow
+  );
+
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const minCanvasWidth = useCanvasMinWidth({
     currentMode,
@@ -214,9 +221,12 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
                       >
                         {/* === STICKY HEADER: full width, inside positioned div for Moveable alignment === */}
-                        {SHOW_CANVAS_HEADER && appType !== 'module' && (
+                        {showCanvasHeader && appType !== 'module' && (
                           <div
-                            className="canvas-header-slot"
+                            className={cx('canvas-header-slot', {
+                              '!tw-w-[450px] tw-mx-auto':
+                                currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode),
+                            })}
                             style={{
                               position: 'sticky',
                               top: 0,
@@ -256,16 +266,37 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                         >
                           {appType !== 'module' && (
                             <>
-                              <PagesSidebarNavigation
-                                isMobileDevice={currentLayout === 'mobile'}
-                                currentPageId={currentPageId ?? homePageId}
-                                switchDarkMode={switchDarkMode}
-                                isSidebarPinned={isViewerSidebarPinned}
-                                setIsSidebarPinned={setIsSidebarPinned}
-                                darkMode={darkMode}
-                                canvasMaxWidth={canvasMaxWidth}
-                                canvasContentRef={canvasContentRef}
-                              />
+                              {/* === SIDEBAR STICKY WRAPPER ===
+                                  position:sticky here (not on navigation-area inside) so the sticking zone is
+                                  the full canvas-wrapper height instead of the bounded SidebarProvider height.
+                                  align-self:flex-start prevents flex-row stretching; without it the flex item
+                                  height equals the canvas height and there is no room for sticky to activate. */}
+                              <div
+                                style={{
+                                  position: 'sticky',
+                                  top: showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0,
+                                  flexShrink: 0,
+                                  zIndex: 5,
+                                  // Use the dynamically measured visible canvas height!
+                                  height:
+                                    currentLayout === 'mobile' && (currentMode === 'edit' || isMobilePreviewMode)
+                                      ? undefined
+                                      : `calc(${sideBarVisibleHeight} - ${
+                                          showCanvasHeader && appType !== 'module' ? CANVAS_HEADER_HEIGHT : 0
+                                        }px)`,
+                                }}
+                              >
+                                <PagesSidebarNavigation
+                                  isMobileDevice={currentLayout === 'mobile'}
+                                  currentPageId={currentPageId ?? homePageId}
+                                  switchDarkMode={switchDarkMode}
+                                  isSidebarPinned={isViewerSidebarPinned}
+                                  setIsSidebarPinned={setIsSidebarPinned}
+                                  darkMode={darkMode}
+                                  canvasMaxWidth={canvasMaxWidth}
+                                  canvasContentRef={canvasContentRef}
+                                />
+                              </div>
                               <MobileNavigationHeader
                                 isMobileDevice={currentLayout === 'mobile'}
                                 currentPageId={currentPageId ?? homePageId}
