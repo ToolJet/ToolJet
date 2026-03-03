@@ -12,6 +12,7 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { APP_TYPES } from '@modules/apps/constants';
+import { UserFolderPermissions } from '@modules/ability/types';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -104,7 +105,12 @@ export class FolderAppsService implements IFolderAppsService {
    * - Builder: if folder permissions are configured, sees only folders they have access to;
    *   otherwise sees all folders (CE / unconfigured EE fallback)
    */
-  protected filterFoldersByPermissions(folders: any[], user: User, isAdmin: boolean, folderPermissions: any): any[] {
+  protected filterFoldersByPermissions(
+    folders: any[],
+    user: User,
+    isAdmin: boolean,
+    folderPermissions: UserFolderPermissions
+  ): any[] {
     if (isAdmin) return folders;
 
     if (user.roleGroup === USER_ROLE.END_USER) {
@@ -113,6 +119,11 @@ export class FolderAppsService implements IFolderAppsService {
 
     // For builders: filter based on granular folder permissions
     if (folderPermissions) {
+      // If user has "all" level access for any permission tier, show all folders
+      if (folderPermissions.isAllEditable || folderPermissions.isAllEditApps || folderPermissions.isAllViewable) {
+        return folders;
+      }
+
       const accessibleFolderIds = new Set([
         ...(folderPermissions.editableFoldersId || []),
         ...(folderPermissions.editAppsInFoldersId || []),
