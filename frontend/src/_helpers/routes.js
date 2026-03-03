@@ -75,7 +75,7 @@ export const getPathname = (path, excludeSlug = false) => {
 
 export const getHostURL = () => {
   const base = isCustomDomain() ? window.location.origin : window.public_config?.TOOLJET_HOST;
-  return `${base}${getSubpath() ?? ''}`;
+  return `${stripTrailingSlash(base)}${getSubpath() ?? ''}`;
 };
 
 export const dashboardUrl = (data, redirectTo, relativePath) => {
@@ -305,7 +305,7 @@ export const isCustomDomain = () => {
 export const redirectToMainHost = () => {
   const tooljetHost = window?.public_config?.TOOLJET_HOST;
   if (tooljetHost) {
-    window.location.href = `${tooljetHost}${window.location.pathname}${window.location.search}`;
+    window.location.href = `${stripTrailingSlash(tooljetHost)}${window.location.pathname}${window.location.search}`;
     return true;
   }
   console.error('[redirectToMainHost] TOOLJET_HOST is not configured — cannot redirect to main host');
