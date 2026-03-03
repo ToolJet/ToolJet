@@ -536,7 +536,7 @@ class BaseManageGranularAccess extends React.Component {
     if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
       currentResource = currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => app.app.id) ?? [];
     } else if (type === RESOURCE_TYPE.FOLDERS) {
-      currentResource = currentEditingPermissions?.foldersGroupPermission?.groupFolders?.map((f) => f.folder.id) ?? [];
+      currentResource = currentEditingPermissions?.foldersGroupPermissions?.groupFolders?.map((f) => f.folder.id) ?? [];
     } else {
       currentResource =
         currentEditingPermissions?.dataSourcesGroupPermission?.groupDataSources?.map((ds) => ds.dataSource.id) ?? [];
@@ -569,7 +569,7 @@ class BaseManageGranularAccess extends React.Component {
         resourceItemsToDelete?.includes(groupApp.appId)
       );
     } else if (type === RESOURCE_TYPE.FOLDERS) {
-      groupResToDelete = currentEditingPermissions?.foldersGroupPermission?.groupFolders?.filter((groupFolder) =>
+      groupResToDelete = currentEditingPermissions?.foldersGroupPermissions?.groupFolders?.filter((groupFolder) =>
         resourceItemsToDelete?.includes(groupFolder.folderId)
       );
     } else {
@@ -605,8 +605,8 @@ class BaseManageGranularAccess extends React.Component {
       name: newPermissionName,
       isAll: isAll,
       actions,
-      resourcesToAdd,
-      resourcesToDelete,
+      resourcesToAdd: isAll ? [] : resourcesToAdd,
+      resourcesToDelete: isAll ? [] : resourcesToDelete,
       allowRoleChange,
     };
 

@@ -71,8 +71,7 @@ export const Folders = function Folders({
   // Delete: requires master Delete OR (folderCreate + ownership)
   const canUpdateSpecificFolder = (folderId, folder) =>
     canEditSpecificFolder(folderId) || (canCreateFolder && isOwnerOfFolder(folder));
-  const canDeleteSpecificFolder = (folderId, folder) =>
-    canDeleteFolder || (canCreateFolder && isOwnerOfFolder(folder));
+  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || (canCreateFolder && isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
@@ -436,9 +435,11 @@ export const Folders = function Folders({
               onClick={showUpdateForm ? executeEditFolder : saveFolder}
               data-cy={`${showUpdateForm ? 'update-folder' : 'create-folder'}-button`}
               isLoading={isCreating || isUpdating}
-              disabled={!!errorText || // Disabled if there's a validation error
-              (showUpdateForm && newFolderName.trim() === updatingFolder?.name) ||
-              (!showUpdateForm && newFolderName.trim() === '')}
+              disabled={
+                !!errorText || // Disabled if there's a validation error
+                (showUpdateForm && newFolderName.trim() === updatingFolder?.name) ||
+                (!showUpdateForm && newFolderName.trim() === '')
+              }
             >
               {showUpdateForm
                 ? t('homePage.foldersSection.editFolder', 'Edit Folder')

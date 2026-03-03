@@ -126,6 +126,11 @@ export default function AppCard({
   // Calculate released app access before LaunchButton definition
   const session = authenticationService.currentSessionValue;
   const appPerms = session?.app_group_permissions;
+
+  // Determine folder-level edit permissions (decide if AppMenu should be shown)
+  const folderGroupPermissions = session?.folder_group_permissions;
+  const canEditAnyFolder =
+    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
   const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
 
   // Check if user has access to any non-released environment (dev, staging, or production)
@@ -288,7 +293,7 @@ export default function AppCard({
                 </div>
               </div>
               <div visible={focused ? true : undefined}>
-                {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                {(canDeleteApp(app) || canUpdateApp(app) || canEditAnyFolder || appType === 'module') && (
                   <AppMenu
                     onMenuOpen={onMenuToggle}
                     openAppActionModal={appActionModalCallBack}

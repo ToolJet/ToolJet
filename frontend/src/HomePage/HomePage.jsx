@@ -1852,9 +1852,15 @@ class HomePageComponent extends React.Component {
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
                   <Select
-                    options={this.state.folders.map((folder) => {
-                      return { name: folder.name, value: folder.id };
-                    })}
+                    options={this.state.folders
+                      .filter((folder) => {
+                        const currentSession = authenticationService.currentSessionValue;
+                        if (currentSession?.super_admin || currentSession?.admin) return true;
+                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        if (folderPermissions?.is_all_editable) return true;
+                        return folderPermissions?.editable_folders_id?.includes(folder.id);
+                      })
+                      .map((folder) => ({ name: folder.name, value: folder.id }))}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
                       this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
