@@ -37,7 +37,7 @@ Run this opetation to get the database schema.
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/db-schema.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/schema-query.png" alt="Weaviate Get Schema" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -46,8 +46,8 @@ Run this opetation to get the database schema.
 {
   "classes": [
     {
-      "class": "Createcollection",
-      "description": "Test collection create",
+      "class": "Test_TJ",
+      "description": "Overview of a Project",
       "invertedIndexConfig": {
         "bm25": {
           "b": 0.75,
@@ -159,77 +159,32 @@ Run this opetation to get the database schema.
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/get-collection-v2.png" alt="Weaviate get collection" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
-{
-[
-  {
-    "dataType":["text"],
-    "description":"Main text field",
-    "indexFilterable":true,
-    "indexRangeFilters":false,
-    "indexSearchable":true,
-    "name":"content",
-    "tokenization":"word"
-  }
-],
-"replicationConfig":{
-  "asyncEnabled":true,
-  "deletionStrategy":"NoAutomatedResolution",
-  "factor":1
-},
-"shardingConfig":{
-  "virtualPerPhysical":128,
-  "desiredCount":1,
-  "actualCount":1,
-  "desiredVirtualCount":128,
-  "actualVirtualCount":128,
-  "key":"_id",
-  "strategy":"hash",
-  "function":"murmur3"
-},
-"vectorIndexConfig":{
-  "skip":false,
-  "cleanupIntervalSeconds":300,
-  "maxConnections":64,
-  "efConstruction":128,
-  "ef":-1,
-  "dynamicEfMin":100,
-  "dynamicEfMax":500,
-  "dynamicEfFactor":8,
-  "vectorCacheMaxObjects":1000000000000,
-  "flatSearchCutoff":40000,
-  "distance":"cosine",
-  "pq":{
-    "enabled":false,
-    "bitCompression":false,
-    "segments":0,
-    "centroids":256,
-    "trainingLimit":100000,
-    "encoder":{
-      "type":"kmeans",
-      "distribution":"log-normal"
-    }
-  },
-  "bq":{
-    "enabled":false
-  },
-  "sq":{
-    "enabled":false,
-    "trainingLimit":100000,
-    "rescoreLimit":20
-  },
-  "filterStrategy":"sweeping"
-},
-"vectorIndexType":"hnsw",
-"vectorizer":"none"
-}
+class:"Test_TJ"
+description:"overview of a project"
+invertedIndexConfig : {} 4 keys
+    bm25 : {} 2 keys
+    stopwords : {} 3 keys
+        usingBlockMaxWAND:true
+multiTenancyConfig : {} 3 keys
+    autoTenantActivation:false
+    autoTenantCreation:false
+    enabled:false
+shardingConfig : {} 8 keys
+    actualCount:1
+    actualVirtualCount:128
+    desiredCount:1
+    desiredVirtualCount:128
+    function:"murmur3"
+    key:"_id"
+    strategy:"hash"
+    virtualPerPhysical:128
 ```
-
 </details>
 
 ### Create Collection
@@ -245,7 +200,7 @@ Use this operation to create a new collection.
 - **Description**: A description for your reference.
 - **Properties**: An array of the properties you are adding, same as a Property Object.
 
-**Required Parameters**
+**Optional Parameters**
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 - **Sharding config**: Controls behavior of the collection in a multi-node setting.
@@ -261,16 +216,15 @@ Use this operation to create a new collection.
 
 Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/config-refs/schema)** for more information.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-collection.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/weaviate/create-collection-v2.png" alt="Weaviate Create COllection" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
-
 {
-  "class":"Newcollection",
-  "description":"Test collection create",
+  "class":"users_data",
+  "description":"Stores user profile and interaction statistics for app analytics",
   "invertedIndexConfig":{
     "bm25":{
       "b":0.75,
@@ -365,7 +319,6 @@ Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/conf
   "vectorizer":"none"
 }
 ```
-
 </details>
 
 ### Delete Collection
@@ -376,7 +329,7 @@ Use this operation to delete a collection.
 
 - **Collection Name**: Collection name that needs to be deleted.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-collection.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/delete-collection-v2.png" alt="Weaviate delete collection" />
 
 ## Data Type - Objects
 
@@ -399,7 +352,7 @@ Use this operation to list all the objects of a collection.
 - **Order**: Determines sorting direction (asc or desc).
 - **Tenant**: Specifies the tenant in a request targeting a multi-tenant class.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/weaviate/list-objs.png" alt="Weaviate list objects" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -408,7 +361,7 @@ Use this operation to list all the objects of a collection.
 {
     "deprecations":[],
     "objects":[{
-        "class":"Testcollection",
+        "class":"Test_TJ",
         "creationTimeUnix":1739009190787,
         "id":"296f9f17-628a-463a-b273-6ae369a3bb59",
         "lastUpdateTimeUnix":1739009190787,
@@ -417,33 +370,10 @@ Use this operation to list all the objects of a collection.
             "title":"New Sample Document"
         },
         "vectorWeights":null
-    },
-    {
-        "class":"Testcollection",
-        "creationTimeUnix":1738941448311,
-        "id":"550e8400-e29b-41d4-a716-446655440000",
-        "lastUpdateTimeUnix":1738941448311,
-        "properties":{
-            "content":"This is a test document stored in Weaviate.",
-            "title":"Sample Document"
-        },
-        "vectorWeights":null
-    },
-    {
-        "class":"Testcollection",
-        "creationTimeUnix":1739008896994,
-        "id":"98a6628d-f07d-4f56-b64b-1b818201095c",
-        "lastUpdateTimeUnix":1739008896994,
-        "properties":{
-            "content":"This is a test document stored in Weaviate.",
-            "title":"Sample Document"
-        },
-        "vectorWeights":null
-    }],
-    "totalResults":3
+    }
+    "totalResults": 2
 }
 ```
-
 </details>
 
 ### Create Object
@@ -460,19 +390,19 @@ Use this operation to create a new object within the selected collection.
 
 - **Object uuid**: The UUID of the object.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/create-obj.png" alt="Weaviate create object" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
 {
-    "class":"Testcollection",
+    "class":"Test_Collection",
     "creationTimeUnix":1739009190787,
     "id":"296f9f17-628a-463a-b273-6ae369a3bb59",
     "lastUpdateTimeUnix":1739009190787,
     "properties":{
-        "content":"This is a test document stored in Weaviate.",
+        "content":"This is a test case.",
         "title":"New Sample Document"
     },
     "vector":[0.12345,0.12345,.......,0.12345,0.12345]
@@ -490,21 +420,17 @@ Use this operation to fetch an object using it's ID.
 - **Collection Name**: Collection Name of the object.
 - **Object ID**: Object ID to fetch the object details.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-object.png" alt="Weaviate Configuration" />
+<img style = {{ marginBottom : '15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/get-obj-id.png" alt="Weaviate get object by id" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
 {
-    "class":"Testcollection",
+    "class":"Test_Collection",
     "creationTimeUnix":1738941448311,
     "id":"550e8400-e29b-41d4-a716-446655440000",
     "lastUpdateTimeUnix":1738941448311,
-    "properties":{
-        "content":"This is a test document stored in Weaviate.",
-        "title":"Sample Document"
-    },
     "vectorWeights":null
 }
 ```
@@ -520,4 +446,4 @@ Use this operation to delete the object using it's ID.
 - **Collection Name**: Collection Name of the object.
 - **Object ID**: Object ID of the object to be deleted.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-object.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/del-obj-id.png" alt="Weaviate delete object by id" />
