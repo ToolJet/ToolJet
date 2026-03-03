@@ -25,6 +25,7 @@ export default function Chart({
 }) {
   const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
+  const [isPinchZoomActive, setIsPinchZoomActive] = useState(false);
   const themeChanged = useStore((state) => state.themeChanged);
 
   const getColor = (color) => {
@@ -192,8 +193,24 @@ export default function Chart({
     ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
     barmode: barmode,
     hoverlabel: { namelength: -1 },
-    ...(Object.keys(chartLayout).includes('dragmode') && { dragmode: chartLayout.dragmode }),
+    ...(Object.prototype.hasOwnProperty.call(chartLayout, 'dragmode')
+      ? { dragmode: chartLayout.dragmode }
+      : { dragmode: isPinchZoomActive ? 'zoom' : false }),
   };
+
+  const handleTouchStartCapture = useCallback((event) => {
+    setIsPinchZoomActive(event.touches.length >= 2);
+  }, []);
+
+  const handleTouchEndCapture = useCallback((event) => {
+    if (event.touches.length < 2) {
+      setIsPinchZoomActive(false);
+    }
+  }, []);
+
+  const handleTouchCancelCapture = useCallback(() => {
+    setIsPinchZoomActive(false);
+  }, []);
 
   const computeChartData = (data, dataString) => {
     let rawData = data;
@@ -293,7 +310,15 @@ export default function Chart({
   }, []);
 
   return (
-    <div class="widget-chart" data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
+    <div
+      className="widget-chart"
+      data-disabled={disabledState}
+      style={computedStyles}
+      data-cy={dataCy}
+      onTouchStartCapture={handleTouchStartCapture}
+      onTouchEndCapture={handleTouchEndCapture}
+      onTouchCancelCapture={handleTouchCancelCapture}
+    >
       {loadingState === true ? (
         <div style={{ width }} className="p-2 loader-main-container">
           <center>
@@ -306,7 +331,7 @@ export default function Chart({
           layout={layout}
           config={{
             displayModeBar: false,
-            scrollZoom: true,
+            scrollZoom: isPinchZoomActive,
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
