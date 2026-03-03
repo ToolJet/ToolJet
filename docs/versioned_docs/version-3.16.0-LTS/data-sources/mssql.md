@@ -57,21 +57,17 @@ To enhance security during data transfer, encryption can be enabled even with a 
 
 ### SSH Tunnelling 
 
-ToolJet now supports SSH tunnelling for the MSSQL data source, allowing secure connections to databases hosted inside private networks.
-
-This is useful for :
+ToolJet now supports SSH tunnelling for the MSSQL data source, allowing secure connections to databases hosted inside private networks. This can be used to:
 - Access private databases
-- Improved security
-- Encrytped Communication
-- No need to change firewall rules
+- Improve security
+- Enable encrypted communication
+- Avoid firewall rule changes
 
 #### SSH Configuration
-SSH Tunnelling for MSSQL Data Source
 
 To securely connect to a private MSSQL database using SSH tunnelling:
 
 1. Enable the **SSH tunnel** toggle in the MSSQL data source configuration.
-
 2. Provide the following details:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
