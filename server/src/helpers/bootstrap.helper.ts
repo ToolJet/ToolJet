@@ -203,24 +203,53 @@ export function initSentry(logger: any, configService: ConfigService) {
  */
 let _cachedOrigins: Set<string> | null = null;
 let _cacheExpiry = 0;
-const ORIGINS_CACHE_TTL_MS = 30_000; // 30 seconds
+const ORIGINS_CACHE_TTL_MS = 5_000; // 5s — tries Redis first, falls back to DB
 
-async function fetchCustomDomainOrigins(dataSource: DataSource, logger: any): Promise<Set<string>> {
+type CorsOriginsCache = { getOriginsSet(): Promise<Set<string> | null> };
+
+function tryGetCacheService(app: NestExpressApplication): CorsOriginsCache | null {
+  try {
+    const { CustomDomainCacheService } = require('@modules/custom-domains/cache.service');
+    return app.get(CustomDomainCacheService, { strict: false }) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchCustomDomainOrigins(
+  dataSource: DataSource,
+  logger: any,
+  cacheService?: CorsOriginsCache
+): Promise<Set<string>> {
   const now = Date.now();
   if (_cachedOrigins && now < _cacheExpiry) return _cachedOrigins;
 
+  // Try Redis first
+  if (cacheService) {
+    try {
+      const redisOrigins = await cacheService.getOriginsSet();
+      if (redisOrigins) {
+        _cachedOrigins = redisOrigins;
+        _cacheExpiry = now + ORIGINS_CACHE_TTL_MS;
+        return redisOrigins;
+      }
+    } catch {
+      // Redis failed — fall through to DB
+    }
+  }
+
+  // Fallback: query DB directly
   try {
     const rows: { domain: string }[] = await dataSource.query(
       `SELECT domain FROM custom_domains WHERE status = 'active'`
     );
     const origins = new Set<string>();
     for (const row of rows) {
-      // Custom domains are stored as bare hostnames; build https origins
       origins.add(`https://${row.domain}`);
     }
     _cachedOrigins = origins;
     _cacheExpiry = now + ORIGINS_CACHE_TTL_MS;
-    logger.log(`Loaded ${origins.size} active custom domain origin(s) for CORS/CSRF check`);
+    logger.log(`Loaded ${origins.size} active custom domain origin(s) for CORS/CSRF check (DB fallback)`);
     return origins;
   } catch (error) {
     logger.error('Failed to fetch custom domains for CORS — all custom domain origins will be rejected:', error);
@@ -261,6 +290,7 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
   ];
 
   let dataSource: DataSource | null = null;
+  let cacheService: CorsOriginsCache | null = null;
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (safeMethods.has(req.method)) return next();
@@ -289,7 +319,8 @@ export function setupCsrfOriginCheck(app: NestExpressApplication, configService:
     if (origin === tooljetHost) return next();
 
     if (!dataSource) dataSource = app.get(DataSource);
-    fetchCustomDomainOrigins(dataSource, logger)
+    if (!cacheService) cacheService = tryGetCacheService(app);
+    fetchCustomDomainOrigins(dataSource, logger, cacheService ?? undefined)
       .then((allowed) => {
         if (allowed.has(origin!)) return next();
         logger.warn(`Blocked mutation ${req.method} ${req.path} from origin: ${origin}`);
@@ -326,6 +357,8 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
       return dataSource;
     };
 
+    let cacheService: CorsOriginsCache | null = null;
+
     // Enable CORS with a dynamic origin function
     app.enableCors({
       origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
@@ -344,8 +377,10 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
           return callback(null, true);
         }
 
-        // Check custom domains (async DB lookup)
-        fetchCustomDomainOrigins(getDataSource(), logger)
+        // Check custom domains (Redis/DB)
+        if (!cacheService) cacheService = tryGetCacheService(app);
+
+        fetchCustomDomainOrigins(getDataSource(), logger, cacheService ?? undefined)
           .then((allowedOrigins) => {
             if (allowedOrigins.has(requestOrigin)) {
               return callback(null, true);
