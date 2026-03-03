@@ -1,4 +1,4 @@
-import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty, Matches, Validate } from 'class-validator';
+import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty, Matches, Validate, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SQLInjectionValidator } from './index';
 
@@ -7,6 +7,7 @@ import { SQLInjectionValidator } from './index';
 class Table {
   @IsString()
   @IsNotEmpty({ message: '::Table name for join not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   name: string;
 
   @IsString()
@@ -25,6 +26,7 @@ class Field {
 
   @IsString()
   @IsNotEmpty({ message: '::Table names for join not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
@@ -54,6 +56,7 @@ class ConditionField {
 
   @IsString()
   @IsOptional() // present only when type is column
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
@@ -101,6 +104,7 @@ class Join {
 
   @IsString()
   @IsNotEmpty({ message: '::Join table is not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @ValidateNested()
@@ -112,6 +116,7 @@ class Join {
 class GroupBy {
   @IsString()
   @IsNotEmpty()
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsString()
@@ -134,6 +139,7 @@ class Order {
 
   @IsString()
   @IsNotEmpty({ message: '::Sort table not selected' })
+  @IsUUID('4', { message: '::Table identifier must be a valid UUID' })
   table: string;
 
   @IsIn(['ASC', 'DESC'], { message: '::Sort direction not selected' })
