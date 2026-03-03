@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { getAvatar } from '@/_helpers/utils';
+import { getAvatar, stripTrailingSlash } from '@/_helpers/utils';
 import { appendWorkspaceId, getQueryParams, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import cx from 'classnames';
 import { organizationService } from '@/_services';
@@ -142,7 +142,7 @@ export default function SwitchWorkspacePage({ darkMode, archived = false, isAppU
           console.error('[SwitchWorkspace] TOOLJET_HOST not configured, cannot redirect from custom domain');
           return;
         }
-        window.location.href = `${mainHost}${newPath}`;
+        window.location.href = `${stripTrailingSlash(mainHost)}${newPath}`;
       } else {
         window.history.replaceState(null, null, newPath);
         window.location.reload();

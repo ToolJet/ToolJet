@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { authenticationService } from '@/_services';
-import { getAvatar, decodeEntities } from '@/_helpers/utils';
+import { getAvatar, decodeEntities, stripTrailingSlash } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
@@ -44,7 +44,7 @@ const BaseOrganizationList = ({ workspacesLimit = null, LicenseBadge = () => nul
         const url = `${targetDomain}${newPath}`;
         newTab ? window.open(url, '_blank') : (window.location.href = url);
       } else if (!targetDomain && isCustomDomain()) {
-        const url = `${window.public_config?.TOOLJET_HOST}${newPath}`;
+        const url = `${stripTrailingSlash(window.public_config?.TOOLJET_HOST)}${newPath}`;
         newTab ? window.open(url, '_blank') : (window.location.href = url);
       } else {
         newTab ? window.open(newPath, '_blank') : (window.location = newPath);
