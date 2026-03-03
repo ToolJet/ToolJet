@@ -7,7 +7,6 @@ import HeaderActions from './HeaderActions';
 import { VersionManagerDropdown, VersionManagerErrorBoundary } from './VersionManager';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons, { PreviewAndShareIcons } from './RightTopHeaderButtons/RightTopHeaderButtons';
-import BuildSuggestions from './BuildSuggestions';
 import { ModuleEditorBanner } from '@/modules/Modules/components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { BranchDropdown } from './BranchDropdown';
@@ -95,8 +94,6 @@ export const EditorHeader = ({ darkMode }) => {
                   )}
                 </div>
               </div>
-
-              <BuildSuggestions />
             </div>
           </div>
         </div>
