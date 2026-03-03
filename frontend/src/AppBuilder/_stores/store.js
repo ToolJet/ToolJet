@@ -29,9 +29,10 @@ import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
 import { createFixWithAiSlice } from './slices/fixWithAi';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
-import { createFormComponentSlice } from './slices/formComponentSlice';
+import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
 import { createBranchSlice } from './slices/branchSlice';
 enableMapSet();
 
@@ -66,9 +67,11 @@ export default create(
       ...createAiSlice(...state),
       ...createFixWithAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
-      ...createFormComponentSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      // component slices
+      ...createFormComponentSlice(...state),
+      ...listViewComponentSlice(...state),
       ...createBranchSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
