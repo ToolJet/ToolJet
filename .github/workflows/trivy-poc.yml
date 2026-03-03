@@ -12,12 +12,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Pull ToolJet LTS Docker image
-        run: docker pull tooljet/tooljet:latest
+        run: docker pull tooljet/tooljet:ee-lts-latest
 
       - name: Trivy Scan - Table Output (visible in logs)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'tooljet/tooljet:latest'
+          image-ref: 'tooljet/tooljet:ee-lts-latest'
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
@@ -26,7 +26,7 @@ jobs:
       - name: Trivy Scan - JSON Output (for report)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'tooljet/tooljet:latest'
+          image-ref: 'tooljet/tooljet:ee-lts-latest'
           format: 'json'
           output: 'trivy-poc-results.json'
           severity: 'CRITICAL,HIGH'
@@ -54,10 +54,10 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "poc: trivy docker image scan results - tooljet/tooljet:latest"
+          commit-message: "poc: trivy docker image scan results - tooljet/tooljet:ee-lts-latest"
           branch: poc/trivy-docker-scan-${{ github.run_id }}
           base: lts-3.16
-          title: "[POC] 🐳 Trivy Docker Image Scan — tooljet/tooljet:latest"
+          title: "[POC] 🐳 Trivy Docker Image Scan — tooljet/tooljet:ee-lts-latest"
           body: |
             ## 🔍 Trivy POC — Docker Image Vulnerability Scan
 
@@ -67,7 +67,7 @@ jobs:
             ---
 
             ### Image Scanned
-            `tooljet/tooljet:latest` (base: `debian:12-slim`)
+            `tooljet/tooljet:ee-lts-latest` (base: `debian:12-slim`)
 
             ### Scan Results (fixable CVEs only)
             | Severity | Count |
