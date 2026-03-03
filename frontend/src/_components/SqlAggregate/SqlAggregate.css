@@ -1,0 +1,28 @@
+.sql-aggregate-container {
+  width: 100%;
+}
+
+.sql-aggregate-row {
+  margin-bottom: 8px;
+}
+
+.sql-aggregate-column-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.sql-aggregate-column-input {
+  width: calc(100% - 35px);
+}
+
+.sql-aggregate-delete-button {
+  flex-shrink: 0;
+}
+
+.sql-aggregate-add-button {
+  margin-top: 8px;
+}
+
+.sql-aggregate-add-button.no-aggregates-above {
+  margin-top: 0;
+}

@@ -1,0 +1,28 @@
+.sql-columns-container {
+  width: 100%;
+}
+
+.sql-column-row {
+  margin-bottom: 8px;
+}
+
+.sql-column-value-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.sql-column-value-input {
+  width: calc(100% - 35px);
+}
+
+.sql-column-delete-button {
+  flex-shrink: 0;
+}
+
+.sql-column-add-button {
+  margin-top: 8px;
+}
+
+.sql-column-add-button.no-columns-above {
+  margin-top: 0;
+}

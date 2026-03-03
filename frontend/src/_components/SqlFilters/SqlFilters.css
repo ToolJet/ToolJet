@@ -1,0 +1,36 @@
+.sql-filters-container {
+  width: 100%;
+}
+
+.sql-filters-label {
+  flex-shrink: 0;
+}
+
+.sql-filters-field-container {
+  flex-grow: 1;
+}
+
+.sql-filter-row {
+  margin-bottom: 8px;
+}
+
+.sql-filter-value-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.sql-filter-value-input {
+  width: calc(100% - 35px);
+}
+
+.sql-filter-delete-button {
+  flex-shrink: 0;
+}
+
+.sql-filter-add-condition-button {
+  margin-top: 8px;
+}
+
+.sql-filter-add-condition-button.no-filters-above {
+  margin-top: 0;
+}
