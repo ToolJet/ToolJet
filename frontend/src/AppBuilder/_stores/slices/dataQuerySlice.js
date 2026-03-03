@@ -599,7 +599,7 @@ export const createDataQuerySlice = (set, get) => ({
 
       queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
 
-      get().checkAndSetTrueBuildSuggestionsFlag();
+      get().rebuildQueryHints(moduleId);
     },
   },
 });
