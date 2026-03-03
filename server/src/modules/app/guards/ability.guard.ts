@@ -144,9 +144,14 @@ export abstract class AbilityGuard implements CanActivate {
         const resourceId = request.tj_resource_id;
 
         // Validate all features against resource if any
-        if (!features.every((feature) => ability.can(feature, this.getSubjectType(), resourceId || undefined))) {
+        const forbiddenFeature = features.find(
+          (feature: string) => !ability.can(feature, this.getSubjectType(), resourceId || undefined)
+        );
+
+        if (forbiddenFeature) {
+          const errorMessage = this.getForbiddenMessage(forbiddenFeature, resourceId);
           throw new ForbiddenException({
-            message: 'You do not have permission to access this resource',
+            message: errorMessage || 'You do not have permission to access this resource',
             organizationId: app?.organizationId,
           });
         }
@@ -169,5 +174,14 @@ export abstract class AbilityGuard implements CanActivate {
         this.transactionLogger.log(`[AbilityGuard] canActivate execution time: ${executionTime}ms - Result: Success`);
       }
     }
+  }
+
+  protected getForbiddenMessage(feature: string, subjectType: any): string {
+    const subjectName = typeof subjectType === 'string' ? subjectType : subjectType?.name;
+    const messageMap: Record<string, string> = {
+      FolderApp: 'You do not have permission to perform this action',
+      // Add more subject-specific messages here
+    };
+    return messageMap?.[subjectName]?.[feature] ?? 'You do not have permission to access this resource';
   }
 }
