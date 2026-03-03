@@ -74,7 +74,7 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
   // --- CORS origins set (cross-pod shared cache) ---
 
   private readonly ORIGINS_KEY = 'custom_domain:cors_origins';
-  private readonly ORIGINS_TTL_SECONDS = 300; // 5 minutes safety net
+  private readonly ORIGINS_TTL_SECONDS = 700; // ~12 min — outlasts the 10-min scheduler interval
 
   /**
    * Rebuilds the Redis Set of all active custom domain origins.
@@ -92,14 +92,18 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
         pipeline.expire(this.ORIGINS_KEY, this.ORIGINS_TTL_SECONDS);
       }
       const results = await pipeline.exec();
+      let anyError = false;
       if (results) {
         for (const [err] of results) {
           if (err) {
             this.logger.error(`Pipeline command failed during CORS origins rebuild: ${err.message}`);
+            anyError = true;
           }
         }
       }
-      this.logger.log(`Rebuilt CORS origins set in Redis: ${origins.length} origin(s)`);
+      if (!anyError) {
+        this.logger.log(`Rebuilt CORS origins set in Redis: ${origins.length} origin(s)`);
+      }
     } catch (error) {
       this.logger.error(`Failed to rebuild CORS origins set: ${error.message}`);
     }
