@@ -88,8 +88,10 @@ export class AbilityService extends IAbilityService {
         // Load app permissions for both MODULES.APP and MODULES.MODULES since modules use app permissions
         if (resources.some((item) => item.resource === MODULES.APP || item.resource === MODULES.MODULES)) {
           const appsGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.APP);
+          const foldersGranularPermissions = allGranularPermissions.filter((perm) => perm.type === ResourceType.FOLDER);
           userPermissions[MODULES.APP] = await this.abilityUtilService.createUserAppsPermissions(
             appsGranularPermissions,
+            foldersGranularPermissions,
             user,
             manager
           );

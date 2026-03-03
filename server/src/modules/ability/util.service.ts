@@ -5,6 +5,7 @@ import { GroupPermissions } from '@entities/group_permissions.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppBase } from '@entities/app_base.entity';
+import { FolderApp } from '@entities/folder_app.entity';
 import { User } from '@entities/user.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -112,7 +113,7 @@ export class AbilityUtilService {
           item.resource === MODULES.APP || item.resource === MODULES.WORKFLOWS || item.resource === MODULES.MODULES
       );
       const dataSourcesResourcesList = resources.filter((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE);
-      const foldersResourcesList = resources.filter((item) => item.resource === MODULES.FOLDER);
+      // const foldersResourcesList = resources.filter((item) => item.resource === MODULES.FOLDER);
 
       if (appsAndWorkflowResourcesList?.length) {
         this.addAppsAndWorkflowPermissionsTOQuery(query, appsAndWorkflowResourcesList);
@@ -120,9 +121,9 @@ export class AbilityUtilService {
       if (dataSourcesResourcesList?.length) {
         this.addDataSourcesPermissionsTOQuery(query, dataSourcesResourcesList);
       }
-      if (foldersResourcesList?.length) {
-        this.addFolderPermissionsToQuery(query);
-      }
+      // if (foldersResourcesList?.length) { // TODO: get folder granular permissions by default.
+      this.addFolderPermissionsToQuery(query);
+      // }
     }
 
     return query;
@@ -177,6 +178,7 @@ export class AbilityUtilService {
 
   async createUserAppsPermissions(
     appsGranularPermissions: GranularPermissions[],
+    foldersGranularPermissions: GranularPermissions[],
     user: User,
     manager: EntityManager
   ): Promise<UserAppsPermissions> {
@@ -199,7 +201,7 @@ export class AbilityUtilService {
     const defaultGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === true);
     const customGroupPermissions = appsGranularPermissions.filter((p) => p.isAll === false);
 
-    defaultGroupPermissions.forEach((permission, idx) => {
+    defaultGroupPermissions.forEach((permission) => {
       const appsPermission = permission?.appsGroupPermissions;
       if (!appsPermission) {
         return;
@@ -224,7 +226,7 @@ export class AbilityUtilService {
       userAppsPermissions.environmentAccess.released ||= appsPermission.canAccessReleased ?? false;
     });
 
-    customGroupPermissions.forEach((permission, idx) => {
+    customGroupPermissions.forEach((permission) => {
       const appsPermission = permission?.appsGroupPermissions;
       const groupApps = appsPermission?.groupApps ? appsPermission.groupApps.map((item) => item.appId) : [];
 
@@ -271,6 +273,67 @@ export class AbilityUtilService {
       userAppsPermissions.editableAppsId = Array.from(
         new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
       );
+    }, manager);
+
+    // Resolve folder-level edit permissions into app IDs
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const editableFolderIds: string[] = [];
+      const viewableFolderIds: string[] = [];
+
+      for (const permission of foldersGranularPermissions) {
+        const folderPermission = permission?.foldersGroupPermissions;
+        if (!folderPermission) continue;
+
+        if (permission.isAll) {
+          if (folderPermission.canEditApps || folderPermission.canEditFolder) {
+            userAppsPermissions.isAllEditable = true;
+          }
+          if (folderPermission.canViewApps) {
+            userAppsPermissions.isAllViewable = true;
+          }
+          // If both flags are set, no need to continue collecting folder IDs
+          if (userAppsPermissions.isAllEditable && userAppsPermissions.isAllViewable) break;
+          continue;
+        }
+
+        if (!permission.isAll) {
+          const folderIds = folderPermission.groupFolders?.map((gf) => gf.folderId) ?? [];
+          if (folderPermission.canEditApps || folderPermission.canEditFolder) {
+            editableFolderIds.push(...folderIds);
+          }
+          if (folderPermission.canViewApps) {
+            viewableFolderIds.push(...folderIds);
+          }
+        }
+      }
+
+      // Resolve editable folder IDs → app IDs
+      if (editableFolderIds.length && !userAppsPermissions.isAllEditable) {
+        const folderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .where('folderApp.folderId IN (:...folderIds)', { folderIds: editableFolderIds })
+          .select('folderApp.appId')
+          .getMany();
+
+        const folderAppIds = folderApps.map((fa) => fa.appId);
+        userAppsPermissions.editableAppsId = Array.from(
+          new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
+        );
+      }
+
+      // Resolve viewable folder IDs → app IDs
+      if (viewableFolderIds.length && !userAppsPermissions.isAllViewable) {
+        const folderApps = await manager
+          .createQueryBuilder(FolderApp, 'folderApp')
+          .where('folderApp.folderId IN (:...folderIds)', { folderIds: viewableFolderIds })
+          .select('folderApp.appId')
+          .getMany();
+
+        const folderAppIds = folderApps.map((fa) => fa.appId);
+        userAppsPermissions.viewableAppsId = Array.from(
+          new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
+        );
+      }
     }, manager);
 
     return userAppsPermissions;
