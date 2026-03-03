@@ -15,7 +15,6 @@ import {
   JsonColumn,
   MarkdownColumn,
   HTMLColumn,
-  ButtonColumn,
   ButtonColumnGroup,
   // Deprecated columns
   TagsColumn,
