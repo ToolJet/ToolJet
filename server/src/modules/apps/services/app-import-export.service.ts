@@ -2875,6 +2875,9 @@ function migrateProperties(
         styles.alignment = { value: 'top' };
         styles.direction = { value: 'left' };
       }
+      if (properties.advanced === undefined) {
+        properties.advanced = { value: true };
+      }
     }
 
     if (SHOW_CLEAR_BTN_COMPONENT_TYPES.includes(componentType) && properties.showClearBtn === undefined) {

@@ -29,6 +29,10 @@ export class MigrateTreeSelectVisibility1771501843686 implements MigrationInterf
             const general = component.general;
             const generalStyles = component.generalStyles;
 
+            if (properties?.advanced === undefined) {
+                properties.advanced = { value: true };
+            }
+
             if (styles.visibility) {
                 properties.visibility = styles.visibility;
                 delete styles.visibility;
@@ -52,6 +56,7 @@ export class MigrateTreeSelectVisibility1771501843686 implements MigrationInterf
             if (!styles.labelColor) {
                 styles.labelColor = { value: styles?.textColor };
             }
+
 
             if (!styles.alignment) {
                 styles.alignment = { value: 'top' };

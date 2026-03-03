@@ -4,7 +4,7 @@ import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
-import SharedCheckbox from '@/AppBuilder/Shared/_components/Checkbox';
+import TreeSelectCheckbox from './TreeSelectCheckbox';
 import Label from '@/_ui/Label';
 import { useTreeSelect } from './useTreeSelect';
 import useStore from '@/AppBuilder/_stores/store';
@@ -212,8 +212,16 @@ const TreeSelect = ({
           for (let i = targetPath.length - 2; i >= 0; i--) {
             const parent = targetPath[i];
             const allChildrenChecked = parent.children.every((child) => newCheckedSet.has(child.value));
-            if (allChildrenChecked) newCheckedSet.add(parent.value);
-            else break;
+            if (allChildrenChecked) {
+              newCheckedSet.add(parent.value);
+            } else {
+              // Not all children selected — remove this ancestor and all higher ancestors
+              // so pre-existing selections (e.g. from checkedData) don't stay as "fully checked"
+              for (let j = i; j >= 0; j--) {
+                newCheckedSet.delete(targetPath[j].value);
+              }
+              break;
+            }
           }
         }
       }
@@ -224,13 +232,23 @@ const TreeSelect = ({
     fireEvent('onChange');
   };
 
-  // Map over nodes to inject custom label component if independent selection
-  // This is required to show intermediate state of parent nodes
+  // Map over nodes to inject custom label component
+  // This is required to show intermediate/checked state of parent nodes
   const processNodes = (items) => {
     if (!Array.isArray(items)) return items;
     return items.map((item) => {
-      const isHalfChecked = halfCheckedValues.has(item.value);
+      // isChecked reflects actual selection state — always used for click logic
       const isChecked = checkedSet.has(item.value);
+      // isHalfChecked means the node has checked descendants but is not itself in checkedSet
+      const isHalfChecked = halfCheckedValues.has(item.value);
+
+      // Visual display state differs by mode:
+      // - cascade (allowIndependentSelection=false): parent is indeterminate when some (not all)
+      //   children are selected; fully checked only when all descendants are selected
+      // - independent (allowIndependentSelection=true): parent shows fully checked (no indeterminate)
+      //   whenever itself or any descendant is selected
+      const displayChecked = allowIndependentSelection ? isChecked || isHalfChecked : isChecked;
+      const displayIndeterminate = allowIndependentSelection ? false : isHalfChecked;
 
       const processedItem = { ...item };
 
@@ -243,18 +261,18 @@ const TreeSelect = ({
             e.stopPropagation();
             e.preventDefault();
             if (processedItem.disabled) return;
+            // Always pass actual checked state (not display state) so toggle logic is correct
             handleCustomCheck(item.value, isChecked);
           }}
         >
-          <SharedCheckbox
+          <TreeSelectCheckbox
             className="me-2"
-            checked={isChecked}
-            isHalfCheck={isHalfChecked}
+            checked={displayChecked}
+            indeterminate={displayIndeterminate}
             checkboxColor={checkedBackground}
             uncheckedColor={uncheckedBackground}
             borderColor={borderColor}
             handleColor={checkmarkColor}
-            size={18}
           />
           {item.label}
         </div>
@@ -367,32 +385,25 @@ const TreeSelect = ({
             id={`component-${id}`}
             icons={{
               check: (
-                <SharedCheckbox
+                <TreeSelectCheckbox
                   checked={true}
                   checkboxColor={checkedBackground}
                   uncheckedColor={uncheckedBackground}
                   borderColor={borderColor}
                   handleColor={checkmarkColor}
-                  size={18}
                 />
               ),
               uncheck: (
-                <SharedCheckbox
-                  checked={false}
-                  uncheckedColor={uncheckedBackground}
-                  borderColor={borderColor}
-                  size={18}
-                />
+                <TreeSelectCheckbox checked={false} uncheckedColor={uncheckedBackground} borderColor={borderColor} />
               ),
               halfCheck: (
-                <SharedCheckbox
+                <TreeSelectCheckbox
+                  indeterminate={true}
                   checked={false}
-                  isHalfCheck={true}
                   checkboxColor={checkedBackground}
                   uncheckedColor={uncheckedBackground}
                   borderColor={borderColor}
                   handleColor={checkmarkColor}
-                  size={18}
                 />
               ),
               expandOpen: (

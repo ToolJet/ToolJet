@@ -176,18 +176,12 @@ export const treeSelectConfig = {
       displayName: 'Unchecked background',
       validation: { schema: { type: 'string' } },
       accordian: 'switch',
-      tip: 'Unchecked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     checkboxColor: {
       type: 'colorSwatches',
       displayName: 'Checked background',
       validation: { schema: { type: 'string' } },
       accordian: 'switch',
-      tip: 'Checked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     checkmarkColor: {
       type: 'colorSwatches',
@@ -208,7 +202,7 @@ export const treeSelectConfig = {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
       },
-      accordian: 'Container',
+      accordian: 'container',
     },
     padding: {
       type: 'switch',
@@ -281,7 +275,7 @@ export const treeSelectConfig = {
         value:
           '{{[{"label":"Asia","value":"asia","children":[{"label":"China","value":"china","children":[{"label":"Beijing","value":"beijing"},{"label":"Shanghai","value":"shanghai"}]},{"label":"Japan","value":"japan"},{"label":"India","value":"india","children":[{"label":"Delhi","value":"delhi"},{"label":"Mumbai","value":"mumbai"},{"label":"Bengaluru","value":"bengaluru"}]}]},{"label":"Europe","value":"europe","children":[{"label":"France","value":"france"},{"label":"Spain","value":"spain"},{"label":"England","value":"england"}]},{"label":"Africa","value":"africa"}]}}',
       },
-      allowIndependentSelection: { value: '{{true}}' },
+      allowIndependentSelection: { value: '{{false}}' },
       checkedData: { value: '{{["asia"]}}' },
       expandedData: { value: '{{["asia"]}}' },
       dynamicHeight: { value: '{{false}}' },
