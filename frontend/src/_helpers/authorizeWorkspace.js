@@ -16,7 +16,7 @@ import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 import { customDomainService } from '@/_services/custom-domain.service';
 const REDIRECT_KEY = 'tj_cd_redirect_ts';
-const REDIRECT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const REDIRECT_COOLDOWN_MS = 10 * 1000; // 10 seconds
 
 function hasRecentRedirectAttempt() {
   const ts = sessionStorage.getItem(REDIRECT_KEY);
