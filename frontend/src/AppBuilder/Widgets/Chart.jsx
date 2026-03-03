@@ -192,6 +192,7 @@ export default function Chart({
     ...(chartLayout.annotations && { annotations: chartLayout.annotations }),
     barmode: barmode,
     hoverlabel: { namelength: -1 },
+    ...(Object.keys(chartLayout).includes('dragmode') && { dragmode: chartLayout.dragmode }),
   };
 
   const computeChartData = (data, dataString) => {
