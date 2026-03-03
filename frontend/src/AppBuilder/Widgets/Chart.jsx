@@ -306,6 +306,7 @@ export default function Chart({
           layout={layout}
           config={{
             displayModeBar: false,
+            scrollZoom: true,
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
