@@ -11,10 +11,11 @@ To connect with UPS you need the following credentials:
 - Client ID
 - Client secret
 - Shipper number
+- Base URL
 
 You can follow the steps in the [Getting Started with UPS APIs](https://developer.ups.com/get-started) guide to generate these credentials.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/ups/connection.png" alt="UPS Install" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/ups/connection-v2.png" alt="UPS datasource configuration" />
 
 ## Supported Operations
 
