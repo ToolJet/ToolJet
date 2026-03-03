@@ -32,6 +32,7 @@ import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
 import { createFormComponentSlice } from './slices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
 enableMapSet();
 
 export default create(
@@ -68,6 +69,7 @@ export default create(
       ...createFormComponentSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

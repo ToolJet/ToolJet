@@ -10,6 +10,7 @@ import MaintenanceMode from './MaintenanceMode';
 import GlobalSettingsHeader from './GlobalSettingsHeader';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import Accordion from '@/_ui/Accordion';
+import JSLibraries from './JSLibraries';
 import './styles.scss';
 
 const GlobalSettings = ({ darkMode, onClose }) => {
@@ -28,6 +29,11 @@ const GlobalSettings = ({ darkMode, onClose }) => {
       title: 'Canvas styles',
       isOpen: true,
       children: canvasStylesContent,
+    },
+    {
+      title: 'JS Libraries',
+      isOpen: false,
+      children: <JSLibraries darkMode={darkMode} />,
     },
   ];
 

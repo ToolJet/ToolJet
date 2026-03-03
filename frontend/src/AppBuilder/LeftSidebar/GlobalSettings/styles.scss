@@ -267,4 +267,190 @@
       width: 158px;
     }
   }
+
+  // JS Libraries section
+  .js-libraries-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .js-libraries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .js-library-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--background-surface-layer-01);
+    border: 1px solid var(--border-default, #ccd1d5);
+  }
+
+  .js-library-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .js-library-name {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--text-default);
+  }
+
+  .js-library-url {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 14px;
+    color: var(--text-placeholder, #6a727c);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .js-library-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-placeholder, #6a727c);
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+      color: var(--tomato9, #e54d2e);
+    }
+  }
+
+  .js-library-add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .js-library-input {
+    width: 100%;
+    height: 32px;
+    padding: 7px 12px;
+    border: 1px solid var(--border-default, #ccd1d5);
+    border-radius: 6px;
+    background: var(--background-surface-layer-01);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--text-default, #1b1f24);
+    outline: none;
+
+    &::placeholder {
+      color: var(--text-placeholder, #6a727c);
+    }
+
+    &:focus {
+      border-color: var(--border-accent-strong, #4368e3);
+    }
+  }
+
+  .js-library-add-btn,
+  .js-library-reload-btn,
+  .js-setup-script-run-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    padding: 0 12px;
+    border: 1px solid var(--border-default, #ccd1d5);
+    border-radius: 6px;
+    background: var(--background-surface-layer-01);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--interactive-overlays-fill-hover);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .js-setup-script-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .js-setup-script-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--text-default);
+    cursor: pointer;
+  }
+
+  .js-setup-script-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .js-setup-script-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px;
+    border: 1px solid var(--border-default, #ccd1d5);
+    border-radius: 6px;
+    background: var(--background-surface-layer-01);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    color: var(--text-default, #1b1f24);
+    outline: none;
+    resize: vertical;
+
+    &::placeholder {
+      color: var(--text-placeholder, #6a727c);
+    }
+
+    &:focus {
+      border-color: var(--border-accent-strong, #4368e3);
+    }
+  }
+
+  .js-libraries-help-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--text-placeholder, #6a727c);
+  }
 }
