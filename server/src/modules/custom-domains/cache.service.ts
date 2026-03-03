@@ -25,6 +25,11 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
     this.redis.on('error', (err) => {
       this.logger.error(`Redis connection error: ${err.message}`, err.stack);
     });
+
+    // Seed the CORS origins set so it's available before the first request
+    this.rebuildOriginsSet().catch((err) => {
+      this.logger.error(`Failed to seed CORS origins on startup: ${err.message}`);
+    });
   }
 
   onModuleDestroy() {
