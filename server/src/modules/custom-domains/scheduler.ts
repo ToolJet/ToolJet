@@ -95,6 +95,7 @@ export class CustomDomainStatusScheduler {
             });
             this.logger.log(`Domain ${domain.domain}: ${domain.status} -> ${newStatus}`);
             await this.customDomainCacheService?.invalidate(domain.organizationId);
+            await this.customDomainCacheService?.rebuildOriginsSet();
           }
         } catch (error) {
           this.logger.error(`Failed to poll status for ${domain.domain}: ${error.message}`);
@@ -143,6 +144,7 @@ export class CustomDomainStatusScheduler {
           await manager.update(CustomDomain, domain.id, { status: 'deleted' });
           await manager.remove(domain);
           await this.customDomainCacheService?.invalidate(domain.organizationId);
+          await this.customDomainCacheService?.rebuildOriginsSet();
           this.logger.log(
             `Cleaned up stale domain ${domain.domain} (org: ${domain.organizationId}, stale >${STALE_TTL_SECONDS}s)`
           );
