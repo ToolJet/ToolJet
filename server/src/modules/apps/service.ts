@@ -264,7 +264,7 @@ export class AppsService implements IAppsService {
     }
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
-    if (name && app.creationMode != 'GIT' && name != app.name) {
+    if (name && name != app.name) {
       const appRenameDto = {
         user: user,
         organizationId: organizationId,
