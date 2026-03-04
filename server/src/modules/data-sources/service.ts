@@ -159,7 +159,7 @@ export class DataSourcesService implements IDataSourcesService {
     const { dataSourceId, environmentId } = updateOptions;
 
     // Fetch datasource details for audit log
-    const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
 
     await this.dataSourcesUtilService.update(dataSourceId, user.organizationId, user.id, name, options, environmentId);
 
@@ -187,7 +187,7 @@ export class DataSourcesService implements IDataSourcesService {
   }
 
   async delete(dataSourceId: string, user: User) {
-    const dataSource = await this.dataSourcesRepository.findById(dataSourceId);
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
     if (!dataSource) {
       return;
     }
