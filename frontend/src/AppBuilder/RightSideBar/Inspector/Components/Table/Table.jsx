@@ -563,8 +563,7 @@ export const Table = (props) => {
       },
       // Action buttons section (deprecated — replaced by button column type)
       {
-        title: (() => { 
-          return (
+        title: (
             <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
               <span>Action buttons</span>
                 <ToolTip
@@ -581,8 +580,7 @@ export const Table = (props) => {
                   </span>
                 </ToolTip>
             </div>
-          );
-        })(),
+          ),
         children: (
           <div className="field">
             <div className="row g-2">

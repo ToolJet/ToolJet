@@ -1,6 +1,7 @@
 import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from '../../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 import { ButtonColumn } from './ButtonColumnAdapter';
 
 export const ButtonColumnGroup = ({
@@ -12,8 +13,8 @@ export const ButtonColumnGroup = ({
   rowData,
   onClick,
 }) => {
-  const getResolvedValue = useStore.getState().getResolvedValue;
-  const { getTableColumnEvents } = useTableStore();
+  const getResolvedValue = useStore((state) => state.getResolvedValue);
+  const getTableColumnEvents = useTableStore((state) => state.getTableColumnEvents, shallow);
 
   const justifyContent =
     horizontalAlignment === 'center' ? 'center' : horizontalAlignment === 'right' ? 'flex-end' : 'flex-start';
@@ -29,26 +30,42 @@ export const ButtonColumnGroup = ({
       }}
     >
       {buttons.map((button) => {
-        const resolvedVisibility = getResolvedValue(button.buttonVisibility, { cellValue, rowData });
+        const context = { cellValue, rowData };
+        const resolvedVisibility = getResolvedValue(button.buttonVisibility, context);
         if (resolvedVisibility === false) return null;
+
+        const resolvedLabel = getResolvedValue(button.buttonLabel, context) || 'Button';
+        const resolvedType = getResolvedValue(button.buttonType, context) || 'solid';
+        const resolvedDisable = getResolvedValue(button.disableButton, context);
+        const resolvedLoading = getResolvedValue(button.loadingState, context);
+        const resolvedBgColor = getResolvedValue(button.buttonBackgroundColor, context);
+        const resolvedLabelColor = getResolvedValue(button.buttonLabelColor, context);
+        const resolvedIconName = getResolvedValue(button.buttonIconName, context);
+        const resolvedIconVisibility = getResolvedValue(button.buttonIconVisibility, context);
+        const resolvedIconColor = getResolvedValue(button.buttonIconColor, context);
+        const resolvedIconAlignment = getResolvedValue(button.buttonIconAlignment, context) || 'left';
+        const resolvedLoaderColor = getResolvedValue(button.buttonLoaderColor, context);
+        const resolvedBorderColor = getResolvedValue(button.buttonBorderColor, context);
+        const resolvedBorderRadius = getResolvedValue(button.buttonBorderRadius, context);
+        const resolvedTooltip = getResolvedValue(button.buttonTooltip, context);
 
         return (
           <ButtonColumn
             key={button.id}
-            buttonLabel={getResolvedValue(button.buttonLabel, { cellValue, rowData }) || 'Button'}
-            buttonType={getResolvedValue(button.buttonType, { cellValue, rowData }) || 'solid'}
-            disableButton={getResolvedValue(button.disableButton, { cellValue, rowData })}
-            loadingState={getResolvedValue(button.loadingState, { cellValue, rowData })}
-            backgroundColor={getResolvedValue(button.buttonBackgroundColor, { cellValue, rowData })}
-            labelColor={getResolvedValue(button.buttonLabelColor, { cellValue, rowData })}
-            iconName={getResolvedValue(button.buttonIconName, { cellValue, rowData })}
-            iconVisibility={getResolvedValue(button.buttonIconVisibility, { cellValue, rowData })}
-            iconColor={getResolvedValue(button.buttonIconColor, { cellValue, rowData })}
-            iconAlignment={getResolvedValue(button.buttonIconAlignment, { cellValue, rowData }) || 'left'}
-            loaderColor={getResolvedValue(button.buttonLoaderColor, { cellValue, rowData })}
-            borderColor={getResolvedValue(button.buttonBorderColor, { cellValue, rowData })}
-            borderRadius={getResolvedValue(button.buttonBorderRadius, { cellValue, rowData })}
-            tooltip={getResolvedValue(button.buttonTooltip, { cellValue, rowData })}
+            buttonLabel={resolvedLabel}
+            buttonType={resolvedType}
+            disableButton={resolvedDisable}
+            loadingState={resolvedLoading}
+            backgroundColor={resolvedBgColor}
+            labelColor={resolvedLabelColor}
+            iconName={resolvedIconName}
+            iconVisibility={resolvedIconVisibility}
+            iconColor={resolvedIconColor}
+            iconAlignment={resolvedIconAlignment}
+            loaderColor={resolvedLoaderColor}
+            borderColor={resolvedBorderColor}
+            borderRadius={resolvedBorderRadius}
+            tooltip={resolvedTooltip}
             onClick={() => {
               if (onClick) onClick(button.id, getTableColumnEvents(id));
             }}

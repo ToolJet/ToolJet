@@ -84,7 +84,8 @@ export const ColumnPopoverContent = ({
   const isButtonColumn = column.columnType === 'button';
   const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
 
-  const { removeButton, duplicateButton } = useButtonManager({ column, index, onColumnItemChange });
+  const buttonManager = useButtonManager({ column, index, onColumnItemChange });
+  const { removeButton, duplicateButton } = buttonManager;
 
   const handleDelete = () => {
     if (isButtonDetailView) {
@@ -188,6 +189,7 @@ export const ColumnPopoverContent = ({
             handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
             selectedButtonId={selectedButtonId}
             setSelectedButtonId={setSelectedButtonId}
+            buttonManager={buttonManager}
           />
         ) : (
           <StylesTabElements
@@ -199,6 +201,7 @@ export const ColumnPopoverContent = ({
             getPopoverFieldSource={getPopoverFieldSource}
             component={component}
             selectedButtonId={selectedButtonId}
+            buttonManager={buttonManager}
           />
         )}
       </Popover.Body>

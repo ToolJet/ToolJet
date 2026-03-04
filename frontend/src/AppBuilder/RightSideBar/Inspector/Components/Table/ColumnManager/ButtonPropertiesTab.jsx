@@ -1,6 +1,6 @@
 import React from 'react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { EventManager } from '../../../EventManager';
+import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Accordion from '@/_ui/Accordion';
 

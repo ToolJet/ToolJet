@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const DEFAULT_BUTTON = {
   buttonLabel: 'Button',
@@ -36,10 +36,11 @@ export const useButtonManager = ({ column, index, onColumnItemChange }) => {
       // Clean up events for this button
       const columnKey = column.key || column.name;
       const ref = `${columnKey}::${buttonId}`;
-      const events = useAppDataStore.getState().events.filter(
+      const { getModuleEvents, deleteAppVersionEventHandler } = useStore.getState().eventsSlice;
+      const events = getModuleEvents('canvas').filter(
         (e) => e.target === 'table_column' && e.event?.ref === ref
       );
-      events.forEach((e) => useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id));
+      events.forEach((e) => deleteAppVersionEventHandler(e.id));
     },
     [column, index, onColumnItemChange]
   );

@@ -22,7 +22,6 @@ import RatingIconToggle from './RatingColumn/RatingIconToggle';
 import RatingColumnProperties from './RatingColumn/RatingColumnProperties';
 import { ButtonListManager } from './ButtonListManager';
 import { ButtonPropertiesTab } from './ButtonPropertiesTab';
-import { useButtonManager } from '../hooks/useButtonManager';
 
 const CustomOption = (props) => {
   const ColumnIcon = getColumnIcon(props.data.value);
@@ -79,13 +78,10 @@ export const PropertiesTabElements = ({
   handleEventManagerPopoverCallback,
   selectedButtonId,
   setSelectedButtonId,
+  buttonManager,
 }) => {
   const { t } = useTranslation();
-  const { addButton, removeButton, updateButtonProperty, reorderButtons, getButton } = useButtonManager({
-    column,
-    index,
-    onColumnItemChange,
-  });
+  const { addButton, removeButton, updateButtonProperty, reorderButtons, getButton } = buttonManager;
 
   const customStylesForSelect = {
     ...defaultStyles(darkMode, '100%'),

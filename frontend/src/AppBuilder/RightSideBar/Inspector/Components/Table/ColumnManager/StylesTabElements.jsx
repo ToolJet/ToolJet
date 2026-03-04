@@ -10,7 +10,6 @@ import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
 import { ButtonStylesTab } from './ButtonStylesTab';
-import { useButtonManager } from '../hooks/useButtonManager';
 
 export const StylesTabElements = ({
   column,
@@ -21,8 +20,9 @@ export const StylesTabElements = ({
   getPopoverFieldSource,
   component,
   selectedButtonId,
+  buttonManager,
 }) => {
-  const { updateButtonProperty, getButton } = useButtonManager({ column, index, onColumnItemChange });
+  const { updateButtonProperty, getButton } = buttonManager;
   const { t } = useTranslation();
   return (
     <>

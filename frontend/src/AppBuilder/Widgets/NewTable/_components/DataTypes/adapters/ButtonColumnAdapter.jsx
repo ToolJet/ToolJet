@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/Button/Button';
-// eslint-disable-next-line import/no-unresolved
-import * as TablerIcons from '@tabler/icons-react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 
@@ -34,10 +33,7 @@ export const ButtonColumn = ({
 
   let iconElement = null;
   if (iconName && iconVisibility) {
-    const IconComponent = TablerIcons[iconName];
-    if (IconComponent) {
-      iconElement = <IconComponent size={14} stroke={1.5} style={iconColor ? { color: iconColor } : undefined} />;
-    }
+    iconElement = <TablerIcon iconName={iconName} size={14} stroke={1.5} style={iconColor ? { color: iconColor } : undefined} />;
   }
 
   const buttonStyle = {
