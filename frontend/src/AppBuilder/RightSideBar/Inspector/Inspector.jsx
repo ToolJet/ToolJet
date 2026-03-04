@@ -447,7 +447,7 @@ export const Inspector = ({
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
     if (value === 'permission') {
       if (!hasAppPermissionComponent) return;

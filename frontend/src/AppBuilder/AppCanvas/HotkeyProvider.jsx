@@ -53,7 +53,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth, 
   const deleteComponents = () => {
     const selectedComponents = getSelectedComponents();
     if (selectedComponents.length > 0) {
-      setWidgetDeleteConfirmation(true);
+      setWidgetDeleteConfirmation(true, isModuleEditor);
     }
   };
 
