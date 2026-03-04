@@ -110,7 +110,7 @@ export function EnvironmentSelect(props) {
         color: 'var(--tomato9)',
       },
       paddingLeft: '0px',
-      ...(state.data.isFixed && { display: 'none' }),
+      ...((state.data.isFixed || state.selectProps.isDisabled) && { display: 'none' }),
     }),
     input: (base) => ({
       ...base,
@@ -119,7 +119,7 @@ export function EnvironmentSelect(props) {
         color: 'var(--slate11) !important',
       },
     }),
-    control: (base) => ({
+    control: (base, state) => ({
       ...base,
       outline: 'none',
       border: '1px solid var(--slate7)',
@@ -130,6 +130,13 @@ export function EnvironmentSelect(props) {
       '&:hover': {
         border: '1px solid var(--slate8)',
       },
+      ...(state.isDisabled && {
+        opacity: 0.6,
+        cursor: 'not-allowed',
+        pointerEvents: 'all',
+        backgroundColor: 'var(--slate3)',
+        border: '1px solid var(--slate6)',
+      }),
     }),
     menuList: (base) => ({
       ...base,
@@ -160,13 +167,7 @@ export function EnvironmentSelect(props) {
         const isEndUserGroup =
           props.groupName?.toLowerCase() === 'end-user' || props.isBuilderLevel === false || props.hasEndUsers === true;
 
-        if (
-          props.allowSelectAll &&
-          selected !== null &&
-          selected.length > 0 &&
-          isSelectAllPresentInSelection &&
-          !isCurrentSelectAll
-        ) {
+        if (props.allowSelectAll && selected.length > 0 && isSelectAllPresentInSelection && !isCurrentSelectAll) {
           if (props.value.find((env) => env?.isAllField)?.isAllField)
             props.onChange(selected.filter((env) => !env?.isAllField));
 
