@@ -21,6 +21,9 @@ import { DataSourceScopes } from '@modules/data-sources/constants';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
+import { App } from '@entities/app.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 
 @Injectable()
@@ -30,7 +33,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) {}
+  ) { }
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -80,6 +83,11 @@ export class VersionsCreateService implements IVersionsCreateService {
         oldComponentToNewComponentMapping,
         oldPageToNewPageMapping
       );
+
+      const app = await manager.findOne(App, { where: { id: appVersion.appId } });
+      if (app?.type === APP_TYPES.WORKFLOW) {
+        await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
+      }
     }, manager);
   }
 
@@ -298,6 +306,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
       }
     }
+
+    // Handle workflow definitions - remap DataQuery IDs in definition.queries
+    if (definition?.queries && Array.isArray(definition.queries)) {
+      definition.queries = definition.queries.map((query) => {
+        if (query.id && dataQueryMapping[query.id]) {
+          return {
+            ...query,
+            id: dataQueryMapping[query.id],
+          };
+        }
+        return query;
+      });
+    }
+
     return definition;
   }
 
@@ -628,6 +650,33 @@ export class VersionsCreateService implements IVersionsCreateService {
       }
       event.event = eventDefinition;
       await manager.save(event);
+    }
+  }
+
+  protected async copyWorkflowBundlesForVersion(
+    manager: EntityManager,
+    newAppVersionId: string,
+    sourceAppVersionId: string
+  ): Promise<void> {
+    const sourceBundles = await manager.find(WorkflowBundle, {
+      where: { appVersionId: sourceAppVersionId },
+    });
+
+    for (const bundle of sourceBundles) {
+      await manager.save(
+        manager.create(WorkflowBundle, {
+          appVersionId: newAppVersionId,
+          language: bundle.language,
+          runtimeVersion: bundle.runtimeVersion,
+          dependencies: bundle.dependencies,
+          bundleBinary: bundle.bundleBinary,
+          bundleSize: bundle.bundleSize,
+          bundleSha: bundle.bundleSha,
+          status: bundle.status,
+          generationTimeMs: bundle.generationTimeMs,
+          error: bundle.error,
+        })
+      );
     }
   }
 }

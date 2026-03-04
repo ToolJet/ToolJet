@@ -9,7 +9,7 @@ function AddResourcePermissionsMenu({
   resourcesOptions,
   currentGroupPermission,
   darkMode,
-  isBasicPlan,
+  isEditable,
 }) {
   const selectResourceIcon = (resourceType) => {
     switch (resourceType) {
@@ -83,7 +83,7 @@ function AddResourcePermissionsMenu({
           fill="var(--slate9)"
           className="add-icon tj-text-xsm font-weight-600"
           leftIcon="plus"
-          disabled={currentGroupPermission.name === 'admin' || isBasicPlan}
+          disabled={currentGroupPermission.name === 'admin' || !isEditable}
           data-cy="add-permission-button"
         >
           Add permission
@@ -98,7 +98,7 @@ function AddResourcePermissionsMenu({
         fill="var(--slate9)"
         className="add-icon tj-text-xsm font-weight-600"
         leftIcon="plus"
-        disabled={currentGroupPermission.name === 'admin' || isBasicPlan}
+        disabled={currentGroupPermission.name === 'admin' || !isEditable}
         onClick={() => {
           openAddPermissionModal(RESOURCE_TYPE.APPS);
         }}

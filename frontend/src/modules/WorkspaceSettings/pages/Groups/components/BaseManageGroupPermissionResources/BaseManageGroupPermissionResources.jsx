@@ -534,12 +534,18 @@ class BaseManageGroupPermissionResources extends React.Component {
     // Treat both basic and starter plans as restricted plans
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
+    const { customGroups: isFeatureEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
       isRoleGroup && (groupPermission?.name === 'admin' || groupPermission?.name === 'end-user');
     const disablePermissionUpdate =
       isBasicPlan || groupPermission?.name === 'admin' || groupPermission?.name === 'end-user';
+    
+    const disableNonPromoteReleasePermissions = disablePermissionUpdate || 
+        (groupPermission?.type === 'default' &&
+        groupPermission?.name === 'builder' &&
+        !featureAccess?.customGroups);
 
     // Check if this group contains any end-user role members
     // For default end-user group: always true
@@ -953,14 +959,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appCreate}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="app-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-create-label">
                                           {this.props.t('globals.create', 'Create')}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
                                           data-cy="app-create-helper-text"
                                         >
                                           Create apps in this workspace
@@ -979,14 +985,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.appDelete}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="app-delete-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-delete-label">
                                           {this.props.t('globals.delete', 'Delete')}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
                                           data-cy="app-delete-helper-text"
                                         >
                                           Delete any app in this workspace
@@ -999,6 +1005,8 @@ class BaseManageGroupPermissionResources extends React.Component {
                                         disablePermissionUpdate={disablePermissionUpdate}
                                         updateGroupPermission={this.updateGroupPermission}
                                         updateState={this.updateParamState}
+                                        featureAccess={featureAccess}
+                                        isBasicPlan={isBasicPlan}
                                       />
                                     </div>
                                   </div>
@@ -1007,7 +1015,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                 {/* Worklfow Permission */}
                                 <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
-                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
                                   updateState={this.updateParamState}
                                 />
@@ -1015,7 +1023,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                 {/* Data source */}
                                 <DataSourcePermissionsUI
                                   groupPermission={groupPermission}
-                                  disablePermissionUpdate={disablePermissionUpdate}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
                                   updateState={this.updateParamState}
                                 />
@@ -1108,7 +1116,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.orgConstantCRUD}
-                                          disabled={disablePermissionUpdate}
+                                          disabled={disableNonPromoteReleasePermissions}
                                           data-cy="env-variable-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="workspace-variable-create-label">
@@ -1118,7 +1126,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                                           )}
                                         </span>
                                         <span
-                                          class={`tj-text-xxsm ${disablePermissionUpdate && 'check-label-disable'}`}
+                                          class={`tj-text-xxsm ${disableNonPromoteReleasePermissions && 'check-label-disable'}`}
                                           data-cy="workspace-constants-helper-text"
                                         >
                                           All operations on workspace constants
@@ -1145,6 +1153,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       fetchGroup={this.fetchGroupPermission}
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
+                      isFeatureEnabled={isFeatureEnabled}
                       hasEndUsers={hasEndUsers}
                     />
                   </aside>

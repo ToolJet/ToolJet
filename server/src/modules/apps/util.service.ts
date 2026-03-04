@@ -298,11 +298,14 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
-    const { name, currentEnvironmentId, definition } = body;
+    const { currentEnvironmentId, definition } = body;
     const { currentVersionId, organizationId } = app;
     let currentEnvironment: AppEnvironment;
 
-    if (version.id === currentVersionId && !body?.is_user_switched_version)
+    // Allow updates to non-released versions
+    // Note: status and name updates are already handled by versionsUtilService.updateVersion
+    // This function only handles workflow-specific fields: currentEnvironmentId and definition
+    if (version.id === currentVersionId && !body?.is_user_switched_version && (currentEnvironmentId || definition))
       throw new BadRequestException('You cannot update a released version');
 
     if (currentEnvironmentId || definition) {
@@ -312,17 +315,6 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     const editableParams = {};
-    if (name) {
-      //means user is trying to update the name
-      const versionNameExists = await this.versionRepository.findOne({
-        where: { name, appId: version.appId },
-      });
-
-      if (versionNameExists) {
-        throw new BadRequestException('Version name already exists.');
-      }
-      editableParams['name'] = name;
-    }
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
@@ -371,7 +363,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -398,22 +390,23 @@ export class AppsUtilService implements IAppsUtilService {
         userPermission[resourceType],
         manager,
         searchKey,
-        undefined,
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
         type
       );
 
       // Eagerly load appVersions for modules
-      if (type === APP_TYPES.MODULE) {
+      if (type === APP_TYPES.MODULE && !isGetAll) {
         viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
 
-      if (page) {
-        return await viewableAppsQb
-          .take(9)
-          .skip(9 * (page - 1))
-          .getMany();
+      if (isGetAll) {
+        return await viewableAppsQb.getMany();
       }
-      return await viewableAppsQb.getMany();
+
+      return await viewableAppsQb
+        .take(9)
+        .skip(9 * (page - 1))
+        .getMany();
     });
   }
 
