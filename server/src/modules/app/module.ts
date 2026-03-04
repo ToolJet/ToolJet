@@ -164,6 +164,11 @@ export class AppModule implements OnModuleInit, NestModule {
       );
     }
 
+    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
+      const { SessionTransferModule } = await import('../session-transfer/module');
+      conditionalImports.push(await SessionTransferModule.register(configs, true));
+    }
+
     if (process.env.ENABLE_METRICS === 'true') {
       conditionalImports.push(MetricsModule);
     }

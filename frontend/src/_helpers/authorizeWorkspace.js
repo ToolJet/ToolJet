@@ -15,6 +15,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 import { customDomainService } from '@/_services/custom-domain.service';
+import { sessionTransferService } from '@/_services/session-transfer.service';
 const REDIRECT_KEY = 'tj_cd_redirect_ts';
 const REDIRECT_COOLDOWN_MS = 10 * 1000; // 10 seconds
 
@@ -221,18 +222,24 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
 
   authenticationService
     .authorize()
-    .then((data) => {
-      // Redirect to custom domain BEFORE any store updates to avoid a flash
-      // of authenticated UI (user avatar, org name) on the base domain.
-      if (data.custom_domain && !isCustomDomain() && !hasRecentRedirectAttempt()) {
+    .then(async (data) => {
+      // Redirect to custom domain via session transfer token to carry auth
+      // across domains. The CF Worker proxies /api/* with redirect:'manual',
+      // so the backend's 302 + Set-Cookie flows through to the browser.
+      const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
         const slug = data.current_organization_slug || data.current_organization_id;
         const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
         setRedirectAttempt();
-        // Keep the workspace slug in the URL — custom domain routes still use /:workspaceId.
-        // Without it, paths like /home are misinterpreted as workspace slugs, causing a
-        // redirect loop between the custom domain and the base domain.
-        window.location.href = `https://${data.custom_domain}/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`;
-        return;
+        try {
+          const { token } = await sessionTransferService.createTransferToken();
+          const redirect = encodeURIComponent(`/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`);
+          window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
+          return;
+        } catch (e) {
+          console.error('[authorizeWorkspace] Transfer token failed:', e);
+          // Fall through to normal store hydration — user stays on base domain
+        }
       }
 
       useStore.getState().setUser({
