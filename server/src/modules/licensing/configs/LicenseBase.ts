@@ -631,7 +631,7 @@ export default class LicenseBase {
     }
 
     if (this._app?.features?.history === undefined) {
-      return true;
+      return false;
     }
     return !!this._app?.features?.history;
   }
