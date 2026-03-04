@@ -66,7 +66,7 @@ export const ComponentsManagerTab = ({ darkMode, isModuleEditor }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleError, setModuleError] = useState(false);
   const [activeTab, setActiveTab] = useState('components');
-  const _shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const _shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
   const edition = fetchEdition();
