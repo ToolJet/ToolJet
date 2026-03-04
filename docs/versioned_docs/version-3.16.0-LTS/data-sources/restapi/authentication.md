@@ -124,31 +124,21 @@ Let’s create a query to make a `GET` request to the URL, it will pop a new win
 - Run the query.
 - A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
 
-## AWS v4 Authentication
+## AWS Signature v4 Authentication
 
-AWS Version 4 is an authentication mechanism used to securely sign requests sent to Amazon Web Services (AWS). It ensures that requests are authenticated using your AWS credentials and are protected against tampering during transit.
+AWS Signature Version 4 is an authentication mechanism used to securely sign requests sent to Amazon Web Services (AWS). It ensures that requests are authenticated using your AWS credentials and protected against tampering during transit.
 
-This authentication type is required when interacting with AWS services such as S3, Lambda, API Gateway, Bedrock, DynamoDB, and others that require signed requests.
+This authentication method is required when interacting with AWS services such as S3, Lambda, API Gateway, Bedrock, DynamoDB, and others that require signed requests.
 
-### Configuring REST API Data Source with AWS v4
+### Configuring REST API Data Source with AWS Signature v4
 
-To configure **AWS v4** authentication in the REST API data source:
+To configure AWS Signature Version 4 authentication in the REST API data source:
 
 - **Authentication type**: Select `AWS v4` from the dropdown.
-
-- **Connect using credential provider chain** (Optional):  
-  Enable this option if ToolJet is running within an AWS environment (such as EC2, ECS, or Lambda) and should automatically use IAM role-based credentials. When enabled, Access Key ID and Secret Access Key fields are not required.
-
-- **Access key ID**:  
-  Enter the AWS Access Key ID associated with your IAM user or role.
-
-- **Secret access key**:  
-  Enter the corresponding AWS Secret Access Key. This value is securely encrypted and stored.
-
-- **Region**:  
-  Specify the AWS region of the service you are accessing (for example, `us-east-1`, `ap-south-1`, `eu-west-1`).
-
-- **Service**:  
-  Provide the AWS service identifier used for request signing (for example, `execute-api`, `s3`, `lambda`, `dynamodb`, `bedrock`).
+- **Connect using credential provider chain** (Optional): Enable this option if ToolJet is running within an AWS environment (such as EC2, ECS, or Lambda) and should automatically use IAM role-based credentials. When enabled, the Access Key ID and Secret Access Key fields are not required.
+- **Access Key ID**: Enter the AWS Access Key ID associated with your IAM user or role.
+- **Secret Access Key**: Enter the corresponding AWS Secret Access Key. This value is securely encrypted and stored.
+- **Region**: Specify the AWS region of the service you are accessing (for example, `us-east-1`, `ap-south-1`, `eu-west-1`).
+- **Service**: Provide the AWS service identifier used for request signing (for example, `execute-api`, `s3`, `lambda`, `dynamodb`, `bedrock`).
 
   <img className="screenshot-full img-full" src="/img/datasource-reference/rest-api/awsv4-connection.png" alt="REST API- aws v4 data source configuration" />
