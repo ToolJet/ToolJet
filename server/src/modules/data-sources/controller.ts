@@ -34,7 +34,7 @@ import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 @InitModule(MODULES.GLOBAL_DATA_SOURCE)
 @UseGuards(JwtAuthGuard)
 export class DataSourcesController implements IDataSourcesController {
-  constructor(protected readonly dataSourcesService: DataSourcesService) { }
+  constructor(protected readonly dataSourcesService: DataSourcesService) {}
 
   // Listing of all global data sources
   @InitFeature(FEATURE_KEY.GET)

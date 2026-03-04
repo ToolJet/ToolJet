@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
+import { TableColumnContext } from './TableColumnContext';
 import { Button } from '@/components/ui/Button/Button';
 import { useButtonManager } from '../hooks/useButtonManager';
 
@@ -104,8 +105,13 @@ export const ColumnPopoverContent = ({
     }
   };
 
+  {
+    /* TableColumnContext provides the table's component ID to all nested CodeHinters,
+        enabling rowData/cellValue autocomplete hints in column editors (properties, styles, etc.).
+        This avoids threading a tableColumnComponentId prop through every intermediate component. */
+  }
   return (
-    <>
+    <TableColumnContext.Provider value={component?.id}>
       <Popover.Header style={{padding : "8px 16px 0 16px !important"}}>
         
           <div
@@ -205,6 +211,6 @@ export const ColumnPopoverContent = ({
           />
         )}
       </Popover.Body>
-    </>
+    </TableColumnContext.Provider>
   );
 };
