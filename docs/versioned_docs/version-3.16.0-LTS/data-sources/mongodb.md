@@ -63,6 +63,34 @@ For example: `mongodb+srv://tooljettest:dummypassword@cluster0.urul7.mongodb.net
 
 **Note:** Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
+### SSH Tunnelling 
+
+ToolJet now supports SSH tunnelling for the MongoDB data source, allowing secure connections to databases hosted inside private networks. This can be used to :
+
+- Access private databases
+- Improve security
+- Enable encrytped communication
+- Avoid firewall rule changes
+
+#### SSH Configuration
+
+To securely connect to a private MongoDB database using SSH tunnelling:
+
+1. Enable the **SSH tunnel** toggle in the MongoDB data source configuration.
+
+2. Provide the following details:
+   - **SSH host** – Server hostname or IP address.
+   - **SSH port** – Port number (default: `22`).
+   - ***SSH dst host** - Destination host that the SSH tunnel forwards traffic to (usually `localhost`)
+   - **SSH username** – Username for the SSH server.
+   - **Authentication method** – Choose either:
+     - **Private key**
+     - **Password**
+
+Once configured, ToolJet establishes a secure SSH connection. All MongoDB queries are routed through this encrypted tunnel.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mongo-db/ssh-tunnel.png" alt="SSH tunnelling mongodb connection"/>
+
 ## Querying MongoDB
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source.
