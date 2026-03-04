@@ -39,13 +39,21 @@ export class CustomDomainStatusScheduler {
   async handleCron() {
     if (process.env.ENABLE_CUSTOM_DOMAINS !== 'true') return;
 
+    // Skip polling if no domains are pending (Redis flag gate)
+    const hasPending = await this.customDomainCacheService?.hasPendingDomains();
+    if (!hasPending) return;
+
     await dbTransactionWrap(async (manager: EntityManager) => {
       const pendingDomains = await manager.find(CustomDomain, {
         where: { status: In(['pending_verification', 'pending_ssl']) },
         take: 50,
       });
 
-      if (pendingDomains.length === 0) return;
+      if (pendingDomains.length === 0) {
+        // Self-healing: flag was set but DB has no pending domains — clear it
+        await this.customDomainCacheService?.clearPendingFlag();
+        return;
+      }
 
       this.logger.log(`Polling status for ${pendingDomains.length} pending custom domains`);
 
@@ -151,6 +159,15 @@ export class CustomDomainStatusScheduler {
         } catch (error) {
           this.logger.error(`Failed to clean up stale domain ${domain.domain}: ${error.message}`);
         }
+      }
+
+      // If we cleaned domains, check whether any pending remain
+      const remaining = await manager.find(CustomDomain, {
+        where: { status: In(['pending_verification', 'pending_ssl']) },
+        take: 1,
+      });
+      if (remaining.length === 0) {
+        await this.customDomainCacheService?.clearPendingFlag();
       }
     });
   }
