@@ -30,6 +30,11 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
     this.rebuildOriginsSet().catch((err) => {
       this.logger.error(`Failed to seed CORS origins on startup: ${err.message}`);
     });
+
+    // Seed the pending-domains flag so the scheduler knows whether to poll
+    this.seedPendingFlag().catch((err) => {
+      this.logger.error(`Failed to seed pending flag on startup: ${err.message}`);
+    });
   }
 
   onModuleDestroy() {
@@ -121,6 +126,47 @@ export class CustomDomainCacheService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.error(`Failed to read CORS origins from Redis: ${error.message}`);
       return null;
+    }
+  }
+
+  // --- Pending-domains flag (gates the scheduler) ---
+
+  private readonly PENDING_FLAG_KEY = 'custom_domain:has_pending';
+
+  async setPendingFlag(): Promise<void> {
+    try {
+      await this.redis.set(this.PENDING_FLAG_KEY, '1');
+    } catch (error) {
+      this.logger.error(`Failed to set pending flag: ${error.message}`);
+    }
+  }
+
+  async clearPendingFlag(): Promise<void> {
+    try {
+      await this.redis.del(this.PENDING_FLAG_KEY);
+    } catch (error) {
+      this.logger.error(`Failed to clear pending flag: ${error.message}`);
+    }
+  }
+
+  async hasPendingDomains(): Promise<boolean> {
+    try {
+      const value = await this.redis.get(this.PENDING_FLAG_KEY);
+      return value === '1';
+    } catch (error) {
+      this.logger.error(`Failed to check pending flag: ${error.message}`);
+      return true; // Fail open — let scheduler run if Redis is down
+    }
+  }
+
+  private async seedPendingFlag(): Promise<void> {
+    const pending = await this.repository.findPendingDomains(1);
+    if (pending.length > 0) {
+      await this.redis.set(this.PENDING_FLAG_KEY, '1');
+      this.logger.log('Pending-domains flag seeded: pending domains found');
+    } else {
+      await this.redis.del(this.PENDING_FLAG_KEY);
+      this.logger.log('Pending-domains flag seeded: no pending domains');
     }
   }
 }
