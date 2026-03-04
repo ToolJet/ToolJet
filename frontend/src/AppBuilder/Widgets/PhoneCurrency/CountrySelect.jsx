@@ -6,7 +6,7 @@ import { CustomOption } from './CustomOption';
 import { CustomValueContainer } from './CustomValueContainer';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const CountrySelect = ({ value, onChange, options, ...rest }) => {
+export const CountrySelect = ({ value, onChange, options, dataCy, ...rest }) => {
   const {
     isCountryChangeEnabled,
     isCurrencyInput = false,
@@ -122,6 +122,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         }
       }}
       ref={dropdownRef}
+      data-cy={`${String(dataCy).toLowerCase()}-country-select-dropdown`}
     >
       <Select
         options={options}

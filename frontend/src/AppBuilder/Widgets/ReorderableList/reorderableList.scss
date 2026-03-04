@@ -1,0 +1,36 @@
+.reorderable-list-container {
+  border-radius: 8px;
+
+  .reorderable-list-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reorderable-list-item {
+    cursor: grab;
+    font-size: 14px;
+    color: var(--cc-primary-text);
+
+    &.is-dragging {
+      opacity: 0.8;
+      cursor: grabbing;
+      background: var(--interactive-overlays-fill-hover);
+    }
+  }
+
+  &.is-disabled .reorderable-list-item {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .reorderable-list-loading,
+  .reorderable-list-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 14px;
+    color: var(--cc-placeholder-text);
+  }
+}
+

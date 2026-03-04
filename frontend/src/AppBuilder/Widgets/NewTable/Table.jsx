@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, memo, useRef } from 'react';
+import React, { useEffect, useMemo, memo, useRef, useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { shallow } from 'zustand/shallow';
@@ -13,6 +13,7 @@ import { getColorModeFromLuminance, getCssVarValue, getModifiedColor } from '@/A
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './table.scss';
 
 const Table = memo(
@@ -25,6 +26,7 @@ const Table = memo(
     styles,
     darkMode,
     fireEvent,
+    setExposedVariable,
     setExposedVariables,
     adjustComponentPositions,
     currentLayout,
@@ -62,7 +64,6 @@ const Table = memo(
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
-    const textColor = getCssVarValue(document.documentElement, `var(--cc-placeholder-text-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
     const scrollColor = getModifiedColor(containerBackgroundColor, 12);
     const editableColumnColor = getModifiedColor(containerBackgroundColor, 12);
@@ -94,6 +95,20 @@ const Table = memo(
 
     const shouldAutogenerateColumns = useRef(false);
     const hasDataChanged = useRef(false);
+
+    const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+      isLoading: loadingState,
+      isVisible: visibility,
+      isDisabled: disabledState,
+    });
+
+    // ===== HELPER FUNCTION =====
+    const updateExposedVariablesState = (key, value) => {
+      setExposedVariablesTemporaryState((prevState) => ({
+        ...prevState,
+        [key]: value,
+      }));
+    };
 
     useEffect(() => {
       hasDataChanged.current = false;
@@ -164,6 +179,50 @@ const Table = memo(
       setTableEvents(id, allAppEvents);
     }, [id, allAppEvents, setTableEvents]);
 
+    useBatchedUpdateEffectArray([
+      {
+        dep: loadingState,
+        sideEffect: () => {
+          updateExposedVariablesState('isLoading', loadingState);
+          setExposedVariable('isLoading', loadingState);
+        },
+      },
+      {
+        dep: visibility,
+        sideEffect: () => {
+          updateExposedVariablesState('isVisible', visibility);
+          setExposedVariable('isVisible', visibility);
+        },
+      },
+      {
+        dep: disabledState,
+        sideEffect: () => {
+          updateExposedVariablesState('isDisabled', disabledState);
+          setExposedVariable('isDisabled', disabledState);
+        },
+      },
+    ]);
+
+    useEffect(() => {
+      setExposedVariables({
+        isLoading: exposedVariablesTemporaryState.isLoading,
+        isVisible: exposedVariablesTemporaryState.isVisible,
+        isDisabled: exposedVariablesTemporaryState.isDisabled,
+        setLoading: async function (value) {
+          setExposedVariable('isLoading', !!value);
+          updateExposedVariablesState('isLoading', !!value);
+        },
+        setVisibility: async function (value) {
+          setExposedVariable('isVisible', !!value);
+          updateExposedVariablesState('isVisible', !!value);
+        },
+        setDisable: async function (value) {
+          setExposedVariable('isDisabled', !!value);
+          updateExposedVariablesState('isDisabled', !!value);
+        },
+      });
+    }, []);
+
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
       return transformTableData(data, transformations, getResolvedValue);
@@ -176,11 +235,11 @@ const Table = memo(
       id: id,
       height,
       value: JSON.stringify({ heightChangeValue, tableData }),
-      skipAdjustment: loadingState || tableData.length === 0,
+      skipAdjustment: exposedVariablesTemporaryState.isLoading || tableData.length === 0,
       adjustComponentPositions,
       currentLayout,
       width,
-      visibility: visibility === 'none' ? false : true,
+      visibility: exposedVariablesTemporaryState.isVisible,
       subContainerIndex,
     });
 
@@ -188,17 +247,16 @@ const Table = memo(
       <div
         ref={tableRef}
         data-cy={`draggable-widget-${componentName}`}
-        data-disabled={disabledState}
+        data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
           height: isDynamicHeightEnabled ? '100%' : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
-          display: visibility === 'none' ? 'none' : '',
+          display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
           boxShadow,
           borderColor,
           backgroundColor: containerBackgroundColor,
-          '--cc-table-record-text-color': textColor,
           '--cc-table-action-icon-color': iconColor,
           '--cc-table-footer-action-hover': hoverColor,
           '--cc-table-row-hover': hoverColor,
@@ -219,6 +277,7 @@ const Table = memo(
           darkMode={darkMode}
           componentName={componentName}
           setExposedVariables={setExposedVariables}
+          loadingState={exposedVariablesTemporaryState.isLoading}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}

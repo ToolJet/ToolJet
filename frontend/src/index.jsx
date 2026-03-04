@@ -63,5 +63,25 @@ appService
       });
     }
   })
-  .then(() => render(<AppWithProfiler />, document.getElementById('app')));
-// .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+  .then(() => {
+    render(<AppWithProfiler />, document.getElementById('app'));
+    // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+
+    // App booted successfully — clear reload flags from both recovery mechanisms
+    // (ChunkErrorBoundary in RootRouter.jsx and the .catch() below) so that
+    // future deployments can trigger auto-reload again if needed.
+    sessionStorage.removeItem('chunk_reload');
+    sessionStorage.removeItem('boot_reload');
+  })
+  .catch((error) => {
+    // If getConfig() or initialization fails (network error, auth redirect, stale response),
+    // React never mounts and the page stays stuck on the HTML loading spinner forever.
+    // Try one automatic reload to recover — the `boot_reload` flag prevents infinite loops.
+    console.error('App failed to initialize:', error);
+    if (!sessionStorage.getItem('boot_reload')) {
+      sessionStorage.setItem('boot_reload', 'true');
+      window.location.reload();
+    }
+    // If boot_reload flag is already set, we've already tried once.
+    // Don't reload again — the issue is likely persistent (server down, etc.).
+  });

@@ -22,6 +22,7 @@ export const RadioButtonV2 = ({
   validation,
   id,
   subContainerIndex,
+  dataCy,
 }) => {
   const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
@@ -193,7 +194,6 @@ export const RadioButtonV2 = ({
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()} `}
         data-disabled={isDisabled}
         className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
@@ -221,6 +221,7 @@ export const RadioButtonV2 = ({
         aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
       >
         <Label
+          dataCy={`${dataCy}`}
           label={label}
           width={labelWidth}
           labelRef={labelRef}
@@ -256,6 +257,7 @@ export const RadioButtonV2 = ({
                 return (
                   <label key={index} className="radio-button-container" htmlFor={inputId}>
                     <span
+                      data-cy={`${dataCy}-option-label-${index}`}
                       style={{
                         color:
                           optionsTextColor !== '#1B1F24'
@@ -268,6 +270,7 @@ export const RadioButtonV2 = ({
                       {getSafeRenderableValue(option.label)}
                     </span>
                     <input
+                      data-cy={`${dataCy}-option-input-${index}`}
                       style={{
                         marginTop: '1px',
                         backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
 import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
@@ -34,7 +35,7 @@ export const parseValueToNumber = (val, numberFormat) => {
 };
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -68,6 +69,7 @@ export const CurrencyInput = (props) => {
     defaultCountry = 'US',
     showFlag = true,
     numberFormat = 'us',
+    showClearBtn,
   } = properties;
 
   // Track previous number format to detect format changes
@@ -119,8 +121,11 @@ export const CurrencyInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
+  const hasValue = value !== '' && value !== null && value !== undefined;
+  const shouldShowClearBtn = showClearBtn && hasValue && !disabledState && !loading;
   const computedStyles = {
     height: '100%',
     borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
@@ -148,29 +153,22 @@ export const CurrencyInput = (props) => {
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
+    paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     borderLeft: 'none',
   };
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
+  const clearButtonRight =
+    direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px';
+  const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
+  const clearButtonTransform = 'translateY(-50%)';
 
   const formattedValue = (value) => {
     return formatValue({
@@ -240,7 +238,6 @@ export const CurrencyInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -271,8 +268,10 @@ export const CurrencyInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -309,6 +308,7 @@ export const CurrencyInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <ReactCurrencyInput
             ref={inputRef}
@@ -337,13 +337,38 @@ export const CurrencyInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
+        {shouldShowClearBtn && (
+          <button
+            type="button"
+            className="tj-input-clear-btn"
+            aria-label="Clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onInputValueChange('');
+            }}
+            style={{
+              position: 'absolute',
+              right: clearButtonRight,
+              top: clearButtonTop,
+              transform: clearButtonTransform,
+              zIndex: 3,
+            }}
+          >
+            <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
+          </button>
+        )}
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(dataCy).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',

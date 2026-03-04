@@ -2,7 +2,7 @@
     overflow-y: auto;
     position: relative;
     padding: 0 0 5px;
-    background-color: var(--cc-surface1-surface) !important;
+    background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface)) !important;
     border-radius: 0 0 8px 8px;
 }
 
@@ -12,4 +12,5 @@
     input::placeholder {
         color: var(--cc-placeholder-text);
     }
+    background-color: var(--dropdown-menu-bg, var(--cc-surface1-surface));
 }

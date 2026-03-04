@@ -16,6 +16,7 @@ import {
   TAB_CANVAS_PADDING,
   MODAL_CANVAS_PADDING,
   LISTVIEW_CANVAS_PADDING,
+  HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
@@ -252,6 +253,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'Accordion' ||
       allComponents[parentId]?.component?.component === 'Form' ||
       allComponents[parentId]?.component?.component === 'ModalV2';
 
@@ -382,6 +384,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
+      parentComponent.component.component === 'Accordion' ||
       parentComponent.component.component === 'Form' ||
       parentComponent.component.component === 'ModalV2'
     );
@@ -555,7 +558,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2', 'Accordion'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
@@ -753,7 +756,10 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
   else if (
     slotName &&
-    (parentComponent === 'Form' || parentComponent === 'Container' || parentComponent === 'ModalV2')
+    (parentComponent === 'Form' ||
+      parentComponent === 'Container' ||
+      parentComponent === 'Accordion' ||
+      parentComponent === 'ModalV2')
   ) {
     return `${parentId}-${slotName}`;
   }
@@ -789,29 +795,41 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form') {
-    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  if (componentType === 'Container' || componentType === 'Form' || componentType === 'Accordion') {
+    padding =
+      2 * CONTAINER_FORM_CANVAS_PADDING +
+      2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +
+      2 * BOX_PADDING +
+      2 * HOVER_CLICK_OUTLINE_BORDER;
   }
-  // if (componentType === 'Tabs') {
-  //   padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
-  // }
   if (componentType === 'ModalV2') {
     const isModalHeader = componentId?.includes('header');
     if (isModalHeader) {
       const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
         ?.hideCloseButton;
-      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0)) + 2 * HOVER_CLICK_OUTLINE_BORDER;
     } else {
-      padding = 2 * MODAL_CANVAS_PADDING;
+      padding = 2 * MODAL_CANVAS_PADDING + 2 * HOVER_CLICK_OUTLINE_BORDER;
     }
   }
   if (componentType === 'Listview') {
-    padding = 2 * LISTVIEW_CANVAS_PADDING + 5; // 5 is accounting for scrollbar
+    padding = 2 * LISTVIEW_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 5 + 2 * HOVER_CLICK_OUTLINE_BORDER; // 5 is accounting for scrollbar
   }
   if (componentType === 'Tabs') {
-    padding = 2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING;
+    padding =
+      2 * TAB_CANVAS_PADDING + 2 * BOX_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * HOVER_CLICK_OUTLINE_BORDER;
   }
   return canvasWidth - padding;
+};
+
+export const getSubContainerHeightAfterPadding = (componentType) => {
+  let height = '100%';
+  if (componentType === 'Tabs') {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px + 2.5px)`;
+  } else {
+    height = `calc(100% + ${HOVER_CLICK_OUTLINE_BORDER}px)`;
+  }
+  return height;
 };
 
 export const addDefaultButtonIdToForm = (formComponent, defaultChildComponents) => {

@@ -786,8 +786,8 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
-          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(gitAuthResponse).toHaveBeenCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toHaveBeenCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, last_name, current_organization_id } = response.body;
@@ -856,8 +856,8 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          expect(gitAuthResponse).toBeCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
-          expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
+          expect(gitAuthResponse).toHaveBeenCalledWith('https://github.host.com/login/oauth/access_token', expect.anything());
+          expect(gitGetUserResponse).toHaveBeenCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
           const { email, first_name, last_name, current_organization_id } = response.body;

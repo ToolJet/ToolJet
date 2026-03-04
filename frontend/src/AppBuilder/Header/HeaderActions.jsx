@@ -48,7 +48,6 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
       className={cx('tw-flex tw-gap-2 tw-items-center tw-justify-center editor-header-actions', {
         'w-100': showFullWidth,
       })}
-      data-cy="header-actions"
     >
       {showToggleLayoutBtn && (
         <ToggleLayoutButtons
@@ -65,16 +64,16 @@ const HeaderActions = function HeaderActions({ darkMode, showFullWidth, showPrev
           to={appPreviewLink}
           target="_blank"
           rel="noreferrer"
-          data-cy="preview-link-button"
           className="text-decoration-none"
           style={{ color: 'var(--text-default)' }}
+          data-cy="editor-preview-Link"
         >
           <ButtonComponent
             isLucid
             size="default"
             variant="outline"
             leadingIcon="play"
-            data-cy="preview-link-button"
+            data-cy="editor-preview-button"
             style={{ padding: '7px 12px' }}
           >
             Preview

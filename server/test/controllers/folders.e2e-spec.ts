@@ -533,7 +533,7 @@ describe('folders controller', () => {
           .send({ name })
           .expect(200);
 
-        const updatedFolder = await getManager().findOne(Folder, folder.id);
+        const updatedFolder = await getManager().findOne(Folder, { where: { id: folder.id } });
 
         expect(updatedFolder.name).toEqual(name);
       }

@@ -283,6 +283,8 @@ const DynamicForm = ({
     label,
     fx_enabled,
     fxEnabled,
+    isMulti,
+    autoFetch,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -570,6 +572,8 @@ const DynamicForm = ({
           value: options?.[key]?.value || options?.[key],
           optionsChanged,
           fxEnabled: fxEnabled || fx_enabled,
+          isMulti: isMulti || false,
+          autoFetch: autoFetch || false,
         };
       default:
         return {};
@@ -670,11 +674,11 @@ const DynamicForm = ({
             ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
             : true;
 
-          const elementProps = getElementProps({
-            ...fieldConfig,
-            key,
-            type,
-          });
+          // const elementProps = getElementProps({
+          //   ...fieldConfig,
+          //   key,
+          //   type,
+          // });
 
           return (
             enabled && (
@@ -749,7 +753,7 @@ const DynamicForm = ({
                 >
                   <Element
                     key={`${selectedDataSource?.id}-${propertyKey}`}
-                    {...elementProps}
+                    {...getElementProps(obj[key])}
                     {...computedProps[propertyKey]}
                     data-cy={`${generateCypressDataCy(label)}-text-field`}
                     dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}

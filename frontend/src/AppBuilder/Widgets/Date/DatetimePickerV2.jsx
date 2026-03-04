@@ -75,7 +75,7 @@ export const DatetimePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat, timeFormat, isTimezoneEnabled } = properties;
+  const { label, defaultValue, dateFormat, timeFormat, isTimezoneEnabled, showClearBtn } = properties;
   const inputProps = {
     properties,
     setExposedVariable,
@@ -150,6 +150,11 @@ export const DatetimePickerV2 = ({
     setExposedDateVariables(unixTimestamp, selectedTimestamp);
     if (skipFireEvent) return;
     fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null);
+    setDisplayTimestamp('Select date and time');
   };
 
   const onDateSelect = (date) => {
@@ -453,6 +458,8 @@ export const DatetimePickerV2 = ({
     showValidationError,
     isValid,
     validationError,
+    showClearBtn,
+    onClear: handleClear,
   };
 
   return (
@@ -473,6 +480,8 @@ export const DatetimePickerV2 = ({
       customTimeInputProps={customTimeInputProps}
       customDateInputProps={customDateInputProps}
       id={id}
+      showClearBtn={showClearBtn}
+      dataCy={dataCy}
     />
   );
 };

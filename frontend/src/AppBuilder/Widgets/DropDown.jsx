@@ -296,6 +296,7 @@ export const DropDown = function DropDown({
       >
         <div className="col-auto my-auto">
           <label
+            data-cy={`${String(dataCy).toLowerCase()}-label`}
             style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
             className="form-label py-0 my-0"
             id={`${id}-label`}

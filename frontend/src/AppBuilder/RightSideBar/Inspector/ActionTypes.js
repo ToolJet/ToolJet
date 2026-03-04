@@ -52,6 +52,16 @@ export const ActionTypes = [
     group: 'control-component',
   },
   {
+    name: 'Scroll component into view',
+    id: 'scroll-component-into-view',
+    options: [
+      { name: 'componentId', type: 'text', default: '' },
+      { name: 'scrollBehavior', type: 'text', default: 'smooth' },
+      { name: 'scrollBlock', type: 'text', default: 'nearest' },
+    ],
+    group: 'control-component',
+  },
+  {
     name: 'Switch page',
     id: 'switch-page',
     options: [{ name: 'page', type: 'text', default: '' }],

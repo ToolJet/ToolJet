@@ -1981,7 +1981,7 @@ class HomePageComponent extends React.Component {
                     canViewApp={this.canViewApp}
                     deleteApp={this.deleteApp}
                     cloneApp={this.cloneApp}
-                    exportApp={this.props.appType === 'workflow' ? this.exportAppDirectly : this.exportApp}
+                    exportApp={this.exportApp}
                     meta={meta}
                     currentFolder={currentFolder}
                     isLoading={isLoading || !featuresLoaded}
