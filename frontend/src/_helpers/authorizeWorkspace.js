@@ -52,11 +52,11 @@ export const authorizeWorkspace = async () => {
       const resolved = await customDomainService.resolveCustomDomain(window.location.hostname);
       const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId || '';
 
-      if (!workspaceIdOrSlug) {
-        workspaceIdOrSlug = resolvedSlug;
-      } else if (workspaceIdOrSlug !== resolvedSlug) {
-        if (redirectToMainHost()) return;
-      }
+      // A custom domain maps to exactly one workspace — always trust the
+      // resolved slug. The URL's first path segment may be a page route
+      // (e.g., 'home', 'database') rather than a real workspace slug when
+      // the base domain redirect strips the slug from the URL.
+      workspaceIdOrSlug = resolvedSlug;
     } catch (e) {
       console.error('[authorizeWorkspace] Failed to resolve custom domain:', e);
       if (redirectToMainHost()) return;
@@ -225,9 +225,13 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       // Redirect to custom domain BEFORE any store updates to avoid a flash
       // of authenticated UI (user avatar, org name) on the base domain.
       if (data.custom_domain && !isCustomDomain() && !hasRecentRedirectAttempt()) {
-        const redirectPath = excludeWorkspaceIdFromURL(window.location.pathname);
+        const slug = data.current_organization_slug || data.current_organization_id;
+        const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
         setRedirectAttempt();
-        window.location.href = `https://${data.custom_domain}${redirectPath}${window.location.search}${window.location.hash}`;
+        // Keep the workspace slug in the URL — custom domain routes still use /:workspaceId.
+        // Without it, paths like /home are misinterpreted as workspace slugs, causing a
+        // redirect loop between the custom domain and the base domain.
+        window.location.href = `https://${data.custom_domain}/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`;
         return;
       }
 

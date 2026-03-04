@@ -62,9 +62,9 @@ export const AuthRoute = ({ children }) => {
           .resolveCustomDomain(window.location.hostname)
           .then((resolved) => {
             const resolvedSlug = resolved?.organizationSlug || resolved?.organizationId;
-            if (organizationSlug && organizationSlug !== resolvedSlug) {
-              if (redirectToMainHost()) return;
-            }
+            // On a custom domain, the URL slug may not match the resolved slug
+            // (e.g., redirected with a bare path). Trust the resolved slug since
+            // the custom domain definitively identifies the workspace.
             fetchOrganizationDetails(resolvedSlug);
           })
           .catch((e) => {
