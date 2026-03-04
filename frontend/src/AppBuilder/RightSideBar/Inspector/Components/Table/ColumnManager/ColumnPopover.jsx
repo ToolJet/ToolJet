@@ -112,7 +112,7 @@ export const ColumnPopoverContent = ({
   }
   return (
     <TableColumnContext.Provider value={component?.id}>
-      <Popover.Header style={{padding : "8px 16px 0 16px !important"}}>
+      <Popover.Header style={{padding : "8px 16px 0 16px"}}>
         
           <div
             className="d-flex align-items-center justify-content-between"
