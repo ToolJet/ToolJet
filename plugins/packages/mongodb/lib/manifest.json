@@ -54,14 +54,14 @@
     },
     "use_ssl": {
       "type": "string",
-      "title": "TLS/SSL",
-      "description": "Connect using TLS/SSL",
+      "title": "SSL/TLS",
+      "description": "Connect using SSL/TLS",
       "enum": ["enabled", "disabled"],
       "default": "disabled"
     },
     "tls_certificate": {
       "type": "string",
-      "title": "TLS/SSL certificate",
+      "title": "SSL/TLS certificate",
       "description": "Single select dropdown for choosing certificates",
       "enum": ["ca_certificate", "client_certificate", "none"],
       "default": "none"
@@ -291,8 +291,8 @@
         "order": 70,
         "$ref": "#/properties/use_ssl",
         "key": "use_ssl",
-        "label": "TLS/SSL",
-        "description": "Connect using TLS/SSL",
+        "label": "SSL/TLS",
+        "description": "Connect using SSL/TLS",
         "help_text": "Enable encrypted connections to MongoDB server",
         "widget": "toggle-flip",
         "default": "disabled",
@@ -301,7 +301,7 @@
             "order": 80,
             "$ref": "#/properties/tls_certificate",
             "key": "tls_certificate",
-            "label": "TLS/SSL certificate",
+            "label": "SSL/TLS certificate",
             "description": "Single select dropdown for choosing certificates",
             "widget": "dropdown-component-flip",
             "list": [
@@ -505,8 +505,8 @@
         "order": 70,
         "$ref": "#/properties/use_ssl",
         "key": "use_ssl",
-        "label": "TLS/SSL",
-        "description": "Connect using TLS/SSL",
+        "label": "SSL/TLS",
+        "description": "Connect using SSL/TLS",
         "help_text": "Enable encrypted connections to MongoDB server",
         "widget": "toggle-flip",
         "default": "disabled",
@@ -515,7 +515,7 @@
             "order": 80,
             "$ref": "#/properties/tls_certificate",
             "key": "tls_certificate",
-            "label": "TLS/SSL certificate",
+            "label": "SSL/TLS certificate",
             "description": "Single select dropdown for choosing certificates",
             "widget": "dropdown-component-flip",
             "list": [
