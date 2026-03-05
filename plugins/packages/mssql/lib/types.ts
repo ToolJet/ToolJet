@@ -16,4 +16,13 @@ export type QueryOptions = {
   primary_key_column: string;
   records: Record<string, unknown>[];
   query_params: string[][];
+  // GUI mode – list_rows
+  where_filters?: Record<string, { column: string; operator: string; value?: unknown }>;
+  order_filters?: Record<string, { column: string; order?: string }>;
+  aggregates?: Record<string, { aggFx: string; column: string; table_id?: string }>;
+  group_by?: Record<string, string[]>;
+  limit?: string | number;
+  offset?: string | number;
+  // GUI mode – create_row / update_rows
+  columns?: Record<string, { column: string; value?: unknown }>;
 };

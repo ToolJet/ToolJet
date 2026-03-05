@@ -48,11 +48,169 @@
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for mode",
         "list": [
-          {
-            "name": "Bulk update using primary key",
-            "value": "bulk_update_pkey"
-          }
+          {"name": "List rows", "value": "list_rows"},
+          {"name": "Create row", "value": "create_row"},
+          {"name": "Update rows", "value": "update_rows"},
+          {"name": "Delete rows", "value": "delete_rows"},
+          {"name": "Bulk insert", "value": "bulk_insert"},
+          {"name": "Bulk update using primary key", "value": "bulk_update_pkey"},
+          {"name": "Bulk upsert using primary key", "value": "bulk_upsert_pkey"}
         ]
+      },
+      "list_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "list_rows.where_filters",
+          "description": "Filter conditions for the query"
+        },
+        "order_filters": {
+          "label": "Sort",
+          "key": "order_filters",
+          "type": "react-component-sql-sort",
+          "parse_key": "list_rows.order_filters",
+          "description": "Sort conditions for the query"
+        },
+        "aggregates": {
+          "label": "Aggregate",
+          "key": "aggregates",
+          "type": "react-component-sql-aggregate",
+          "parse_key": "list_rows.aggregates",
+          "description": "Aggregate functions for the query"
+        },
+        "group_by": {
+          "label": "Group by",
+          "key": "group_by",
+          "type": "react-component-sql-groupby",
+          "parse_key": "list_rows.group_by",
+          "description": "Group by columns for the query"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Maximum number of rows to return",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter limit"
+        },
+        "offset": {
+          "label": "Offset",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Number of rows to skip",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter offset"
+        }
+      },
+      "create_row": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "create_row.columns",
+          "description": "Column name and value pairs to insert"
+        }
+      },
+      "update_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "update_rows.where_filters",
+          "description": "Filter conditions to target rows for update"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "update_rows.columns",
+          "description": "Column name and value pairs to update"
+        }
+      },
+      "delete_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "where_filters": {
+          "label": "Filter",
+          "key": "where_filters",
+          "type": "react-component-sql-filters",
+          "parse_key": "delete_rows.where_filters",
+          "description": "Filter conditions to target rows for deletion"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Maximum number of rows to delete",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter limit"
+        }
+      },
+      "bulk_insert": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "records": {
+          "label": "Records to insert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
       },
       "bulk_update_pkey": {
         "table": {
@@ -85,6 +243,37 @@
           "height": "150px",
           "editorType": "extendedSingleLine",
           "placeholder": "{{ [ ] }}"
+        }
+      },
+      "bulk_upsert_pkey": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "primary_key_column": {
+          "label": "Primary key column",
+          "key": "primary_key_column",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter primary key column",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
         }
       }
     }

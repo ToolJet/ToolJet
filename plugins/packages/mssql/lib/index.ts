@@ -7,6 +7,7 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
   getCachedConnection,
+  createQueryBuilder,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
@@ -80,13 +81,101 @@ export default class MssqlQueryService implements QueryService {
     }
   }
 
-  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
-    if (queryOptions.operation !== 'bulk_update_pkey') {
-      return { rows: [] };
-    }
+  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { operation, table } = queryOptions;
+    const queryBuilder = createQueryBuilder('mssql');
 
-    const query = this.buildBulkUpdateQuery(queryOptions);
-    return await this.executeQuery(knexInstance, query);
+    switch (operation) {
+      case 'list_rows': {
+        const { where_filters, order_filters, aggregates, group_by, limit, offset } = queryOptions;
+        const { query, params } = queryBuilder.listRows(table, {
+          where_filters,
+          order_filters,
+          aggregates,
+          group_by,
+          limit,
+          offset,
+        }) as { query: string; params: unknown[] };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'create_row': {
+        const { columns } = queryOptions;
+        const { query, params } = queryBuilder.createRow(table, columns) as { query: string; params: unknown[] };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'update_rows': {
+        const { columns, where_filters } = queryOptions;
+        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'delete_rows': {
+        const { where_filters, limit } = queryOptions;
+        const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'bulk_insert': {
+        const { records } = queryOptions;
+        const { query, params } = queryBuilder.bulkInsert(table, { rows_insert: records }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this.executeParameterizedQuery(knexInstance, query, params);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'bulk_update_pkey': {
+        const { primary_key_column, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+          primary_key: [primary_key_column],
+          rows_update: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data: [] };
+      }
+
+      case 'bulk_upsert_pkey': {
+        const { primary_key_column, records } = queryOptions;
+        const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+          primary_key: [primary_key_column],
+          row_upsert: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        await this.executeBulkQueriesInTransaction(knexInstance, queries);
+        return { status: 'ok', data: [] };
+      }
+
+      default:
+        throw new Error(`Unsupported GUI operation: "${operation}"`);
+    }
+  }
+
+  private async executeParameterizedQuery(knexInstance: Knex, query: string, params: unknown[]): Promise<unknown> {
+    const result = await knexInstance.raw(query, params as any[]).timeout(this.STATEMENT_TIMEOUT);
+    return result;
+  }
+
+  private async executeBulkQueriesInTransaction(
+    knexInstance: Knex,
+    queries: { query: string; params: unknown[] }[]
+  ): Promise<void> {
+    await knexInstance.transaction(async (transaction) => {
+      for (const { query, params } of queries) {
+        await transaction.raw(query, params as any[]);
+      }
+    });
   }
 
   private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
