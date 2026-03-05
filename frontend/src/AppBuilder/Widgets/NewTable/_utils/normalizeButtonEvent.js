@@ -52,6 +52,13 @@ export function normalizeButtonEvent(evt, buttonId) {
 
   // Map event label → eventId
   const eventId = eventLabel ? EVENT_LABEL_TO_ID[eventLabel.toLowerCase()] : 'onClick';
+  if (eventLabel && !eventId) {
+    const available = Object.keys(EVENT_LABEL_TO_ID)
+      .map((k) => `"${k}"`)
+      .join(', ');
+    console.warn(`[Table] Unknown event "${eventLabel}" in button "${buttonId}". Available events: ${available}`);
+    return null;
+  }
 
   return { ...rest, eventId, actionId };
 }
