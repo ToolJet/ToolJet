@@ -34,7 +34,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const paramListContainerRef = useRef(null);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
-  const creatingQueryInProcessId = useStore((state) => state.dataQuery.creatingQueryInProcessId);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
@@ -226,7 +225,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         <ElementToRender
           renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={creatingQueryInProcessId || selectedQuery?.id}
+          key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}
