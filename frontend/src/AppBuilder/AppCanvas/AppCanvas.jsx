@@ -88,6 +88,17 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       ] ?? false,
     shallow
   );
+  const headerBackgroundColor = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.backgroundColor,
+    shallow
+  );
+  const headerBorderColor = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.borderColor,
+    shallow
+  );
+
+  const setCanvasHeaderSelected = useStore((state) => state.setCanvasHeaderSelected, shallow);
+  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
 
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
   const minCanvasWidth = useCanvasMinWidth({
@@ -166,6 +177,14 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
         className={cx('canvas-header-slot', {
           '!tw-w-[450px] tw-mx-auto': isMobileLayout && (currentMode === 'edit' || isMobilePreviewMode),
         })}
+        onClick={(e) => {
+          if (currentMode === 'edit') {
+            e.stopPropagation();
+            clearSelectedComponents();
+            console.log('kingSize');
+            setCanvasHeaderSelected(true);
+          }
+        }}
         style={{
           position: 'sticky',
           top: 0,
@@ -173,8 +192,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
           flexShrink: 0,
           padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
           height: `${CANVAS_HEADER_HEIGHT}px`,
-          borderBottom: '1px solid var(--cc-default-border)',
-          backgroundColor: isAppDarkMode ? '#232E3C' : '#fff',
+          borderBottom: `1px solid ${headerBorderColor ?? 'var(--cc-default-border)'}`,
+          backgroundColor: headerBackgroundColor ?? (isAppDarkMode ? '#232E3C' : '#fff'),
           width: '100%',
         }}
       >
