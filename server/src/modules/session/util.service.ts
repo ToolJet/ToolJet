@@ -56,6 +56,20 @@ export class SessionUtilService {
     return this.jwtService.sign(JWTPayload);
   }
 
+  getClearCookieOptions(): CookieOptions {
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      secure: isHttpsEnabled(),
+      sameSite: 'strict',
+    };
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+    applyCustomDomainCookieOptions(cookieOptions, this.configService);
+    return cookieOptions;
+  }
+
   async generateLoginResultPayload(
     response: Response,
     user: User,
