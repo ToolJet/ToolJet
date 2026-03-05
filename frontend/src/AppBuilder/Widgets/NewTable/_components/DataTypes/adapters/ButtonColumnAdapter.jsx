@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -21,13 +21,10 @@ export const ButtonColumn = ({
   tooltip,
   onClick,
 }) => {
-  const handleClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      if (onClick) onClick();
-    },
-    [onClick]
-  );
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (onClick) onClick();
+  };
 
   const variant = buttonType === 'outline' ? 'outline' : 'primary';
 

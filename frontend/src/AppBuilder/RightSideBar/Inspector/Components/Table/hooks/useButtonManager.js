@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
 
@@ -21,61 +20,48 @@ export const DEFAULT_BUTTON = {
 };
 
 export const useButtonManager = ({ column, index, onColumnItemChange }) => {
-  const addButton = useCallback(() => {
+  const addButton = () => {
     const newButton = { ...DEFAULT_BUTTON, id: uuidv4() };
     const updatedButtons = [...(column.buttons || []), newButton];
     onColumnItemChange(index, 'buttons', updatedButtons);
     return newButton.id;
-  }, [column, index, onColumnItemChange]);
+  };
 
-  const removeButton = useCallback(
-    (buttonId) => {
-      const updatedButtons = (column.buttons || []).filter((b) => b.id !== buttonId);
-      onColumnItemChange(index, 'buttons', updatedButtons);
+  const removeButton = (buttonId) => {
+    const updatedButtons = (column.buttons || []).filter((b) => b.id !== buttonId);
+    onColumnItemChange(index, 'buttons', updatedButtons);
 
-      // Clean up events for this button
-      const columnKey = column.key || column.name;
-      const ref = `${columnKey}::${buttonId}`;
-      const { getModuleEvents, deleteAppVersionEventHandler } = useStore.getState().eventsSlice;
-      const events = getModuleEvents('canvas').filter((e) => e.target === 'table_column' && e.event?.ref === ref);
-      events.forEach((e) => deleteAppVersionEventHandler(e.id));
-    },
-    [column, index, onColumnItemChange]
-  );
+    // Clean up events for this button
+    const columnKey = column.key || column.name;
+    const ref = `${columnKey}::${buttonId}`;
+    const { getModuleEvents, deleteAppVersionEventHandler } = useStore.getState().eventsSlice;
+    const events = getModuleEvents('canvas').filter((e) => e.target === 'table_column' && e.event?.ref === ref);
+    Promise.all(events.map((e) => deleteAppVersionEventHandler(e.id))).catch((err) => {
+      console.error('[useButtonManager] Failed to delete event handlers for button', buttonId, err);
+    });
+  };
 
-  const updateButtonProperty = useCallback(
-    (buttonId, property, value) => {
-      const updatedButtons = (column.buttons || []).map((b) => (b.id === buttonId ? { ...b, [property]: value } : b));
-      onColumnItemChange(index, 'buttons', updatedButtons);
-    },
-    [column, index, onColumnItemChange]
-  );
+  const updateButtonProperty = (buttonId, property, value) => {
+    const updatedButtons = (column.buttons || []).map((b) => (b.id === buttonId ? { ...b, [property]: value } : b));
+    onColumnItemChange(index, 'buttons', updatedButtons);
+  };
 
-  const reorderButtons = useCallback(
-    (reorderedButtons) => {
-      onColumnItemChange(index, 'buttons', reorderedButtons);
-    },
-    [index, onColumnItemChange]
-  );
+  const reorderButtons = (reorderedButtons) => {
+    onColumnItemChange(index, 'buttons', reorderedButtons);
+  };
 
-  const duplicateButton = useCallback(
-    (buttonId) => {
-      const button = (column.buttons || []).find((b) => b.id === buttonId);
-      if (!button) return null;
-      const newButton = { ...button, id: uuidv4() };
-      const updatedButtons = [...(column.buttons || []), newButton];
-      onColumnItemChange(index, 'buttons', updatedButtons);
-      return newButton.id;
-    },
-    [column, index, onColumnItemChange]
-  );
+  const duplicateButton = (buttonId) => {
+    const button = (column.buttons || []).find((b) => b.id === buttonId);
+    if (!button) return null;
+    const newButton = { ...button, id: uuidv4() };
+    const updatedButtons = [...(column.buttons || []), newButton];
+    onColumnItemChange(index, 'buttons', updatedButtons);
+    return newButton.id;
+  };
 
-  const getButton = useCallback(
-    (buttonId) => {
-      return (column.buttons || []).find((b) => b.id === buttonId);
-    },
-    [column]
-  );
+  const getButton = (buttonId) => {
+    return (column.buttons || []).find((b) => b.id === buttonId);
+  };
 
   return { addButton, removeButton, duplicateButton, updateButtonProperty, reorderButtons, getButton };
 };
