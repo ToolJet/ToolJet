@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-  "title": "Mysql data query schema",
-  "description": "A schema defining mysql data query",
+  "title": "Mssql data query schema",
+  "description": "A schema defining mssql data query",
   "type": "database",
   "defaults": {
     "mode": "sql"
@@ -48,13 +48,38 @@
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for mode",
         "list": [
-          {"name": "List rows", "value": "list_rows"},
-          {"name": "Create row", "value": "create_row"},
-          {"name": "Update rows", "value": "update_rows"},
-          {"name": "Delete rows", "value": "delete_rows"},
-          {"name": "Bulk insert", "value": "bulk_insert"},
-          {"name": "Bulk update using primary key", "value": "bulk_update_pkey"},
-          {"name": "Bulk upsert using primary key", "value": "bulk_upsert_pkey"}
+          {
+            "name": "List rows",
+            "value": "list_rows"
+          },
+          {
+            "name": "Create row",
+            "value": "create_row"
+          },
+          {
+            "name": "Update rows",
+            "value": "update_rows"
+          },
+          {
+            "name": "Delete rows",
+            "value": "delete_rows"
+          },
+          {
+            "name": "Upsert row",
+            "value": "upsert_rows"
+          },
+          {
+            "name": "Bulk insert",
+            "value": "bulk_insert"
+          },
+          {
+            "name": "Bulk update using primary key",
+            "value": "bulk_update_pkey"
+          },
+          {
+            "name": "Bulk upsert using primary key",
+            "value": "bulk_upsert_pkey"
+          }
         ]
       },
       "list_rows": {
@@ -160,6 +185,59 @@
           "type": "react-component-sql-columns",
           "parse_key": "update_rows.columns",
           "description": "Column name and value pairs to update"
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to update multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can modify multiple rows at once"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that updates zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
+        }
+      },
+      "upsert_rows": {
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter table name"
+        },
+        "primary_key_column": {
+          "label": "Primary key column",
+          "key": "primary_key_column",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the primary key column used to detect conflicts",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter primary key column"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "react-component-sql-columns",
+          "parse_key": "upsert_rows.columns",
+          "description": "Column name and value pairs to insert or update"
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to update multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can modify multiple rows at once"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that updates zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
         }
       },
       "delete_rows": {
@@ -189,6 +267,12 @@
           "height": "36px",
           "className": "codehinter-plugins",
           "placeholder": "Enter limit"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that deletes zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a query that matches no rows is still treated as successful"
         }
       },
       "bulk_insert": {
