@@ -289,3 +289,15 @@ export class ValidatePATSessionDto {
   @IsString()
   accessToken: string;
 }
+
+// Export groups DTOs
+export {
+  CreateGroupExternalDto,
+  GranularPermissionDto,
+  GranularPermissionResourceType,
+  AppEnvironment,
+  AppPermissionsDto,
+  DataSourcePermissionsDto,
+  WorkspacePermissionsDto,
+  WorkflowPermissionsDto,
+} from './groups.dto';

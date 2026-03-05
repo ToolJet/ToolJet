@@ -17,6 +17,7 @@ import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
 import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
 import { appPermissionService } from '@/_services';
@@ -45,7 +46,8 @@ export const QueryDataPane = ({ darkMode }) => {
   const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
   const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
   const setQueries = useStore((state) => state.dataQuery.setQueries);
-  const isFreezed = useStore((state) => state.getShouldFreeze());
+  const { isModuleEditor } = useModuleContext();
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setQueryPanelSearchTerm(searchTermForFilters);
@@ -241,9 +243,10 @@ const EmptyDataSource = () => (
 );
 
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
+  const { isModuleEditor } = useModuleContext();
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
   // const { isVersionReleased, isEditorFreezed } = useStore(
   //   (state) => ({
   //     isVersionReleased: state.isVersionReleased,

@@ -1,0 +1,1153 @@
+// Branch Dropdown Styles
+.branch-dropdown-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  user-select: none;
+  margin-right: 8px;
+  border-radius: 8px;
+
+  &.selected {
+    .branch-dropdown-button {
+      background-color: var(--slate3);
+    }
+  }
+
+  &.dark-theme {
+    .branch-dropdown-button {
+      border-color: var(--slate7);
+      background-color: var(--slate2);
+    }
+  }
+}
+
+.branch-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--slate6);
+  background-color: var(--slate1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--slate12);
+  outline: none;
+  outline: 0px !important;
+
+  &:hover {
+    background-color: var(--slate3);
+    border-color: var(--slate7);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  .branch-name {
+    color: var(--text-default);
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Old styles - keeping for backward compatibility
+.branch-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--slate6);
+  background-color: var(--slate2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+
+  &:hover {
+    background-color: var(--slate3);
+    border-color: var(--slate7);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  .branch-label {
+    color: var(--slate11);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .current-branch-name {
+    color: var(--slate12);
+    font-weight: 500;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .branch-arrow {
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+
+    &.branch-arrow-rotate {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.branch-dropdown-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 320px;
+  max-height: 450px;
+  background-color: var(--slate1);
+  border: 1px solid var(--slate6);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &.theme-dark {
+    background-color: var(--slate2);
+    border-color: var(--slate7);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Current Branch Header (with lock icon)
+.branch-dropdown-current-branch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 8px 16px;
+
+  &.with-border {
+    border-bottom: 1px solid var(--slate6);
+  }
+
+  .branch-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 100px;
+    background-color: var(--indigo3);
+    flex-shrink: 0;
+  }
+
+  // Feature branch icon (gitsync)
+  .branch-icon-container-feature {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 100px;
+    background-color: var(--indigo3);
+    flex-shrink: 0;
+  }
+
+  .branch-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+
+    .branch-name-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--text-default);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .branch-metadata,
+    .branch-metadata-feature {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 18px;
+
+      .metadata-text {
+        color: var(--slate11);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .metadata-dot {
+        color: var(--slate11);
+        width: 2px;
+        height: 2px;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+// Main Content Area
+.branch-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--slate6);
+
+  .fetch-prs-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    min-height: 94px;
+
+    .fetch-prs-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      height: 28px;
+      background-color: var(--slate1);
+      border: 1px solid var(--slate6);
+      border-radius: 6px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--slate12);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+
+      &:hover:not(:disabled) {
+        background-color: var(--slate3);
+        border-color: var(--slate7);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &.loading {
+        opacity: 0.8;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.branches-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--slate7);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--slate3);
+  }
+}
+
+.branch-section {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--slate11);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 16px 4px;
+  }
+}
+
+.branch-group {
+  margin-bottom: 2px;
+}
+
+.branch-item {
+  padding: 0 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--slate3);
+  }
+
+  &.active {
+    background-color: var(--indigo3);
+
+    .branch-name span {
+      color: var(--indigo11);
+      font-weight: 600;
+    }
+
+    svg {
+      fill: var(--indigo11);
+    }
+  }
+}
+
+.branch-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px;
+  border-radius: 6px;
+
+  .branch-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+
+    span {
+      font-size: 13px;
+      color: var(--slate12);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .expand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      padding: 2px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--slate5);
+      }
+
+      svg {
+        transition: transform 0.2s ease;
+
+        &.expanded {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+}
+
+.pr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.pr-badge-open {
+    background-color: var(--green3);
+    color: var(--green11);
+  }
+
+  &.pr-badge-merged {
+    background-color: var(--purple3);
+    color: var(--purple11);
+  }
+
+  &.pr-badge-closed {
+    background-color: var(--red3);
+    color: var(--red11);
+  }
+}
+
+.nested-versions {
+  padding-left: 32px;
+  margin-top: 4px;
+}
+
+.version-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--slate3);
+  }
+
+  .version-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .version-label {
+      font-size: 12px;
+      color: var(--slate11);
+    }
+
+    .draft-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      background-color: var(--amber3);
+      color: var(--amber11);
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+  min-height: 200px;
+
+  .empty-state-icon {
+    margin-bottom: 16px;
+    opacity: 0.4;
+
+    svg {
+      display: block;
+    }
+  }
+
+  .empty-state-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--slate12);
+    margin: 0 0 4px 0;
+  }
+
+  .empty-state-subtext {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--slate11);
+    margin: 0;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 12px;
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--slate6);
+    border-top-color: var(--indigo9);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--slate11);
+  }
+}
+
+// Small spinner for buttons
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--slate6);
+  border-top-color: var(--indigo9);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.branch-dropdown-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--slate6);
+
+  .create-branch-btn,
+  .switch-branch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background-color: var(--slate1);
+    border: 1px solid var(--slate6);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+
+    &:hover {
+      background-color: var(--slate3);
+      border-color: var(--slate7);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .create-branch-btn.accent {
+    border-color: var(--indigo6);
+
+    &:hover {
+      border-color: var(--indigo7);
+      background-color: var(--indigo2);
+    }
+
+    svg {
+      fill: var(--indigo9);
+    }
+  }
+}
+
+// Branch metadata styles
+.branch-metadata {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.branch-updated {
+  font-size: 11px;
+  color: var(--slate9);
+  white-space: nowrap;
+}
+
+.branch-lock-icon {
+  flex-shrink: 0;
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Fetch PRs Section (only shown on default branch at top)
+.fetch-prs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 94px;
+  border-bottom: 1px solid var(--slate6);
+
+  .fetch-prs-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    height: 28px;
+
+    &:hover {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Fetch Branch Info Section (only shown on feature branch at top)
+.fetch-branch-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  min-height: 120px;
+
+  .fetch-branch-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    height: 28px;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+// PR Tabs Section (only shown on default branch)
+.pr-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--slate6);
+
+  .pr-tab {
+    position: relative;
+    padding: 6px 7px 8px 7px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate11);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+
+    &:hover {
+      color: var(--slate12);
+    }
+
+    &.active {
+      color: var(--slate12);
+      border-bottom-color: var(--indigo9);
+      border-radius: 0;
+    }
+  }
+}
+
+// PR List Container
+.pr-list-container {
+  padding: 0 16px;
+  overflow-y: auto;
+  max-height: 280px;
+
+  .pr-item {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: 6px;
+
+    &:hover {
+      background-color: var(--slate3);
+    }
+
+    .pr-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+
+    .pr-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .pr-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--slate12);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .pr-metadata {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--slate11);
+        white-space: normal;
+        word-break: break-word;
+      }
+    }
+  }
+}
+
+// Empty PR State (old simple version)
+.empty-pr-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+
+  .empty-pr-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--slate11);
+    margin: 0;
+    text-align: center;
+  }
+}
+
+// Empty PR State Box (new Figma design with warning icon)
+.empty-pr-state-box {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  margin: 16px 0px;
+  height: 70px;
+  border: 1px dashed var(--slate8);
+  border-radius: 6px;
+  background: transparent;
+
+  svg {
+    color: var(--icon-warning, #BF4F03);
+    flex-shrink: 0;
+  }
+
+  .empty-pr-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+  }
+
+  .empty-pr-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+
+    .empty-pr-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--slate12);
+    }
+
+    .empty-pr-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      color: var(--slate11);
+    }
+  }
+}
+
+// Fetch Branch Section (for non-default branches)
+.fetch-branch-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  height: 120px;
+
+  .fetch-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    height: 28px;
+    background: var(--slate1);
+    border: 1px solid var(--slate6);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate7);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+
+      &.rotating {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Latest Commit Section
+.latest-commit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 12px 16px;
+  width: 100%;
+
+  .latest-commit-header {
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--slate11);
+      text-transform: uppercase;
+    }
+  }
+
+  .commit-info {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+
+    .commit-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .commit-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+
+      .commit-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--slate12);
+      }
+
+      .commit-metadata {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--slate11);
+      }
+    }
+  }
+}
+
+// No Commits Empty State
+.no-commits-empty-state {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  margin: 16px;
+  border: 1px dashed var(--border-default, #CCD1D5);
+  border-radius: 6px;
+  background: transparent;
+
+  svg {
+    color: var(--icon-warning, #BF4F03);
+    flex-shrink: 0;
+  }
+
+  .empty-state-icon-warning {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .empty-state-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    .empty-state-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 18px;
+      color: var(--slate12);
+    }
+
+    .empty-state-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      color: var(--slate11);
+    }
+  }
+}
+
+// Loading Commit State
+.loading-commit-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  gap: 12px;
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--slate6);
+    border-top-color: var(--indigo9);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  span {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--slate11);
+  }
+}
+
+// Update footer button styles for Create PR
+.branch-dropdown-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  width: 100%;
+
+  .create-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--indigo7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex: 1;
+
+    &:hover {
+      background: var(--indigo2);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .fetch-branch-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex: 1;
+
+    &:hover:not(:disabled) {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .create-pr-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--indigo7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--indigo2);
+      border-color: var(--indigo8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .switch-branch-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 5px 10px;
+    background: var(--slate1);
+    border: 1px solid var(--slate7);
+    border-radius: 6px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--slate12);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--slate3);
+      border-color: var(--slate8);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}

@@ -31,6 +31,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.AUTO_RELEASE_APP,
         FEATURE_KEY.GENERATE_PAT,
         FEATURE_KEY.VALIDATE_PAT_SESSION,
+        FEATURE_KEY.CREATE_GROUP,
       ],
       User
     );
