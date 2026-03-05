@@ -65,7 +65,6 @@ ToolJet now supports SSH tunnelling for the PostgreSQL data source, allowing sec
 To securely connect to a private PostgreSQL database using SSH tunnelling:
 
 1. Enable the **SSH tunnel** toggle in the PostgreSQL data source configuration.
-
 2. Provide the following details:
    - **SSH host** – Server hostname or IP address.
    - **SSH port** – Port number (default: `22`).
