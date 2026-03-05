@@ -82,7 +82,10 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { definition: { properties = {} } = {} } = pageSettings ?? {};
   const { position } = properties ?? {};
   const showCanvasHeader = useStore(
-    (state) => state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader,
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader?.[
+        currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
+      ] ?? false,
     shallow
   );
 

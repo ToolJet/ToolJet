@@ -72,6 +72,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
   const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const showPageCanvasHeader = useStore(
+    (state) =>
+      state.modules[moduleId].pages.find((p) => p.id === currentPageId)?.pageHeader[
+        state?.currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'
+      ]
+  );
 
   const [page, setPage] = useState(editingPage || props?.page);
   const [pageName, setPageName] = useState('');
@@ -376,8 +382,11 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    checked={page?.pageHeader}
-                    onChange={(e) => togglePageHeader(page?.id, e.target.checked)}
+                    checked={showPageCanvasHeader ?? false}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      togglePageHeader(page?.id, checked);
+                    }}
                   />
                 </label>
               </div>

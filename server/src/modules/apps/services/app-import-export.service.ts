@@ -163,16 +163,16 @@ const INPUT_WIDGET_TYPES = [
 ];
 
 const SHOW_CLEAR_BTN_COMPONENT_TYPES = [
-      'TextInput',
-      'NumberInput',
-      'EmailInput',
-      'CurrencyInput',
-      'PhoneInput',
-      'Datepicker',
-      'DatePickerV2',
-      'DatetimePickerV2',
-      'TimePicker',
-      'DaterangePicker',
+  'TextInput',
+  'NumberInput',
+  'EmailInput',
+  'CurrencyInput',
+  'PhoneInput',
+  'Datepicker',
+  'DatePickerV2',
+  'DatetimePickerV2',
+  'TimePicker',
+  'DaterangePicker',
 ];
 
 @Injectable()
@@ -820,6 +820,7 @@ export class AppImportExportService {
               index: pagePostionIntheList,
               disabled: page.disabled || false,
               hidden: page.hidden || false,
+              pageHeader: page.pageHeader || null,
               autoComputeLayout: page.autoComputeLayout || false,
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
@@ -1102,6 +1103,7 @@ export class AppImportExportService {
           pageGroupIndex: page.pageGroupIndex ?? null,
           disabled: page.disabled || false,
           hidden: page.hidden || false,
+          pageHeader: page.pageHeader || null,
           autoComputeLayout: page.autoComputeLayout || false,
           icon: page.icon || null,
           isPageGroup: !!page.isPageGroup,

@@ -87,8 +87,8 @@ export class Page {
   })
   type: PageType;
 
-  @Column({ name: 'page_header', default: false })
-  pageHeader: boolean;
+  @Column('jsonb', { name: 'page_header', nullable: true })
+  pageHeader;
 
   @Column({ name: 'app_id', type: 'varchar', nullable: true }) // Assuming appId is a varchar/string
   appId: string | null;

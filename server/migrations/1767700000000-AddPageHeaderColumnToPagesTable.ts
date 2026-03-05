@@ -6,9 +6,8 @@ export class AddPageHeaderColumnToPagesTable1767700000000 implements MigrationIn
             'pages',
             new TableColumn({
                 name: 'page_header',
-                type: 'boolean',
-                isNullable: false,
-                default: false,
+                type: 'jsonb',
+                isNullable: true,
             })
         );
     }
