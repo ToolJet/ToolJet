@@ -11,6 +11,8 @@ import { defaultAppEnvironments } from '@helpers/utils.helper';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
@@ -22,6 +24,24 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         {
           environmentId,
           dataSourceId,
+        },
+        { options, updatedAt: new Date() }
+      );
+    }, manager);
+  }
+
+  async updateVersionOptions(
+    options: object,
+    dataSourceVersionId: string,
+    environmentId: string,
+    manager?: EntityManager
+  ) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(
+        DataSourceVersionOptions,
+        {
+          dataSourceVersionId,
+          environmentId,
         },
         { options, updatedAt: new Date() }
       );
@@ -203,7 +223,12 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     }, manager);
   }
 
-  async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
+  async getOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string,
+    branchId?: string
+  ): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       let envName: string;
@@ -219,6 +244,31 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
           select: ['name'],
         });
         envName = environment?.name || 'unknown';
+      }
+
+      // Branch-aware path: read from data_source_version_options
+      if (branchId) {
+        const dsv = await manager.findOne(DataSourceVersion, {
+          where: { dataSourceId, branchId, isActive: true },
+        });
+        if (dsv) {
+          const dsvo = await manager.findOne(DataSourceVersionOptions, {
+            where: { dataSourceVersionId: dsv.id, environmentId: envId },
+          });
+          if (dsvo) {
+            // Return as DataSourceOptions-compatible shape
+            const result = {
+              id: dsvo.id,
+              options: dsvo.options,
+              environmentId: envId,
+              dataSourceId,
+              createdAt: dsvo.createdAt,
+              updatedAt: dsvo.updatedAt,
+              environmentName: envName,
+            } as any;
+            return result;
+          }
+        }
       }
 
       const dataSourceOptions = await manager.findOneOrFail(DataSourceOptions, {

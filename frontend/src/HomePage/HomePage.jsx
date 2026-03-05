@@ -57,6 +57,8 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -761,6 +763,14 @@ class HomePageComponent extends React.Component {
 
   canUpdateFolder = () => {
     return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+  };
+
+  isWorkspaceBranchLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
   };
 
   cancelDeleteAppDialog = () => {
@@ -1512,6 +1522,7 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          <WorkspaceLockedBanner />
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
             <PermissionDeniedModal
@@ -1980,9 +1991,9 @@ class HomePageComponent extends React.Component {
                   currentFolder={currentFolder}
                   folderChanged={this.folderChanged}
                   foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder()}
-                  canDeleteFolder={this.canDeleteFolder()}
-                  canUpdateFolder={this.canUpdateFolder()}
+                  canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                  canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
+                  canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
                   darkMode={this.props.darkMode}
                   canCreateApp={this.canCreateApp()}
                   appType={this.props.appType}

@@ -12,7 +12,7 @@ export class OrganizationGitSyncRepository extends Repository<OrganizationGitSyn
     const repository = manager ? manager.getRepository(this.target) : this;
     return await repository.findOne({
       where: { organizationId: organizationId },
-      relations: ['gitSsh', 'gitHttps', 'gitLab'],
+      relations: ['gitSsh', 'gitHttps', 'gitLab', 'activeBranch'],
     });
   }
 

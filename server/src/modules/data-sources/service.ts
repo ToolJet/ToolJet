@@ -5,7 +5,7 @@ import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { decamelizeKeys } from 'humps';
-import { DataSourceTypes } from './constants';
+import { DataSourceScopes, DataSourceTypes } from './constants';
 import {
   AuthorizeDataSourceOauthDto,
   CreateDataSourceDto,
@@ -23,6 +23,10 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class DataSourcesService implements IDataSourcesService {
@@ -30,7 +34,8 @@ export class DataSourcesService implements IDataSourcesService {
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
-    protected readonly pluginsServiceSelector: PluginsServiceSelector
+    protected readonly pluginsServiceSelector: PluginsServiceSelector,
+    protected readonly branchContextService: BranchContextService
   ) {}
 
   async getForApp(
@@ -200,7 +205,22 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
     }
 
-    await this.dataSourcesRepository.delete(dataSourceId);
+    // Branch-aware: soft-delete via DataSourceVersion.isActive = false
+    const branchId = dataSource.scope === DataSourceScopes.GLOBAL
+      ? await this.branchContextService.getActiveBranchId(user.organizationId)
+      : null;
+
+    if (branchId) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        await manager.update(
+          DataSourceVersion,
+          { dataSourceId, branchId },
+          { isActive: false, updatedAt: new Date() }
+        );
+      });
+    } else {
+      await this.dataSourcesRepository.delete(dataSourceId);
+    }
 
     // Setting data for audit logs
     RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -319,10 +339,16 @@ export class DataSourcesService implements IDataSourcesService {
       throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
     }
 
+    // Branch-aware: pass branchId for global DS option resolution
+    const branchId = dataSource.scope === DataSourceScopes.GLOBAL
+      ? await this.branchContextService.getActiveBranchId(user.organizationId)
+      : null;
+
     const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
       dataSource.id,
       user.organizationId,
-      environmentId
+      environmentId,
+      branchId
     );
 
     const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
@@ -366,7 +392,8 @@ export class DataSourcesService implements IDataSourcesService {
             const updatedDataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
               dataSource.id,
               user.organizationId,
-              environmentId
+              environmentId,
+              branchId
             );
 
             const updatedSourceOptions = await this.dataSourcesUtilService.parseSourceOptions(

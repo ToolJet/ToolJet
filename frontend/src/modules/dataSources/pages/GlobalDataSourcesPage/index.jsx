@@ -11,6 +11,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -266,6 +267,7 @@ export const GlobalDataSourcesPage = (props) => {
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+      <WorkspaceLockedBanner />
       <GlobalDataSourcesContext.Provider value={value}>
         <div className="page-wrapper">
           <GlobalDataSources darkMode={props.darkMode} updateSelectedDatasource={updateSelectedDatasource} />

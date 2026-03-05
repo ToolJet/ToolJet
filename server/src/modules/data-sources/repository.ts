@@ -7,10 +7,14 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { DefaultDataSourceKind, GetQueryVariables } from './types';
 import { decode } from 'js-base64';
+import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
 
 @Injectable()
 export class DataSourcesRepository extends Repository<DataSource> {
-  constructor(private dataSource: typeOrmDS) {
+  constructor(
+    private dataSource: typeOrmDS,
+    private readonly branchContextService: BranchContextService
+  ) {
     super(DataSource, dataSource.createEntityManager());
   }
 
@@ -30,6 +34,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isAdmin = userPermissions.isSuperAdmin;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
+
       const query = manager
         .createQueryBuilder(DataSource, 'data_source')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -37,7 +43,31 @@ export class DataSourcesRepository extends Repository<DataSource> {
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
-      if (environmentId) {
+      const useBranchPath = !!(branchId && environmentId);
+
+      if (useBranchPath) {
+        // Branch-aware: join through data_source_versions → data_source_version_options
+        query.innerJoin(
+          'data_source_versions',
+          'dsv',
+          'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
+          { branchId }
+        );
+        query.innerJoinAndSelect(
+          'data_source_version_options',
+          'dsvo',
+          'dsvo.data_source_version_id = dsv.id AND dsvo.environment_id = :environmentId',
+          { environmentId }
+        );
+      } else if (branchId) {
+        // Branch-aware but no environmentId: filter by branch existence only (no options loaded)
+        query.innerJoin(
+          'data_source_versions',
+          'dsv',
+          'dsv.data_source_id = data_source.id AND dsv.branch_id = :branchId AND dsv.is_active = true',
+          { branchId }
+        );
+      } else if (environmentId) {
         query.innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options');
       }
 
@@ -70,7 +100,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
       if (types && types.length > 0) {
         query.andWhere('data_source.type IN (:...types)', { types });
       }
-      if (environmentId) {
+      if (environmentId && !useBranchPath) {
         query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });
       }
       const result = await query.getMany();
@@ -103,16 +133,33 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       //remove tokenData from restapi datasources
       const dataSources = dataSourceList?.map((ds) => {
-        if (ds.kind === 'restapi') {
-          const options = {};
-          Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
-            if (key !== 'tokenData') {
-              return (options[key] = ds.dataSourceOptions[0].options[key]);
-            }
-          });
-          ds.options = options;
+        if (useBranchPath) {
+          // Options come from the dsvo raw columns selected via innerJoinAndSelect
+          const rawOptions = (ds as any).dsvo_options || {};
+          const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(parsedOptions).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = parsedOptions[key]);
+              }
+            });
+            ds.options = options;
+          } else {
+            ds.options = { ...parsedOptions };
+          }
         } else {
-          ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
+          if (ds.kind === 'restapi') {
+            const options = {};
+            Object.keys(ds.dataSourceOptions?.[0]?.options || {}).filter((key) => {
+              if (key !== 'tokenData') {
+                return (options[key] = ds.dataSourceOptions[0].options[key]);
+              }
+            });
+            ds.options = options;
+          } else {
+            ds.options = { ...(ds.dataSourceOptions?.[0]?.options || {}) };
+          }
         }
         delete ds['dataSourceOptions'];
         return ds;

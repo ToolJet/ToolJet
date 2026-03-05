@@ -19,6 +19,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Constants, redirectToWorkspace } from '@/_helpers/utils';
 import { SearchBox } from '@/_components/SearchBox';
 import { ConstantsEnvironmentsTabs } from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/components';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -230,16 +231,23 @@ const BaseManageOrgConstants = ({
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
+  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  });
+
   const canCreateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
   };
 
   const canUpdateVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
   };
 
   const canDeleteVariable = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin;
+    return (authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin || admin) && !isWorkspaceBranchLocked;
   };
 
   const fetchEnvironments = () => {

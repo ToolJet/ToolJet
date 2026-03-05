@@ -8,13 +8,17 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
+import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
+import { OrganizationConstantVersion } from '@entities/organization_constant_version.entity';
+import { OrganizationConstantVersionValue } from '@entities/organization_constant_version_values.entity';
 const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
     protected readonly organizationConstantRepository: OrganizationConstantRepository,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
+    protected readonly branchContextService: BranchContextService
   ) {}
 
   async allEnvironmentConstants(
@@ -25,6 +29,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId, type);
       const appEnvironments = await this.appEnvironmentUtilService.getAll(organizationId);
+      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
@@ -34,20 +39,53 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
               name: constant.constantName,
             };
           }
+
+          // Branch-aware: check if constant is active on branch
+          let cv: OrganizationConstantVersion | null = null;
+          if (branchId) {
+            cv = await manager.findOne(OrganizationConstantVersion, {
+              where: { organizationConstantId: constant.id, branchId },
+            });
+            // No version entry or inactive → constant doesn't exist on this branch
+            if (!cv || !cv.isActive) {
+              return null;
+            }
+          }
+
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
-              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
               let resolvedValue = '';
-              if (value) {
-                if (constant.type === OrganizationConstantType.SECRET) {
-                  resolvedValue = decryptSecretValue
-                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : secretValue;
-                } else {
-                  resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
-                    organizationId,
-                    value.value
-                  ); // Constant type values are always decrypted
+
+              // Branch-aware: read from version values if available
+              if (cv) {
+                const versionValue = await manager.findOne(OrganizationConstantVersionValue, {
+                  where: { constantVersionId: cv.id, environmentId: env.id },
+                });
+                if (versionValue) {
+                  if (constant.type === OrganizationConstantType.SECRET) {
+                    resolvedValue = decryptSecretValue
+                      ? await this.organizationConstantsUtilService.decryptSecret(organizationId, versionValue.value)
+                      : secretValue;
+                  } else {
+                    resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
+                      organizationId,
+                      versionValue.value
+                    );
+                  }
+                }
+              } else {
+                const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
+                if (value) {
+                  if (constant.type === OrganizationConstantType.SECRET) {
+                    resolvedValue = decryptSecretValue
+                      ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
+                      : secretValue;
+                  } else {
+                    resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
+                      organizationId,
+                      value.value
+                    );
+                  }
                 }
               }
 
@@ -68,7 +106,8 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
         })
       );
 
-      return constantsWithValues;
+      // Filter out null entries (soft-deleted on branch)
+      return constantsWithValues.filter(Boolean);
     });
   }
 
@@ -78,6 +117,50 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     type?: OrganizationConstantType
   ): Promise<any[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const branchId = await this.branchContextService.getActiveBranchId(organizationId);
+
+      if (branchId) {
+        // Branch-aware: query through organization_constant_versions + version_values
+        const query = manager
+          .createQueryBuilder(OrganizationConstant, 'organization_constants')
+          .innerJoin(
+            'organization_constant_versions',
+            'ocv',
+            'ocv.organization_constant_id = organization_constants.id AND ocv.branch_id = :branchId AND ocv.is_active = true',
+            { branchId }
+          )
+          .innerJoinAndSelect(
+            'organization_constant_version_values',
+            'ocvv',
+            'ocvv.constant_version_id = ocv.id AND ocvv.environment_id = :environmentId',
+            { environmentId }
+          )
+          .where('organization_constants.organization_id = :organizationId', { organizationId });
+
+        if (type) {
+          query.andWhere('organization_constants.type = :type', { type });
+        }
+
+        const result = await query.getMany();
+
+        return await Promise.all(
+          result.map(async (constant) => {
+            const rawValue = (constant as any).ocvv_value || '';
+            const resolvedValue = !(constant.type === OrganizationConstantType.SECRET)
+              ? await this.organizationConstantsUtilService.decryptSecret(organizationId, rawValue)
+              : secretValue;
+
+            return {
+              id: constant.id,
+              name: constant.constantName,
+              type: constant.type,
+              value: resolvedValue,
+            };
+          })
+        );
+      }
+
+      // Non-branched fallback (existing behavior)
       const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId, type);
 
       return await Promise.all(

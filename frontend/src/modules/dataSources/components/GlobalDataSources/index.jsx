@@ -21,6 +21,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { ToolTip } from '@/_components/ToolTip';
 import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -322,10 +323,17 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     );
   };
 
+  const isWorkspaceBranchLocked = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled = state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
+  });
+
   const renderCardGroup = (source, type) => {
-    const canAddDataSource = canCreateDataSource();
+    const canAddDataSource = canCreateDataSource() && !isWorkspaceBranchLocked;
     const addDataSourceBtn = (item) => (
-      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+      <ToolTip message={isWorkspaceBranchLocked ? 'Create a branch to make changes' : 'You do not have permission to add a data source'} show={!canAddDataSource} placement="bottom">
         <div>
           <ButtonSolid
             disabled={addingDataSource || !canAddDataSource}
@@ -499,7 +507,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
-            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            showSaveBtn={!isWorkspaceBranchLocked && (canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource())}
             environmentLoading={environmentLoading}
             tags={tags}
           />

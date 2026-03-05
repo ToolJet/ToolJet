@@ -11,10 +11,16 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 import { AppGitSync } from '../../entities/app_git_sync.entity';
+import { BranchContextService } from '@modules/workspace-branches/branch-context.service';
+import { FolderBranchEntry } from '@entities/folder_branch_entry.entity';
+import { FolderAppBranchEntry } from '@entities/folder_app_branch_entry.entity';
 
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
-  constructor(protected readonly abilityService: AbilityService) {}
+  constructor(
+    protected readonly abilityService: AbilityService,
+    protected readonly branchContextService: BranchContextService
+  ) {}
 
   async allFoldersWithAppCount(
     user: User,
@@ -207,6 +213,26 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       });
 
       const folderApp = await manager.save(FolderApp, newFolderApp);
+
+      // Branch-aware: also create FolderAppBranchEntry
+      const folder = await manager.findOne(Folder, { where: { id: folderId }, select: ['organizationId'] });
+      if (folder) {
+        const branchId = await this.branchContextService.getActiveBranchId(folder.organizationId);
+        if (branchId) {
+          const fbe = await manager.findOne(FolderBranchEntry, {
+            where: { folderId, branchId, isActive: true },
+          });
+          if (fbe) {
+            await manager.save(
+              manager.create(FolderAppBranchEntry, {
+                folderBranchEntryId: fbe.id,
+                appId,
+                createdAt: new Date(),
+              })
+            );
+          }
+        }
+      }
 
       return folderApp;
     });

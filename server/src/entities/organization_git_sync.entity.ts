@@ -8,6 +8,7 @@ import {
   JoinTable,
   OneToMany,
   OneToOne,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { AppGitSync } from './app_git_sync.entity';
@@ -15,6 +16,7 @@ import { Organization } from './organization.entity';
 import { OrganizationGitSsh } from './gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
 import { OrganizationGitLab } from './gitsync_entities/organization_gitlab.entity';
+import { WorkspaceBranch } from './workspace_branch.entity';
 export enum GITConnectionType {
   GITHUB_SSH = 'github_ssh',
   GITHUB_HTTPS = 'github_https',
@@ -43,6 +45,13 @@ export class OrganizationGitSync extends BaseEntity {
 
   @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
   schemaVersion: string;
+
+  @Column({ name: 'active_branch_id', nullable: true })
+  activeBranchId: string;
+
+  @ManyToOne(() => WorkspaceBranch, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'active_branch_id' })
+  activeBranch: WorkspaceBranch;
 
   @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
   @JoinTable({
